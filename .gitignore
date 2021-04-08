@@ -1,0 +1,7 @@
+# Binary builds
+build/
+
+# Data storage
+storage/input/mocks/**
+storage/output/**
+tests/test_output/**
