@@ -3,10 +3,10 @@ build/**
 !build/.gitignore
 
 # Docs builds
-docs/misc
 docs/build
 
 # Data storage
 storage/input/mocks/**
 storage/output/**
+storage/misc
 tests/test_output/**
