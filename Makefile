@@ -17,8 +17,8 @@ INCLUDE += -I${GSL_DIR}/include
 INCLUDE += -I${FFTW_DIR}/include
 
 LIB = -lm
-LIB += -L${GSL_DIR}/lib -lgsl -lgslcblas
-LIB += -L$(FFTW_DIR)/lib -lfftw3
+LIB += -lgsl -lgslcblas -L${GSL_DIR}/lib
+LIB += -lfftw3 -L$(FFTW_DIR)/lib
 
 endif
 

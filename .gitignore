@@ -1,5 +1,9 @@
 # Binary builds
-build/
+build/**
+!build/.gitignore
+
+# Docs builds
+docs/build
 
 # Data storage
 storage/input/mocks/**
