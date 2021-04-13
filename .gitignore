@@ -1,8 +1,9 @@
-# Binary builds
+# Binaries
 build/**
 !build/.gitignore
 
 # Docs builds
+docs/misc
 docs/build
 
 # Data storage
