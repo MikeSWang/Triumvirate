@@ -8,5 +8,5 @@ docs/build
 # Data storage
 storage/input/mocks/**
 storage/output/**
-storage/misc
+storage/misc/**
 tests/test_output/**
