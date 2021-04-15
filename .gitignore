@@ -14,7 +14,7 @@ tests/test_output/**
 !tests/test_output/.gitignore
 
 storage/input/**
-!storage/input/params/param.ini
+!storage/input/params/params.ini
 
 storage/output/**
 !storage/output/.gitignore
