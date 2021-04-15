@@ -1,12 +1,25 @@
 # Binaries
-build/**
+build/
 !build/.gitignore
 
 # Docs builds
-docs/build
+docs/build/
+!docs/build/.gitignore
 
 # Data storage
-storage/input/mocks/**
-storage/output/**
-storage/misc/**
+tests/test_build/**
+!tests/test_build/.gitignore
+
 tests/test_output/**
+!tests/test_output/.gitignore
+
+storage/input/**
+!storage/input/params/param.ini
+
+storage/output/**
+!storage/output/.gitignore
+
+storage/misc/**
+
+# Editor
+.vscode/
