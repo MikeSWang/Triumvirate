@@ -44,19 +44,19 @@ trium: src/trium.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix build/, $(notdir $@)) $< $(CLIBS) $(LIB)
 
 test_common: tests/test_common.cpp
-	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/, $(notdir $@)) $< $(CLIBS) $(LIB)
+	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
 
 test_parameter: tests/test_parameter.cpp
-	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/, $(notdir $@)) $< $(CLIBS) $(LIB)
+	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
 
 test_bessel: tests/test_bessel.cpp
-	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/, $(notdir $@)) $< $(CLIBS) $(LIB)
+	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
 
 test_tools: tests/test_tools.cpp
-	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/, $(notdir $@)) $< $(CLIBS) $(LIB)
+	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
 
 clean:
-	rm -f build/* core
+	rm -f build/* tests/test_build/* core
 
 distclean:
-	rm -f build/* *~
+	rm -f build/* tests/test_build/* *~
