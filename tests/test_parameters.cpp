@@ -2,7 +2,7 @@
 
 #include <sys/stat.h>
 
-#include "parameter.hpp"
+#include "parameters.hpp"
 
 /**
  * Test initial parameter input.
