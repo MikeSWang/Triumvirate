@@ -1,64 +1,84 @@
-#ifndef __particleBOSS__
-#define __particleBOSS__
+#ifndef TRIUM_PARTICLES_H_INCLUDED_
+#define TRIUM_PARTICLES_H_INCLUDED_
 
-#ifndef __parameter__
-#include "parameter.hpp"
+#ifndef TRIUM_PARAMETERS_H_INCLUDED_
+#include "parameters.hpp"
 #endif
 
-class ParticleBOSSClass {
-private:
-public:
+/**
+ * Collection of particles.
+ *
+ */
+class ParticleBOSSClass {  // FIXME: change class name
+ public:
 	struct ParticleInfo {
-		double pos[3];
-		double w;
-	} * P;             // particle information
+		double pos[3];  ///< particle position vector
+		double w;  ///< particle weight
+	}* particles;  ///< particle information
 
+	int n_tot;  ///< total number of particles
+	double pos_min[3];  ///< minimum values of particle positions
+	double pos_max[3];  ///< maximum values of particle positions
 
-	int n_tot;         // The total number of particles
-	double pos_max[3]; // the maximum value of particle positions
-	double pos_min[3]; // the minimum value of particle positions
-
-	ParticleInfo & operator [] (int id) { return this->P[id]; }
-
-	ParticleBOSSClass() {
-		/* initialize */
-		this->P = NULL;
-		this->n_tot = 0;
-		this->pos_max[0] = 0.0; this->pos_min[0] = 0.0;
-		this->pos_max[1] = 0.0; this->pos_min[1] = 0.0;
-		this->pos_max[2] = 0.0; this->pos_min[2] = 0.0;
+	/**
+	 * Return particle information.
+	 *
+	 * @param id Particle ID.
+	 * @returns Particle information.
+	 */
+	ParticleInfo &operator [] (int id) {
+		return this->particles[id];
 	}
+
+	/**
+	 * Initialise particle class.
+	 */
+	ParticleBOSSClass () {
+		this->particles = NULL;
+		this->n_tot = 0;
+		this->pos_min[0] = 0.; this->pos_max[0] = 0.;
+		this->pos_min[1] = 0.; this->pos_max[1] = 0.;
+		this->pos_min[2] = 0.; this->pos_max[2] = 0.;
+	}
+
+	/**
+	 * Deconstruct particle class.
+	 */
 	~ParticleBOSSClass() {
 		finalizeParticle();
 	}
 
-	void initializeParticle(const int num) {
-
-		if(num <= 0) { printf("Number of particles is <= 0\n"); return; }
-
-		/* insert the total number of particles in this->n_tot */
+	/**
+	 * Initialise particles.
+	 */
+	void initialise_particles (const int num) {
+		/// Check total number of particles.
+		if (num <= 0) {
+			printf("Number of particles is <= 0!\n");
+			return;
+		}
 		this->n_tot = num;
 
 		/* allocate particles */
-		delete [] P; P == NULL;
-		this->P = new ParticleInfo[this->n_tot];
+		delete [] particles; particles == NULL;
+		this->particles = new ParticleInfo[this->n_tot];
 
 		/* compute memory */
-		bytes += double( sizeof(struct ParticleInfo) * this->n_tot / 1024.0 / 1024.0 / 1024.0 );
+		bytes += double(sizeof(struct ParticleInfo) * this->n_tot / 1024.0 / 1024.0 / 1024.0);
 
 		/* initialize particles */
 		for(int i = 0; i < this->n_tot; i++) {
-			P[i].pos[0] = 0.0;
-			P[i].pos[1] = 0.0;
-			P[i].pos[2] = 0.0;
-			P[i].w = 0.0;
+			particles[i].pos[0] = 0.0;
+			particles[i].pos[1] = 0.0;
+			particles[i].pos[2] = 0.0;
+			particles[i].w = 0.0;
 		}
 	}
 
 	void finalizeParticle() {
-		if(P != NULL) {
-			delete [] this->P; this->P = NULL;
-			bytes -= double( sizeof(struct ParticleInfo) * this->n_tot / 1024.0 / 1024.0 / 1024.0);
+		if (particles != NULL) {
+			delete [] this->particles; this->particles = NULL;
+			bytes -= double(sizeof(struct ParticleInfo) * this->n_tot / 1024.0 / 1024.0 / 1024.0);
 		}
 	}
 
@@ -71,15 +91,15 @@ public:
 		int num_lines = 0;
 
 		fin.open(fname_in.c_str(), std::ios::in);
-		if( fin.fail() ) {
+		if (fin.fail()) {
 			printf("can not open file '%s'...\n", fname_in.c_str());
 			fin.close();
 			return -1;
 		}
 		std::string str;
 		double x, y, z, w;
-		while(getline(fin, str)) {
-			if( sscanf(str.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &w) != 4 ) {
+		while (getline(fin, str)) {
+			if (sscanf(str.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &w) != 4) {
 				continue;
 			}
 			num_lines++;
@@ -88,20 +108,20 @@ public:
 		/*****************************************/
 
 		/* initialize particles */
-		this->initializeParticle(num_lines);
+		this->initialise_particles(num_lines);
 
 		/*****************************************/
 		/* read particle information */
 		num_lines = 0;
 		fin.open(fname_in.c_str(), std::ios::in);
-		while(getline(fin, str)) {
-			if( sscanf(str.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &w) != 4 ) {
+		while (getline(fin, str)) {
+			if (sscanf(str.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &w) != 4) {
 				continue;
 			}
-			P[num_lines].pos[0] = x;
-			P[num_lines].pos[1] = y;
-			P[num_lines].pos[2] = z;
-			P[num_lines].w = w;
+			particles[num_lines].pos[0] = x;
+			particles[num_lines].pos[1] = y;
+			particles[num_lines].pos[2] = z;
+			particles[num_lines].w = w;
             if (num_lines <= 2) {
                 std::cout << "x=" << x << ", y=" << y << ", z=" << z << ", w=" << w << "\n";
             }
@@ -121,7 +141,7 @@ public:
 		int num_lines = 0;
 
 		fin.open(fname_in.c_str(), std::ios::in);
-		if( fin.fail() ) {
+		if (fin.fail()) {
 			printf("can not open file '%s'...\n", fname_in.c_str());
 			fin.close();
 			return -1;
@@ -130,8 +150,8 @@ public:
 		std::string str;
 		double x, y, z, vx, vy, vz, mass, dummy;
 		int ID, PID;
-		while(getline(fin, str)) {
-			if( sscanf(str.c_str(), "%lf %lf %lf",  &x, &y, &z) != 3 ) {
+		while (getline(fin, str)) {
+			if (sscanf(str.c_str(), "%lf %lf %lf",  &x, &y, &z) != 3) {
 				continue;
 			}
             if (num_lines <= 2) {
@@ -145,20 +165,20 @@ public:
 		/*****************************************/
 
 		/* initialize particles */
-		this->initializeParticle(num_lines);
+		this->initialise_particles(num_lines);
 
 		/*****************************************/
 		/* read particle information */
 		num_lines = 0;
 		fin.open(fname_in.c_str(), std::ios::in);
-		while(getline(fin, str)) {
-			if( sscanf(str.c_str(), "%lf %lf %lf",  &x, &y, &z) != 3 ) {
+		while (getline(fin, str)) {
+			if (sscanf(str.c_str(), "%lf %lf %lf",  &x, &y, &z) != 3) {
 				continue;
 			}
-			this->P[num_lines].pos[0] = x;
-			this->P[num_lines].pos[1] = y;
-			this->P[num_lines].pos[2] = z;
-			this->P[num_lines].w = 1.0;
+			this->particles[num_lines].pos[0] = x;
+			this->particles[num_lines].pos[1] = y;
+			this->particles[num_lines].pos[2] = z;
+			this->particles[num_lines].w = 1.0;
 			num_lines++;
 		}
 		fin.close();
@@ -171,33 +191,33 @@ public:
 
 	int calcMinAndMax() {
 
-		if( P == NULL) { return -1; }
+		if (particles == NULL) { return -1; }
 
 		double min[3], max[3];
 
-		min[0] = this->P[0].pos[0]; max[0] = this->P[0].pos[0];
-		min[1] = this->P[0].pos[1]; max[1] = this->P[0].pos[1];
-		min[2] = this->P[0].pos[2]; max[2] = this->P[0].pos[2];
+		min[0] = this->particles[0].pos[0]; max[0] = this->particles[0].pos[0];
+		min[1] = this->particles[0].pos[1]; max[1] = this->particles[0].pos[1];
+		min[2] = this->particles[0].pos[2]; max[2] = this->particles[0].pos[2];
 
 		for (int i = 0; i < this->n_tot; i++) {
-			if(min[0] > P[i].pos[0]) {
-				min[0] = P[i].pos[0];
+			if (min[0] > particles[i].pos[0]) {
+				min[0] = particles[i].pos[0];
 			}
-			if(min[1] > P[i].pos[1]) {
-				min[1] = P[i].pos[1];
+			if (min[1] > particles[i].pos[1]) {
+				min[1] = particles[i].pos[1];
 			}
-			if(min[2] > P[i].pos[2]) {
-				min[2] = P[i].pos[2];
+			if (min[2] > particles[i].pos[2]) {
+				min[2] = particles[i].pos[2];
 			}
 
-			if(max[0] < P[i].pos[0]) {
-				max[0] = P[i].pos[0];
+			if (max[0] < particles[i].pos[0]) {
+				max[0] = particles[i].pos[0];
 			}
-			if(max[1] < P[i].pos[1]) {
-				max[1] = P[i].pos[1];
+			if (max[1] < particles[i].pos[1]) {
+				max[1] = particles[i].pos[1];
 			}
-			if(max[2] < P[i].pos[2]) {
-				max[2] = P[i].pos[2];
+			if (max[2] < particles[i].pos[2]) {
+				max[2] = particles[i].pos[2];
 			}
 		}
 		this->pos_min[0] = min[0]; this->pos_max[0] = max[0];
@@ -209,11 +229,11 @@ public:
 
 	int resetParticle(const double * dP) {
 
-		if( P == NULL) { return -1; }
+		if (particles == NULL) { return -1; }
 		for (int p = 0; p < this->n_tot; p++) {
-			this->P[p].pos[0] -= dP[0];
-			this->P[p].pos[1] -= dP[1];
-			this->P[p].pos[2] -= dP[2];
+			this->particles[p].pos[0] -= dP[0];
+			this->particles[p].pos[1] -= dP[1];
+			this->particles[p].pos[2] -= dP[2];
 		}
 
 		return 0;
@@ -284,10 +304,10 @@ public:
 		for(int p = 0; p < this->n_tot; p++) {
 
 			for(int axes = 0; axes < 3; axes++) {
-				if(this->P[p].pos[axes] >= param.boxsize[axes]) {
-					this->P[p].pos[axes] -= param.boxsize[axes];
-				} else if(this->P[p].pos[axes] < 0.0) {
-					this->P[p].pos[axes] += param.boxsize[axes];
+				if (this->particles[p].pos[axes] >= param.boxsize[axes]) {
+					this->particles[p].pos[axes] -= param.boxsize[axes];
+				} else if (this->particles[p].pos[axes] < 0.0) {
+					this->particles[p].pos[axes] += param.boxsize[axes];
 				}
 			}
 		}
@@ -311,7 +331,7 @@ public:
 
 		for(int p = 0; p < this->n_tot; p++) {
 			for(int axes = 0; axes < 3; axes++) {
-				this->P[p].pos[axes] += dx[axes];
+				this->particles[p].pos[axes] += dx[axes];
 			}
 		}
 
@@ -320,6 +340,7 @@ public:
 		return 0;
 	}
 
+ private:
 };
 
 #endif

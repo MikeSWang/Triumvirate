@@ -26,10 +26,10 @@
 #define wigner_3j(j1,j2,j3,m1,m2,m3) (gsl_sf_coupling_3j(2*j1,2*j2,2*j3,2*m1,2*m2,2*m3))
 
 #include "common.hpp"
-#include "parameter.hpp"
+#include "parameters.hpp"
 #include "tools.hpp"
 #include "bessel.hpp"
-#include "particle.hpp"
+#include "particles.hpp"
 #include "field.hpp"
 #include "powerspec.hpp"
 #include "bispec.hpp"

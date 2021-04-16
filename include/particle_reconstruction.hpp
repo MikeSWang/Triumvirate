@@ -2,7 +2,7 @@
 #define __particle_reconstruction__
 
 #ifndef __parameter__
-#include "parameter.hpp"
+#include "parameters.hpp"
 #endif
 
 #ifndef __field__

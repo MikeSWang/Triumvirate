@@ -2,7 +2,7 @@
 #define TRIUM_TOOLS_H_INCLUDED_
 
 #ifndef TRIUM_PARAMETER_H_INCLUDED_
-#include "parameter.hpp"
+#include "parameters.hpp"
 #endif
 
 /**

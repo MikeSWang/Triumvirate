@@ -9,7 +9,7 @@ public:
 		double vel[3]; // 3次元の場所。
 		double w;
 		long long ID;
-	} * P;
+	} * particles;
 
 	int n_tot;         // 全粒子数
 	double pos_max[3]; // 粒子の位置の最小値
@@ -24,11 +24,11 @@ public:
 	double    hubble;
 	double    mass;
 
-	ParticleInfo & operator [] (int id) { return this->P[id]; } // 粒子の定義
+	ParticleInfo & operator [] (int id) { return this->particles[id]; } // 粒子の定義
 
 	ParticleBOSSClass() {
 		/* initialize */
-		this->P = NULL;
+		this->particles = NULL;
 		this->n_tot = 0;
 		this->pos_max[0] = 0.0; this->pos_min[0] = 0.0;
 		this->pos_max[1] = 0.0; this->pos_min[1] = 0.0;
@@ -68,13 +68,13 @@ public:
 
 
 	void finalizeParticle() {
-		if(P != NULL) {
-			delete [] this->P; this->P = NULL;
+		if(particles != NULL) {
+			delete [] this->particles; this->particles = NULL;
 			bytes -= double( sizeof(struct ParticleInfo) * this->n_tot / 1024.0 / 1024.0 / 1024.0);
 		}
 	}
 
-	int initializeParticle(const int num) {
+	int initialise_particles(const int num) {
 
 		if(num <= 0) { printf("Number of particles is <= 0\n"); return -1; }
 
@@ -82,25 +82,25 @@ public:
 		this->n_tot = num;
 
 		/* allocate particles */
-		delete [] P; P == NULL;
-		this->P = new ParticleInfo[this->n_tot];
+		delete [] particles; particles == NULL;
+		this->particles = new ParticleInfo[this->n_tot];
 
 		/* compute memory */
 		bytes += double( sizeof(struct ParticleInfo) * this->n_tot / 1024.0 / 1024.0 / 1024.0 );
 
 		/* initialize particles */
 		for(int i = 0; i < this->n_tot; i++) {
-			P[i].pos[0] = 0.0;
-			P[i].pos[1] = 0.0;
-			P[i].pos[2] = 0.0;
+			particles[i].pos[0] = 0.0;
+			particles[i].pos[1] = 0.0;
+			particles[i].pos[2] = 0.0;
 
-			P[i].vel[0] = 0.0;
-			P[i].vel[1] = 0.0;
-			P[i].vel[2] = 0.0;
+			particles[i].vel[0] = 0.0;
+			particles[i].vel[1] = 0.0;
+			particles[i].vel[2] = 0.0;
 
-			P[i].w = 1.0;
+			particles[i].w = 1.0;
 
-			P[i].ID = i;
+			particles[i].ID = i;
 		}
 
 		return 0;
@@ -152,7 +152,7 @@ public:
 		if( this->read_parameters(snapshotFileName)) { printf("fail to read snapshot files\n"); return -1;}
 
 		//****** 粒子の初期化。 *****//
-		if ( this->initializeParticle(this->n_tot) ) { printf("fail to read snapshot files\n"); return -1;}
+		if ( this->initialise_particles(this->n_tot) ) { printf("fail to read snapshot files\n"); return -1;}
 
 		//****** 粒子の読み込み。 *****//
 		int pc = 0, pc_new = 0;
@@ -184,7 +184,7 @@ public:
 			pc_new = pc;
 			for(int n = 0; n < NumPart; n++) {
 			    	for(int k = 0; k < 3; k++) {
-				      P[pc_new].pos[k] =(double) block[3 * n + k];
+				      particles[pc_new].pos[k] =(double) block[3 * n + k];
 				}
 				pc_new++;
 			}
@@ -195,7 +195,7 @@ public:
 			pc_new = pc;
 			for(int n = 0; n < NumPart; n++) {
 			    	for(int k = 0; k < 3; k++) {
-				      P[pc_new].vel[k] = (double) block[3 * n + k] * sqrt(scaleFactor);
+				      particles[pc_new].vel[k] = (double) block[3 * n + k] * sqrt(scaleFactor);
 				}
 				pc_new++;
 			}
@@ -206,7 +206,7 @@ public:
 			fread(&dummy,sizeof(dummy),1,fp);
 			pc_new = pc;
 			for(int n = 0; n < NumPart; n++) {
-				P[pc_new].ID = (long long) blockid[n];
+				particles[pc_new].ID = (long long) blockid[n];
 				pc_new++;
 			}
 			if(i == numFiles-1) {
@@ -259,7 +259,7 @@ public:
 		/*****************************************/
 
 		/* initialize particles */
-		this->initializeParticle(num_lines);
+		this->initialise_particles(num_lines);
 
 		/*****************************************/
 		/* read particle information */
@@ -278,13 +278,13 @@ public:
 				continue;
 			}
 			if( (12.9 < log10(mass)) && (log10(mass) < 13.1) ) {
-				P[num_lines].pos[0] = x;
-				P[num_lines].pos[1] = y;
-				P[num_lines].pos[2] = z;
-				P[num_lines].vel[0] = vx;
-				P[num_lines].vel[1] = vy;
-				P[num_lines].vel[2] = vz;
-				P[num_lines].ID = num_lines;
+				particles[num_lines].pos[0] = x;
+				particles[num_lines].pos[1] = y;
+				particles[num_lines].pos[2] = z;
+				particles[num_lines].vel[0] = vx;
+				particles[num_lines].vel[1] = vy;
+				particles[num_lines].vel[2] = vz;
+				particles[num_lines].ID = num_lines;
 				num_lines++;
 
 			}
@@ -324,7 +324,7 @@ public:
 		/*****************************************/
 
 		/* initialize particles */
-		this->initializeParticle(num_lines);
+		this->initialise_particles(num_lines);
 
 		/*****************************************/
 		/* read particle information */
@@ -334,10 +334,10 @@ public:
 			if( sscanf(str.c_str(), "%lf %lf %lf",  &x, &y, &z) != 3 ) {
 				continue;
 			}
-			this->P[num_lines].pos[0] = x;
-			this->P[num_lines].pos[1] = y;
-			this->P[num_lines].pos[2] = z;
-			this->P[num_lines].w = 1.0;
+			this->particles[num_lines].pos[0] = x;
+			this->particles[num_lines].pos[1] = y;
+			this->particles[num_lines].pos[2] = z;
+			this->particles[num_lines].w = 1.0;
 			num_lines++;
 		}
 		fin.close();
@@ -360,20 +360,20 @@ public:
 	    }
 
 	    /* initialize particles */
-	    this->initializeParticle(num_lines);
+	    this->initialise_particles(num_lines);
 
 	    num_lines = 0;
 	    for(int i = 0; i < P_in.n_tot; i++) {
 		    if((P_in[i].pos[0] > 500.0*double(i_box)  ) && (P_in[i].pos[1] > 500.0*double(j_box)  ) && (P_in[i].pos[2] > 500.0*double(k_box)  ) &&
 		       (P_in[i].pos[0] < 500.0*double(i_box+1)) && (P_in[i].pos[1] < 500.0*double(j_box+1)) && (P_in[i].pos[2] < 500.0*double(k_box+1)) ) {
 
-			this->P[num_lines].pos[0] = P_in[i].pos[0];
-			this->P[num_lines].pos[1] = P_in[i].pos[1];
-			this->P[num_lines].pos[2] = P_in[i].pos[2];
-			this->P[num_lines].vel[0] = P_in[i].vel[0];
-			this->P[num_lines].vel[1] = P_in[i].vel[1];
-			this->P[num_lines].vel[2] = P_in[i].vel[2];
-			this->P[num_lines].ID = num_lines;
+			this->particles[num_lines].pos[0] = P_in[i].pos[0];
+			this->particles[num_lines].pos[1] = P_in[i].pos[1];
+			this->particles[num_lines].pos[2] = P_in[i].pos[2];
+			this->particles[num_lines].vel[0] = P_in[i].vel[0];
+			this->particles[num_lines].vel[1] = P_in[i].vel[1];
+			this->particles[num_lines].vel[2] = P_in[i].vel[2];
+			this->particles[num_lines].ID = num_lines;
 			num_lines++;
 		    }
 	    }
@@ -400,7 +400,7 @@ public:
 		double hubble = 100.0 * sqrt(this->omegaM0 / pow(a,3) + (1.0 - this->omegaM0 - this->omegaLambda) / pow(a,2) + this->omegaLambda);
 		double aH = this->scaleFactor * hubble; // aH;
 		for (int i = 0; i < this->n_tot; i++) {
-			this->P[i].pos[axis] += P[i].vel[axis] / aH;
+			this->particles[i].pos[axis] += particles[i].vel[axis] / aH;
 		}
 
 		return 0;
@@ -411,10 +411,10 @@ public:
 		for(int p = 0; p < this->n_tot; p++) {
 
 			for(int axes = 0; axes < 3; axes++) {
-				if(P[p].pos[axes] >= param.boxsize[axes]) {
-					P[p].pos[axes] -= param.boxsize[axes];
-				} else if(P[p].pos[axes] < 0.0) {
-					P[p].pos[axes] += param.boxsize[axes];
+				if(particles[p].pos[axes] >= param.boxsize[axes]) {
+					particles[p].pos[axes] -= param.boxsize[axes];
+				} else if(particles[p].pos[axes] < 0.0) {
+					particles[p].pos[axes] += param.boxsize[axes];
 				}
 			}
 		}
@@ -424,33 +424,33 @@ public:
 
 	int calcMinAndMax() {
 
-		if( P == NULL) { return -1; }
+		if( particles == NULL) { return -1; }
 
 		double min[3], max[3];
 
-		min[0] = this->P[0].pos[0]; max[0] = this->P[0].pos[0];
-		min[1] = this->P[0].pos[1]; max[1] = this->P[0].pos[1];
-		min[2] = this->P[0].pos[2]; max[2] = this->P[0].pos[2];
+		min[0] = this->particles[0].pos[0]; max[0] = this->particles[0].pos[0];
+		min[1] = this->particles[0].pos[1]; max[1] = this->particles[0].pos[1];
+		min[2] = this->particles[0].pos[2]; max[2] = this->particles[0].pos[2];
 
 		for (int i = 0; i < this->n_tot; i++) {
-			if(min[0] > P[i].pos[0]) {
-				min[0] = P[i].pos[0];
+			if(min[0] > particles[i].pos[0]) {
+				min[0] = particles[i].pos[0];
 			}
-			if(min[1] > P[i].pos[1]) {
-				min[1] = P[i].pos[1];
+			if(min[1] > particles[i].pos[1]) {
+				min[1] = particles[i].pos[1];
 			}
-			if(min[2] > P[i].pos[2]) {
-				min[2] = P[i].pos[2];
+			if(min[2] > particles[i].pos[2]) {
+				min[2] = particles[i].pos[2];
 			}
 
-			if(max[0] < P[i].pos[0]) {
-				max[0] = P[i].pos[0];
+			if(max[0] < particles[i].pos[0]) {
+				max[0] = particles[i].pos[0];
 			}
-			if(max[1] < P[i].pos[1]) {
-				max[1] = P[i].pos[1];
+			if(max[1] < particles[i].pos[1]) {
+				max[1] = particles[i].pos[1];
 			}
-			if(max[2] < P[i].pos[2]) {
-				max[2] = P[i].pos[2];
+			if(max[2] < particles[i].pos[2]) {
+				max[2] = particles[i].pos[2];
 			}
 		}
 		this->pos_min[0] = min[0]; this->pos_max[0] = max[0];
@@ -462,11 +462,11 @@ public:
 
 	int resetParticle() {
 
-		if( P == NULL) { return -1; }
+		if( particles == NULL) { return -1; }
 		for (int p = 0; p < this->n_tot; p++) {
-			this->P[p].pos[0] -= this->pos_min[0];
-			this->P[p].pos[1] -= this->pos_min[1];
-			this->P[p].pos[2] -= this->pos_min[2];
+			this->particles[p].pos[0] -= this->pos_min[0];
+			this->particles[p].pos[1] -= this->pos_min[1];
+			this->particles[p].pos[2] -= this->pos_min[2];
 		}
 
 		return 0;
@@ -475,33 +475,33 @@ public:
 
 //	int calcMinAndMax() {
 //
-//		if( this->P == NULL) { return -1; }
+//		if( this->particles == NULL) { return -1; }
 //
 //		double min[3], max[3];
 //
-//		min[0] = this->P[0].pos[0]; max[0] = this->P[0].pos[0];
-//		min[1] = this->P[0].pos[1]; max[1] = this->P[0].pos[1];
-//		min[2] = this->P[0].pos[2]; max[2] = this->P[0].pos[2];
+//		min[0] = this->particles[0].pos[0]; max[0] = this->particles[0].pos[0];
+//		min[1] = this->particles[0].pos[1]; max[1] = this->particles[0].pos[1];
+//		min[2] = this->particles[0].pos[2]; max[2] = this->particles[0].pos[2];
 //
 //		for (int i = 0; i < this->nTotal; i++) {
-//			if(min[0] > P[i].pos[0]) {
-//				min[0] = P[i].pos[0];
+//			if(min[0] > particles[i].pos[0]) {
+//				min[0] = particles[i].pos[0];
 //			}
-//			if(min[1] > P[i].pos[1]) {
-//				min[1] = P[i].pos[1];
+//			if(min[1] > particles[i].pos[1]) {
+//				min[1] = particles[i].pos[1];
 //			}
-//			if(min[2] > P[i].pos[2]) {
-//				min[2] = P[i].pos[2];
+//			if(min[2] > particles[i].pos[2]) {
+//				min[2] = particles[i].pos[2];
 //			}
 //
-//			if(max[0] < P[i].pos[0]) {
-//				max[0] = P[i].pos[0];
+//			if(max[0] < particles[i].pos[0]) {
+//				max[0] = particles[i].pos[0];
 //			}
-//			if(max[1] < P[i].pos[1]) {
-//				max[1] = P[i].pos[1];
+//			if(max[1] < particles[i].pos[1]) {
+//				max[1] = particles[i].pos[1];
 //			}
-//			if(max[2] < P[i].pos[2]) {
-//				max[2] = P[i].pos[2];
+//			if(max[2] < particles[i].pos[2]) {
+//				max[2] = particles[i].pos[2];
 //			}
 //		}
 //		this->posMin[0] = min[0]; this->posMax[0] = max[0];
@@ -546,19 +546,19 @@ public:
 //		for(int i = 0; i < this->nTotal; i++) {
 //			double xmag_xyz2 = 0.0;
 //			for(int axes = 0; axes < 3; axes++) {
-//				xmag_xyz2 += P[i].pos[axes] * P[i].pos[axes];
+//				xmag_xyz2 += particles[i].pos[axes] * particles[i].pos[axes];
 //			}
 //			double xmag_xyz = sqrt(xmag_xyz2);
 //
 //			/* mu の計算。*/
-//			double mu = P[i].pos[2] / xmag_xyz;
+//			double mu = particles[i].pos[2] / xmag_xyz;
 //			/* phi の計算 */
-//			double phi = atan(P[i].pos[1]/P[i].pos[0]);
+//			double phi = atan(particles[i].pos[1]/particles[i].pos[0]);
 //			/* atan は -pi/2 < atan < pi/2 までしか範囲を取らないから，o <=phi <= 2pi に変換する。 */
-//			if( P[i].pos[0] > 0 && P[i].pos[1] < 0 ) {
+//			if( particles[i].pos[0] > 0 && particles[i].pos[1] < 0 ) {
 //				phi = phi + 2.0 * M_PI;
 //			}
-//			if( P[i].pos[0] < 0 ) {
+//			if( particles[i].pos[0] < 0 ) {
 //				phi = phi + M_PI;
 //			}
 //			if(phi < 0.0 || phi > 2.0*M_PI) { return -1; }
@@ -570,7 +570,7 @@ public:
 //			/* Ylm に sqrt(4pi/(2ell+1)) をかけたものを使う。*/
 //			Ylm *= sqrt(4.0 * M_PI/(2.0 * double(ell) + 1.0));
 //			/* 粒子に代入。*/
-//			P[i].Ylm = Ylm;
+//			particles[i].Ylm = Ylm;
 //		}
 //		return 0;
 //	}
@@ -632,9 +632,9 @@ private:
 		int    ID;     // ID
 		std::complex<double> Ylm; // multipole 計算のための、spherical harmonics
 		double T; // kSZ温度
-	} * P;
+	} * particles;
 public:
-	const ParticleInfo & operator [] (int id) { return this->P[id]; } // 粒子の定義。
+	const ParticleInfo & operator [] (int id) { return this->particles[id]; } // 粒子の定義。
 	int nTotal; // トータル粒子数。
 	double posMax[3]; // 粒子の場所の最大値。
 	double posMin[3]; // 粒子の場所の最小値。
@@ -650,7 +650,7 @@ public:
 
 	ParticleGadgetClassReduced() {
 		// 変数を初期化。//
-		this->P = NULL;
+		this->particles = NULL;
 		this->nTotal = 0;
 		this->posMax[0] = 0.0; this->posMin[0] = 0.0;
 		this->posMax[1] = 0.0; this->posMin[1] = 0.0;
@@ -668,37 +668,37 @@ public:
 		this->finalizeParticle();
 	}
 	void finalizeParticle() {
-		delete [] this->P; this->P = NULL;
+		delete [] this->particles; this->particles = NULL;
 	}
 
-	int initializeParticle(const int num) {
+	int initialise_particles(const int num) {
 
 		/* n_tot の代入 */
 		if(num < 0) { printf("Number of particles is < 0\n"); return -1; }
 		this->nTotal = num;
 
 		/* 粒子の定義，メモリ確保，初期化*/
-		delete [] P; P = NULL;
-		this->P = new ParticleInfo[this->nTotal];
+		delete [] particles; particles = NULL;
+		this->particles = new ParticleInfo[this->nTotal];
 		for(int i = 0; i < this->nTotal; i++) {
-			this->P[i].pos[0] = 0.0;
-			this->P[i].pos[1] = 0.0;
-			this->P[i].pos[2] = 0.0;
-			this->P[i].vel[0] = 0.0;
-			this->P[i].vel[1] = 0.0;
-			this->P[i].vel[2] = 0.0;
-			this->P[i].Z = 0.0;
-			this->P[i].Weight = 0.0;
-			this->P[i].ID = 0;
-			this->P[i].Ylm = 0.0;
-			this->P[i].T = 0.0;
+			this->particles[i].pos[0] = 0.0;
+			this->particles[i].pos[1] = 0.0;
+			this->particles[i].pos[2] = 0.0;
+			this->particles[i].vel[0] = 0.0;
+			this->particles[i].vel[1] = 0.0;
+			this->particles[i].vel[2] = 0.0;
+			this->particles[i].Z = 0.0;
+			this->particles[i].Weight = 0.0;
+			this->particles[i].ID = 0;
+			this->particles[i].Ylm = 0.0;
+			this->particles[i].T = 0.0;
 		}
 
 		return 0;
 	}
 
 	int checkParticle() {
-		if( this->P == NULL ) {
+		if( this->particles == NULL ) {
 			return -1;
 		} else {
 			return 0;
@@ -723,33 +723,33 @@ public:
 
 	int calcMinAndMax() {
 
-		if( this->P == NULL) { return -1; }
+		if( this->particles == NULL) { return -1; }
 
 		double min[3], max[3];
 
-		min[0] = this->P[0].pos[0]; max[0] = this->P[0].pos[0];
-		min[1] = this->P[0].pos[1]; max[1] = this->P[0].pos[1];
-		min[2] = this->P[0].pos[2]; max[2] = this->P[0].pos[2];
+		min[0] = this->particles[0].pos[0]; max[0] = this->particles[0].pos[0];
+		min[1] = this->particles[0].pos[1]; max[1] = this->particles[0].pos[1];
+		min[2] = this->particles[0].pos[2]; max[2] = this->particles[0].pos[2];
 
 		for (int i = 0; i < this->nTotal; i++) {
-			if(min[0] > P[i].pos[0]) {
-				min[0] = P[i].pos[0];
+			if(min[0] > particles[i].pos[0]) {
+				min[0] = particles[i].pos[0];
 			}
-			if(min[1] > P[i].pos[1]) {
-				min[1] = P[i].pos[1];
+			if(min[1] > particles[i].pos[1]) {
+				min[1] = particles[i].pos[1];
 			}
-			if(min[2] > P[i].pos[2]) {
-				min[2] = P[i].pos[2];
+			if(min[2] > particles[i].pos[2]) {
+				min[2] = particles[i].pos[2];
 			}
 
-			if(max[0] < P[i].pos[0]) {
-				max[0] = P[i].pos[0];
+			if(max[0] < particles[i].pos[0]) {
+				max[0] = particles[i].pos[0];
 			}
-			if(max[1] < P[i].pos[1]) {
-				max[1] = P[i].pos[1];
+			if(max[1] < particles[i].pos[1]) {
+				max[1] = particles[i].pos[1];
 			}
-			if(max[2] < P[i].pos[2]) {
-				max[2] = P[i].pos[2];
+			if(max[2] < particles[i].pos[2]) {
+				max[2] = particles[i].pos[2];
 			}
 		}
 		this->posMin[0] = min[0]; this->posMax[0] = max[0];
@@ -813,17 +813,17 @@ public:
 
 		for(int p = 0; p < this->nTotal; p++) {
 			int index = shuffle[p];
-			this->P[p].pos[0] = particle[index].pos[0];
-			this->P[p].pos[1] = particle[index].pos[1];
-			this->P[p].pos[2] = particle[index].pos[2];
-			this->P[p].vel[0] = particle[index].vel[0];
-			this->P[p].vel[1] = particle[index].vel[1];
-			this->P[p].vel[2] = particle[index].vel[2];
-			this->P[p].Z = particle[index].Z;
-			this->P[p].Weight = particle[index].Weight;
-			this->P[p].ID = particle[index].ID;
-			this->P[p].Ylm = particle[index].Ylm;
-			this->P[p].T = particle[index].T;
+			this->particles[p].pos[0] = particle[index].pos[0];
+			this->particles[p].pos[1] = particle[index].pos[1];
+			this->particles[p].pos[2] = particle[index].pos[2];
+			this->particles[p].vel[0] = particle[index].vel[0];
+			this->particles[p].vel[1] = particle[index].vel[1];
+			this->particles[p].vel[2] = particle[index].vel[2];
+			this->particles[p].Z = particle[index].Z;
+			this->particles[p].Weight = particle[index].Weight;
+			this->particles[p].ID = particle[index].ID;
+			this->particles[p].Ylm = particle[index].Ylm;
+			this->particles[p].T = particle[index].T;
 		}
 
 		return 0;
@@ -872,8 +872,8 @@ public:
 //	std::string snapshot_file;
 //public:
 //
-//	ParticleInfo *P;
-//	ParticleInfo & operator [] (long long id) { return P[id]; }
+//	ParticleInfo *particles;
+//	ParticleInfo & operator [] (long long id) { return particles[id]; }
 //	long long n_tot;
 //	int       n_sample;
 //	double    scale_factor;
@@ -907,13 +907,13 @@ public:
 //	Particle() {
 //		printf("\n**************************\n");
 //		printf("Particle\n");
-//		P = NULL;
+//		particles = NULL;
 //	}
 //
 //	~Particle() {
-//		if(P != NULL) {
+//		if(particles != NULL) {
 //			printf("freeParticle\n");
-//			delete [] P; P = NULL;
+//			delete [] particles; particles = NULL;
 //		}
 //	}
 //
@@ -965,7 +965,7 @@ public:
 //	void freeParticle(int & bytes) {
 //		printf("freeParticle\n");
 //		bytes -= (int) (sizeof(ParticleInfo) * this->n_tot / 1024 / 1024);
-//		if(P != NULL) {delete [] P; P = NULL; }
+//		if(particles != NULL) {delete [] particles; particles = NULL; }
 //		printf("memomry = %ld Mb\n",bytes);
 //	}
 //
@@ -1017,7 +1017,7 @@ public:
 //		printf("allocateParticle\n");
 //		bytes += (int) (sizeof(ParticleInfo) * this->n_tot / 1024 / 1024);
 //		printf("memomry = %ld Mb\n",bytes);
-//		P = new ParticleInfo[this->n_tot];
+//		particles = new ParticleInfo[this->n_tot];
 //	}
 //
 //	void writeParticles(std::string filename) {
@@ -1026,9 +1026,9 @@ public:
 //		fp = fopen(filename.c_str(),"w");
 //		for(int i = 0; i < n_tot; i++) {
 //			fprintf(fp, "%.7e \t %.7e \t %.7e \t %.7e \t %.7e \t %.7e \t %.7e \t %.7e \t %.7e \n",
-//					 P[i].pos[0], P[i].pos[1] , P[i].pos[2],
-//      			       P[i].vel[0], P[i].vel[1] , P[i].vel[2],
-//      			       P[i].ini[0], P[i].ini[1] , P[i].ini[2]);
+//					 particles[i].pos[0], particles[i].pos[1] , particles[i].pos[2],
+//      			       particles[i].vel[0], particles[i].vel[1] , particles[i].vel[2],
+//      			       particles[i].ini[0], particles[i].ini[1] , particles[i].ini[2]);
 //		}
 //		fclose(fp);
 //	}
@@ -1039,10 +1039,10 @@ public:
 //		printf("setParticleDisplacementVector\n");
 //		for(int i = 0; i < n_tot; i++) {
 //		for(int axes = 0; axes < 3; axes++) {
-//			double disp = P[i].pos[axes] - P[i].ini[axes];
+//			double disp = particles[i].pos[axes] - particles[i].ini[axes];
 //			disp = (disp >   boxsize / 2.0) ? disp - boxsize : disp;
 //			disp = (disp < - boxsize / 2.0) ? disp + boxsize : disp;
-//			P[i].dis[axes] = disp;
+//			particles[i].dis[axes] = disp;
 //		}}
 //	}
 //
@@ -1079,7 +1079,7 @@ public:
 //			pc_new = pc;
 //			for(int n = 0; n < NumPart; n++) {
 //			    	for(int k = 0; k < 3; k++) {
-//				      P[pc_new].pos[k] =(double) block[3 * n + k];
+//				      particles[pc_new].pos[k] =(double) block[3 * n + k];
 //				}
 //				pc_new++;
 //			}
@@ -1090,7 +1090,7 @@ public:
 //			pc_new = pc;
 //			for(int n = 0; n < NumPart; n++) {
 //			    	for(int k = 0; k < 3; k++) {
-//				      P[pc_new].vel[k] = (double) block[3 * n + k] * sqrt(scale_factor);
+//				      particles[pc_new].vel[k] = (double) block[3 * n + k] * sqrt(scale_factor);
 //				}
 //				pc_new++;
 //			}
@@ -1101,7 +1101,7 @@ public:
 //			fread(&dummy,sizeof(dummy),1,fp);
 //			pc_new = pc;
 //			for(int n = 0; n < NumPart; n++) {
-//				P[pc_new].id = (long long) blockid[n];
+//				particles[pc_new].id = (long long) blockid[n];
 //				pc_new++;
 //			}
 //			if(i == header.num_files-1) {
@@ -1147,9 +1147,9 @@ public:
 //				for(int n=0;n<header.npart[k];n++){
 //					float x[3];
 //					fread(x,sizeof(float), 3, fp);
-//					P[pc_new].pos[0] = (double) x[0];
-//					P[pc_new].pos[1] = (double) x[1];
-//					P[pc_new].pos[2] = (double) x[2];
+//					particles[pc_new].pos[0] = (double) x[0];
+//					particles[pc_new].pos[1] = (double) x[1];
+//					particles[pc_new].pos[2] = (double) x[2];
 //					pc_new++;
 //				}
 //			}
@@ -1161,9 +1161,9 @@ public:
 //				for(int n=0;n<header.npart[k];n++){
 //					float v[3];
 //					fread(v,sizeof(float), 3, fp);
-//					P[pc_new].vel[0] = (double) v[0] * sqrt(scale_factor); // sqrt(time) * comv_vel-> time * comv_vel = physical vel
-//					P[pc_new].vel[1] = (double) v[1] * sqrt(scale_factor);
-//					P[pc_new].vel[2] = (double) v[2] * sqrt(scale_factor);
+//					particles[pc_new].vel[0] = (double) v[0] * sqrt(scale_factor); // sqrt(time) * comv_vel-> time * comv_vel = physical vel
+//					particles[pc_new].vel[1] = (double) v[1] * sqrt(scale_factor);
+//					particles[pc_new].vel[2] = (double) v[2] * sqrt(scale_factor);
 //					pc_new++;
 //				}
 //			}
@@ -1176,7 +1176,7 @@ public:
 //				for(int n=0;n<header.npart[k];n++){
 //					long long id;
 //					fread(&id,sizeof(long long), 1, fp);
-//					P[pc_new].id = id;
+//					particles[pc_new].id = id;
 //					pc_new++;
 //				}
 //			}
@@ -1194,7 +1194,7 @@ public:
 //			mass_sum += header.mass[i];
 //		}
 //		for(long long i = 0; i < getNumberOfParticle(); i++) {
-//			P[i].mass = mass_sum;
+//			particles[i].mass = mass_sum;
 //		}
 //	}
 //	void setLatticeInitialPositions() {
@@ -1213,9 +1213,9 @@ public:
 //		}}}
 //
 //		for(long long i = 0; i < n_tot; i++){
-//			P[i].ini[0] = temp_x[P[i].id-1];
-//			P[i].ini[1] = temp_y[P[i].id-1];
-//			P[i].ini[2] = temp_z[P[i].id-1];
+//			particles[i].ini[0] = temp_x[particles[i].id-1];
+//			particles[i].ini[1] = temp_y[particles[i].id-1];
+//			particles[i].ini[2] = temp_z[particles[i].id-1];
 //		}
 //		delete [] temp_x;
 //		delete [] temp_y;
@@ -1226,8 +1226,8 @@ public:
 //		printf("setPeriodicBoundary\n");
 //		for(long long i = 0; i < n_tot; i++) {
 //		for(int axes = 0; axes < 3; axes++) {
-//			if ( P[i].pos[axes] >= boxsize) { P[i].pos[axes] -= boxsize; }
-//			if ( P[i].pos[axes] <  0.0) { P[i].pos[axes] += boxsize; }
+//			if ( particles[i].pos[axes] >= boxsize) { particles[i].pos[axes] -= boxsize; }
+//			if ( particles[i].pos[axes] <  0.0) { particles[i].pos[axes] += boxsize; }
 //		}}
 //	}
 //
@@ -1245,7 +1245,7 @@ public:
 //			ampl = sqrt(-2.0 * log(ampl));
 //			double phase = 2.0 * M_PI * gsl_rng_uniform(random_generator);
 //			double rand = ampl * sin(phase);
-//			P[i].rand = rand;
+//			particles[i].rand = rand;
 //		}
 //		gsl_rng_free(random_generator);
 //	}
