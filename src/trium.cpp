@@ -79,11 +79,11 @@ int main(int argc, char *argv[]) {
 	/********/
 
 	ParticleBOSSClass P_D, P_R;
-	if ( P_D.readParticleBOSS(param.data_catalogue_file) ) {
+	if ( P_D.read_particles_BOSS(param.data_catalogue_file) ) {
 		printf("ERROR2\n");
 		exit(1);
 	}
-	if ( P_R.readParticleBOSS(param.rand_catalogue_file) ) {
+	if ( P_R.read_particles_BOSS(param.rand_catalogue_file) ) {
 		printf("ERROR3\n");
 		exit(1);
 	}
@@ -232,10 +232,10 @@ int main(int argc, char *argv[]) {
 //		calcThreePointFunctionForBOX(P_D, param, rbin);
 	}
 
-    delete [] los_D; los_D = NULL;
-    delete [] los_R; los_R = NULL;
-	P_D.finalizeParticle();
-	P_R.finalizeParticle();
+    delete[] los_D; los_D = NULL;
+    delete[] los_R; los_R = NULL;
+	P_D.finalise_particles();
+	P_R.finalise_particles();
 	if(thisTask == 0 ) {
 		std::cout << "bytes = " << bytes << std::endl;
 	}

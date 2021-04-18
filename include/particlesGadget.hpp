@@ -4,7 +4,7 @@
 class ParticleBOSSClass {
 private:
 public:
-	struct ParticleInfo {
+	struct particleInfoStruct {
 		double pos[3]; // 3次元の場所。
 		double vel[3]; // 3次元の場所。
 		double w;
@@ -24,7 +24,7 @@ public:
 	double    hubble;
 	double    mass;
 
-	ParticleInfo & operator [] (int id) { return this->particles[id]; } // 粒子の定義
+	particleInfoStruct & operator[] (int id) { return this->particles[id]; } // 粒子の定義
 
 	ParticleBOSSClass() {
 		/* initialize */
@@ -46,7 +46,7 @@ public:
 	}
 
 	~ParticleBOSSClass() {
-		this->finalizeParticle();
+		this->finalise_particles();
 	}
 
 	struct io_header {
@@ -67,10 +67,10 @@ public:
 	} header;
 
 
-	void finalizeParticle() {
+	void finalise_particles() {
 		if(particles != NULL) {
-			delete [] this->particles; this->particles = NULL;
-			bytes -= double( sizeof(struct ParticleInfo) * this->n_tot / 1024.0 / 1024.0 / 1024.0);
+			delete[] this->particles; this->particles = NULL;
+			bytes -= double( sizeof(struct particleInfoStruct) * this->n_tot / 1024.0 / 1024.0 / 1024.0);
 		}
 	}
 
@@ -82,11 +82,11 @@ public:
 		this->n_tot = num;
 
 		/* allocate particles */
-		delete [] particles; particles == NULL;
-		this->particles = new ParticleInfo[this->n_tot];
+		delete[] particles; particles == NULL;
+		this->particles = new particleInfoStruct[this->n_tot];
 
 		/* compute memory */
-		bytes += double( sizeof(struct ParticleInfo) * this->n_tot / 1024.0 / 1024.0 / 1024.0 );
+		bytes += double( sizeof(struct particleInfoStruct) * this->n_tot / 1024.0 / 1024.0 / 1024.0 );
 
 		/* initialize particles */
 		for(int i = 0; i < this->n_tot; i++) {
@@ -343,7 +343,7 @@ public:
 		fin.close();
 		/*****************************************/
 
-		this->calcMinAndMax();
+		this->calc_min_and_max();
 
 		return 0;
 	}
@@ -422,7 +422,7 @@ public:
 		return 0;
 	}
 
-	int calcMinAndMax() {
+	int calc_min_and_max() {
 
 		if( particles == NULL) { return -1; }
 
@@ -473,7 +473,7 @@ public:
 	}
 
 
-//	int calcMinAndMax() {
+//	int calc_min_and_max() {
 //
 //		if( this->particles == NULL) { return -1; }
 //
@@ -624,7 +624,7 @@ public:
 template <class TemplateParticle>
 class ParticleGadgetClassReduced {
 private:
-	struct ParticleInfo {
+	struct particleInfoStruct {
 		double pos[3]; // 3次元の場所。
 		double vel[3]; // 3次元の速度。
 		double Z;      // redshift
@@ -634,7 +634,7 @@ private:
 		double T; // kSZ温度
 	} * particles;
 public:
-	const ParticleInfo & operator [] (int id) { return this->particles[id]; } // 粒子の定義。
+	const particleInfoStruct & operator[] (int id) { return this->particles[id]; } // 粒子の定義。
 	int nTotal; // トータル粒子数。
 	double posMax[3]; // 粒子の場所の最大値。
 	double posMin[3]; // 粒子の場所の最小値。
@@ -665,10 +665,10 @@ public:
 	}
 	~ParticleGadgetClassReduced() {
 		//粒子をフリー//
-		this->finalizeParticle();
+		this->finalise_particles();
 	}
-	void finalizeParticle() {
-		delete [] this->particles; this->particles = NULL;
+	void finalise_particles() {
+		delete[] this->particles; this->particles = NULL;
 	}
 
 	int initialise_particles(const int num) {
@@ -678,8 +678,8 @@ public:
 		this->nTotal = num;
 
 		/* 粒子の定義，メモリ確保，初期化*/
-		delete [] particles; particles = NULL;
-		this->particles = new ParticleInfo[this->nTotal];
+		delete[] particles; particles = NULL;
+		this->particles = new particleInfoStruct[this->nTotal];
 		for(int i = 0; i < this->nTotal; i++) {
 			this->particles[i].pos[0] = 0.0;
 			this->particles[i].pos[1] = 0.0;
@@ -721,7 +721,7 @@ public:
 		printf("****************************************\n");
 	}
 
-	int calcMinAndMax() {
+	int calc_min_and_max() {
 
 		if( this->particles == NULL) { return -1; }
 
@@ -839,7 +839,7 @@ public:
 
 //
 //
-//struct ParticleInfo {
+//struct particleInfoStruct {
 //	double pos[3];
 //	double vel[3];
 ////	double acc[3];
@@ -872,8 +872,8 @@ public:
 //	std::string snapshot_file;
 //public:
 //
-//	ParticleInfo *particles;
-//	ParticleInfo & operator [] (long long id) { return particles[id]; }
+//	particleInfoStruct *particles;
+//	particleInfoStruct & operator[] (long long id) { return particles[id]; }
 //	long long n_tot;
 //	int       n_sample;
 //	double    scale_factor;
@@ -913,7 +913,7 @@ public:
 //	~Particle() {
 //		if(particles != NULL) {
 //			printf("freeParticle\n");
-//			delete [] particles; particles = NULL;
+//			delete[] particles; particles = NULL;
 //		}
 //	}
 //
@@ -964,8 +964,8 @@ public:
 //
 //	void freeParticle(int & bytes) {
 //		printf("freeParticle\n");
-//		bytes -= (int) (sizeof(ParticleInfo) * this->n_tot / 1024 / 1024);
-//		if(particles != NULL) {delete [] particles; particles = NULL; }
+//		bytes -= (int) (sizeof(particleInfoStruct) * this->n_tot / 1024 / 1024);
+//		if(particles != NULL) {delete[] particles; particles = NULL; }
 //		printf("memomry = %ld Mb\n",bytes);
 //	}
 //
@@ -1015,9 +1015,9 @@ public:
 //
 //	void allocateParticle(int & bytes) {
 //		printf("allocateParticle\n");
-//		bytes += (int) (sizeof(ParticleInfo) * this->n_tot / 1024 / 1024);
+//		bytes += (int) (sizeof(particleInfoStruct) * this->n_tot / 1024 / 1024);
 //		printf("memomry = %ld Mb\n",bytes);
-//		particles = new ParticleInfo[this->n_tot];
+//		particles = new particleInfoStruct[this->n_tot];
 //	}
 //
 //	void writeParticles(std::string filename) {
@@ -1217,9 +1217,9 @@ public:
 //			particles[i].ini[1] = temp_y[particles[i].id-1];
 //			particles[i].ini[2] = temp_z[particles[i].id-1];
 //		}
-//		delete [] temp_x;
-//		delete [] temp_y;
-//		delete [] temp_z;
+//		delete[] temp_x;
+//		delete[] temp_y;
+//		delete[] temp_z;
 //	}
 //
 //	void setPeriodicBoundary() {
