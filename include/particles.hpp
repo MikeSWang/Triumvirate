@@ -6,32 +6,32 @@
 #endif
 
 /**
- * Collection of particles.
+ * Container of particle data and summary information.
  *
  */
 class ParticleBOSSClass {  // FIXME: change class name
  public:
-	struct ParticleInfo {
+	struct particleInfoStruct {
 		double pos[3];  ///< particle position vector
 		double w;  ///< particle weight
-	}* particles;  ///< particle information
+	}* particles;  ///< particle data
 
 	int n_tot;  ///< total number of particles
 	double pos_min[3];  ///< minimum values of particle positions
 	double pos_max[3];  ///< maximum values of particle positions
 
 	/**
-	 * Return particle information.
+	 * Return individual particle information.
 	 *
 	 * @param id Particle ID.
 	 * @returns Particle information.
 	 */
-	ParticleInfo &operator [] (int id) {
+	particleInfoStruct& operator[](int id) {  // FIXME: change function name
 		return this->particles[id];
 	}
 
 	/**
-	 * Initialise particle class.
+	 * Initialise particle container.
 	 */
 	ParticleBOSSClass () {
 		this->particles = NULL;
@@ -42,163 +42,193 @@ class ParticleBOSSClass {  // FIXME: change class name
 	}
 
 	/**
-	 * Deconstruct particle class.
+	 * Deconstruct particle container.
 	 */
 	~ParticleBOSSClass() {
-		finalizeParticle();
+		finalise_particles();
 	}
 
 	/**
-	 * Initialise particles.
+	 * Initialise particle data and information.
+	 *
+	 * @param num Number of particles.
 	 */
-	void initialise_particles (const int num) {
+	void initialise_particles(const int num) {
 		/// Check total number of particles.
 		if (num <= 0) {
-			printf("Number of particles is <= 0!\n");
+			printf("Number of particles must be >= 0.\n");
 			return;
 		}
 		this->n_tot = num;
 
-		/* allocate particles */
-		delete [] particles; particles == NULL;
-		this->particles = new ParticleInfo[this->n_tot];
+		/// Renew particle data.
+		delete[] particles; particles = NULL;
+		this->particles = new particleInfoStruct[this->n_tot];
 
-		/* compute memory */
-		bytes += double(sizeof(struct ParticleInfo) * this->n_tot / 1024.0 / 1024.0 / 1024.0);
+		/// Determine memory usage.
+		bytes += double(
+			this->n_tot * sizeof(struct particleInfoStruct) / 1024. / 1024. / 1024.
+		);
 
-		/* initialize particles */
-		for(int i = 0; i < this->n_tot; i++) {
-			particles[i].pos[0] = 0.0;
-			particles[i].pos[1] = 0.0;
-			particles[i].pos[2] = 0.0;
-			particles[i].w = 0.0;
+		/// Initialise particle data values.
+		for (int i = 0; i < this->n_tot; i++) {
+			particles[i].pos[0] = 0.;
+			particles[i].pos[1] = 0.;
+			particles[i].pos[2] = 0.;
+			particles[i].w = 0.;
 		}
 	}
 
-	void finalizeParticle() {
-		if (particles != NULL) {
-			delete [] this->particles; this->particles = NULL;
-			bytes -= double(sizeof(struct ParticleInfo) * this->n_tot / 1024.0 / 1024.0 / 1024.0);
+	/**
+	 * Finalise particle data and information.
+	 */
+	void finalise_particles() {
+		if (particles != NULL) {  // ???: not this->particles?
+			delete[] this->particles; this->particles = NULL;
+			bytes -= double(
+				this->n_tot * sizeof(struct particleInfoStruct) / 1024. / 1024. / 1024.
+			);
 		}
 	}
 
-	int readParticleBOSS(std::string & fname_in) {
+	/**
+	 * Read in particle data from file.
+	 *
+	 * @param fpath_in Input file path.
+	 * @returns Exit code.
+	 */
+	int read_particles_BOSS(std::string& fpath_in) {
 
 		std::ifstream fin;
 
-		/*****************************************/
-		/* count the number of lines (particles) */
+		/// Count for the number of lines/particles.
 		int num_lines = 0;
 
-		fin.open(fname_in.c_str(), std::ios::in);
+		/// Read in data from file.
+		fin.open(fpath_in.c_str(), std::ios::in);
+
 		if (fin.fail()) {
-			printf("can not open file '%s'...\n", fname_in.c_str());
+			printf("Cannot open file '%s'.\n", fpath_in.c_str());
 			fin.close();
 			return -1;
 		}
-		std::string str;
+
+		std::string str_line;
 		double x, y, z, w;
-		while (getline(fin, str)) {
-			if (sscanf(str.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &w) != 4) {
+		while (getline(fin, str_line)) {
+			if (sscanf(str_line.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &w) != 4) {
 				continue;
 			}
 			num_lines++;
 		}
-		fin.close();
-		/*****************************************/
 
-		/* initialize particles */
+		fin.close();
+
+		/// Fill in particle data.
 		this->initialise_particles(num_lines);
 
-		/*****************************************/
-		/* read particle information */
+		fin.open(fpath_in.c_str(), std::ios::in);
+
 		num_lines = 0;
-		fin.open(fname_in.c_str(), std::ios::in);
-		while (getline(fin, str)) {
-			if (sscanf(str.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &w) != 4) {
+		while (getline(fin, str_line)) {
+			if (sscanf(str_line.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &w) != 4) {
 				continue;
 			}
+
 			particles[num_lines].pos[0] = x;
 			particles[num_lines].pos[1] = y;
 			particles[num_lines].pos[2] = z;
 			particles[num_lines].w = w;
-            if (num_lines <= 2) {
-                std::cout << "x=" << x << ", y=" << y << ", z=" << z << ", w=" << w << "\n";
-            }
+
 			num_lines++;
 		}
+
 		fin.close();
-		/*****************************************/
+
 		return 0;
 	}
 
-	int readParticlesTest(std::string & fname_in) {
+	/**
+	 * Test the reading in of particle data from file.
+	 *
+	 * @param fpath_in Input file path.
+	 * @returns Exit code.
+	 */
+	int read_particles_test(std::string& fpath_in) {
 
 		std::ifstream fin;
 
-		/*****************************************/
-		/* count the number of lines (particles) */
+		/// Count for the number of lines/particles.
 		int num_lines = 0;
 
-		fin.open(fname_in.c_str(), std::ios::in);
+		/// Read in data from file.
+		fin.open(fpath_in.c_str(), std::ios::in);
+
 		if (fin.fail()) {
-			printf("can not open file '%s'...\n", fname_in.c_str());
+			printf("Cannot open file '%s'.\n", fpath_in.c_str());
 			fin.close();
 			return -1;
 		}
 
-		std::string str;
+		std::string str_line;
 		double x, y, z, vx, vy, vz, mass, dummy;
-		int ID, PID;
-		while (getline(fin, str)) {
-			if (sscanf(str.c_str(), "%lf %lf %lf",  &x, &y, &z) != 3) {
+		int ID, PID;  // FIXME: Redundant?
+		while (getline(fin, str_line)) {
+			if (sscanf(str_line.c_str(), "%lf %lf %lf", &x, &y, &z) != 3) {
 				continue;
 			}
-            if (num_lines <= 2) {
-                std::cout << "x=" << x << ", y=" << y << ", z=" << z << "\n";
-            }
-
 			num_lines++;
-
 		}
-		fin.close();
-		/*****************************************/
 
-		/* initialize particles */
+		fin.close();
+
+		/// Fill in particle data.
 		this->initialise_particles(num_lines);
 
-		/*****************************************/
-		/* read particle information */
+		fin.open(fpath_in.c_str(), std::ios::in);
+
 		num_lines = 0;
-		fin.open(fname_in.c_str(), std::ios::in);
-		while (getline(fin, str)) {
-			if (sscanf(str.c_str(), "%lf %lf %lf",  &x, &y, &z) != 3) {
+		while (getline(fin, str_line)) {
+			if (sscanf(str_line.c_str(), "%lf %lf %lf", &x, &y, &z) != 3) {
 				continue;
 			}
+
 			this->particles[num_lines].pos[0] = x;
 			this->particles[num_lines].pos[1] = y;
 			this->particles[num_lines].pos[2] = z;
 			this->particles[num_lines].w = 1.0;
+
 			num_lines++;
 		}
-		fin.close();
-		/*****************************************/
 
-		this->calcMinAndMax();
+		fin.close();
+
+		/// Calculate data value extremes.
+		this->calc_min_and_max();
 
 		return 0;
 	}
 
-	int calcMinAndMax() {
+	/**
+	 * Calculate data value extremes.
+	 *
+	 * @returns Exit code.
+	 */
+	int calc_min_and_max() {
 
-		if (particles == NULL) { return -1; }
+		if (particles == NULL) {
+			return -1;
+		}
 
+		/// Initialise minimum and maximum values and set them to the first
+		/// data entry/row.
 		double min[3], max[3];
 
 		min[0] = this->particles[0].pos[0]; max[0] = this->particles[0].pos[0];
 		min[1] = this->particles[0].pos[1]; max[1] = this->particles[0].pos[1];
 		min[2] = this->particles[0].pos[2]; max[2] = this->particles[0].pos[2];
 
+		/// Find maximum and minimum line-by-line.
 		for (int i = 0; i < this->n_tot; i++) {
 			if (min[0] > particles[i].pos[0]) {
 				min[0] = particles[i].pos[0];
@@ -227,9 +257,12 @@ class ParticleBOSSClass {  // FIXME: change class name
 		return 0;
 	}
 
-	int resetParticle(const double * dP) {
+	int reset_particles(const double* dP) {
 
-		if (particles == NULL) { return -1; }
+		if (particles == NULL) {
+			return -1;
+		}
+
 		for (int p = 0; p < this->n_tot; p++) {
 			this->particles[p].pos[0] -= dP[0];
 			this->particles[p].pos[1] -= dP[1];
@@ -239,7 +272,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 		return 0;
 	}
 
-	static double calcAlpha(ParticleBOSSClass & P_D, ParticleBOSSClass & P_R) {
+	static double calcAlpha(ParticleBOSSClass& P_D, ParticleBOSSClass& P_R) {
 
 		double num_D_weight = 0.0;
 		for(int p = 0; p < P_D.n_tot; p++) {
@@ -255,7 +288,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 		return alpha;
 	}
 
-	static double calcNormalizationForPowerSpectrum(ParticleBOSSClass & P_D, double Vsurvey) {
+	static double calcNormalizationForPowerSpectrum(ParticleBOSSClass& P_D, double Vsurvey) {
 
 		double num_D_weight = 0.0;
 		for(int p = 0; p < P_D.n_tot; p++) {
@@ -267,7 +300,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 
 	}
 
-	static double calcNormalizationForBispectrum(ParticleBOSSClass & P_D, double Vsurvey) {
+	static double calcNormalizationForBispectrum(ParticleBOSSClass& P_D, double Vsurvey) {
 
 		double num_D_weight = 0.0;
 		for(int p = 0; p < P_D.n_tot; p++) {
@@ -280,10 +313,10 @@ class ParticleBOSSClass {  // FIXME: change class name
 
 	}
 
-	static int resetParticleForFFT(ParticleBOSSClass & P_D, ParticleBOSSClass & P_R, ParameterClass & param, double factor = 3.0) {
+	static int resetParticleForFFT(ParticleBOSSClass& P_D, ParticleBOSSClass& P_R, ParameterClass& param, double factor=3.0) {
 
-		P_D.calcMinAndMax();
-		P_R.calcMinAndMax();
+		P_D.calc_min_and_max();
+		P_R.calc_min_and_max();
 
 		double dP[3] = {P_R.pos_min[0], P_R.pos_min[1], P_R.pos_min[2]};
 		dP[0] -= factor * param.boxsize[0] / double(param.nmesh[0]);
@@ -293,13 +326,13 @@ class ParticleBOSSClass {  // FIXME: change class name
 		P_D.resetParticle(dP);
 		P_R.resetParticle(dP);
 
-		P_D.calcMinAndMax();
-		P_R.calcMinAndMax();
+		P_D.calc_min_and_max();
+		P_R.calc_min_and_max();
 
 		return 0;
 	}
 
-	int calcPeriodicBoundary(ParameterClass & param) {
+	int calcPeriodicBoundary(ParameterClass& param) {
 
 		for(int p = 0; p < this->n_tot; p++) {
 
@@ -312,12 +345,12 @@ class ParticleBOSSClass {  // FIXME: change class name
 			}
 		}
 
-		this->calcMinAndMax();
+		this->calc_min_and_max();
 
 		return 0;
 	}
 
-	int resetParticlesForWindowFunction(ParameterClass & param) {
+	int resetParticlesForWindowFunction(ParameterClass& param) {
 
 		double x_mid = this->pos_min[0] + (this->pos_max[0] - this->pos_min[0]) / 2.0;
 		double y_mid = this->pos_min[1] + (this->pos_max[1] - this->pos_min[1]) / 2.0;
@@ -335,7 +368,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 			}
 		}
 
-		this->calcMinAndMax();
+		this->calc_min_and_max();
 
 		return 0;
 	}
