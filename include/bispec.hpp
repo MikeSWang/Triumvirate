@@ -211,8 +211,8 @@ int calcBiSpectrum(
 
 	}
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 	}}
@@ -344,8 +344,8 @@ int calcBiSpectrum(
 
 	}
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 
@@ -374,8 +374,8 @@ int calcBiSpectrum(
 	}
 	fclose(fp);
 
-	delete [] sn_save;
-	delete [] bk_save;
+	delete[] sn_save;
+	delete[] bk_save;
 
 	return 0;
 }
@@ -487,8 +487,8 @@ int calcThreePointFunction(
 
 	}
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 	}}
@@ -628,8 +628,8 @@ int calcThreePointFunction(
 
 	}
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 
@@ -655,8 +655,8 @@ int calcThreePointFunction(
 	}
 	fclose(fp);
 
-	delete [] sn_save;
-	delete [] zeta_save;
+	delete[] sn_save;
+	delete[] zeta_save;
 
 	return 0;
 }
@@ -790,8 +790,8 @@ int calcThreePointWindowFunction(
 
 	}
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 	}}
@@ -928,8 +928,8 @@ int calcThreePointWindowFunction(
 
 	}
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 
@@ -956,8 +956,8 @@ int calcThreePointWindowFunction(
 
 	fclose(fp);
 
-	delete [] sn_save;
-	delete [] zeta_save;
+	delete[] sn_save;
+	delete[] zeta_save;
 
 	return 0;
 }
@@ -1067,8 +1067,8 @@ int calcThreePointWindowFunctionFor3PCF(
 
 	}
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 	}}
@@ -1205,8 +1205,8 @@ int calcThreePointWindowFunctionFor3PCF(
 
 	}
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 
@@ -1233,8 +1233,8 @@ int calcThreePointWindowFunctionFor3PCF(
 
 	fclose(fp);
 
-	delete [] sn_save;
-	delete [] zeta_save;
+	delete[] sn_save;
+	delete[] zeta_save;
 
 	return 0;
 }
@@ -1434,8 +1434,8 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterClass & param, double
 		bytes -= double( sizeof(fftw_complex) * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 	}}
@@ -1552,8 +1552,8 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterClass & param, double
 		}
 
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 
@@ -1579,8 +1579,8 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterClass & param, double
 	}
 	fclose(fp);
 
-	delete [] sn_save;
-	delete [] bk_save;
+	delete[] sn_save;
+	delete[] bk_save;
 
 	return 0;
 }
@@ -1670,8 +1670,8 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterClass & param
 		if(thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
 
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 	}}
@@ -1792,8 +1792,8 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterClass & param
 		}
 
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 
@@ -1819,8 +1819,8 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterClass & param
 	}
 	fclose(fp);
 
-	delete [] sn_save;
-	delete [] zeta_save;
+	delete[] sn_save;
+	delete[] zeta_save;
 
 	return 0;
 }
@@ -2110,8 +2110,8 @@ int calcBiSpectrumChoiceOfLOS(
 
 	}
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 	}}
@@ -2256,8 +2256,8 @@ int calcBiSpectrumChoiceOfLOS(
 
 	}
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 
@@ -2282,8 +2282,8 @@ int calcBiSpectrumChoiceOfLOS(
 	}
 	fclose(fp);
 
-	delete [] sn_save;
-	delete [] bk_save;
+	delete[] sn_save;
+	delete[] bk_save;
 
 	return 0;
 }
@@ -2510,8 +2510,8 @@ int calcBiSpectrumMmode(
 
 	}
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 	}}
@@ -2652,8 +2652,8 @@ int calcBiSpectrumMmode(
 
 	}
 
-		delete [] Ylm1; Ylm1 = NULL;
-		delete [] Ylm2; Ylm2 = NULL;
+		delete[] Ylm1; Ylm1 = NULL;
+		delete[] Ylm2; Ylm2 = NULL;
 		bytes -= double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
 

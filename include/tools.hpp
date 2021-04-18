@@ -96,7 +96,7 @@ class ToolClass {
 	 * @returns Exit code.
 	 */
 	static int store_reduced_spherical_harmonic_in_fourier_space(
-		int ell_, int m_, ParameterClass &param, std::complex<double>* ylm_out
+		int ell_, int m_, ParameterClass& param, std::complex<double>* ylm_out
 	) {
 		if (ylm_out == NULL) {
 			return -1;
@@ -145,7 +145,7 @@ class ToolClass {
 	 * @returns Exit code.
 	 */
 	static int store_reduced_spherical_harmonic_in_config_space(
-		int ell_, int m_, ParameterClass &param, std::complex<double>* ylm_out
+		int ell_, int m_, ParameterClass& param, std::complex<double>* ylm_out
 	) {
 		if (ylm_out == NULL) {
 			return -1;
@@ -191,7 +191,7 @@ class ToolClass {
 	 * @param[out] kbin_out Set wavenumber bins.
 	 * @returns Exit code.
 	 */
-	static int set_kbin(ParameterClass &param, double* kbin_out) {
+	static int set_kbin(ParameterClass& param, double* kbin_out) {
 		double dk = (param.kmax - param.kmin) / double(param.num_kbin - 1);
 		for (int i = 0; i < param.num_kbin; i++) {
 			kbin_out[i] = param.kmin + dk * i;
@@ -206,7 +206,7 @@ class ToolClass {
 	 * @param[out] rbin_out Set separation bins.
 	 * @returns Exit code.
 	 */
-	static int set_rbin(ParameterClass &param, double* rbin_out) {
+	static int set_rbin(ParameterClass& param, double* rbin_out) {
 		double dr = (param.rmax - param.rmin) / double(param.num_rbin - 1);
 		for (int i = 0; i < param.num_rbin; i++) {
 			rbin_out[i] = param.rmin + dr * i;

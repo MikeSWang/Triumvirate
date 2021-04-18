@@ -299,7 +299,7 @@ class ParameterClass {
 	 */
 	int check_parameters() {
 		/// Print out extracted parameters to a file.
-		FILE *ptr_file;
+		FILE* ptr_file;
 
 		char buf[1024];
 		sprintf(buf, "%s/used_parameters", this->output_dir.c_str());

@@ -9,7 +9,7 @@ public:
 	/*****************************************/
 	fftw_complex * field;
 	/*****************************************/
-	const fftw_complex & operator [] (int id) { return this->field[id]; }
+	const fftw_complex& operator[](int id) { return this->field[id]; }
 
 	DensityFieldClass(ParameterClass & param) {
 
@@ -676,10 +676,10 @@ public:
 	}
 
 	void finalizeTwoPointStatistics() {
-		delete [] this->pk; this->pk = NULL;
-		delete [] this->n_mode_pk; this->n_mode_pk = NULL;
-		delete [] this->xi; this->xi = NULL;
-		delete [] this->n_mode_xi; this->n_mode_xi = NULL;
+		delete[] this->pk; this->pk = NULL;
+		delete[] this->n_mode_pk; this->n_mode_pk = NULL;
+		delete[] this->xi; this->xi = NULL;
+		delete[] this->n_mode_xi; this->n_mode_xi = NULL;
 	}
 
 	std::complex<double> calcShotNoiseForPowerspectrum(
@@ -822,8 +822,8 @@ public:
 			}
 		}
 
-		delete [] pk_temp;
-		delete [] n_mode_temp;
+		delete[] pk_temp;
+		delete[] n_mode_temp;
 
 		return 0;
 
@@ -941,9 +941,9 @@ public:
 		}
 
 
-		delete [] xi3d_temp;
-		delete [] xi_temp;
-		delete [] n_mode_temp;
+		delete[] xi3d_temp;
+		delete[] xi_temp;
+		delete[] n_mode_temp;
 
 		return 0;
 
@@ -1122,9 +1122,9 @@ public:
 			}
 		}
 
-		delete [] xi3d_temp;
-		delete [] xi_temp;
-		delete [] n_mode_temp;
+		delete[] xi3d_temp;
+		delete[] xi_temp;
+		delete[] n_mode_temp;
 
 		return 0;
 

@@ -80,7 +80,7 @@ int calcPowerSpectrum(
 	}
 	fclose(fp);
 
-	delete [] pk_save;
+	delete[] pk_save;
 	return 0;
 }
 
@@ -159,7 +159,7 @@ int calcTwoPointFunction(
 	}
 	fclose(fp);
 
-	delete [] xi_save;
+	delete[] xi_save;
 	return 0;
 }
 
@@ -233,7 +233,7 @@ int calcPowerSpectrumWindowFunction(
 	std::cout << norm * pk_save[0].real() << std::endl;
 	std::cout << "XIXIXIXIXIXIXXI" << std::endl;
 
-	delete [] pk_save;
+	delete[] pk_save;
 	return 0;
 }
 
@@ -315,7 +315,7 @@ int calcTwoPointWindowFunction(
 	}
 	fclose(fp);
 
-	delete [] xi_save;
+	delete[] xi_save;
 	return 0;
 }
 
@@ -369,7 +369,7 @@ int calcPowerSpectrumForBOX(ParticleBOSSClass & P_D, ParameterClass & param, dou
 	}
 	fclose(fp);
 
-	delete [] pk_save;
+	delete[] pk_save;
 
 	return 0;
 }
@@ -423,7 +423,7 @@ int calcTwoPointFunctionForBOX(ParticleBOSSClass & P_D, ParameterClass & param, 
 	}
 	fclose(fp);
 
-	delete [] xi_save;
+	delete[] xi_save;
 
 	return 0;
 }
@@ -479,7 +479,7 @@ int calcPowerSpectrumForBOXForReconstruction(ParticleBOSSClass & P_D, ParticleBO
 	}
 	fclose(fp);
 
-	delete [] pk_save;
+	delete[] pk_save;
 
 	return 0;
 }
