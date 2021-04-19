@@ -17,7 +17,7 @@ storage/input/**
 !storage/input/params/params.ini
 
 storage/output/**
-!storage/output/.gitignore
+!storage/output/results/.gitignore
 
 storage/misc/**
 

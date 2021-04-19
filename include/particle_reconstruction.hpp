@@ -11,8 +11,8 @@
 
 int calcReconstructionParticles(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
-        losStruct * los_D, losStruct * los_R,
-        ParameterClass & param, double alpha,
+        LineOfSight* los_D, LineOfSight* los_R,
+        ParameterSet & param, double alpha,
         double Vsurvey, double b1_fid, double RG, int nmesh[3]) {
 
 	double nmesh_save[3] = {param.nmesh[0], param.nmesh[1], param.nmesh[2]};

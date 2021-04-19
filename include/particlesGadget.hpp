@@ -4,7 +4,7 @@
 class ParticleBOSSClass {
 private:
 public:
-	struct particleInfoStruct {
+	struct ParticleData {
 		double pos[3]; // 3次元の場所。
 		double vel[3]; // 3次元の場所。
 		double w;
@@ -24,7 +24,7 @@ public:
 	double    hubble;
 	double    mass;
 
-	particleInfoStruct & operator[] (int id) { return this->particles[id]; } // 粒子の定義
+	ParticleData & operator[] (int id) { return this->particles[id]; } // 粒子の定義
 
 	ParticleBOSSClass() {
 		/* initialize */
@@ -70,7 +70,7 @@ public:
 	void finalise_particles() {
 		if(particles != NULL) {
 			delete[] this->particles; this->particles = NULL;
-			bytes -= double( sizeof(struct particleInfoStruct) * this->n_tot / 1024.0 / 1024.0 / 1024.0);
+			bytes -= double( sizeof(struct ParticleData) * this->n_tot / 1024.0 / 1024.0 / 1024.0);
 		}
 	}
 
@@ -83,10 +83,10 @@ public:
 
 		/* allocate particles */
 		delete[] particles; particles == NULL;
-		this->particles = new particleInfoStruct[this->n_tot];
+		this->particles = new ParticleData[this->n_tot];
 
 		/* compute memory */
-		bytes += double( sizeof(struct particleInfoStruct) * this->n_tot / 1024.0 / 1024.0 / 1024.0 );
+		bytes += double( sizeof(struct ParticleData) * this->n_tot / 1024.0 / 1024.0 / 1024.0 );
 
 		/* initialize particles */
 		for(int i = 0; i < this->n_tot; i++) {
@@ -406,7 +406,7 @@ public:
 		return 0;
 	}
 
-	int calcPeriodicBoundary(ParameterClass & param) {
+	int calcPeriodicBoundary(ParameterSet & param) {
 
 		for(int p = 0; p < this->n_tot; p++) {
 
@@ -576,7 +576,7 @@ public:
 //	}
 //
 
-	static double calcNormalizationForPowerSpectrum(ParticleBOSSClass & P_D, ParameterClass & param) {
+	static double calcNormalizationForPowerSpectrum(ParticleBOSSClass & P_D, ParameterSet & param) {
 
 		double num_D_weight = 0.0;
 		for(int p = 0; p < P_D.n_tot; p++) {
@@ -588,7 +588,7 @@ public:
 
 	}
 
-	static double calcNormalizationForBispectrum(ParticleBOSSClass & P_D, ParameterClass & param) {
+	static double calcNormalizationForBispectrum(ParticleBOSSClass & P_D, ParameterSet & param) {
 
 		double num_D_weight = 0.0;
 		for(int p = 0; p < P_D.n_tot; p++) {
@@ -624,7 +624,7 @@ public:
 template <class TemplateParticle>
 class ParticleGadgetClassReduced {
 private:
-	struct particleInfoStruct {
+	struct ParticleData {
 		double pos[3]; // 3次元の場所。
 		double vel[3]; // 3次元の速度。
 		double Z;      // redshift
@@ -634,7 +634,7 @@ private:
 		double T; // kSZ温度
 	} * particles;
 public:
-	const particleInfoStruct & operator[] (int id) { return this->particles[id]; } // 粒子の定義。
+	const ParticleData & operator[] (int id) { return this->particles[id]; } // 粒子の定義。
 	int nTotal; // トータル粒子数。
 	double posMax[3]; // 粒子の場所の最大値。
 	double posMin[3]; // 粒子の場所の最小値。
@@ -679,7 +679,7 @@ public:
 
 		/* 粒子の定義，メモリ確保，初期化*/
 		delete[] particles; particles = NULL;
-		this->particles = new particleInfoStruct[this->nTotal];
+		this->particles = new ParticleData[this->nTotal];
 		for(int i = 0; i < this->nTotal; i++) {
 			this->particles[i].pos[0] = 0.0;
 			this->particles[i].pos[1] = 0.0;
@@ -839,7 +839,7 @@ public:
 
 //
 //
-//struct particleInfoStruct {
+//struct ParticleData {
 //	double pos[3];
 //	double vel[3];
 ////	double acc[3];
@@ -872,8 +872,8 @@ public:
 //	std::string snapshot_file;
 //public:
 //
-//	particleInfoStruct *particles;
-//	particleInfoStruct & operator[] (long long id) { return particles[id]; }
+//	ParticleData *particles;
+//	ParticleData & operator[] (long long id) { return particles[id]; }
 //	long long n_tot;
 //	int       n_sample;
 //	double    scale_factor;
@@ -964,7 +964,7 @@ public:
 //
 //	void freeParticle(int & bytes) {
 //		printf("freeParticle\n");
-//		bytes -= (int) (sizeof(particleInfoStruct) * this->n_tot / 1024 / 1024);
+//		bytes -= (int) (sizeof(ParticleData) * this->n_tot / 1024 / 1024);
 //		if(particles != NULL) {delete[] particles; particles = NULL; }
 //		printf("memomry = %ld Mb\n",bytes);
 //	}
@@ -1015,9 +1015,9 @@ public:
 //
 //	void allocateParticle(int & bytes) {
 //		printf("allocateParticle\n");
-//		bytes += (int) (sizeof(particleInfoStruct) * this->n_tot / 1024 / 1024);
+//		bytes += (int) (sizeof(ParticleData) * this->n_tot / 1024 / 1024);
 //		printf("memomry = %ld Mb\n",bytes);
-//		particles = new particleInfoStruct[this->n_tot];
+//		particles = new ParticleData[this->n_tot];
 //	}
 //
 //	void writeParticles(std::string filename) {

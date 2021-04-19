@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <fstream>
 
 #include <sys/stat.h>
@@ -8,7 +9,7 @@
  * Test initial parameter input.
  */
 int main(int argc, char* argv[]) {
-  ParameterClass parameters_ini;
+  ParameterSet parameters_ini;
   parameters_ini.read_parameters(argv);
   return 0;
 }

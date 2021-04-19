@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
 	/******************************/
 	/* read "param.ini"           */
 	/******************************/
-	ParameterClass param;
+	ParameterSet param;
 	if( param.read_parameters(argv) ) {
 		printf("ERROR\n");
 		exit(1);
@@ -65,10 +65,10 @@ int main(int argc, char *argv[]) {
 
 	/* set kbin */
 	double kbin[param.num_kbin];
-	ToolClass::set_kbin(param, kbin);
+	ToolCollection::set_kbin(param, kbin);
 	/* set rbin */
 	double rbin[param.num_rbin];
-	ToolClass::set_rbin(param, rbin);
+	ToolCollection::set_rbin(param, rbin);
 
 	/***************************/
 	/* read particles */
@@ -91,8 +91,8 @@ int main(int argc, char *argv[]) {
     /*************/
     /* calc. LOS */
     /*************/
-    losStruct * los_D = new losStruct[P_D.n_tot];
-    losStruct * los_R = new losStruct[P_R.n_tot];
+    LineOfSight* los_D = new LineOfSight[P_D.n_tot];
+    LineOfSight* los_R = new LineOfSight[P_R.n_tot];
     for (int p = 0; p < P_D.n_tot; p++) {
         double pos_mag = sqrt( P_D[p].pos[0] * P_D[p].pos[0] + P_D[p].pos[1] * P_D[p].pos[1] + P_D[p].pos[2] * P_D[p].pos[2] );
         los_D[p].pos[0] = P_D[p].pos[0] / pos_mag;
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
 		ParticleBOSSClass::resetParticleForFFT(P_D, P_R, param);
 
 	}
-	if(param.catalogue_type== "box") {
+	if(param.catalogue_type== "sim") {
 		P_D.calcPeriodicBoundary(param);
 	}
 
@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
 
 	}
 
-	if(param.catalogue_type== "box") {
+	if(param.catalogue_type== "sim") {
 //		calcPowerSpectrumForBOX(P_D, param, kbin);
 //		calcTwoPointFunctionForBOX(P_D, param, rbin);
 //	    	calcBiSpectrumForBOX(P_D, param, kbin);

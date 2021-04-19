@@ -7,8 +7,8 @@
 
 int calcPowerSpectrum(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
-        losStruct * los_D, losStruct * los_R,
-        ParameterClass & param, double alpha, double * kbin, double Vsurvey) {
+        LineOfSight* los_D, LineOfSight* los_R,
+        ParameterSet & param, double alpha, double * kbin, double Vsurvey) {
 
 	if(thisTask == 0) { printf("start to compute power spectrum...\n");}
 
@@ -86,8 +86,8 @@ int calcPowerSpectrum(
 
 int calcTwoPointFunction(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
-        losStruct * los_D, losStruct * los_R,
-        ParameterClass & param, double alpha, double * rbin, double Vsurvey) {
+        LineOfSight* los_D, LineOfSight* los_R,
+        ParameterSet & param, double alpha, double * rbin, double Vsurvey) {
 
 	if(thisTask == 0) { printf("start to compute two-point correlation function...\n");}
 
@@ -166,8 +166,8 @@ int calcTwoPointFunction(
 
 int calcPowerSpectrumWindowFunction(
         ParticleBOSSClass & P_R,
-        losStruct * los_R,
-        ParameterClass & param, double alpha, double * kbin, double Vsurvey) {
+        LineOfSight* los_R,
+        ParameterSet & param, double alpha, double * kbin, double Vsurvey) {
 
 	if(thisTask == 0) { printf("start to compute two-point window function...\n");}
 
@@ -240,8 +240,8 @@ int calcPowerSpectrumWindowFunction(
 
 int calcTwoPointWindowFunction(
         ParticleBOSSClass & P_R,
-        losStruct * los_R,
-        ParameterClass & param, double alpha, double * rbin, double Vsurvey) {
+        LineOfSight* los_R,
+        ParameterSet & param, double alpha, double * rbin, double Vsurvey) {
 	if(thisTask == 0) { printf("start to compute two-point window function...\n");}
 
 	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
@@ -319,7 +319,7 @@ int calcTwoPointWindowFunction(
 	return 0;
 }
 
-int calcPowerSpectrumForBOX(ParticleBOSSClass & P_D, ParameterClass & param, double * kbin) {
+int calcPowerSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double * kbin) {
 	if(thisTask == 0) { printf("start to compute power spectrum...\n");}
 
 	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
@@ -374,7 +374,7 @@ int calcPowerSpectrumForBOX(ParticleBOSSClass & P_D, ParameterClass & param, dou
 	return 0;
 }
 
-int calcTwoPointFunctionForBOX(ParticleBOSSClass & P_D, ParameterClass & param, double * rbin) {
+int calcTwoPointFunctionForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double * rbin) {
 	if(thisTask == 0) { printf("start to compute two-point correlation function...\n");}
 
 	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
@@ -429,7 +429,7 @@ int calcTwoPointFunctionForBOX(ParticleBOSSClass & P_D, ParameterClass & param, 
 }
 
 
-int calcPowerSpectrumForBOXForReconstruction(ParticleBOSSClass & P_D, ParticleBOSSClass & P_R, ParameterClass & param, double alpha, double * kbin) {
+int calcPowerSpectrumForBOXForReconstruction(ParticleBOSSClass & P_D, ParticleBOSSClass & P_R, ParameterSet & param, double alpha, double * kbin) {
 	if(thisTask == 0) { printf("start to compute power spectrum...\n");}
 
 	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {

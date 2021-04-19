@@ -6,20 +6,20 @@
  * of the first kind.
  *
  */
-class SphericalBesselClass {
+class SphericalBesselCalculator {
  public:
 	/**
 	 * Initialise the interpolated function.
 	 *
 	 * @param ell Order @f$ \ell @f$ of the spherical Bessel function.
 	 */
-	SphericalBesselClass(int ell) {
-		/// Set up sampling range and number and calculate sample spacing.
+	SphericalBesselCalculator(int ell) {
+		/// Set up sampling range and number; calculate sample spacing.
 		double xmin = 0.;
 		double xmax = 10000.;  // NOTE: discretionary
 		int nsample = 1000000;  // NOTE: discretionary
 
-		double dx = (xmax - xmin) / double(nsample - 1);
+		double dx = (xmax - xmin) / (nsample - 1);
 
 		/// Initialise and evaluate sample points.
 		double* x = new double[nsample];
@@ -44,7 +44,7 @@ class SphericalBesselClass {
 	/**
 	 * Deconstruct interpolators.
 	 */
-	~SphericalBesselClass() {
+	~SphericalBesselCalculator() {
 		if (this->accel != NULL) {
 			gsl_interp_accel_free(this->accel); this->accel = NULL;
 		}

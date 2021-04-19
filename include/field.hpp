@@ -4,14 +4,14 @@
 template <class TemplateParticle>
 class DensityFieldClass {
 private:
-	ParameterClass param;
+	ParameterSet param;
 public:
 	/*****************************************/
 	fftw_complex * field;
 	/*****************************************/
 	const fftw_complex& operator[](int id) { return this->field[id]; }
 
-	DensityFieldClass(ParameterClass & param) {
+	DensityFieldClass(ParameterSet & param) {
 
 		this->param = param;
 
@@ -172,7 +172,7 @@ public:
 
 	int calcYlmWeightedDensityFluctuation(
             TemplateParticle & P_D, TemplateParticle & P_R,
-            losStruct * los_D, losStruct * los_R,
+            LineOfSight* los_D, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
 		DensityFieldClass<ParticleBOSSClass> n_R(this->param);
@@ -182,7 +182,7 @@ public:
 		weight = fftw_alloc_complex(P_D.n_tot);
 		for (int p = 0; p < P_D.n_tot; p++) {
             double los[3] = {los_D[p].pos[0], los_D[p].pos[1], los_D[p].pos[2]};
-            std::complex<double> Ylm = ToolClass::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
+            std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
             weight[p][0] = Ylm.real() * P_D[p].w;
             weight[p][1] = Ylm.imag() * P_D[p].w;
 		}
@@ -194,7 +194,7 @@ public:
 		weight = fftw_alloc_complex(P_R.n_tot);
 		for (int p = 0; p < P_R.n_tot; p++) {
             double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-            std::complex<double> Ylm = ToolClass::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
+            std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
             weight[p][0] = Ylm.real() * P_R[p].w;
             weight[p][1] = Ylm.imag() * P_R[p].w;
 		}
@@ -214,7 +214,7 @@ public:
 
 	int calcYlmWeightedDensityFluctuationForBispectrumShotnoise(
             TemplateParticle & P_D, TemplateParticle & P_R,
-            losStruct * los_D, losStruct * los_R,
+            LineOfSight* los_D, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
 		DensityFieldClass<ParticleBOSSClass> n_R(this->param);
@@ -224,7 +224,7 @@ public:
 		weight = fftw_alloc_complex(P_D.n_tot);
 		for (int p = 0; p < P_D.n_tot; p++) {
 			double los[3] = {los_D[p].pos[0], los_D[p].pos[1], los_D[p].pos[2]};
-			std::complex<double> Ylm = ToolClass::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
+			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
 			Ylm = std::conj(Ylm); // IMPORTANT! //
 			weight[p][0] = Ylm.real() * pow(P_D[p].w, 2);
 		       	weight[p][1] = Ylm.imag() * pow(P_D[p].w, 2);
@@ -236,7 +236,7 @@ public:
 		weight = fftw_alloc_complex(P_R.n_tot);
 		for (int p = 0; p < P_R.n_tot; p++) {
 			double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-			std::complex<double> Ylm = ToolClass::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
+			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
 			Ylm = std::conj(Ylm); // IMPORTANT! //
 			weight[p][0] = Ylm.real() * pow(P_R[p].w, 2);
 		       	weight[p][1] = Ylm.imag() * pow(P_R[p].w, 2);
@@ -253,7 +253,7 @@ public:
 		return 0;
 	}
 
-	int calcNormalDensityFluctuationForBOX(TemplateParticle & P_D, ParameterClass & param) {
+	int calcNormalDensityFluctuationForBOX(TemplateParticle & P_D, ParameterSet & param) {
 
 		fftw_complex * weight = NULL;
 		weight = fftw_alloc_complex(P_D.n_tot);
@@ -288,7 +288,7 @@ public:
 	}
 
 	int calcYlmWeightedMeanDensity(
-            TemplateParticle & P_R, losStruct * los_R,
+            TemplateParticle & P_R, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
 		fftw_complex * weight = NULL;
@@ -297,7 +297,7 @@ public:
 		weight = fftw_alloc_complex(P_R.n_tot);
 		for (int p = 0; p < P_R.n_tot; p++) {
 			double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-			std::complex<double> Ylm = ToolClass::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
+			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
 			weight[p][0] = Ylm.real() * P_R[p].w;
 		       	weight[p][1] = Ylm.imag() * P_R[p].w;
 		}
@@ -314,7 +314,7 @@ public:
 	}
 
 	int calcYlmWeightedMeanDensityForThreePointWindowFunctionShotnoise(
-            TemplateParticle & P_R, losStruct * los_R,
+            TemplateParticle & P_R, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
 		fftw_complex * weight = NULL;
@@ -322,7 +322,7 @@ public:
 		weight = fftw_alloc_complex(P_R.n_tot);
 		for (int p = 0; p < P_R.n_tot; p++) {
 			double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-			std::complex<double> Ylm = ToolClass::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
+			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
 			Ylm = std::conj(Ylm); // IMPORTANT! //
 			weight[p][0] = Ylm.real() * pow(P_R[p].w, 2);
 		       	weight[p][1] = Ylm.imag() * pow(P_R[p].w, 2);
@@ -462,7 +462,7 @@ public:
 	}
 
 	int calcInverseFourierTransformForThreePointFunction(DensityFieldClass & density, double rmag_in, std::complex<double> * Ylm,
-			SphericalBesselClass & sj ) {
+			SphericalBesselCalculator & sj ) {
 
 		/* initialize */
 		for (int i = 0; i < this->param.nmesh_tot; i++) {
@@ -644,14 +644,14 @@ public:
 template <class TemplateParticle>
 class TwoPointStatisticsClass {
 private:
-	ParameterClass param;
+	ParameterSet param;
 public:
 	std::complex<double> * pk;
 	std::complex<double> * xi;
 	int * n_mode_pk;
 	int * n_mode_xi;
 
-	TwoPointStatisticsClass(ParameterClass & param){
+	TwoPointStatisticsClass(ParameterSet & param){
 
 		this->param = param;
 		this->pk = new std::complex<double>[param.num_kbin];
@@ -684,20 +684,20 @@ public:
 
 	std::complex<double> calcShotNoiseForPowerspectrum(
             TemplateParticle & P_D, TemplateParticle & P_R,
-            losStruct * los_D, losStruct * los_R,
+            LineOfSight* los_D, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
 		std::complex<double> sum_D = 0.0;
 		std::complex<double> sum_R = 0.0;
 		for(int p = 0; p < P_D.n_tot; p++) {
 			double los[3] = {los_D[p].pos[0], los_D[p].pos[1], los_D[p].pos[2]};
-			std::complex<double> Ylm = ToolClass::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
+			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
 			sum_D += pow(P_D[p].w,2) * Ylm;
 		}
 
 		for(int p = 0; p < P_R.n_tot; p++) {
 			double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-			std::complex<double> Ylm = ToolClass::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
+			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
 			sum_R += pow(P_R[p].w,2) * Ylm;
 		}
 
@@ -706,13 +706,13 @@ public:
 	}
 
 	std::complex<double> calcShotNoiseForTwoPointWindowFunction(
-            TemplateParticle & P_R, losStruct * los_R,
+            TemplateParticle & P_R, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
 		std::complex<double> sum_R = 0.0;
 		for(int p = 0; p < P_R.n_tot; p++) {
 			double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-			std::complex<double> Ylm = ToolClass::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
+			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
 			sum_R += pow(P_R[p].w,2) * Ylm;
 		}
 
@@ -722,20 +722,20 @@ public:
 
 	std::complex<double> calcShotNoiseForBispectrum(
             TemplateParticle & P_D, TemplateParticle & P_R,
-            losStruct * los_D, losStruct * los_R,
+            LineOfSight* los_D, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
 		std::complex<double> sum_D = 0.0;
 		std::complex<double> sum_R = 0.0;
 		for(int p = 0; p < P_D.n_tot; p++) {
 			double los[3] = {los_D[p].pos[0], los_D[p].pos[1], los_D[p].pos[2]};
-			std::complex<double> Ylm = ToolClass::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
+			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
 			sum_D += pow(P_D[p].w,3) * Ylm;
 		}
 
 		for(int p = 0; p < P_R.n_tot; p++) {
 			double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-			std::complex<double> Ylm = ToolClass::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
+			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
 			sum_R += pow(P_R[p].w,3) * Ylm;
 		}
 
@@ -793,7 +793,7 @@ public:
 				pk2 /= pow(wf,2);
 
 				// spherical harmonics //
-				std::complex<double> Ylm = ToolClass::calc_reduced_spherical_harmonic(_ELL_, _M_, kvec);
+				std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, kvec);
 				pk2 *= Ylm;
 
 				pk_temp[kindex] += pk2;
@@ -908,7 +908,7 @@ public:
 				std::complex<double> xi2(xi3d_temp[coord][0], xi3d_temp[coord][1]);
 
 				// spherical harmonics //
-				std::complex<double> Ylm = ToolClass::calc_reduced_spherical_harmonic(_ELL_, _M_, rvec);
+				std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, rvec);
 				xi2 *= Ylm;
 
 				xi_temp[rindex] += xi2;

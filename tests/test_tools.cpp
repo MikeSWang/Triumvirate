@@ -22,7 +22,7 @@ int main(int argc, char* argv[]) {
   double pos[3] = {x, y, z};
 
   /// Initialise the tool class.
-  ToolClass toolset;
+  ToolCollection toolset;
 
   /// Display the numerical result.
   std::cout <<
