@@ -6,20 +6,20 @@
 #endif
 
 /**
- * Collection of initial parameters.
+ * Set of initial parameters.
  *
  * This reads parameters from a file, stores and prints out the extracted
  * parameters, and validates the input.
  *
  */
-class ParameterClass {
+class ParameterSet {
  public:
 	std::string catalogue_dir;  ///< catalogue directory
-	std::string output_dir;  ///< measurement output directory
-	std::string data_catalogue_file;  ///< data catalogue file path
-	std::string rand_catalogue_file;  ///< random catalogue file path
+	std::string output_dir;  ///< output directory
+	std::string data_catalogue_file;  ///< data catalogue file
+	std::string rand_catalogue_file;  ///< random catalogue file
 
-	std::string catalogue_type;  ///< type of catalogue
+	std::string catalogue_type;  ///< type of catalogue: {'survey', 'mock', 'sim'}
 
 	double boxsize[3];  ///< boxsize in each dimension
 	double volume;  ///< box volume
@@ -27,7 +27,7 @@ class ParameterClass {
 	int nmesh[3];  ///< mesh number in each dimension
 	int nmesh_tot;  ///< total number of meshes
 
-	std::string assignment;  ///< grid assignment scheme
+	std::string assignment;  ///< grid assignment scheme: {'NGP', 'CIC', 'TSC'}
 
 	int ell1;  ///< spherical degree associated with the first wavevector
 	int ell2;  ///< spherical degree associated with the second wavevector
@@ -44,7 +44,7 @@ class ParameterClass {
 
 	std::string form;  ///< full or diagonal form for the bispectrum
 
-	/// NOTE: The following attributes are irrelevant at the current
+	/// FIXME: The following attributes are irrelevant at the current
 	/// development stage.
 	int NR;  ///< ???
 	int ith_kbin;  ///< ???
@@ -62,7 +62,7 @@ class ParameterClass {
 	 * @returns Parameter acceptance outcome.
 	 */
 	int read_parameters(char* argv[]) {
-		/// Load in the parameter file.
+		/// Load the parameter file.
 		std::string param_file = argv[1];
 		std::ifstream fin(param_file.c_str());
 
@@ -169,7 +169,7 @@ class ParameterClass {
 					sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, form_);
 				}
 
-				/// NOTE: The following parameters are irrelevant at the current
+				/// FIXME: The following parameters are irrelevant at the current
 				/// development stage.
 				if (str_line.find("ith_kbin") != std::string::npos) {
 					sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ith_kbin);
@@ -299,27 +299,27 @@ class ParameterClass {
 	 */
 	int check_parameters() {
 		/// Print out extracted parameters to a file.
-		FILE* ptr_file;
+		FILE* file_ptr;
 
 		char buf[1024];
 		sprintf(buf, "%s/used_parameters", this->output_dir.c_str());
 
-		if (!(ptr_file = fopen(buf, "w"))) {
+		if (!(file_ptr = fopen(buf, "w"))) {
 			if (thisTask == 0) {
-				printf("Output directory '%s' does not exit.\n", this->output_dir.c_str());
+				printf("Output directory '%s' does not exist.\n", this->output_dir.c_str());
 			}
 			return -1;
 		}
 
-		this->print_parameters(ptr_file);
+		this->print_parameters(file_ptr);
 
-		fclose(ptr_file);
+		fclose(file_ptr);
 
 		/// Validate input parameters.
 		if (!(this->assignment == "NGP" || this->assignment == "CIC" || this->assignment == "TSC")) {
 			if (thisTask == 0) {
 				printf(
-					"Grid assignment scheme must be 'NGP', 'CIC' or 'TSC': assignment = %s.\n",
+					"Grid assignment scheme must be 'NGP', 'CIC' or 'TSC': `assignment` = %s.\n",
 					this->assignment.c_str()
 				);
 			}
@@ -328,7 +328,7 @@ class ParameterClass {
 
 		if (this->num_kbin < 2 || this->num_rbin < 2) {
 			if (thisTask == 0) {
-				printf("Number of bins ('num_kbin' or 'num_rbin') must be >= 2.\n");
+				printf("Number of bins (`num_kbin` or `num_rbin`) must be >= 2.\n");
 			}
 			return -1;
 		}
@@ -336,8 +336,8 @@ class ParameterClass {
 		if (this->ith_kbin >= this->num_kbin || this->ith_rbin >= this->num_rbin) {
 			if (thisTask == 0) {
 				printf(
-					"Bin index ('ith_kbin' or 'ith_rbin') must be less than "
-					"the number of bins ('num_kbin' or 'num_rbin').\n"
+					"Bin index (`ith_kbin` or `ith_rbin`) must be less than "
+					"the number of bins (`num_kbin` or `num_rbin`).\n"
 				);
 			}
 			return -1;
@@ -345,7 +345,7 @@ class ParameterClass {
 
 		if (!(this->form == "diag" || this->form == "full")) {
 			if (thisTask == 0) {
-				printf("'form' must be 'full' or 'diag'.\n");
+				printf("`form` must be either 'full' or 'diag'.\n");
 			}
 			return -1;
 		}
@@ -358,51 +358,50 @@ class ParameterClass {
 	 *
 	 * @returns Exit code.
 	 */
-	int print_parameters(FILE* ptr_file) {
+	int print_parameters(FILE* file_ptr) {
 		/// IDEA: Perhaps the following code block could be refactored
 		///	using a C++ equivalent to Python's ``zip``.
-		fprintf(ptr_file, "catalogue_dir = %s\n", this->catalogue_dir.c_str());
-		fprintf(ptr_file, "output_dir = %s\n", this->output_dir.c_str());
-		fprintf(ptr_file, "data_catalogue_file = %s\n", this->data_catalogue_file.c_str());
-		fprintf(ptr_file, "rand_catalogue_file = %s\n", this->rand_catalogue_file.c_str());
+		fprintf(file_ptr, "catalogue_dir = %s\n", this->catalogue_dir.c_str());
+		fprintf(file_ptr, "output_dir = %s\n", this->output_dir.c_str());
+		fprintf(file_ptr, "data_catalogue_file = %s\n", this->data_catalogue_file.c_str());
+		fprintf(file_ptr, "rand_catalogue_file = %s\n", this->rand_catalogue_file.c_str());
 
-		fprintf(ptr_file, "catalogue_type = %s\n", this->catalogue_type.c_str());
+		fprintf(file_ptr, "catalogue_type = %s\n", this->catalogue_type.c_str());
 
-		fprintf(ptr_file, "boxsize_x = %.2f\n", this->boxsize[0]);
-		fprintf(ptr_file, "boxsize_y = %.2f\n", this->boxsize[1]);
-		fprintf(ptr_file, "boxsize_z = %.2f\n", this->boxsize[2]);
+		fprintf(file_ptr, "boxsize_x = %.2f\n", this->boxsize[0]);
+		fprintf(file_ptr, "boxsize_y = %.2f\n", this->boxsize[1]);
+		fprintf(file_ptr, "boxsize_z = %.2f\n", this->boxsize[2]);
 
-		fprintf(ptr_file, "nmesh_x = %d\n", this->nmesh[0]);
-		fprintf(ptr_file, "nmesh_y = %d\n", this->nmesh[1]);
-		fprintf(ptr_file, "nmesh_z = %d\n", this->nmesh[2]);
+		fprintf(file_ptr, "nmesh_x = %d\n", this->nmesh[0]);
+		fprintf(file_ptr, "nmesh_y = %d\n", this->nmesh[1]);
+		fprintf(file_ptr, "nmesh_z = %d\n", this->nmesh[2]);
 
-		fprintf(ptr_file, "assignment = %s\n", this->assignment.c_str());
+		fprintf(file_ptr, "assignment = %s\n", this->assignment.c_str());
 
-		fprintf(ptr_file, "ell1 = %d\n", this->ell1);
-		fprintf(ptr_file, "ell2 = %d\n", this->ell2);
-		fprintf(ptr_file, "ELL = %d\n", this->ELL);
+		fprintf(file_ptr, "ell1 = %d\n", this->ell1);
+		fprintf(file_ptr, "ell2 = %d\n", this->ell2);
+		fprintf(file_ptr, "ELL = %d\n", this->ELL);
 
-		fprintf(ptr_file, "kmin = %.4f\n", this->kmin);
-		fprintf(ptr_file, "kmax = %.4f\n", this->kmax);
-		fprintf(ptr_file, "num_kbin = %d\n", this->num_kbin);
+		fprintf(file_ptr, "kmin = %.4f\n", this->kmin);
+		fprintf(file_ptr, "kmax = %.4f\n", this->kmax);
+		fprintf(file_ptr, "num_kbin = %d\n", this->num_kbin);
 
-		fprintf(ptr_file, "rmin = %.2f\n", this->rmin);
-		fprintf(ptr_file, "rmax = %.2f\n", this->rmax);
-		fprintf(ptr_file, "num_rbin = %d\n", this->num_rbin);
+		fprintf(file_ptr, "rmin = %.2f\n", this->rmin);
+		fprintf(file_ptr, "rmax = %.2f\n", this->rmax);
+		fprintf(file_ptr, "num_rbin = %d\n", this->num_rbin);
 
-		fprintf(ptr_file, "form = %s\n", this->form.c_str());
+		fprintf(file_ptr, "form = %s\n", this->form.c_str());
 
-		fprintf(ptr_file, "ith_kbin = %d\n", this->ith_kbin);
-		fprintf(ptr_file, "ith_rbin = %d\n", this->ith_rbin);
+		fprintf(file_ptr, "ith_kbin = %d\n", this->ith_kbin);
+		fprintf(file_ptr, "ith_rbin = %d\n", this->ith_rbin);
 
-		fprintf(ptr_file, "reconstruction = %s\n", this->reconstruction.c_str());
-		fprintf(ptr_file, "b1_fid = %.4f\n", this->b1_fid);
-		fprintf(ptr_file, "RG = %.4f\n", this->RG);
+		fprintf(file_ptr, "reconstruction = %s\n", this->reconstruction.c_str());
+		fprintf(file_ptr, "b1_fid = %.4f\n", this->b1_fid);
+		fprintf(file_ptr, "RG = %.4f\n", this->RG);
 
 		return 0;
 	}
 
- private:
 };
 
 #endif

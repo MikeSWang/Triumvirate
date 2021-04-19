@@ -38,7 +38,7 @@ endif
 #   Programs
 # ************
 
-all: trium test_common test_parameter test_bessel
+all: trium test_common test_parameters test_bessel
 
 trium: src/trium.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix build/, $(notdir $@)) $< $(CLIBS) $(LIB)
@@ -46,7 +46,7 @@ trium: src/trium.cpp
 test_common: tests/test_common.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
 
-test_parameter: tests/test_parameter.cpp
+test_parameters: tests/test_parameters.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
 
 test_bessel: tests/test_bessel.cpp

@@ -3,8 +3,8 @@
 
 int calcBiSpectrum(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
-        losStruct * los_D, losStruct * los_R,
-        ParameterClass & param, double alpha, double * kbin, double Vsurvey) {
+        LineOfSight* los_D, LineOfSight* los_R,
+        ParameterSet & param, double alpha, double * kbin, double Vsurvey) {
 
 	if(thisTask == 0) { printf("start to compute bispectrum...\n");}
 
@@ -107,8 +107,8 @@ int calcBiSpectrum(
 	N_00_sn.calcFourierTransform();
 
 	/* store spherical bessel functions */
-	SphericalBesselClass sj1(param.ell1);
-	SphericalBesselClass sj2(param.ell2);
+	SphericalBesselCalculator sj1(param.ell1);
+	SphericalBesselCalculator sj2(param.ell2);
 
 	for(int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
 	for(int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
@@ -130,8 +130,8 @@ int calcBiSpectrum(
 		}
 
 		if(flag == "TRUE") {
-			ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
-			ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
 		}
 
 	for(int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
@@ -279,8 +279,8 @@ int calcBiSpectrum(
 
 		if(flag == "TRUE") {
 
-			ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-			ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
 		}
 
 	for(int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
@@ -383,8 +383,8 @@ int calcBiSpectrum(
 
 int calcThreePointFunction(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
-        losStruct * los_D, losStruct * los_R,
-        ParameterClass & param, double alpha, double * rbin, double Vsurvey) {
+        LineOfSight* los_D, LineOfSight* los_R,
+        ParameterSet & param, double alpha, double * rbin, double Vsurvey) {
 
 
 	if(thisTask == 0) { printf("start to compute three-point function...\n");}
@@ -443,8 +443,8 @@ int calcThreePointFunction(
 
 		if(flag == "TRUE") {
 
-			ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
-			ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
 
 		}
 
@@ -528,8 +528,8 @@ int calcThreePointFunction(
 	dn_00.calcFourierTransform();
 
 	/* store spherical bessel functions */
-	SphericalBesselClass sj1(param.ell1);
-	SphericalBesselClass sj2(param.ell2);
+	SphericalBesselCalculator sj1(param.ell1);
+	SphericalBesselCalculator sj2(param.ell2);
 
 
 	/* define zeta_save:: bispectrum */
@@ -562,8 +562,8 @@ int calcThreePointFunction(
 
 		if(flag == "TRUE") {
 
-			ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-			ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
 
 		}
 
@@ -665,8 +665,8 @@ int calcThreePointFunction(
 
 int calcThreePointWindowFunction(
         ParticleBOSSClass & P_R,
-        losStruct * los_R,
-        ParameterClass & param, double alpha, double * rbin, double Vsurvey) {
+        LineOfSight* los_R,
+        ParameterSet & param, double alpha, double * rbin, double Vsurvey) {
 
 	if(thisTask == 0) { printf("start to compute three-point window...\n");}
 
@@ -746,8 +746,8 @@ int calcThreePointWindowFunction(
 
 		if(flag == "TRUE") {
 
-			ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
-			ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
 
 		}
 
@@ -830,8 +830,8 @@ int calcThreePointWindowFunction(
 	dn_00.calcFourierTransform();
 
 	/* store spherical bessel functions */
-	SphericalBesselClass sj1(param.ell1);
-	SphericalBesselClass sj2(param.ell2);
+	SphericalBesselCalculator sj1(param.ell1);
+	SphericalBesselCalculator sj2(param.ell2);
 
 
 	/* define zeta_save:: bispectrum */
@@ -862,8 +862,8 @@ int calcThreePointWindowFunction(
 
 		if(flag == "TRUE") {
 
-			ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-			ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
 
 		}
 
@@ -964,8 +964,8 @@ int calcThreePointWindowFunction(
 
 int calcThreePointWindowFunctionFor3PCF(
         ParticleBOSSClass & P_R,
-        losStruct * los_R,
-        ParameterClass & param, double alpha, double * rbin, double Vsurvey) {
+        LineOfSight* los_R,
+        ParameterSet & param, double alpha, double * rbin, double Vsurvey) {
 
 	if(thisTask == 0) { printf("start to compute three-point window function...\n");}
 
@@ -1023,8 +1023,8 @@ int calcThreePointWindowFunctionFor3PCF(
 
 		if(flag == "TRUE") {
 
-			ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
-			ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
 
 		}
 
@@ -1107,8 +1107,8 @@ int calcThreePointWindowFunctionFor3PCF(
 	dn_00.calcFourierTransform();
 
 	/* store spherical bessel functions */
-	SphericalBesselClass sj1(param.ell1);
-	SphericalBesselClass sj2(param.ell2);
+	SphericalBesselCalculator sj1(param.ell1);
+	SphericalBesselCalculator sj2(param.ell2);
 
 
 	/* define zeta_save:: bispectrum */
@@ -1139,8 +1139,8 @@ int calcThreePointWindowFunctionFor3PCF(
 
 		if(flag == "TRUE") {
 
-			ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-			ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
 
 		}
 
@@ -1242,7 +1242,7 @@ int calcThreePointWindowFunctionFor3PCF(
 
 
 
-int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterClass & param, double * kbin) {
+int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double * kbin) {
 	if(thisTask == 0) { printf("start to compute bispectrum...\n");}
 
 	if(fabs(wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0)) < 1.0e-10) {
@@ -1344,8 +1344,8 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterClass & param, double
 	N_00_sn.calcFourierTransform();
 
 	/* store spherical bessel functions */
-	SphericalBesselClass sj1(param.ell1);
-	SphericalBesselClass sj2(param.ell2);
+	SphericalBesselCalculator sj1(param.ell1);
+	SphericalBesselCalculator sj2(param.ell2);
 
 	for(int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
 	for(int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
@@ -1364,8 +1364,8 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterClass & param, double
 		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
 		bytes += double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
-		ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
-		ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
+		ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
+		ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
@@ -1498,8 +1498,8 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterClass & param, double
 		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
 		bytes += double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
-		ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-		ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
+		ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
+		ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
 
 		/* calc the yLM-weighted density perturbation */
 		DensityFieldClass<ParticleBOSSClass> dn_LM(param);
@@ -1585,7 +1585,7 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterClass & param, double
 	return 0;
 }
 
-int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterClass & param, double * rbin) {
+int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double * rbin) {
 	if(thisTask == 0) { printf("start to compute three-point function...\n");}
 
 	if(fabs(wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0)) < 1.0e-10) {
@@ -1637,8 +1637,8 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterClass & param
 		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
 		bytes += double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
-		ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
-		ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
+		ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
+		ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
 
 
 		/**********************************************/
@@ -1710,8 +1710,8 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterClass & param
 	dn_00.calcFourierTransform();
 
 	/* store spherical bessel functions */
-	SphericalBesselClass sj1(param.ell1);
-	SphericalBesselClass sj2(param.ell2);
+	SphericalBesselCalculator sj1(param.ell1);
+	SphericalBesselCalculator sj2(param.ell2);
 
 	/* define zeta_save:: bispectrum */
 	std::complex<double> * zeta_save = new std::complex<double>[param.num_rbin];
@@ -1737,8 +1737,8 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterClass & param
 		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
 		bytes += double( sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
 
-		ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-		ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
+		ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
+		ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
 
 
 		/* calc the yLM-weighted density perturbation */
@@ -1828,8 +1828,8 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterClass & param
 
 int calcBiSpectrumChoiceOfLOS(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
-        losStruct * los_D, losStruct * los_R,
-        ParameterClass & param, double alpha, double * kbin, int los, double Vsurvey
+        LineOfSight* los_D, LineOfSight* los_R,
+        ParameterSet & param, double alpha, double * kbin, int los, double Vsurvey
         ) {
 
 	if(thisTask == 0) { printf("start to compute bispectrum...\n");}
@@ -1990,8 +1990,8 @@ int calcBiSpectrumChoiceOfLOS(
 
 
 	/* store spherical bessel functions */
-	SphericalBesselClass sj1(param.ell1);
-	SphericalBesselClass sj2(param.ell2);
+	SphericalBesselCalculator sj1(param.ell1);
+	SphericalBesselCalculator sj2(param.ell2);
 
 	for(int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
 	for(int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
@@ -2014,8 +2014,8 @@ int calcBiSpectrumChoiceOfLOS(
 
 		if(flag == "TRUE") {
 
-			ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
-			ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
 
 		}
 	for(int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
@@ -2166,8 +2166,8 @@ int calcBiSpectrumChoiceOfLOS(
 
 		if(flag == "TRUE") {
 
-			ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-			ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
 
 		}
 	for(int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
@@ -2293,8 +2293,8 @@ int calcBiSpectrumChoiceOfLOS(
 
 int calcBiSpectrumMmode(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
-        losStruct * los_D, losStruct * los_R,
-        ParameterClass & param, double alpha, double * kbin, double Vsurvey) {
+        LineOfSight* los_D, LineOfSight* los_R,
+        ParameterSet & param, double alpha, double * kbin, double Vsurvey) {
 
     if(thisTask == 0) { printf("start to compute bispectrum...\n");}
 
@@ -2404,8 +2404,8 @@ int calcBiSpectrumMmode(
 	N_00_sn.calcFourierTransform();
 
 	/* store spherical bessel functions */
-	SphericalBesselClass sj1(param.ell1);
-	SphericalBesselClass sj2(param.ell2);
+	SphericalBesselCalculator sj1(param.ell1);
+	SphericalBesselCalculator sj2(param.ell2);
 
 	for(int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
 	for(int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
@@ -2428,8 +2428,8 @@ int calcBiSpectrumMmode(
 
 		if(flag == "TRUE") {
 
-			ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
-			ToolClass::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell1, _m1_, param, Ylm1 );
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space( param.ell2, _m2_, param, Ylm2 );
 
 		}
 
@@ -2586,8 +2586,8 @@ int calcBiSpectrumMmode(
 
 		if(flag == "TRUE") {
 
-			ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-			ToolClass::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
 
 		}
 
