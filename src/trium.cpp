@@ -26,14 +26,14 @@
 	gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3) \
 )
 
-#include "common.hpp"
-#include "parameters.hpp"
-#include "tools.hpp"
-#include "bessel.hpp"
-#include "particles.hpp"
-#include "field.hpp"
-#include "power.hpp"
-#include "bispec.hpp"
+#include "measurements/common.hpp"
+#include "measurements/parameters.hpp"
+#include "measurements/tools.hpp"
+#include "measurements/bessel.hpp"
+#include "measurements/particles.hpp"
+#include "measurements/field.hpp"
+#include "measurements/power.hpp"
+#include "measurements/bispec.hpp"
 
 /**
  * Triumvirate main program.

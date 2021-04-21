@@ -17,8 +17,8 @@ INCLUDE += -I${GSL_DIR}/include
 INCLUDE += -I${FFTW_DIR}/include
 
 LIB = -lm
-LIB += -lgsl -lgslcblas -L${GSL_DIR}/lib
-LIB += -lfftw3 -L$(FFTW_DIR)/lib
+LIB += -L${GSL_DIR}/lib -lgsl -lgslcblas
+LIB += -L$(FFTW_DIR)/lib -lfftw3
 
 endif
 
@@ -43,13 +43,16 @@ all: trium test_common test_parameters test_bessel
 trium: src/trium.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix build/, $(notdir $@)) $< $(CLIBS) $(LIB)
 
+test_bessel: tests/test_bessel.cpp
+	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
+
 test_common: tests/test_common.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
 
 test_parameters: tests/test_parameters.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
 
-test_bessel: tests/test_bessel.cpp
+test_particles: tests/test_particles.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
 
 test_tools: tests/test_tools.cpp
