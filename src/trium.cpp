@@ -32,7 +32,7 @@
 #include "bessel.hpp"
 #include "particles.hpp"
 #include "field.hpp"
-#include "powerspec.hpp"
+#include "power.hpp"
 #include "bispec.hpp"
 
 /**
