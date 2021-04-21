@@ -220,7 +220,6 @@ class ToolCollection {
 		}
 		return 0;
 	}
-
 };
 
 #endif

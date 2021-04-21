@@ -5,7 +5,7 @@
 #include "parameters.hpp"
 #endif
 
-#ifndef __field__
+#ifndef TRIUM_FIELD_H_INCLUDED_
 #include "field.hpp"
 #endif
 

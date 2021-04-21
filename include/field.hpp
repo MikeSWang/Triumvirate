@@ -1,25 +1,23 @@
-#ifndef __field__
-#define __field__
+#ifndef TRIUM_FIELD_H_INCLUDED_
+#define TRIUM_FIELD_H_INCLUDED_
 
 template <class TemplateParticle>
 class DensityFieldClass {
-private:
-	ParameterSet param;
 public:
 	/*****************************************/
 	fftw_complex * field;
 	/*****************************************/
 	const fftw_complex& operator[](int id) { return this->field[id]; }
 
-	DensityFieldClass(ParameterSet & param) {
+	DensityFieldClass(ParameterSet & params) {
 
-		this->param = param;
+		this->params = params;
 
 		this->field = NULL;
-		this->field = fftw_alloc_complex(this->param.nmesh_tot);
-		bytes += double( sizeof(fftw_complex) * this->param.nmesh_tot / 1024.0 / 1024.0 / 1024.0);
+		this->field = fftw_alloc_complex(this->params.nmesh_tot);
+		bytes += double( sizeof(fftw_complex) * this->params.nmesh_tot / 1024.0 / 1024.0 / 1024.0);
 
-		for (int i = 0; i < this->param.nmesh_tot; i++) {
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] = 0.0;
 			this->field[i][1] = 0.0;
 		}
@@ -32,17 +30,17 @@ public:
 	void finalizeDensityField() {
 		if(this->field != NULL) {
 			fftw_free(this->field); this->field = NULL;
-			bytes -= double( sizeof(fftw_complex) * this->param.nmesh_tot / 1024.0 / 1024.0 / 1024.0);
+			bytes -= double( sizeof(fftw_complex) * this->params.nmesh_tot / 1024.0 / 1024.0 / 1024.0);
 		}
 	}
 
 	int calcField(TemplateParticle & particle, fftw_complex * weight) {
 		if(0) {
-		} else if (this->param.assignment == "NGP") {
+		} else if (this->params.assignment == "NGP") {
 			this->calcFieldNGP(particle, weight);
-		} else if (this->param.assignment == "CIC") {
+		} else if (this->params.assignment == "CIC") {
 			this->calcFieldCIC(particle, weight);
-		} else if (this->param.assignment == "TSC") {
+		} else if (this->params.assignment == "TSC") {
 			this->calcFieldTSC(particle, weight);
 		} else {
 			return -1;
@@ -55,20 +53,20 @@ public:
 
 		/* rho = sum_i w_i delta_D(x - x_i) */
 
-		for(int i = 0; i < this->param.nmesh_tot; i++) {
+		for(int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] = 0.0;
 			this->field[i][1] = 0.0;
 		}
 
 		/* delta_D = (1/dV) * delta_K, dV = volume/nmesh */
-		double dV = this->param.volume / double(this->param.nmesh_tot);
+		double dV = this->params.volume / double(this->params.nmesh_tot);
 		double factor = 1.0 / dV;
 
 		for(int p = 0; p < particle.n_tot; p++) {
 			double w[1][3];
 			int iw[1][3];
 			for(int axes = 0; axes < 3; axes++) {
-				double xp = particle[p].pos[axes] * double(this->param.nmesh[axes]) / this->param.boxsize[axes];
+				double xp = particle[p].pos[axes] * double(this->params.nmesh[axes]) / this->params.boxsize[axes];
 				iw[0][axes] = int(xp + 0.5);
 				w[0][axes] = 1.0;
 			}
@@ -76,8 +74,8 @@ public:
 			for(int i = 0; i < 1; i++) {
 			for(int j = 0; j < 1; j++) {
 			for(int k = 0; k < 1; k++) {
-				long long coord = ( iw[i][0] * this->param.nmesh[1] + iw[j][1] ) * this->param.nmesh[2] + iw[k][2];
-				if( (coord >= 0) && (coord < this->param.nmesh_tot) ) {
+				long long coord = ( iw[i][0] * this->params.nmesh[1] + iw[j][1] ) * this->params.nmesh[2] + iw[k][2];
+				if( (coord >= 0) && (coord < this->params.nmesh_tot) ) {
 					this->field[coord][0] += weight[p][0] * factor * w[i][0] * w[j][1] * w[k][2];
 					this->field[coord][1] += weight[p][1] * factor * w[i][0] * w[j][1] * w[k][2];
 				}
@@ -92,20 +90,20 @@ public:
 
 		/* rho = sum_i w_i delta_D(x - x_i) */
 
-		for(int i = 0; i < this->param.nmesh_tot; i++) {
+		for(int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] = 0.0;
 			this->field[i][1] = 0.0;
 		}
 
 		/* delta_D = (1/dV) * delta_K, dV = volume/nmesh */
-		double dV = this->param.volume / double(this->param.nmesh_tot);
+		double dV = this->params.volume / double(this->params.nmesh_tot);
 		double factor = 1.0 / dV;
 
 		for(int p = 0; p < particle.n_tot; p++) {
 			double w[2][3];
 			int iw[2][3];
 			for(int axes = 0; axes < 3; axes++) {
-				double xp = particle[p].pos[axes] * double(this->param.nmesh[axes]) / this->param.boxsize[axes];
+				double xp = particle[p].pos[axes] * double(this->params.nmesh[axes]) / this->params.boxsize[axes];
 				iw[0][axes] = int(xp);
 				double dx = xp - double(iw[0][axes]);
 				w[0][axes] = 1.0 - dx;
@@ -116,8 +114,8 @@ public:
 			for(int i = 0; i < 2; i++) {
 			for(int j = 0; j < 2; j++) {
 			for(int k = 0; k < 2; k++) {
-				long long coord = ( iw[i][0] * this->param.nmesh[1] + iw[j][1] ) * this->param.nmesh[2] + iw[k][2];
-				if( (coord >= 0) && (coord < this->param.nmesh_tot) ) {
+				long long coord = ( iw[i][0] * this->params.nmesh[1] + iw[j][1] ) * this->params.nmesh[2] + iw[k][2];
+				if( (coord >= 0) && (coord < this->params.nmesh_tot) ) {
 					this->field[coord][0] += weight[p][0] * factor * w[i][0] * w[j][1] * w[k][2];
 					this->field[coord][1] += weight[p][1] * factor * w[i][0] * w[j][1] * w[k][2];
 				}
@@ -133,20 +131,20 @@ public:
 
 		/* rho = sum_i w_i delta_D(x - x_i) */
 
-		for(int i = 0; i < this->param.nmesh_tot; i++) {
+		for(int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] = 0.0;
 			this->field[i][1] = 0.0;
 		}
 
 		/* delta_D = (1/dV) * delta_K, dV = volume/nmesh */
-		double dV = this->param.volume / double(this->param.nmesh_tot);
+		double dV = this->params.volume / double(this->params.nmesh_tot);
 		double factor = 1.0 / dV;
 
 		for(int p = 0; p < particle.n_tot; p++) {
 			double w[3][3];
 			int iw[3][3];
 			for(int axes = 0; axes < 3; axes++) {
-				double xp = particle[p].pos[axes] * double(this->param.nmesh[axes]) / this->param.boxsize[axes];
+				double xp = particle[p].pos[axes] * double(this->params.nmesh[axes]) / this->params.boxsize[axes];
 				iw[1][axes] = int(xp + 0.5);
 				double dx = xp - double(iw[1][axes]);
 				w[0][axes] = 0.5 * (0.5 - dx) * (0.5 - dx);
@@ -159,8 +157,8 @@ public:
 			for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 3; j++) {
 			for(int k = 0; k < 3; k++) {
-				long long coord = ( iw[i][0] * this->param.nmesh[1] + iw[j][1] ) * this->param.nmesh[2] + iw[k][2];
-				if( (coord >= 0) && (coord < this->param.nmesh_tot) ) {
+				long long coord = ( iw[i][0] * this->params.nmesh[1] + iw[j][1] ) * this->params.nmesh[2] + iw[k][2];
+				if( (coord >= 0) && (coord < this->params.nmesh_tot) ) {
 					this->field[coord][0] += weight[p][0] * factor * w[i][0] * w[j][1] * w[k][2];
 					this->field[coord][1] += weight[p][1] * factor * w[i][0] * w[j][1] * w[k][2];
 				}
@@ -175,7 +173,7 @@ public:
             LineOfSight* los_D, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
-		DensityFieldClass<ParticleBOSSClass> n_R(this->param);
+		DensityFieldClass<ParticleBOSSClass> n_R(this->params);
 		fftw_complex * weight = NULL;
 
 		/****/
@@ -203,7 +201,7 @@ public:
 		fftw_free(weight); weight = NULL;
 
 		/****/
-		for(int i = 0; i < this->param.nmesh_tot; i++) {
+		for(int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] -= alpha * n_R.field[i][0];
 			this->field[i][1] -= alpha * n_R.field[i][1];
 		}
@@ -217,7 +215,7 @@ public:
             LineOfSight* los_D, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
-		DensityFieldClass<ParticleBOSSClass> n_R(this->param);
+		DensityFieldClass<ParticleBOSSClass> n_R(this->params);
 		fftw_complex * weight = NULL;
 
 		/****/
@@ -245,7 +243,7 @@ public:
 		fftw_free(weight); weight = NULL;
 
 		/****/
-		for(int i = 0; i < this->param.nmesh_tot; i++) {
+		for(int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] += alpha * alpha * n_R.field[i][0];
 			this->field[i][1] += alpha * alpha * n_R.field[i][1];
 		}
@@ -253,7 +251,7 @@ public:
 		return 0;
 	}
 
-	int calcNormalDensityFluctuationForBOX(TemplateParticle & P_D, ParameterSet & param) {
+	int calcNormalDensityFluctuationForBOX(TemplateParticle & P_D, ParameterSet & params) {
 
 		fftw_complex * weight = NULL;
 		weight = fftw_alloc_complex(P_D.n_tot);
@@ -265,8 +263,8 @@ public:
 		fftw_free(weight); weight = NULL;
 
 		/****/
-		for(int i = 0; i < this->param.nmesh_tot; i++) {
-			this->field[i][0] -= (double(P_D.n_tot)/param.volume);
+		for(int i = 0; i < this->params.nmesh_tot; i++) {
+			this->field[i][0] -= (double(P_D.n_tot)/params.volume);
 			this->field[i][1] -= 0.0;
 		}
 
@@ -305,7 +303,7 @@ public:
 		fftw_free(weight); weight = NULL;
 
 		/****/
-		for(int i = 0; i < this->param.nmesh_tot; i++) {
+		for(int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] *= alpha;
 			this->field[i][1] *= alpha;
 		}
@@ -331,7 +329,7 @@ public:
 		fftw_free(weight); weight = NULL;
 
 		/****/
-		for(int i = 0; i < this->param.nmesh_tot; i++) {
+		for(int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] *= alpha * alpha;
 			this->field[i][1] *= alpha * alpha;
 		}
@@ -343,15 +341,15 @@ public:
 	int calcFourierTransform() {
 
 		/* d^3x = (dV) \sum_i */
-		double dV = this->param.volume / double(this->param.nmesh_tot);
+		double dV = this->params.volume / double(this->params.nmesh_tot);
 
-		for(int i = 0;  i < this->param.nmesh_tot; i++) {
+		for(int i = 0;  i < this->params.nmesh_tot; i++) {
 			this->field[i][0] *= dV;
 			this->field[i][1] *= dV;
 		}
 
 		/* FFT */
-		fftw_plan plan = fftw_plan_dft_3d(this->param.nmesh[0],this->param.nmesh[1],this->param.nmesh[2], this->field, this->field, FFTW_FORWARD, FFTW_ESTIMATE);
+		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0],this->params.nmesh[1],this->params.nmesh[2], this->field, this->field, FFTW_FORWARD, FFTW_ESTIMATE);
 		fftw_execute(plan);
 		fftw_destroy_plan(plan);
 
@@ -363,18 +361,18 @@ public:
 
 		double kvec[3];
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
 
-		for(int i = 0; i < this->param.nmesh[0]; i++) {
-		for(int j = 0; j < this->param.nmesh[1]; j++) {
-		for(int k = 0; k < this->param.nmesh[2]; k++) {
-			long long coord = ( i * this->param.nmesh[1] + j ) * this->param.nmesh[2] + k;
+		for(int i = 0; i < this->params.nmesh[0]; i++) {
+		for(int j = 0; j < this->params.nmesh[1]; j++) {
+		for(int k = 0; k < this->params.nmesh[2]; k++) {
+			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
 
-			kvec[0] = (i < this->param.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->param.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->param.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->param.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->param.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->param.nmesh[2]) * dk[2];
+			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
+			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
+			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
 
 			// assignment function.
 			double	wf = this->WindowFunction(kvec);
@@ -389,15 +387,15 @@ public:
 	int calcInverseFourierTransform() {
 
 		/* d^3k/(2pi)^3 = (1/V) \sum_i */
-		double V = this->param.volume;
+		double V = this->params.volume;
 
-		for(int i = 0;  i < this->param.nmesh_tot; i++) {
+		for(int i = 0;  i < this->params.nmesh_tot; i++) {
 			this->field[i][0] /= V;
 			this->field[i][1] /= V;
 		}
 
 		/* Inverse FFT */
-		fftw_plan plan = fftw_plan_dft_3d(this->param.nmesh[0], this->param.nmesh[1], this->param.nmesh[2], this->field, this->field, FFTW_BACKWARD, FFTW_ESTIMATE);
+		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], this->field, this->field, FFTW_BACKWARD, FFTW_ESTIMATE);
 		fftw_execute(plan);
 		fftw_destroy_plan(plan);
 
@@ -407,7 +405,7 @@ public:
 	int calcInverseFourierTransformForBispectrum(DensityFieldClass & density, double kmag_in, double dk_in, std::complex<double> * Ylm) {
 
 		/* initialize */
-		for (int i = 0; i < this->param.nmesh_tot; i++) {
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] = 0.0;
 			this->field[i][1] = 0.0;
 		}
@@ -415,18 +413,18 @@ public:
 		int n_mode = 0;
 		double kvec[3];
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
 
-		for(int i = 0; i < this->param.nmesh[0]; i++) {
-		for(int j = 0; j < this->param.nmesh[1]; j++) {
-		for(int k = 0; k < this->param.nmesh[2]; k++) {
-			long long coord = ( i * this->param.nmesh[1] + j ) * this->param.nmesh[2] + k;
+		for(int i = 0; i < this->params.nmesh[0]; i++) {
+		for(int j = 0; j < this->params.nmesh[1]; j++) {
+		for(int k = 0; k < this->params.nmesh[2]; k++) {
+			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
 
-			kvec[0] = (i < this->param.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->param.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->param.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->param.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->param.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->param.nmesh[2]) * dk[2];
+			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
+			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
+			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
 			double kmag = sqrt( kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2] );
 
 			double lower = ( kmag_in > dk_in*0.5 ) ? (kmag_in - dk_in * 0.5) : 0.0;
@@ -449,11 +447,11 @@ public:
 		}}}
 
 		/* Inverse FFTW */
-		fftw_plan plan = fftw_plan_dft_3d(this->param.nmesh[0], this->param.nmesh[1], this->param.nmesh[2], this->field, this->field, FFTW_BACKWARD, FFTW_ESTIMATE);
+		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], this->field, this->field, FFTW_BACKWARD, FFTW_ESTIMATE);
 		fftw_execute(plan);
 		fftw_destroy_plan(plan);
 
-		for(int coord = 0; coord < this->param.nmesh_tot; coord++) {
+		for(int coord = 0; coord < this->params.nmesh_tot; coord++) {
 			this->field[coord][0] /=  double(n_mode);
 			this->field[coord][1] /=  double(n_mode);
 		}
@@ -465,25 +463,25 @@ public:
 			SphericalBesselCalculator & sj ) {
 
 		/* initialize */
-		for (int i = 0; i < this->param.nmesh_tot; i++) {
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] = 0.0;
 			this->field[i][1] = 0.0;
 		}
 
 		double kvec[3];
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
 
-		for(int i = 0; i < this->param.nmesh[0]; i++) {
-		for(int j = 0; j < this->param.nmesh[1]; j++) {
-		for(int k = 0; k < this->param.nmesh[2]; k++) {
-			long long coord = ( i * this->param.nmesh[1] + j ) * this->param.nmesh[2] + k;
+		for(int i = 0; i < this->params.nmesh[0]; i++) {
+		for(int j = 0; j < this->params.nmesh[1]; j++) {
+		for(int k = 0; k < this->params.nmesh[2]; k++) {
+			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
 
-			kvec[0] = (i < this->param.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->param.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->param.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->param.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->param.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->param.nmesh[2]) * dk[2];
+			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
+			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
+			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
 			double kmag = sqrt( kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2] );
 
 			std::complex<double> dn(density[coord][0], density[coord][1]);
@@ -492,12 +490,12 @@ public:
 			double	wf = this->WindowFunction(kvec);
 			dn /= wf;
 
-			this->field[coord][0] = sj.eval(kmag * rmag_in) * ( Ylm[coord] * dn ).real() / this->param.volume;
-			this->field[coord][1] = sj.eval(kmag * rmag_in) * ( Ylm[coord] * dn ).imag() / this->param.volume;
+			this->field[coord][0] = sj.eval(kmag * rmag_in) * ( Ylm[coord] * dn ).real() / this->params.volume;
+			this->field[coord][1] = sj.eval(kmag * rmag_in) * ( Ylm[coord] * dn ).imag() / this->params.volume;
 		}}}
 
 		/* Inverse FFTW */
-		fftw_plan plan = fftw_plan_dft_3d(this->param.nmesh[0], this->param.nmesh[1], this->param.nmesh[2], this->field, this->field, FFTW_BACKWARD, FFTW_ESTIMATE);
+		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], this->field, this->field, FFTW_BACKWARD, FFTW_ESTIMATE);
 		fftw_execute(plan);
 		fftw_destroy_plan(plan);
 
@@ -507,11 +505,11 @@ public:
 
 	double WindowFunction(double * kvec) {
 		if(0) {
-		} else if (this->param.assignment == "NGP") {
+		} else if (this->params.assignment == "NGP") {
 			return this->WindowFunctionNGP(kvec);
-		} else if (this->param.assignment == "CIC") {
+		} else if (this->params.assignment == "CIC") {
 			return this->WindowFunctionCIC(kvec);
-		} else if (this->param.assignment == "TSC") {
+		} else if (this->params.assignment == "TSC") {
 			return this->WindowFunctionTSC(kvec);
 		} else {
 			return 1.0;
@@ -522,15 +520,15 @@ public:
 	}
 	double WindowFunctionNGP(const double * kvec) {
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
 		int i = (int) ( kvec[0] / dk[0] + 1.0e-5);
 		int j = (int) ( kvec[1] / dk[1] + 1.0e-5);
 		int k = (int) ( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->param.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->param.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->param.nmesh[2]);
+		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
+		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
+		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
 		double f1 = (i != 0) ? sin(x1) / x1 : 1.0;
 		double f2 = (j != 0) ? sin(x2) / x2 : 1.0;
 		double f3 = (k != 0) ? sin(x3) / x3 : 1.0;
@@ -542,15 +540,15 @@ public:
 
 	double WindowFunctionCIC(const double * kvec) {
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
 		int i = (int) ( kvec[0] / dk[0] + 1.0e-5);
 		int j = (int) ( kvec[1] / dk[1] + 1.0e-5);
 		int k = (int) ( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->param.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->param.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->param.nmesh[2]);
+		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
+		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
+		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
 		double f1 = (i != 0) ? sin(x1) / x1 : 1.0;
 		double f2 = (j != 0) ? sin(x2) / x2 : 1.0;
 		double f3 = (k != 0) ? sin(x3) / x3 : 1.0;
@@ -563,15 +561,15 @@ public:
 
 	double WindowFunctionTSC(const double * kvec) {
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
 		int i = (int) ( kvec[0] / dk[0] + 1.0e-5);
 		int j = (int) ( kvec[1] / dk[1] + 1.0e-5);
 		int k = (int) ( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->param.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->param.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->param.nmesh[2]);
+		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
+		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
+		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
 		double f1 = (i != 0) ? sin(x1) / x1 : 1.0;
 		double f2 = (j != 0) ? sin(x2) / x2 : 1.0;
 		double f3 = (k != 0) ? sin(x3) / x3 : 1.0;
@@ -594,9 +592,9 @@ public:
 		fftw_free(weight); weight = NULL;
 
 		/****/
-		double dV = this->param.volume / double(this->param.nmesh_tot);
+		double dV = this->params.volume / double(this->params.nmesh_tot);
 		double norm = 0.0;
-		for(int i = 0; i < this->param.nmesh_tot; i++) {
+		for(int i = 0; i < this->params.nmesh_tot; i++) {
 			norm += this->field[i][0] * this->field[i][0] * dV;
 		}
 
@@ -608,7 +606,7 @@ public:
 
 	int calcNormalDensityFluctuationForBOXForReconstruction(TemplateParticle & P_D, TemplateParticle & P_R, double alpha) {
 
-		DensityFieldClass<ParticleBOSSClass> n_R(this->param);
+		DensityFieldClass<ParticleBOSSClass> n_R(this->params);
 		fftw_complex * weight = NULL;
 
 		/****/
@@ -630,7 +628,7 @@ public:
 		fftw_free(weight); weight = NULL;
 
 		/****/
-		for(int i = 0; i < this->param.nmesh_tot; i++) {
+		for(int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] -= alpha * n_R.field[i][0];
 			this->field[i][1] -= alpha * n_R.field[i][1];
 		}
@@ -638,32 +636,33 @@ public:
 		return 0;
 	}
 
-
+ private:
+	ParameterSet params;
 };
 
 template <class TemplateParticle>
 class TwoPointStatisticsClass {
 private:
-	ParameterSet param;
+	ParameterSet params;
 public:
 	std::complex<double> * pk;
 	std::complex<double> * xi;
 	int * n_mode_pk;
 	int * n_mode_xi;
 
-	TwoPointStatisticsClass(ParameterSet & param){
+	TwoPointStatisticsClass(ParameterSet & params){
 
-		this->param = param;
-		this->pk = new std::complex<double>[param.num_kbin];
-		this->n_mode_pk = new int[param.num_kbin];
-	       	for(int i = 0; i < param.num_kbin; i++) {
+		this->params = params;
+		this->pk = new std::complex<double>[params.num_kbin];
+		this->n_mode_pk = new int[params.num_kbin];
+	       	for(int i = 0; i < params.num_kbin; i++) {
 			this->pk[i] = 0.0;
 			this->n_mode_pk[i] = 0.0;
 		}
 
-		this->xi = new std::complex<double>[param.num_rbin];
-		this->n_mode_xi = new int[param.num_rbin];
-	       	for(int i = 0; i < param.num_rbin; i++) {
+		this->xi = new std::complex<double>[params.num_rbin];
+		this->n_mode_xi = new int[params.num_rbin];
+	       	for(int i = 0; i < params.num_rbin; i++) {
 			this->xi[i] = 0.0;
 			this->n_mode_xi[i] = 0.0;
 		}
@@ -757,7 +756,7 @@ public:
 			pk_temp[i] = 0.0;
 			n_mode_temp[i] = 0.0;
 		}
-	    for(int i = 0; i < this->param.num_kbin; i++) {
+	    for(int i = 0; i < this->params.num_kbin; i++) {
 			this->pk[i] = 0.0;
 			this->n_mode_pk[i] = 0.0;
 		}
@@ -765,16 +764,16 @@ public:
 		/* 場の値の代入*/
 		double kvec[3];
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
-		for(int i = 0; i < this->param.nmesh[0]; i++) {
-		for(int j = 0; j < this->param.nmesh[1]; j++) {
-		for(int k = 0; k < this->param.nmesh[2]; k++) {
-			long long coord = ( i * this->param.nmesh[1] + j ) * this->param.nmesh[2] + k;
-			kvec[0] = (i < this->param.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->param.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->param.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->param.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->param.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->param.nmesh[2]) * dk[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
+		for(int i = 0; i < this->params.nmesh[0]; i++) {
+		for(int j = 0; j < this->params.nmesh[1]; j++) {
+		for(int k = 0; k < this->params.nmesh[2]; k++) {
+			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
+			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
+			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
+			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
 			double kmag = sqrt( kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2] );
 			int kindex = int( kmag / dk_temp + 0.5);
 			if(kindex < n_temp) {
@@ -802,7 +801,7 @@ public:
 
 		}}}
 
-		for(int j = 0; j < this->param.num_kbin; j++) {
+		for(int j = 0; j < this->params.num_kbin; j++) {
 			double lower = ( kbin[j] > dk_bin*0.5 ) ? (kbin[j] - dk_bin * 0.5) : 0.0;
 			double upper = kbin[j] + dk_bin*0.5;
 			for(int i = 0; i < n_temp; i++) {
@@ -814,7 +813,7 @@ public:
 			}
 		}
 
-		for(int i = 0; i < this->param.num_kbin; i++) {
+		for(int i = 0; i < this->params.num_kbin; i++) {
 			if(this->n_mode_pk[i] != 0) {
 				this->pk[i] /= double(this->n_mode_pk[i]);
 			} else {
@@ -833,26 +832,26 @@ public:
 	int calcCorrelationFunction(DensityFieldClass<TemplateParticle> & density1, DensityFieldClass<TemplateParticle> & density2,
 		        	 double * rbin, std::complex<double> shotnoise, int _ELL_, int _M_) {
 
-		fftw_complex * xi3d_temp = fftw_alloc_complex(this->param.nmesh_tot);
-		for(int i = 0; i < this->param.nmesh_tot; i++) {
+		fftw_complex * xi3d_temp = fftw_alloc_complex(this->params.nmesh_tot);
+		for(int i = 0; i < this->params.nmesh_tot; i++) {
 			xi3d_temp[i][0] = 0.0;
 			xi3d_temp[i][1] = 0.0;
 		}
 
 		/* dk^3 = (1/V) sum_i */
-		double factor  = 1.0 / this->param.volume;
+		double factor  = 1.0 / this->params.volume;
 		double kvec[3];
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
-		for(int i = 0; i < this->param.nmesh[0]; i++) {
-		for(int j = 0; j < this->param.nmesh[1]; j++) {
-		for(int k = 0; k < this->param.nmesh[2]; k++) {
-			long long coord = ( i * this->param.nmesh[1] + j ) * this->param.nmesh[2] + k;
-			kvec[0] = (i < this->param.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->param.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->param.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->param.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->param.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->param.nmesh[2]) * dk[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
+		for(int i = 0; i < this->params.nmesh[0]; i++) {
+		for(int j = 0; j < this->params.nmesh[1]; j++) {
+		for(int k = 0; k < this->params.nmesh[2]; k++) {
+			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
+			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
+			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
+			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
 
 			// delta^2 = (2pi)^3 delta_D(k1+k2) P(k), where (2pi)^3 delta_D(k1+k2) = V //
 			// P = (V/N^2) |n(k)|^2 //
@@ -873,7 +872,7 @@ public:
 		}}}
 
 		/* Inverse FFTW */
-		fftw_plan plan = fftw_plan_dft_3d(this->param.nmesh[0], this->param.nmesh[1], this->param.nmesh[2], xi3d_temp, xi3d_temp, FFTW_BACKWARD, FFTW_ESTIMATE);
+		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], xi3d_temp, xi3d_temp, FFTW_BACKWARD, FFTW_ESTIMATE);
 		fftw_execute(plan);
 		fftw_destroy_plan(plan);
 
@@ -885,23 +884,23 @@ public:
 			xi_temp[i] = 0.0;
 			n_mode_temp[i] = 0.0;
 		}
-	       	for(int i = 0; i < this->param.num_rbin; i++) {
+	       	for(int i = 0; i < this->params.num_rbin; i++) {
 			this->xi[i] = 0.0;
 			this->n_mode_xi[i] = 0.0;
 		}
 
 		double rvec[3];
 		double dr[3];
-		dr[0] = this->param.boxsize[0] / double(this->param.nmesh[0]);
-		dr[1] = this->param.boxsize[1] / double(this->param.nmesh[1]);
-		dr[2] = this->param.boxsize[2] / double(this->param.nmesh[2]);
-		for(int i = 0; i < this->param.nmesh[0]; i++) {
-		for(int j = 0; j < this->param.nmesh[1]; j++) {
-		for(int k = 0; k < this->param.nmesh[2]; k++) {
-			long long coord = ( i * this->param.nmesh[1] + j ) * this->param.nmesh[2] + k;
-			rvec[0] = (i < this->param.nmesh[0]/2) ? (double) i * dr[0] : (double) (i - this->param.nmesh[0]) * dr[0];
-			rvec[1] = (j < this->param.nmesh[1]/2) ? (double) j * dr[1] : (double) (j - this->param.nmesh[1]) * dr[1];
-			rvec[2] = (k < this->param.nmesh[2]/2) ? (double) k * dr[2] : (double) (k - this->param.nmesh[2]) * dr[2];
+		dr[0] = this->params.boxsize[0] / double(this->params.nmesh[0]);
+		dr[1] = this->params.boxsize[1] / double(this->params.nmesh[1]);
+		dr[2] = this->params.boxsize[2] / double(this->params.nmesh[2]);
+		for(int i = 0; i < this->params.nmesh[0]; i++) {
+		for(int j = 0; j < this->params.nmesh[1]; j++) {
+		for(int k = 0; k < this->params.nmesh[2]; k++) {
+			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
+			rvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dr[0] : (double) (i - this->params.nmesh[0]) * dr[0];
+			rvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dr[1] : (double) (j - this->params.nmesh[1]) * dr[1];
+			rvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dr[2] : (double) (k - this->params.nmesh[2]) * dr[2];
 			double rmag = sqrt( rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2] );
 			int rindex = (int) (rmag / dr_temp + 0.5);
 			if(rindex < n_temp) {
@@ -920,7 +919,7 @@ public:
 		/*****************************************/
 		double dr_bin = rbin[1] - rbin[0];
 
-		for(int j = 0; j < this->param.num_rbin; j++) {
+		for(int j = 0; j < this->params.num_rbin; j++) {
 			double lower = ( rbin[j] > dr_bin*0.5 ) ? (rbin[j] - dr_bin * 0.5) : 0.0;
 			double upper = rbin[j] + dr_bin*0.5;
 			for(int i = 0; i < n_temp; i++) {
@@ -932,7 +931,7 @@ public:
 			}
 		}
 
-		for(int i = 0; i < this->param.num_rbin; i++) {
+		for(int i = 0; i < this->params.num_rbin; i++) {
 			if(this->n_mode_xi[i] != 0) {
 				this->xi[i] /= double(this->n_mode_xi[i]);
 			} else {
@@ -954,19 +953,19 @@ public:
 
 
 		/* dk^3 = (1/V) sum_i */
-		double factor  = 1.0 / this->param.volume;
+		double factor  = 1.0 / this->params.volume;
 		double kvec[3];
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
-		for(int i = 0; i < this->param.nmesh[0]; i++) {
-		for(int j = 0; j < this->param.nmesh[1]; j++) {
-		for(int k = 0; k < this->param.nmesh[2]; k++) {
-			long long coord = ( i * this->param.nmesh[1] + j ) * this->param.nmesh[2] + k;
-			kvec[0] = (i < this->param.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->param.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->param.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->param.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->param.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->param.nmesh[2]) * dk[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
+		for(int i = 0; i < this->params.nmesh[0]; i++) {
+		for(int j = 0; j < this->params.nmesh[1]; j++) {
+		for(int k = 0; k < this->params.nmesh[2]; k++) {
+			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
+			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
+			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
+			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
 
 			// delta^2 = (2pi)^3 delta_D(k1+k2) P(k), where (2pi)^3 delta_D(k1+k2) = V //
 			// P = (V/N^2) |n(k)|^2 //
@@ -987,7 +986,7 @@ public:
 		}}}
 
 		/* Inverse FFTW */
-		fftw_plan plan = fftw_plan_dft_3d(this->param.nmesh[0], this->param.nmesh[1], this->param.nmesh[2], xi, xi, FFTW_BACKWARD, FFTW_ESTIMATE);
+		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], xi, xi, FFTW_BACKWARD, FFTW_ESTIMATE);
 		fftw_execute(plan);
 		fftw_destroy_plan(plan);
 
@@ -999,26 +998,26 @@ public:
 		        	 double * rbin, std::complex<double> shotnoise, int _ELL_, int _M_,
 				 std::complex<double> * Ylm1, std::complex<double> * Ylm2) {
 
-		fftw_complex * xi3d_temp = fftw_alloc_complex(this->param.nmesh_tot);
-		for(int i = 0; i < this->param.nmesh_tot; i++) {
+		fftw_complex * xi3d_temp = fftw_alloc_complex(this->params.nmesh_tot);
+		for(int i = 0; i < this->params.nmesh_tot; i++) {
 			xi3d_temp[i][0] = 0.0;
 			xi3d_temp[i][1] = 0.0;
 		}
 
 		/* dk^3 = (1/V) sum_i */
-		double factor  = 1.0 / this->param.volume;
+		double factor  = 1.0 / this->params.volume;
 		double kvec[3];
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
-		for(int i = 0; i < this->param.nmesh[0]; i++) {
-		for(int j = 0; j < this->param.nmesh[1]; j++) {
-		for(int k = 0; k < this->param.nmesh[2]; k++) {
-			long long coord = ( i * this->param.nmesh[1] + j ) * this->param.nmesh[2] + k;
-			kvec[0] = (i < this->param.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->param.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->param.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->param.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->param.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->param.nmesh[2]) * dk[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
+		for(int i = 0; i < this->params.nmesh[0]; i++) {
+		for(int j = 0; j < this->params.nmesh[1]; j++) {
+		for(int k = 0; k < this->params.nmesh[2]; k++) {
+			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
+			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
+			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
+			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
 
 			// delta^2 = (2pi)^3 delta_D(k1+k2) P(k), where (2pi)^3 delta_D(k1+k2) = V //
 			// P = (V/N^2) |n(k)|^2 //
@@ -1039,7 +1038,7 @@ public:
 		}}}
 
 		/* Inverse FFTW */
-		fftw_plan plan = fftw_plan_dft_3d(this->param.nmesh[0], this->param.nmesh[1], this->param.nmesh[2], xi3d_temp, xi3d_temp, FFTW_BACKWARD, FFTW_ESTIMATE);
+		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], xi3d_temp, xi3d_temp, FFTW_BACKWARD, FFTW_ESTIMATE);
 		fftw_execute(plan);
 		fftw_destroy_plan(plan);
 
@@ -1051,23 +1050,23 @@ public:
 			xi_temp[i] = 0.0;
 			n_mode_temp[i] = 0.0;
 		}
-	       	for(int i = 0; i < this->param.num_rbin; i++) {
+	       	for(int i = 0; i < this->params.num_rbin; i++) {
 			this->xi[i] = 0.0;
 			this->n_mode_xi[i] = 0.0;
 		}
 
 		double rvec[3];
 		double dr[3];
-		dr[0] = this->param.boxsize[0] / double(this->param.nmesh[0]);
-		dr[1] = this->param.boxsize[1] / double(this->param.nmesh[1]);
-		dr[2] = this->param.boxsize[2] / double(this->param.nmesh[2]);
-		for(int i = 0; i < this->param.nmesh[0]; i++) {
-		for(int j = 0; j < this->param.nmesh[1]; j++) {
-		for(int k = 0; k < this->param.nmesh[2]; k++) {
-			long long coord = ( i * this->param.nmesh[1] + j ) * this->param.nmesh[2] + k;
-			rvec[0] = (i < this->param.nmesh[0]/2) ? (double) i * dr[0] : (double) (i - this->param.nmesh[0]) * dr[0];
-			rvec[1] = (j < this->param.nmesh[1]/2) ? (double) j * dr[1] : (double) (j - this->param.nmesh[1]) * dr[1];
-			rvec[2] = (k < this->param.nmesh[2]/2) ? (double) k * dr[2] : (double) (k - this->param.nmesh[2]) * dr[2];
+		dr[0] = this->params.boxsize[0] / double(this->params.nmesh[0]);
+		dr[1] = this->params.boxsize[1] / double(this->params.nmesh[1]);
+		dr[2] = this->params.boxsize[2] / double(this->params.nmesh[2]);
+		for(int i = 0; i < this->params.nmesh[0]; i++) {
+		for(int j = 0; j < this->params.nmesh[1]; j++) {
+		for(int k = 0; k < this->params.nmesh[2]; k++) {
+			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
+			rvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dr[0] : (double) (i - this->params.nmesh[0]) * dr[0];
+			rvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dr[1] : (double) (j - this->params.nmesh[1]) * dr[1];
+			rvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dr[2] : (double) (k - this->params.nmesh[2]) * dr[2];
 			double rmag = sqrt( rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2] );
 			int rindex = (int) (rmag / dr_temp + 0.5);
 			if(rindex < n_temp) {
@@ -1084,11 +1083,11 @@ public:
 
 		/*****************************************/
 
-		double dr_bin[this->param.num_rbin-1];
-		for(int j = 0; j < this->param.num_rbin-1; j++) {
+		double dr_bin[this->params.num_rbin-1];
+		for(int j = 0; j < this->params.num_rbin-1; j++) {
 			dr_bin[j] = rbin[j+1] - rbin[j];
 		}
-		for(int j = 0; j < this->param.num_rbin; j++) {
+		for(int j = 0; j < this->params.num_rbin; j++) {
 
 			double lower = 0.0;
 			if(j ==0) {
@@ -1097,7 +1096,7 @@ public:
 				lower = rbin[j] - dr_bin[j-1] * 0.5;
 			}
 			double upper = 0.0;
-			if(j == this->param.num_rbin-1) {
+			if(j == this->params.num_rbin-1) {
 				upper = (rbin[j] + dr_bin[j-1] * 0.5);
 			} else {
 				upper = (rbin[j] + dr_bin[j] * 0.5);
@@ -1112,10 +1111,10 @@ public:
 			}
 		}
 
-		double dV = this->param.volume / double(this->param.nmesh_tot);
-		for(int i = 0; i < this->param.num_rbin; i++) {
+		double dV = this->params.volume / double(this->params.nmesh_tot);
+		for(int i = 0; i < this->params.num_rbin; i++) {
 			if(this->n_mode_xi[i] != 0) {
-				this->xi[i] *= ( pow(-1.0, this->param.ell1+this->param.ell2)
+				this->xi[i] *= ( pow(-1.0, this->params.ell1+this->params.ell2)
 						/ double(this->n_mode_xi[i]) / double(this->n_mode_xi[i]) / dV );
 			} else {
 				this->xi[i] = 0.0;
@@ -1133,11 +1132,11 @@ public:
 
 	double ShotnoiseFunction(double * kvec) {
 		if(0) {
-		} else if (this->param.assignment == "NGP") {
+		} else if (this->params.assignment == "NGP") {
 			return this->ShotnoiseFunctionNGP(kvec);
-		} else if (this->param.assignment == "CIC") {
+		} else if (this->params.assignment == "CIC") {
 			return this->ShotnoiseFunctionCIC(kvec);
-		} else if (this->param.assignment == "TSC") {
+		} else if (this->params.assignment == "TSC") {
 			return this->ShotnoiseFunctionTSC(kvec);
 		} else {
 			return 0.0;
@@ -1151,15 +1150,15 @@ public:
 
 	double ShotnoiseFunctionCIC(const double * kvec) {
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
 		int i = int( kvec[0] / dk[0] + 1.0e-5);
 		int j = int( kvec[1] / dk[1] + 1.0e-5);
 		int k = int( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->param.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->param.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->param.nmesh[2]);
+		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
+		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
+		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
 		double f1 = (i != 0) ? sin(x1): 0.0;
 		double f2 = (j != 0) ? sin(x2): 0.0;
 		double f3 = (k != 0) ? sin(x3): 0.0;
@@ -1169,15 +1168,15 @@ public:
 
 	double ShotnoiseFunctionTSC(const double * kvec) {
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
 		int i = int( kvec[0] / dk[0] + 1.0e-5);
 		int j = int( kvec[1] / dk[1] + 1.0e-5);
 		int k = int( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->param.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->param.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->param.nmesh[2]);
+		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
+		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
+		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
 		double f1 = (i != 0) ? sin(x1): 0.0;
 		double f2 = (j != 0) ? sin(x2): 0.0;
 		double f3 = (k != 0) ? sin(x3): 0.0;
@@ -1188,11 +1187,11 @@ public:
 
 	double WindowFunction(double * kvec) {
 		if(0) {
-		} else if (this->param.assignment == "NGP") {
+		} else if (this->params.assignment == "NGP") {
 			return this->WindowFunctionNGP(kvec);
-		} else if (this->param.assignment == "CIC") {
+		} else if (this->params.assignment == "CIC") {
 			return this->WindowFunctionCIC(kvec);
-		} else if (this->param.assignment == "TSC") {
+		} else if (this->params.assignment == "TSC") {
 			return this->WindowFunctionTSC(kvec);
 		} else {
 			return 1.0;
@@ -1203,15 +1202,15 @@ public:
 
 	double WindowFunctionNGP(const double * kvec) {
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
 		int i = (int) ( kvec[0] / dk[0] + 1.0e-5);
 		int j = (int) ( kvec[1] / dk[1] + 1.0e-5);
 		int k = (int) ( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->param.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->param.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->param.nmesh[2]);
+		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
+		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
+		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
 		double f1 = (i != 0) ? sin(x1) / x1 : 1.0;
 		double f2 = (j != 0) ? sin(x2) / x2 : 1.0;
 		double f3 = (k != 0) ? sin(x3) / x3 : 1.0;
@@ -1223,15 +1222,15 @@ public:
 
 	double WindowFunctionCIC(const double * kvec) {
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
 		int i = (int) ( kvec[0] / dk[0] + 1.0e-5);
 		int j = (int) ( kvec[1] / dk[1] + 1.0e-5);
 		int k = (int) ( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->param.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->param.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->param.nmesh[2]);
+		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
+		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
+		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
 		double f1 = (i != 0) ? sin(x1) / x1 : 1.0;
 		double f2 = (j != 0) ? sin(x2) / x2 : 1.0;
 		double f3 = (k != 0) ? sin(x3) / x3 : 1.0;
@@ -1244,15 +1243,15 @@ public:
 
 	double WindowFunctionTSC(const double * kvec) {
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->param.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->param.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->param.boxsize[2];
+		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
+		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
+		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
 		int i = (int) ( kvec[0] / dk[0] + 1.0e-5);
 		int j = (int) ( kvec[1] / dk[1] + 1.0e-5);
 		int k = (int) ( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->param.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->param.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->param.nmesh[2]);
+		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
+		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
+		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
 		double f1 = (i != 0) ? sin(x1) / x1 : 1.0;
 		double f2 = (j != 0) ? sin(x2) / x2 : 1.0;
 		double f3 = (k != 0) ? sin(x3) / x3 : 1.0;
@@ -1271,16 +1270,6 @@ public:
 		return sum_D + pow(alpha,2) * sum_R;
 
 	}
-
-
-
-
-
 };
 
-
-
-
 #endif
-
-
