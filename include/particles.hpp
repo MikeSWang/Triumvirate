@@ -171,7 +171,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 		}
 
 		std::string str_line;
-		double x, y, z, vx, vy, vz, mass, dummy;
+		double x, y, z, vx, vy, vz, mass, dummy;  // FIXME: Redundant?
 		int ID, PID;  // FIXME: Redundant?
 		while (getline(fin, str_line)) {
 			if (sscanf(str_line.c_str(), "%lf %lf %lf", &x, &y, &z) != 3) {
