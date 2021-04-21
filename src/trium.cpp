@@ -34,8 +34,6 @@
 #include "powerspec.hpp"
 #include "bispec.hpp"
 
-#include "particle_reconstruction.hpp"
-
 int main(int argc, char *argv[]) {
 
 	/* time */
@@ -169,25 +167,6 @@ int main(int argc, char *argv[]) {
 		std::cout << "CCCCCCCCCCCCCC" << std::endl;
 		std::cout << "Survey_Volume = " << vol_survey << std::endl;
 		std::cout << "Survey_L = " << pow(vol_survey,1.0/3.0) << std::endl;
-	}
-
-	if(param.reconstruction == "true") {
-		/****************************/
-		/*****  reconstruction  *****/
-		/****************************/
-		if(thisTask == 0) {
-		    std::cout << "computing recostruction" << std::endl;
-		}
-		double b1_fid = param.b1_fid;
-		double RG = param.RG;
-		int nmesh[3] = {512, 512, 512};
-		calcReconstructionParticles(P_D, P_R, los_D, los_R, param, alpha, vol_survey, b1_fid, RG, nmesh);
-		ParticleBOSSClass::offset_particles_for_fft(P_D, P_R, param);
-
-		/* time */
-		durationInSec = double(clock() - timeStart);
-		if(thisTask == 0) { printf("done | %.3f sec\n", durationInSec / CLOCKS_PER_SEC);}
-		/********/
 	}
 
 	/******************************/
