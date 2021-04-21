@@ -1,6 +1,11 @@
 #ifndef TRIUM_FIELD_H_INCLUDED_
 #define TRIUM_FIELD_H_INCLUDED_
 
+/**
+ * Density field object.
+ *
+ * This is based on a particle container
+ */
 template <class TemplateParticle>
 class DensityFieldClass {
 public:
@@ -24,10 +29,10 @@ public:
 	}
 
 	~DensityFieldClass() {
-		finalizeDensityField();
+		finalise_density_field();
 	}
 
-	void finalizeDensityField() {
+	void finalise_density_field() {
 		if(this->field != NULL) {
 			fftw_free(this->field); this->field = NULL;
 			bytes -= double( sizeof(fftw_complex) * this->params.nmesh_tot / 1024.0 / 1024.0 / 1024.0);
@@ -251,7 +256,7 @@ public:
 		return 0;
 	}
 
-	int calcNormalDensityFluctuationForBOX(TemplateParticle & P_D, ParameterSet & params) {
+	int calcNormalDensityFluctuation_in_box(TemplateParticle & P_D, ParameterSet & params) {
 
 		fftw_complex * weight = NULL;
 		weight = fftw_alloc_complex(P_D.n_tot);
@@ -271,7 +276,7 @@ public:
 		return 0;
 	}
 
-	int calcNormalDensityForBispectrumShotnoiseForBOX(TemplateParticle & P_D) {
+	int calcNormalDensityForBispectrumShotnoise_in_box(TemplateParticle & P_D) {
 
 		fftw_complex * weight = NULL;
 		weight = fftw_alloc_complex(P_D.n_tot);
@@ -579,7 +584,7 @@ public:
 	}
 
 
-	double calcSurveyVolume(TemplateParticle & P_R) {
+	double calc_survey_volume(TemplateParticle & P_R) {
 
 		/****/
 		fftw_complex * weight = NULL;
@@ -604,7 +609,7 @@ public:
 
 	}
 
-	int calcNormalDensityFluctuationForBOXForReconstruction(TemplateParticle & P_D, TemplateParticle & P_R, double alpha) {
+	int calcNormalDensityFluctuation_in_boxForReconstruction(TemplateParticle & P_D, TemplateParticle & P_R, double alpha) {
 
 		DensityFieldClass<ParticleBOSSClass> n_R(this->params);
 		fftw_complex * weight = NULL;
@@ -743,7 +748,7 @@ public:
 	}
 
 
-	int calcPowerSpectrum(DensityFieldClass<TemplateParticle> & density1, DensityFieldClass<TemplateParticle> & density2,
+	int calc_power_spec(DensityFieldClass<TemplateParticle> & density1, DensityFieldClass<TemplateParticle> & density2,
 		        	   double * kbin, std::complex<double> shotnoise, int _ELL_, int _M_) {
 
 		double dk_bin = kbin[1] - kbin[0];
@@ -1262,7 +1267,7 @@ public:
 
 
 
-	std::complex<double> calcShotNoiseForPowerspectrumForBOXForReconstruction(TemplateParticle & P_D, TemplateParticle & P_R, double alpha) {
+	std::complex<double> calcShotNoiseForPowerspectrum_in_boxForReconstruction(TemplateParticle & P_D, TemplateParticle & P_R, double alpha) {
 
 		std::complex<double> sum_D = double(P_D.n_tot);
 		std::complex<double> sum_R = double(P_R.n_tot);
