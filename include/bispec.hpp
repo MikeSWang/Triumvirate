@@ -1,7 +1,7 @@
 #ifndef __bispec__
 #define __bispec__
 
-int calcBiSpectrum(
+int calc_bispec(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
         LineOfSight* los_D, LineOfSight* los_R,
         ParameterSet & param, double alpha, double * kbin, double vol_survey) {
@@ -70,7 +70,7 @@ int calcBiSpectrum(
 		}
 
 		if( (param.ell2 == 0) ) {
-			stat.calcPowerSpectrum(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell1, _m1_);
+			stat.calc_power_spec(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell1, _m1_);
 			if(param.form == "diag") {
 				for(int i =0; i < param.num_kbin; i++) {
 					sn_save[i] += w * stat.pk[i];
@@ -83,7 +83,7 @@ int calcBiSpectrum(
 		}
 
 		if( (param.ell1 == 0) ) {
-			stat.calcPowerSpectrum(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell2, _m2_);
+			stat.calc_power_spec(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell2, _m2_);
 			for(int i =0; i < param.num_kbin; i++) {
 				sn_save[i] += w * stat.pk[i];
 		       	}
@@ -96,7 +96,7 @@ int calcBiSpectrum(
 	}}}
 
 	/****/
-	dn_00_sn.finalizeDensityField();
+	dn_00_sn.finalise_density_field();
 	/****************************************/
 
 	/****************************************/
@@ -218,7 +218,7 @@ int calcBiSpectrum(
 	}}
 
 	/****/
-	N_00_sn.finalizeDensityField();
+	N_00_sn.finalise_density_field();
 	/****************************************/
 
 	/* time */
@@ -381,7 +381,7 @@ int calcBiSpectrum(
 }
 
 
-int calcThreePointFunction(
+int calc_3pt_func(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
         LineOfSight* los_D, LineOfSight* los_R,
         ParameterSet & param, double alpha, double * rbin, double vol_survey) {
@@ -495,7 +495,7 @@ int calcThreePointFunction(
 
 
 	/****/
-	N_00_sn.finalizeDensityField();
+	N_00_sn.finalise_density_field();
 	/****************************************/
 
 	/* time */
@@ -663,7 +663,7 @@ int calcThreePointFunction(
 
 
 
-int calcThreePointWindowFunction(
+int calc_3pt_func_window(
         ParticleBOSSClass & P_R,
         LineOfSight* los_R,
         ParameterSet & param, double alpha, double * rbin, double vol_survey) {
@@ -797,7 +797,7 @@ int calcThreePointWindowFunction(
 	}}
 
 	/****/
-	N_00_sn.finalizeDensityField();
+	N_00_sn.finalise_density_field();
 	/****************************************/
 
 	/* time */
@@ -962,7 +962,7 @@ int calcThreePointWindowFunction(
 	return 0;
 }
 
-int calcThreePointWindowFunctionFor3PCF(
+int calc_3pt_func_window_for_3pcf(
         ParticleBOSSClass & P_R,
         LineOfSight* los_R,
         ParameterSet & param, double alpha, double * rbin, double vol_survey) {
@@ -1074,7 +1074,7 @@ int calcThreePointWindowFunctionFor3PCF(
 	}}
 
 	/****/
-	N_00_sn.finalizeDensityField();
+	N_00_sn.finalise_density_field();
 	/****************************************/
 
 	/* time */
@@ -1242,7 +1242,7 @@ int calcThreePointWindowFunctionFor3PCF(
 
 
 
-int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double * kbin) {
+int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * kbin) {
 	if(thisTask == 0) { printf("start to compute bispectrum...\n");}
 
 	if(fabs(wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0)) < 1.0e-10) {
@@ -1274,7 +1274,7 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityFieldClass<ParticleBOSSClass> dn_00_sn(param);
-	dn_00_sn.calcNormalDensityFluctuationForBOX(P_D, param);
+	dn_00_sn.calcNormalDensityFluctuation_in_box(P_D, param);
 	/* Fourier transform*/
 	dn_00_sn.calcFourierTransform();
 
@@ -1293,7 +1293,7 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double *
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
 		DensityFieldClass<ParticleBOSSClass> N_LM_sn(param);
-		N_LM_sn.calcNormalDensityForBispectrumShotnoiseForBOX(P_D);
+		N_LM_sn.calcNormalDensityForBispectrumShotnoise_in_box(P_D);
 		/* Fourier transform*/
 		N_LM_sn.calcFourierTransform();
 
@@ -1307,7 +1307,7 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double *
 		}
 
 		if( (param.ell2 == 0) ) {
-			stat.calcPowerSpectrum(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell1, _m1_);
+			stat.calc_power_spec(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell1, _m1_);
 			if(param.form == "diag") {
 				for(int i =0; i < param.num_kbin; i++) {
 					sn_save[i] += w * stat.pk[i];
@@ -1320,7 +1320,7 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double *
 		}
 
 		if( (param.ell1 == 0) ) {
-			stat.calcPowerSpectrum(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell2, _m2_);
+			stat.calc_power_spec(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell2, _m2_);
 			for(int i =0; i < param.num_kbin; i++) {
 				sn_save[i] += w * stat.pk[i];
 		       	}
@@ -1333,13 +1333,13 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	}}
 
 	/****/
-	dn_00_sn.finalizeDensityField();
+	dn_00_sn.finalise_density_field();
 	/****************************************/
 
 	/****************************************/
 	/* calc F00 */
 	DensityFieldClass<ParticleBOSSClass> N_00_sn(param);
-	N_00_sn.calcNormalDensityForBispectrumShotnoiseForBOX(P_D);
+	N_00_sn.calcNormalDensityForBispectrumShotnoise_in_box(P_D);
 	/* Fourier transform*/
 	N_00_sn.calcFourierTransform();
 
@@ -1370,7 +1370,7 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double *
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
 		DensityFieldClass<ParticleBOSSClass> dn_LM_sn(param);
-		dn_LM_sn.calcNormalDensityFluctuationForBOX(P_D, param);
+		dn_LM_sn.calcNormalDensityFluctuation_in_box(P_D, param);
 		/* Fourier transform*/
 		dn_LM_sn.calcFourierTransform();
 
@@ -1441,7 +1441,7 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	}}
 
 	/****/
-	N_00_sn.finalizeDensityField();
+	N_00_sn.finalise_density_field();
 	/****************************************/
 
 	/* time */
@@ -1469,7 +1469,7 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityFieldClass<ParticleBOSSClass> dn_00(param);
-	dn_00.calcNormalDensityFluctuationForBOX(P_D, param);
+	dn_00.calcNormalDensityFluctuation_in_box(P_D, param);
 	/* Fourier transform*/
 	dn_00.calcFourierTransform();
 
@@ -1503,7 +1503,7 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double *
 
 		/* calc the yLM-weighted density perturbation */
 		DensityFieldClass<ParticleBOSSClass> dn_LM(param);
-		dn_LM.calcNormalDensityFluctuationForBOX(P_D, param);
+		dn_LM.calcNormalDensityFluctuation_in_box(P_D, param);
 		/* Fourier transform*/
 		dn_LM.calcFourierTransform();
 		/* divided by a assignment function */
@@ -1585,7 +1585,7 @@ int calcBiSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	return 0;
 }
 
-int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double * rbin) {
+int calc_3pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * rbin) {
 	if(thisTask == 0) { printf("start to compute three-point function...\n");}
 
 	if(fabs(wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0)) < 1.0e-10) {
@@ -1616,7 +1616,7 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterSet & param, 
 	/****************************************/
 	/* calc F00 */
 	DensityFieldClass<ParticleBOSSClass> N_00_sn(param);
-	N_00_sn.calcNormalDensityForBispectrumShotnoiseForBOX(P_D);
+	N_00_sn.calcNormalDensityForBispectrumShotnoise_in_box(P_D);
 	/* Fourier transform*/
 	N_00_sn.calcFourierTransform();
 
@@ -1644,7 +1644,7 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterSet & param, 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
 		DensityFieldClass<ParticleBOSSClass> dn_LM_sn(param);
-		dn_LM_sn.calcNormalDensityFluctuationForBOX(P_D, param);
+		dn_LM_sn.calcNormalDensityFluctuation_in_box(P_D, param);
 		/* Fourier transform*/
 		dn_LM_sn.calcFourierTransform();
 
@@ -1677,7 +1677,7 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterSet & param, 
 	}}
 
 	/****/
-	N_00_sn.finalizeDensityField();
+	N_00_sn.finalise_density_field();
 	/****************************************/
 
 	/* time */
@@ -1705,7 +1705,7 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterSet & param, 
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityFieldClass<ParticleBOSSClass> dn_00(param);
-	dn_00.calcNormalDensityFluctuationForBOX(P_D, param);
+	dn_00.calcNormalDensityFluctuation_in_box(P_D, param);
 	/* Fourier transform*/
 	dn_00.calcFourierTransform();
 
@@ -1743,7 +1743,7 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterSet & param, 
 
 		/* calc the yLM-weighted density perturbation */
 		DensityFieldClass<ParticleBOSSClass> dn_LM(param);
-		dn_LM.calcNormalDensityFluctuationForBOX(P_D, param);
+		dn_LM.calcNormalDensityFluctuation_in_box(P_D, param);
 		/* Fourier transform*/
 		dn_LM.calcFourierTransform();
 		/* divided by a assignment function */
@@ -1826,7 +1826,7 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterSet & param, 
 }
 
 
-int calcBiSpectrumChoiceOfLOS(
+int calc_bispecChoiceOfLOS(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
         LineOfSight* los_D, LineOfSight* los_R,
         ParameterSet & param, double alpha, double * kbin, int los, double vol_survey
@@ -1904,7 +1904,7 @@ int calcBiSpectrumChoiceOfLOS(
 		}
 
 		if( (param.ell2 == 0) ) {
-			stat.calcPowerSpectrum(dn_sn, N_sn, kbin, shotnoise, param.ell1, _m1_);
+			stat.calc_power_spec(dn_sn, N_sn, kbin, shotnoise, param.ell1, _m1_);
 			if(param.form == "diag") {
 				for(int i =0; i < param.num_kbin; i++) {
 					sn_save[i] += w * stat.pk[i];
@@ -1962,7 +1962,7 @@ int calcBiSpectrumChoiceOfLOS(
 		std::complex<double> shotnoise = stat.calcShotNoiseForBispectrum(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 
 		if( (param.ell1 == 0) ) {
-			stat.calcPowerSpectrum(dn_sn, N_sn, kbin, shotnoise, param.ell2, _m2_);
+			stat.calc_power_spec(dn_sn, N_sn, kbin, shotnoise, param.ell2, _m2_);
 			for(int i =0; i < param.num_kbin; i++) {
 				sn_save[i] += w * stat.pk[i];
 		       	}
@@ -2291,7 +2291,7 @@ int calcBiSpectrumChoiceOfLOS(
 
 
 
-int calcBiSpectrumMmode(
+int calc_bispecMmode(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
         LineOfSight* los_D, LineOfSight* los_R,
         ParameterSet & param, double alpha, double * kbin, double vol_survey) {
@@ -2367,7 +2367,7 @@ int calcBiSpectrumMmode(
 		}
 
 		if( (param.ell2 == 0) ) {
-			stat.calcPowerSpectrum(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell1, _m1_);
+			stat.calc_power_spec(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell1, _m1_);
 			if(param.form == "diag") {
 				for(int i =0; i < param.num_kbin; i++) {
 					sn_save[_M_+param.ELL][i] += stat.pk[i];
@@ -2380,7 +2380,7 @@ int calcBiSpectrumMmode(
 		}
 
 		if( (param.ell1 == 0) ) {
-			stat.calcPowerSpectrum(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell2, _m2_);
+			stat.calc_power_spec(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell2, _m2_);
 			for(int i =0; i < param.num_kbin; i++) {
 				sn_save[_M_+param.ELL][i] += stat.pk[i];
 		       	}
@@ -2393,7 +2393,7 @@ int calcBiSpectrumMmode(
 	}}}
 
 	/****/
-	dn_00_sn.finalizeDensityField();
+	dn_00_sn.finalise_density_field();
 	/****************************************/
 
 	/****************************************/
@@ -2517,7 +2517,7 @@ int calcBiSpectrumMmode(
 	}}
 
 	/****/
-	N_00_sn.finalizeDensityField();
+	N_00_sn.finalise_density_field();
 	/****************************************/
 
 	/* time */

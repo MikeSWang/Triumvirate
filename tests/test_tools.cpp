@@ -3,8 +3,9 @@
 #include <fstream>
 #include <iostream>
 
-#include <gsl/gsl_sf_legendre.h>
 #include <sys/stat.h>
+
+#include <gsl/gsl_sf_legendre.h>
 
 #include "tools.hpp"
 

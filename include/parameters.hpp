@@ -280,7 +280,7 @@ class ParameterSet {
 					}
 				} else {
 					if (thisTask == 0) {
-						printf("Output subdirectory '%s' fails to be made.\n", buf_dir);
+						printf("FATAL: Failed to make output subdirectory '%s'.\n", buf_dir);
 					}
 					exit(1);
 				}
