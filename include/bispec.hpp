@@ -4,7 +4,7 @@
 int calcBiSpectrum(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
         LineOfSight* los_D, LineOfSight* los_R,
-        ParameterSet & param, double alpha, double * kbin, double Vsurvey) {
+        ParameterSet & param, double alpha, double * kbin, double vol_survey) {
 
 	if(thisTask == 0) { printf("start to compute bispectrum...\n");}
 
@@ -351,7 +351,7 @@ int calcBiSpectrum(
 
 	}}
 
-	double norm = ParticleBOSSClass::calcNormalizationForPowerSpectrum(P_D, Vsurvey);
+	double norm = ParticleBOSSClass::calc_norm_for_power_spectrum(P_D, vol_survey);
 
 	FILE * fp;
 	char buf[1024];
@@ -384,7 +384,7 @@ int calcBiSpectrum(
 int calcThreePointFunction(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
         LineOfSight* los_D, LineOfSight* los_R,
-        ParameterSet & param, double alpha, double * rbin, double Vsurvey) {
+        ParameterSet & param, double alpha, double * rbin, double vol_survey) {
 
 
 	if(thisTask == 0) { printf("start to compute three-point function...\n");}
@@ -636,7 +636,7 @@ int calcThreePointFunction(
 	}}
 
 
-	double norm = ParticleBOSSClass::calcNormalizationForBispectrum(P_D, Vsurvey);
+	double norm = ParticleBOSSClass::calc_norm_for_bispectrum(P_D, vol_survey);
 
 	FILE * fp;
 	char buf[1024];
@@ -666,7 +666,7 @@ int calcThreePointFunction(
 int calcThreePointWindowFunction(
         ParticleBOSSClass & P_R,
         LineOfSight* los_R,
-        ParameterSet & param, double alpha, double * rbin, double Vsurvey) {
+        ParameterSet & param, double alpha, double * rbin, double vol_survey) {
 
 	if(thisTask == 0) { printf("start to compute three-point window...\n");}
 
@@ -935,7 +935,7 @@ int calcThreePointWindowFunction(
 
 	}}
 
-	double norm = ParticleBOSSClass::calcNormalizationForBispectrum(P_R, Vsurvey);
+	double norm = ParticleBOSSClass::calc_norm_for_bispectrum(P_R, vol_survey);
 	norm /= (alpha * alpha * alpha);
 
 	FILE * fp;
@@ -965,7 +965,7 @@ int calcThreePointWindowFunction(
 int calcThreePointWindowFunctionFor3PCF(
         ParticleBOSSClass & P_R,
         LineOfSight* los_R,
-        ParameterSet & param, double alpha, double * rbin, double Vsurvey) {
+        ParameterSet & param, double alpha, double * rbin, double vol_survey) {
 
 	if(thisTask == 0) { printf("start to compute three-point window function...\n");}
 
@@ -1212,7 +1212,7 @@ int calcThreePointWindowFunctionFor3PCF(
 
 	}}
 
-	double norm = ParticleBOSSClass::calcNormalizationForBispectrum(P_R, Vsurvey);
+	double norm = ParticleBOSSClass::calc_norm_for_bispectrum(P_R, vol_survey);
 	norm /= (alpha * alpha * alpha);
 
 	FILE * fp;
@@ -1829,7 +1829,7 @@ int calcThreePointFunctionForBOX(ParticleBOSSClass & P_D, ParameterSet & param, 
 int calcBiSpectrumChoiceOfLOS(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
         LineOfSight* los_D, LineOfSight* los_R,
-        ParameterSet & param, double alpha, double * kbin, int los, double Vsurvey
+        ParameterSet & param, double alpha, double * kbin, int los, double vol_survey
         ) {
 
 	if(thisTask == 0) { printf("start to compute bispectrum...\n");}
@@ -2263,7 +2263,7 @@ int calcBiSpectrumChoiceOfLOS(
 
 	}}
 
-	double norm = ParticleBOSSClass::calcNormalizationForBispectrum(P_D, Vsurvey);
+	double norm = ParticleBOSSClass::calc_norm_for_bispectrum(P_D, vol_survey);
 
 	FILE * fp;
 	char buf[1024];
@@ -2294,7 +2294,7 @@ int calcBiSpectrumChoiceOfLOS(
 int calcBiSpectrumMmode(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
         LineOfSight* los_D, LineOfSight* los_R,
-        ParameterSet & param, double alpha, double * kbin, double Vsurvey) {
+        ParameterSet & param, double alpha, double * kbin, double vol_survey) {
 
     if(thisTask == 0) { printf("start to compute bispectrum...\n");}
 
@@ -2659,7 +2659,7 @@ int calcBiSpectrumMmode(
 
 	}}
 
-	double norm = ParticleBOSSClass::calcNormalizationForBispectrum(P_D, Vsurvey);
+	double norm = ParticleBOSSClass::calc_norm_for_bispectrum(P_D, vol_survey);
 
 	for(int _M_ = 0; _M_<2*param.ELL+1;_M_++) {
 		FILE * fp;

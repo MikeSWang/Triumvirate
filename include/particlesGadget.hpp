@@ -406,7 +406,7 @@ public:
 		return 0;
 	}
 
-	int calcPeriodicBoundary(ParameterSet & param) {
+	int offset_particles_for_periodicity(ParameterSet & param) {
 
 		for(int p = 0; p < this->n_tot; p++) {
 
@@ -460,7 +460,7 @@ public:
 		return 0;
 	}
 
-	int resetParticle() {
+	int offset_particles() {
 
 		if( particles == NULL) { return -1; }
 		for (int p = 0; p < this->n_tot; p++) {
@@ -576,7 +576,7 @@ public:
 //	}
 //
 
-	static double calcNormalizationForPowerSpectrum(ParticleBOSSClass & P_D, ParameterSet & param) {
+	static double calc_norm_for_power_spectrum(ParticleBOSSClass & P_D, ParameterSet & param) {
 
 		double num_D_weight = 0.0;
 		for(int p = 0; p < P_D.n_tot; p++) {
@@ -588,7 +588,7 @@ public:
 
 	}
 
-	static double calcNormalizationForBispectrum(ParticleBOSSClass & P_D, ParameterSet & param) {
+	static double calc_norm_for_bispectrum(ParticleBOSSClass & P_D, ParameterSet & param) {
 
 		double num_D_weight = 0.0;
 		for(int p = 0; p < P_D.n_tot; p++) {
@@ -601,7 +601,7 @@ public:
 
 	}
 
-	static double calcAlpha(ParticleBOSSClass & P_D, ParticleBOSSClass & P_R) {
+	static double calc_alpha_ratio(ParticleBOSSClass & P_D, ParticleBOSSClass & P_R) {
 
 		double num_D_weight = 0.0;
 		for(int p = 0; p < P_D.n_tot; p++) {

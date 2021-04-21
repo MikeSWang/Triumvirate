@@ -8,7 +8,7 @@
 int calcPowerSpectrum(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
         LineOfSight* los_D, LineOfSight* los_R,
-        ParameterSet & param, double alpha, double * kbin, double Vsurvey) {
+        ParameterSet & param, double alpha, double * kbin, double vol_survey) {
 
 	if(thisTask == 0) { printf("start to compute power spectrum...\n");}
 
@@ -69,7 +69,7 @@ int calcPowerSpectrum(
 		}
 	}
 
-	double norm = ParticleBOSSClass::calcNormalizationForPowerSpectrum(P_D, Vsurvey);
+	double norm = ParticleBOSSClass::calc_norm_for_power_spectrum(P_D, vol_survey);
 
 	FILE * fp;
 	char buf[1024];
@@ -87,7 +87,7 @@ int calcPowerSpectrum(
 int calcTwoPointFunction(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
         LineOfSight* los_D, LineOfSight* los_R,
-        ParameterSet & param, double alpha, double * rbin, double Vsurvey) {
+        ParameterSet & param, double alpha, double * rbin, double vol_survey) {
 
 	if(thisTask == 0) { printf("start to compute two-point correlation function...\n");}
 
@@ -148,7 +148,7 @@ int calcTwoPointFunction(
 		}
 	}
 
-	double norm = ParticleBOSSClass::calcNormalizationForPowerSpectrum(P_D, Vsurvey);
+	double norm = ParticleBOSSClass::calc_norm_for_power_spectrum(P_D, vol_survey);
 
 	FILE * fp;
 	char buf[1024];
@@ -167,7 +167,7 @@ int calcTwoPointFunction(
 int calcPowerSpectrumWindowFunction(
         ParticleBOSSClass & P_R,
         LineOfSight* los_R,
-        ParameterSet & param, double alpha, double * kbin, double Vsurvey) {
+        ParameterSet & param, double alpha, double * kbin, double vol_survey) {
 
 	if(thisTask == 0) { printf("start to compute two-point window function...\n");}
 
@@ -209,7 +209,7 @@ int calcPowerSpectrumWindowFunction(
 
 	std::cout << "BITE = " << bytes << std::endl;
 
-	double norm = ParticleBOSSClass::calcNormalizationForPowerSpectrum(P_R, Vsurvey);
+	double norm = ParticleBOSSClass::calc_norm_for_power_spectrum(P_R, vol_survey);
 	norm /= (alpha * alpha);
 
 	/***********************************************/
@@ -241,7 +241,7 @@ int calcPowerSpectrumWindowFunction(
 int calcTwoPointWindowFunction(
         ParticleBOSSClass & P_R,
         LineOfSight* los_R,
-        ParameterSet & param, double alpha, double * rbin, double Vsurvey) {
+        ParameterSet & param, double alpha, double * rbin, double vol_survey) {
 	if(thisTask == 0) { printf("start to compute two-point window function...\n");}
 
 	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
@@ -303,7 +303,7 @@ int calcTwoPointWindowFunction(
 		}
 	}
 
-	double norm = ParticleBOSSClass::calcNormalizationForPowerSpectrum(P_R, Vsurvey);
+	double norm = ParticleBOSSClass::calc_norm_for_power_spectrum(P_R, vol_survey);
 	norm /= (alpha * alpha);
 
 	FILE * fp;

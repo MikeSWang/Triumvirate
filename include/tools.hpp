@@ -30,7 +30,11 @@ class ToolCollection {
 	 * @param pos 3-d position vector.
 	 * @returns ylm Normalised conjugated value.
 	 */
-	static std::complex<double> calc_reduced_spherical_harmonic(int ell, int m, double* pos) {
+	static std::complex<double> calc_reduced_spherical_harmonic(
+			int ell,
+			int m,
+			double* pos
+		) {
 		/// Return the trivial value.
 		if (ell == 0 && m == 0) {
 			return 1.;
