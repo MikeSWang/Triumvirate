@@ -11,7 +11,7 @@
  */
 class ParticleBOSSClass {  // FIXME: change class name
  public:
-	struct particleInfoStruct {
+	struct ParticleData {
 		double pos[3];  ///< particle position vector
 		double w;  ///< particle weight
 	}* particles;  ///< particle data
@@ -23,17 +23,17 @@ class ParticleBOSSClass {  // FIXME: change class name
 	/**
 	 * Return individual particle information.
 	 *
-	 * @param id Particle ID.
+	 * @param id Particle ID/index.
 	 * @returns Particle information.
 	 */
-	particleInfoStruct& operator[](int id) {  // FIXME: change function name
+	ParticleData& operator[](int id) {
 		return this->particles[id];
 	}
 
 	/**
-	 * Initialise particle container.
+	 * Initialise particle containers.
 	 */
-	ParticleBOSSClass () {
+	ParticleBOSSClass () {  // FIXME: change class name
 		this->particles = NULL;
 		this->n_tot = 0;
 		this->pos_min[0] = 0.; this->pos_max[0] = 0.;
@@ -42,9 +42,9 @@ class ParticleBOSSClass {  // FIXME: change class name
 	}
 
 	/**
-	 * Deconstruct particle container.
+	 * Deconstruct particle containers.
 	 */
-	~ParticleBOSSClass() {
+	~ParticleBOSSClass() {  // FIXME: change class name
 		finalise_particles();
 	}
 
@@ -63,19 +63,19 @@ class ParticleBOSSClass {  // FIXME: change class name
 
 		/// Renew particle data.
 		delete[] particles; particles = NULL;
-		this->particles = new particleInfoStruct[this->n_tot];
+		this->particles = new ParticleData[this->n_tot];
 
 		/// Determine memory usage.
 		bytes += double(
-			this->n_tot * sizeof(struct particleInfoStruct) / 1024. / 1024. / 1024.
+			this->n_tot * sizeof(struct ParticleData) / 1024. / 1024. / 1024.
 		);
 
 		/// Initialise particle data values.
-		for (int i = 0; i < this->n_tot; i++) {
-			particles[i].pos[0] = 0.;
-			particles[i].pos[1] = 0.;
-			particles[i].pos[2] = 0.;
-			particles[i].w = 0.;
+		for (int id = 0; id < this->n_tot; id++) {
+			particles[id].pos[0] = 0.;
+			particles[id].pos[1] = 0.;
+			particles[id].pos[2] = 0.;
+			particles[id].w = 0.;
 		}
 	}
 
@@ -86,7 +86,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 		if (particles != NULL) {  // ???: not this->particles?
 			delete[] this->particles; this->particles = NULL;
 			bytes -= double(
-				this->n_tot * sizeof(struct particleInfoStruct) / 1024. / 1024. / 1024.
+				this->n_tot * sizeof(struct ParticleData) / 1024. / 1024. / 1024.
 			);
 		}
 	}
@@ -94,10 +94,10 @@ class ParticleBOSSClass {  // FIXME: change class name
 	/**
 	 * Read in particle data from file.
 	 *
-	 * @param fpath_in Input file path.
+	 * @param particles_file Input file path.
 	 * @returns Exit code.
 	 */
-	int read_particles_BOSS(std::string& fpath_in) {
+	int read_particles_BOSS(std::string& particles_file) {  // FIXME: change function name
 
 		std::ifstream fin;
 
@@ -105,10 +105,10 @@ class ParticleBOSSClass {  // FIXME: change class name
 		int num_lines = 0;
 
 		/// Read in data from file.
-		fin.open(fpath_in.c_str(), std::ios::in);
+		fin.open(particles_file.c_str(), std::ios::in);
 
 		if (fin.fail()) {
-			printf("Cannot open file '%s'.\n", fpath_in.c_str());
+			printf("Cannot open file '%s'.\n", particles_file.c_str());
 			fin.close();
 			return -1;
 		}
@@ -127,7 +127,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 		/// Fill in particle data.
 		this->initialise_particles(num_lines);
 
-		fin.open(fpath_in.c_str(), std::ios::in);
+		fin.open(particles_file.c_str(), std::ios::in);
 
 		num_lines = 0;
 		while (getline(fin, str_line)) {
@@ -151,10 +151,10 @@ class ParticleBOSSClass {  // FIXME: change class name
 	/**
 	 * Test the reading in of particle data from file.
 	 *
-	 * @param fpath_in Input file path.
+	 * @param particles_file Input file path.
 	 * @returns Exit code.
 	 */
-	int read_particles_test(std::string& fpath_in) {
+	int read_particles_test(std::string& particles_file) {
 
 		std::ifstream fin;
 
@@ -162,10 +162,10 @@ class ParticleBOSSClass {  // FIXME: change class name
 		int num_lines = 0;
 
 		/// Read in data from file.
-		fin.open(fpath_in.c_str(), std::ios::in);
+		fin.open(particles_file.c_str(), std::ios::in);
 
 		if (fin.fail()) {
-			printf("Cannot open file '%s'.\n", fpath_in.c_str());
+			printf("Cannot open file '%s'.\n", particles_file.c_str());
 			fin.close();
 			return -1;
 		}
@@ -185,7 +185,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 		/// Fill in particle data.
 		this->initialise_particles(num_lines);
 
-		fin.open(fpath_in.c_str(), std::ios::in);
+		fin.open(particles_file.c_str(), std::ios::in);
 
 		num_lines = 0;
 		while (getline(fin, str_line)) {
@@ -196,21 +196,21 @@ class ParticleBOSSClass {  // FIXME: change class name
 			this->particles[num_lines].pos[0] = x;
 			this->particles[num_lines].pos[1] = y;
 			this->particles[num_lines].pos[2] = z;
-			this->particles[num_lines].w = 1.0;
+			this->particles[num_lines].w = 1.;
 
 			num_lines++;
 		}
 
 		fin.close();
 
-		/// Calculate data value extremes.
+		/// Calculate extreme data values.
 		this->calc_min_and_max();
 
 		return 0;
 	}
 
 	/**
-	 * Calculate data value extremes.
+	 * Calculate extreme data values.
 	 *
 	 * @returns Exit code.
 	 */
@@ -220,7 +220,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 			return -1;
 		}
 
-		/// Initialise minimum and maximum values and set them to the first
+		/// Initialise minimum and maximum values with the first
 		/// data entry/row.
 		double min[3], max[3];
 
@@ -228,28 +228,29 @@ class ParticleBOSSClass {  // FIXME: change class name
 		min[1] = this->particles[0].pos[1]; max[1] = this->particles[0].pos[1];
 		min[2] = this->particles[0].pos[2]; max[2] = this->particles[0].pos[2];
 
-		/// Find maximum and minimum line-by-line.
-		for (int i = 0; i < this->n_tot; i++) {
-			if (min[0] > particles[i].pos[0]) {
-				min[0] = particles[i].pos[0];
+		/// Find/update minimum and maximum values line-by-line.
+		for (int id = 0; id < this->n_tot; id++) {
+			if (min[0] > particles[id].pos[0]) {
+				min[0] = particles[id].pos[0];
 			}
-			if (min[1] > particles[i].pos[1]) {
-				min[1] = particles[i].pos[1];
+			if (min[1] > particles[id].pos[1]) {
+				min[1] = particles[id].pos[1];
 			}
-			if (min[2] > particles[i].pos[2]) {
-				min[2] = particles[i].pos[2];
+			if (min[2] > particles[id].pos[2]) {
+				min[2] = particles[id].pos[2];
 			}
 
-			if (max[0] < particles[i].pos[0]) {
-				max[0] = particles[i].pos[0];
+			if (max[0] < particles[id].pos[0]) {
+				max[0] = particles[id].pos[0];
 			}
-			if (max[1] < particles[i].pos[1]) {
-				max[1] = particles[i].pos[1];
+			if (max[1] < particles[id].pos[1]) {
+				max[1] = particles[id].pos[1];
 			}
-			if (max[2] < particles[i].pos[2]) {
-				max[2] = particles[i].pos[2];
+			if (max[2] < particles[id].pos[2]) {
+				max[2] = particles[id].pos[2];
 			}
 		}
+
 		this->pos_min[0] = min[0]; this->pos_max[0] = max[0];
 		this->pos_min[1] = min[1]; this->pos_max[1] = max[1];
 		this->pos_min[2] = min[2]; this->pos_max[2] = max[2];
@@ -257,117 +258,172 @@ class ParticleBOSSClass {  // FIXME: change class name
 		return 0;
 	}
 
-	int reset_particles(const double* dP) {
-
-		if (particles == NULL) {
-			return -1;
+	/**
+	 * Calculate the alpha ratio (of weighted number counts or number densities).
+	 *
+	 * @param particles_data Source-data particle data.
+	 * @param particles_rand Random particle data.
+	 * @returns alpha Alpha ratio.
+	 */
+	static double calc_alpha_ratio(ParticleBOSSClass& particles_data, ParticleBOSSClass& particles_rand) {
+		double num_wgt_data = 0.;
+		for(int id = 0; id < particles_data.n_tot; id++) {
+			num_wgt_data += particles_data[id].w;
 		}
 
-		for (int p = 0; p < this->n_tot; p++) {
-			this->particles[p].pos[0] -= dP[0];
-			this->particles[p].pos[1] -= dP[1];
-			this->particles[p].pos[2] -= dP[2];
+		double num_wgt_rand = 0.;
+		for(int id = 0; id < particles_rand.n_tot; id++) {
+			num_wgt_rand += particles_rand[id].w;
 		}
 
-		return 0;
-	}
-
-	static double calcAlpha(ParticleBOSSClass& P_D, ParticleBOSSClass& P_R) {
-
-		double num_D_weight = 0.0;
-		for(int p = 0; p < P_D.n_tot; p++) {
-			num_D_weight += P_D[p].w;
-		}
-
-		double num_R_weight = 0.0;
-		for(int p = 0; p < P_R.n_tot; p++) {
-			num_R_weight += P_R[p].w;
-		}
-		double alpha =  num_D_weight / num_R_weight;
+		double alpha = num_wgt_data / num_wgt_rand;
 
 		return alpha;
 	}
 
-	static double calcNormalizationForPowerSpectrum(ParticleBOSSClass& P_D, double Vsurvey) {
-
-		double num_D_weight = 0.0;
-		for(int p = 0; p < P_D.n_tot; p++) {
-			num_D_weight += P_D[p].w;
+	/**
+	 * Calculate power spectrum normalisation.
+	 *
+	 * @param particles_data Source-data particle data.
+	 * @param vol_survey Survey volume.
+	 * @returns norm Normalisation constant.
+	 */
+	static double calc_norm_for_power_spectrum(ParticleBOSSClass& particles_data, double vol_survey) {
+		double num_wgt_data = 0.0;
+		for(int id = 0; id < particles_data.n_tot; id++) {
+			num_wgt_data += particles_data[id].w;
 		}
 
-		double norm = Vsurvey / num_D_weight / num_D_weight;
-		return norm;
+		double norm = vol_survey / num_wgt_data / num_wgt_data;
 
+		return norm;
 	}
 
-	static double calcNormalizationForBispectrum(ParticleBOSSClass& P_D, double Vsurvey) {
-
-		double num_D_weight = 0.0;
-		for(int p = 0; p < P_D.n_tot; p++) {
-			num_D_weight += P_D[p].w;
+	/**
+	 * Calculate bispectrum normalisation.
+	 *
+	 * @param particles_data Source-data particle data.
+	 * @param vol_survey Survey volume.
+	 * @returns norm Normalisation constant.
+	 */
+	static double calc_norm_for_bispectrum(ParticleBOSSClass& particles_data, double vol_survey) {
+		double num_wgt_data = 0.0;
+		for(int id = 0; id < particles_data.n_tot; id++) {
+			num_wgt_data += particles_data[id].w;
 		}
 
-		double norm = Vsurvey / num_D_weight / num_D_weight;
-		norm *= (Vsurvey / num_D_weight);
-		return norm;
+		double norm = vol_survey / num_wgt_data / num_wgt_data;
 
+		norm *= vol_survey / num_wgt_data;
+
+		return norm;
 	}
 
-	static int resetParticleForFFT(ParticleBOSSClass& P_D, ParticleBOSSClass& P_R, ParameterClass& param, double factor=3.0) {
+	/**
+	 * Offset particle positions.
+	 *
+	 * @param dpos Position offset vector (subtractive).
+	 * @returns Exit code.
+	 */
+	int offset_particles(const double* dpos) {
+		if (particles == NULL) {
+			return -1;
+		}
 
-		P_D.calc_min_and_max();
-		P_R.calc_min_and_max();
-
-		double dP[3] = {P_R.pos_min[0], P_R.pos_min[1], P_R.pos_min[2]};
-		dP[0] -= factor * param.boxsize[0] / double(param.nmesh[0]);
-		dP[1] -= factor * param.boxsize[1] / double(param.nmesh[1]);
-		dP[2] -= factor * param.boxsize[2] / double(param.nmesh[2]);
-
-		P_D.resetParticle(dP);
-		P_R.resetParticle(dP);
-
-		P_D.calc_min_and_max();
-		P_R.calc_min_and_max();
+		for (int id = 0; id < this->n_tot; id++) {
+			this->particles[id].pos[0] -= dpos[0];
+			this->particles[id].pos[1] -= dpos[1];
+			this->particles[id].pos[2] -= dpos[2];
+		}
 
 		return 0;
 	}
 
-	int calcPeriodicBoundary(ParameterClass& param) {
-
-		for(int p = 0; p < this->n_tot; p++) {
-
-			for(int axes = 0; axes < 3; axes++) {
-				if (this->particles[p].pos[axes] >= param.boxsize[axes]) {
-					this->particles[p].pos[axes] -= param.boxsize[axes];
-				} else if (this->particles[p].pos[axes] < 0.0) {
-					this->particles[p].pos[axes] += param.boxsize[axes];
+	/**
+	 * Offset particle positions for periodic boundary conditions.
+	 *
+	 * @param params Input parameter set.
+	 * @returns Exit code.
+	 */
+	int offset_particles_for_periodicity(ParameterSet& params) {
+		for (int id = 0; id < this->n_tot; id++) {
+			for (int axis = 0; axis < 3; axis++) {
+				if (this->particles[id].pos[axis] >= params.boxsize[axis]) {
+					this->particles[id].pos[axis] -= params.boxsize[axis];
+				} else if (this->particles[id].pos[axis] < 0.) {
+					this->particles[id].pos[axis] += params.boxsize[axis];
 				}
 			}
 		}
 
+		/// Recalculate extreme data values.
 		this->calc_min_and_max();
 
 		return 0;
 	}
 
-	int resetParticlesForWindowFunction(ParameterClass& param) {
+	/**
+	 * Offset particle positions for FFTs (by grid adjustment).
+	 *
+	 * @param particles_data Source-data particle data.
+	 * @param particles_rand Random particle data.
+	 * @param params Input parameter set.
+	 * @param factor Offset grid adjustment factor (default is 3.).
+	 * @returns Exit code.
+	 */
+	static int offset_particles_for_fft(
+			ParticleBOSSClass& particles_data,
+			ParticleBOSSClass& particles_rand,
+			ParameterSet& params,
+			double factor=3.  /// ???: why 3.?
+		) {
+		particles_data.calc_min_and_max();
+		particles_rand.calc_min_and_max();
 
-		double x_mid = this->pos_min[0] + (this->pos_max[0] - this->pos_min[0]) / 2.0;
-		double y_mid = this->pos_min[1] + (this->pos_max[1] - this->pos_min[1]) / 2.0;
-		double z_mid = this->pos_min[2] + (this->pos_max[2] - this->pos_min[2]) / 2.0;
+		/// ???: Compensate by grid adjustment.
+		double dpos[3] = {
+			particles_rand.pos_min[0],
+			particles_rand.pos_min[1],
+			particles_rand.pos_min[2]
+		};
+		dpos[0] -= factor * params.boxsize[0] / double(params.nmesh[0]);
+		dpos[1] -= factor * params.boxsize[1] / double(params.nmesh[1]);
+		dpos[2] -= factor * params.boxsize[2] / double(params.nmesh[2]);
 
-		double dx[3] = {0.0, 0.0, 0.0};
+		particles_data.offset_particles(dpos);
+		particles_rand.offset_particles(dpos);
 
-		dx[0] = param.boxsize[0] / 2.0 - x_mid;
-		dx[1] = param.boxsize[1] / 2.0 - y_mid;
-		dx[2] = param.boxsize[2] / 2.0 - z_mid;
+		/// Recalculate extreme data values.
+		particles_data.calc_min_and_max();
+		particles_rand.calc_min_and_max();
 
-		for(int p = 0; p < this->n_tot; p++) {
-			for(int axes = 0; axes < 3; axes++) {
-				this->particles[p].pos[axes] += dx[axes];
+		return 0;
+	}
+
+	/**
+	 * Offset particle positions for window function calculations (by
+	 * centring inside the pre-determined box).
+	 *
+	 * @param params Input parameter set.
+	 * @returns Exit code.
+	 */
+	int offset_particles_for_window(ParameterSet& params) {
+		double xmid = this->pos_min[0] + (this->pos_max[0] - this->pos_min[0]) / 2.;
+		double ymid = this->pos_min[1] + (this->pos_max[1] - this->pos_min[1]) / 2.;
+		double zmid = this->pos_min[2] + (this->pos_max[2] - this->pos_min[2]) / 2.;
+
+		double dx[3] = {0., 0., 0.};
+		dx[0] = params.boxsize[0]/2. - xmid;
+		dx[1] = params.boxsize[1]/2. - ymid;
+		dx[2] = params.boxsize[2]/2. - zmid;
+
+		for (int id = 0; id < this->n_tot; id++) {
+			for (int axis = 0; axis < 3; axis++) {
+				this->particles[id].pos[axis] += dx[axis];
 			}
 		}
 
+		/// Recalculate extreme data values.
 		this->calc_min_and_max();
 
 		return 0;

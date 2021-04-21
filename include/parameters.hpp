@@ -32,7 +32,7 @@ class ParameterSet {
 	int ell1;  ///< spherical degree associated with the first wavevector
 	int ell2;  ///< spherical degree associated with the second wavevector
 	int ELL;  ///< spherical degree associated with the line-of-sight vector
-	          // NOTE: Standard variable naming convention overriden.
+	          // NOTE: standard variable naming convention overriden
 
 	double kmin;  ///< minimum wavenumber boundary
 	double kmax;  ///< maximum wavenumber boundary
@@ -233,8 +233,8 @@ class ParameterSet {
 			this->rand_catalogue_file = this->catalogue_dir + "/" + this->rand_catalogue_file;
 		}
 
-		/// Set mock data and random catalogue inputs.
-		/// Make subdirectories to store the output for each data realisation.
+		/// Set mock data and random catalogue inputs. Make subdirectories
+		/// to store the output for each data realisation.
 		if (this->catalogue_type == "mock") {
 			/// ???: Enumerate the input data catalogue.
 			int realisation = numTasks * this->NR + thisTask + 1;
@@ -293,27 +293,31 @@ class ParameterSet {
 	}
 
 	/**
-	 * Print out and check extracted parameters as valid input.
+	 * Print out and check extracted parameters as valid input (i.e. used
+	 * parameters).
 	 *
 	 * @returns Exit code.
 	 */
 	int check_parameters() {
 		/// Print out extracted parameters to a file.
-		FILE* file_ptr;
+		FILE* used_param_file_ptr;
 
 		char buf[1024];
 		sprintf(buf, "%s/used_parameters", this->output_dir.c_str());
 
-		if (!(file_ptr = fopen(buf, "w"))) {
+		if (!(used_param_file_ptr = fopen(buf, "w"))) {
 			if (thisTask == 0) {
-				printf("Output directory '%s' does not exist.\n", this->output_dir.c_str());
+				printf(
+					"Output directory '%s' does not exist.\n",
+					this->output_dir.c_str()
+				);
 			}
 			return -1;
 		}
 
-		this->print_parameters(file_ptr);
+		this->print_parameters(used_param_file_ptr);
 
-		fclose(file_ptr);
+		fclose(used_param_file_ptr);
 
 		/// Validate input parameters.
 		if (!(this->assignment == "NGP" || this->assignment == "CIC" || this->assignment == "TSC")) {
@@ -354,50 +358,51 @@ class ParameterSet {
 	}
 
 	/**
-	 * Print out extracted parameters.
+	 * Print out extracted parameters which are used in a process.
 	 *
+	 * @param used_param_file_ptr Pointer to file containing used parameters.
 	 * @returns Exit code.
 	 */
-	int print_parameters(FILE* file_ptr) {
+	int print_parameters(FILE* used_param_file_ptr) {
 		/// IDEA: Perhaps the following code block could be refactored
 		///	using a C++ equivalent to Python's ``zip``.
-		fprintf(file_ptr, "catalogue_dir = %s\n", this->catalogue_dir.c_str());
-		fprintf(file_ptr, "output_dir = %s\n", this->output_dir.c_str());
-		fprintf(file_ptr, "data_catalogue_file = %s\n", this->data_catalogue_file.c_str());
-		fprintf(file_ptr, "rand_catalogue_file = %s\n", this->rand_catalogue_file.c_str());
+		fprintf(used_param_file_ptr, "catalogue_dir = %s\n", this->catalogue_dir.c_str());
+		fprintf(used_param_file_ptr, "output_dir = %s\n", this->output_dir.c_str());
+		fprintf(used_param_file_ptr, "data_catalogue_file = %s\n", this->data_catalogue_file.c_str());
+		fprintf(used_param_file_ptr, "rand_catalogue_file = %s\n", this->rand_catalogue_file.c_str());
 
-		fprintf(file_ptr, "catalogue_type = %s\n", this->catalogue_type.c_str());
+		fprintf(used_param_file_ptr, "catalogue_type = %s\n", this->catalogue_type.c_str());
 
-		fprintf(file_ptr, "boxsize_x = %.2f\n", this->boxsize[0]);
-		fprintf(file_ptr, "boxsize_y = %.2f\n", this->boxsize[1]);
-		fprintf(file_ptr, "boxsize_z = %.2f\n", this->boxsize[2]);
+		fprintf(used_param_file_ptr, "boxsize_x = %.2f\n", this->boxsize[0]);
+		fprintf(used_param_file_ptr, "boxsize_y = %.2f\n", this->boxsize[1]);
+		fprintf(used_param_file_ptr, "boxsize_z = %.2f\n", this->boxsize[2]);
 
-		fprintf(file_ptr, "nmesh_x = %d\n", this->nmesh[0]);
-		fprintf(file_ptr, "nmesh_y = %d\n", this->nmesh[1]);
-		fprintf(file_ptr, "nmesh_z = %d\n", this->nmesh[2]);
+		fprintf(used_param_file_ptr, "nmesh_x = %d\n", this->nmesh[0]);
+		fprintf(used_param_file_ptr, "nmesh_y = %d\n", this->nmesh[1]);
+		fprintf(used_param_file_ptr, "nmesh_z = %d\n", this->nmesh[2]);
 
-		fprintf(file_ptr, "assignment = %s\n", this->assignment.c_str());
+		fprintf(used_param_file_ptr, "assignment = %s\n", this->assignment.c_str());
 
-		fprintf(file_ptr, "ell1 = %d\n", this->ell1);
-		fprintf(file_ptr, "ell2 = %d\n", this->ell2);
-		fprintf(file_ptr, "ELL = %d\n", this->ELL);
+		fprintf(used_param_file_ptr, "ell1 = %d\n", this->ell1);
+		fprintf(used_param_file_ptr, "ell2 = %d\n", this->ell2);
+		fprintf(used_param_file_ptr, "ELL = %d\n", this->ELL);
 
-		fprintf(file_ptr, "kmin = %.4f\n", this->kmin);
-		fprintf(file_ptr, "kmax = %.4f\n", this->kmax);
-		fprintf(file_ptr, "num_kbin = %d\n", this->num_kbin);
+		fprintf(used_param_file_ptr, "kmin = %.4f\n", this->kmin);
+		fprintf(used_param_file_ptr, "kmax = %.4f\n", this->kmax);
+		fprintf(used_param_file_ptr, "num_kbin = %d\n", this->num_kbin);
 
-		fprintf(file_ptr, "rmin = %.2f\n", this->rmin);
-		fprintf(file_ptr, "rmax = %.2f\n", this->rmax);
-		fprintf(file_ptr, "num_rbin = %d\n", this->num_rbin);
+		fprintf(used_param_file_ptr, "rmin = %.2f\n", this->rmin);
+		fprintf(used_param_file_ptr, "rmax = %.2f\n", this->rmax);
+		fprintf(used_param_file_ptr, "num_rbin = %d\n", this->num_rbin);
 
-		fprintf(file_ptr, "form = %s\n", this->form.c_str());
+		fprintf(used_param_file_ptr, "form = %s\n", this->form.c_str());
 
-		fprintf(file_ptr, "ith_kbin = %d\n", this->ith_kbin);
-		fprintf(file_ptr, "ith_rbin = %d\n", this->ith_rbin);
+		fprintf(used_param_file_ptr, "ith_kbin = %d\n", this->ith_kbin);
+		fprintf(used_param_file_ptr, "ith_rbin = %d\n", this->ith_rbin);
 
-		fprintf(file_ptr, "reconstruction = %s\n", this->reconstruction.c_str());
-		fprintf(file_ptr, "b1_fid = %.4f\n", this->b1_fid);
-		fprintf(file_ptr, "RG = %.4f\n", this->RG);
+		fprintf(used_param_file_ptr, "reconstruction = %s\n", this->reconstruction.c_str());
+		fprintf(used_param_file_ptr, "b1_fid = %.4f\n", this->b1_fid);
+		fprintf(used_param_file_ptr, "RG = %.4f\n", this->RG);
 
 		return 0;
 	}

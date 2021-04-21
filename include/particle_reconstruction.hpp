@@ -13,7 +13,7 @@ int calcReconstructionParticles(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
         LineOfSight* los_D, LineOfSight* los_R,
         ParameterSet & param, double alpha,
-        double Vsurvey, double b1_fid, double RG, int nmesh[3]) {
+        double vol_survey, double b1_fid, double RG, int nmesh[3]) {
 
 	double nmesh_save[3] = {param.nmesh[0], param.nmesh[1], param.nmesh[2]};
 	double nmesh_tot_save = param.nmesh_tot;
@@ -112,14 +112,14 @@ int calcReconstructionParticles(
 
 	/** normalization **/
 	for(int i = 0; i < param.nmesh_tot; i++) {
-	    Psi_0[i][0] *= (Vsurvey / num_D_weight);
-	    Psi_0[i][1] *= (Vsurvey / num_D_weight);
+	    Psi_0[i][0] *= (vol_survey / num_D_weight);
+	    Psi_0[i][1] *= (vol_survey / num_D_weight);
 
-	    Psi_1[i][0] *= (Vsurvey / num_D_weight);
-	    Psi_1[i][1] *= (Vsurvey / num_D_weight);
+	    Psi_1[i][0] *= (vol_survey / num_D_weight);
+	    Psi_1[i][1] *= (vol_survey / num_D_weight);
 
-	    Psi_2[i][0] *= (Vsurvey / num_D_weight);
-	    Psi_2[i][1] *= (Vsurvey / num_D_weight);
+	    Psi_2[i][0] *= (vol_survey / num_D_weight);
+	    Psi_2[i][1] *= (vol_survey / num_D_weight);
 
 	}
 

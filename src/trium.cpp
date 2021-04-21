@@ -112,15 +112,15 @@ int main(int argc, char *argv[]) {
 
 		/****************************************************/
 		/* calc the ratio between the numbers of galaxies and random particles, namely "alpha" */
-		alpha = ParticleBOSSClass::calcAlpha(P_D, P_R);
+		alpha = ParticleBOSSClass::calc_alpha_ratio(P_D, P_R);
 
 		/***************************************************************/
 		/* place particles in a box for FFT */
-		ParticleBOSSClass::resetParticleForFFT(P_D, P_R, param);
+		ParticleBOSSClass::offset_particles_for_fft(P_D, P_R, param);
 
 	}
 	if(param.catalogue_type== "sim") {
-		P_D.calcPeriodicBoundary(param);
+		P_D.offset_particles_for_periodicity(param);
 	}
 
 	/******** calc. survey volume *********/
@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
 //	param.nmesh[2] = 512;
 //	param.nmesh_tot = param.nmesh[0] * param.nmesh[1] * param.nmesh[2];
 	DensityFieldClass<ParticleBOSSClass> Vol(param);
-	double Vsurvey = Vol.calcSurveyVolume(P_R);
+	double vol_survey = Vol.calcSurveyVolume(P_R);
 	Vol.finalizeDensityField();
 //	param.nmesh[0] = save_nmesh[0];
 //	param.nmesh[1] = save_nmesh[1];
@@ -167,8 +167,8 @@ int main(int argc, char *argv[]) {
 		std::cout << "BBBBBBBBBBBBBB" << std::endl;
 		std::cout << "              " << std::endl;
 		std::cout << "CCCCCCCCCCCCCC" << std::endl;
-		std::cout << "Survey_Volume = " << Vsurvey << std::endl;
-		std::cout << "Survey_L = " << pow(Vsurvey,1.0/3.0) << std::endl;
+		std::cout << "Survey_Volume = " << vol_survey << std::endl;
+		std::cout << "Survey_L = " << pow(vol_survey,1.0/3.0) << std::endl;
 	}
 
 	if(param.reconstruction == "true") {
@@ -181,8 +181,8 @@ int main(int argc, char *argv[]) {
 		double b1_fid = param.b1_fid;
 		double RG = param.RG;
 		int nmesh[3] = {512, 512, 512};
-		calcReconstructionParticles(P_D, P_R, los_D, los_R, param, alpha, Vsurvey, b1_fid, RG, nmesh);
-		ParticleBOSSClass::resetParticleForFFT(P_D, P_R, param);
+		calcReconstructionParticles(P_D, P_R, los_D, los_R, param, alpha, vol_survey, b1_fid, RG, nmesh);
+		ParticleBOSSClass::offset_particles_for_fft(P_D, P_R, param);
 
 		/* time */
 		durationInSec = double(clock() - timeStart);
@@ -214,14 +214,14 @@ int main(int argc, char *argv[]) {
 	/******************************/
 	if (param.catalogue_type == "mock" || param.catalogue_type =="survey") {
 
-//        calcPowerSpectrum(P_D, P_R, los_D, los_R, param, alpha, kbin, Vsurvey);
-//        calcTwoPointFunction(P_D, P_R, los_D, los_R, param, alpha, rbin, Vsurvey);
-//        calcTwoPointWindowFunction(P_R, los_R, param, alpha, rbin, Vsurvey);
+//        calcPowerSpectrum(P_D, P_R, los_D, los_R, param, alpha, kbin, vol_survey);
+//        calcTwoPointFunction(P_D, P_R, los_D, los_R, param, alpha, rbin, vol_survey);
+//        calcTwoPointWindowFunction(P_R, los_R, param, alpha, rbin, vol_survey);
 
-        calcBiSpectrum(P_D, P_R, los_D, los_R, param, alpha, kbin, Vsurvey);
-//        calcThreePointFunction(P_D, P_R, los_D, los_R, param, alpha, rbin, Vsurvey);
-//        calcThreePointWindowFunction(P_R, los_R, param, alpha, rbin, Vsurvey);
-//        calcThreePointWindowFunctionFor3PCF(P_R, los_R, param, alpha, rbin, Vsurvey);
+        calcBiSpectrum(P_D, P_R, los_D, los_R, param, alpha, kbin, vol_survey);
+//        calcThreePointFunction(P_D, P_R, los_D, los_R, param, alpha, rbin, vol_survey);
+//        calcThreePointWindowFunction(P_R, los_R, param, alpha, rbin, vol_survey);
+//        calcThreePointWindowFunctionFor3PCF(P_R, los_R, param, alpha, rbin, vol_survey);
 
 	}
 
