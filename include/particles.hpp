@@ -428,8 +428,6 @@ class ParticleBOSSClass {  // FIXME: change class name
 
 		return 0;
 	}
-
- private:
 };
 
 #endif

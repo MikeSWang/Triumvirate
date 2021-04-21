@@ -406,7 +406,6 @@ class ParameterSet {
 
 		return 0;
 	}
-
 };
 
 #endif

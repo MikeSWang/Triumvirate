@@ -1,7 +1,7 @@
 #ifndef __powerspec__
 #define __powerspec__
 
-#ifndef __field__
+#ifndef TRIUM_FIELD_H_INCLUDED_
 #include "field.hpp"
 #endif
 
