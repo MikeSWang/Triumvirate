@@ -5,7 +5,7 @@
 #include "field.hpp"
 #endif
 
-int calcPowerSpectrum(
+int calc_power_spec(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
         LineOfSight* los_D, LineOfSight* los_R,
         ParameterSet & param, double alpha, double * kbin, double vol_survey) {
@@ -56,7 +56,7 @@ int calcPowerSpectrum(
 			continue;
 		}
 
-		stat.calcPowerSpectrum(dn_LM, dn_00, kbin, shotnoise, param.ell1, _m1_);
+		stat.calc_power_spec(dn_LM, dn_00, kbin, shotnoise, param.ell1, _m1_);
 
 		for(int i =0; i < param.num_kbin; i++) {
 			pk_save[i] += w * stat.pk[i];
@@ -84,7 +84,7 @@ int calcPowerSpectrum(
 	return 0;
 }
 
-int calcTwoPointFunction(
+int calc_2pt_func(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
         LineOfSight* los_D, LineOfSight* los_R,
         ParameterSet & param, double alpha, double * rbin, double vol_survey) {
@@ -164,7 +164,7 @@ int calcTwoPointFunction(
 }
 
 
-int calcPowerSpectrumWindowFunction(
+int calc_power_specWindowFunction(
         ParticleBOSSClass & P_R,
         LineOfSight* los_R,
         ParameterSet & param, double alpha, double * kbin, double vol_survey) {
@@ -201,7 +201,7 @@ int calcPowerSpectrumWindowFunction(
 
 	std::cout << "BITE = " << bytes << std::endl;
 
-	stat.calcPowerSpectrum(dn_00, dn_00, kbin, shotnoise, param.ell1, 0);
+	stat.calc_power_spec(dn_00, dn_00, kbin, shotnoise, param.ell1, 0);
 
 	for(int i =0; i < param.num_kbin; i++) {
 		pk_save[i] += stat.pk[i];
@@ -238,7 +238,7 @@ int calcPowerSpectrumWindowFunction(
 }
 
 
-int calcTwoPointWindowFunction(
+int calc_2pt_func_window(
         ParticleBOSSClass & P_R,
         LineOfSight* los_R,
         ParameterSet & param, double alpha, double * rbin, double vol_survey) {
@@ -319,7 +319,7 @@ int calcTwoPointWindowFunction(
 	return 0;
 }
 
-int calcPowerSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double * kbin) {
+int calc_power_spec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * kbin) {
 	if(thisTask == 0) { printf("start to compute power spectrum...\n");}
 
 	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
@@ -332,7 +332,7 @@ int calcPowerSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, doubl
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityFieldClass<ParticleBOSSClass> dn(param);
-	dn.calcNormalDensityFluctuationForBOX(P_D, param);
+	dn.calcNormalDensityFluctuation_in_box(P_D, param);
 	/* Fourier transform*/
 	dn.calcFourierTransform();
 
@@ -347,7 +347,7 @@ int calcPowerSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, doubl
 	TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
 	std::complex<double> shotnoise = double(P_D.n_tot);
 
-	stat.calcPowerSpectrum(dn, dn, kbin, shotnoise, param.ELL, 0);
+	stat.calc_power_spec(dn, dn, kbin, shotnoise, param.ELL, 0);
 
 	for(int i =0; i < param.num_kbin; i++) {
 		pk_save[i] += double(2*param.ELL+1) * stat.pk[i];
@@ -374,7 +374,7 @@ int calcPowerSpectrumForBOX(ParticleBOSSClass & P_D, ParameterSet & param, doubl
 	return 0;
 }
 
-int calcTwoPointFunctionForBOX(ParticleBOSSClass & P_D, ParameterSet & param, double * rbin) {
+int calc_2pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * rbin) {
 	if(thisTask == 0) { printf("start to compute two-point correlation function...\n");}
 
 	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
@@ -387,7 +387,7 @@ int calcTwoPointFunctionForBOX(ParticleBOSSClass & P_D, ParameterSet & param, do
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityFieldClass<ParticleBOSSClass> dn(param);
-	dn.calcNormalDensityFluctuationForBOX(P_D, param);
+	dn.calcNormalDensityFluctuation_in_box(P_D, param);
 	/* Fourier transform*/
 	dn.calcFourierTransform();
 
@@ -429,7 +429,7 @@ int calcTwoPointFunctionForBOX(ParticleBOSSClass & P_D, ParameterSet & param, do
 }
 
 
-int calcPowerSpectrumForBOXForReconstruction(ParticleBOSSClass & P_D, ParticleBOSSClass & P_R, ParameterSet & param, double alpha, double * kbin) {
+int calc_power_spec_in_boxForReconstruction(ParticleBOSSClass & P_D, ParticleBOSSClass & P_R, ParameterSet & param, double alpha, double * kbin) {
 	if(thisTask == 0) { printf("start to compute power spectrum...\n");}
 
 	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
@@ -442,7 +442,7 @@ int calcPowerSpectrumForBOXForReconstruction(ParticleBOSSClass & P_D, ParticleBO
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityFieldClass<ParticleBOSSClass> dn(param);
-	dn.calcNormalDensityFluctuationForBOXForReconstruction(P_D, P_R, alpha);
+	dn.calcNormalDensityFluctuation_in_boxForReconstruction(P_D, P_R, alpha);
 	/* Fourier transform*/
 	dn.calcFourierTransform();
 
@@ -455,9 +455,9 @@ int calcPowerSpectrumForBOXForReconstruction(ParticleBOSSClass & P_D, ParticleBO
 
 	/* calc shotnoise term */
 	TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
-	std::complex<double> shotnoise = stat.calcShotNoiseForPowerspectrumForBOXForReconstruction(P_D, P_R, alpha);
+	std::complex<double> shotnoise = stat.calcShotNoiseForPowerspectrum_in_boxForReconstruction(P_D, P_R, alpha);
 
-	stat.calcPowerSpectrum(dn, dn, kbin, shotnoise, param.ELL, 0);
+	stat.calc_power_spec(dn, dn, kbin, shotnoise, param.ELL, 0);
 
 	for(int i =0; i < param.num_kbin; i++) {
 		pk_save[i] += double(2*param.ELL+1) * stat.pk[i];
