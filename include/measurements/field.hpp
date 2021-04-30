@@ -4,23 +4,35 @@
 /**
  * Density field object.
  *
- * This is based on a particle container
+ * This is based on a particle container.
+ *
  */
-template <class TemplateParticle>
-class DensityFieldClass {
-public:
-	/*****************************************/
-	fftw_complex * field;
-	/*****************************************/
-	const fftw_complex& operator[](int id) { return this->field[id]; }
+template <class ParticleContainer>
+class DensityField {
+ public:
+	fftw_complex * field;   ///> gridded complex field
 
-	DensityFieldClass(ParameterSet & params) {
+	/**
+	 * Return individual field grid.
+	 *
+	 * @param id Grid ID/index.
+	 * @returns Field value.
+	 */
+	const fftw_complex& operator[](int id) {
+		return this->field[id];
+	}
 
+	/**
+	 * Construct density field.
+	 *
+	 * @param params Input parameter set.
+	 */
+	DensityField(ParameterSet& params) {
 		this->params = params;
 
 		this->field = NULL;
 		this->field = fftw_alloc_complex(this->params.nmesh_tot);
-		bytes += double( sizeof(fftw_complex) * this->params.nmesh_tot / 1024.0 / 1024.0 / 1024.0);
+		bytes += this->params.nmesh_tot * sizeof(fftw_complex) / 1024. / 1024. / 1024.;
 
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] = 0.0;
@@ -28,25 +40,37 @@ public:
 		}
 	}
 
-	~DensityFieldClass() {
+	/**
+	 * Destruct density field.
+	 */
+	~DensityField() {
 		finalise_density_field();
 	}
 
+	/**
+	 * Finalise density field data.
+	 */
 	void finalise_density_field() {
-		if(this->field != NULL) {
+		if (this->field != NULL) {
 			fftw_free(this->field); this->field = NULL;
-			bytes -= double( sizeof(fftw_complex) * this->params.nmesh_tot / 1024.0 / 1024.0 / 1024.0);
+			bytes -= this->params.nmesh_tot * sizeof(fftw_complex) / 1024. / 1024. / 1024.;
 		}
 	}
 
-	int calcField(TemplateParticle & particle, fftw_complex * weight) {
-		if(0) {
+	/**
+	 * Calculate weighted density field values according to a grid assignment.
+	 *
+	 * @param particles Particle container.
+	 * @param weight Weight field.
+	 */
+	int calc_grid_weighted_field(ParticleContainer& particles, fftw_complex* weight) {
+		if (0) {
 		} else if (this->params.assignment == "NGP") {
-			this->calcFieldNGP(particle, weight);
+			this->calc_grid_weighted_field_ngp(particles, weight);
 		} else if (this->params.assignment == "CIC") {
-			this->calcFieldCIC(particle, weight);
+			this->calc_grid_weighted_field_cic(particles, weight);
 		} else if (this->params.assignment == "TSC") {
-			this->calcFieldTSC(particle, weight);
+			this->calc_grid_weighted_field_tsc(particles, weight);
 		} else {
 			return -1;
 		}
@@ -54,131 +78,168 @@ public:
 		return 0;
 	}
 
-	int calcFieldNGP(TemplateParticle & particle, fftw_complex * weight) {
-
-		/* rho = sum_i w_i delta_D(x - x_i) */
-
-		for(int i = 0; i < this->params.nmesh_tot; i++) {
-			this->field[i][0] = 0.0;
-			this->field[i][1] = 0.0;
+	/**
+	 * Calculate weighted density field values by nearest-grid-point
+	 * assignment.
+	 *
+	 * @param particles Particle container (reference).
+	 * @param weight Weight field (pointer).
+	 */
+	int calc_grid_weighted_field_ngp(ParticleContainer& particles, fftw_complex* weight) {
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
+			this->field[i][0] = 0.;
+			this->field[i][1] = 0.;
 		}
 
-		/* delta_D = (1/dV) * delta_K, dV = volume/nmesh */
-		double dV = this->params.volume / double(this->params.nmesh_tot);
-		double factor = 1.0 / dV;
+	  /// Here over-density is given by \sum_i w_i \delta_D(x - x_i),
+		/// where \delta_D = \delta_K / dV, dV = volume / nmesh.
+		double dV = this->params.volume / double(this->params.nmesh_tot);  // NOTE: standard variable naming convention overriden
+		double cell_vol_factor = 1. / dV;
 
-		for(int p = 0; p < particle.n_tot; p++) {
-			double w[1][3];
-			int iw[1][3];
-			for(int axes = 0; axes < 3; axes++) {
-				double xp = particle[p].pos[axes] * double(this->params.nmesh[axes]) / this->params.boxsize[axes];
-				iw[0][axes] = int(xp + 0.5);
-				w[0][axes] = 1.0;
+		int order = 1;
+		for (int id = 0; id < particle.n_tot; id++) {
+			double win[order][3];
+			int ijk[order][3];
+			for (int axis = 0; axis < 3; axis++) {
+				double loc_grid = this->params.nmesh[axis]
+					* particle[id].pos[axis] / this->params.boxsize[axis];
+				ijk[0][axis] = int(loc_grid + 0.5);
+				win[0][axis] = 1.;
 			}
 
-			for(int i = 0; i < 1; i++) {
-			for(int j = 0; j < 1; j++) {
-			for(int k = 0; k < 1; k++) {
-				long long coord = ( iw[i][0] * this->params.nmesh[1] + iw[j][1] ) * this->params.nmesh[2] + iw[k][2];
-				if( (coord >= 0) && (coord < this->params.nmesh_tot) ) {
-					this->field[coord][0] += weight[p][0] * factor * w[i][0] * w[j][1] * w[k][2];
-					this->field[coord][1] += weight[p][1] * factor * w[i][0] * w[j][1] * w[k][2];
+			for (int i_order = 0; i_order < order; i_order++) {
+				for (int j_order = 0; j_order < order; j_order++) {
+					for (int k_order = 0; k_order < order; k_order++) {
+						long long coord = (
+							ijk[i_order][0] * this->params.nmesh[1] + ijk[j_order][1]
+						) * this->params.nmesh[2] + ijk[k_order][2];
+						if (coord >= 0 && coord < this->params.nmesh_tot) {
+							this->field[coord][0] += cell_vol_factor
+								* weight[id][0] * win[i_order][0] * win[j_order][1] * win[k_order][2];
+							this->field[coord][1] += cell_vol_factor
+								* weight[id][1] * win[i_order][0] * win[j_order][1] * win[k_order][2];
+						}
+					}
 				}
-			}}}
+			}
 		}
 
 		return 0;
 	}
 
-
-	int calcFieldCIC(TemplateParticle & particle, fftw_complex * weight) {
-
-		/* rho = sum_i w_i delta_D(x - x_i) */
-
-		for(int i = 0; i < this->params.nmesh_tot; i++) {
-			this->field[i][0] = 0.0;
-			this->field[i][1] = 0.0;
+	/**
+	 * Calculate weighted density field values by cloud-in-cell assignment.
+	 *
+	 * @param particles Particle container (reference).
+	 * @param weight Weight field (pointer).
+	 */
+	int calc_grid_weighted_field_cic(ParticleContainer& particle, fftw_complex* weight) {
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
+			this->field[i][0] = 0.;
+			this->field[i][1] = 0.;
 		}
 
-		/* delta_D = (1/dV) * delta_K, dV = volume/nmesh */
-		double dV = this->params.volume / double(this->params.nmesh_tot);
-		double factor = 1.0 / dV;
+	  /// Here over-density is given by \sum_i w_i \delta_D(x - x_i),
+		/// where \delta_D = \delta_K / dV, dV = volume / nmesh.
+		double dV = this->params.volume / double(this->params.nmesh_tot);  // NOTE: standard variable naming convention overriden
+		double cell_vol_factor = 1. / dV;
 
-		for(int p = 0; p < particle.n_tot; p++) {
-			double w[2][3];
-			int iw[2][3];
-			for(int axes = 0; axes < 3; axes++) {
-				double xp = particle[p].pos[axes] * double(this->params.nmesh[axes]) / this->params.boxsize[axes];
-				iw[0][axes] = int(xp);
-				double dx = xp - double(iw[0][axes]);
-				w[0][axes] = 1.0 - dx;
-				w[1][axes] = dx;
-				iw[1][axes] = iw[0][axes] + 1;
+		/// ???: Check against CIC formula.
+		int order = 2;
+		for (int id = 0; id < particle.n_tot; id++) {
+			double win[order][3];
+			int ijk[order][3];
+			for (int axis = 0; axis < 3; axis++) {
+				double loc_grid = this->params.nmesh[axis]
+					* particle[id].pos[axis] / this->params.boxsize[axis];
+				ijk[0][axis] = int(loc_grid);
+				ijk[1][axis] = int(loc_grid) + 1;
+
+				double s = loc_grid - double(int(loc_grid));
+				win[0][axis] = 1. - s;
+				win[1][axis] = s;
 			}
 
-			for(int i = 0; i < 2; i++) {
-			for(int j = 0; j < 2; j++) {
-			for(int k = 0; k < 2; k++) {
-				long long coord = ( iw[i][0] * this->params.nmesh[1] + iw[j][1] ) * this->params.nmesh[2] + iw[k][2];
-				if( (coord >= 0) && (coord < this->params.nmesh_tot) ) {
-					this->field[coord][0] += weight[p][0] * factor * w[i][0] * w[j][1] * w[k][2];
-					this->field[coord][1] += weight[p][1] * factor * w[i][0] * w[j][1] * w[k][2];
+			for (int i_order = 0; i_order < order; i_order++) {
+				for (int j_order = 0; j_order < order; j_order++) {
+					for (int k_order = 0; k_order < order; k_order++) {
+						long long coord = (
+							ijk[i_order][0] * this->params.nmesh[1] + ijk[j_order][1]
+						) * this->params.nmesh[2] + ijk[k_order][2];
+						if (coord >= 0 && coord < this->params.nmesh_tot) {
+							this->field[coord][0] += cell_vol_factor
+								* weight[id][0] * win[i_order][0] * win[j_order][1] * win[k_order][2];
+							this->field[coord][1] += cell_vol_factor
+								* weight[id][1] * win[i_order][0] * win[j_order][1] * win[k_order][2];
+						}
+					}
 				}
-			}}}
+			}
 		}
 
 		return 0;
 	}
 
-
-
-	int calcFieldTSC(TemplateParticle & particle, fftw_complex * weight) {
-
-		/* rho = sum_i w_i delta_D(x - x_i) */
-
-		for(int i = 0; i < this->params.nmesh_tot; i++) {
-			this->field[i][0] = 0.0;
-			this->field[i][1] = 0.0;
+	/**
+	 * Calculate weighted density field values by triangular-shaped-cloud
+	 * assignment.
+	 *
+	 * @param particles Particle container (reference).
+	 * @param weight Weight field (pointer).
+	 */
+	int calc_grid_weighted_field_tsc(ParticleContainer& particle, fftw_complex* weight) {
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
+			this->field[i][0] = 0.;
+			this->field[i][1] = 0.;
 		}
 
-		/* delta_D = (1/dV) * delta_K, dV = volume/nmesh */
+	  /// Here over-density is given by \sum_i w_i \delta_D(x - x_i),
+		/// where \delta_D = \delta_K / dV, dV = volume / nmesh.
 		double dV = this->params.volume / double(this->params.nmesh_tot);
-		double factor = 1.0 / dV;
+		double cell_vol_factor = 1. / dV;
 
-		for(int p = 0; p < particle.n_tot; p++) {
-			double w[3][3];
-			int iw[3][3];
-			for(int axes = 0; axes < 3; axes++) {
-				double xp = particle[p].pos[axes] * double(this->params.nmesh[axes]) / this->params.boxsize[axes];
-				iw[1][axes] = int(xp + 0.5);
-				double dx = xp - double(iw[1][axes]);
-				w[0][axes] = 0.5 * (0.5 - dx) * (0.5 - dx);
-				w[1][axes] = 0.75 - dx * dx;
-				w[2][axes] = 0.5 * (0.5 + dx) * (0.5 + dx);
-				iw[0][axes] = iw[1][axes] - 1;
-				iw[2][axes] = iw[1][axes] + 1;
+		int order = 3;
+		for (int id = 0; id < particle.n_tot; id++) {
+			double win[order][3];
+			int ijk[order][3];
+			for (int axis = 0; axis < 3; axis++) {
+				double loc_grid = this->params.nmesh[axis] * particle[p].pos[axis] / this->params.boxsize[axis];
+				ijk[1][axis] = int(loc_grid + 0.5);
+				ijk[0][axis] = int(loc_grid + 0.5) - 1;
+				ijk[2][axis] = int(loc_grid + 0.5) + 1;
+
+				double s = loc_grid - double(int(loc_grid + 0.5));
+				win[0][axis] = 0.5 * (0.5 - s) * (0.5 - s);
+				win[1][axis] = 0.75 - s * s;
+				win[2][axis] = 0.5 * (0.5 + s) * (0.5 + s);
 			}
 
-			for(int i = 0; i < 3; i++) {
-			for(int j = 0; j < 3; j++) {
-			for(int k = 0; k < 3; k++) {
-				long long coord = ( iw[i][0] * this->params.nmesh[1] + iw[j][1] ) * this->params.nmesh[2] + iw[k][2];
-				if( (coord >= 0) && (coord < this->params.nmesh_tot) ) {
-					this->field[coord][0] += weight[p][0] * factor * w[i][0] * w[j][1] * w[k][2];
-					this->field[coord][1] += weight[p][1] * factor * w[i][0] * w[j][1] * w[k][2];
+			for (int i_order = 0; i_order < order; i_order++) {
+				for (int j_order = 0; j_order < order; j_order++) {
+					for (int k_order = 0; k_order < order; k_order++) {
+						long long coord = (
+							ijk[i_order][0] * this->params.nmesh[1] + ijk[j_order][1]
+						) * this->params.nmesh[2] + ijk[k_order][2];
+						if (coord >= 0 && coord < this->params.nmesh_tot) {
+							this->field[coord][0] += cell_vol_factor
+								* weight[id][0] * win[i_order][0] * win[j_order][1] * win[k_order][2];
+							this->field[coord][1] += cell_vol_factor
+								* weight[id][1] * win[i_order][0] * win[j_order][1] * win[k_order][2];
+						}
+					}
 				}
-			}}}
+			}
 		}
 
 		return 0;
 	}
 
 	int calcYlmWeightedDensityFluctuation(
-            TemplateParticle & P_D, TemplateParticle & P_R,
+            ParticleContainer & P_D, ParticleContainer & P_R,
             LineOfSight* los_D, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
-		DensityFieldClass<ParticleBOSSClass> n_R(this->params);
+		DensityField<ParticleBOSSClass> n_R(this->params);
 		fftw_complex * weight = NULL;
 
 		/****/
@@ -190,7 +251,7 @@ public:
             weight[p][1] = Ylm.imag() * P_D[p].w;
 		}
 
-		this->calcField(P_D, weight);
+		this->calc_grid_weighted_field(P_D, weight);
 		fftw_free(weight); weight = NULL;
 
 		/****/
@@ -202,7 +263,7 @@ public:
             weight[p][1] = Ylm.imag() * P_R[p].w;
 		}
 
-		n_R.calcField(P_R, weight);
+		n_R.calc_grid_weighted_field(P_R, weight);
 		fftw_free(weight); weight = NULL;
 
 		/****/
@@ -216,11 +277,11 @@ public:
 
 
 	int calcYlmWeightedDensityFluctuationForBispectrumShotnoise(
-            TemplateParticle & P_D, TemplateParticle & P_R,
+            ParticleContainer & P_D, ParticleContainer & P_R,
             LineOfSight* los_D, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
-		DensityFieldClass<ParticleBOSSClass> n_R(this->params);
+		DensityField<ParticleBOSSClass> n_R(this->params);
 		fftw_complex * weight = NULL;
 
 		/****/
@@ -232,7 +293,7 @@ public:
 			weight[p][0] = Ylm.real() * pow(P_D[p].w, 2);
 		       	weight[p][1] = Ylm.imag() * pow(P_D[p].w, 2);
 		}
-		this->calcField(P_D, weight);
+		this->calc_grid_weighted_field(P_D, weight);
 		fftw_free(weight); weight = NULL;
 
 		/****/
@@ -244,7 +305,7 @@ public:
 			weight[p][0] = Ylm.real() * pow(P_R[p].w, 2);
 		       	weight[p][1] = Ylm.imag() * pow(P_R[p].w, 2);
 		}
-		n_R.calcField(P_R, weight);
+		n_R.calc_grid_weighted_field(P_R, weight);
 		fftw_free(weight); weight = NULL;
 
 		/****/
@@ -256,7 +317,7 @@ public:
 		return 0;
 	}
 
-	int calcNormalDensityFluctuation_in_box(TemplateParticle & P_D, ParameterSet & params) {
+	int calcNormalDensityFluctuation_in_box(ParticleContainer & P_D, ParameterSet & params) {
 
 		fftw_complex * weight = NULL;
 		weight = fftw_alloc_complex(P_D.n_tot);
@@ -264,7 +325,7 @@ public:
 			weight[p][0] = 1.0;
 		       	weight[p][1] = 0.0;
 		}
-		this->calcField(P_D, weight);
+		this->calc_grid_weighted_field(P_D, weight);
 		fftw_free(weight); weight = NULL;
 
 		/****/
@@ -276,7 +337,7 @@ public:
 		return 0;
 	}
 
-	int calcNormalDensityForBispectrumShotnoise_in_box(TemplateParticle & P_D) {
+	int calcNormalDensityForBispectrumShotnoise_in_box(ParticleContainer & P_D) {
 
 		fftw_complex * weight = NULL;
 		weight = fftw_alloc_complex(P_D.n_tot);
@@ -284,14 +345,14 @@ public:
 			weight[p][0] = 1.0;
 		       	weight[p][1] = 0.0;
 		}
-		this->calcField(P_D, weight);
+		this->calc_grid_weighted_field(P_D, weight);
 		fftw_free(weight); weight = NULL;
 
 		return 0;
 	}
 
 	int calcYlmWeightedMeanDensity(
-            TemplateParticle & P_R, LineOfSight* los_R,
+            ParticleContainer & P_R, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
 		fftw_complex * weight = NULL;
@@ -304,7 +365,7 @@ public:
 			weight[p][0] = Ylm.real() * P_R[p].w;
 		       	weight[p][1] = Ylm.imag() * P_R[p].w;
 		}
-		this->calcField(P_R, weight);
+		this->calc_grid_weighted_field(P_R, weight);
 		fftw_free(weight); weight = NULL;
 
 		/****/
@@ -317,7 +378,7 @@ public:
 	}
 
 	int calcYlmWeightedMeanDensityForThreePointWindowFunctionShotnoise(
-            TemplateParticle & P_R, LineOfSight* los_R,
+            ParticleContainer & P_R, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
 		fftw_complex * weight = NULL;
@@ -330,7 +391,7 @@ public:
 			weight[p][0] = Ylm.real() * pow(P_R[p].w, 2);
 		       	weight[p][1] = Ylm.imag() * pow(P_R[p].w, 2);
 		}
-		this->calcField(P_R, weight);
+		this->calc_grid_weighted_field(P_R, weight);
 		fftw_free(weight); weight = NULL;
 
 		/****/
@@ -407,7 +468,7 @@ public:
 		return 0;
 	}
 
-	int calcInverseFourierTransformForBispectrum(DensityFieldClass & density, double kmag_in, double dk_in, std::complex<double> * Ylm) {
+	int calcInverseFourierTransformForBispectrum(DensityField & density, double kmag_in, double dk_in, std::complex<double> * Ylm) {
 
 		/* initialize */
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
@@ -438,7 +499,7 @@ public:
 
 				std::complex<double> dn(density[coord][0], density[coord][1]);
 
-				// the window function.
+				// the win function.
 				double	wf = this->WindowFunction(kvec);
 				dn /= wf;
 
@@ -464,7 +525,7 @@ public:
 		return 0;
 	}
 
-	int calcInverseFourierTransformForThreePointFunction(DensityFieldClass & density, double rmag_in, std::complex<double> * Ylm,
+	int calcInverseFourierTransformForThreePointFunction(DensityField & density, double rmag_in, std::complex<double> * Ylm,
 			SphericalBesselCalculator & sj ) {
 
 		/* initialize */
@@ -491,7 +552,7 @@ public:
 
 			std::complex<double> dn(density[coord][0], density[coord][1]);
 
-			// the window function.
+			// the win function.
 			double	wf = this->WindowFunction(kvec);
 			dn /= wf;
 
@@ -584,7 +645,7 @@ public:
 	}
 
 
-	double calc_survey_volume(TemplateParticle & P_R) {
+	double calc_survey_volume(ParticleContainer & P_R) {
 
 		/****/
 		fftw_complex * weight = NULL;
@@ -593,7 +654,7 @@ public:
 			weight[p][0] = 1.0;
 		       	weight[p][1] = 0.0;
 		}
-		this->calcField(P_R, weight);
+		this->calc_grid_weighted_field(P_R, weight);
 		fftw_free(weight); weight = NULL;
 
 		/****/
@@ -609,9 +670,9 @@ public:
 
 	}
 
-	int calcNormalDensityFluctuation_in_boxForReconstruction(TemplateParticle & P_D, TemplateParticle & P_R, double alpha) {
+	int calcNormalDensityFluctuation_in_boxForReconstruction(ParticleContainer & P_D, ParticleContainer & P_R, double alpha) {
 
-		DensityFieldClass<ParticleBOSSClass> n_R(this->params);
+		DensityField<ParticleBOSSClass> n_R(this->params);
 		fftw_complex * weight = NULL;
 
 		/****/
@@ -620,7 +681,7 @@ public:
 			weight[p][0] = 1.0;
 		       	weight[p][1] = 0.0;
 		}
-		this->calcField(P_D, weight);
+		this->calc_grid_weighted_field(P_D, weight);
 		fftw_free(weight); weight = NULL;
 
 		/****/
@@ -629,7 +690,7 @@ public:
 			weight[p][0] = 1.0;
 		       	weight[p][1] = 0.0;
 		}
-		n_R.calcField(P_R, weight);
+		n_R.calc_grid_weighted_field(P_R, weight);
 		fftw_free(weight); weight = NULL;
 
 		/****/
@@ -645,7 +706,7 @@ public:
 	ParameterSet params;
 };
 
-template <class TemplateParticle>
+template <class ParticleContainer>
 class TwoPointStatisticsClass {
 private:
 	ParameterSet params;
@@ -687,7 +748,7 @@ public:
 	}
 
 	std::complex<double> calcShotNoiseForPowerspectrum(
-            TemplateParticle & P_D, TemplateParticle & P_R,
+            ParticleContainer & P_D, ParticleContainer & P_R,
             LineOfSight* los_D, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
@@ -710,7 +771,7 @@ public:
 	}
 
 	std::complex<double> calcShotNoiseForTwoPointWindowFunction(
-            TemplateParticle & P_R, LineOfSight* los_R,
+            ParticleContainer & P_R, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
 		std::complex<double> sum_R = 0.0;
@@ -725,7 +786,7 @@ public:
 	}
 
 	std::complex<double> calcShotNoiseForBispectrum(
-            TemplateParticle & P_D, TemplateParticle & P_R,
+            ParticleContainer & P_D, ParticleContainer & P_R,
             LineOfSight* los_D, LineOfSight* los_R,
             double alpha, int _ELL_, int _M_) {
 
@@ -748,7 +809,7 @@ public:
 	}
 
 
-	int calc_power_spec(DensityFieldClass<TemplateParticle> & density1, DensityFieldClass<TemplateParticle> & density2,
+	int calc_power_spec(DensityField<ParticleContainer> & density1, DensityField<ParticleContainer> & density2,
 		        	   double * kbin, std::complex<double> shotnoise, int _ELL_, int _M_) {
 
 		double dk_bin = kbin[1] - kbin[0];
@@ -834,7 +895,7 @@ public:
 	}
 
 
-	int calcCorrelationFunction(DensityFieldClass<TemplateParticle> & density1, DensityFieldClass<TemplateParticle> & density2,
+	int calcCorrelationFunction(DensityField<ParticleContainer> & density1, DensityField<ParticleContainer> & density2,
 		        	 double * rbin, std::complex<double> shotnoise, int _ELL_, int _M_) {
 
 		fftw_complex * xi3d_temp = fftw_alloc_complex(this->params.nmesh_tot);
@@ -953,7 +1014,7 @@ public:
 
 	}
 
-	int calcShotNoiseForBispectrum_ijk(DensityFieldClass<TemplateParticle> & density1, DensityFieldClass<TemplateParticle> & density2,
+	int calcShotNoiseForBispectrum_ijk(DensityField<ParticleContainer> & density1, DensityField<ParticleContainer> & density2,
 		        	           std::complex<double> shotnoise, int _ELL_, int _M_, fftw_complex * xi) {
 
 
@@ -981,7 +1042,7 @@ public:
 			/* subtract shotnoise */
 			pk2 -= ( shotnoise * ShotnoiseFunction(kvec) );
 
-			// window function.
+			// win function.
 			double	wf = WindowFunction(kvec);
 			pk2 /= pow(wf,2);
 
@@ -999,7 +1060,7 @@ public:
 
 	}
 
-	int calcCorrelationFunctionForThreePointFunction(DensityFieldClass<TemplateParticle> & density1, DensityFieldClass<TemplateParticle> & density2,
+	int calcCorrelationFunctionForThreePointFunction(DensityField<ParticleContainer> & density1, DensityField<ParticleContainer> & density2,
 		        	 double * rbin, std::complex<double> shotnoise, int _ELL_, int _M_,
 				 std::complex<double> * Ylm1, std::complex<double> * Ylm2) {
 
@@ -1267,7 +1328,7 @@ public:
 
 
 
-	std::complex<double> calcShotNoiseForPowerspectrum_in_boxForReconstruction(TemplateParticle & P_D, TemplateParticle & P_R, double alpha) {
+	std::complex<double> calcShotNoiseForPowerspectrum_in_boxForReconstruction(ParticleContainer & P_D, ParticleContainer & P_R, double alpha) {
 
 		std::complex<double> sum_D = double(P_D.n_tot);
 		std::complex<double> sum_R = double(P_R.n_tot);

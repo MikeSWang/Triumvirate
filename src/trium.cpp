@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	/// Compute catalogue field volume.
-	DensityFieldClass<ParticleBOSSClass> field_rand(params);
+	DensityField<ParticleBOSSClass> field_rand(params);
 	double vol_survey = field_rand.calc_survey_volume(particles_rand);
 	field_rand.finalise_density_field();
 

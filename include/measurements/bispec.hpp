@@ -36,7 +36,7 @@ int calc_bispec(
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00_sn(param);
+	DensityField<ParticleBOSSClass> dn_00_sn(param);
 	dn_00_sn.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00_sn.calcFourierTransform();
@@ -55,7 +55,7 @@ int calc_bispec(
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> N_LM_sn(param);
+		DensityField<ParticleBOSSClass> N_LM_sn(param);
 		N_LM_sn.calcYlmWeightedDensityFluctuationForBispectrumShotnoise(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		N_LM_sn.calcFourierTransform();
@@ -101,7 +101,7 @@ int calc_bispec(
 
 	/****************************************/
 	/* calc F00 */
-	DensityFieldClass<ParticleBOSSClass> N_00_sn(param);
+	DensityField<ParticleBOSSClass> N_00_sn(param);
 	N_00_sn.calcYlmWeightedDensityFluctuationForBispectrumShotnoise(P_D, P_R, los_D, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	N_00_sn.calcFourierTransform();
@@ -145,7 +145,7 @@ int calc_bispec(
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM_sn(param);
+		DensityField<ParticleBOSSClass> dn_LM_sn(param);
 		dn_LM_sn.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM_sn.calcFourierTransform();
@@ -245,7 +245,7 @@ int calc_bispec(
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00(param);
+	DensityField<ParticleBOSSClass> dn_00(param);
 	dn_00.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calcFourierTransform();
@@ -293,7 +293,7 @@ int calc_bispec(
 		}
 
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM(param);
+		DensityField<ParticleBOSSClass> dn_LM(param);
 		dn_LM.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM.calcFourierTransform();
@@ -303,7 +303,7 @@ int calc_bispec(
 		dn_LM.calcInverseFourierTransform();
 
 		/* calc dn_tilde1 */
-		DensityFieldClass<ParticleBOSSClass> dn_tilde1(param);
+		DensityField<ParticleBOSSClass> dn_tilde1(param);
 		double kmag1;
 		double dk = kbin[1] - kbin[0];
 		if(param.form == "full") {
@@ -322,7 +322,7 @@ int calc_bispec(
 			}
 
 			/* calc dn_tilde2 */
-			DensityFieldClass<ParticleBOSSClass> dn_tilde2(param);
+			DensityField<ParticleBOSSClass> dn_tilde2(param);
 			dn_tilde2.calcInverseFourierTransformForBispectrum(dn_00, kmag2, dk, Ylm2);
 
 			/* calc bispectrum */
@@ -416,7 +416,7 @@ int calc_3pt_func(
 
 	/****************************************/
 	/* calc F00 */
-	DensityFieldClass<ParticleBOSSClass> N_00_sn(param);
+	DensityField<ParticleBOSSClass> N_00_sn(param);
 	N_00_sn.calcYlmWeightedDensityFluctuationForBispectrumShotnoise(P_D, P_R, los_D, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	N_00_sn.calcFourierTransform();
@@ -459,7 +459,7 @@ int calc_3pt_func(
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM_sn(param);
+		DensityField<ParticleBOSSClass> dn_LM_sn(param);
 		dn_LM_sn.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM_sn.calcFourierTransform();
@@ -522,7 +522,7 @@ int calc_3pt_func(
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00(param);
+	DensityField<ParticleBOSSClass> dn_00(param);
 	dn_00.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calcFourierTransform();
@@ -577,7 +577,7 @@ int calc_3pt_func(
 		}
 
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM(param);
+		DensityField<ParticleBOSSClass> dn_LM(param);
 		dn_LM.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM.calcFourierTransform();
@@ -587,7 +587,7 @@ int calc_3pt_func(
 		dn_LM.calcInverseFourierTransform();
 
 		/* calc dn_tilde1 */
-		DensityFieldClass<ParticleBOSSClass> dn_tilde1(param);
+		DensityField<ParticleBOSSClass> dn_tilde1(param);
 		double rmag1;
 		if(param.form == "full") {
 			rmag1 = rbin[param.ith_rbin];
@@ -605,7 +605,7 @@ int calc_3pt_func(
 			}
 
 			/* calc dn_tilde2 */
-			DensityFieldClass<ParticleBOSSClass> dn_tilde2(param);
+			DensityField<ParticleBOSSClass> dn_tilde2(param);
 			dn_tilde2.calcInverseFourierTransformForThreePointFunction(dn_00, rmag2, Ylm2, sj2);
 
 			/* calc bispectrum */
@@ -719,7 +719,7 @@ int calc_3pt_func_window(
 
 	/****************************************/
 	/* calc F00 */
-	DensityFieldClass<ParticleBOSSClass> N_00_sn(param);
+	DensityField<ParticleBOSSClass> N_00_sn(param);
 	N_00_sn.calcYlmWeightedMeanDensityForThreePointWindowFunctionShotnoise(P_R, los_R, alpha, 0, 0);
 
 	/* Fourier transform*/
@@ -762,7 +762,7 @@ int calc_3pt_func_window(
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM_sn(param);
+		DensityField<ParticleBOSSClass> dn_LM_sn(param);
 		dn_LM_sn.calcYlmWeightedMeanDensity(P_R, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM_sn.calcFourierTransform();
@@ -824,7 +824,7 @@ int calc_3pt_func_window(
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00(param);
+	DensityField<ParticleBOSSClass> dn_00(param);
 	dn_00.calcYlmWeightedMeanDensity(P_R, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calcFourierTransform();
@@ -877,7 +877,7 @@ int calc_3pt_func_window(
 		}
 
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM(param);
+		DensityField<ParticleBOSSClass> dn_LM(param);
 		dn_LM.calcYlmWeightedMeanDensity(P_R, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM.calcFourierTransform();
@@ -887,7 +887,7 @@ int calc_3pt_func_window(
 		dn_LM.calcInverseFourierTransform();
 
 		/* calc dn_tilde1 */
-		DensityFieldClass<ParticleBOSSClass> dn_tilde1(param);
+		DensityField<ParticleBOSSClass> dn_tilde1(param);
 		double rmag1;
 		if(param.form == "full") {
 			rmag1 = rbin[param.ith_rbin];
@@ -905,7 +905,7 @@ int calc_3pt_func_window(
 			}
 
 			/* calc dn_tilde2 */
-			DensityFieldClass<ParticleBOSSClass> dn_tilde2(param);
+			DensityField<ParticleBOSSClass> dn_tilde2(param);
 			dn_tilde2.calcInverseFourierTransformForThreePointFunction(dn_00, rmag2, Ylm2, sj2);
 
 			/* calc bispectrum */
@@ -996,7 +996,7 @@ int calc_3pt_func_window_for_3pcf(
 
 	/****************************************/
 	/* calc F00 */
-	DensityFieldClass<ParticleBOSSClass> N_00_sn(param);
+	DensityField<ParticleBOSSClass> N_00_sn(param);
 	N_00_sn.calcYlmWeightedMeanDensityForThreePointWindowFunctionShotnoise(P_R, los_R, alpha, 0, 0);
 
 	/* Fourier transform*/
@@ -1039,7 +1039,7 @@ int calc_3pt_func_window_for_3pcf(
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM_sn(param);
+		DensityField<ParticleBOSSClass> dn_LM_sn(param);
 		dn_LM_sn.calcYlmWeightedMeanDensity(P_R, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM_sn.calcFourierTransform();
@@ -1101,7 +1101,7 @@ int calc_3pt_func_window_for_3pcf(
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00(param);
+	DensityField<ParticleBOSSClass> dn_00(param);
 	dn_00.calcYlmWeightedMeanDensity(P_R, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calcFourierTransform();
@@ -1154,7 +1154,7 @@ int calc_3pt_func_window_for_3pcf(
 		}
 
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM(param);
+		DensityField<ParticleBOSSClass> dn_LM(param);
 		dn_LM.calcYlmWeightedMeanDensity(P_R, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM.calcFourierTransform();
@@ -1164,7 +1164,7 @@ int calc_3pt_func_window_for_3pcf(
 		dn_LM.calcInverseFourierTransform();
 
 		/* calc dn_tilde1 */
-		DensityFieldClass<ParticleBOSSClass> dn_tilde1(param);
+		DensityField<ParticleBOSSClass> dn_tilde1(param);
 		double rmag1;
 		if(param.form == "full") {
 			rmag1 = rbin[param.ith_rbin];
@@ -1182,7 +1182,7 @@ int calc_3pt_func_window_for_3pcf(
 			}
 
 			/* calc dn_tilde2 */
-			DensityFieldClass<ParticleBOSSClass> dn_tilde2(param);
+			DensityField<ParticleBOSSClass> dn_tilde2(param);
 			dn_tilde2.calcInverseFourierTransformForThreePointFunction(dn_00, rmag2, Ylm2, sj2);
 
 			/* calc bispectrum */
@@ -1273,7 +1273,7 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00_sn(param);
+	DensityField<ParticleBOSSClass> dn_00_sn(param);
 	dn_00_sn.calcNormalDensityFluctuation_in_box(P_D, param);
 	/* Fourier transform*/
 	dn_00_sn.calcFourierTransform();
@@ -1292,7 +1292,7 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> N_LM_sn(param);
+		DensityField<ParticleBOSSClass> N_LM_sn(param);
 		N_LM_sn.calcNormalDensityForBispectrumShotnoise_in_box(P_D);
 		/* Fourier transform*/
 		N_LM_sn.calcFourierTransform();
@@ -1338,7 +1338,7 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 
 	/****************************************/
 	/* calc F00 */
-	DensityFieldClass<ParticleBOSSClass> N_00_sn(param);
+	DensityField<ParticleBOSSClass> N_00_sn(param);
 	N_00_sn.calcNormalDensityForBispectrumShotnoise_in_box(P_D);
 	/* Fourier transform*/
 	N_00_sn.calcFourierTransform();
@@ -1369,7 +1369,7 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM_sn(param);
+		DensityField<ParticleBOSSClass> dn_LM_sn(param);
 		dn_LM_sn.calcNormalDensityFluctuation_in_box(P_D, param);
 		/* Fourier transform*/
 		dn_LM_sn.calcFourierTransform();
@@ -1468,7 +1468,7 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00(param);
+	DensityField<ParticleBOSSClass> dn_00(param);
 	dn_00.calcNormalDensityFluctuation_in_box(P_D, param);
 	/* Fourier transform*/
 	dn_00.calcFourierTransform();
@@ -1502,7 +1502,7 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 		ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
 
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM(param);
+		DensityField<ParticleBOSSClass> dn_LM(param);
 		dn_LM.calcNormalDensityFluctuation_in_box(P_D, param);
 		/* Fourier transform*/
 		dn_LM.calcFourierTransform();
@@ -1512,7 +1512,7 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 		dn_LM.calcInverseFourierTransform();
 
 		/* calc dn_tilde1 */
-		DensityFieldClass<ParticleBOSSClass> dn_tilde1(param);
+		DensityField<ParticleBOSSClass> dn_tilde1(param);
 		double kmag1;
 		double dk = kbin[1] - kbin[0];
 		if(param.form == "full") {
@@ -1531,7 +1531,7 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 			}
 
 			/* calc dn_tilde2 */
-			DensityFieldClass<ParticleBOSSClass> dn_tilde2(param);
+			DensityField<ParticleBOSSClass> dn_tilde2(param);
 			dn_tilde2.calcInverseFourierTransformForBispectrum(dn_00, kmag2, dk, Ylm2);
 
 			/* calc bispectrum */
@@ -1615,7 +1615,7 @@ int calc_3pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 
 	/****************************************/
 	/* calc F00 */
-	DensityFieldClass<ParticleBOSSClass> N_00_sn(param);
+	DensityField<ParticleBOSSClass> N_00_sn(param);
 	N_00_sn.calcNormalDensityForBispectrumShotnoise_in_box(P_D);
 	/* Fourier transform*/
 	N_00_sn.calcFourierTransform();
@@ -1643,7 +1643,7 @@ int calc_3pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM_sn(param);
+		DensityField<ParticleBOSSClass> dn_LM_sn(param);
 		dn_LM_sn.calcNormalDensityFluctuation_in_box(P_D, param);
 		/* Fourier transform*/
 		dn_LM_sn.calcFourierTransform();
@@ -1704,7 +1704,7 @@ int calc_3pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00(param);
+	DensityField<ParticleBOSSClass> dn_00(param);
 	dn_00.calcNormalDensityFluctuation_in_box(P_D, param);
 	/* Fourier transform*/
 	dn_00.calcFourierTransform();
@@ -1742,7 +1742,7 @@ int calc_3pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 
 
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM(param);
+		DensityField<ParticleBOSSClass> dn_LM(param);
 		dn_LM.calcNormalDensityFluctuation_in_box(P_D, param);
 		/* Fourier transform*/
 		dn_LM.calcFourierTransform();
@@ -1752,7 +1752,7 @@ int calc_3pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 		dn_LM.calcInverseFourierTransform();
 
 		/* calc dn_tilde1 */
-		DensityFieldClass<ParticleBOSSClass> dn_tilde1(param);
+		DensityField<ParticleBOSSClass> dn_tilde1(param);
 		double rmag1;
 		if(param.form == "full") {
 			rmag1 = rbin[param.ith_rbin];
@@ -1770,7 +1770,7 @@ int calc_3pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 			}
 
 			/* calc dn_tilde2 */
-			DensityFieldClass<ParticleBOSSClass> dn_tilde2(param);
+			DensityField<ParticleBOSSClass> dn_tilde2(param);
 			dn_tilde2.calcInverseFourierTransformForThreePointFunction(dn_00, rmag2, Ylm2, sj2);
 
 			/* calc bispectrum */
@@ -1874,7 +1874,7 @@ int calc_bispecChoiceOfLOS(
 		/****************************************/
 		/* calc the normal density fluctuation */
 		/* dn = n - bar{n} */
-		DensityFieldClass<ParticleBOSSClass> dn_sn(param);
+		DensityField<ParticleBOSSClass> dn_sn(param);
 		if(los == 0) {
 			dn_sn.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		} else {
@@ -1885,7 +1885,7 @@ int calc_bispecChoiceOfLOS(
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> N_sn(param);
+		DensityField<ParticleBOSSClass> N_sn(param);
 		if(los == 0) {
 			N_sn.calcYlmWeightedDensityFluctuationForBispectrumShotnoise(P_D, P_R, los_D, los_R, alpha, 0, 0);
 		} else {
@@ -1938,7 +1938,7 @@ int calc_bispecChoiceOfLOS(
 		/****************************************/
 		/* calc the normal density fluctuation */
 		/* dn = n - bar{n} */
-		DensityFieldClass<ParticleBOSSClass> dn_sn(param);
+		DensityField<ParticleBOSSClass> dn_sn(param);
 		if(los == 1) {
 			dn_sn.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		} else {
@@ -1949,7 +1949,7 @@ int calc_bispecChoiceOfLOS(
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> N_sn(param);
+		DensityField<ParticleBOSSClass> N_sn(param);
 		if(los == 1) {
 			N_sn.calcYlmWeightedDensityFluctuationForBispectrumShotnoise(P_D, P_R, los_D, los_R, alpha, 0, 0);
 		} else {
@@ -2029,7 +2029,7 @@ int calc_bispecChoiceOfLOS(
 
 		/****************************************/
 		/* calc N00 */
-		DensityFieldClass<ParticleBOSSClass> N_sn(param);
+		DensityField<ParticleBOSSClass> N_sn(param);
 		if(los == 2) {
 			N_sn.calcYlmWeightedDensityFluctuationForBispectrumShotnoise(P_D, P_R, los_D, los_R, alpha, 0, 0);
 		} else {
@@ -2040,7 +2040,7 @@ int calc_bispecChoiceOfLOS(
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_sn(param);
+		DensityField<ParticleBOSSClass> dn_sn(param);
 		if(los == 2) {
 			dn_sn.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		} else {
@@ -2182,7 +2182,7 @@ int calc_bispecChoiceOfLOS(
 		/****************************************/
 		/* calc the normal density fluctuation */
 		/* dn = n - bar{n} */
-		DensityFieldClass<ParticleBOSSClass> dn1(param);
+		DensityField<ParticleBOSSClass> dn1(param);
 		if(los == 0) {
 			dn1.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		} else {
@@ -2191,7 +2191,7 @@ int calc_bispecChoiceOfLOS(
 		/* Fourier transform*/
 		dn1.calcFourierTransform();
 
-		DensityFieldClass<ParticleBOSSClass> dn2(param);
+		DensityField<ParticleBOSSClass> dn2(param);
 		if(los == 1) {
 			dn2.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		} else {
@@ -2201,7 +2201,7 @@ int calc_bispecChoiceOfLOS(
 		dn2.calcFourierTransform();
 
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn3(param);
+		DensityField<ParticleBOSSClass> dn3(param);
 		if(los == 2) {
 			dn3.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		} else {
@@ -2215,7 +2215,7 @@ int calc_bispecChoiceOfLOS(
 		dn3.calcInverseFourierTransform();
 
 		/* calc dn_tilde1 */
-		DensityFieldClass<ParticleBOSSClass> dn_tilde1(param);
+		DensityField<ParticleBOSSClass> dn_tilde1(param);
 		double kmag1;
 		double dk = kbin[1] - kbin[0];
 		if(param.form == "full") {
@@ -2234,7 +2234,7 @@ int calc_bispecChoiceOfLOS(
 			}
 
 			/* calc dn_tilde2 */
-			DensityFieldClass<ParticleBOSSClass> dn_tilde2(param);
+			DensityField<ParticleBOSSClass> dn_tilde2(param);
 			dn_tilde2.calcInverseFourierTransformForBispectrum(dn2, kmag2, dk, Ylm2);
 
 			/* calc bispectrum */
@@ -2333,7 +2333,7 @@ int calc_bispecMmode(
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00_sn(param);
+	DensityField<ParticleBOSSClass> dn_00_sn(param);
 	dn_00_sn.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00_sn.calcFourierTransform();
@@ -2352,7 +2352,7 @@ int calc_bispecMmode(
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> N_LM_sn(param);
+		DensityField<ParticleBOSSClass> N_LM_sn(param);
 		N_LM_sn.calcYlmWeightedDensityFluctuationForBispectrumShotnoise(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		N_LM_sn.calcFourierTransform();
@@ -2398,7 +2398,7 @@ int calc_bispecMmode(
 
 	/****************************************/
 	/* calc F00 */
-	DensityFieldClass<ParticleBOSSClass> N_00_sn(param);
+	DensityField<ParticleBOSSClass> N_00_sn(param);
 	N_00_sn.calcYlmWeightedDensityFluctuationForBispectrumShotnoise(P_D, P_R, los_D, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	N_00_sn.calcFourierTransform();
@@ -2444,7 +2444,7 @@ int calc_bispecMmode(
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM_sn(param);
+		DensityField<ParticleBOSSClass> dn_LM_sn(param);
 		dn_LM_sn.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM_sn.calcFourierTransform();
@@ -2544,7 +2544,7 @@ int calc_bispecMmode(
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00(param);
+	DensityField<ParticleBOSSClass> dn_00(param);
 	dn_00.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calcFourierTransform();
@@ -2601,7 +2601,7 @@ int calc_bispecMmode(
 		}
 
 		/* calc the yLM-weighted density perturbation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM(param);
+		DensityField<ParticleBOSSClass> dn_LM(param);
 		dn_LM.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM.calcFourierTransform();
@@ -2611,7 +2611,7 @@ int calc_bispecMmode(
 		dn_LM.calcInverseFourierTransform();
 
 		/* calc dn_tilde1 */
-		DensityFieldClass<ParticleBOSSClass> dn_tilde1(param);
+		DensityField<ParticleBOSSClass> dn_tilde1(param);
 		double kmag1;
 		double dk = kbin[1] - kbin[0];
 		if(param.form == "full") {
@@ -2630,7 +2630,7 @@ int calc_bispecMmode(
 			}
 
 			/* calc dn_tilde2 */
-			DensityFieldClass<ParticleBOSSClass> dn_tilde2(param);
+			DensityField<ParticleBOSSClass> dn_tilde2(param);
 			dn_tilde2.calcInverseFourierTransformForBispectrum(dn_00, kmag2, dk, Ylm2);
 
 			/* calc bispectrum */
@@ -2683,24 +2683,4 @@ int calc_bispecMmode(
 	return 0;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #endif
-

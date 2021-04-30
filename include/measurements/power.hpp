@@ -21,7 +21,7 @@ int calc_power_spec(
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00(param);
+	DensityField<ParticleBOSSClass> dn_00(param);
 	dn_00.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calcFourierTransform();
@@ -37,7 +37,7 @@ int calc_power_spec(
 
 		/****************************************/
 		/* calc the ylm-weighted density fluctuation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM(param);
+		DensityField<ParticleBOSSClass> dn_LM(param);
 		dn_LM.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM.calcFourierTransform();
@@ -100,7 +100,7 @@ int calc_2pt_func(
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00(param);
+	DensityField<ParticleBOSSClass> dn_00(param);
 	dn_00.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calcFourierTransform();
@@ -116,7 +116,7 @@ int calc_2pt_func(
 
 		/****************************************/
 		/* calc the ylm-weighted density fluctuation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM(param);
+		DensityField<ParticleBOSSClass> dn_LM(param);
 		dn_LM.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM.calcFourierTransform();
@@ -180,7 +180,7 @@ int calc_power_specWindowFunction(
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00(param);
+	DensityField<ParticleBOSSClass> dn_00(param);
 	dn_00.calcYlmWeightedMeanDensity(P_R, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calcFourierTransform();
@@ -253,7 +253,7 @@ int calc_2pt_func_window(
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn_00(param);
+	DensityField<ParticleBOSSClass> dn_00(param);
 	dn_00.calcYlmWeightedMeanDensity(P_R, los_R, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calcFourierTransform();
@@ -271,7 +271,7 @@ int calc_2pt_func_window(
 
 		/****************************************/
 		/* calc the ylm-weighted density fluctuation */
-		DensityFieldClass<ParticleBOSSClass> dn_LM(param);
+		DensityField<ParticleBOSSClass> dn_LM(param);
 		dn_LM.calcYlmWeightedMeanDensity(P_R, los_R, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM.calcFourierTransform();
@@ -331,7 +331,7 @@ int calc_power_spec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn(param);
+	DensityField<ParticleBOSSClass> dn(param);
 	dn.calcNormalDensityFluctuation_in_box(P_D, param);
 	/* Fourier transform*/
 	dn.calcFourierTransform();
@@ -386,7 +386,7 @@ int calc_2pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn(param);
+	DensityField<ParticleBOSSClass> dn(param);
 	dn.calcNormalDensityFluctuation_in_box(P_D, param);
 	/* Fourier transform*/
 	dn.calcFourierTransform();
@@ -441,7 +441,7 @@ int calc_power_spec_in_boxForReconstruction(ParticleBOSSClass & P_D, ParticleBOS
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityFieldClass<ParticleBOSSClass> dn(param);
+	DensityField<ParticleBOSSClass> dn(param);
 	dn.calcNormalDensityFluctuation_in_boxForReconstruction(P_D, P_R, alpha);
 	/* Fourier transform*/
 	dn.calcFourierTransform();

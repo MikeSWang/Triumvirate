@@ -42,7 +42,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	}
 
 	/**
-	 * Deconstruct particle containers.
+	 * Destruct particle containers.
 	 */
 	~ParticleBOSSClass() {  // FIXME: change class name
 		finalise_particles();
