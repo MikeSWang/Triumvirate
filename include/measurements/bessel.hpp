@@ -42,7 +42,7 @@ class SphericalBesselCalculator {
 	}
 
 	/**
-	 * Deconstruct interpolators.
+	 * Destruct interpolators.
 	 */
 	~SphericalBesselCalculator() {
 		if (this->accel != NULL) {
