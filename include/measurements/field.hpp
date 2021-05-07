@@ -10,7 +10,7 @@
 template <class ParticleContainer>
 class DensityField {
  public:
-	fftw_complex * field;   ///> gridded complex field
+	fftw_complex* field;  ///> gridded complex field
 
 	/**
 	 * Return individual field grid.
@@ -35,8 +35,8 @@ class DensityField {
 		bytes += this->params.nmesh_tot * sizeof(fftw_complex) / 1024. / 1024. / 1024.;
 
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
-			this->field[i][0] = 0.0;
-			this->field[i][1] = 0.0;
+			this->field[i][0] = 0.;
+			this->field[i][1] = 0.;
 		}
 	}
 
@@ -58,19 +58,20 @@ class DensityField {
 	}
 
 	/**
-	 * Calculate weighted density field values according to a grid assignment.
+	 * Assign weighted density field to a grid by interpolation scheme.
 	 *
 	 * @param particles Particle container.
 	 * @param weight Weight field.
+	 * @returns Exit status.
 	 */
-	int calc_grid_weighted_field(ParticleContainer& particles, fftw_complex* weight) {
+	int assign_weighted_field_to_grid(ParticleContainer& particles, fftw_complex* weight) {
 		if (0) {
 		} else if (this->params.assignment == "NGP") {
-			this->calc_grid_weighted_field_ngp(particles, weight);
+			this->assign_weighted_field_to_grid_ngp(particles, weight);
 		} else if (this->params.assignment == "CIC") {
-			this->calc_grid_weighted_field_cic(particles, weight);
+			this->assign_weighted_field_to_grid_cic(particles, weight);
 		} else if (this->params.assignment == "TSC") {
-			this->calc_grid_weighted_field_tsc(particles, weight);
+			this->assign_weighted_field_to_grid_tsc(particles, weight);
 		} else {
 			return -1;
 		}
@@ -79,13 +80,17 @@ class DensityField {
 	}
 
 	/**
-	 * Calculate weighted density field values by nearest-grid-point
-	 * assignment.
+	 * Assign weighted density field to a grid by the nearest-grid-point
+	 * scheme.
 	 *
-	 * @param particles Particle container (reference).
-	 * @param weight Weight field (pointer).
+	 * @param particles Particle container.
+	 * @param weight Particle weight.
+	 * @returns Exit status.
 	 */
-	int calc_grid_weighted_field_ngp(ParticleContainer& particles, fftw_complex* weight) {
+	int assign_weighted_field_to_grid_ngp(
+		ParticleContainer& particles,
+		fftw_complex* weight
+	) {
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] = 0.;
 			this->field[i][1] = 0.;
@@ -93,7 +98,8 @@ class DensityField {
 
 	  /// Here over-density is given by \sum_i w_i \delta_D(x - x_i),
 		/// where \delta_D = \delta_K / dV, dV = volume / nmesh.
-		double dV = this->params.volume / double(this->params.nmesh_tot);  // NOTE: standard variable naming convention overriden
+		/// NOTE: Standard variable naming convention overriden.
+		double dV = this->params.volume / double(this->params.nmesh_tot);
 		double cell_vol_factor = 1. / dV;
 
 		int order = 1;
@@ -110,13 +116,13 @@ class DensityField {
 			for (int i_order = 0; i_order < order; i_order++) {
 				for (int j_order = 0; j_order < order; j_order++) {
 					for (int k_order = 0; k_order < order; k_order++) {
-						long long coord = (
+						long long coord_flat = (
 							ijk[i_order][0] * this->params.nmesh[1] + ijk[j_order][1]
 						) * this->params.nmesh[2] + ijk[k_order][2];
-						if (coord >= 0 && coord < this->params.nmesh_tot) {
-							this->field[coord][0] += cell_vol_factor
+						if (coord_flat >= 0 && coord_flat < this->params.nmesh_tot) {
+							this->field[coord_flat][0] += cell_vol_factor
 								* weight[id][0] * win[i_order][0] * win[j_order][1] * win[k_order][2];
-							this->field[coord][1] += cell_vol_factor
+							this->field[coord_flat][1] += cell_vol_factor
 								* weight[id][1] * win[i_order][0] * win[j_order][1] * win[k_order][2];
 						}
 					}
@@ -128,12 +134,17 @@ class DensityField {
 	}
 
 	/**
-	 * Calculate weighted density field values by cloud-in-cell assignment.
+	 * Assign weighted density field to a grid by the cloud-in-cell
+	 * scheme.
 	 *
-	 * @param particles Particle container (reference).
-	 * @param weight Weight field (pointer).
+	 * @param particles Particle container.
+	 * @param weight Particle weight.
+	 * @returns Exit status.
 	 */
-	int calc_grid_weighted_field_cic(ParticleContainer& particle, fftw_complex* weight) {
+	int assign_weighted_field_to_grid_cic(
+		ParticleContainer& particle,
+		fftw_complex* weight
+	) {
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] = 0.;
 			this->field[i][1] = 0.;
@@ -141,10 +152,10 @@ class DensityField {
 
 	  /// Here over-density is given by \sum_i w_i \delta_D(x - x_i),
 		/// where \delta_D = \delta_K / dV, dV = volume / nmesh.
-		double dV = this->params.volume / double(this->params.nmesh_tot);  // NOTE: standard variable naming convention overriden
+		/// NOTE: Standard variable naming convention overriden.
+		double dV = this->params.volume / double(this->params.nmesh_tot);
 		double cell_vol_factor = 1. / dV;
 
-		/// ???: Check against CIC formula.
 		int order = 2;
 		for (int id = 0; id < particle.n_tot; id++) {
 			double win[order][3];
@@ -163,13 +174,13 @@ class DensityField {
 			for (int i_order = 0; i_order < order; i_order++) {
 				for (int j_order = 0; j_order < order; j_order++) {
 					for (int k_order = 0; k_order < order; k_order++) {
-						long long coord = (
+						long long coord_flat = (
 							ijk[i_order][0] * this->params.nmesh[1] + ijk[j_order][1]
 						) * this->params.nmesh[2] + ijk[k_order][2];
-						if (coord >= 0 && coord < this->params.nmesh_tot) {
-							this->field[coord][0] += cell_vol_factor
+						if (coord_flat >= 0 && coord_flat < this->params.nmesh_tot) {
+							this->field[coord_flat][0] += cell_vol_factor
 								* weight[id][0] * win[i_order][0] * win[j_order][1] * win[k_order][2];
-							this->field[coord][1] += cell_vol_factor
+							this->field[coord_flat][1] += cell_vol_factor
 								* weight[id][1] * win[i_order][0] * win[j_order][1] * win[k_order][2];
 						}
 					}
@@ -181,13 +192,17 @@ class DensityField {
 	}
 
 	/**
-	 * Calculate weighted density field values by triangular-shaped-cloud
-	 * assignment.
+	 * Assign weighted density field to a grid by the
+	 * triangular-shaped-cloud scheme.
 	 *
-	 * @param particles Particle container (reference).
-	 * @param weight Weight field (pointer).
+	 * @param particles Particle container.
+	 * @param weight Particle weight.
+	 * @returns Exit status.
 	 */
-	int calc_grid_weighted_field_tsc(ParticleContainer& particle, fftw_complex* weight) {
+	int assign_weighted_field_to_grid_tsc(
+		ParticleContainer& particle,
+		fftw_complex* weight
+	) {
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] = 0.;
 			this->field[i][1] = 0.;
@@ -195,6 +210,7 @@ class DensityField {
 
 	  /// Here over-density is given by \sum_i w_i \delta_D(x - x_i),
 		/// where \delta_D = \delta_K / dV, dV = volume / nmesh.
+		/// NOTE: Standard variable naming convention overriden.
 		double dV = this->params.volume / double(this->params.nmesh_tot);
 		double cell_vol_factor = 1. / dV;
 
@@ -203,7 +219,7 @@ class DensityField {
 			double win[order][3];
 			int ijk[order][3];
 			for (int axis = 0; axis < 3; axis++) {
-				double loc_grid = this->params.nmesh[axis] * particle[p].pos[axis] / this->params.boxsize[axis];
+				double loc_grid = this->params.nmesh[axis] * particle[id].pos[axis] / this->params.boxsize[axis];
 				ijk[1][axis] = int(loc_grid + 0.5);
 				ijk[0][axis] = int(loc_grid + 0.5) - 1;
 				ijk[2][axis] = int(loc_grid + 0.5) + 1;
@@ -217,13 +233,13 @@ class DensityField {
 			for (int i_order = 0; i_order < order; i_order++) {
 				for (int j_order = 0; j_order < order; j_order++) {
 					for (int k_order = 0; k_order < order; k_order++) {
-						long long coord = (
+						long long coord_flat = (
 							ijk[i_order][0] * this->params.nmesh[1] + ijk[j_order][1]
 						) * this->params.nmesh[2] + ijk[k_order][2];
-						if (coord >= 0 && coord < this->params.nmesh_tot) {
-							this->field[coord][0] += cell_vol_factor
+						if (coord_flat >= 0 && coord_flat < this->params.nmesh_tot) {
+							this->field[coord_flat][0] += cell_vol_factor
 								* weight[id][0] * win[i_order][0] * win[j_order][1] * win[k_order][2];
-							this->field[coord][1] += cell_vol_factor
+							this->field[coord_flat][1] += cell_vol_factor
 								* weight[id][1] * win[i_order][0] * win[j_order][1] * win[k_order][2];
 						}
 					}
@@ -234,142 +250,157 @@ class DensityField {
 		return 0;
 	}
 
-	int calcYlmWeightedDensityFluctuation(
-            ParticleContainer & P_D, ParticleContainer & P_R,
-            LineOfSight* los_D, LineOfSight* los_R,
-            double alpha, int _ELL_, int _M_) {
+	/**
+	 * Calculate reduced spherical harmonic transform of a weighted
+	 * over-density field.
+	 *
+	 * @param particles_data Data-source particle container.
+	 * @param particles_rand Random-source particle container.
+	 * @param los_data Data-source particle lines of sight.
+	 * @param los_rand Random-source particle lines of sight.
+	 * @param alpha Alpha ratio.
+	 * @param ell Degree of the spherical harmonic.
+	 * @param m Order of the spherical harmonic.
+	 * @returns Exit status.
+	 */
+	int calc_ylm_weighted_overdensity_field(
+		ParticleContainer& particles_data, ParticleContainer& particles_rand,
+		LineOfSight* los_data, LineOfSight* los_rand,
+		double alpha,
+		int ell, int m
+	) {
+		DensityField<ParticleBOSSClass> density_rand(this->params);
+		fftw_complex* weight = NULL;
 
-		DensityField<ParticleBOSSClass> n_R(this->params);
-		fftw_complex * weight = NULL;
-
-		/****/
-		weight = fftw_alloc_complex(P_D.n_tot);
-		for (int p = 0; p < P_D.n_tot; p++) {
-            double los[3] = {los_D[p].pos[0], los_D[p].pos[1], los_D[p].pos[2]};
-            std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
-            weight[p][0] = Ylm.real() * P_D[p].w;
-            weight[p][1] = Ylm.imag() * P_D[p].w;
+		/// Calculate data-source weighted density field.
+		weight = fftw_alloc_complex(particles_data.n_tot);
+		for (int id = 0; id < particles_data.n_tot; id++) {
+			double los[3] = {
+				los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
+			};
+			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			weight[id][0] = ylm.real() * particles_data[id].w;
+			weight[id][1] = ylm.imag() * particles_data[id].w;
 		}
 
-		this->calc_grid_weighted_field(P_D, weight);
+		this->assign_weighted_field_to_grid(particles_data, weight);
 		fftw_free(weight); weight = NULL;
 
-		/****/
-		weight = fftw_alloc_complex(P_R.n_tot);
-		for (int p = 0; p < P_R.n_tot; p++) {
-            double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-            std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
-            weight[p][0] = Ylm.real() * P_R[p].w;
-            weight[p][1] = Ylm.imag() * P_R[p].w;
+		/// Calculate random-source weighted density field.
+		weight = fftw_alloc_complex(particles_rand.n_tot);
+		for (int id = 0; id < particles_rand.n_tot; id++) {
+			double los[3] = {
+				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
+			};
+			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			weight[id][0] = ylm.real() * particles_rand[id].w;
+			weight[id][1] = ylm.imag() * particles_rand[id].w;
 		}
 
-		n_R.calc_grid_weighted_field(P_R, weight);
+		density_rand.assign_weighted_field_to_grid(particles_rand, weight);
 		fftw_free(weight); weight = NULL;
 
-		/****/
-		for(int i = 0; i < this->params.nmesh_tot; i++) {
-			this->field[i][0] -= alpha * n_R.field[i][0];
-			this->field[i][1] -= alpha * n_R.field[i][1];
+		/// Subtract to compute fluctuations.
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
+			this->field[i][0] -= alpha * density_rand.field[i][0];
+			this->field[i][1] -= alpha * density_rand.field[i][1];
 		}
 
 		return 0;
 	}
 
+	/**
+	 * Calculate reduced spherical harmonic transform of a weighted
+	 * over-density field for calculating bispectrum shot noise.
+	 *
+	 * @param particles_data Data-source particle container.
+	 * @param particles_rand Random-source particle container.
+	 * @param los_data Data-source particle lines of sight.
+	 * @param los_rand Random-source particle lines of sight.
+	 * @param alpha Alpha ratio.
+	 * @param ell Degree of the spherical harmonic.
+	 * @param m Order of the spherical harmonic.
+	 * @returns Exit status.
+	 */
+	int calc_ylm_weighted_overdensity_field_for_bispec_shotnoise(  /// ???
+		ParticleContainer& particles_data, ParticleContainer& particles_rand,
+		LineOfSight* los_data, LineOfSight* los_rand,
+		double alpha,
+		int ell, int m
+	) {
+		DensityField<ParticleBOSSClass> density_rand(this->params);
+		fftw_complex* weight = NULL;
 
-	int calcYlmWeightedDensityFluctuationForBispectrumShotnoise(
-            ParticleContainer & P_D, ParticleContainer & P_R,
-            LineOfSight* los_D, LineOfSight* los_R,
-            double alpha, int _ELL_, int _M_) {
-
-		DensityField<ParticleBOSSClass> n_R(this->params);
-		fftw_complex * weight = NULL;
-
-		/****/
-		weight = fftw_alloc_complex(P_D.n_tot);
-		for (int p = 0; p < P_D.n_tot; p++) {
-			double los[3] = {los_D[p].pos[0], los_D[p].pos[1], los_D[p].pos[2]};
-			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
-			Ylm = std::conj(Ylm); // IMPORTANT! //
-			weight[p][0] = Ylm.real() * pow(P_D[p].w, 2);
-		       	weight[p][1] = Ylm.imag() * pow(P_D[p].w, 2);
+		/// Calculate data-source weighted density field.
+		weight = fftw_alloc_complex(particles_data.n_tot);
+		for (int id = 0; id < particles_data.n_tot; id++) {
+			double los[3] = {los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]};
+			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			ylm = std::conj(ylm);  /// NOTE: this cojugation is essential
+			weight[id][0] = ylm.real() * pow(particles_data[id].w, 2);
+			weight[id][1] = ylm.imag() * pow(particles_data[id].w, 2);
 		}
-		this->calc_grid_weighted_field(P_D, weight);
+
+		this->assign_weighted_field_to_grid(particles_data, weight);
 		fftw_free(weight); weight = NULL;
 
-		/****/
-		weight = fftw_alloc_complex(P_R.n_tot);
-		for (int p = 0; p < P_R.n_tot; p++) {
-			double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
-			Ylm = std::conj(Ylm); // IMPORTANT! //
-			weight[p][0] = Ylm.real() * pow(P_R[p].w, 2);
-		       	weight[p][1] = Ylm.imag() * pow(P_R[p].w, 2);
+		/// Calculate random-source weighted density field.
+		weight = fftw_alloc_complex(particles_rand.n_tot);
+		for (int id = 0; id < particles_rand.n_tot; id++) {
+			double los[3] = {
+				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
+			};
+			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			ylm = std::conj(ylm);  /// NOTE: this cojugation is essential
+			weight[id][0] = ylm.real() * pow(particles_rand[id].w, 2);
+			weight[id][1] = ylm.imag() * pow(particles_rand[id].w, 2);
 		}
-		n_R.calc_grid_weighted_field(P_R, weight);
+
+		density_rand.assign_weighted_field_to_grid(particles_rand, weight);
 		fftw_free(weight); weight = NULL;
 
-		/****/
-		for(int i = 0; i < this->params.nmesh_tot; i++) {
-			this->field[i][0] += alpha * alpha * n_R.field[i][0];
-			this->field[i][1] += alpha * alpha * n_R.field[i][1];
+		/// Compute shot noise contribution.
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
+			this->field[i][0] += alpha * alpha * density_rand.field[i][0];
+			this->field[i][1] += alpha * alpha * density_rand.field[i][1];
 		}
 
 		return 0;
 	}
 
-	int calcNormalDensityFluctuation_in_box(ParticleContainer & P_D, ParameterSet & params) {
+	/**
+	 * Calculate reduced spherical harmonic transform of a mean-density
+	 * field.
+	 *
+	 * @param particles_rand Random-source particle container.
+	 * @param los_rand Random-source particle lines of sight.
+	 * @param alpha Alpha ratio.
+	 * @param ell Degree of the spherical harmonic.
+	 * @param m Order of the spherical harmonic.
+	 * @returns Exit status.
+	 */
+	int calc_ylm_weighted_mean_density(
+		ParticleContainer& particles_rand,
+		LineOfSight* los_rand,
+		double alpha,
+		int ell, int m
+	) {
+		fftw_complex* weight = NULL;
 
-		fftw_complex * weight = NULL;
-		weight = fftw_alloc_complex(P_D.n_tot);
-		for (int p = 0; p < P_D.n_tot; p++) {
-			weight[p][0] = 1.0;
-		       	weight[p][1] = 0.0;
+		weight = fftw_alloc_complex(particles_rand.n_tot);
+		for (int id = 0; id < particles_rand.n_tot; id++) {
+			double los[3] = {
+				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
+			};
+			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			weight[id][0] = ylm.real() * particles_rand[id].w;
+			weight[id][1] = ylm.imag() * particles_rand[id].w;
 		}
-		this->calc_grid_weighted_field(P_D, weight);
+
+		this->assign_weighted_field_to_grid(particles_rand, weight);
 		fftw_free(weight); weight = NULL;
 
-		/****/
-		for(int i = 0; i < this->params.nmesh_tot; i++) {
-			this->field[i][0] -= (double(P_D.n_tot)/params.volume);
-			this->field[i][1] -= 0.0;
-		}
-
-		return 0;
-	}
-
-	int calcNormalDensityForBispectrumShotnoise_in_box(ParticleContainer & P_D) {
-
-		fftw_complex * weight = NULL;
-		weight = fftw_alloc_complex(P_D.n_tot);
-		for (int p = 0; p < P_D.n_tot; p++) {
-			weight[p][0] = 1.0;
-		       	weight[p][1] = 0.0;
-		}
-		this->calc_grid_weighted_field(P_D, weight);
-		fftw_free(weight); weight = NULL;
-
-		return 0;
-	}
-
-	int calcYlmWeightedMeanDensity(
-            ParticleContainer & P_R, LineOfSight* los_R,
-            double alpha, int _ELL_, int _M_) {
-
-		fftw_complex * weight = NULL;
-
-		/****/
-		weight = fftw_alloc_complex(P_R.n_tot);
-		for (int p = 0; p < P_R.n_tot; p++) {
-			double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
-			weight[p][0] = Ylm.real() * P_R[p].w;
-		       	weight[p][1] = Ylm.imag() * P_R[p].w;
-		}
-		this->calc_grid_weighted_field(P_R, weight);
-		fftw_free(weight); weight = NULL;
-
-		/****/
-		for(int i = 0; i < this->params.nmesh_tot; i++) {
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] *= alpha;
 			this->field[i][1] *= alpha;
 		}
@@ -377,25 +408,40 @@ class DensityField {
 		return 0;
 	}
 
-	int calcYlmWeightedMeanDensityForThreePointWindowFunctionShotnoise(
-            ParticleContainer & P_R, LineOfSight* los_R,
-            double alpha, int _ELL_, int _M_) {
+	/**
+	 * Calculate reduced spherical harmonic transform of a mean-density
+	 * field for calculating 3-point window function shot noise.
+	 *
+	 * @param particles_rand Random-source particle container.
+	 * @param los_rand Random-source particle lines of sight.
+	 * @param alpha Alpha ratio.
+	 * @param ell Degree of the spherical harmonic.
+	 * @param m Order of the spherical harmonic.
+	 * @returns Exit status.
+	 */
+	int calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(
+		ParticleContainer& particles_rand,
+		LineOfSight* los_rand,
+		double alpha,
+		int ell, int m
+	) {
+		fftw_complex* weight = NULL;
 
-		fftw_complex * weight = NULL;
-		/****/
-		weight = fftw_alloc_complex(P_R.n_tot);
-		for (int p = 0; p < P_R.n_tot; p++) {
-			double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
-			Ylm = std::conj(Ylm); // IMPORTANT! //
-			weight[p][0] = Ylm.real() * pow(P_R[p].w, 2);
-		       	weight[p][1] = Ylm.imag() * pow(P_R[p].w, 2);
+		weight = fftw_alloc_complex(particles_rand.n_tot);
+		for (int id = 0; id < particles_rand.n_tot; id++) {
+			double los[3] = {
+				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
+			};
+			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			ylm = std::conj(ylm);  /// NOTE: this cojugation is essential
+			weight[id][0] = ylm.real() * pow(particles_rand[id].w, 2);
+			weight[id][1] = ylm.imag() * pow(particles_rand[id].w, 2);
 		}
-		this->calc_grid_weighted_field(P_R, weight);
+
+		this->assign_weighted_field_to_grid(particles_rand, weight);
 		fftw_free(weight); weight = NULL;
 
-		/****/
-		for(int i = 0; i < this->params.nmesh_tot; i++) {
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] *= alpha * alpha;
 			this->field[i][1] *= alpha * alpha;
 		}
@@ -403,303 +449,454 @@ class DensityField {
 		return 0;
 	}
 
+	/**
+	 * Calculate normal density field in a periodic box.
+	 *
+	 * @param particles_data Data-source particle container.
+	 * @param params Input parameter set.
+	 * @returns Exit status.
+	 */
+	int calc_normal_density_field_in_box(
+		ParticleContainer& particles_data,
+		ParameterSet& params
+	) {  /// ???
+		fftw_complex* weight = NULL;
 
-	int calcFourierTransform() {
+		weight = fftw_alloc_complex(particles_data.n_tot);
+		for (int id = 0; id < particles_data.n_tot; id++) {
+			weight[id][0] = 1.;
+			weight[id][1] = 0.;
+		}
 
-		/* d^3x = (dV) \sum_i */
+		this->assign_weighted_field_to_grid(particles_data, weight);
+		fftw_free(weight); weight = NULL;
+
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
+			this->field[i][0] -= double(particles_data.n_tot) / params.volume;
+			this->field[i][1] -= 0.;
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Calculate normal density field in a periodic box for bispectrum
+	 * calculations.
+	 *
+	 * @param particles_data Data-source particle container.
+	 * @returns Exit status.
+	 */
+	int calc_normal_density_field_in_box_for_bispec(ParticleContainer& particles_data) {  /// ???
+		fftw_complex* weight = NULL;
+
+		weight = fftw_alloc_complex(particles_data.n_tot);
+		for (int id = 0; id < particles_data.n_tot; id++) {
+			weight[id][0] = 1.;
+			weight[id][1] = 0.;
+		}
+
+		this->assign_weighted_field_to_grid(particles_data, weight);
+		fftw_free(weight); weight = NULL;
+
+		return 0;
+	}
+
+	/**
+	 * Calculate normal density field in a periodic box for reconstruction.
+	 *
+	 * @param particles_data Data-source particle container.
+	 * @param particles_rand Random-source particle container.
+	 * @param alpha Alpha ratio.
+	 * @returns Exit status.
+	 */
+	int calc_normal_density_field_in_box_for_reconstruction(
+		ParticleContainer& particles_data,
+		ParticleContainer& particles_rand,
+		double alpha
+	) {
+		DensityField<ParticleBOSSClass> density_rand(this->params);
+		fftw_complex* weight = NULL;
+
+		/// Assign data-source weighted field.
+		weight = fftw_alloc_complex(particles_data.n_tot);
+		for (int id = 0; id < particles_data.n_tot; id++) {
+			weight[id][0] = 1.;
+			weight[id][1] = 0.;
+		}
+
+		this->assign_weighted_field_to_grid(particles_data, weight);
+		fftw_free(weight); weight = NULL;
+
+		/// Assign random-source weighted field.
+		weight = fftw_alloc_complex(particles_rand.n_tot);
+		for (int id = 0; id < particles_rand.n_tot; id++) {
+			weight[id][0] = 1.;
+			weight[id][1] = 0.;
+		}
+
+		density_rand.assign_weighted_field_to_grid(particles_rand, weight);
+		fftw_free(weight); weight = NULL;
+
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
+			this->field[i][0] -= alpha * density_rand.field[i][0];
+			this->field[i][1] -= alpha * density_rand.field[i][1];
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Calculate Fourier transform of the field.
+	 *
+	 * @returns Exit status.
+	 */
+	int calc_fourier_transform() {
+		/// Convert d^3 x = dV \sum_i.
+		/// NOTE: Standard variable naming convention overriden.
 		double dV = this->params.volume / double(this->params.nmesh_tot);
 
-		for(int i = 0;  i < this->params.nmesh_tot; i++) {
+		for (int i = 0;  i < this->params.nmesh_tot; i++) {
 			this->field[i][0] *= dV;
 			this->field[i][1] *= dV;
 		}
 
-		/* FFT */
-		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0],this->params.nmesh[1],this->params.nmesh[2], this->field, this->field, FFTW_FORWARD, FFTW_ESTIMATE);
-		fftw_execute(plan);
-		fftw_destroy_plan(plan);
+		/// Perform FFT.
+		fftw_plan fft_plan_forward = fftw_plan_dft_3d(
+			this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], this->field, this->field,
+			FFTW_FORWARD, FFTW_ESTIMATE
+		);
+		fftw_execute(fft_plan_forward);
+		fftw_destroy_plan(fft_plan_forward);
 
 		return 0;
 	}
 
-
-	int calcAssignmentFunctionCorrection() {
-
-		double kvec[3];
-		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
-
-		for(int i = 0; i < this->params.nmesh[0]; i++) {
-		for(int j = 0; j < this->params.nmesh[1]; j++) {
-		for(int k = 0; k < this->params.nmesh[2]; k++) {
-			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
-
-			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
-
-			// assignment function.
-			double	wf = this->WindowFunction(kvec);
-
-			this->field[coord][0] /=wf;
-			this->field[coord][1] /=wf;
-		}}}
-
-		return 0;
-	}
-
-	int calcInverseFourierTransform() {
-
-		/* d^3k/(2pi)^3 = (1/V) \sum_i */
+	/**
+	 * Calculate the inverse Fourier transform of the transformed field.
+	 *
+	 * @returns Exit status.
+	 */
+	int calc_inverse_fourier_transform() {
+		/// Convert d^3 k / (2\pi)^3 = (1/V) \sum_i.
+		/// NOTE: Standard variable naming convention overriden.
 		double V = this->params.volume;
 
-		for(int i = 0;  i < this->params.nmesh_tot; i++) {
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] /= V;
 			this->field[i][1] /= V;
 		}
 
-		/* Inverse FFT */
-		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], this->field, this->field, FFTW_BACKWARD, FFTW_ESTIMATE);
-		fftw_execute(plan);
-		fftw_destroy_plan(plan);
+		/// Perform inverse FFT.
+		fftw_plan fft_plan_backward = fftw_plan_dft_3d(
+			this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2],
+			this->field, this->field,
+			FFTW_BACKWARD, FFTW_ESTIMATE
+		);
+		fftw_execute(fft_plan_backward);
+		fftw_destroy_plan(fft_plan_backward);
 
 		return 0;
 	}
 
-	int calcInverseFourierTransformForBispectrum(DensityField & density, double kmag_in, double dk_in, std::complex<double> * Ylm) {
-
-		/* initialize */
+	/**
+	 * Calculate the inverse Fourier transform of a transformed field.
+	 *
+	 * @param density FFT-transformed density field.
+	 * @param kmag_in ???.
+	 * @param dk_in ???.
+	 * @param ylm Reduced spherical harmonic on a grid.
+	 * @returns Exit status.
+	 */
+	int calc_inverse_fourier_transform_for_bispec(
+		DensityField& density,
+		double kmag_in, double dk_in,
+		std::complex<double>* ylm
+	) {
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
-			this->field[i][0] = 0.0;
-			this->field[i][1] = 0.0;
+			this->field[i][0] = 0.;
+			this->field[i][1] = 0.;
 		}
 
-		int n_mode = 0;
+		int nmode = 0;
 		double kvec[3];
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-		for(int i = 0; i < this->params.nmesh[0]; i++) {
-		for(int j = 0; j < this->params.nmesh[1]; j++) {
-		for(int k = 0; k < this->params.nmesh[2]; k++) {
-			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
+		for (int i = 0; i < this->params.nmesh[0]; i++) {
+			for (int j = 0; j < this->params.nmesh[1]; j++) {
+				for (int k = 0; k < this->params.nmesh[2]; k++) {
+					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
-			double kmag = sqrt( kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2] );
+					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
+					double kmag = sqrt(kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2]);
 
-			double lower = ( kmag_in > dk_in*0.5 ) ? (kmag_in - dk_in * 0.5) : 0.0;
-			double upper = kmag_in + dk_in*0.5;
-			if( (kmag > lower) && (kmag <= upper) ) {
+					double k_lower = (kmag_in > dk_in/2) ? (kmag_in - dk_in/2) : 0.;
+					double k_upper = kmag_in + dk_in/2;
+					if (kmag > k_lower && kmag <= k_upper) {
+						std::complex<double> den(density[coord_flat][0], density[coord_flat][1]);
+						double win = this->calc_interpolation_window_in_fourier(kvec);
+						den /= win;
 
-				std::complex<double> dn(density[coord][0], density[coord][1]);
-
-				// the win function.
-				double	wf = this->WindowFunction(kvec);
-				dn /= wf;
-
-				this->field[coord][0] = ( Ylm[coord] * dn ).real();
-				this->field[coord][1] = ( Ylm[coord] * dn ).imag();
-				n_mode++;
-			} else {
-				this->field[coord][0] = 0.0;
-				this->field[coord][1] = 0.0;
+						this->field[coord_flat][0] = (ylm[coord_flat] * den).real();
+						this->field[coord_flat][1] = (ylm[coord_flat] * den).imag();
+						nmode++;
+					} else {
+						this->field[coord_flat][0] = 0.;
+						this->field[coord_flat][1] = 0.;
+					}
+				}
 			}
-		}}}
+		}
 
-		/* Inverse FFTW */
-		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], this->field, this->field, FFTW_BACKWARD, FFTW_ESTIMATE);
-		fftw_execute(plan);
-		fftw_destroy_plan(plan);
+		fftw_plan fft_plan_backward = fftw_plan_dft_3d(
+			this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2],
+			this->field, this->field,
+			FFTW_BACKWARD, FFTW_ESTIMATE
+		);
+		fftw_execute(fft_plan_backward);
+		fftw_destroy_plan(fft_plan_backward);
 
-		for(int coord = 0; coord < this->params.nmesh_tot; coord++) {
-			this->field[coord][0] /=  double(n_mode);
-			this->field[coord][1] /=  double(n_mode);
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
+			this->field[i][0] /= double(nmode);
+			this->field[i][1] /= double(nmode);
 		}
 
 		return 0;
 	}
 
-	int calcInverseFourierTransformForThreePointFunction(DensityField & density, double rmag_in, std::complex<double> * Ylm,
-			SphericalBesselCalculator & sj ) {
-
-		/* initialize */
+	/**
+	 * Calculate the inverse Fourier transform of a transformed field
+	 * for three-point functions.
+	 *
+	 * @param density FFT-transformed density field.
+	 * @param rmag_in ???.
+	 * @param ylm Reduced spherical harmonic on a grid.
+	 * @param bessel_j Spherical Bessel function interpolator.
+	 * @returns Exit status.
+	 */
+	int calc_inverse_fourier_transform_for_3pt_func(
+		DensityField& density,
+		double rmag_in,
+		std::complex<double>* ylm,
+		SphericalBesselCalculator& bessel_j
+	) {
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
-			this->field[i][0] = 0.0;
-			this->field[i][1] = 0.0;
+			this->field[i][0] = 0.;
+			this->field[i][1] = 0.;
 		}
+
+		double dk[3];
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
 
 		double kvec[3];
-		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
+		for (int i = 0; i < this->params.nmesh[0]; i++) {
+			for (int j = 0; j < this->params.nmesh[1]; j++) {
+				for (int k = 0; k < this->params.nmesh[2]; k++) {
+					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-		for(int i = 0; i < this->params.nmesh[0]; i++) {
-		for(int j = 0; j < this->params.nmesh[1]; j++) {
-		for(int k = 0; k < this->params.nmesh[2]; k++) {
-			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
+					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
+					double kmag = sqrt(kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2]);
 
-			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
-			double kmag = sqrt( kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2] );
+					std::complex<double> den(density[coord_flat][0], density[coord_flat][1]);
+					double win = this->calc_interpolation_window_in_fourier(kvec);
+					den /= win;
 
-			std::complex<double> dn(density[coord][0], density[coord][1]);
-
-			// the win function.
-			double	wf = this->WindowFunction(kvec);
-			dn /= wf;
-
-			this->field[coord][0] = sj.eval(kmag * rmag_in) * ( Ylm[coord] * dn ).real() / this->params.volume;
-			this->field[coord][1] = sj.eval(kmag * rmag_in) * ( Ylm[coord] * dn ).imag() / this->params.volume;
+					this->field[coord_flat][0] =
+						bessel_j.eval(kmag * rmag_in) * (ylm[i] * dn).real() / this->params.volume;
+					this->field[coord_flat][1] =
+						bessel_j.eval(kmag * rmag_in) * (ylm[i] * dn).imag() / this->params.volume;
 		}}}
 
-		/* Inverse FFTW */
-		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], this->field, this->field, FFTW_BACKWARD, FFTW_ESTIMATE);
-		fftw_execute(plan);
-		fftw_destroy_plan(plan);
+		fftw_plan fft_plan_backward = fftw_plan_dft_3d(
+			this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2],
+			this->field, this->field,
+			FFTW_BACKWARD, FFTW_ESTIMATE
+		);
+		fftw_execute(fft_plan_backward);
+		fftw_destroy_plan(fft_plan_backward);
 
 		return 0;
 	}
 
-
-	double WindowFunction(double * kvec) {
-		if(0) {
+	/**
+	 * Calculate interpolarion window in Fourier space for
+	 * assignment schemes.
+	 *
+	 * @param kvec Wavevector.
+	 * @returns Window value in Fourier space.
+	 */
+	double calc_interpolation_window_in_fourier(double* kvec) {
+		if (0) {
 		} else if (this->params.assignment == "NGP") {
-			return this->WindowFunctionNGP(kvec);
+			return this->calc_interpolation_window_ngp(kvec);
 		} else if (this->params.assignment == "CIC") {
-			return this->WindowFunctionCIC(kvec);
+			return this->calc_interpolation_window_cic(kvec);
 		} else if (this->params.assignment == "TSC") {
-			return this->WindowFunctionTSC(kvec);
+			return this->calc_interpolation_window_tsc(kvec);
 		} else {
-			return 1.0;
+			return 1.;
 		}
 
-		return 1.0;
-
+		return 1.;
 	}
-	double WindowFunctionNGP(const double * kvec) {
+
+	/**
+	 * Calculate interpolarion window in Fourier space for
+	 * the nearest-grid-point assignment scheme.
+	 *
+	 * @param kvec Wavevector.
+	 * @returns Window value in Fourier space.
+	 */
+	double calc_interpolation_window_ngp(const double* kvec) {
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
-		int i = (int) ( kvec[0] / dk[0] + 1.0e-5);
-		int j = (int) ( kvec[1] / dk[1] + 1.0e-5);
-		int k = (int) ( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
-		double f1 = (i != 0) ? sin(x1) / x1 : 1.0;
-		double f2 = (j != 0) ? sin(x2) / x2 : 1.0;
-		double f3 = (k != 0) ? sin(x3) / x3 : 1.0;
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-		double ret = f1 * f2 * f3;
-		return pow(ret,1);  // W = ret**3
+		int i = int(kvec[0] / dk[0] + 1.e-5);
+		int j = int(kvec[1] / dk[1] + 1.e-5);
+		int k = int(kvec[2] / dk[2] + 1.e-5);
+
+		double xk = M_PI * i / double(this->params.nmesh[0]);
+		double yk = M_PI * j / double(this->params.nmesh[1]);
+		double zk = M_PI * k / double(this->params.nmesh[2]);
+
+		double w1 = (i != 0) ? sin(xk) / xk : 1.;
+		double w2 = (j != 0) ? sin(yk) / yk : 1.;
+		double w3 = (k != 0) ? sin(zk) / zk : 1.;
+		double wk = w1 * w2 * w3;
+
+		return pow(wk, 1);
 	}
 
-
-	double WindowFunctionCIC(const double * kvec) {
+	/**
+	 * Calculate interpolarion window in Fourier space for
+	 * the cloud-in-cell assignment scheme.
+	 *
+	 * @param kvec Wavevector.
+	 * @returns Window value in Fourier space.
+	 */
+	double calc_interpolation_window_cic(const double* kvec) {
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
-		int i = (int) ( kvec[0] / dk[0] + 1.0e-5);
-		int j = (int) ( kvec[1] / dk[1] + 1.0e-5);
-		int k = (int) ( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
-		double f1 = (i != 0) ? sin(x1) / x1 : 1.0;
-		double f2 = (j != 0) ? sin(x2) / x2 : 1.0;
-		double f3 = (k != 0) ? sin(x3) / x3 : 1.0;
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-		double ret = f1 * f2 * f3;
-		return pow(ret,2);  // W = ret**3
+		int i = int(kvec[0] / dk[0] + 1.e-5);
+		int j = int(kvec[1] / dk[1] + 1.e-5);
+		int k = int(kvec[2] / dk[2] + 1.e-5);
+
+		double xk = M_PI * i / double(this->params.nmesh[0]);
+		double yk = M_PI * j / double(this->params.nmesh[1]);
+		double zk = M_PI * k / double(this->params.nmesh[2]);
+
+		double w1 = (i != 0) ? sin(xk) / xk : 1.;
+		double w2 = (j != 0) ? sin(yk) / yk : 1.;
+		double w3 = (k != 0) ? sin(zk) / zk : 1.;
+		double wk = w1 * w2 * w3;
+
+		return pow(wk, 2);
 	}
 
-
-
-	double WindowFunctionTSC(const double * kvec) {
+	/**
+	 * Calculate interpolarion window in Fourier space for
+	 * the triangular-shaped-cloud assignment scheme.
+	 *
+	 * @param kvec Wavevector.
+	 * @returns Window value in Fourier space.
+	 */
+	double calc_interpolation_window_tsc(const double* kvec) {
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
-		int i = (int) ( kvec[0] / dk[0] + 1.0e-5);
-		int j = (int) ( kvec[1] / dk[1] + 1.0e-5);
-		int k = (int) ( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
-		double f1 = (i != 0) ? sin(x1) / x1 : 1.0;
-		double f2 = (j != 0) ? sin(x2) / x2 : 1.0;
-		double f3 = (k != 0) ? sin(x3) / x3 : 1.0;
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-		double ret = f1 * f2 * f3;
-		return pow(ret,3);  // W = ret**3
+		int i = int(kvec[0] / dk[0] + 1.e-5);
+		int j = int(kvec[1] / dk[1] + 1.e-5);
+		int k = int(kvec[2] / dk[2] + 1.e-5);
+
+		double xk = M_PI * i / double(this->params.nmesh[0]);
+		double yk = M_PI * j / double(this->params.nmesh[1]);
+		double zk = M_PI * k / double(this->params.nmesh[2]);
+
+		double w1 = (i != 0) ? sin(xk) / xk : 1.;
+		double w2 = (j != 0) ? sin(yk) / yk : 1.;
+		double w3 = (k != 0) ? sin(zk) / zk : 1.;
+		double wk = w1 * w2 * w3;
+
+		return pow(wk, 3);
 	}
 
+	/**
+	 * Calculate compensation needed in Fouerier transform for
+	 * assignment schemes.
+	 *
+	 * @returns Exit status.
+	 */
+	int calc_assignment_compensation() {
+		double dk[3];
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-	double calc_survey_volume(ParticleContainer & P_R) {
+		double kvec[3];
+		for (int i = 0; i < this->params.nmesh[0]; i++) {
+			for (int j = 0; j < this->params.nmesh[1]; j++) {
+				for (int k = 0; k < this->params.nmesh[2]; k++) {
+					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-		/****/
-		fftw_complex * weight = NULL;
-		weight = fftw_alloc_complex(P_R.n_tot);
-		for (int p = 0; p < P_R.n_tot; p++) {
-			weight[p][0] = 1.0;
-		       	weight[p][1] = 0.0;
+					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
+
+					double win = this->calc_interpolation_window_in_fourier(kvec);
+
+					this->field[coord_flat][0] /= win;
+					this->field[coord_flat][1] /= win;
+				}
+			}
 		}
-		this->calc_grid_weighted_field(P_R, weight);
+
+		return 0;
+	}
+
+	/**
+	 * Calculate survey volume normalisation.
+	 *
+	 * @param particles_rand Random-source particle container.
+	 * @returns survey_volume_norm Survey volume normalisation.
+	 */
+	double calc_survey_volume_normalisation(ParticleContainer& particles_rand) {
+		fftw_complex* weight = NULL;
+
+		weight = fftw_alloc_complex(particles_rand.n_tot);
+		for (int id = 0; id < particles_rand.n_tot; id++) {
+			weight[id][0] = 1.;
+			weight[id][1] = 0.;
+		}
+		this->assign_weighted_field_to_grid(particles_rand, weight);
+
 		fftw_free(weight); weight = NULL;
 
-		/****/
+		/// NOTE: Standard variable naming convention overriden.
 		double dV = this->params.volume / double(this->params.nmesh_tot);
-		double norm = 0.0;
-		for(int i = 0; i < this->params.nmesh_tot; i++) {
+
+		double norm = 0.;
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			norm += this->field[i][0] * this->field[i][0] * dV;
 		}
 
-		double survey_volume = double(P_R.n_tot) * double(P_R.n_tot) / norm;
+		double survey_volume_norm = particles_rand.n_tot * particles_rand.n_tot / norm;
 
-		return survey_volume;
-
-	}
-
-	int calcNormalDensityFluctuation_in_boxForReconstruction(ParticleContainer & P_D, ParticleContainer & P_R, double alpha) {
-
-		DensityField<ParticleBOSSClass> n_R(this->params);
-		fftw_complex * weight = NULL;
-
-		/****/
-		weight = fftw_alloc_complex(P_D.n_tot);
-		for (int p = 0; p < P_D.n_tot; p++) {
-			weight[p][0] = 1.0;
-		       	weight[p][1] = 0.0;
-		}
-		this->calc_grid_weighted_field(P_D, weight);
-		fftw_free(weight); weight = NULL;
-
-		/****/
-		weight = fftw_alloc_complex(P_R.n_tot);
-		for (int p = 0; p < P_R.n_tot; p++) {
-			weight[p][0] = 1.0;
-		       	weight[p][1] = 0.0;
-		}
-		n_R.calc_grid_weighted_field(P_R, weight);
-		fftw_free(weight); weight = NULL;
-
-		/****/
-		for(int i = 0; i < this->params.nmesh_tot; i++) {
-			this->field[i][0] -= alpha * n_R.field[i][0];
-			this->field[i][1] -= alpha * n_R.field[i][1];
-		}
-
-		return 0;
+		return survey_volume_norm;
 	}
 
  private:
@@ -708,634 +905,861 @@ class DensityField {
 
 template <class ParticleContainer>
 class TwoPointStatisticsClass {
-private:
-	ParameterSet params;
-public:
-	std::complex<double> * pk;
-	std::complex<double> * xi;
-	int * n_mode_pk;
-	int * n_mode_xi;
+ public:
+	std::complex<double>* pk;  ///< power spectrum statistics
+	std::complex<double>* xi;  ///< correlation function statistics
+	int* nmode_pk;  ///< number of wavevector modes
+	int* npair_xi;  ///< number of separation pairs
 
-	TwoPointStatisticsClass(ParameterSet & params){
-
+	/**
+	 * Construct two-point statistics.
+	 *
+	 * @param params Input parameter set.
+	 */
+	TwoPointStatisticsClass(ParameterSet& params){
 		this->params = params;
+
 		this->pk = new std::complex<double>[params.num_kbin];
-		this->n_mode_pk = new int[params.num_kbin];
-	       	for(int i = 0; i < params.num_kbin; i++) {
-			this->pk[i] = 0.0;
-			this->n_mode_pk[i] = 0.0;
+		this->nmode_pk = new int[params.num_kbin];
+	  for (int i = 0; i < params.num_kbin; i++) {
+			this->pk[i] = 0.;
+			this->nmode_pk[i] = 0;
 		}
 
 		this->xi = new std::complex<double>[params.num_rbin];
-		this->n_mode_xi = new int[params.num_rbin];
-	       	for(int i = 0; i < params.num_rbin; i++) {
-			this->xi[i] = 0.0;
-			this->n_mode_xi[i] = 0.0;
+		this->npair_xi = new int[params.num_rbin];
+		for (int i = 0; i < params.num_rbin; i++) {
+			this->xi[i] = 0.;
+			this->npair_xi[i] = 0;
 		}
-
-
 	}
 
+	/**
+	 * Destruct two-point statistics.
+	 */
 	~TwoPointStatisticsClass(){
-		finalizeTwoPointStatistics();
+		finalise_2pt_stats();
 	}
 
-	void finalizeTwoPointStatistics() {
+	/**
+	 * Finalise two-point statistics.
+	 */
+	void finalise_2pt_stats() {
 		delete[] this->pk; this->pk = NULL;
-		delete[] this->n_mode_pk; this->n_mode_pk = NULL;
+		delete[] this->nmode_pk; this->nmode_pk = NULL;
 		delete[] this->xi; this->xi = NULL;
-		delete[] this->n_mode_xi; this->n_mode_xi = NULL;
+		delete[] this->npair_xi; this->npair_xi = NULL;
 	}
 
-	std::complex<double> calcShotNoiseForPowerspectrum(
-            ParticleContainer & P_D, ParticleContainer & P_R,
-            LineOfSight* los_D, LineOfSight* los_R,
-            double alpha, int _ELL_, int _M_) {
+	/**
+	 * Calculate power spectrum.
+	 *
+	 * @param density_a First density field.
+	 * @param density_b Second density field.
+	 * @param kbin Wavenumber bins.
+	 * @param shotnoise Power spectrum shot noise.
+	 * @param ell Degree of the spherical harmonic.
+	 * @param m Order of the spherical harmonic.
+	 * @returns Exit status.
+	 */
+	int calc_power_spec(
+		DensityField<ParticleContainer> & density_a,
+		DensityField<ParticleContainer> & density_b,
+		double* kbin,
+		std::complex<double> shotnoise,
+		int ell, int m
+	) {
+		double dk_sample = 0.0001;
 
-		std::complex<double> sum_D = 0.0;
-		std::complex<double> sum_R = 0.0;
-		for(int p = 0; p < P_D.n_tot; p++) {
-			double los[3] = {los_D[p].pos[0], los_D[p].pos[1], los_D[p].pos[2]};
-			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
-			sum_D += pow(P_D[p].w,2) * Ylm;
+		int n_sample = 100000;
+		std::complex<double>* pk_sample = new std::complex<double>[n_sample];
+		int* nmode_sample = new int[n_sample];
+		for (int i = 0; i < n_sample; i++) {
+			pk_sample[i] = 0.;
+			nmode_sample[i] = 0;
 		}
 
-		for(int p = 0; p < P_R.n_tot; p++) {
-			double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
-			sum_R += pow(P_R[p].w,2) * Ylm;
+		for (int i = 0; i < this->params.num_kbin; i++) {
+			this->pk[i] = 0.;
+			this->nmode_pk[i] = 0;
 		}
 
-		return sum_D + pow(alpha,2) * sum_R;
-
-	}
-
-	std::complex<double> calcShotNoiseForTwoPointWindowFunction(
-            ParticleContainer & P_R, LineOfSight* los_R,
-            double alpha, int _ELL_, int _M_) {
-
-		std::complex<double> sum_R = 0.0;
-		for(int p = 0; p < P_R.n_tot; p++) {
-			double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
-			sum_R += pow(P_R[p].w,2) * Ylm;
-		}
-
-		return pow(alpha,2) * sum_R;
-
-	}
-
-	std::complex<double> calcShotNoiseForBispectrum(
-            ParticleContainer & P_D, ParticleContainer & P_R,
-            LineOfSight* los_D, LineOfSight* los_R,
-            double alpha, int _ELL_, int _M_) {
-
-		std::complex<double> sum_D = 0.0;
-		std::complex<double> sum_R = 0.0;
-		for(int p = 0; p < P_D.n_tot; p++) {
-			double los[3] = {los_D[p].pos[0], los_D[p].pos[1], los_D[p].pos[2]};
-			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
-			sum_D += pow(P_D[p].w,3) * Ylm;
-		}
-
-		for(int p = 0; p < P_R.n_tot; p++) {
-			double los[3] = {los_R[p].pos[0], los_R[p].pos[1], los_R[p].pos[2]};
-			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, los);
-			sum_R += pow(P_R[p].w,3) * Ylm;
-		}
-
-		return sum_D - pow(alpha,3) * sum_R;
-
-	}
-
-
-	int calc_power_spec(DensityField<ParticleContainer> & density1, DensityField<ParticleContainer> & density2,
-		        	   double * kbin, std::complex<double> shotnoise, int _ELL_, int _M_) {
-
-		double dk_bin = kbin[1] - kbin[0];
-
-		int n_temp = 100000;
-		double dk_temp = 0.0001;
-		std::complex<double> * pk_temp = new std::complex<double>[n_temp];
-		int * n_mode_temp = new int[n_temp];
-	    for(int i = 0; i < n_temp; i++) {
-			pk_temp[i] = 0.0;
-			n_mode_temp[i] = 0.0;
-		}
-	    for(int i = 0; i < this->params.num_kbin; i++) {
-			this->pk[i] = 0.0;
-			this->n_mode_pk[i] = 0.0;
-		}
-
-		/* 場の値の代入*/
-		double kvec[3];
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
-		for(int i = 0; i < this->params.nmesh[0]; i++) {
-		for(int j = 0; j < this->params.nmesh[1]; j++) {
-		for(int k = 0; k < this->params.nmesh[2]; k++) {
-			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
-			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
-			double kmag = sqrt( kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2] );
-			int kindex = int( kmag / dk_temp + 0.5);
-			if(kindex < n_temp) {
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-				// delta^2 = (2pi)^3 delta_D(k1+k2) P(k), where (2pi)^3 delta_D(k1+k2) = V //
-				// P = (V/N^2) |n(k)|^2 //
-				std::complex<double> f1(density1[coord][0], density1[coord][1]);
-				std::complex<double> f2(density2[coord][0], density2[coord][1]);
-				std::complex<double> pk2 = f1 * conj(f2);
+		/// Convert \delta^2 = (2\pi)^3 \delta_D(k_1 + k_2) P(k), where
+		/// (2\pi)^3 \delta_D(k_1 + k_2) <-> V, thus
+		/// P(k) = (V/N^2) |\delta(k)|^2.
+		double kvec[3];
+		for (int i = 0; i < this->params.nmesh[0]; i++) {
+			for (int j = 0; j < this->params.nmesh[1]; j++) {
+				for (int k = 0; k < this->params.nmesh[2]; k++) {
+					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-				/* subtract shotnoise */
-				pk2 -= ( shotnoise * ShotnoiseFunction(kvec) );
+					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] :  (k - this->params.nmesh[2]) * dk[2];
+					double kmag = sqrt(kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2]);
 
-				// assignment function //.
-				double	wf = WindowFunction(kvec);
-				pk2 /= pow(wf,2);
+					int idx_k = int(kmag / dk_sample + 0.5);
+					if (idx_k < n_sample) {
+						std::complex<double> delta_a(density_a[coord_flat][0], density_a[coord_flat][1]);
+						std::complex<double> delta_b(density_b[coord_flat][0], density_b[coord_flat][1]);
+						std::complex<double> mode_power = delta_a * conj(delta_b);
 
-				// spherical harmonics //
-				std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, kvec);
-				pk2 *= Ylm;
+						mode_power -= shotnoise * calc_shotnoise_func(kvec);
 
-				pk_temp[kindex] += pk2;
-				n_mode_temp[kindex]++;
-			}
+						double win = calc_interpolation_window_in_fourier(kvec);
+						mode_power /= pow(win, 2);
 
-		}}}
+						std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, kvec);
+						mode_power *= ylm;
 
-		for(int j = 0; j < this->params.num_kbin; j++) {
-			double lower = ( kbin[j] > dk_bin*0.5 ) ? (kbin[j] - dk_bin * 0.5) : 0.0;
-			double upper = kbin[j] + dk_bin*0.5;
-			for(int i = 0; i < n_temp; i++) {
-				double kmag_temp = double(i) * dk_temp;
-				if( (kmag_temp > lower) && (kmag_temp <= upper) ) {
-					this->pk[j] += pk_temp[i];
-					this->n_mode_pk[j] += n_mode_temp[i];
+						pk_sample[idx_k] += mode_power;
+						nmode_sample[idx_k]++;
+					}
 				}
 			}
 		}
 
-		for(int i = 0; i < this->params.num_kbin; i++) {
-			if(this->n_mode_pk[i] != 0) {
-				this->pk[i] /= double(this->n_mode_pk[i]);
-			} else {
-				this->pk[i] = 0.0;
+		double dkbin = kbin[1] - kbin[0];
+		for (int j = 0; j < this->params.num_kbin; j++) {
+			double k_lower = (kbin[j] > dkbin/2) ? (kbin[j] - dkbin/2) : 0.;
+			double k_upper = kbin[j] + dkbin/2;
+			for (int i = 0; i < n_sample; i++) {
+				double k_sample = double(i) * dk_sample;
+				if (k_sample > k_lower && k_sample <= k_upper) {
+					this->pk[j] += pk_sample[i];
+					this->nmode_pk[j] += nmode_sample[i];
+				}
 			}
 		}
 
-		delete[] pk_temp;
-		delete[] n_mode_temp;
+		for (int i = 0; i < this->params.num_kbin; i++) {
+			if (this->nmode_pk[i] != 0) {
+				this->pk[i] /= double(this->nmode_pk[i]);
+			} else {
+				this->pk[i] = 0.;
+			}
+		}
+
+		delete[] pk_sample;
+		delete[] nmode_sample;
 
 		return 0;
-
 	}
 
-
-	int calcCorrelationFunction(DensityField<ParticleContainer> & density1, DensityField<ParticleContainer> & density2,
-		        	 double * rbin, std::complex<double> shotnoise, int _ELL_, int _M_) {
-
-		fftw_complex * xi3d_temp = fftw_alloc_complex(this->params.nmesh_tot);
-		for(int i = 0; i < this->params.nmesh_tot; i++) {
-			xi3d_temp[i][0] = 0.0;
-			xi3d_temp[i][1] = 0.0;
+	/**
+	 * Calculate correlation function.
+	 *
+	 * @param density_a First density field.
+	 * @param density_b Second density field.
+	 * @param rbin Separation bins.
+	 * @param shotnoise Correlation function shot noise.
+	 * @param ell Degree of the spherical harmonic.
+	 * @param m Order of the spherical harmonic.
+	 * @returns Exit status.
+	 */
+	int calc_corr_func(
+		DensityField<ParticleContainer>& density_a,
+		DensityField<ParticleContainer>& density_b,
+		double* rbin,
+		std::complex<double> shotnoise,
+		int ell, int m
+	) {
+		/// NOTE: Standard variable naming convention overriden.
+		fftw_complex* xi3d_sample = fftw_alloc_complex(this->params.nmesh_tot);
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
+			xi3d_sample[i][0] = 0.;
+			xi3d_sample[i][1] = 0.;
 		}
 
-		/* dk^3 = (1/V) sum_i */
-		double factor  = 1.0 / this->params.volume;
-		double kvec[3];
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
-		for(int i = 0; i < this->params.nmesh[0]; i++) {
-		for(int j = 0; j < this->params.nmesh[1]; j++) {
-		for(int k = 0; k < this->params.nmesh[2]; k++) {
-			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
-			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-			// delta^2 = (2pi)^3 delta_D(k1+k2) P(k), where (2pi)^3 delta_D(k1+k2) = V //
-			// P = (V/N^2) |n(k)|^2 //
-			std::complex<double> f1(density1[coord][0], density1[coord][1]);
-			std::complex<double> f2(density2[coord][0], density2[coord][1]);
-			std::complex<double> pk2 = f1 * conj(f2);
+		/// Convert d^3 k = (1/V) \sum_i.
+		double vol_factor = 1. / this->params.volume;
 
-			/* subtract shotnoise */
-			pk2 -= ( shotnoise * ShotnoiseFunction(kvec) );
+		/// Convert \delta^2 = (2\pi)^3 \delta_D(k_1 + k_2) P(k), where
+		/// (2\pi)^3 \delta_D(k_1 + k_2) <-> V, thus
+		/// P(k) = (V/N^2) |\delta(k)|^2.
+		double kvec[3];
+		for (int i = 0; i < this->params.nmesh[0]; i++) {
+			for (int j = 0; j < this->params.nmesh[1]; j++) {
+				for (int k = 0; k < this->params.nmesh[2]; k++) {
+					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-			/* assiginment function.*/
-			double	wf = WindowFunction(kvec);
-			pk2 /= pow(wf,2);
+					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
 
-			xi3d_temp[coord][0] = factor * pk2.real();
-			xi3d_temp[coord][1] = factor * pk2.imag();
+					std::complex<double> delta_a(density_a[coord_flat][0], density_a[coord_flat][1]);
+					std::complex<double> delta_b(density_b[coord_flat][0], density_b[coord_flat][1]);
+					std::complex<double> mode_power = delta_a * conj(delta_b);
 
-		}}}
+					mode_power -= shotnoise * calc_shotnoise_func(kvec);
 
-		/* Inverse FFTW */
-		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], xi3d_temp, xi3d_temp, FFTW_BACKWARD, FFTW_ESTIMATE);
-		fftw_execute(plan);
-		fftw_destroy_plan(plan);
+					double win = calc_interpolation_window_in_fourier(kvec);
+					mode_power /= pow(win,2);
 
-		int n_temp = 10000;
-		double dr_temp = 0.5;
-		std::complex<double> * xi_temp = new std::complex<double>[n_temp];
-		int * n_mode_temp = new int[n_temp];
-	       	for(int i = 0; i < n_temp; i++) {
-			xi_temp[i] = 0.0;
-			n_mode_temp[i] = 0.0;
-		}
-	       	for(int i = 0; i < this->params.num_rbin; i++) {
-			this->xi[i] = 0.0;
-			this->n_mode_xi[i] = 0.0;
+					xi3d_sample[coord_flat][0] = vol_factor * mode_power.real();
+					xi3d_sample[coord_flat][1] = vol_factor * mode_power.imag();
+				}
+			}
 		}
 
-		double rvec[3];
+		/// Inverse Fourier transform.
+		fftw_plan fft_plan_backward = fftw_plan_dft_3d(
+			this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2],
+			xi3d_sample, xi3d_sample,
+			FFTW_BACKWARD, FFTW_ESTIMATE
+		);
+		fftw_execute(fft_plan_backward);
+		fftw_destroy_plan(fft_plan_backward);
+
+		/// !!!: [Add comment here.]
+		double dr_sample = 0.5;
+
+		int n_sample = 10000;
+		std::complex<double>* xi_sample = new std::complex<double>[n_sample];
+		int* npair_sample = new int[n_sample];
+	  for (int i = 0; i < n_sample; i++) {
+			xi_sample[i] = 0.;
+			npair_sample[i] = 0;
+		}
+
+		for (int i = 0; i < this->params.num_rbin; i++) {
+			this->xi[i] = 0.;
+			this->npair_xi[i] = 0;
+		}
+
 		double dr[3];
 		dr[0] = this->params.boxsize[0] / double(this->params.nmesh[0]);
 		dr[1] = this->params.boxsize[1] / double(this->params.nmesh[1]);
 		dr[2] = this->params.boxsize[2] / double(this->params.nmesh[2]);
-		for(int i = 0; i < this->params.nmesh[0]; i++) {
-		for(int j = 0; j < this->params.nmesh[1]; j++) {
-		for(int k = 0; k < this->params.nmesh[2]; k++) {
-			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
-			rvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dr[0] : (double) (i - this->params.nmesh[0]) * dr[0];
-			rvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dr[1] : (double) (j - this->params.nmesh[1]) * dr[1];
-			rvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dr[2] : (double) (k - this->params.nmesh[2]) * dr[2];
-			double rmag = sqrt( rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2] );
-			int rindex = (int) (rmag / dr_temp + 0.5);
-			if(rindex < n_temp) {
-				std::complex<double> xi2(xi3d_temp[coord][0], xi3d_temp[coord][1]);
 
-				// spherical harmonics //
-				std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(_ELL_, _M_, rvec);
-				xi2 *= Ylm;
+		double rvec[3];
+		for (int i = 0; i < this->params.nmesh[0]; i++) {
+			for (int j = 0; j < this->params.nmesh[1]; j++) {
+				for (int k = 0; k < this->params.nmesh[2]; k++) {
+					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-				xi_temp[rindex] += xi2;
-				n_mode_temp[rindex]++;
+					rvec[0] = (i < this->params.nmesh[0]/2) ? i * dr[0] : (i - this->params.nmesh[0]) * dr[0];
+					rvec[1] = (j < this->params.nmesh[1]/2) ? j * dr[1] : (j - this->params.nmesh[1]) * dr[1];
+					rvec[2] = (k < this->params.nmesh[2]/2) ? k * dr[2] : (k - this->params.nmesh[2]) * dr[2];
+					double rmag = sqrt(rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]);
 
-			}
-		}}}
+					int idx_r = int(rmag / dr_sample + 0.5);
+					if (idx_r < n_sample) {
+						std::complex<double> pair_corr(xi3d_sample[coord_flat][0], xi3d_sample[coord_flat][1]);
 
-		/*****************************************/
-		double dr_bin = rbin[1] - rbin[0];
+						std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, rvec);
+						pair_corr *= ylm;
 
-		for(int j = 0; j < this->params.num_rbin; j++) {
-			double lower = ( rbin[j] > dr_bin*0.5 ) ? (rbin[j] - dr_bin * 0.5) : 0.0;
-			double upper = rbin[j] + dr_bin*0.5;
-			for(int i = 0; i < n_temp; i++) {
-				double rmag_temp = double(i) * dr_temp;
-				if( (rmag_temp > lower) && (rmag_temp <= upper) ) {
-					this->xi[j] += xi_temp[i];
-					this->n_mode_xi[j] += n_mode_temp[i];
+						xi_sample[idx_r] += pair_corr;
+						npair_sample[idx_r]++;
+					}
 				}
 			}
 		}
 
-		for(int i = 0; i < this->params.num_rbin; i++) {
-			if(this->n_mode_xi[i] != 0) {
-				this->xi[i] /= double(this->n_mode_xi[i]);
-			} else {
-				this->xi[i] = 0.0;
+		double drbin = rbin[1] - rbin[0];
+		for (int j = 0; j < this->params.num_rbin; j++) {
+			double r_lower = (rbin[j] > drbin/2) ? (rbin[j] - drbin/2) : 0.;
+			double r_upper = rbin[j] + drbin/2;
+			for (int i = 0; i < n_sample; i++) {
+				double rmag_sample = i * dr_sample;
+				if (rmag_sample > r_lower && rmag_sample <= r_upper) {
+					this->xi[j] += xi_sample[i];
+					this->npair_xi[j] += npair_sample[i];
+				}
 			}
 		}
 
+		for (int i = 0; i < this->params.num_rbin; i++) {
+			if (this->npair_xi[i] != 0) {
+				this->xi[i] /= double(this->npair_xi[i]);
+			} else {
+				this->xi[i] = 0.;
+			}
+		}
 
-		delete[] xi3d_temp;
-		delete[] xi_temp;
-		delete[] n_mode_temp;
+		delete[] xi3d_sample;
+		delete[] xi_sample;
+		delete[] npair_sample;
 
 		return 0;
-
 	}
 
-	int calcShotNoiseForBispectrum_ijk(DensityField<ParticleContainer> & density1, DensityField<ParticleContainer> & density2,
-		        	           std::complex<double> shotnoise, int _ELL_, int _M_, fftw_complex * xi) {
+	/**
+	 * Calculate correlation function for the three-point function.
+	 *
+	 * @param density_a First density field.
+	 * @param density_b Second density field.
+	 * @param rbin Separation bins.
+	 * @param shotnoise Correlation function shot noise.
+	 * @param ell Degree of the spherical harmonic.
+	 * @param m Order of the spherical harmonic.
+	 * @param ylm_a Reduced spherical harmonic on a grid for the first density field.
+	 * @param ylm_b Reduced spherical harmonic on a grid for the second density field.
+	 * @returns Exit status.
+	 */
+	int calc_corr_func_for_3pt_func(
+		DensityField<ParticleContainer>& density_a,
+		DensityField<ParticleContainer>& density_b,
+		double* rbin,
+		std::complex<double> shotnoise,
+		int ell, int m,
+		std::complex<double>* ylm_a, std::complex<double>* ylm_b
+	) {
+		/// NOTE: Standard variable naming convention overriden.
+		fftw_complex* xi3d_sample = fftw_alloc_complex(this->params.nmesh_tot);
+		for (int i = 0; i < this->params.nmesh_tot; i++) {
+			xi3d_sample[i][0] = 0.;
+			xi3d_sample[i][1] = 0.;
+		}
 
-
-		/* dk^3 = (1/V) sum_i */
-		double factor  = 1.0 / this->params.volume;
-		double kvec[3];
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
-		for(int i = 0; i < this->params.nmesh[0]; i++) {
-		for(int j = 0; j < this->params.nmesh[1]; j++) {
-		for(int k = 0; k < this->params.nmesh[2]; k++) {
-			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
-			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-			// delta^2 = (2pi)^3 delta_D(k1+k2) P(k), where (2pi)^3 delta_D(k1+k2) = V //
-			// P = (V/N^2) |n(k)|^2 //
-			std::complex<double> f1(density1[coord][0], density1[coord][1]);
-			std::complex<double> f2(density2[coord][0], density2[coord][1]);
-			std::complex<double> pk2 = f1 * conj(f2);
+		/// Convert d^3 k = (1/V) \sum_i.
+		double vol_factor = 1. / this->params.volume;
 
-			/* subtract shotnoise */
-			pk2 -= ( shotnoise * ShotnoiseFunction(kvec) );
-
-			// win function.
-			double	wf = WindowFunction(kvec);
-			pk2 /= pow(wf,2);
-
-			xi[coord][0] = factor * pk2.real();
-			xi[coord][1] = factor * pk2.imag();
-
-		}}}
-
-		/* Inverse FFTW */
-		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], xi, xi, FFTW_BACKWARD, FFTW_ESTIMATE);
-		fftw_execute(plan);
-		fftw_destroy_plan(plan);
-
-		return 0;
-
-	}
-
-	int calcCorrelationFunctionForThreePointFunction(DensityField<ParticleContainer> & density1, DensityField<ParticleContainer> & density2,
-		        	 double * rbin, std::complex<double> shotnoise, int _ELL_, int _M_,
-				 std::complex<double> * Ylm1, std::complex<double> * Ylm2) {
-
-		fftw_complex * xi3d_temp = fftw_alloc_complex(this->params.nmesh_tot);
-		for(int i = 0; i < this->params.nmesh_tot; i++) {
-			xi3d_temp[i][0] = 0.0;
-			xi3d_temp[i][1] = 0.0;
-		}
-
-		/* dk^3 = (1/V) sum_i */
-		double factor  = 1.0 / this->params.volume;
+		/// Convert \delta^2 = (2\pi)^3 \delta_D(k_1 + k_2) P(k), where
+		/// (2\pi)^3 \delta_D(k_1 + k_2) <-> V, thus
+		/// P(k) = (V/N^2) |\delta(k)|^2.
 		double kvec[3];
-		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
-		for(int i = 0; i < this->params.nmesh[0]; i++) {
-		for(int j = 0; j < this->params.nmesh[1]; j++) {
-		for(int k = 0; k < this->params.nmesh[2]; k++) {
-			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
-			kvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dk[0] : (double) (i - this->params.nmesh[0]) * dk[0];
-			kvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dk[1] : (double) (j - this->params.nmesh[1]) * dk[1];
-			kvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dk[2] : (double) (k - this->params.nmesh[2]) * dk[2];
+		for (int i = 0; i < this->params.nmesh[0]; i++) {
+			for (int j = 0; j < this->params.nmesh[1]; j++) {
+				for (int k = 0; k < this->params.nmesh[2]; k++) {
+					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-			// delta^2 = (2pi)^3 delta_D(k1+k2) P(k), where (2pi)^3 delta_D(k1+k2) = V //
-			// P = (V/N^2) |n(k)|^2 //
-			std::complex<double> f1(density1[coord][0], density1[coord][1]);
-			std::complex<double> f2(density2[coord][0], density2[coord][1]);
-			std::complex<double> pk2 = f1 * conj(f2);
+					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
 
-			/* subtract shotnoise */
-			pk2 -= ( shotnoise * ShotnoiseFunction(kvec) );
+					std::complex<double> delta_a(density_a[coord_flat][0], density_a[coord_flat][1]);
+					std::complex<double> delta_b(density_b[coord_flat][0], density_b[coord_flat][1]);
+					std::complex<double> mode_power = delta_a * conj(delta_b);
 
-			/* assiginment function.*/
-			double	wf = WindowFunction(kvec);
-			pk2 /= pow(wf,2);
+					mode_power -= shotnoise * calc_shotnoise_func(kvec);
 
-			xi3d_temp[coord][0] = factor * pk2.real();
-			xi3d_temp[coord][1] = factor * pk2.imag();
+					double win = calc_interpolation_window_in_fourier(kvec);
+					mode_power /= pow(win,2);
 
-		}}}
-
-		/* Inverse FFTW */
-		fftw_plan plan = fftw_plan_dft_3d(this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], xi3d_temp, xi3d_temp, FFTW_BACKWARD, FFTW_ESTIMATE);
-		fftw_execute(plan);
-		fftw_destroy_plan(plan);
-
-		int n_temp = 10000;
-		double dr_temp = 0.5;
-		std::complex<double> * xi_temp = new std::complex<double>[n_temp];
-		int * n_mode_temp = new int[n_temp];
-	       	for(int i = 0; i < n_temp; i++) {
-			xi_temp[i] = 0.0;
-			n_mode_temp[i] = 0.0;
-		}
-	       	for(int i = 0; i < this->params.num_rbin; i++) {
-			this->xi[i] = 0.0;
-			this->n_mode_xi[i] = 0.0;
+					xi3d_sample[coord_flat][0] = vol_factor * mode_power.real();
+					xi3d_sample[coord_flat][1] = vol_factor * mode_power.imag();
+				}
+			}
 		}
 
-		double rvec[3];
+		/// Inverse Fourier transform.
+		fftw_plan fft_plan_backward = fftw_plan_dft_3d(
+			this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2],
+			xi3d_sample, xi3d_sample,
+			FFTW_BACKWARD, FFTW_ESTIMATE
+		);
+		fftw_execute(fft_plan_backward);
+		fftw_destroy_plan(fft_plan_backward);
+
+		/// !!!: [Add comment here.]
+		double dr_sample = 0.5;
+
+		int n_sample = 10000;
+		std::complex<double>* xi_sample = new std::complex<double>[n_sample];
+		int* npair_sample = new int[n_sample];
+		for (int i = 0; i < n_sample; i++) {
+			xi_sample[i] = 0.;
+			npair_sample[i] = 0;
+		}
+
+		for (int i = 0; i < this->params.num_rbin; i++) {
+			this->xi[i] = 0.;
+			this->npair_xi[i] = 0;
+		}
+
 		double dr[3];
 		dr[0] = this->params.boxsize[0] / double(this->params.nmesh[0]);
 		dr[1] = this->params.boxsize[1] / double(this->params.nmesh[1]);
 		dr[2] = this->params.boxsize[2] / double(this->params.nmesh[2]);
-		for(int i = 0; i < this->params.nmesh[0]; i++) {
-		for(int j = 0; j < this->params.nmesh[1]; j++) {
-		for(int k = 0; k < this->params.nmesh[2]; k++) {
-			long long coord = ( i * this->params.nmesh[1] + j ) * this->params.nmesh[2] + k;
-			rvec[0] = (i < this->params.nmesh[0]/2) ? (double) i * dr[0] : (double) (i - this->params.nmesh[0]) * dr[0];
-			rvec[1] = (j < this->params.nmesh[1]/2) ? (double) j * dr[1] : (double) (j - this->params.nmesh[1]) * dr[1];
-			rvec[2] = (k < this->params.nmesh[2]/2) ? (double) k * dr[2] : (double) (k - this->params.nmesh[2]) * dr[2];
-			double rmag = sqrt( rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2] );
-			int rindex = (int) (rmag / dr_temp + 0.5);
-			if(rindex < n_temp) {
-				std::complex<double> xi2(xi3d_temp[coord][0], xi3d_temp[coord][1]);
 
-				// spherical harmonics //
-				xi2 *= Ylm1[coord] * Ylm2[coord];
+		double rvec[3];
+		for (int i = 0; i < this->params.nmesh[0]; i++) {
+			for (int j = 0; j < this->params.nmesh[1]; j++) {
+				for (int k = 0; k < this->params.nmesh[2]; k++) {
+					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-				xi_temp[rindex] += xi2;
-				n_mode_temp[rindex]++;
+					rvec[0] = (i < this->params.nmesh[0]/2) ? i * dr[0] : (i - this->params.nmesh[0]) * dr[0];
+					rvec[1] = (j < this->params.nmesh[1]/2) ? j * dr[1] : (j - this->params.nmesh[1]) * dr[1];
+					rvec[2] = (k < this->params.nmesh[2]/2) ? k * dr[2] : (k - this->params.nmesh[2]) * dr[2];
+					double rmag = sqrt(rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]);
 
-			}
-		}}}
+					int idx_r = int(rmag / dr_sample + 0.5);
+					if (idx_r < n_sample) {
+						std::complex<double> pair_corr(xi3d_sample[coord_flat][0], xi3d_sample[coord_flat][1]);
 
-		/*****************************************/
+						pair_corr *= ylm_a[coord_flat] * ylm_b[coord_flat];
 
-		double dr_bin[this->params.num_rbin-1];
-		for(int j = 0; j < this->params.num_rbin-1; j++) {
-			dr_bin[j] = rbin[j+1] - rbin[j];
-		}
-		for(int j = 0; j < this->params.num_rbin; j++) {
-
-			double lower = 0.0;
-			if(j ==0) {
-				lower = ( rbin[j] > dr_bin[j] * 0.5) ? (rbin[j] - dr_bin[j] * 0.5) : 0.0;
-			} else {
-				lower = rbin[j] - dr_bin[j-1] * 0.5;
-			}
-			double upper = 0.0;
-			if(j == this->params.num_rbin-1) {
-				upper = (rbin[j] + dr_bin[j-1] * 0.5);
-			} else {
-				upper = (rbin[j] + dr_bin[j] * 0.5);
-			}
-
-			for(int i = 0; i < n_temp; i++) {
-				double rmag_temp = double(i) * dr_temp;
-				if( (rmag_temp > lower) && (rmag_temp <= upper) ) {
-					this->xi[j] += xi_temp[i];
-					this->n_mode_xi[j] += n_mode_temp[i];
+						xi_sample[idx_r] += pair_corr;
+						npair_sample[idx_r]++;
+					}
 				}
 			}
 		}
 
+		double drbin[this->params.num_rbin - 1];
+		for (int j = 0; j < this->params.num_rbin - 1; j++) {
+			drbin[j] = rbin[j + 1] - rbin[j];
+		}
+
+		for (int j = 0; j < this->params.num_rbin; j++) {
+			double r_lower = 0.;
+			if (j == 0) {
+				r_lower = (rbin[j] > drbin[j]/2) ? (rbin[j] - drbin[j]/2) : 0.;
+			} else {
+				r_lower = rbin[j] - drbin[j - 1]/2;
+			}
+
+			double r_upper = 0.;
+			if (j == this->params.num_rbin - 1) {
+				r_upper = (rbin[j] + drbin[j - 1]/2);
+			} else {
+				r_upper = (rbin[j] + drbin[j]/2);
+			}
+
+			for (int i = 0; i < n_sample; i++) {
+				double rmag_sample = i * dr_sample;
+				if (rmag_sample > r_lower && rmag_sample <= r_upper) {
+					this->xi[j] += xi_sample[i];
+					this->npair_xi[j] += npair_sample[i];
+				}
+			}
+		}
+
+		/// NOTE: Standard variable naming convention overriden.
 		double dV = this->params.volume / double(this->params.nmesh_tot);
-		for(int i = 0; i < this->params.num_rbin; i++) {
-			if(this->n_mode_xi[i] != 0) {
-				this->xi[i] *= ( pow(-1.0, this->params.ell1+this->params.ell2)
-						/ double(this->n_mode_xi[i]) / double(this->n_mode_xi[i]) / dV );
+		for (int i = 0; i < this->params.num_rbin; i++) {
+			if (this->npair_xi[i] != 0) {
+				this->xi[i] *= pow(-1., this->params.ell1+this->params.ell2) / dV
+					/ double(this->npair_xi[i]) / double(this->npair_xi[i]);
 			} else {
-				this->xi[i] = 0.0;
+				this->xi[i] = 0.;
 			}
 		}
 
-		delete[] xi3d_temp;
-		delete[] xi_temp;
-		delete[] n_mode_temp;
+		delete[] xi3d_sample;
+		delete[] xi_sample;
+		delete[] npair_sample;
 
 		return 0;
-
 	}
 
+	/**
+	 * Calculate shot noise for power spectrum.
+	 *
+	 * @param particles_data Data-source particle container.
+	 * @param particles_rand Random-source particle container.
+	 * @param los_data Data-source particle lines of sight.
+	 * @param los_rand Random-source particle lines of sight.
+	 * @param alpha Alpha ratio.
+	 * @param ell Degree of the spherical harmonic.
+	 * @param m Order of the spherical harmonic.
+	 * @returns Shot noise for power spectrum.
+	 */
+	std::complex<double> calc_shotnoise_for_power_spec(
+		ParticleContainer& particles_data,
+		ParticleContainer& particles_rand,
+		LineOfSight* los_data,
+		LineOfSight* los_rand,
+		double alpha,
+		int ell, int m
+	) {
+		std::complex<double> sum_data = 0.;
+		std::complex<double> sum_rand = 0.;
 
-	double ShotnoiseFunction(double * kvec) {
-		if(0) {
-		} else if (this->params.assignment == "NGP") {
-			return this->ShotnoiseFunctionNGP(kvec);
-		} else if (this->params.assignment == "CIC") {
-			return this->ShotnoiseFunctionCIC(kvec);
-		} else if (this->params.assignment == "TSC") {
-			return this->ShotnoiseFunctionTSC(kvec);
-		} else {
-			return 0.0;
-		}
-		return 0.0;
-	}
-
-	double ShotnoiseFunctionNGP(const double * kvec) {
-		return 1.0;
-	}
-
-	double ShotnoiseFunctionCIC(const double * kvec) {
-		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
-		int i = int( kvec[0] / dk[0] + 1.0e-5);
-		int j = int( kvec[1] / dk[1] + 1.0e-5);
-		int k = int( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
-		double f1 = (i != 0) ? sin(x1): 0.0;
-		double f2 = (j != 0) ? sin(x2): 0.0;
-		double f3 = (k != 0) ? sin(x3): 0.0;
-		double ret = ( 1.0 - (2.0/3.0) * f1 * f1 ) * ( 1.0 - (2.0/3.0) * f2 * f2 ) * ( 1.0 - (2.0/3.0) * f3 * f3 );
-		return ret;
-	}
-
-	double ShotnoiseFunctionTSC(const double * kvec) {
-		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
-		int i = int( kvec[0] / dk[0] + 1.0e-5);
-		int j = int( kvec[1] / dk[1] + 1.0e-5);
-		int k = int( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
-		double f1 = (i != 0) ? sin(x1): 0.0;
-		double f2 = (j != 0) ? sin(x2): 0.0;
-		double f3 = (k != 0) ? sin(x3): 0.0;
-		double ret = ( 1.0 - f1 * f1 + 2.0 * pow(f1,4) / 15.0 )
-			     * ( 1.0 - f2 * f2 + 2.0 * pow(f2,4) / 15.0 ) * ( 1.0 - f3 * f3 + 2.0 * pow(f3,4) / 15.0 );
-		return ret;
-	}
-
-	double WindowFunction(double * kvec) {
-		if(0) {
-		} else if (this->params.assignment == "NGP") {
-			return this->WindowFunctionNGP(kvec);
-		} else if (this->params.assignment == "CIC") {
-			return this->WindowFunctionCIC(kvec);
-		} else if (this->params.assignment == "TSC") {
-			return this->WindowFunctionTSC(kvec);
-		} else {
-			return 1.0;
+		for (int id = 0; id < particles_data.n_tot; id++) {
+			double los[3] = {
+				los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
+			};
+			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			sum_data += pow(particles_data[id].w, 2) * ylm;
 		}
 
-		return 1.0;
+		for (int id = 0; id < particles_rand.n_tot; id++) {
+			double los[3] = {
+				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
+			};
+			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			sum_rand += pow(particles_rand[id].w, 2) * ylm;
+		}
+
+		return sum_data + pow(alpha, 2) * sum_rand;
 	}
 
-	double WindowFunctionNGP(const double * kvec) {
+	/**
+	 * Calculate shot noise for two-point function window.
+	 *
+	 * @param particles_rand Random-source particle container.
+	 * @param los_rand Random-source particle lines of sight.
+	 * @param alpha Alpha ratio.
+	 * @param ell Degree of the spherical harmonic.
+	 * @param m Order of the spherical harmonic.
+	 * @returns Shot noise for two-point function window.
+	 */
+	std::complex<double> calc_shotnoise_for_2pt_func_window(
+		ParticleContainer& particles_rand,
+		LineOfSight* los_rand,
+		double alpha,
+		int ell, int m
+	) {
+		std::complex<double> sum_rand = 0.;
+		for (int id = 0; id < particles_rand.n_tot; id++) {
+			double los[3] = {
+				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
+			};
+			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			sum_rand += pow(particles_rand[id].w, 2) * ylm;
+		}
+
+		return pow(alpha, 2) * sum_rand;
+	}
+
+	/**
+	 * Calculate shot noise for bispectrum.
+	 *
+	 * @param particles_data Data-source particle container.
+	 * @param particles_rand Random-source particle container.
+	 * @param los_data Data-source particle lines of sight.
+	 * @param los_rand Random-source particle lines of sight.
+	 * @param alpha Alpha ratio.
+	 * @param ell Degree of the spherical harmonic.
+	 * @param m Order of the spherical harmonic.
+	 * @returns Shot noise for bispectrum.
+	 */
+	std::complex<double> calc_shotnoise_for_bispec(
+		ParticleContainer& particles_data, ParticleContainer& particles_rand,
+		LineOfSight* los_data, LineOfSight* los_rand,
+		double alpha,
+		int ell, int m
+	) {
+		std::complex<double> sum_data = 0.;
+		std::complex<double> sum_rand = 0.;
+
+		for (int id = 0; id < particles_data.n_tot; id++) {
+			double los[3] = {
+				los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
+			};
+			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			sum_data += pow(particles_data[id].w, 3) * ylm;
+		}
+
+		for (int id = 0; id < particles_rand.n_tot; id++) {
+			double los[3] = {
+				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
+			};
+			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			sum_rand += pow(particles_rand[id].w,3) * Ylm;
+		}
+
+		return sum_data - pow(alpha, 3) * sum_rand;
+	}
+
+	/**
+	 * Calculate shot noise for bispectrum.
+	 *
+	 * @param density_a First density field.
+	 * @param density_b Second density field.
+	 * @param shotnoise Shot noise.
+	 * @param ell Degree of the spherical harmonic.
+	 * @param m Order of the spherical harmonic.
+	 * @param xi Correlation function.
+	 * @returns Exit status.
+	 */
+	int calc_shotnoise_for_bispec_ijk(
+		DensityField<ParticleContainer>& density_a,
+		DensityField<ParticleContainer>& density_b,
+		std::complex<double> shotnoise,
+		int ell, int m,
+		fftw_complex* xi
+	) {
+		/// Convert d^3 k = (1/V) \sum_i.
+		double vol_factor = 1. / this->params.volume;
+
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
-		int i = (int) ( kvec[0] / dk[0] + 1.0e-5);
-		int j = (int) ( kvec[1] / dk[1] + 1.0e-5);
-		int k = (int) ( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
-		double f1 = (i != 0) ? sin(x1) / x1 : 1.0;
-		double f2 = (j != 0) ? sin(x2) / x2 : 1.0;
-		double f3 = (k != 0) ? sin(x3) / x3 : 1.0;
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-		double ret = f1 * f2 * f3;
-		return pow(ret,1);  // W = ret**3
+		/// Convert \delta^2 = (2\pi)^3 \delta_D(k_1 + k_2) P(k), where
+		/// (2\pi)^3 \delta_D(k_1 + k_2) <-> V, thus
+		/// P(k) = (V/N^2) |\delta(k)|^2.
+		double kvec[3];
+		for (int i = 0; i < this->params.nmesh[0]; i++) {
+			for (int j = 0; j < this->params.nmesh[1]; j++) {
+				for (int k = 0; k < this->params.nmesh[2]; k++) {
+					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
+
+					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
+
+					std::complex<double> oden_a(density_a[coord_flat][0], density_a[coord_flat][1]);
+					std::complex<double> oden_b(density_b[coord_flat][0], density_b[coord_flat][1]);
+					std::complex<double> mode_power = oden_a * conj(oden_b);
+
+					mode_power -= shotnoise * calc_shotnoise_func(kvec);
+
+					double win = calc_interpolation_window_in_fourier(kvec);
+					mode_power /= pow(win, 2);
+
+					xi[i][0] = vol_factor * mode_power.real();
+					xi[i][1] = vol_factor * mode_power.imag();
+				}
+			}
+		}
+
+		/// Inverse Fourier transform.
+		fftw_plan fft_plan_backward = fftw_plan_dft_3d(
+			this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2],
+			xi, xi,
+			FFTW_BACKWARD, FFTW_ESTIMATE
+		);
+		fftw_execute(fft_plan_backward);
+		fftw_destroy_plan(fft_plan_backward);
+
+		return 0;
 	}
 
+	/**
+	 * Calculate the shot noise function.
+	 *
+	 * @param kvec Wavevector.
+	 * @returns Value of the shot noise function.
+	 */
+	double calc_shotnoise_func(double* kvec) {
+		if (0) {
+		} else if (this->params.assignment == "NGP") {
+			return this->calc_shotnoise_func_ngp(kvec);
+		} else if (this->params.assignment == "CIC") {
+			return this->calc_shotnoise_func_cic(kvec);
+		} else if (this->params.assignment == "TSC") {
+			return this->calc_shotnoise_func_tsc(kvec);
+		} else {
+			return 0.;
+		}
 
-	double WindowFunctionCIC(const double * kvec) {
+		return 0.;
+	}
+
+	/**
+	 * Calculate the shot noise function for the nearest-grid-point
+	 * assignment scheme.
+	 *
+	 * @param kvec Wavevector.
+	 * @returns Value of the shot noise function.
+	 */
+	double calc_shotnoise_func_ngp(const double* kvec) {
+		return 1.;
+	}
+
+	/**
+	 * Calculate the shot noise function for the cloud-in-cell
+	 * assignment scheme.
+	 *
+	 * @param kvec Wavevector.
+	 * @returns val Value of the shot noise function.
+	 */
+	double calc_shotnoise_func_cic(const double* kvec) {
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
-		int i = (int) ( kvec[0] / dk[0] + 1.0e-5);
-		int j = (int) ( kvec[1] / dk[1] + 1.0e-5);
-		int k = (int) ( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
-		double f1 = (i != 0) ? sin(x1) / x1 : 1.0;
-		double f2 = (j != 0) ? sin(x2) / x2 : 1.0;
-		double f3 = (k != 0) ? sin(x3) / x3 : 1.0;
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-		double ret = f1 * f2 * f3;
-		return pow(ret,2);  // W = ret**3
+		int i = int(kvec[0] / dk[0] + 1.e-5);
+		int j = int(kvec[1] / dk[1] + 1.e-5);
+		int k = int(kvec[2] / dk[2] + 1.e-5);
+
+		double xk = M_PI * i / double(this->params.nmesh[0]);
+		double yk = M_PI * k / double(this->params.nmesh[1]);
+		double zk = M_PI * k / double(this->params.nmesh[2]);
+
+		double f1 = (i != 0) ? sin(xk): 0.;
+		double f2 = (j != 0) ? sin(yk): 0.;
+		double f3 = (k != 0) ? sin(zk): 0.;
+		double val =
+			(1. - (2./3.) * f1 * f1) * (1. - (2./3.) * f2 * f2) * (1. - (2./3.) * f3 * f3);
+
+		return val;
 	}
 
-
-
-	double WindowFunctionTSC(const double * kvec) {
+	/**
+	 * Calculate the shot noise function for the triangular-shaped-cloud
+	 * assignment scheme.
+	 *
+	 * @param kvec Wavevector.
+	 * @returns val Value of the shot noise function.
+	 */
+	double calc_shotnoise_func_tsc(const double* kvec) {
 		double dk[3];
-		dk[0] = 2.0 * M_PI / this->params.boxsize[0];
-		dk[1] = 2.0 * M_PI / this->params.boxsize[1];
-		dk[2] = 2.0 * M_PI / this->params.boxsize[2];
-		int i = (int) ( kvec[0] / dk[0] + 1.0e-5);
-		int j = (int) ( kvec[1] / dk[1] + 1.0e-5);
-		int k = (int) ( kvec[2] / dk[2] + 1.0e-5);
-		double x1 = M_PI * double(i) / double(this->params.nmesh[0]);
-		double x2 = M_PI * double(j) / double(this->params.nmesh[1]);
-		double x3 = M_PI * double(k) / double(this->params.nmesh[2]);
-		double f1 = (i != 0) ? sin(x1) / x1 : 1.0;
-		double f2 = (j != 0) ? sin(x2) / x2 : 1.0;
-		double f3 = (k != 0) ? sin(x3) / x3 : 1.0;
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-		double ret = f1 * f2 * f3;
-		return pow(ret,3);  // W = ret**3
+		int i = int(kvec[0] / dk[0] + 1.e-5);
+		int j = int(kvec[1] / dk[1] + 1.e-5);
+		int k = int(kvec[2] / dk[2] + 1.e-5);
+
+		double xk = M_PI * i / double(this->params.nmesh[0]);
+		double yk = M_PI * k / double(this->params.nmesh[1]);
+		double zk = M_PI * k / double(this->params.nmesh[2]);
+
+		double f1 = (i != 0) ? sin(xk): 0.;
+		double f2 = (j != 0) ? sin(yk): 0.;
+		double f3 = (k != 0) ? sin(zk): 0.;
+		double val = (1. - f1 * f1 + 2. * pow(f1, 4) / 15.)
+			* (1. - f2 * f2 + 2. * pow(f2, 4) / 15.)
+			* (1. - f3 * f3 + 2. * pow(f3, 4) / 15.);
+
+		return val;
 	}
 
+	/**
+	 * Calculate interpolarion window in Fourier space for
+	 * assignment schemes.
+	 *
+	 * @param kvec Wavevector.
+	 * @returns Window value in Fourier space.
+	 */
+	double calc_interpolation_window_in_fourier(double* kvec) {
+		if (0) {
+		} else if (this->params.assignment == "NGP") {
+			return this->calc_interpolation_window_ngp(kvec);
+		} else if (this->params.assignment == "CIC") {
+			return this->calc_interpolation_window_cic(kvec);
+		} else if (this->params.assignment == "TSC") {
+			return this->calc_interpolation_window_tsc(kvec);
+		} else {
+			return 1.;
+		}
 
-
-	std::complex<double> calcShotNoiseForPowerspectrum_in_boxForReconstruction(ParticleContainer & P_D, ParticleContainer & P_R, double alpha) {
-
-		std::complex<double> sum_D = double(P_D.n_tot);
-		std::complex<double> sum_R = double(P_R.n_tot);
-
-		return sum_D + pow(alpha,2) * sum_R;
-
+		return 1.;
 	}
+
+	/**
+	 * Calculate interpolarion window in Fourier space for
+	 * the nearest-grid-point assignment scheme.
+	 *
+	 * @param kvec Wavevector.
+	 * @returns Window value in Fourier space.
+	 */
+	double calc_interpolation_window_ngp(const double* kvec) {
+		double dk[3];
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
+
+		int i = int(kvec[0] / dk[0] + 1.e-5);
+		int j = int(kvec[1] / dk[1] + 1.e-5);
+		int k = int(kvec[2] / dk[2] + 1.e-5);
+
+		double xk = M_PI * i / double(this->params.nmesh[0]);
+		double yk = M_PI * j / double(this->params.nmesh[1]);
+		double zk = M_PI * k / double(this->params.nmesh[2]);
+
+		double w1 = (i != 0) ? sin(xk) / xk : 1.;
+		double w2 = (j != 0) ? sin(yk) / yk : 1.;
+		double w3 = (k != 0) ? sin(zk) / zk : 1.;
+		double wk = w1 * w2 * w3;
+
+		return pow(wk, 1);
+	}
+
+	/**
+	 * Calculate interpolarion window in Fourier space for
+	 * the cloud-in-cell assignment scheme.
+	 *
+	 * @param kvec Wavevector.
+	 * @returns Window value in Fourier space.
+	 */
+	double calc_interpolation_window_cic(const double* kvec) {
+		double dk[3];
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
+
+		int i = int(kvec[0] / dk[0] + 1.e-5);
+		int j = int(kvec[1] / dk[1] + 1.e-5);
+		int k = int(kvec[2] / dk[2] + 1.e-5);
+
+		double xk = M_PI * i / double(this->params.nmesh[0]);
+		double yk = M_PI * j / double(this->params.nmesh[1]);
+		double zk = M_PI * k / double(this->params.nmesh[2]);
+
+		double w1 = (i != 0) ? sin(xk) / xk : 1.;
+		double w2 = (j != 0) ? sin(yk) / yk : 1.;
+		double w3 = (k != 0) ? sin(zk) / zk : 1.;
+		double wk = w1 * w2 * w3;
+
+		return pow(wk, 2);
+	}
+
+	/**
+	 * Calculate interpolarion window in Fourier space for
+	 * the triangular-shaped-cloud assignment scheme.
+	 *
+	 * @param kvec Wavevector.
+	 * @returns Window value in Fourier space.
+	 */
+	double calc_interpolation_window_tsc(const double* kvec) {
+		double dk[3];
+		dk[0] = 2.*M_PI / this->params.boxsize[0];
+		dk[1] = 2.*M_PI / this->params.boxsize[1];
+		dk[2] = 2.*M_PI / this->params.boxsize[2];
+
+		int i = int(kvec[0] / dk[0] + 1.e-5);
+		int j = int(kvec[1] / dk[1] + 1.e-5);
+		int k = int(kvec[2] / dk[2] + 1.e-5);
+
+		double xk = M_PI * i / double(this->params.nmesh[0]);
+		double yk = M_PI * j / double(this->params.nmesh[1]);
+		double zk = M_PI * k / double(this->params.nmesh[2]);
+
+		double w1 = (i != 0) ? sin(xk) / xk : 1.;
+		double w2 = (j != 0) ? sin(yk) / yk : 1.;
+		double w3 = (k != 0) ? sin(zk) / zk : 1.;
+		double wk = w1 * w2 * w3;
+
+		return pow(wk, 3);
+	}
+
+	/**
+	 * Calculate shot noise for the power spectrum in a periodic box
+	 * for reconstruction.
+	 *
+	 * @param particles_data Data-source particle container.
+	 * @param particles_rand Random-source particle container.
+	 * @param alpha Alpha ratio.
+	 * @returns Shot noise for the power spectrum.
+	 */
+	std::complex<double> calc_shotnoise_for_power_spec_in_box_for_reconstruction(
+		ParticleContainer& particles_data,
+		ParticleContainer& particles_rand,
+		double alpha
+	) {
+		std::complex<double> sum_data = double(particles_data.n_tot);
+		std::complex<double> sum_rand = double(particles_rand.n_tot);
+
+		return sum_data + pow(alpha, 2) * sum_rand;
+	}
+
+ private:
+	ParameterSet params;
 };
 
 #endif

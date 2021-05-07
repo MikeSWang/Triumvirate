@@ -224,7 +224,7 @@ class ParameterSet {
 	 * Set I/O paths and directories for data and random catalogue files
 	 * and processed results.
 	 *
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	int set_io_files() {
 		/// Set survey data and random catalogue inputs.
@@ -296,7 +296,7 @@ class ParameterSet {
 	 * Print out and check extracted parameters as valid input (i.e. used
 	 * parameters).
 	 *
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	int check_parameters() {
 		/// Print out extracted parameters to a file.
@@ -361,7 +361,7 @@ class ParameterSet {
 	 * Print out extracted parameters which are used in a process.
 	 *
 	 * @param used_param_file_ptr Pointer to file containing used parameters.
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	int print_parameters(FILE* used_param_file_ptr) {
 		/// IDEA: Perhaps the following code block could be refactored
