@@ -7,12 +7,12 @@
 
 int calc_power_spec(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
-        LineOfSight* los_D, LineOfSight* los_R,
+        LineOfSight* los_data, LineOfSight* los_rand,
         ParameterSet & param, double alpha, double * kbin, double vol_survey) {
 
-	if(thisTask == 0) { printf("start to compute power spectrum...\n");}
+	if (thisTask == 0) { printf("start to compute power spectrum...\n");}
 
-	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
+	if (!((param.ELL == param.ell1) && (param.ell2 == 0))) {
 		printf("This multipole combination is not allowed.\n");
 		printf("It should be ELL == ell1 and ell2 == 0\n");
 		exit(1);
@@ -22,60 +22,60 @@ int calc_power_spec(
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00(param);
-	dn_00.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, 0, 0);
+	dn_00.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
-	dn_00.calcFourierTransform();
+	dn_00.calc_fourier_transform();
 
 	/* define pk_save */
 	std::complex<double> * pk_save = new std::complex<double>[param.num_kbin];
-	for(int i =0; i < param.num_kbin; i++) {
+	for (int i =0; i < param.num_kbin; i++) {
 		pk_save[i] = 0.0;
 	}
 
 	/* calc power spectrum */
-	for(int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
 
 		/****************************************/
 		/* calc the ylm-weighted density fluctuation */
 		DensityField<ParticleBOSSClass> dn_LM(param);
-		dn_LM.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
+		dn_LM.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		/* Fourier transform*/
-		dn_LM.calcFourierTransform();
+		dn_LM.calc_fourier_transform();
 
 		/* calc shotnoise term */
 		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
-		std::complex<double> shotnoise = stat.calcShotNoiseForPowerspectrum(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
+		std::complex<double> shotnoise = stat.calc_shotnoise_for_power_spec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 
-	for(int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
+	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
 
 		/*****/
 		/* (-1)**m1 delta_{m1, -M} */
 		double w = wigner_3j(param.ell1, 0, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, 0, param.ELL, _m1_, 0, _M_);
 		w *= double(2*param.ELL+1) * double(2*param.ell1+1);
-		if(fabs(w) < 1.0e-10) {
+		if (fabs(w) < 1.0e-10) {
 			continue;
 		}
 
 		stat.calc_power_spec(dn_LM, dn_00, kbin, shotnoise, param.ell1, _m1_);
 
-		for(int i =0; i < param.num_kbin; i++) {
+		for (int i =0; i < param.num_kbin; i++) {
 			pk_save[i] += w * stat.pk[i];
 	       	}
 
 	}
 		durationInSec = double(clock() - timeStart);
-		if(thisTask == 0) {
+		if (thisTask == 0) {
 			printf("M = %d | %.3f sec\n", _M_, durationInSec / CLOCKS_PER_SEC);
 		}
 	}
 
-	double norm = ParticleBOSSClass::calc_norm_for_power_spectrum(P_D, vol_survey);
+	double norm = ParticleBOSSClass::calc_norm_for_power_spec(P_D, vol_survey);
 
 	FILE * fp;
 	char buf[1024];
 	sprintf(buf, "%s/pk%d", param.output_dir.c_str(), param.ELL);
 	fp = fopen(buf, "w");
-	for(int i =0; i < param.num_kbin; i++) {
+	for (int i =0; i < param.num_kbin; i++) {
 		fprintf(fp, "%.5f \t %.7e\n", kbin[i], norm * pk_save[i].real());
 	}
 	fclose(fp);
@@ -86,12 +86,12 @@ int calc_power_spec(
 
 int calc_2pt_func(
         ParticleBOSSClass & P_D, ParticleBOSSClass & P_R,
-        LineOfSight* los_D, LineOfSight* los_R,
+        LineOfSight* los_data, LineOfSight* los_rand,
         ParameterSet & param, double alpha, double * rbin, double vol_survey) {
 
-	if(thisTask == 0) { printf("start to compute two-point correlation function...\n");}
+	if (thisTask == 0) { printf("start to compute two-point correlation function...\n");}
 
-	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
+	if (!((param.ELL == param.ell1) && (param.ell2 == 0))) {
 		printf("This multipole combination is not allowed.\n");
 		printf("It should be ELL == ell1 and ell2 == 0\n");
 		exit(1);
@@ -101,60 +101,60 @@ int calc_2pt_func(
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00(param);
-	dn_00.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, 0, 0);
+	dn_00.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
-	dn_00.calcFourierTransform();
+	dn_00.calc_fourier_transform();
 
 	/* define xi_save */
 	std::complex<double> * xi_save = new std::complex<double>[param.num_rbin];
-	for(int i =0; i < param.num_rbin; i++) {
+	for (int i =0; i < param.num_rbin; i++) {
 		xi_save[i] = 0.0;
 	}
 
 	/* calc power spectrum */
-	for(int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
 
 		/****************************************/
 		/* calc the ylm-weighted density fluctuation */
 		DensityField<ParticleBOSSClass> dn_LM(param);
-		dn_LM.calcYlmWeightedDensityFluctuation(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
+		dn_LM.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		/* Fourier transform*/
-		dn_LM.calcFourierTransform();
+		dn_LM.calc_fourier_transform();
 
 		/* calc shotnoise term */
 		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
-		std::complex<double> shotnoise = stat.calcShotNoiseForPowerspectrum(P_D, P_R, los_D, los_R, alpha, param.ELL, _M_);
+		std::complex<double> shotnoise = stat.calc_shotnoise_for_power_spec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 
-	for(int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
+	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
 
 		/*****/
 		/* (-1)**m1 delta_{m1, -M} */
 		double w = wigner_3j(param.ell1, 0, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, 0, param.ELL, _m1_, 0, _M_);
 		w *= double(2*param.ELL+1) * double(2*param.ell1+1);
-		if(fabs(w) < 1.0e-10) {
+		if (fabs(w) < 1.0e-10) {
 			continue;
 		}
 
-		stat.calcCorrelationFunction(dn_LM, dn_00, rbin, shotnoise, param.ell1, _m1_);
+		stat.calc_corr_func(dn_LM, dn_00, rbin, shotnoise, param.ell1, _m1_);
 
-		for(int i =0; i < param.num_rbin; i++) {
+		for (int i =0; i < param.num_rbin; i++) {
 			xi_save[i] += w * stat.xi[i];
 	       	}
 
 	}
 		durationInSec = double(clock() - timeStart);
-		if(thisTask == 0) {
+		if (thisTask == 0) {
 			printf("M = %d | %.3f sec\n", _M_, durationInSec / CLOCKS_PER_SEC);
 		}
 	}
 
-	double norm = ParticleBOSSClass::calc_norm_for_power_spectrum(P_D, vol_survey);
+	double norm = ParticleBOSSClass::calc_norm_for_power_spec(P_D, vol_survey);
 
 	FILE * fp;
 	char buf[1024];
 	sprintf(buf, "%s/xi%d", param.output_dir.c_str(), param.ELL);
 	fp = fopen(buf, "w");
-	for(int i =0; i < param.num_rbin; i++) {
+	for (int i =0; i < param.num_rbin; i++) {
 		fprintf(fp, "%.5f \t %.7e\n", rbin[i], norm * xi_save[i].real());
 	}
 	fclose(fp);
@@ -166,12 +166,12 @@ int calc_2pt_func(
 
 int calc_power_specWindowFunction(
         ParticleBOSSClass & P_R,
-        LineOfSight* los_R,
+        LineOfSight* los_rand,
         ParameterSet & param, double alpha, double * kbin, double vol_survey) {
 
-	if(thisTask == 0) { printf("start to compute two-point window function...\n");}
+	if (thisTask == 0) { printf("start to compute two-point window function...\n");}
 
-	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
+	if (!((param.ELL == param.ell1) && (param.ell2 == 0))) {
 		printf("This multipole combination is not allowed.\n");
 		printf("It should be ELL == ell1 and ell2 == 0\n");
 		exit(1);
@@ -181,14 +181,14 @@ int calc_power_specWindowFunction(
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00(param);
-	dn_00.calcYlmWeightedMeanDensity(P_R, los_R, alpha, 0, 0);
+	dn_00.calc_ylm_weighted_mean_density(P_R, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
-	dn_00.calcFourierTransform();
+	dn_00.calc_fourier_transform();
 
 	/* define pk_save */
 	std::complex<double> * pk_save = new std::complex<double>[param.num_kbin];
 
-	for(int i =0; i < param.num_kbin; i++) {
+	for (int i =0; i < param.num_kbin; i++) {
 		pk_save[i] = 0.0;
 	}
 
@@ -197,19 +197,19 @@ int calc_power_specWindowFunction(
 
 	/* calc shotnoise term */
 	TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
-	std::complex<double> shotnoise = stat.calcShotNoiseForTwoPointWindowFunction(P_R, los_R, alpha, param.ELL, 0);
+	std::complex<double> shotnoise = stat.calcShotNoiseForTwoPointWindowFunction(P_R, los_rand, alpha, param.ELL, 0);
 
 	std::cout << "BITE = " << bytes << std::endl;
 
 	stat.calc_power_spec(dn_00, dn_00, kbin, shotnoise, param.ell1, 0);
 
-	for(int i =0; i < param.num_kbin; i++) {
+	for (int i =0; i < param.num_kbin; i++) {
 		pk_save[i] += stat.pk[i];
 	}
 
 	std::cout << "BITE = " << bytes << std::endl;
 
-	double norm = ParticleBOSSClass::calc_norm_for_power_spectrum(P_R, vol_survey);
+	double norm = ParticleBOSSClass::calc_norm_for_power_spec(P_R, vol_survey);
 	norm /= (alpha * alpha);
 
 	/***********************************************/
@@ -224,7 +224,7 @@ int calc_power_specWindowFunction(
 	char buf[1024];
 	sprintf(buf, "%s/pk%d_window", param.output_dir.c_str(), param.ELL);
 	fp = fopen(buf, "w");
-	for(int i =0; i < param.num_kbin; i++) {
+	for (int i =0; i < param.num_kbin; i++) {
 		fprintf(fp, "%.5f \t %.7e\n", kbin[i], norm * pk_save[i].real());
 	}
 	fclose(fp);
@@ -240,11 +240,11 @@ int calc_power_specWindowFunction(
 
 int calc_2pt_func_window(
         ParticleBOSSClass & P_R,
-        LineOfSight* los_R,
+        LineOfSight* los_rand,
         ParameterSet & param, double alpha, double * rbin, double vol_survey) {
-	if(thisTask == 0) { printf("start to compute two-point window function...\n");}
+	if (thisTask == 0) { printf("start to compute two-point window function...\n");}
 
-	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
+	if (!((param.ELL == param.ell1) && (param.ell2 == 0))) {
 		printf("This multipole combination is not allowed.\n");
 		printf("It should be ELL == ell1 and ell2 == 0\n");
 		exit(1);
@@ -254,63 +254,63 @@ int calc_2pt_func_window(
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00(param);
-	dn_00.calcYlmWeightedMeanDensity(P_R, los_R, alpha, 0, 0);
+	dn_00.calc_ylm_weighted_mean_density(P_R, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
-	dn_00.calcFourierTransform();
+	dn_00.calc_fourier_transform();
 
 	/* define xi_save */
 	std::complex<double> * xi_save = new std::complex<double>[param.num_rbin];
 
 
-	for(int i =0; i < param.num_rbin; i++) {
+	for (int i =0; i < param.num_rbin; i++) {
 		xi_save[i] = 0.0;
 	}
 
 	/* calc power spectrum */
-	for(int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
 
 		/****************************************/
 		/* calc the ylm-weighted density fluctuation */
 		DensityField<ParticleBOSSClass> dn_LM(param);
-		dn_LM.calcYlmWeightedMeanDensity(P_R, los_R, alpha, param.ELL, _M_);
+		dn_LM.calc_ylm_weighted_mean_density(P_R, los_rand, alpha, param.ELL, _M_);
 		/* Fourier transform*/
-		dn_LM.calcFourierTransform();
+		dn_LM.calc_fourier_transform();
 
 		/* calc shotnoise term */
 		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
-		std::complex<double> shotnoise = stat.calcShotNoiseForTwoPointWindowFunction(P_R, los_R, alpha, param.ELL, _M_);
+		std::complex<double> shotnoise = stat.calcShotNoiseForTwoPointWindowFunction(P_R, los_rand, alpha, param.ELL, _M_);
 
-	for(int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
+	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
 
 		/*****/
 		/* (-1)**m1 delta_{m1, -M} */
 		double w = wigner_3j(param.ell1, 0, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, 0, param.ELL, _m1_, 0, _M_);
 		w *= double(2*param.ELL+1) * double(2*param.ell1+1);
-		if(fabs(w) < 1.0e-10) {
+		if (fabs(w) < 1.0e-10) {
 			continue;
 		}
 
-		stat.calcCorrelationFunction(dn_LM, dn_00, rbin, shotnoise, param.ell1, _m1_);
+		stat.calc_corr_func(dn_LM, dn_00, rbin, shotnoise, param.ell1, _m1_);
 
-		for(int i =0; i < param.num_rbin; i++) {
+		for (int i =0; i < param.num_rbin; i++) {
 			xi_save[i] += w * stat.xi[i];
 	       	}
 
 	}
 		durationInSec = double(clock() - timeStart);
-		if(thisTask == 0) {
+		if (thisTask == 0) {
 			printf("M = %d | %.3f sec\n", _M_, durationInSec / CLOCKS_PER_SEC);
 		}
 	}
 
-	double norm = ParticleBOSSClass::calc_norm_for_power_spectrum(P_R, vol_survey);
+	double norm = ParticleBOSSClass::calc_norm_for_power_spec(P_R, vol_survey);
 	norm /= (alpha * alpha);
 
 	FILE * fp;
 	char buf[1024];
 	sprintf(buf, "%s/xi%d_window", param.output_dir.c_str(), param.ELL);
 	fp = fopen(buf, "w");
-	for(int i =0; i < param.num_rbin; i++) {
+	for (int i =0; i < param.num_rbin; i++) {
 		fprintf(fp, "%.5f \t %.7e\n", rbin[i], norm * xi_save[i].real());
 	}
 	fclose(fp);
@@ -320,9 +320,9 @@ int calc_2pt_func_window(
 }
 
 int calc_power_spec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * kbin) {
-	if(thisTask == 0) { printf("start to compute power spectrum...\n");}
+	if (thisTask == 0) { printf("start to compute power spectrum...\n");}
 
-	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
+	if (!((param.ELL == param.ell1) && (param.ell2 == 0))) {
 		printf("This multipole combination is not allowed.\n");
 		printf("It should be ELL == ell1 and ell2 == 0\n");
 		exit(1);
@@ -332,14 +332,14 @@ int calc_power_spec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn(param);
-	dn.calcNormalDensityFluctuation_in_box(P_D, param);
+	dn.calc_normal_density_field_in_box(P_D, param);
 	/* Fourier transform*/
-	dn.calcFourierTransform();
+	dn.calc_fourier_transform();
 
 	/* define pk_save */
 //	std::complex<double> pk_save[param.num_kbin];
 	std::complex<double> * pk_save = new std::complex<double>[param.num_kbin];
-	for(int i =0; i < param.num_kbin; i++) {
+	for (int i =0; i < param.num_kbin; i++) {
 		pk_save[i] = 0.0;
 	}
 
@@ -349,12 +349,12 @@ int calc_power_spec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double
 
 	stat.calc_power_spec(dn, dn, kbin, shotnoise, param.ELL, 0);
 
-	for(int i =0; i < param.num_kbin; i++) {
+	for (int i =0; i < param.num_kbin; i++) {
 		pk_save[i] += double(2*param.ELL+1) * stat.pk[i];
        	}
 
 	durationInSec = double(clock() - timeStart);
-	if(thisTask == 0) {
+	if (thisTask == 0) {
 		printf("%.3f sec\n", durationInSec / CLOCKS_PER_SEC);
 	}
 
@@ -364,7 +364,7 @@ int calc_power_spec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double
 	char buf[1024];
 	sprintf(buf, "%s/pk%d", param.output_dir.c_str(), param.ELL);
 	fp = fopen(buf, "w");
-	for(int i =0; i < param.num_kbin; i++) {
+	for (int i =0; i < param.num_kbin; i++) {
 		fprintf(fp, "%.5f \t %.7e\n", kbin[i], norm * pk_save[i].real());
 	}
 	fclose(fp);
@@ -375,9 +375,9 @@ int calc_power_spec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double
 }
 
 int calc_2pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * rbin) {
-	if(thisTask == 0) { printf("start to compute two-point correlation function...\n");}
+	if (thisTask == 0) { printf("start to compute two-point correlation function...\n");}
 
-	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
+	if (!((param.ELL == param.ell1) && (param.ell2 == 0))) {
 		printf("This multipole combination is not allowed.\n");
 		printf("It should be ELL == ell1 and ell2 == 0\n");
 		exit(1);
@@ -387,13 +387,13 @@ int calc_2pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn(param);
-	dn.calcNormalDensityFluctuation_in_box(P_D, param);
+	dn.calc_normal_density_field_in_box(P_D, param);
 	/* Fourier transform*/
-	dn.calcFourierTransform();
+	dn.calc_fourier_transform();
 
 	/* define xi_save */
 	std::complex<double> * xi_save = new std::complex<double>[param.num_rbin];
-	for(int i =0; i < param.num_rbin; i++) {
+	for (int i =0; i < param.num_rbin; i++) {
 		xi_save[i] = 0.0;
 	}
 
@@ -401,14 +401,14 @@ int calc_2pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
 	std::complex<double> shotnoise = double(P_D.n_tot);
 
-	stat.calcCorrelationFunction(dn, dn, rbin, shotnoise, param.ELL, 0);
+	stat.calc_corr_func(dn, dn, rbin, shotnoise, param.ELL, 0);
 
-	for(int i =0; i < param.num_rbin; i++) {
+	for (int i =0; i < param.num_rbin; i++) {
 		xi_save[i] += double(2*param.ELL+1) * stat.xi[i];
 	}
 
 	durationInSec = double(clock() - timeStart);
-	if(thisTask == 0) {
+	if (thisTask == 0) {
 		printf("%.3f sec\n", durationInSec / CLOCKS_PER_SEC);
 	}
 
@@ -418,7 +418,7 @@ int calc_2pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	char buf[1024];
 	sprintf(buf, "%s/xi%d", param.output_dir.c_str(), param.ELL);
 	fp = fopen(buf, "w");
-	for(int i =0; i < param.num_rbin; i++) {
+	for (int i =0; i < param.num_rbin; i++) {
 		fprintf(fp, "%.5f \t %.7e\n", rbin[i], norm * xi_save[i].real());
 	}
 	fclose(fp);
@@ -430,9 +430,9 @@ int calc_2pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 
 
 int calc_power_spec_in_boxForReconstruction(ParticleBOSSClass & P_D, ParticleBOSSClass & P_R, ParameterSet & param, double alpha, double * kbin) {
-	if(thisTask == 0) { printf("start to compute power spectrum...\n");}
+	if (thisTask == 0) { printf("start to compute power spectrum...\n");}
 
-	if( !( (param.ELL == param.ell1) && (param.ell2 == 0) ) ) {
+	if (!((param.ELL == param.ell1) && (param.ell2 == 0))) {
 		printf("This multipole combination is not allowed.\n");
 		printf("It should be ELL == ell1 and ell2 == 0\n");
 		exit(1);
@@ -442,29 +442,29 @@ int calc_power_spec_in_boxForReconstruction(ParticleBOSSClass & P_D, ParticleBOS
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn(param);
-	dn.calcNormalDensityFluctuation_in_boxForReconstruction(P_D, P_R, alpha);
+	dn.calc_normal_density_field_in_box_for_reconstruction(P_D, P_R, alpha);
 	/* Fourier transform*/
-	dn.calcFourierTransform();
+	dn.calc_fourier_transform();
 
 	/* define pk_save */
 //	std::complex<double> pk_save[param.num_kbin];
 	std::complex<double> * pk_save = new std::complex<double>[param.num_kbin];
-	for(int i =0; i < param.num_kbin; i++) {
+	for (int i =0; i < param.num_kbin; i++) {
 		pk_save[i] = 0.0;
 	}
 
 	/* calc shotnoise term */
 	TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
-	std::complex<double> shotnoise = stat.calcShotNoiseForPowerspectrum_in_boxForReconstruction(P_D, P_R, alpha);
+	std::complex<double> shotnoise = stat.calc_shotnoise_for_power_spec_in_box_for_reconstruction(P_D, P_R, alpha);
 
 	stat.calc_power_spec(dn, dn, kbin, shotnoise, param.ELL, 0);
 
-	for(int i =0; i < param.num_kbin; i++) {
+	for (int i =0; i < param.num_kbin; i++) {
 		pk_save[i] += double(2*param.ELL+1) * stat.pk[i];
        	}
 
 	durationInSec = double(clock() - timeStart);
-	if(thisTask == 0) {
+	if (thisTask == 0) {
 		printf("%.3f sec\n", durationInSec / CLOCKS_PER_SEC);
 	}
 
@@ -474,7 +474,7 @@ int calc_power_spec_in_boxForReconstruction(ParticleBOSSClass & P_D, ParticleBOS
 	char buf[1024];
 	sprintf(buf, "%s/pk%d", param.output_dir.c_str(), param.ELL);
 	fp = fopen(buf, "w");
-	for(int i =0; i < param.num_kbin; i++) {
+	for (int i =0; i < param.num_kbin; i++) {
 		fprintf(fp, "%.5f \t %.7e\n", kbin[i], norm * pk_save[i].real());
 	}
 	fclose(fp);

@@ -95,7 +95,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	 * Read in particle data from file.
 	 *
 	 * @param particles_file Input file path.
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	int read_particles_BOSS(std::string& particles_file) {  // FIXME: change function name
 
@@ -152,7 +152,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	 * Test the reading in of particle data from file.
 	 *
 	 * @param particles_file Input file path.
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	int read_particles_test(std::string& particles_file) {
 
@@ -212,7 +212,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	/**
 	 * Calculate extreme data values.
 	 *
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	int calc_min_and_max() {
 
@@ -261,18 +261,18 @@ class ParticleBOSSClass {  // FIXME: change class name
 	/**
 	 * Calculate the alpha ratio (of weighted number counts or number densities).
 	 *
-	 * @param particles_data Source-data particle data.
-	 * @param particles_rand Random particle data.
+	 * @param particles_data Data-source particle container.
+	 * @param particles_rand Random-source particle container.
 	 * @returns alpha Alpha ratio.
 	 */
 	static double calc_alpha_ratio(ParticleBOSSClass& particles_data, ParticleBOSSClass& particles_rand) {
 		double num_wgt_data = 0.;
-		for(int id = 0; id < particles_data.n_tot; id++) {
+		for (int id = 0; id < particles_data.n_tot; id++) {
 			num_wgt_data += particles_data[id].w;
 		}
 
 		double num_wgt_rand = 0.;
-		for(int id = 0; id < particles_rand.n_tot; id++) {
+		for (int id = 0; id < particles_rand.n_tot; id++) {
 			num_wgt_rand += particles_rand[id].w;
 		}
 
@@ -284,13 +284,13 @@ class ParticleBOSSClass {  // FIXME: change class name
 	/**
 	 * Calculate power spectrum normalisation.
 	 *
-	 * @param particles_data Source-data particle data.
+	 * @param particles_data Data-source particle container.
 	 * @param vol_survey Survey volume.
 	 * @returns norm Normalisation constant.
 	 */
-	static double calc_norm_for_power_spectrum(ParticleBOSSClass& particles_data, double vol_survey) {
+	static double calc_norm_for_power_spec(ParticleBOSSClass& particles_data, double vol_survey) {
 		double num_wgt_data = 0.0;
-		for(int id = 0; id < particles_data.n_tot; id++) {
+		for (int id = 0; id < particles_data.n_tot; id++) {
 			num_wgt_data += particles_data[id].w;
 		}
 
@@ -302,13 +302,13 @@ class ParticleBOSSClass {  // FIXME: change class name
 	/**
 	 * Calculate bispectrum normalisation.
 	 *
-	 * @param particles_data Source-data particle data.
+	 * @param particles_data Data-source particle container.
 	 * @param vol_survey Survey volume.
 	 * @returns norm Normalisation constant.
 	 */
 	static double calc_norm_for_bispectrum(ParticleBOSSClass& particles_data, double vol_survey) {
 		double num_wgt_data = 0.0;
-		for(int id = 0; id < particles_data.n_tot; id++) {
+		for (int id = 0; id < particles_data.n_tot; id++) {
 			num_wgt_data += particles_data[id].w;
 		}
 
@@ -323,7 +323,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	 * Offset particle positions.
 	 *
 	 * @param dpos Position offset vector (subtractive).
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	int offset_particles(const double* dpos) {
 		if (particles == NULL) {
@@ -343,7 +343,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	 * Offset particle positions for periodic boundary conditions.
 	 *
 	 * @param params Input parameter set.
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	int offset_particles_for_periodicity(ParameterSet& params) {
 		for (int id = 0; id < this->n_tot; id++) {
@@ -365,11 +365,11 @@ class ParticleBOSSClass {  // FIXME: change class name
 	/**
 	 * Offset particle positions for FFTs (by grid adjustment).
 	 *
-	 * @param particles_data Source-data particle data.
-	 * @param particles_rand Random particle data.
+	 * @param particles_data Data-source particle container.
+	 * @param particles_rand Random-soruce particle data.
 	 * @param params Input parameter set.
 	 * @param factor Offset grid adjustment factor (default is 3.).
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	static int offset_particles_for_fft(
 			ParticleBOSSClass& particles_data,
@@ -405,7 +405,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	 * centring inside the pre-determined box).
 	 *
 	 * @param params Input parameter set.
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	int offset_particles_for_window(ParameterSet& params) {
 		double xmid = this->pos_min[0] + (this->pos_max[0] - this->pos_min[0]) / 2.;

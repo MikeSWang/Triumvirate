@@ -44,31 +44,31 @@ class ToolCollection {
 		const double eps = 1.e-15;
 
 		/// Calculate magnitudes.
-		double mag_xyz_square = 0.;
+		double xyz_mag_square = 0.;
 		for (int axis = 0; axis < 3; axis++) {
-			mag_xyz_square += pos[axis] * pos[axis];
+			xyz_mag_square += pos[axis] * pos[axis];
 		}  // r^2 = x^2 + y^2 + z^2
 
-		double mag_xyz = sqrt(mag_xyz_square);  // r = √(x^2 + y^2 + z^2)
+		double xyz_mag = sqrt(xyz_mag_square);  // r = √(x^2 + y^2 + z^2)
 
-		double mag_xy = sqrt(
+		double xy_mag = sqrt(
 			pos[0] * pos[0] + pos[1] * pos[1]
 		);  // r_xy = √(x^2 + y^2)
 
 		/// Calculate the angular variable μ = cos(θ).
 		double mu = 0.;
-		if (fabs(mag_xyz) < eps) {
+		if (fabs(xyz_mag) < eps) {
 			return 0.;  // return trivial value
 		} else {
-			mu = pos[2] / mag_xyz;  // μ = z / r
+			mu = pos[2] / xyz_mag;  // μ = z / r
 		}
 
 		/// Calculate the angular variable ϕ.
 		double phi = 0.;
-		if (fabs(mag_xy) < eps) {
+		if (fabs(xy_mag) < eps) {
 			phi = 0.;  // return default value
 		} else {
-			phi = acos(pos[0] / mag_xy);  // ϕ = arccos(x / r_xy)
+			phi = acos(pos[0] / xy_mag);  // ϕ = arccos(x / r_xy)
 			if (pos[1] < 0.) {
 				phi = - phi + 2.*M_PI;  // ϕ ∈ [π, 2π] if y < 0
 			}
@@ -98,7 +98,7 @@ class ToolCollection {
 	 * @param[in] m_ Order of the spherical harmonic.
 	 * @param[in] params Input parameter set.
 	 * @param[out] ylm_out Stored calculated values.
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	static int store_reduced_spherical_harmonic_in_fourier_space(
 		int ell_, int m_, ParameterSet& params, std::complex<double>* ylm_out
@@ -124,7 +124,7 @@ class ToolCollection {
 					/// The assigned integer coordinate is
 					/// (i * nmesh_y * nmesh_z + j * nmesh_z + k)
 					/// where nmesh is the mesh number along each axis.
-					long long coord = (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+					long long coord_flat = (i * params.nmesh[1] + j) * params.nmesh[2] + k;
 
 					/// Note the origin is at the centre of the mesh grid.
 					/// ???: Have the two halves of the grid in each dimension been
@@ -133,7 +133,7 @@ class ToolCollection {
 					kvec[1] = (j < params.nmesh[1]/2) ? (j * dk[1]) : ((j - params.nmesh[1]) * dk[1]);
 					kvec[2] = (k < params.nmesh[2]/2) ? (k * dk[2]) : ((k - params.nmesh[2]) * dk[2]);
 
-					ylm_out[coord] = calc_reduced_spherical_harmonic(ell_, m_, kvec);
+					ylm_out[coord_flat] = calc_reduced_spherical_harmonic(ell_, m_, kvec);
 				}
 			}
 		}
@@ -148,7 +148,7 @@ class ToolCollection {
 	 * @param[in] m_ Order of the spherical harmonic.
 	 * @param[in] params Input parameter set.
 	 * @param[out] ylm_out Stored calculated values.
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	static int store_reduced_spherical_harmonic_in_config_space(
 		int ell_, int m_, ParameterSet& params, std::complex<double>* ylm_out
@@ -174,7 +174,7 @@ class ToolCollection {
 					/// The assigned integer coordinate is
 					/// (i * nmesh_y * nmesh_z + j * nmesh_z + k)
 					/// where nmesh is the mesh number along each axis.
-					long long coord = (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+					long long coord_flat = (i * params.nmesh[1] + j) * params.nmesh[2] + k;
 
 					/// Note the origin is at the centre of the mesh grid.
 					/// ???: Have the two halves of the grid in each dimension been
@@ -183,7 +183,7 @@ class ToolCollection {
 					rvec[1] = (j < params.nmesh[1]/2) ? (j * dr[1]) : ((j - params.nmesh[1]) * dr[1]);
 					rvec[2] = (k < params.nmesh[2]/2) ? (k * dr[2]) : ((k - params.nmesh[2]) * dr[2]);
 
-					ylm_out[coord] = calc_reduced_spherical_harmonic(ell_, m_, rvec);
+					ylm_out[coord_flat] = calc_reduced_spherical_harmonic(ell_, m_, rvec);
 				}
 			}
 		}
@@ -196,7 +196,7 @@ class ToolCollection {
 	 *
 	 * @param[in] params Input parameter set.
 	 * @param[out] kbin_out Set wavenumber bins.
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	static int set_kbin(ParameterSet& params, double* kbin_out) {
 		double dk = (params.kmax - params.kmin) / double(params.num_kbin - 1);
@@ -211,7 +211,7 @@ class ToolCollection {
 	 *
 	 * @param[in] params Input parameter set.
 	 * @param[out] rbin_out Set separation bins.
-	 * @returns Exit code.
+	 * @returns Exit status.
 	 */
 	static int set_rbin(ParameterSet& params, double* rbin_out) {
 		double dr = (params.rmax - params.rmin) / double(params.num_rbin - 1);

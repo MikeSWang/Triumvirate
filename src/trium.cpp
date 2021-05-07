@@ -96,11 +96,11 @@ int main(int argc, char *argv[]) {
 	/// Read catalogue files.
 	ParticleBOSSClass particles_data, particles_rand;
 	if (particles_data.read_particles_BOSS(params.data_catalogue_file)) {
-		printf("FATAL: Failed to load source-data catalogue file.\n");
+		printf("FATAL: Failed to load data-source catalogue file.\n");
 		exit(1);
 	}
 	if (particles_rand.read_particles_BOSS(params.rand_catalogue_file)) {
-		printf("FATAL: Failed to load random catalogue file.\n");
+		printf("FATAL: Failed to load random-source catalogue file.\n");
 		exit(1);
 	}
 
@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
 
 	/// Compute catalogue field volume.
 	DensityField<ParticleBOSSClass> field_rand(params);
-	double vol_survey = field_rand.calc_survey_volume(particles_rand);
+	double vol_survey = field_rand.calc_survey_volume_normalisation(particles_rand);
 	field_rand.finalise_density_field();
 
 	/// Print out catalogue field properties.
@@ -169,8 +169,8 @@ int main(int argc, char *argv[]) {
 		std::cout <<  particles_rand.pos_min[2] << " <= z_rand <= " << particles_rand.pos_max[2] << std::endl;
 		std::cout << "" << std::endl;
 
-		std::cout << "Volume of field : V_survey = " << vol_survey << std::endl;
-		std::cout << "Size of field (geometric mean): L_survey = " << pow(vol_survey, 1./3.) << std::endl;
+		std::cout << "Survey volume normalisation : V_survey = " << vol_survey << std::endl;
+		std::cout << "Size of field (geometric mean) : L_survey = " << pow(vol_survey, 1./3.) << std::endl;
 	}
 
 	durationInSec = double(clock() - timeStart);
@@ -189,13 +189,13 @@ int main(int argc, char *argv[]) {
 	/// ???
 	/*
   if (params.catalogue_type == "survey") {
-		if(thisTask >= params.num_rbin) {
+		if (thisTask >= params.num_rbin) {
 			params.ith_rbin = 0;
 		} else {
 			params.ith_rbin = thisTask;
 		}
 
-		if(thisTask >= params.num_kbin) {
+		if (thisTask >= params.num_kbin) {
 			params.ith_kbin = 0;
 		} else {
 			params.ith_kbin = thisTask;
