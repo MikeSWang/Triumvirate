@@ -9,7 +9,7 @@
  * Container of particle data and summary information.
  *
  */
-class ParticleBOSSClass {  // FIXME: change class name
+class ParticlesCatalogue {
  public:
 	struct ParticleData {
 		double pos[3];  ///< particle position vector
@@ -33,7 +33,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	/**
 	 * Initialise particle containers.
 	 */
-	ParticleBOSSClass () {  // FIXME: change class name
+	ParticlesCatalogue () {
 		this->particles = NULL;
 		this->n_tot = 0;
 		this->pos_min[0] = 0.; this->pos_max[0] = 0.;
@@ -44,7 +44,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	/**
 	 * Destruct particle containers.
 	 */
-	~ParticleBOSSClass() {  // FIXME: change class name
+	~ParticlesCatalogue() {
 		finalise_particles();
 	}
 
@@ -97,7 +97,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	 * @param particles_file Input file path.
 	 * @returns Exit status.
 	 */
-	int read_particles_BOSS(std::string& particles_file) {  // FIXME: change function name
+	int read_particles_catalogue(std::string& particles_file) {
 
 		std::ifstream fin;
 
@@ -171,8 +171,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 		}
 
 		std::string str_line;
-		double x, y, z, vx, vy, vz, mass, dummy;  // FIXME: Redundant?
-		int ID, PID;  // FIXME: Redundant?
+		double x, y, z;
 		while (getline(fin, str_line)) {
 			if (sscanf(str_line.c_str(), "%lf %lf %lf", &x, &y, &z) != 3) {
 				continue;
@@ -265,7 +264,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	 * @param particles_rand Random-source particle container.
 	 * @returns alpha Alpha ratio.
 	 */
-	static double calc_alpha_ratio(ParticleBOSSClass& particles_data, ParticleBOSSClass& particles_rand) {
+	static double calc_alpha_ratio(ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand) {
 		double num_wgt_data = 0.;
 		for (int id = 0; id < particles_data.n_tot; id++) {
 			num_wgt_data += particles_data[id].w;
@@ -288,7 +287,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	 * @param vol_survey Survey volume.
 	 * @returns norm Normalisation constant.
 	 */
-	static double calc_norm_for_power_spec(ParticleBOSSClass& particles_data, double vol_survey) {
+	static double calc_norm_for_power_spec(ParticlesCatalogue& particles_data, double vol_survey) {
 		double num_wgt_data = 0.0;
 		for (int id = 0; id < particles_data.n_tot; id++) {
 			num_wgt_data += particles_data[id].w;
@@ -306,7 +305,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	 * @param vol_survey Survey volume.
 	 * @returns norm Normalisation constant.
 	 */
-	static double calc_norm_for_bispec(ParticleBOSSClass& particles_data, double vol_survey) {
+	static double calc_norm_for_bispec(ParticlesCatalogue& particles_data, double vol_survey) {
 		double num_wgt_data = 0.0;
 		for (int id = 0; id < particles_data.n_tot; id++) {
 			num_wgt_data += particles_data[id].w;
@@ -349,8 +348,8 @@ class ParticleBOSSClass {  // FIXME: change class name
 	 * @returns Exit status.
 	 */
 	static int offset_particles_for_fft(
-			ParticleBOSSClass& particles_data,
-			ParticleBOSSClass& particles_rand,
+			ParticlesCatalogue& particles_data,
+			ParticlesCatalogue& particles_rand,
 			ParameterSet& params,
 			double factor=3.  /// ???: why 3.?
 		) {

@@ -29,10 +29,10 @@ class ParameterSet {
 
 	std::string assignment;  ///< grid assignment scheme: {'NGP', 'CIC', 'TSC'}
 
+	/// NOTE: Standard variable naming convention overriden.
 	int ell1;  ///< spherical degree associated with the first wavevector
 	int ell2;  ///< spherical degree associated with the second wavevector
 	int ELL;  ///< spherical degree associated with the line-of-sight vector
-	          // NOTE: standard variable naming convention overriden
 
 	double kmin;  ///< minimum wavenumber boundary
 	double kmax;  ///< maximum wavenumber boundary
@@ -44,11 +44,9 @@ class ParameterSet {
 
 	std::string form;  ///< full or diagonal form for the bispectrum
 
-	/// FIXME: The following attributes are irrelevant at the current
-	/// development stage.
-	int NR;  ///< ???
 	int ith_kbin;  ///< ???
 	int ith_rbin;  ///< ???
+	int NR;  ///< ???
 
 	std::string reconstruction;  ///< reconstruction flag
 
@@ -83,8 +81,6 @@ class ParameterSet {
 		std::string str_line;  // string representing the line being parsed
 		char str_dummy[1024];  // string placeholder for irrelevant contents
 
-		/// IDEA: Perhaps the following code block could be refactored
-		///	using a C++ equivalent to Python's ``zip``.
 		while (getline(fin, str_line)) {
 				/// Check if the line is in the correct format for parameter
 				/// parsing; process if yes, otherwise move on to the next line.
@@ -169,8 +165,6 @@ class ParameterSet {
 					sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, form_);
 				}
 
-				/// FIXME: The following parameters are irrelevant at the current
-				/// development stage.
 				if (str_line.find("ith_kbin") != std::string::npos) {
 					sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ith_kbin);
 				}
@@ -364,8 +358,6 @@ class ParameterSet {
 	 * @returns Exit status.
 	 */
 	int print_parameters(FILE* used_param_file_ptr) {
-		/// IDEA: Perhaps the following code block could be refactored
-		///	using a C++ equivalent to Python's ``zip``.
 		fprintf(used_param_file_ptr, "catalogue_dir = %s\n", this->catalogue_dir.c_str());
 		fprintf(used_param_file_ptr, "output_dir = %s\n", this->output_dir.c_str());
 		fprintf(used_param_file_ptr, "data_catalogue_file = %s\n", this->data_catalogue_file.c_str());
