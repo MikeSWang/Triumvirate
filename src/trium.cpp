@@ -94,12 +94,12 @@ int main(int argc, char *argv[]) {
 	}
 
 	/// Read catalogue files.
-	ParticleBOSSClass particles_data, particles_rand;
-	if (particles_data.read_particles_BOSS(params.data_catalogue_file)) {
+	ParticlesCatalogue particles_data, particles_rand;
+	if (particles_data.read_particles_catalogue(params.data_catalogue_file)) {
 		printf("FATAL: Failed to load data-source catalogue file.\n");
 		exit(1);
 	}
-	if (particles_rand.read_particles_BOSS(params.rand_catalogue_file)) {
+	if (particles_rand.read_particles_catalogue(params.rand_catalogue_file)) {
 		printf("FATAL: Failed to load random-source catalogue file.\n");
 		exit(1);
 	}
@@ -131,19 +131,19 @@ int main(int argc, char *argv[]) {
 	/// Compute number density alpha ratio.
 	double alpha = 0.;
 	if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-		alpha = ParticleBOSSClass::calc_alpha_ratio(particles_data, particles_rand);
+		alpha = ParticlesCatalogue::calc_alpha_ratio(particles_data, particles_rand);
 	}
 
 	/// Offset particle positions for measurement standardisation.
 	if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-		ParticleBOSSClass::offset_particles_for_fft(particles_data, particles_rand, params);
+		ParticlesCatalogue::offset_particles_for_fft(particles_data, particles_rand, params);
 	}
 	if (params.catalogue_type == "sim") {
 		particles_data.offset_particles_for_periodicity(params);
 	}
 
 	/// Compute catalogue field volume.
-	DensityField<ParticleBOSSClass> field_rand(params);
+	DensityField<ParticlesCatalogue> field_rand(params);
 	double vol_survey = field_rand.calc_survey_volume_norm(particles_rand);
 	field_rand.finalise_density_field();
 
@@ -187,7 +187,6 @@ int main(int argc, char *argv[]) {
 	}
 
 	/// ???
-	/*
   if (params.catalogue_type == "survey") {
 		if (thisTask >= params.num_rbin) {
 			params.ith_rbin = 0;
@@ -201,8 +200,6 @@ int main(int argc, char *argv[]) {
 			params.ith_kbin = thisTask;
 		}
 	}
-	*/
-
 
 	/// IDEA: Formalise the choosing of measurement programs by parsing
 	/// an additional command-line argument.

@@ -269,7 +269,7 @@ class DensityField {
 		double alpha,
 		int ell, int m
 	) {
-		DensityField<ParticleBOSSClass> density_rand(this->params);
+		DensityField<ParticlesCatalogue> density_rand(this->params);
 		fftw_complex* weight = NULL;
 
 		/// Calculate data-source weighted density field.
@@ -322,13 +322,13 @@ class DensityField {
 	 * @param m Order of the spherical harmonic.
 	 * @returns Exit status.
 	 */
-	int calc_ylm_weighted_overdensity_for_bispec_shotnoise(  /// ???
+	int calc_ylm_weighted_overdensity_for_bispec_shotnoise(
 		ParticleContainer& particles_data, ParticleContainer& particles_rand,
 		LineOfSight* los_data, LineOfSight* los_rand,
 		double alpha,
 		int ell, int m
 	) {
-		DensityField<ParticleBOSSClass> density_rand(this->params);
+		DensityField<ParticlesCatalogue> density_rand(this->params);
 		fftw_complex* weight = NULL;
 
 		/// Calculate data-source weighted density field.
@@ -336,7 +336,7 @@ class DensityField {
 		for (int id = 0; id < particles_data.n_tot; id++) {
 			double los[3] = {los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]};
 			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
-			ylm = std::conj(ylm);  /// NOTE: this cojugation is essential
+			ylm = std::conj(ylm);  // NOTE: this cojugation is essential
 			weight[id][0] = ylm.real() * pow(particles_data[id].w, 2);
 			weight[id][1] = ylm.imag() * pow(particles_data[id].w, 2);
 		}
@@ -351,7 +351,7 @@ class DensityField {
 				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
 			};
 			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
-			ylm = std::conj(ylm);  /// NOTE: this cojugation is essential
+			ylm = std::conj(ylm);  // NOTE: this cojugation is essential
 			weight[id][0] = ylm.real() * pow(particles_rand[id].w, 2);
 			weight[id][1] = ylm.imag() * pow(particles_rand[id].w, 2);
 		}
@@ -433,7 +433,7 @@ class DensityField {
 				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
 			};
 			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
-			ylm = std::conj(ylm);  /// NOTE: this cojugation is essential
+			ylm = std::conj(ylm);  // NOTE: this cojugation is essential
 			weight[id][0] = ylm.real() * pow(particles_rand[id].w, 2);
 			weight[id][1] = ylm.imag() * pow(particles_rand[id].w, 2);
 		}
@@ -459,7 +459,7 @@ class DensityField {
 	int calc_density_field_in_box(
 		ParticleContainer& particles_data,
 		ParameterSet& params
-	) {  /// ???
+	) {
 		fftw_complex* weight = NULL;
 
 		weight = fftw_alloc_complex(particles_data.n_tot);
@@ -486,7 +486,7 @@ class DensityField {
 	 * @param particles_data Data-source particle container.
 	 * @returns Exit status.
 	 */
-	int calc_density_field_in_box_for_bispec(ParticleContainer& particles_data) {  /// ???
+	int calc_density_field_in_box_for_bispec(ParticleContainer& particles_data) {
 		fftw_complex* weight = NULL;
 
 		weight = fftw_alloc_complex(particles_data.n_tot);
@@ -514,7 +514,7 @@ class DensityField {
 		ParticleContainer& particles_rand,
 		double alpha
 	) {
-		DensityField<ParticleBOSSClass> density_rand(this->params);
+		DensityField<ParticlesCatalogue> density_rand(this->params);
 		fftw_complex* weight = NULL;
 
 		/// Assign data-source weighted field.
@@ -1121,7 +1121,7 @@ class TwoPointStatistics {
 		fftw_execute(fft_plan_backward);
 		fftw_destroy_plan(fft_plan_backward);
 
-		/// !!!: [Add comment here.]
+		/// Perform binning.
 		double dr_sample = 0.5;
 
 		int n_sample = 10000;
@@ -1268,7 +1268,7 @@ class TwoPointStatistics {
 		fftw_execute(fft_plan_backward);
 		fftw_destroy_plan(fft_plan_backward);
 
-		/// !!!: [Add comment here.]
+		/// Perform binning.
 		double dr_sample = 0.5;
 
 		int n_sample = 10000;
