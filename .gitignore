@@ -1,9 +1,9 @@
 # Binaries
-build/
+build/**
 !build/.gitignore
 
 # Docs builds
-docs/build/
+docs/build/**
 !docs/build/.gitignore
 
 # Data storage
