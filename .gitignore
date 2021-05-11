@@ -11,12 +11,18 @@ tests/test_build/**
 !tests/test_build/.gitignore
 
 tests/test_output/**
+!tests/test_output/results/
+tests/test_output/results/**
 !tests/test_output/results/.gitignore
 
 storage/input/**
+!storage/input/params/
+storage/input/params/**
 !storage/input/params/params.ini
 
 storage/output/**
+!storage/output/results/
+storage/output/results/**
 !storage/output/results/.gitignore
 
 storage/misc/**
