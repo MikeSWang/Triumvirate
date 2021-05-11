@@ -52,7 +52,7 @@ class ParameterSet {
 
 	std::string reconstruction;  ///< reconstruction flag
 
-	double b1_fid;  ///< ???
+	double b1_fiducial;  ///< ???
 	double RG;  ///< ???
 
 	/**
@@ -185,8 +185,8 @@ class ParameterSet {
 					sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, reconstruction_);
 				}
 
-				if (str_line.find("b1_fid") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->b1_fid);
+				if (str_line.find("b1_fiducial") != std::string::npos) {
+					sscanf(str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->b1_fiducial);
 				}
 				if (str_line.find("RG") != std::string::npos) {
 					sscanf(str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->RG);
@@ -401,7 +401,7 @@ class ParameterSet {
 		fprintf(used_param_file_ptr, "ith_rbin = %d\n", this->ith_rbin);
 
 		fprintf(used_param_file_ptr, "reconstruction = %s\n", this->reconstruction.c_str());
-		fprintf(used_param_file_ptr, "b1_fid = %.4f\n", this->b1_fid);
+		fprintf(used_param_file_ptr, "b1_fiducial = %.4f\n", this->b1_fiducial);
 		fprintf(used_param_file_ptr, "RG = %.4f\n", this->RG);
 
 		return 0;

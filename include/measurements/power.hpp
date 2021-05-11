@@ -22,7 +22,7 @@ int calc_power_spec(
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00(param);
-	dn_00.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+	dn_00.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calc_fourier_transform();
 
@@ -38,12 +38,12 @@ int calc_power_spec(
 		/****************************************/
 		/* calc the ylm-weighted density fluctuation */
 		DensityField<ParticleBOSSClass> dn_LM(param);
-		dn_LM.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		dn_LM.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM.calc_fourier_transform();
 
 		/* calc shotnoise term */
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
 		std::complex<double> shotnoise = stat.calc_shotnoise_for_power_spec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 
 	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
@@ -101,7 +101,7 @@ int calc_2pt_func(
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00(param);
-	dn_00.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+	dn_00.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calc_fourier_transform();
 
@@ -117,12 +117,12 @@ int calc_2pt_func(
 		/****************************************/
 		/* calc the ylm-weighted density fluctuation */
 		DensityField<ParticleBOSSClass> dn_LM(param);
-		dn_LM.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		dn_LM.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM.calc_fourier_transform();
 
 		/* calc shotnoise term */
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
 		std::complex<double> shotnoise = stat.calc_shotnoise_for_power_spec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 
 	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
@@ -196,8 +196,8 @@ int calc_power_specWindowFunction(
 	std::cout << "BITE = " << bytes << std::endl;
 
 	/* calc shotnoise term */
-	TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
-	std::complex<double> shotnoise = stat.calcShotNoiseForTwoPointWindowFunction(P_R, los_rand, alpha, param.ELL, 0);
+	TwoPointStatistics<ParticleBOSSClass> stat(param);
+	std::complex<double> shotnoise = stat.calc_shotnoise_for_2pt_func_window(P_R, los_rand, alpha, param.ELL, 0);
 
 	std::cout << "BITE = " << bytes << std::endl;
 
@@ -277,8 +277,8 @@ int calc_2pt_func_window(
 		dn_LM.calc_fourier_transform();
 
 		/* calc shotnoise term */
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
-		std::complex<double> shotnoise = stat.calcShotNoiseForTwoPointWindowFunction(P_R, los_rand, alpha, param.ELL, _M_);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
+		std::complex<double> shotnoise = stat.calc_shotnoise_for_2pt_func_window(P_R, los_rand, alpha, param.ELL, _M_);
 
 	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
 
@@ -332,7 +332,7 @@ int calc_power_spec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn(param);
-	dn.calc_normal_density_field_in_box(P_D, param);
+	dn.calc_density_field_in_box(P_D, param);
 	/* Fourier transform*/
 	dn.calc_fourier_transform();
 
@@ -344,7 +344,7 @@ int calc_power_spec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double
 	}
 
 	/* calc shotnoise term */
-	TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+	TwoPointStatistics<ParticleBOSSClass> stat(param);
 	std::complex<double> shotnoise = double(P_D.n_tot);
 
 	stat.calc_power_spec(dn, dn, kbin, shotnoise, param.ELL, 0);
@@ -387,7 +387,7 @@ int calc_2pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn(param);
-	dn.calc_normal_density_field_in_box(P_D, param);
+	dn.calc_density_field_in_box(P_D, param);
 	/* Fourier transform*/
 	dn.calc_fourier_transform();
 
@@ -398,7 +398,7 @@ int calc_2pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	}
 
 	/* calc power spectrum */
-	TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+	TwoPointStatistics<ParticleBOSSClass> stat(param);
 	std::complex<double> shotnoise = double(P_D.n_tot);
 
 	stat.calc_corr_func(dn, dn, rbin, shotnoise, param.ELL, 0);
@@ -442,7 +442,7 @@ int calc_power_spec_in_boxForReconstruction(ParticleBOSSClass & P_D, ParticleBOS
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn(param);
-	dn.calc_normal_density_field_in_box_for_reconstruction(P_D, P_R, alpha);
+	dn.calc_density_field_in_box_for_recon(P_D, P_R, alpha);
 	/* Fourier transform*/
 	dn.calc_fourier_transform();
 
@@ -454,8 +454,8 @@ int calc_power_spec_in_boxForReconstruction(ParticleBOSSClass & P_D, ParticleBOS
 	}
 
 	/* calc shotnoise term */
-	TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
-	std::complex<double> shotnoise = stat.calc_shotnoise_for_power_spec_in_box_for_reconstruction(P_D, P_R, alpha);
+	TwoPointStatistics<ParticleBOSSClass> stat(param);
+	std::complex<double> shotnoise = stat.calc_shotnoise_for_power_spec_in_box_for_recon(P_D, P_R, alpha);
 
 	stat.calc_power_spec(dn, dn, kbin, shotnoise, param.ELL, 0);
 

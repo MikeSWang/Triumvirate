@@ -37,7 +37,7 @@ int calc_bispec(
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00_sn(param);
-	dn_00_sn.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+	dn_00_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00_sn.calc_fourier_transform();
 
@@ -56,11 +56,11 @@ int calc_bispec(
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> N_LM_sn(param);
-		N_LM_sn.calc_ylm_weighted_overdensity_field_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		N_LM_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		N_LM_sn.calc_fourier_transform();
 
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
 		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 
 		if ((param.ell1 == 0) && (param.ell2 == 0)) {
@@ -102,7 +102,7 @@ int calc_bispec(
 	/****************************************/
 	/* calc F00 */
 	DensityField<ParticleBOSSClass> N_00_sn(param);
-	N_00_sn.calc_ylm_weighted_overdensity_field_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+	N_00_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
 	N_00_sn.calc_fourier_transform();
 
@@ -146,11 +146,11 @@ int calc_bispec(
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> dn_LM_sn(param);
-		dn_LM_sn.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		dn_LM_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM_sn.calc_fourier_transform();
 
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
 		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 
 		fftw_complex * xi = fftw_alloc_complex(param.nmesh_tot);
@@ -246,7 +246,7 @@ int calc_bispec(
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00(param);
-	dn_00.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+	dn_00.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calc_fourier_transform();
 
@@ -294,7 +294,7 @@ int calc_bispec(
 
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> dn_LM(param);
-		dn_LM.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		dn_LM.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM.calc_fourier_transform();
 		/* divided by a assignment function */
@@ -308,7 +308,7 @@ int calc_bispec(
 		double dk = kbin[1] - kbin[0];
 		if (param.form == "full") {
 			kmag1 = kbin[param.ith_kbin];
-			dn_tilde1.calc_inverse_fourier_transformForBispectrum(dn_00, kmag1, dk, Ylm1);
+			dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag1, dk, Ylm1);
 		}
 
 		for (int ik = 0; ik < param.num_kbin; ik++) {
@@ -318,12 +318,12 @@ int calc_bispec(
 			/* calc dn_tilde1 */
 			if (param.form == "diag") {
 				kmag1 = kmag2;
-				dn_tilde1.calc_inverse_fourier_transformForBispectrum(dn_00, kmag1, dk, Ylm1);
+				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag1, dk, Ylm1);
 			}
 
 			/* calc dn_tilde2 */
 			DensityField<ParticleBOSSClass> dn_tilde2(param);
-			dn_tilde2.calc_inverse_fourier_transformForBispectrum(dn_00, kmag2, dk, Ylm2);
+			dn_tilde2.calc_inverse_fourier_transform_for_bispec(dn_00, kmag2, dk, Ylm2);
 
 			/* calc bispectrum */
 			std::complex<double> bk_sum = 0.0;
@@ -417,7 +417,7 @@ int calc_3pt_func(
 	/****************************************/
 	/* calc F00 */
 	DensityField<ParticleBOSSClass> N_00_sn(param);
-	N_00_sn.calc_ylm_weighted_overdensity_field_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+	N_00_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
 	N_00_sn.calc_fourier_transform();
 
@@ -460,11 +460,11 @@ int calc_3pt_func(
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> dn_LM_sn(param);
-		dn_LM_sn.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		dn_LM_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM_sn.calc_fourier_transform();
 
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
 		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 
 		stat.calc_corr_func_for_3pt_func(dn_LM_sn, N_00_sn, rbin, shotnoise, param.ell1, _m1_, Ylm1, Ylm2);
@@ -523,7 +523,7 @@ int calc_3pt_func(
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00(param);
-	dn_00.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+	dn_00.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calc_fourier_transform();
 
@@ -578,7 +578,7 @@ int calc_3pt_func(
 
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> dn_LM(param);
-		dn_LM.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		dn_LM.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM.calc_fourier_transform();
 		/* divided by a assignment function */
@@ -636,7 +636,7 @@ int calc_3pt_func(
 	}}
 
 
-	double norm = ParticleBOSSClass::calc_norm_for_bispectrum(P_D, vol_survey);
+	double norm = ParticleBOSSClass::calc_norm_for_bispec(P_D, vol_survey);
 
 	FILE * fp;
 	char buf[1024];
@@ -767,8 +767,8 @@ int calc_3pt_func_window(
 		/* Fourier transform*/
 		dn_LM_sn.calc_fourier_transform();
 
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
-		std::complex<double> shotnoise = stat.calcShotNoiseForTwoPointWindowFunction(P_R, los_rand, alpha, param.ELL, _M_);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
+		std::complex<double> shotnoise = stat.calc_shotnoise_for_2pt_func_window(P_R, los_rand, alpha, param.ELL, _M_);
 
 		stat.calc_corr_func_for_3pt_func(dn_LM_sn, N_00_sn, rbin, shotnoise, param.ell1, _m1_, Ylm1, Ylm2);
 
@@ -935,7 +935,7 @@ int calc_3pt_func_window(
 
 	}}
 
-	double norm = ParticleBOSSClass::calc_norm_for_bispectrum(P_R, vol_survey);
+	double norm = ParticleBOSSClass::calc_norm_for_bispec(P_R, vol_survey);
 	norm /= (alpha * alpha * alpha);
 
 	FILE * fp;
@@ -1044,8 +1044,8 @@ int calc_3pt_func_window_for_3pcf(
 		/* Fourier transform*/
 		dn_LM_sn.calc_fourier_transform();
 
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
-		std::complex<double> shotnoise = stat.calcShotNoiseForTwoPointWindowFunction(P_R, los_rand, alpha, param.ELL, _M_);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
+		std::complex<double> shotnoise = stat.calc_shotnoise_for_2pt_func_window(P_R, los_rand, alpha, param.ELL, _M_);
 
 		stat.calc_corr_func_for_3pt_func(dn_LM_sn, N_00_sn, rbin, shotnoise, param.ell1, _m1_, Ylm1, Ylm2);
 
@@ -1212,7 +1212,7 @@ int calc_3pt_func_window_for_3pcf(
 
 	}}
 
-	double norm = ParticleBOSSClass::calc_norm_for_bispectrum(P_R, vol_survey);
+	double norm = ParticleBOSSClass::calc_norm_for_bispec(P_R, vol_survey);
 	norm /= (alpha * alpha * alpha);
 
 	FILE * fp;
@@ -1274,7 +1274,7 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00_sn(param);
-	dn_00_sn.calc_normal_density_field_in_box(P_D, param);
+	dn_00_sn.calc_density_field_in_box(P_D, param);
 	/* Fourier transform*/
 	dn_00_sn.calc_fourier_transform();
 
@@ -1293,11 +1293,11 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> N_LM_sn(param);
-		N_LM_sn.calc_normal_density_field_in_box_for_bispec(P_D);
+		N_LM_sn.calc_density_field_in_box_for_bispec(P_D);
 		/* Fourier transform*/
 		N_LM_sn.calc_fourier_transform();
 
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
 		std::complex<double> shotnoise = double(P_D.n_tot);
 
 		if ((param.ell1 == 0) && (param.ell2 == 0)) {
@@ -1339,7 +1339,7 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 	/****************************************/
 	/* calc F00 */
 	DensityField<ParticleBOSSClass> N_00_sn(param);
-	N_00_sn.calc_normal_density_field_in_box_for_bispec(P_D);
+	N_00_sn.calc_density_field_in_box_for_bispec(P_D);
 	/* Fourier transform*/
 	N_00_sn.calc_fourier_transform();
 
@@ -1370,11 +1370,11 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> dn_LM_sn(param);
-		dn_LM_sn.calc_normal_density_field_in_box(P_D, param);
+		dn_LM_sn.calc_density_field_in_box(P_D, param);
 		/* Fourier transform*/
 		dn_LM_sn.calc_fourier_transform();
 
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
 		std::complex<double> shotnoise = double(P_D.n_tot);
 
 		fftw_complex * xi = fftw_alloc_complex(param.nmesh_tot);
@@ -1469,7 +1469,7 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00(param);
-	dn_00.calc_normal_density_field_in_box(P_D, param);
+	dn_00.calc_density_field_in_box(P_D, param);
 	/* Fourier transform*/
 	dn_00.calc_fourier_transform();
 
@@ -1503,7 +1503,7 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> dn_LM(param);
-		dn_LM.calc_normal_density_field_in_box(P_D, param);
+		dn_LM.calc_density_field_in_box(P_D, param);
 		/* Fourier transform*/
 		dn_LM.calc_fourier_transform();
 		/* divided by a assignment function */
@@ -1517,7 +1517,7 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 		double dk = kbin[1] - kbin[0];
 		if (param.form == "full") {
 			kmag1 = kbin[param.ith_kbin];
-			dn_tilde1.calc_inverse_fourier_transformForBispectrum(dn_00, kmag1, dk, Ylm1);
+			dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag1, dk, Ylm1);
 		}
 
 		for (int ik = 0; ik < param.num_kbin; ik++) {
@@ -1527,12 +1527,12 @@ int calc_bispec_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double * k
 			/* calc dn_tilde1 */
 			if (param.form == "diag") {
 				kmag1 = kmag2;
-				dn_tilde1.calc_inverse_fourier_transformForBispectrum(dn_00, kmag1, dk, Ylm1);
+				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag1, dk, Ylm1);
 			}
 
 			/* calc dn_tilde2 */
 			DensityField<ParticleBOSSClass> dn_tilde2(param);
-			dn_tilde2.calc_inverse_fourier_transformForBispectrum(dn_00, kmag2, dk, Ylm2);
+			dn_tilde2.calc_inverse_fourier_transform_for_bispec(dn_00, kmag2, dk, Ylm2);
 
 			/* calc bispectrum */
 			std::complex<double> bk_sum = 0.0;
@@ -1616,7 +1616,7 @@ int calc_3pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	/****************************************/
 	/* calc F00 */
 	DensityField<ParticleBOSSClass> N_00_sn(param);
-	N_00_sn.calc_normal_density_field_in_box_for_bispec(P_D);
+	N_00_sn.calc_density_field_in_box_for_bispec(P_D);
 	/* Fourier transform*/
 	N_00_sn.calc_fourier_transform();
 
@@ -1644,11 +1644,11 @@ int calc_3pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> dn_LM_sn(param);
-		dn_LM_sn.calc_normal_density_field_in_box(P_D, param);
+		dn_LM_sn.calc_density_field_in_box(P_D, param);
 		/* Fourier transform*/
 		dn_LM_sn.calc_fourier_transform();
 
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
 		std::complex<double> shotnoise = double(P_D.n_tot);
 
 		stat.calc_corr_func_for_3pt_func(dn_LM_sn, N_00_sn, rbin, shotnoise, param.ell1, _m1_, Ylm1, Ylm2);
@@ -1705,7 +1705,7 @@ int calc_3pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00(param);
-	dn_00.calc_normal_density_field_in_box(P_D, param);
+	dn_00.calc_density_field_in_box(P_D, param);
 	/* Fourier transform*/
 	dn_00.calc_fourier_transform();
 
@@ -1743,7 +1743,7 @@ int calc_3pt_func_in_box(ParticleBOSSClass & P_D, ParameterSet & param, double *
 
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> dn_LM(param);
-		dn_LM.calc_normal_density_field_in_box(P_D, param);
+		dn_LM.calc_density_field_in_box(P_D, param);
 		/* Fourier transform*/
 		dn_LM.calc_fourier_transform();
 		/* divided by a assignment function */
@@ -1876,9 +1876,9 @@ int calc_bispecChoiceOfLOS(
 		/* dn = n - bar{n} */
 		DensityField<ParticleBOSSClass> dn_sn(param);
 		if (los == 0) {
-			dn_sn.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			dn_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		} else {
-			dn_sn.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			dn_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 		}
 		/* Fourier transform*/
 		dn_sn.calc_fourier_transform();
@@ -1887,14 +1887,14 @@ int calc_bispecChoiceOfLOS(
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> N_sn(param);
 		if (los == 0) {
-			N_sn.calc_ylm_weighted_overdensity_field_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 		} else {
-			N_sn.calc_ylm_weighted_overdensity_field_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		}
 		/* Fourier transform*/
 		N_sn.calc_fourier_transform();
 
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
 		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 
 		if ((param.ell1 == 0) && (param.ell2 == 0)) {
@@ -1940,9 +1940,9 @@ int calc_bispecChoiceOfLOS(
 		/* dn = n - bar{n} */
 		DensityField<ParticleBOSSClass> dn_sn(param);
 		if (los == 1) {
-			dn_sn.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			dn_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		} else {
-			dn_sn.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			dn_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 		}
 		/* Fourier transform*/
 		dn_sn.calc_fourier_transform();
@@ -1951,14 +1951,14 @@ int calc_bispecChoiceOfLOS(
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> N_sn(param);
 		if (los == 1) {
-			N_sn.calc_ylm_weighted_overdensity_field_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 		} else {
-			N_sn.calc_ylm_weighted_overdensity_field_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		}
 		/* Fourier transform*/
 		N_sn.calc_fourier_transform();
 
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
 		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 
 		if ((param.ell1 == 0)) {
@@ -2031,9 +2031,9 @@ int calc_bispecChoiceOfLOS(
 		/* calc N00 */
 		DensityField<ParticleBOSSClass> N_sn(param);
 		if (los == 2) {
-			N_sn.calc_ylm_weighted_overdensity_field_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 		} else {
-			N_sn.calc_ylm_weighted_overdensity_field_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		}
 		/* Fourier transform*/
 		N_sn.calc_fourier_transform();
@@ -2042,14 +2042,14 @@ int calc_bispecChoiceOfLOS(
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> dn_sn(param);
 		if (los == 2) {
-			dn_sn.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			dn_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		} else {
-			dn_sn.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			dn_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 		}
 		/* Fourier transform*/
 		dn_sn.calc_fourier_transform();
 
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
 		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 
 		fftw_complex * xi = fftw_alloc_complex(param.nmesh_tot);
@@ -2184,18 +2184,18 @@ int calc_bispecChoiceOfLOS(
 		/* dn = n - bar{n} */
 		DensityField<ParticleBOSSClass> dn1(param);
 		if (los == 0) {
-			dn1.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			dn1.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		} else {
-			dn1.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			dn1.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 		}
 		/* Fourier transform*/
 		dn1.calc_fourier_transform();
 
 		DensityField<ParticleBOSSClass> dn2(param);
 		if (los == 1) {
-			dn2.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			dn2.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		} else {
-			dn2.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			dn2.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 		}
 		/* Fourier transform*/
 		dn2.calc_fourier_transform();
@@ -2203,9 +2203,9 @@ int calc_bispecChoiceOfLOS(
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> dn3(param);
 		if (los == 2) {
-			dn3.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			dn3.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		} else {
-			dn3.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			dn3.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 		}
 		/* Fourier transform*/
 		dn3.calc_fourier_transform();
@@ -2220,7 +2220,7 @@ int calc_bispecChoiceOfLOS(
 		double dk = kbin[1] - kbin[0];
 		if (param.form == "full") {
 			kmag1 = kbin[param.ith_kbin];
-				dn_tilde1.calc_inverse_fourier_transformForBispectrum(dn1, kmag1, dk, Ylm1);
+				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn1, kmag1, dk, Ylm1);
 		}
 
 		for (int ik = 0; ik < param.num_kbin; ik++) {
@@ -2230,12 +2230,12 @@ int calc_bispecChoiceOfLOS(
 			/* calc dn_tilde1 */
 			if (param.form == "diag") {
 				kmag1 = kmag2;
-				dn_tilde1.calc_inverse_fourier_transformForBispectrum(dn1, kmag1, dk, Ylm1);
+				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn1, kmag1, dk, Ylm1);
 			}
 
 			/* calc dn_tilde2 */
 			DensityField<ParticleBOSSClass> dn_tilde2(param);
-			dn_tilde2.calc_inverse_fourier_transformForBispectrum(dn2, kmag2, dk, Ylm2);
+			dn_tilde2.calc_inverse_fourier_transform_for_bispec(dn2, kmag2, dk, Ylm2);
 
 			/* calc bispectrum */
 			std::complex<double> bk_sum = 0.0;
@@ -2263,7 +2263,7 @@ int calc_bispecChoiceOfLOS(
 
 	}}
 
-	double norm = ParticleBOSSClass::calc_norm_for_bispectrum(P_D, vol_survey);
+	double norm = ParticleBOSSClass::calc_norm_for_bispec(P_D, vol_survey);
 
 	FILE * fp;
 	char buf[1024];
@@ -2334,7 +2334,7 @@ int calc_bispecMmode(
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00_sn(param);
-	dn_00_sn.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+	dn_00_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00_sn.calc_fourier_transform();
 
@@ -2353,11 +2353,11 @@ int calc_bispecMmode(
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> N_LM_sn(param);
-		N_LM_sn.calc_ylm_weighted_overdensity_field_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		N_LM_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		N_LM_sn.calc_fourier_transform();
 
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
 		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 
 		if ((param.ell1 == 0) && (param.ell2 == 0)) {
@@ -2399,7 +2399,7 @@ int calc_bispecMmode(
 	/****************************************/
 	/* calc F00 */
 	DensityField<ParticleBOSSClass> N_00_sn(param);
-	N_00_sn.calc_ylm_weighted_overdensity_field_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+	N_00_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
 	N_00_sn.calc_fourier_transform();
 
@@ -2445,11 +2445,11 @@ int calc_bispecMmode(
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> dn_LM_sn(param);
-		dn_LM_sn.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		dn_LM_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM_sn.calc_fourier_transform();
 
-		TwoPointStatisticsClass<ParticleBOSSClass> stat(param);
+		TwoPointStatistics<ParticleBOSSClass> stat(param);
 		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 
 		fftw_complex * xi = fftw_alloc_complex(param.nmesh_tot);
@@ -2545,7 +2545,7 @@ int calc_bispecMmode(
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
 	DensityField<ParticleBOSSClass> dn_00(param);
-	dn_00.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+	dn_00.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calc_fourier_transform();
 
@@ -2602,7 +2602,7 @@ int calc_bispecMmode(
 
 		/* calc the yLM-weighted density perturbation */
 		DensityField<ParticleBOSSClass> dn_LM(param);
-		dn_LM.calc_ylm_weighted_overdensity_field(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		dn_LM.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
 		/* Fourier transform*/
 		dn_LM.calc_fourier_transform();
 		/* divided by a assignment function */
@@ -2616,7 +2616,7 @@ int calc_bispecMmode(
 		double dk = kbin[1] - kbin[0];
 		if (param.form == "full") {
 			kmag1 = kbin[param.ith_kbin];
-			dn_tilde1.calc_inverse_fourier_transformForBispectrum(dn_00, kmag1, dk, Ylm1);
+			dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag1, dk, Ylm1);
 		}
 
 		for (int ik = 0; ik < param.num_kbin; ik++) {
@@ -2626,12 +2626,12 @@ int calc_bispecMmode(
 			/* calc dn_tilde1 */
 			if (param.form == "diag") {
 				kmag1 = kmag2;
-				dn_tilde1.calc_inverse_fourier_transformForBispectrum(dn_00, kmag1, dk, Ylm1);
+				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag1, dk, Ylm1);
 			}
 
 			/* calc dn_tilde2 */
 			DensityField<ParticleBOSSClass> dn_tilde2(param);
-			dn_tilde2.calc_inverse_fourier_transformForBispectrum(dn_00, kmag2, dk, Ylm2);
+			dn_tilde2.calc_inverse_fourier_transform_for_bispec(dn_00, kmag2, dk, Ylm2);
 
 			/* calc bispectrum */
 			std::complex<double> bk_sum = 0.0;
@@ -2659,7 +2659,7 @@ int calc_bispecMmode(
 
 	}}
 
-	double norm = ParticleBOSSClass::calc_norm_for_bispectrum(P_D, vol_survey);
+	double norm = ParticleBOSSClass::calc_norm_for_bispec(P_D, vol_survey);
 
 	for (int _M_ = 0; _M_<2*param.ELL+1;_M_++) {
 		FILE * fp;

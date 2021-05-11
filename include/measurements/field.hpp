@@ -103,12 +103,12 @@ class DensityField {
 		double cell_vol_factor = 1. / dV;
 
 		int order = 1;
-		for (int id = 0; id < particle.n_tot; id++) {
+		for (int id = 0; id < particles.n_tot; id++) {
 			double win[order][3];
 			int ijk[order][3];
 			for (int axis = 0; axis < 3; axis++) {
 				double loc_grid = this->params.nmesh[axis]
-					* particle[id].pos[axis] / this->params.boxsize[axis];
+					* particles[id].pos[axis] / this->params.boxsize[axis];
 				ijk[0][axis] = int(loc_grid + 0.5);
 				win[0][axis] = 1.;
 			}
@@ -263,7 +263,7 @@ class DensityField {
 	 * @param m Order of the spherical harmonic.
 	 * @returns Exit status.
 	 */
-	int calc_ylm_weighted_overdensity_field(
+	int calc_ylm_weighted_overdensity(
 		ParticleContainer& particles_data, ParticleContainer& particles_rand,
 		LineOfSight* los_data, LineOfSight* los_rand,
 		double alpha,
@@ -322,7 +322,7 @@ class DensityField {
 	 * @param m Order of the spherical harmonic.
 	 * @returns Exit status.
 	 */
-	int calc_ylm_weighted_overdensity_field_for_bispec_shotnoise(  /// ???
+	int calc_ylm_weighted_overdensity_for_bispec_shotnoise(  /// ???
 		ParticleContainer& particles_data, ParticleContainer& particles_rand,
 		LineOfSight* los_data, LineOfSight* los_rand,
 		double alpha,
@@ -456,7 +456,7 @@ class DensityField {
 	 * @param params Input parameter set.
 	 * @returns Exit status.
 	 */
-	int calc_normal_density_field_in_box(
+	int calc_density_field_in_box(
 		ParticleContainer& particles_data,
 		ParameterSet& params
 	) {  /// ???
@@ -486,7 +486,7 @@ class DensityField {
 	 * @param particles_data Data-source particle container.
 	 * @returns Exit status.
 	 */
-	int calc_normal_density_field_in_box_for_bispec(ParticleContainer& particles_data) {  /// ???
+	int calc_density_field_in_box_for_bispec(ParticleContainer& particles_data) {  /// ???
 		fftw_complex* weight = NULL;
 
 		weight = fftw_alloc_complex(particles_data.n_tot);
@@ -509,7 +509,7 @@ class DensityField {
 	 * @param alpha Alpha ratio.
 	 * @returns Exit status.
 	 */
-	int calc_normal_density_field_in_box_for_reconstruction(
+	int calc_density_field_in_box_for_recon(
 		ParticleContainer& particles_data,
 		ParticleContainer& particles_rand,
 		double alpha
@@ -710,9 +710,9 @@ class DensityField {
 					den /= win;
 
 					this->field[coord_flat][0] =
-						bessel_j.eval(kmag * rmag_in) * (ylm[i] * dn).real() / this->params.volume;
+						bessel_j.eval(kmag * rmag_in) * (ylm[i] * den).real() / this->params.volume;
 					this->field[coord_flat][1] =
-						bessel_j.eval(kmag * rmag_in) * (ylm[i] * dn).imag() / this->params.volume;
+						bessel_j.eval(kmag * rmag_in) * (ylm[i] * den).imag() / this->params.volume;
 		}}}
 
 		fftw_plan fft_plan_backward = fftw_plan_dft_3d(
@@ -736,11 +736,11 @@ class DensityField {
 	double calc_interpolation_window_in_fourier(double* kvec) {
 		if (0) {
 		} else if (this->params.assignment == "NGP") {
-			return this->calc_interpolation_window_ngp(kvec);
+			return this->calc_interpolation_window_in_fourier_ngp(kvec);
 		} else if (this->params.assignment == "CIC") {
-			return this->calc_interpolation_window_cic(kvec);
+			return this->calc_interpolation_window_in_fourier_cic(kvec);
 		} else if (this->params.assignment == "TSC") {
-			return this->calc_interpolation_window_tsc(kvec);
+			return this->calc_interpolation_window_in_fourier_tsc(kvec);
 		} else {
 			return 1.;
 		}
@@ -755,7 +755,7 @@ class DensityField {
 	 * @param kvec Wavevector.
 	 * @returns Window value in Fourier space.
 	 */
-	double calc_interpolation_window_ngp(const double* kvec) {
+	double calc_interpolation_window_in_fourier_ngp(const double* kvec) {
 		double dk[3];
 		dk[0] = 2.*M_PI / this->params.boxsize[0];
 		dk[1] = 2.*M_PI / this->params.boxsize[1];
@@ -784,7 +784,7 @@ class DensityField {
 	 * @param kvec Wavevector.
 	 * @returns Window value in Fourier space.
 	 */
-	double calc_interpolation_window_cic(const double* kvec) {
+	double calc_interpolation_window_in_fourier_cic(const double* kvec) {
 		double dk[3];
 		dk[0] = 2.*M_PI / this->params.boxsize[0];
 		dk[1] = 2.*M_PI / this->params.boxsize[1];
@@ -813,7 +813,7 @@ class DensityField {
 	 * @param kvec Wavevector.
 	 * @returns Window value in Fourier space.
 	 */
-	double calc_interpolation_window_tsc(const double* kvec) {
+	double calc_interpolation_window_in_fourier_tsc(const double* kvec) {
 		double dk[3];
 		dk[0] = 2.*M_PI / this->params.boxsize[0];
 		dk[1] = 2.*M_PI / this->params.boxsize[1];
@@ -836,7 +836,7 @@ class DensityField {
 	}
 
 	/**
-	 * Calculate compensation needed in Fouerier transform for
+	 * Calculate compensation needed in Fourier transform for
 	 * assignment schemes.
 	 *
 	 * @returns Exit status.
@@ -874,7 +874,7 @@ class DensityField {
 	 * @param particles_rand Random-source particle container.
 	 * @returns survey_volume_norm Survey volume normalisation.
 	 */
-	double calc_survey_volume_normalisation(ParticleContainer& particles_rand) {
+	double calc_survey_volume_norm(ParticleContainer& particles_rand) {
 		fftw_complex* weight = NULL;
 
 		weight = fftw_alloc_complex(particles_rand.n_tot);
@@ -904,7 +904,7 @@ class DensityField {
 };
 
 template <class ParticleContainer>
-class TwoPointStatisticsClass {
+class TwoPointStatistics {
  public:
 	std::complex<double>* pk;  ///< power spectrum statistics
 	std::complex<double>* xi;  ///< correlation function statistics
@@ -916,7 +916,7 @@ class TwoPointStatisticsClass {
 	 *
 	 * @param params Input parameter set.
 	 */
-	TwoPointStatisticsClass(ParameterSet& params){
+	TwoPointStatistics(ParameterSet& params){
 		this->params = params;
 
 		this->pk = new std::complex<double>[params.num_kbin];
@@ -937,7 +937,7 @@ class TwoPointStatisticsClass {
 	/**
 	 * Destruct two-point statistics.
 	 */
-	~TwoPointStatisticsClass(){
+	~TwoPointStatistics(){
 		finalise_2pt_stats();
 	}
 
@@ -1747,7 +1747,7 @@ class TwoPointStatisticsClass {
 	 * @param alpha Alpha ratio.
 	 * @returns Shot noise for the power spectrum.
 	 */
-	std::complex<double> calc_shotnoise_for_power_spec_in_box_for_reconstruction(
+	std::complex<double> calc_shotnoise_for_power_spec_in_box_for_recon(
 		ParticleContainer& particles_data,
 		ParticleContainer& particles_rand,
 		double alpha

@@ -306,7 +306,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	 * @param vol_survey Survey volume.
 	 * @returns norm Normalisation constant.
 	 */
-	static double calc_norm_for_bispectrum(ParticleBOSSClass& particles_data, double vol_survey) {
+	static double calc_norm_for_bispec(ParticleBOSSClass& particles_data, double vol_survey) {
 		double num_wgt_data = 0.0;
 		for (int id = 0; id < particles_data.n_tot; id++) {
 			num_wgt_data += particles_data[id].w;
@@ -340,30 +340,7 @@ class ParticleBOSSClass {  // FIXME: change class name
 	}
 
 	/**
-	 * Offset particle positions for periodic boundary conditions.
-	 *
-	 * @param params Input parameter set.
-	 * @returns Exit status.
-	 */
-	int offset_particles_for_periodicity(ParameterSet& params) {
-		for (int id = 0; id < this->n_tot; id++) {
-			for (int axis = 0; axis < 3; axis++) {
-				if (this->particles[id].pos[axis] >= params.boxsize[axis]) {
-					this->particles[id].pos[axis] -= params.boxsize[axis];
-				} else if (this->particles[id].pos[axis] < 0.) {
-					this->particles[id].pos[axis] += params.boxsize[axis];
-				}
-			}
-		}
-
-		/// Recalculate extreme data values.
-		this->calc_min_and_max();
-
-		return 0;
-	}
-
-	/**
-	 * Offset particle positions for FFTs (by grid adjustment).
+	 * Offset particle positions for FFT (by grid adjustment).
 	 *
 	 * @param particles_data Data-source particle container.
 	 * @param particles_rand Random-soruce particle data.
@@ -420,6 +397,29 @@ class ParticleBOSSClass {  // FIXME: change class name
 		for (int id = 0; id < this->n_tot; id++) {
 			for (int axis = 0; axis < 3; axis++) {
 				this->particles[id].pos[axis] += dx[axis];
+			}
+		}
+
+		/// Recalculate extreme data values.
+		this->calc_min_and_max();
+
+		return 0;
+	}
+
+	/**
+	 * Offset particle positions for periodic boundary conditions.
+	 *
+	 * @param params Input parameter set.
+	 * @returns Exit status.
+	 */
+	int offset_particles_for_periodicity(ParameterSet& params) {
+		for (int id = 0; id < this->n_tot; id++) {
+			for (int axis = 0; axis < 3; axis++) {
+				if (this->particles[id].pos[axis] >= params.boxsize[axis]) {
+					this->particles[id].pos[axis] -= params.boxsize[axis];
+				} else if (this->particles[id].pos[axis] < 0.) {
+					this->particles[id].pos[axis] += params.boxsize[axis];
+				}
 			}
 		}
 
