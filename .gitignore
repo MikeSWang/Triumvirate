@@ -11,7 +11,7 @@ tests/test_build/**
 !tests/test_build/.gitignore
 
 tests/test_output/**
-!tests/test_output/.gitignore
+!tests/test_output/results/.gitignore
 
 storage/input/**
 !storage/input/params/params.ini
