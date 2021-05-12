@@ -56,7 +56,7 @@ class ParticlesCatalogue {
 	void initialise_particles(const int num) {
 		/// Check total number of particles.
 		if (num <= 0) {
-			printf("Number of particles must be >= 0.\n");
+			printf("[Warning] :: Number of particles is negative.\n");
 			return;
 		}
 		this->n_tot = num;
@@ -108,7 +108,7 @@ class ParticlesCatalogue {
 		fin.open(particles_file.c_str(), std::ios::in);
 
 		if (fin.fail()) {
-			printf("Cannot open file '%s'.\n", particles_file.c_str());
+			printf("[Error] :: Cannot open file '%s'.\n", particles_file.c_str());
 			fin.close();
 			return -1;
 		}
@@ -165,7 +165,7 @@ class ParticlesCatalogue {
 		fin.open(particles_file.c_str(), std::ios::in);
 
 		if (fin.fail()) {
-			printf("Cannot open file '%s'.\n", particles_file.c_str());
+			printf("[Error] :: Cannot open file '%s'.\n", particles_file.c_str());
 			fin.close();
 			return -1;
 		}
