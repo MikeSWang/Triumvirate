@@ -270,11 +270,11 @@ class ParameterSet {
 				/// Check output subdirectory status and exit upon failure.
 				if (ret == 0) {
 					if (thisTask == 0) {
-						printf("Output subdirectory '%s' is successfully made.\n", buf_dir);
+						printf("[Info] :: Output subdirectory '%s' is successfully made.\n", buf_dir);
 					}
 				} else {
 					if (thisTask == 0) {
-						printf("FATAL: Failed to make output subdirectory '%s'.\n", buf_dir);
+						printf("[Error] :: Failed to make output subdirectory '%s'.\n", buf_dir);
 					}
 					exit(1);
 				}
@@ -302,7 +302,7 @@ class ParameterSet {
 		if (!(used_param_file_ptr = fopen(buf, "w"))) {
 			if (thisTask == 0) {
 				printf(
-					"Output directory '%s' does not exist.\n",
+					"[Error] :: Output directory '%s' does not exist.\n",
 					this->output_dir.c_str()
 				);
 			}
@@ -317,7 +317,7 @@ class ParameterSet {
 		if (!(this->assignment == "NGP" || this->assignment == "CIC" || this->assignment == "TSC")) {
 			if (thisTask == 0) {
 				printf(
-					"Grid assignment scheme must be 'NGP', 'CIC' or 'TSC': `assignment` = %s.\n",
+					"[Error] :: Grid assignment scheme must be 'NGP', 'CIC' or 'TSC': `assignment` = %s.\n",
 					this->assignment.c_str()
 				);
 			}
@@ -326,7 +326,7 @@ class ParameterSet {
 
 		if (this->num_kbin < 2 || this->num_rbin < 2) {
 			if (thisTask == 0) {
-				printf("Number of bins (`num_kbin` or `num_rbin`) must be >= 2.\n");
+				printf("[Error] :: Number of bins (`num_kbin` or `num_rbin`) must be >= 2.\n");
 			}
 			return -1;
 		}
@@ -334,7 +334,7 @@ class ParameterSet {
 		if (this->ith_kbin >= this->num_kbin || this->ith_rbin >= this->num_rbin) {
 			if (thisTask == 0) {
 				printf(
-					"Bin index (`ith_kbin` or `ith_rbin`) must be less than "
+					"[Error] :: Bin index (`ith_kbin` or `ith_rbin`) must be less than "
 					"the number of bins (`num_kbin` or `num_rbin`).\n"
 				);
 			}
@@ -343,7 +343,7 @@ class ParameterSet {
 
 		if (!(this->form == "diag" || this->form == "full")) {
 			if (thisTask == 0) {
-				printf("`form` must be either 'full' or 'diag'.\n");
+				printf("[Error] :: `form` must be either 'full' or 'diag'.\n");
 			}
 			return -1;
 		}
