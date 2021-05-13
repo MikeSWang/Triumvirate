@@ -351,7 +351,7 @@ class ParticlesCatalogue {
 			ParticlesCatalogue& particles_data,
 			ParticlesCatalogue& particles_rand,
 			ParameterSet& params,
-			double factor=3.  /// ???: why 3.?
+			double factor=3.  // ???: why 3.?
 		) {
 		particles_data.calc_min_and_max();
 		particles_rand.calc_min_and_max();

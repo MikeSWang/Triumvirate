@@ -55,13 +55,13 @@ int main(int argc, char *argv[]) {
 	}
 
 	/// Initialise parameters.
-	if (argc != 2) {
+	if (argc != 2 && thisTask == 0) {
 		printf("[Error] :: Missing parameter file. Add parameter file to the call.\n");
 		exit(1);
 	}
 
 	ParameterSet params;
-	if (params.read_parameters(argv)) {
+	if (params.read_parameters(argv) && thisTask == 0) {
 		printf("[Error] :: Failed to initialise parameters.\n");
 		exit(1);
 	}
