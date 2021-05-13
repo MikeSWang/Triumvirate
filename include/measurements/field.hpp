@@ -32,7 +32,8 @@ class DensityField {
 
 		this->field = NULL;
 		this->field = fftw_alloc_complex(this->params.nmesh_tot);
-		bytes += this->params.nmesh_tot * sizeof(fftw_complex) / 1024. / 1024. / 1024.;
+		bytes += double(this->params.nmesh_tot) * sizeof(fftw_complex)
+			/ 1024. / 1024. / 1024.;
 
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] = 0.;
@@ -53,7 +54,8 @@ class DensityField {
 	void finalise_density_field() {
 		if (this->field != NULL) {
 			fftw_free(this->field); this->field = NULL;
-			bytes -= this->params.nmesh_tot * sizeof(fftw_complex) / 1024. / 1024. / 1024.;
+			bytes -= double(this->params.nmesh_tot) * sizeof(fftw_complex)
+				/ 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -142,7 +144,7 @@ class DensityField {
 	 * @returns Exit status.
 	 */
 	int assign_weighted_field_to_grid_cic(
-		ParticleContainer& particle,
+		ParticleContainer& particles,
 		fftw_complex* weight
 	) {
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
@@ -157,12 +159,12 @@ class DensityField {
 		double cell_vol_factor = 1. / dV;
 
 		int order = 2;
-		for (int id = 0; id < particle.n_tot; id++) {
+		for (int id = 0; id < particles.n_tot; id++) {
 			double win[order][3];
 			int ijk[order][3];
 			for (int axis = 0; axis < 3; axis++) {
 				double loc_grid = this->params.nmesh[axis]
-					* particle[id].pos[axis] / this->params.boxsize[axis];
+					* particles[id].pos[axis] / this->params.boxsize[axis];
 				ijk[0][axis] = int(loc_grid);
 				ijk[1][axis] = int(loc_grid) + 1;
 
@@ -200,7 +202,7 @@ class DensityField {
 	 * @returns Exit status.
 	 */
 	int assign_weighted_field_to_grid_tsc(
-		ParticleContainer& particle,
+		ParticleContainer& particles,
 		fftw_complex* weight
 	) {
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
@@ -215,11 +217,11 @@ class DensityField {
 		double cell_vol_factor = 1. / dV;
 
 		int order = 3;
-		for (int id = 0; id < particle.n_tot; id++) {
+		for (int id = 0; id < particles.n_tot; id++) {
 			double win[order][3];
 			int ijk[order][3];
 			for (int axis = 0; axis < 3; axis++) {
-				double loc_grid = this->params.nmesh[axis] * particle[id].pos[axis] / this->params.boxsize[axis];
+				double loc_grid = this->params.nmesh[axis] * particles[id].pos[axis] / this->params.boxsize[axis];
 				ijk[1][axis] = int(loc_grid + 0.5);
 				ijk[0][axis] = int(loc_grid + 0.5) - 1;
 				ijk[2][axis] = int(loc_grid + 0.5) + 1;
@@ -894,7 +896,7 @@ class DensityField {
 			norm += this->field[i][0] * this->field[i][0] * dV;
 		}
 
-		double survey_volume_norm = particles_rand.n_tot * particles_rand.n_tot / norm;
+		double survey_volume_norm = double(particles_rand.n_tot) * double(particles_rand.n_tot) / norm;  // NOTE: `double` needed for int overflow
 
 		return survey_volume_norm;
 	}

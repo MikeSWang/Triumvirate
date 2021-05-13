@@ -66,9 +66,8 @@ class ParticlesCatalogue {
 		this->particles = new ParticleData[this->n_tot];
 
 		/// Determine memory usage.
-		bytes += double(
-			this->n_tot * sizeof(struct ParticleData) / 1024. / 1024. / 1024.
-		);
+		bytes += double(this->n_tot) * sizeof(struct ParticleData)
+			/ 1024. / 1024. / 1024.;
 
 		/// Initialise particle data values.
 		for (int id = 0; id < this->n_tot; id++) {
@@ -85,9 +84,8 @@ class ParticlesCatalogue {
 	void finalise_particles() {
 		if (particles != NULL) {  // ???: not this->particles?
 			delete[] this->particles; this->particles = NULL;
-			bytes -= double(
-				this->n_tot * sizeof(struct ParticleData) / 1024. / 1024. / 1024.
-			);
+			bytes -= double(this->n_tot) * sizeof(struct ParticleData)
+				/ 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -98,7 +96,6 @@ class ParticlesCatalogue {
 	 * @returns Exit status.
 	 */
 	int read_particles_catalogue(std::string& particles_file) {
-
 		std::ifstream fin;
 
 		/// Count for the number of lines/particles.
