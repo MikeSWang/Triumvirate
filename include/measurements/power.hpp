@@ -27,7 +27,7 @@ int calc_power_spec(
   double vol_survey
 ) {
 	if (thisTask == 0) {
-		printf("[Info] :: Measuring power spectrum.\n");
+		printf("[Status] :: Measuring power spectrum.\n");
 
 		if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
 			printf("[Error] :: Disallowed multipole degree combination for power spectrum measurements. ");
@@ -94,7 +94,7 @@ int calc_power_spec(
 		durationInSec = double(clock() - timeStart);
 		if (thisTask == 0) {
 			printf(
-				"[Info] Computed order M = %d (... %.3f seconds elapsed in total).\n",
+				"[Status] :: Computed order M = %d (... %.3f seconds elapsed in total).\n",
 				M_, durationInSec / CLOCKS_PER_SEC
 			);
 		}
@@ -140,7 +140,7 @@ int calc_2pt_func(
 	double vol_survey
 ) {
 	if (thisTask == 0) {
-		printf("[Info] :: Measuring two-point correlation function.\n");
+		printf("[Status] :: Measuring two-point correlation function.\n");
 
 		if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
 			printf(
@@ -209,7 +209,7 @@ int calc_2pt_func(
 		durationInSec = double(clock() - timeStart);
 		if (thisTask == 0) {
 			printf(
-				"[Info] :: Computed order M = %d (... %.3f seconds elapsed in total).\n",
+				"[Status] :: Computed order M = %d (... %.3f seconds elapsed in total).\n",
 				M_, durationInSec / CLOCKS_PER_SEC
 			);
 		}
@@ -253,7 +253,7 @@ int calc_power_spec_window(
 	double vol_survey
 ) {
 	if (thisTask == 0) {
-		printf("[Info] :: Measuring power spectrum window function.\n");
+		printf("[Status] :: Measuring power spectrum window function.\n");
 
 		if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
 			printf("[Error] :: Disallowed multipole degree combination for two-point statistics measurements. ");
@@ -308,7 +308,7 @@ int calc_power_spec_window(
 	if (0) {
 	} else if (thisTask == 0) {
 		printf(
-			"[Info] Power spectrum in the lowest wavenumber bin: %.2f.",
+			"[Info] :: Power spectrum in the lowest wavenumber bin: %.2f.",
 			norm * pk_save[0].real()
 		);
 	}
@@ -338,7 +338,7 @@ int calc_2pt_func_window(
 	double vol_survey
 ) {
 	if (thisTask == 0) {
-		printf("[Info] :: Measuring two-point correlation window function.\n");
+		printf("[Status] :: Measuring two-point correlation window function.\n");
 
 		if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
 			printf("[Error] :: Disallowed multipole degree combination for two-point statistics measurements. ");
@@ -392,7 +392,7 @@ int calc_2pt_func_window(
 		durationInSec = double(clock() - timeStart);
 		if (thisTask == 0) {
 			printf(
-				"[Info] :: Computed order M = %d (... %.3f seconds elapsed in total).\n",
+				"[Status] :: Computed order M = %d (... %.3f seconds elapsed in total).\n",
 				M_, durationInSec / CLOCKS_PER_SEC
 			);
 		}
@@ -431,7 +431,7 @@ int calc_power_spec_in_box(
 	double* kbin
 ) {
 	if (thisTask == 0) {
-		printf("[Info] :: Measuring power spectrum.\n");
+		printf("[Status] :: Measuring power spectrum.\n");
 
 		if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
 			printf("[Error] :: Disallowed multipole degree combination for power spectrum measurements. ");
@@ -465,7 +465,7 @@ int calc_power_spec_in_box(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Info] :: Computed power spectrum in a periodic box (... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computed power spectrum in a periodic box (... %.3f seconds elapsed in total).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
@@ -503,7 +503,7 @@ int calc_2pt_func_in_box(
 	double* rbin
 ) {
 	if (thisTask == 0) {
-		printf("[Info] :: Measuring two-point correlation function.\n");
+		printf("[Status] :: Measuring two-point correlation function.\n");
 
 		if (!(params.ell1 == params.ELL) && (params.ell2 == 0)) {
 			printf("[Error] :: Disallowed multipole degree combination for two-point correlation function measurements. ");
@@ -539,7 +539,7 @@ int calc_2pt_func_in_box(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Info] :: Computed two-point correlation in a periodic box (... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computed two-point correlation in a periodic box (... %.3f seconds elapsed in total).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
@@ -580,7 +580,7 @@ int calc_power_spec_in_box_for_recon(
 	double * kbin
 ) {
 	if (thisTask == 0) {
-		printf("[Info] :: Measuring power spectrum.\n");
+		printf("[Status] :: Measuring power spectrum.\n");
 
 		if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
 			printf("[Error] :: Disallowed multipole degree combination for power spectrum measurements. ");
@@ -618,7 +618,7 @@ int calc_power_spec_in_box_for_recon(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Info] :: Computed power spectrum in a periodic box for reconstruction (... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computed power spectrum in a periodic box for reconstruction (... %.3f seconds elapsed in total).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
