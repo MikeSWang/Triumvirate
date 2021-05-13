@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
 
 	if (thisTask == 0) {
 		printf("%s\n", std::string(80, '>').c_str());
-		printf("Initialising...\n");
+		printf("Initialising...\n\n");
 	}
 
 	/// Initialise parameters.
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
-		printf("... total time elapsed: %.3f seconds.\n", durationInSec / CLOCKS_PER_SEC);
+		printf("\n... total time elapsed: %.3f seconds.\n", durationInSec / CLOCKS_PER_SEC);
 		printf("%s\n\n", std::string(80, '<').c_str());
 	}
 
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
 	/// *******************
 	if (thisTask == 0) {
 		printf("%s\n", std::string(80, '>').c_str());
-		printf("Reading and processing catalogues...\n");
+		printf("Reading and processing catalogues...\n\n");
 	}
 
 	/// Read catalogue files.
@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
-		printf("... total time elapsed: %.3f seconds.\n", durationInSec / CLOCKS_PER_SEC);
+		printf("\n... total time elapsed: %.3f seconds.\n", durationInSec / CLOCKS_PER_SEC);
 		printf("%s\n\n", std::string(80, '<').c_str());
 	}
 
@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
 	/// ****************
 	if (thisTask == 0) {
 		printf("%s\n", std::string(80, '>').c_str());
-		printf("Making measurements...\n");
+		printf("Making measurements...\n\n");
 	}
 
 	/// ???
@@ -205,7 +205,7 @@ int main(int argc, char *argv[]) {
 
 	/// IDEA: Formalise the choosing of measurement programs by parsing
 	/// an additional command-line argument.
-	if (params.catalogue_type == "mock" || params.catalogue_type =="survey") {
+	if (params.catalogue_type == "mock" || params.catalogue_type == "survey") {
 		/*
 		calc_power_spec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, vol_survey);
 		calc_2pt_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, vol_survey);
@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
-		printf("... total time elapsed: %.3f seconds.\n\n", durationInSec / CLOCKS_PER_SEC);
+		printf("\n... total time elapsed: %.3f seconds.\n", durationInSec / CLOCKS_PER_SEC);
 		printf("%s\n\n", std::string(80, '<').c_str());
 	}
 
@@ -249,7 +249,7 @@ int main(int argc, char *argv[]) {
 	durationInSec = double(clock() - timeStart);
 
 	if (thisTask == 0) {
-		printf("Memory usage: %.0f bytes.\n", bytes);
+		printf("Persistent memory usage: %.0f bytes.\n", bytes);
 		printf("Total time elapsed: %.3f seconds.\n\n", durationInSec / CLOCKS_PER_SEC);
 
 		printf("Program ended.\n");
