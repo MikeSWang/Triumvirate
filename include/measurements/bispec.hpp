@@ -351,7 +351,7 @@ int calc_bispec(
 
 	}}
 
-	double norm = ParticlesCatalogue::calc_norm_for_power_spec(P_D, vol_survey);
+	double norm = ParticlesCatalogue::calc_norm_for_bispec(P_D, vol_survey);
 
 	FILE * fp;
 	char buf[1024];
