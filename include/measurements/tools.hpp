@@ -124,16 +124,21 @@ class ToolCollection {
 					/// The assigned integer coordinate is
 					/// (i * nmesh_y * nmesh_z + j * nmesh_z + k)
 					/// where nmesh is the mesh number along each axis.
-					long long coord_flat = (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+					long long coord_flat =
+						(i * params.nmesh[1] + j) * params.nmesh[2] + k;
 
 					/// Note the origin is at the centre of the mesh grid.
 					/// ???: Have the two halves of the grid in each dimension been
 					/// rearranged?
-					kvec[0] = (i < params.nmesh[0]/2) ? (i * dk[0]) : ((i - params.nmesh[0]) * dk[0]);
-					kvec[1] = (j < params.nmesh[1]/2) ? (j * dk[1]) : ((j - params.nmesh[1]) * dk[1]);
-					kvec[2] = (k < params.nmesh[2]/2) ? (k * dk[2]) : ((k - params.nmesh[2]) * dk[2]);
+					kvec[0] = (i < params.nmesh[0]/2) ?
+						(i * dk[0]) : ((i - params.nmesh[0]) * dk[0]);
+					kvec[1] = (j < params.nmesh[1]/2) ?
+						(j * dk[1]) : ((j - params.nmesh[1]) * dk[1]);
+					kvec[2] = (k < params.nmesh[2]/2) ?
+						(k * dk[2]) : ((k - params.nmesh[2]) * dk[2]);
 
-					ylm_out[coord_flat] = calc_reduced_spherical_harmonic(ell_, m_, kvec);
+					ylm_out[coord_flat] =
+						calc_reduced_spherical_harmonic(ell_, m_, kvec);
 				}
 			}
 		}
@@ -174,16 +179,21 @@ class ToolCollection {
 					/// The assigned integer coordinate is
 					/// (i * nmesh_y * nmesh_z + j * nmesh_z + k)
 					/// where nmesh is the mesh number along each axis.
-					long long coord_flat = (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+					long long coord_flat =
+						(i * params.nmesh[1] + j) * params.nmesh[2] + k;
 
 					/// Note the origin is at the centre of the mesh grid.
 					/// ???: Have the two halves of the grid in each dimension been
 					/// rearranged?
-					rvec[0] = (i < params.nmesh[0]/2) ? (i * dr[0]) : ((i - params.nmesh[0]) * dr[0]);
-					rvec[1] = (j < params.nmesh[1]/2) ? (j * dr[1]) : ((j - params.nmesh[1]) * dr[1]);
-					rvec[2] = (k < params.nmesh[2]/2) ? (k * dr[2]) : ((k - params.nmesh[2]) * dr[2]);
+					rvec[0] = (i < params.nmesh[0]/2) ?
+						(i * dr[0]) : ((i - params.nmesh[0]) * dr[0]);
+					rvec[1] = (j < params.nmesh[1]/2) ?
+						(j * dr[1]) : ((j - params.nmesh[1]) * dr[1]);
+					rvec[2] = (k < params.nmesh[2]/2) ?
+						(k * dr[2]) : ((k - params.nmesh[2]) * dr[2]);
 
-					ylm_out[coord_flat] = calc_reduced_spherical_harmonic(ell_, m_, rvec);
+					ylm_out[coord_flat] =
+						calc_reduced_spherical_harmonic(ell_, m_, rvec);
 				}
 			}
 		}

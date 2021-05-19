@@ -13,6 +13,7 @@ double durationInSec;  ///< process duration in seconds
 
 /**
  * Line-of-sight vector.
+ *
  */
 struct LineOfSight{
 	double pos[3];   ///< 3-d position vector

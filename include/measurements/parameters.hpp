@@ -19,7 +19,7 @@ class ParameterSet {
 	std::string data_catalogue_file;  ///< data catalogue file
 	std::string rand_catalogue_file;  ///< random catalogue file
 
-	std::string catalogue_type;  ///< type of catalogue: {'survey', 'mock', 'sim'}
+	std::string catalogue_type;  ///< catalogue type: {'survey', 'mock', 'sim'}
 
 	double boxsize[3];  ///< boxsize in each dimension
 	double volume;  ///< box volume
@@ -85,40 +85,62 @@ class ParameterSet {
 				/// Check if the line is in the correct format for parameter
 				/// parsing; process if yes, otherwise move on to the next line.
 				if (
-					sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, str_dummy) != 3
+					sscanf(
+						str_line.data(), "%s %s %s", str_dummy, str_dummy, str_dummy
+					) != 3
 				) {
 					continue;
 				}
 
 				if (str_line.find("catalogue_dir") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, catalogue_dir_);
+					sscanf(
+						str_line.data(), "%s %s %s", str_dummy, str_dummy, catalogue_dir_
+					);
 				}
 				if (str_line.find("output_dir") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, output_dir_);
+					sscanf(
+						str_line.data(), "%s %s %s", str_dummy, str_dummy, output_dir_
+					);
 				}
 				if (str_line.find("data_catalogue_file") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, data_catalogue_file_);
+					sscanf(
+						str_line.data(), "%s %s %s",
+						str_dummy, str_dummy, data_catalogue_file_
+					);
 				}
 				if (str_line.find("rand_catalogue_file") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, rand_catalogue_file_);
+					sscanf(
+						str_line.data(), "%s %s %s",
+						str_dummy, str_dummy, rand_catalogue_file_
+					);
 				}
 
 				if (str_line.find("catalogue_type") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, catalogue_type_);
+					sscanf(
+						str_line.data(), "%s %s %s", str_dummy, str_dummy, catalogue_type_
+					);
 				}
 
 				if (str_line.find("boxsize_x") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_x);
+					sscanf(
+						str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_x
+					);
 				}
 				if (str_line.find("boxsize_y") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_y);
+					sscanf(
+						str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_y
+					);
 				}
 				if (str_line.find("boxsize_z") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_z);
+					sscanf(
+						str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_z
+					);
 				}
 
 				if (str_line.find("nmesh_x") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &nmesh_x);
+					sscanf(
+						str_line.data(), "%s %s %d", str_dummy, str_dummy, &nmesh_x
+					);
 				}
 				if (str_line.find("nmesh_y") != std::string::npos) {
 					sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &nmesh_y);
@@ -128,37 +150,57 @@ class ParameterSet {
 				}
 
 				if (str_line.find("assignment") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, assignment_);
+					sscanf(
+						str_line.data(), "%s %s %s", str_dummy, str_dummy, assignment_
+					);
 				}
 
 				if (str_line.find("ell1") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ell1);
+					sscanf(
+						str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ell1
+					);
 				}
 				if (str_line.find("ell2") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ell2);
+					sscanf(
+						str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ell2
+					);
 				}
 				if (str_line.find("ELL") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ELL);
+					sscanf(
+						str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ELL
+					);
 				}
 
 				if (str_line.find("kmin") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->kmin);
+					sscanf(
+						str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->kmin
+					);
 				}
 				if (str_line.find("kmax") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->kmax);
+					sscanf(
+						str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->kmax
+					);
 				}
 				if (str_line.find("num_kbin") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->num_kbin);
+					sscanf(
+						str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->num_kbin
+					);
 				}
 
 				if (str_line.find("rmin") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->rmin);
+					sscanf(
+						str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->rmin
+					);
 				}
 				if (str_line.find("rmax") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->rmax);
+					sscanf(
+						str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->rmax
+					);
 				}
 				if (str_line.find("num_rbin") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->num_rbin);
+					sscanf(
+						str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->num_rbin
+					);
 				}
 
 				if (str_line.find("form") != std::string::npos) {
@@ -166,24 +208,35 @@ class ParameterSet {
 				}
 
 				if (str_line.find("ith_kbin") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ith_kbin);
+					sscanf(
+						str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ith_kbin
+					);
 				}
 				if (str_line.find("ith_rbin") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ith_rbin);
+					sscanf(
+						str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ith_rbin
+					);
 				}
 				if (str_line.find("NR") != std::string::npos) {
 					sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->NR);
 				}
 
 				if (str_line.find("reconstruction") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, reconstruction_);
+					sscanf(
+						str_line.data(), "%s %s %s", str_dummy, str_dummy, reconstruction_
+					);
 				}
 
 				if (str_line.find("b1_fiducial") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->b1_fiducial);
+					sscanf(
+						str_line.data(), "%s %s %lg",
+						str_dummy, str_dummy, &this->b1_fiducial
+					);
 				}
 				if (str_line.find("RG") != std::string::npos) {
-					sscanf(str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->RG);
+					sscanf(
+						str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->RG
+					);
 				}
 		}
 
@@ -223,8 +276,10 @@ class ParameterSet {
 	int set_io_files() {
 		/// Set survey data and random catalogue inputs.
 		if (this->catalogue_type == "survey") {
-			this->data_catalogue_file = this->catalogue_dir + "/" + this->data_catalogue_file;
-			this->rand_catalogue_file = this->catalogue_dir + "/" + this->rand_catalogue_file;
+			this->data_catalogue_file =
+				this->catalogue_dir + "/" + this->data_catalogue_file;
+			this->rand_catalogue_file =
+				this->catalogue_dir + "/" + this->rand_catalogue_file;
 		}
 
 		/// Set mock data and random catalogue inputs. Make subdirectories
@@ -270,11 +325,17 @@ class ParameterSet {
 				/// Check output subdirectory status and exit upon failure.
 				if (ret == 0) {
 					if (thisTask == 0) {
-						printf("[Info] :: Output subdirectory '%s' is successfully made.\n", buf_dir);
+						printf(
+							"[Info] :: Output subdirectory '%s' is successfully made.\n",
+							buf_dir
+						);
 					}
 				} else {
 					if (thisTask == 0) {
-						printf("[Error] :: Failed to make output subdirectory '%s'.\n", buf_dir);
+						printf(
+							"[Error] :: Failed to make output subdirectory '%s'.\n",
+							buf_dir
+						);
 					}
 					exit(1);
 				}
@@ -314,10 +375,15 @@ class ParameterSet {
 		fclose(used_param_file_ptr);
 
 		/// Validate input parameters.
-		if (!(this->assignment == "NGP" || this->assignment == "CIC" || this->assignment == "TSC")) {
+		if (!(
+			this->assignment == "NGP"
+			|| this->assignment == "CIC"
+			|| this->assignment == "TSC"
+		)) {
 			if (thisTask == 0) {
 				printf(
-					"[Error] :: Grid assignment scheme must be 'NGP', 'CIC' or 'TSC': `assignment` = %s.\n",
+					"[Error] :: Grid assignment scheme must be 'NGP', 'CIC' or 'TSC': "
+					"`assignment` = %s.\n",
 					this->assignment.c_str()
 				);
 			}
@@ -326,7 +392,10 @@ class ParameterSet {
 
 		if (this->num_kbin < 2 || this->num_rbin < 2) {
 			if (thisTask == 0) {
-				printf("[Error] :: Number of bins (`num_kbin` or `num_rbin`) must be >= 2.\n");
+				printf(
+					"[Error] :: Number of bins (`num_kbin` or `num_rbin`) "
+					"must be >= 2.\n"
+				);
 			}
 			return -1;
 		}
@@ -358,12 +427,25 @@ class ParameterSet {
 	 * @returns Exit status.
 	 */
 	int print_parameters(FILE* used_param_file_ptr) {
-		fprintf(used_param_file_ptr, "catalogue_dir = %s\n", this->catalogue_dir.c_str());
-		fprintf(used_param_file_ptr, "output_dir = %s\n", this->output_dir.c_str());
-		fprintf(used_param_file_ptr, "data_catalogue_file = %s\n", this->data_catalogue_file.c_str());
-		fprintf(used_param_file_ptr, "rand_catalogue_file = %s\n", this->rand_catalogue_file.c_str());
+		fprintf(
+			used_param_file_ptr, "catalogue_dir = %s\n",
+			this->catalogue_dir.c_str()
+		);
+		fprintf(
+			used_param_file_ptr, "output_dir = %s\n", this->output_dir.c_str());
+		fprintf(
+			used_param_file_ptr, "data_catalogue_file = %s\n",
+			this->data_catalogue_file.c_str()
+		);
+		fprintf(
+			used_param_file_ptr, "rand_catalogue_file = %s\n",
+			this->rand_catalogue_file.c_str()
+		);
 
-		fprintf(used_param_file_ptr, "catalogue_type = %s\n", this->catalogue_type.c_str());
+		fprintf(
+			used_param_file_ptr, "catalogue_type = %s\n",
+			this->catalogue_type.c_str()
+		);
 
 		fprintf(used_param_file_ptr, "boxsize_x = %.2f\n", this->boxsize[0]);
 		fprintf(used_param_file_ptr, "boxsize_y = %.2f\n", this->boxsize[1]);
@@ -373,7 +455,9 @@ class ParameterSet {
 		fprintf(used_param_file_ptr, "nmesh_y = %d\n", this->nmesh[1]);
 		fprintf(used_param_file_ptr, "nmesh_z = %d\n", this->nmesh[2]);
 
-		fprintf(used_param_file_ptr, "assignment = %s\n", this->assignment.c_str());
+		fprintf(
+			used_param_file_ptr, "assignment = %s\n", this->assignment.c_str()
+		);
 
 		fprintf(used_param_file_ptr, "ell1 = %d\n", this->ell1);
 		fprintf(used_param_file_ptr, "ell2 = %d\n", this->ell2);
@@ -392,7 +476,10 @@ class ParameterSet {
 		fprintf(used_param_file_ptr, "ith_kbin = %d\n", this->ith_kbin);
 		fprintf(used_param_file_ptr, "ith_rbin = %d\n", this->ith_rbin);
 
-		fprintf(used_param_file_ptr, "reconstruction = %s\n", this->reconstruction.c_str());
+		fprintf(
+			used_param_file_ptr, "reconstruction = %s\n",
+			this->reconstruction.c_str()
+		);
 		fprintf(used_param_file_ptr, "b1_fiducial = %.4f\n", this->b1_fiducial);
 		fprintf(used_param_file_ptr, "RG = %.4f\n", this->RG);
 

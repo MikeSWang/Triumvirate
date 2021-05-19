@@ -261,7 +261,9 @@ class ParticlesCatalogue {
 	 * @param particles_rand Random-source particle container.
 	 * @returns alpha Alpha ratio.
 	 */
-	static double calc_alpha_ratio(ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand) {
+	static double calc_alpha_ratio(
+			ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand
+		) {
 		double num_wgt_data = 0.;
 		for (int id = 0; id < particles_data.n_tot; id++) {
 			num_wgt_data += particles_data[id].w;
@@ -281,10 +283,12 @@ class ParticlesCatalogue {
 	 * Calculate power spectrum normalisation.
 	 *
 	 * @param particles_data Data-source particle container.
-	 * @param vol_survey Survey volume.
+	 * @param vol_survey Effective survey volume.
 	 * @returns norm Normalisation constant.
 	 */
-	static double calc_norm_for_power_spec(ParticlesCatalogue& particles_data, double vol_survey) {
+	static double calc_norm_for_power_spec(
+			ParticlesCatalogue& particles_data, double vol_survey
+		) {
 		double num_wgt_data = 0.0;
 		for (int id = 0; id < particles_data.n_tot; id++) {
 			num_wgt_data += particles_data[id].w;
@@ -299,10 +303,12 @@ class ParticlesCatalogue {
 	 * Calculate bispectrum normalisation.
 	 *
 	 * @param particles_data Data-source particle container.
-	 * @param vol_survey Survey volume.
+	 * @param vol_survey Effective survey volume.
 	 * @returns norm Normalisation constant.
 	 */
-	static double calc_norm_for_bispec(ParticlesCatalogue& particles_data, double vol_survey) {
+	static double calc_norm_for_bispec(
+			ParticlesCatalogue& particles_data, double vol_survey
+		) {
 		double num_wgt_data = 0.0;
 		for (int id = 0; id < particles_data.n_tot; id++) {
 			num_wgt_data += particles_data[id].w;
@@ -381,9 +387,12 @@ class ParticlesCatalogue {
 	 * @returns Exit status.
 	 */
 	int offset_particles_for_window(ParameterSet& params) {
-		double xmid = this->pos_min[0] + (this->pos_max[0] - this->pos_min[0]) / 2.;
-		double ymid = this->pos_min[1] + (this->pos_max[1] - this->pos_min[1]) / 2.;
-		double zmid = this->pos_min[2] + (this->pos_max[2] - this->pos_min[2]) / 2.;
+		double xmid = this->pos_min[0]
+			+ (this->pos_max[0] - this->pos_min[0]) / 2.;
+		double ymid = this->pos_min[1]
+			+ (this->pos_max[1] - this->pos_min[1]) / 2.;
+		double zmid = this->pos_min[2]
+			+ (this->pos_max[2] - this->pos_min[2]) / 2.;
 
 		double dx[3] = {0., 0., 0.};
 		dx[0] = params.boxsize[0]/2. - xmid;
