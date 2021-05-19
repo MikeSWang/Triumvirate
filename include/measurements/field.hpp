@@ -66,7 +66,10 @@ class DensityField {
 	 * @param weight Weight field.
 	 * @returns Exit status.
 	 */
-	int assign_weighted_field_to_grid(ParticleContainer& particles, fftw_complex* weight) {
+	int assign_weighted_field_to_grid(
+		ParticleContainer& particles,
+		fftw_complex* weight
+	) {
 		if (0) {
 		} else if (this->params.assignment == "NGP") {
 			this->assign_weighted_field_to_grid_ngp(particles, weight);
@@ -100,8 +103,8 @@ class DensityField {
 
 	  /// Here over-density is given by \sum_i w_i \delta_D(x - x_i),
 		/// where \delta_D = \delta_K / dV, dV = volume / nmesh.
-		/// NOTE: Standard variable naming convention overriden.
 		double dV = this->params.volume / double(this->params.nmesh_tot);
+			// NOTE: Standard variable naming convention overriden.
 		double cell_vol_factor = 1. / dV;
 
 		int order = 1;
@@ -123,9 +126,11 @@ class DensityField {
 						) * this->params.nmesh[2] + ijk[k_order][2];
 						if (coord_flat >= 0 && coord_flat < this->params.nmesh_tot) {
 							this->field[coord_flat][0] += cell_vol_factor
-								* weight[id][0] * win[i_order][0] * win[j_order][1] * win[k_order][2];
+								* weight[id][0]
+								* win[i_order][0] * win[j_order][1] * win[k_order][2];
 							this->field[coord_flat][1] += cell_vol_factor
-								* weight[id][1] * win[i_order][0] * win[j_order][1] * win[k_order][2];
+								* weight[id][1]
+								* win[i_order][0] * win[j_order][1] * win[k_order][2];
 						}
 					}
 				}
@@ -154,8 +159,8 @@ class DensityField {
 
 	  /// Here over-density is given by \sum_i w_i \delta_D(x - x_i),
 		/// where \delta_D = \delta_K / dV, dV = volume / nmesh.
-		/// NOTE: Standard variable naming convention overriden.
 		double dV = this->params.volume / double(this->params.nmesh_tot);
+			// NOTE: Standard variable naming convention overriden.
 		double cell_vol_factor = 1. / dV;
 
 		int order = 2;
@@ -181,9 +186,11 @@ class DensityField {
 						) * this->params.nmesh[2] + ijk[k_order][2];
 						if (coord_flat >= 0 && coord_flat < this->params.nmesh_tot) {
 							this->field[coord_flat][0] += cell_vol_factor
-								* weight[id][0] * win[i_order][0] * win[j_order][1] * win[k_order][2];
+								* weight[id][0]
+								* win[i_order][0] * win[j_order][1] * win[k_order][2];
 							this->field[coord_flat][1] += cell_vol_factor
-								* weight[id][1] * win[i_order][0] * win[j_order][1] * win[k_order][2];
+								* weight[id][1]
+								* win[i_order][0] * win[j_order][1] * win[k_order][2];
 						}
 					}
 				}
@@ -212,8 +219,8 @@ class DensityField {
 
 	  /// Here over-density is given by \sum_i w_i \delta_D(x - x_i),
 		/// where \delta_D = \delta_K / dV, dV = volume / nmesh.
-		/// NOTE: Standard variable naming convention overriden.
 		double dV = this->params.volume / double(this->params.nmesh_tot);
+			// NOTE: Standard variable naming convention overriden.
 		double cell_vol_factor = 1. / dV;
 
 		int order = 3;
@@ -221,7 +228,8 @@ class DensityField {
 			double win[order][3];
 			int ijk[order][3];
 			for (int axis = 0; axis < 3; axis++) {
-				double loc_grid = this->params.nmesh[axis] * particles[id].pos[axis] / this->params.boxsize[axis];
+				double loc_grid = this->params.nmesh[axis] * particles[id].pos[axis]
+					/ this->params.boxsize[axis];
 				ijk[1][axis] = int(loc_grid + 0.5);
 				ijk[0][axis] = int(loc_grid + 0.5) - 1;
 				ijk[2][axis] = int(loc_grid + 0.5) + 1;
@@ -240,9 +248,11 @@ class DensityField {
 						) * this->params.nmesh[2] + ijk[k_order][2];
 						if (coord_flat >= 0 && coord_flat < this->params.nmesh_tot) {
 							this->field[coord_flat][0] += cell_vol_factor
-								* weight[id][0] * win[i_order][0] * win[j_order][1] * win[k_order][2];
+								* weight[id][0]
+								* win[i_order][0] * win[j_order][1] * win[k_order][2];
 							this->field[coord_flat][1] += cell_vol_factor
-								* weight[id][1] * win[i_order][0] * win[j_order][1] * win[k_order][2];
+								* weight[id][1]
+								* win[i_order][0] * win[j_order][1] * win[k_order][2];
 						}
 					}
 				}
@@ -280,7 +290,8 @@ class DensityField {
 			double los[3] = {
 				los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
 			};
-			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			std::complex<double> ylm =
+				ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 			weight[id][0] = ylm.real() * particles_data[id].w;
 			weight[id][1] = ylm.imag() * particles_data[id].w;
 		}
@@ -294,7 +305,8 @@ class DensityField {
 			double los[3] = {
 				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
 			};
-			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			std::complex<double> ylm =
+				ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 			weight[id][0] = ylm.real() * particles_rand[id].w;
 			weight[id][1] = ylm.imag() * particles_rand[id].w;
 		}
@@ -336,8 +348,11 @@ class DensityField {
 		/// Calculate data-source weighted density field.
 		weight = fftw_alloc_complex(particles_data.n_tot);
 		for (int id = 0; id < particles_data.n_tot; id++) {
-			double los[3] = {los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]};
-			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			double los[3] = {
+				los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
+			};
+			std::complex<double> ylm =
+				ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 			ylm = std::conj(ylm);  // NOTE: this cojugation is essential
 			weight[id][0] = ylm.real() * pow(particles_data[id].w, 2);
 			weight[id][1] = ylm.imag() * pow(particles_data[id].w, 2);
@@ -352,7 +367,8 @@ class DensityField {
 			double los[3] = {
 				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
 			};
-			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			std::complex<double> ylm =
+				ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 			ylm = std::conj(ylm);  // NOTE: this cojugation is essential
 			weight[id][0] = ylm.real() * pow(particles_rand[id].w, 2);
 			weight[id][1] = ylm.imag() * pow(particles_rand[id].w, 2);
@@ -394,7 +410,8 @@ class DensityField {
 			double los[3] = {
 				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
 			};
-			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			std::complex<double> ylm =
+				ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 			weight[id][0] = ylm.real() * particles_rand[id].w;
 			weight[id][1] = ylm.imag() * particles_rand[id].w;
 		}
@@ -434,7 +451,8 @@ class DensityField {
 			double los[3] = {
 				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
 			};
-			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			std::complex<double> ylm =
+				ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 			ylm = std::conj(ylm);  // NOTE: this cojugation is essential
 			weight[id][0] = ylm.real() * pow(particles_rand[id].w, 2);
 			weight[id][1] = ylm.imag() * pow(particles_rand[id].w, 2);
@@ -554,8 +572,8 @@ class DensityField {
 	 */
 	int calc_fourier_transform() {
 		/// Convert d^3 x = dV \sum_i.
-		/// NOTE: Standard variable naming convention overriden.
 		double dV = this->params.volume / double(this->params.nmesh_tot);
+			// NOTE: Standard variable naming convention overriden.
 
 		for (int i = 0;  i < this->params.nmesh_tot; i++) {
 			this->field[i][0] *= dV;
@@ -564,7 +582,8 @@ class DensityField {
 
 		/// Perform FFT.
 		fftw_plan fft_plan_forward = fftw_plan_dft_3d(
-			this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2], this->field, this->field,
+			this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2],
+			this->field, this->field,
 			FFTW_FORWARD, FFTW_ESTIMATE
 		);
 		fftw_execute(fft_plan_forward);
@@ -580,8 +599,8 @@ class DensityField {
 	 */
 	int calc_inverse_fourier_transform() {
 		/// Convert d^3 k / (2\pi)^3 = (1/V) \sum_i.
-		/// NOTE: Standard variable naming convention overriden.
 		double V = this->params.volume;
+			// NOTE: Standard variable naming convention overriden.
 
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			this->field[i][0] /= V;
@@ -629,17 +648,25 @@ class DensityField {
 		for (int i = 0; i < this->params.nmesh[0]; i++) {
 			for (int j = 0; j < this->params.nmesh[1]; j++) {
 				for (int k = 0; k < this->params.nmesh[2]; k++) {
-					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
+					long long coord_flat =
+						(i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
-					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
-					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
-					double kmag = sqrt(kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2]);
+					kvec[0] = (i < this->params.nmesh[0]/2) ?
+						i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ?
+						j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ?
+						k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
+					double kmag = sqrt(
+						kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2]
+					);
 
 					double k_lower = (kmag_in > dk_in/2) ? (kmag_in - dk_in/2) : 0.;
 					double k_upper = kmag_in + dk_in/2;
 					if (kmag > k_lower && kmag <= k_upper) {
-						std::complex<double> den(density[coord_flat][0], density[coord_flat][1]);
+						std::complex<double> den(
+							density[coord_flat][0], density[coord_flat][1]
+						);
 						double win = this->calc_interpolation_window_in_fourier(kvec);
 						den /= win;
 
@@ -700,21 +727,31 @@ class DensityField {
 		for (int i = 0; i < this->params.nmesh[0]; i++) {
 			for (int j = 0; j < this->params.nmesh[1]; j++) {
 				for (int k = 0; k < this->params.nmesh[2]; k++) {
-					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
+					long long coord_flat =
+						(i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
-					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
-					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
-					double kmag = sqrt(kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2]);
+					kvec[0] = (i < this->params.nmesh[0]/2) ?
+						i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ?
+						j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ?
+						k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
+					double kmag = sqrt(
+						kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2]
+					);
 
-					std::complex<double> den(density[coord_flat][0], density[coord_flat][1]);
+					std::complex<double> den(
+						density[coord_flat][0], density[coord_flat][1]
+					);
 					double win = this->calc_interpolation_window_in_fourier(kvec);
 					den /= win;
 
 					this->field[coord_flat][0] =
-						bessel_j.eval(kmag * rmag_in) * (ylm[i] * den).real() / this->params.volume;
+						bessel_j.eval(kmag * rmag_in) * (ylm[i] * den).real()
+						/ this->params.volume;
 					this->field[coord_flat][1] =
-						bessel_j.eval(kmag * rmag_in) * (ylm[i] * den).imag() / this->params.volume;
+						bessel_j.eval(kmag * rmag_in) * (ylm[i] * den).imag()
+						/ this->params.volume;
 		}}}
 
 		fftw_plan fft_plan_backward = fftw_plan_dft_3d(
@@ -853,11 +890,15 @@ class DensityField {
 		for (int i = 0; i < this->params.nmesh[0]; i++) {
 			for (int j = 0; j < this->params.nmesh[1]; j++) {
 				for (int k = 0; k < this->params.nmesh[2]; k++) {
-					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
+					long long coord_flat =
+						(i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
-					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
-					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
+					kvec[0] = (i < this->params.nmesh[0]/2) ?
+						i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ?
+						j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ?
+						k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
 
 					double win = this->calc_interpolation_window_in_fourier(kvec);
 
@@ -888,15 +929,17 @@ class DensityField {
 
 		fftw_free(weight); weight = NULL;
 
-		/// NOTE: Standard variable naming convention overriden.
 		double dV = this->params.volume / double(this->params.nmesh_tot);
+			// NOTE: Standard variable naming convention overriden.
 
 		double norm = 0.;
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			norm += this->field[i][0] * this->field[i][0] * dV;
 		}
 
-		double survey_volume_norm = double(particles_rand.n_tot) * double(particles_rand.n_tot) / norm;  // NOTE: `double` needed for int overflow
+		double survey_volume_norm =
+			double(particles_rand.n_tot) * double(particles_rand.n_tot) / norm;
+			// NOTE: `double` needed for int overflow
 
 		return survey_volume_norm;
 	}
@@ -998,17 +1041,27 @@ class TwoPointStatistics {
 		for (int i = 0; i < this->params.nmesh[0]; i++) {
 			for (int j = 0; j < this->params.nmesh[1]; j++) {
 				for (int k = 0; k < this->params.nmesh[2]; k++) {
-					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
+					long long coord_flat =
+						(i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
-					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
-					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] :  (k - this->params.nmesh[2]) * dk[2];
-					double kmag = sqrt(kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2]);
+					kvec[0] = (i < this->params.nmesh[0]/2) ?
+						i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ?
+						j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ?
+						k * dk[2] :  (k - this->params.nmesh[2]) * dk[2];
+					double kmag = sqrt(
+						kvec[0] * kvec[0] + kvec[1] * kvec[1] + kvec[2] * kvec[2]
+					);
 
 					int idx_k = int(kmag / dk_sample + 0.5);
 					if (idx_k < n_sample) {
-						std::complex<double> delta_a(density_a[coord_flat][0], density_a[coord_flat][1]);
-						std::complex<double> delta_b(density_b[coord_flat][0], density_b[coord_flat][1]);
+						std::complex<double> delta_a(
+							density_a[coord_flat][0], density_a[coord_flat][1]
+						);
+						std::complex<double> delta_b(
+							density_b[coord_flat][0], density_b[coord_flat][1]
+						);
 						std::complex<double> mode_power = delta_a * conj(delta_b);
 
 						mode_power -= shotnoise * calc_shotnoise_func(kvec);
@@ -1016,7 +1069,8 @@ class TwoPointStatistics {
 						double win = calc_interpolation_window_in_fourier(kvec);
 						mode_power /= pow(win, 2);
 
-						std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, kvec);
+						std::complex<double> ylm =
+							ToolCollection::calc_reduced_spherical_harmonic(ell, m, kvec);
 						mode_power *= ylm;
 
 						pk_sample[idx_k] += mode_power;
@@ -1071,7 +1125,6 @@ class TwoPointStatistics {
 		std::complex<double> shotnoise,
 		int ell, int m
 	) {
-		/// NOTE: Standard variable naming convention overriden.
 		fftw_complex* xi3d_sample = fftw_alloc_complex(this->params.nmesh_tot);
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			xi3d_sample[i][0] = 0.;
@@ -1093,14 +1146,22 @@ class TwoPointStatistics {
 		for (int i = 0; i < this->params.nmesh[0]; i++) {
 			for (int j = 0; j < this->params.nmesh[1]; j++) {
 				for (int k = 0; k < this->params.nmesh[2]; k++) {
-					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
+					long long coord_flat =
+						(i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
-					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
-					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
+					kvec[0] = (i < this->params.nmesh[0]/2) ?
+						i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ?
+						j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ?
+						k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
 
-					std::complex<double> delta_a(density_a[coord_flat][0], density_a[coord_flat][1]);
-					std::complex<double> delta_b(density_b[coord_flat][0], density_b[coord_flat][1]);
+					std::complex<double> delta_a(
+						density_a[coord_flat][0], density_a[coord_flat][1]
+					);
+					std::complex<double> delta_b(
+						density_b[coord_flat][0], density_b[coord_flat][1]
+					);
 					std::complex<double> mode_power = delta_a * conj(delta_b);
 
 					mode_power -= shotnoise * calc_shotnoise_func(kvec);
@@ -1148,18 +1209,27 @@ class TwoPointStatistics {
 		for (int i = 0; i < this->params.nmesh[0]; i++) {
 			for (int j = 0; j < this->params.nmesh[1]; j++) {
 				for (int k = 0; k < this->params.nmesh[2]; k++) {
-					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
+					long long coord_flat =
+						(i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-					rvec[0] = (i < this->params.nmesh[0]/2) ? i * dr[0] : (i - this->params.nmesh[0]) * dr[0];
-					rvec[1] = (j < this->params.nmesh[1]/2) ? j * dr[1] : (j - this->params.nmesh[1]) * dr[1];
-					rvec[2] = (k < this->params.nmesh[2]/2) ? k * dr[2] : (k - this->params.nmesh[2]) * dr[2];
-					double rmag = sqrt(rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]);
+					rvec[0] = (i < this->params.nmesh[0]/2) ?
+						i * dr[0] : (i - this->params.nmesh[0]) * dr[0];
+					rvec[1] = (j < this->params.nmesh[1]/2) ?
+						j * dr[1] : (j - this->params.nmesh[1]) * dr[1];
+					rvec[2] = (k < this->params.nmesh[2]/2) ?
+						k * dr[2] : (k - this->params.nmesh[2]) * dr[2];
+					double rmag = sqrt(
+						rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
+					);
 
 					int idx_r = int(rmag / dr_sample + 0.5);
 					if (idx_r < n_sample) {
-						std::complex<double> pair_corr(xi3d_sample[coord_flat][0], xi3d_sample[coord_flat][1]);
+						std::complex<double> pair_corr(
+							xi3d_sample[coord_flat][0], xi3d_sample[coord_flat][1]
+						);
 
-						std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, rvec);
+						std::complex<double> ylm =
+							ToolCollection::calc_reduced_spherical_harmonic(ell, m, rvec);
 						pair_corr *= ylm;
 
 						xi_sample[idx_r] += pair_corr;
@@ -1218,7 +1288,6 @@ class TwoPointStatistics {
 		int ell, int m,
 		std::complex<double>* ylm_a, std::complex<double>* ylm_b
 	) {
-		/// NOTE: Standard variable naming convention overriden.
 		fftw_complex* xi3d_sample = fftw_alloc_complex(this->params.nmesh_tot);
 		for (int i = 0; i < this->params.nmesh_tot; i++) {
 			xi3d_sample[i][0] = 0.;
@@ -1240,14 +1309,22 @@ class TwoPointStatistics {
 		for (int i = 0; i < this->params.nmesh[0]; i++) {
 			for (int j = 0; j < this->params.nmesh[1]; j++) {
 				for (int k = 0; k < this->params.nmesh[2]; k++) {
-					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
+					long long coord_flat =
+						(i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
-					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
-					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
+					kvec[0] = (i < this->params.nmesh[0]/2) ?
+						i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ?
+						j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ?
+						k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
 
-					std::complex<double> delta_a(density_a[coord_flat][0], density_a[coord_flat][1]);
-					std::complex<double> delta_b(density_b[coord_flat][0], density_b[coord_flat][1]);
+					std::complex<double> delta_a(
+						density_a[coord_flat][0], density_a[coord_flat][1]
+					);
+					std::complex<double> delta_b(
+						density_b[coord_flat][0], density_b[coord_flat][1]
+					);
 					std::complex<double> mode_power = delta_a * conj(delta_b);
 
 					mode_power -= shotnoise * calc_shotnoise_func(kvec);
@@ -1295,16 +1372,24 @@ class TwoPointStatistics {
 		for (int i = 0; i < this->params.nmesh[0]; i++) {
 			for (int j = 0; j < this->params.nmesh[1]; j++) {
 				for (int k = 0; k < this->params.nmesh[2]; k++) {
-					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
+					long long coord_flat =
+						(i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-					rvec[0] = (i < this->params.nmesh[0]/2) ? i * dr[0] : (i - this->params.nmesh[0]) * dr[0];
-					rvec[1] = (j < this->params.nmesh[1]/2) ? j * dr[1] : (j - this->params.nmesh[1]) * dr[1];
-					rvec[2] = (k < this->params.nmesh[2]/2) ? k * dr[2] : (k - this->params.nmesh[2]) * dr[2];
-					double rmag = sqrt(rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]);
+					rvec[0] = (i < this->params.nmesh[0]/2) ?
+						i * dr[0] : (i - this->params.nmesh[0]) * dr[0];
+					rvec[1] = (j < this->params.nmesh[1]/2) ?
+						j * dr[1] : (j - this->params.nmesh[1]) * dr[1];
+					rvec[2] = (k < this->params.nmesh[2]/2) ?
+						k * dr[2] : (k - this->params.nmesh[2]) * dr[2];
+					double rmag = sqrt(
+						rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
+					);
 
 					int idx_r = int(rmag / dr_sample + 0.5);
 					if (idx_r < n_sample) {
-						std::complex<double> pair_corr(xi3d_sample[coord_flat][0], xi3d_sample[coord_flat][1]);
+						std::complex<double> pair_corr(
+							xi3d_sample[coord_flat][0], xi3d_sample[coord_flat][1]
+						);
 
 						pair_corr *= ylm_a[coord_flat] * ylm_b[coord_flat];
 
@@ -1344,8 +1429,8 @@ class TwoPointStatistics {
 			}
 		}
 
-		/// NOTE: Standard variable naming convention overriden.
 		double dV = this->params.volume / double(this->params.nmesh_tot);
+			// NOTE: Standard variable naming convention overriden.
 		for (int i = 0; i < this->params.num_rbin; i++) {
 			if (this->npair_xi[i] != 0) {
 				this->xi[i] *= pow(-1., this->params.ell1+this->params.ell2) / dV
@@ -1389,7 +1474,8 @@ class TwoPointStatistics {
 			double los[3] = {
 				los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
 			};
-			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			std::complex<double> ylm =
+				ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 			sum_data += pow(particles_data[id].w, 2) * ylm;
 		}
 
@@ -1397,7 +1483,8 @@ class TwoPointStatistics {
 			double los[3] = {
 				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
 			};
-			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			std::complex<double> ylm =
+				ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 			sum_rand += pow(particles_rand[id].w, 2) * ylm;
 		}
 
@@ -1425,7 +1512,8 @@ class TwoPointStatistics {
 			double los[3] = {
 				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
 			};
-			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			std::complex<double> ylm =
+				ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 			sum_rand += pow(particles_rand[id].w, 2) * ylm;
 		}
 
@@ -1457,7 +1545,8 @@ class TwoPointStatistics {
 			double los[3] = {
 				los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
 			};
-			std::complex<double> ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			std::complex<double> ylm =
+				ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 			sum_data += pow(particles_data[id].w, 3) * ylm;
 		}
 
@@ -1465,7 +1554,8 @@ class TwoPointStatistics {
 			double los[3] = {
 				los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
 			};
-			std::complex<double> Ylm = ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+			std::complex<double> Ylm =
+				ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 			sum_rand += pow(particles_rand[id].w,3) * Ylm;
 		}
 
@@ -1505,14 +1595,22 @@ class TwoPointStatistics {
 		for (int i = 0; i < this->params.nmesh[0]; i++) {
 			for (int j = 0; j < this->params.nmesh[1]; j++) {
 				for (int k = 0; k < this->params.nmesh[2]; k++) {
-					long long coord_flat = (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
+					long long coord_flat =
+						(i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-					kvec[0] = (i < this->params.nmesh[0]/2) ? i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
-					kvec[1] = (j < this->params.nmesh[1]/2) ? j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
-					kvec[2] = (k < this->params.nmesh[2]/2) ? k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
+					kvec[0] = (i < this->params.nmesh[0]/2) ?
+						i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
+					kvec[1] = (j < this->params.nmesh[1]/2) ?
+						j * dk[1] : (j - this->params.nmesh[1]) * dk[1];
+					kvec[2] = (k < this->params.nmesh[2]/2) ?
+						k * dk[2] : (k - this->params.nmesh[2]) * dk[2];
 
-					std::complex<double> oden_a(density_a[coord_flat][0], density_a[coord_flat][1]);
-					std::complex<double> oden_b(density_b[coord_flat][0], density_b[coord_flat][1]);
+					std::complex<double> oden_a(
+						density_a[coord_flat][0], density_a[coord_flat][1]
+					);
+					std::complex<double> oden_b(
+						density_b[coord_flat][0], density_b[coord_flat][1]
+					);
 					std::complex<double> mode_power = oden_a * conj(oden_b);
 
 					mode_power -= shotnoise * calc_shotnoise_func(kvec);
@@ -1594,8 +1692,9 @@ class TwoPointStatistics {
 		double f1 = (i != 0) ? sin(xk): 0.;
 		double f2 = (j != 0) ? sin(yk): 0.;
 		double f3 = (k != 0) ? sin(zk): 0.;
-		double val =
-			(1. - (2./3.) * f1 * f1) * (1. - (2./3.) * f2 * f2) * (1. - (2./3.) * f3 * f3);
+		double val = (1. - (2./3.) * f1 * f1)
+			* (1. - (2./3.) * f2 * f2)
+			* (1. - (2./3.) * f3 * f3);
 
 		return val;
 	}

@@ -15,7 +15,7 @@
  * @param params Input parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
- * @param vol_survey Survey volume.
+ * @param vol_survey Effective survey volume.
  * @returns Exit status.
  */
 int calc_power_spec(
@@ -30,14 +30,17 @@ int calc_power_spec(
 		printf("[Status] :: Measuring power spectrum.\n");
 
 		if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
-			printf("[Error] :: Disallowed multipole degree combination for power spectrum measurements. ");
-			printf("Please set `ell1 = ELL` and `ell2 = 0`.\n");
+			printf(
+				"[Error] :: Disallowed multipole degree combination "
+				"for power spectrum measurements. "
+			  "Please set `ell1 = ELL` and `ell2 = 0`.\n"
+			);
 			exit(1);
 		}
 	}
 
-	/// Compute monopole of the spherical harmonic transform of the density
-	/// fluctuation and then Fourier transform.
+	/// Compute monopole of the Fourier-harmonic transform of the density
+	/// fluctuation.
 	DensityField<ParticlesCatalogue> dn_00(params);
 	dn_00.calc_ylm_weighted_overdensity(
 		particles_data, particles_rand,
@@ -54,8 +57,7 @@ int calc_power_spec(
 	}
 
 	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-		/// Compute spherical harmonic transform of the density fluctuation
-	  /// and then Fourier transform.
+		/// Compute Fourier-harmonic transform of the density fluctuation.
 		DensityField<ParticlesCatalogue> dn_lm(params);
 		dn_lm.calc_ylm_weighted_overdensity(
 			particles_data, particles_rand,
@@ -94,14 +96,17 @@ int calc_power_spec(
 		durationInSec = double(clock() - timeStart);
 		if (thisTask == 0) {
 			printf(
-				"[Status] :: Computed order M = %d (... %.3f seconds elapsed in total).\n",
+				"[Status] :: Computed order M = %d "
+				"(... %.3f seconds elapsed in total).\n",
 				M_, durationInSec / CLOCKS_PER_SEC
 			);
 		}
 	}
 
 	/// Normalise and then save the output.
-	double norm = ParticlesCatalogue::calc_norm_for_power_spec(particles_data, vol_survey);
+	double norm = ParticlesCatalogue::calc_norm_for_power_spec(
+		particles_data, vol_survey
+	);
 
 	char buf[1024];
 	sprintf(buf, "%s/pk%d", params.output_dir.c_str(), params.ELL);
@@ -109,7 +114,9 @@ int calc_power_spec(
 	FILE* saved_file_ptr;
 	saved_file_ptr = fopen(buf, "w");
 	for (int i = 0; i < params.num_kbin; i++) {
-		fprintf(saved_file_ptr, "%.5f \t %.7e\n", kbin[i], norm * pk_save[i].real());
+		fprintf(
+			saved_file_ptr, "%.5f \t %.7e\n", kbin[i], norm * pk_save[i].real()
+		);
 	}
 	fclose(saved_file_ptr);
 
@@ -128,7 +135,7 @@ int calc_power_spec(
  * @param params Input parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
- * @param vol_survey Survey volume.
+ * @param vol_survey Effective survey volume.
  * @returns Exit status.
  */
 int calc_2pt_func(
@@ -152,8 +159,8 @@ int calc_2pt_func(
 		}
 	}
 
-	/// Compute monopole of the spherical harmonic transform of the density
-	/// fluctuation and then Fourier transform.
+	/// Compute monopole of the Fourier-harmonic transform of the density
+	/// fluctuation.
 	DensityField<ParticlesCatalogue> dn_00(params);
 	dn_00.calc_ylm_weighted_overdensity(
 		particles_data, particles_rand,
@@ -170,8 +177,7 @@ int calc_2pt_func(
 	}
 
 	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-		/// Compute spherical harmonic transform of the density fluctuation
-	  /// and then Fourier transform.
+		/// Compute Fourier-harmonic transform of the density fluctuation.
 		DensityField<ParticlesCatalogue> dn_lm(params);
 		dn_lm.calc_ylm_weighted_overdensity(
 			particles_data, particles_rand,
@@ -209,14 +215,17 @@ int calc_2pt_func(
 		durationInSec = double(clock() - timeStart);
 		if (thisTask == 0) {
 			printf(
-				"[Status] :: Computed order M = %d (... %.3f seconds elapsed in total).\n",
+				"[Status] :: Computed order M = %d "
+				"(... %.3f seconds elapsed in total).\n",
 				M_, durationInSec / CLOCKS_PER_SEC
 			);
 		}
 	}
 
 	/// Normalise and then save the output.
-	double norm = ParticlesCatalogue::calc_norm_for_power_spec(particles_data, vol_survey);
+	double norm = ParticlesCatalogue::calc_norm_for_power_spec(
+		particles_data, vol_survey
+	);
 
 	char buf[1024];
 	sprintf(buf, "%s/xi%d", params.output_dir.c_str(), params.ELL);
@@ -224,7 +233,9 @@ int calc_2pt_func(
 	FILE* saved_file_ptr;
 	saved_file_ptr = fopen(buf, "w");
 	for (int i = 0; i < params.num_rbin; i++) {
-		fprintf(saved_file_ptr, "%.5f \t %.7e\n", rbin[i], norm * xi_save[i].real());
+		fprintf(
+			saved_file_ptr, "%.5f \t %.7e\n", rbin[i], norm * xi_save[i].real()
+		);
 	}
 	fclose(saved_file_ptr);
 
@@ -241,7 +252,7 @@ int calc_2pt_func(
  * @param params Input parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
- * @param vol_survey Survey volume.
+ * @param vol_survey Effective survey volume.
  * @returns Exit status.
  */
 int calc_power_spec_window(
@@ -256,14 +267,16 @@ int calc_power_spec_window(
 		printf("[Status] :: Measuring power spectrum window function.\n");
 
 		if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
-			printf("[Error] :: Disallowed multipole degree combination for two-point statistics measurements. ");
-			printf("Please set `ell1 = ELL` and `ell2 = 0`.\n");
+			printf(
+				"[Error] :: Disallowed multipole degree combination "
+				"for two-point statistics measurements. "
+				"Please set `ell1 = ELL` and `ell2 = 0`.\n"
+			);
 			exit(1);
 		}
 	}
 
-	/// Compute monopole of the spherical harmonic transform of the mean
-	/// density and then Fourier transform.
+	/// Compute monopole of the Fourier-harmonic transform of the mean density.
 	DensityField<ParticlesCatalogue> dn_00(params);
 	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
 	dn_00.calc_fourier_transform();
@@ -291,9 +304,11 @@ int calc_power_spec_window(
 	std::cout << "Current memory usage: " << bytes << " bytes." << std::endl;
 
 	/// Normalise and then save the output.
-	double norm = ParticlesCatalogue::calc_norm_for_power_spec(particles_rand, vol_survey);
+	double norm = ParticlesCatalogue::calc_norm_for_power_spec(
+		particles_rand, vol_survey
+	);
 	norm /= alpha * alpha;
-	norm /= params.volume;  /// NOTE: this volume normalisation is essential
+	norm /= params.volume;  // NOTE: this volume normalisation is essential
 
 	char buf[1024];
 	sprintf(buf, "%s/pk%d_window", params.output_dir.c_str(), params.ELL);
@@ -301,7 +316,9 @@ int calc_power_spec_window(
 	FILE* saved_file_ptr;
 	saved_file_ptr = fopen(buf, "w");
 	for (int i = 0; i < params.num_kbin; i++) {
-		fprintf(saved_file_ptr, "%.5f \t %.7e\n", kbin[i], norm * pk_save[i].real());
+		fprintf(
+			saved_file_ptr, "%.5f \t %.7e\n", kbin[i], norm * pk_save[i].real()
+		);
 	}
 	fclose(saved_file_ptr);
 
@@ -326,7 +343,7 @@ int calc_power_spec_window(
  * @param params Input parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
- * @param vol_survey Survey volume.
+ * @param vol_survey Effective survey volume.
  * @returns Exit status.
  */
 int calc_2pt_func_window(
@@ -341,14 +358,16 @@ int calc_2pt_func_window(
 		printf("[Status] :: Measuring two-point correlation window function.\n");
 
 		if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
-			printf("[Error] :: Disallowed multipole degree combination for two-point statistics measurements. ");
-			printf("Please set `ell1 = ELL` and `ell2 = 0`.\n");
+			printf(
+				"[Error] :: Disallowed multipole degree combination "
+				"for two-point statistics measurements. "
+			  "Please set `ell1 = ELL` and `ell2 = 0`.\n"
+			);
 			exit(1);
 		}
 	}
 
-	/// Compute monopole of the spherical harmonic transform of the mean
-	/// density and then Fourier transform.
+	/// Compute monopole of the Fourier-harmonic transform of the mean density.
 	DensityField<ParticlesCatalogue> dn_00(params);
 	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
 	dn_00.calc_fourier_transform();
@@ -361,10 +380,11 @@ int calc_2pt_func_window(
 
 	/// Compute two-point correlation function.
 	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-		/// Compute spherical harmonic transform of the density fluctuation
-	  /// and then Fourier transform.
+		/// Compute Fourier-harmonic transform of the density fluctuation.
 		DensityField<ParticlesCatalogue> dn_lm(params);
-		dn_lm.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, params.ELL, M_);
+		dn_lm.calc_ylm_weighted_mean_density(
+			particles_rand, los_rand, alpha, params.ELL, M_
+		);
 		dn_lm.calc_fourier_transform();
 
 		/// Compute shot noise.
@@ -392,14 +412,17 @@ int calc_2pt_func_window(
 		durationInSec = double(clock() - timeStart);
 		if (thisTask == 0) {
 			printf(
-				"[Status] :: Computed order M = %d (... %.3f seconds elapsed in total).\n",
+				"[Status] :: Computed order M = %d "
+				"(... %.3f seconds elapsed in total).\n",
 				M_, durationInSec / CLOCKS_PER_SEC
 			);
 		}
 	}
 
 	/// Normalise and then save the output.
-	double norm = ParticlesCatalogue::calc_norm_for_power_spec(particles_rand, vol_survey);
+	double norm = ParticlesCatalogue::calc_norm_for_power_spec(
+		particles_rand, vol_survey
+	);
 	norm /= alpha * alpha;
 
 	char buf[1024];
@@ -408,7 +431,9 @@ int calc_2pt_func_window(
 	FILE* saved_file_ptr;
 	saved_file_ptr = fopen(buf, "w");
 	for (int i = 0; i < params.num_rbin; i++) {
-		fprintf(saved_file_ptr, "%.5f \t %.7e\n", rbin[i], norm * xi_save[i].real());
+		fprintf(
+			saved_file_ptr, "%.5f \t %.7e\n", rbin[i], norm * xi_save[i].real()
+		);
 	}
 	fclose(saved_file_ptr);
 
@@ -434,8 +459,11 @@ int calc_power_spec_in_box(
 		printf("[Status] :: Measuring power spectrum.\n");
 
 		if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
-			printf("[Error] :: Disallowed multipole degree combination for power spectrum measurements. ");
-			printf("Please set `ell1 = ELL` and `ell2 = 0`.\n");
+			printf(
+				"[Error] :: Disallowed multipole degree combination "
+				"for power spectrum measurements. "
+			  "Please set `ell1 = ELL` and `ell2 = 0`.\n"
+			);
 			exit(1);
 		}
 	}
@@ -459,13 +487,14 @@ int calc_power_spec_in_box(
 	stats.calc_power_spec(dn, dn, kbin, shotnoise, params.ELL, 0);
 
 	for (int i = 0; i < params.num_kbin; i++) {
-		pk_save[i] += double(2*params.ELL+1) * stats.pk[i];
+		pk_save[i] += double(2*params.ELL + 1) * stats.pk[i];
 	}
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computed power spectrum in a periodic box (... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computed power spectrum in a periodic box "
+			"(... %.3f seconds elapsed in total).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
@@ -480,7 +509,9 @@ int calc_power_spec_in_box(
 	FILE* saved_file_ptr;
 	saved_file_ptr = fopen(buf, "w");
 	for (int i = 0; i < params.num_kbin; i++) {
-		fprintf(saved_file_ptr, "%.5f \t %.7e\n", kbin[i], norm * pk_save[i].real());
+		fprintf(
+			saved_file_ptr, "%.5f \t %.7e\n", kbin[i], norm * pk_save[i].real()
+		);
 	}
 	fclose(saved_file_ptr);
 
@@ -506,8 +537,11 @@ int calc_2pt_func_in_box(
 		printf("[Status] :: Measuring two-point correlation function.\n");
 
 		if (!(params.ell1 == params.ELL) && (params.ell2 == 0)) {
-			printf("[Error] :: Disallowed multipole degree combination for two-point correlation function measurements. ");
-			printf("Please set `ell1 = ELL` and `ell2 = 0`.\n");
+			printf(
+				"[Error] :: Disallowed multipole degree combination "
+				"for two-point correlation function measurements. "
+				"Please set `ell1 = ELL` and `ell2 = 0`.\n"
+			);
 			exit(1);
 		}
 	}
@@ -531,15 +565,16 @@ int calc_2pt_func_in_box(
 	stats.calc_corr_func(dn, dn, rbin, shotnoise, params.ELL, 0);
 
 	for (int i = 0; i < params.num_rbin; i++) {
-		/// NOTE: `double` needed here as complex multiplication is defined
-		/// as a template unlike normal floats.
 		xi_save[i] += double(2 * params.ELL + 1) * stats.xi[i];
+			// NOTE: `double` needed here as complex multiplication is defined
+			// as a template unlike normal floats.
 	}
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computed two-point correlation in a periodic box (... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computed two-point correlation in a periodic box "
+			"(... %.3f seconds elapsed in total).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
@@ -554,7 +589,9 @@ int calc_2pt_func_in_box(
 	FILE* saved_file_ptr;
 	saved_file_ptr = fopen(buf, "w");
 	for (int i = 0; i < params.num_rbin; i++) {
-		fprintf(saved_file_ptr, "%.5f \t %.7e\n", rbin[i], norm * xi_save[i].real());
+		fprintf(
+			saved_file_ptr, "%.5f \t %.7e\n", rbin[i], norm * xi_save[i].real()
+		);
 	}
 	fclose(saved_file_ptr);
 
@@ -583,15 +620,20 @@ int calc_power_spec_in_box_for_recon(
 		printf("[Status] :: Measuring power spectrum.\n");
 
 		if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
-			printf("[Error] :: Disallowed multipole degree combination for power spectrum measurements. ");
-			printf("Please set `ell1 = ELL` and `ell2 = 0`.\n");
+			printf(
+				"[Error] :: Disallowed multipole degree combination "
+				"for power spectrum measurements. "
+				"Please set `ell1 = ELL` and `ell2 = 0`.\n"
+			);
 			exit(1);
 		}
 	}
 
 	/// Fourier transform the density field.
 	DensityField<ParticlesCatalogue> dn(params);
-	dn.calc_density_field_in_box_for_recon(particles_data, particles_rand, alpha);
+	dn.calc_density_field_in_box_for_recon(
+		particles_data, particles_rand, alpha
+	);
 	dn.calc_fourier_transform();
 
 	/// Initialise output power spectrum.
@@ -602,23 +644,25 @@ int calc_power_spec_in_box_for_recon(
 
 	/// Compute shot noise.
 	TwoPointStatistics<ParticlesCatalogue> stats(params);
-	std::complex<double> shotnoise = stats.calc_shotnoise_for_power_spec_in_box_for_recon(
-		particles_data, particles_rand, alpha
-	);
+	std::complex<double> shotnoise =
+		stats.calc_shotnoise_for_power_spec_in_box_for_recon(
+			particles_data, particles_rand, alpha
+		);
 
 	/// Compute power spectrum.
 	stats.calc_power_spec(dn, dn, kbin, shotnoise, params.ELL, 0);
 
 	for (int i = 0; i < params.num_kbin; i++) {
-		/// NOTE: `double` needed here as complex multiplication is defined
-		/// as a template unlike normal floats.
-		pk_save[i] += double(2*params.ELL+1) * stats.pk[i];
+		pk_save[i] += double(2*params.ELL + 1) * stats.pk[i];
+			// NOTE: `double` needed here as complex multiplication is defined
+			// as a template unlike normal floats.
 	}
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computed power spectrum in a periodic box for reconstruction (... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computed power spectrum in a periodic box "
+			"for reconstruction (... %.3f seconds elapsed in total).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
@@ -633,7 +677,9 @@ int calc_power_spec_in_box_for_recon(
 	FILE* saved_file_ptr;
 	saved_file_ptr = fopen(buf, "w");
 	for (int i = 0; i < params.num_kbin; i++) {
-		fprintf(saved_file_ptr, "%.5f \t %.7e\n", kbin[i], norm * pk_save[i].real());
+		fprintf(
+			saved_file_ptr, "%.5f \t %.7e\n", kbin[i], norm * pk_save[i].real()
+		);
 	}
 	fclose(saved_file_ptr);
 
