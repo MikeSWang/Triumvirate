@@ -1,803 +1,1281 @@
-#ifndef __bispec__
-#define __bispec__
+#ifndef TRIUM_BISPEC_H_INCLUDED_
+#define TRIUM_BISPEC_H_INCLUDED_
 
+/**
+ * Calculate bispectrum from catalogues.
+ *
+ * @param particles_data Data-source particle container.
+ * @param particles_rand Random-source particle container.
+ * @param los_data Data-source particle lines of sight.
+ * @param los_rand Random-source particle lines of sight.
+ * @param params Input parameter set.
+ * @param alpha Alpha ratio.
+ * @param kbin Wavenumber bins.
+ * @param vol_survey Effective survey volume.
+ * @returns Exit status.
+ */
 int calc_bispec(
-        ParticlesCatalogue & P_D, ParticlesCatalogue & P_R,
-        LineOfSight* los_data, LineOfSight* los_rand,
-        ParameterSet & param, double alpha, double * kbin, double vol_survey) {
+	ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand,
+	LineOfSight* los_data, LineOfSight* los_rand,
+	ParameterSet& params,
+	double alpha,
+	double* kbin,
+	double vol_survey
+) {
+	if (thisTask == 0) {
+		printf("[Status] :: Measuring bispectrum.\n");
+	}
 
-	if (thisTask == 0) { printf("start to compute bispectrum...\n");}
-
-	if (fabs(wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0)) < 1.0e-10) {
+	if (
+		fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)) < 1.e-10
+	) {
 		if (thisTask == 0) {
-			printf("This multipole combination is not allowed.\n");
-			printf("It should be wigner_3j(ell1, ell2, ELL, 0,0,0) != 0\n");
+			printf(
+				"[Error] :: Disallowed multipole degree combination "
+				"for bispectrum measurements. "
+				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
+			);
 		}
 		exit(1);
 	}
 
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* shotnoise */
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* time */
+	/// Initialise output shot noise terms.
 	durationInSec = double(clock() - timeStart);
-	if (thisTask == 0) { printf("computing shotnoise terms...| %.3f sec\n", durationInSec / CLOCKS_PER_SEC);}
-
-	/* define sn_save:: shotnoise term */
-	std::complex<double> * sn_save = new std::complex<double>[param.num_kbin];
-	for (int i = 0; i < param.num_kbin; i++) {
-		sn_save[i] = 0.0;
+	if (thisTask == 0) {
+		printf(
+			"[Status] :: Computing shot noise terms "
+			"(... %.3f seconds elapsed in total).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
 	}
 
-	/****************************************/
-	/* calc the normal density fluctuation */
-	/* dn = n - bar{n} */
-	DensityField<ParticlesCatalogue> dn_00_sn(param);
-	dn_00_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
-	/* Fourier transform*/
-	dn_00_sn.calc_fourier_transform();
-
-	/* calc shot noise terms */
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
-
-		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
-			continue;
-		}
-
-		/**********************************************/
-		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> N_LM_sn(param);
-		N_LM_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
-		/* Fourier transform*/
-		N_LM_sn.calc_fourier_transform();
-
-		TwoPointStatistics<ParticlesCatalogue> stat(param);
-		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
-
-		if ((param.ell1 == 0) && (param.ell2 == 0)) {
-			for (int i =0; i < param.num_kbin; i++) {
-				sn_save[i] += w * shotnoise;
-	       		}
-		}
-
-		if ((param.ell2 == 0)) {
-			stat.calc_power_spec(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell1, _m1_);
-			if (param.form == "diag") {
-				for (int i =0; i < param.num_kbin; i++) {
-					sn_save[i] += w * stat.pk[i];
-			       	}
-			} else if (param.form == "full") {
-				for (int i =0; i < param.num_kbin; i++) {
-					sn_save[i] += w * stat.pk[param.ith_kbin];
-			       	}
-			}
-		}
-
-		if ((param.ell1 == 0)) {
-			stat.calc_power_spec(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell2, _m2_);
-			for (int i =0; i < param.num_kbin; i++) {
-				sn_save[i] += w * stat.pk[i];
-		       	}
-		}
-
-		/* time */
-		durationInSec = double(clock() - timeStart);
-		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
-
-	}}}
-
-	/****/
-	dn_00_sn.finalise_density_field();
-	/****************************************/
-
-	/****************************************/
-	/* calc F00 */
-	DensityField<ParticlesCatalogue> N_00_sn(param);
-	N_00_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
-	/* Fourier transform*/
-	N_00_sn.calc_fourier_transform();
-
-	/* store spherical bessel functions */
-	SphericalBesselCalculator sj1(param.ell1);
-	SphericalBesselCalculator sj2(param.ell2);
-
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
-
-		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
-
-		std::string flag = "FALSE";
-		for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
-			/*****/
-			double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-			w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-
-			if (fabs(w) > 1.0e-10) {
-				flag = "TRUE";
-			}
-		}
-
-		if (flag == "TRUE") {
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell1, _m1_, param, Ylm1);
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell2, _m2_, param, Ylm2);
-		}
-
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
-
-		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
-			continue;
-		}
-
-		/**********************************************/
-		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM_sn(param);
-		dn_LM_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
-		/* Fourier transform*/
-		dn_LM_sn.calc_fourier_transform();
-
-		TwoPointStatistics<ParticlesCatalogue> stat(param);
-		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
-
-		fftw_complex * xi = fftw_alloc_complex(param.nmesh_tot);
-		bytes += double(sizeof(fftw_complex) * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
-		for (int i = 0; i < (param.nmesh_tot); i++) {
-			xi[i][0] = 0.0;
-			xi[i][1] = 0.0;
-		}
-
-		stat.calc_shotnoise_for_bispec_ijk(dn_LM_sn, N_00_sn, shotnoise, param.ELL, _M_, xi);
-
-		for (int ik = 0; ik < param.num_kbin; ik++) {
-
-			double kmag2 = kbin[ik];
-			double kmag1;
-			if (param.form == "diag") {
-				kmag1 = kmag2;
-			} else if (param.form == "full") {
-				kmag1 = kbin[param.ith_kbin];
-			}
-
-			/* calc shotnoise */
-			std::complex<double> sn_sum = 0.0;
-			double rvec[3];
-			double dr[3];
-			dr[0] = param.boxsize[0] / double(param.nmesh[0]);
-			dr[1] = param.boxsize[1] / double(param.nmesh[1]);
-			dr[2] = param.boxsize[2] / double(param.nmesh[2]);
-			for (int i = 0; i < param.nmesh[0]; i++) {
-			for (int j = 0; j < param.nmesh[1]; j++) {
-			for (int k = 0; k < param.nmesh[2]; k++) {
-				long long coord_flat = (i * param.nmesh[1] + j) * param.nmesh[2] + k;
-				rvec[0] = (i < param.nmesh[0]/2) ? (double) i * dr[0] : (double) (i - param.nmesh[0]) * dr[0];
-				rvec[1] = (j < param.nmesh[1]/2) ? (double) j * dr[1] : (double) (j - param.nmesh[1]) * dr[1];
-				rvec[2] = (k < param.nmesh[2]/2) ? (double) k * dr[2] : (double) (k - param.nmesh[2]) * dr[2];
-				double rmag = sqrt(rvec[0] * rvec[0] +  rvec[1] * rvec[1] +  rvec[2] * rvec[2]);
-				std::complex<double> ff(xi[i][0], xi[i][1]);
-				double j1 = sj1.eval(kmag1 * rmag);
-				double j2 = sj2.eval(kmag2 * rmag);
-
-				sn_sum += (j1 * j2 * ff * Ylm1[i] * Ylm2[i]);
-
-			}}}
-
-			std::complex<double> _I_(0.0,1.0);
-			double fac = param.volume / double(param.nmesh_tot);
-			sn_sum *= pow(_I_, param.ell1 + param.ell2) * fac;
-
-			sn_save[ik] += (w * sn_sum);
-
-			/* time */
-			durationInSec = double(clock() - timeStart);
-			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag2, _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
-		}
-
-		fftw_free(xi); xi = NULL;
-		bytes -= double(sizeof(fftw_complex) * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
-
+	std::complex<double>* shotnoise_save =
+		new std::complex<double>[params.num_kbin];
+	for (int i = 0; i < params.num_kbin; i++) {
+		shotnoise_save[i] = 0.;
 	}
 
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+	/// Compute shot noise terms.
+	DensityField<ParticlesCatalogue> dn_00_shotnoise(params);
+	dn_00_shotnoise.calc_ylm_weighted_overdensity(
+		particles_data, particles_rand,
+		los_data, los_rand,
+		alpha,
+		0, 0
+	);
+	dn_00_shotnoise.calc_fourier_transform();
 
-	}}
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+				double coupling = double(2*params.ELL + 1)
+					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+				if (fabs(coupling) < 1.e-10) {
+					continue;
+				}
 
-	/****/
-	N_00_sn.finalise_density_field();
-	/****************************************/
+				DensityField<ParticlesCatalogue> shotnoise_LM(params);
+				shotnoise_LM.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+					particles_data, particles_rand,
+					los_data, los_rand,
+					alpha,
+					params.ELL, M_
+				);
+				shotnoise_LM.calc_fourier_transform();
 
-	/* time */
+				TwoPointStatistics<ParticlesCatalogue> stats(params);
+				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
+					particles_data, particles_rand,
+					los_data, los_rand,
+					alpha,
+					params.ELL, M_
+				);
+
+				if (params.ell1 == 0 && params.ell2 == 0) {
+					for (int i = 0; i < params.num_kbin; i++) {
+						shotnoise_save[i] += coupling * shotnoise;
+					}
+				}
+
+				if (params.ell2 == 0) {
+					stats.calc_power_spec(
+						dn_00_shotnoise, shotnoise_LM, kbin, shotnoise, params.ell1, m1_
+					);
+					if (params.form == "diag") {
+						for (int i = 0; i < params.num_kbin; i++) {
+							shotnoise_save[i] += coupling * stats.pk[i];
+						}
+					} else if (params.form == "full") {
+						for (int i = 0; i < params.num_kbin; i++) {
+							shotnoise_save[i] += coupling * stats.pk[params.ith_kbin];
+						}
+					}
+				}
+
+				if (params.ell1 == 0) {
+					stats.calc_power_spec(
+						dn_00_shotnoise, shotnoise_LM, kbin, shotnoise, params.ell2, m2_
+					);
+					for (int i = 0; i < params.num_kbin; i++) {
+						shotnoise_save[i] += coupling * stats.pk[i];
+					}
+				}
+
+				durationInSec = double(clock() - timeStart);
+				if (thisTask == 0) {
+					printf(
+						"[Status] :: Computed for orders m1 = %d, m2 = %d, M = %d "
+						"(... %.3f seconds elapsed in total).\n",
+						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+					);
+				}
+			}
+		}
+	}
+
+	dn_00_shotnoise.finalise_density_field();
+
+	DensityField<ParticlesCatalogue> shotnoise_00(params);
+	shotnoise_00.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+		particles_data, particles_rand,
+		los_data, los_rand,
+		alpha,
+		0, 0
+	);
+	shotnoise_00.calc_fourier_transform();
+
+	SphericalBesselCalculator sj1(params.ell1);
+	SphericalBesselCalculator sj2(params.ell2);
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+			std::complex<double>* Ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* Ylm_b = new std::complex<double>[params.nmesh_tot];
+			bytes += 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+
+			std::string flag_nontrivial = "FALSE";
+			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+				double coupling = double(2*params.ELL + 1)
+					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+				  *	wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+				if (fabs(coupling) > 1.e-10) {
+					flag_nontrivial = "TRUE";
+				}
+			}
+
+			if (flag_nontrivial == "TRUE") {
+				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+					params.ell1, m1_, params, Ylm_a
+				);
+				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+					params.ell2, m2_, params, Ylm_b
+				);
+			}
+
+			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+				double coupling = double(2*params.ELL + 1)
+					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+				if (fabs(coupling) < 1.e-10) {
+					continue;
+				}
+
+				DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
+				dn_LM_shotnoise.calc_ylm_weighted_overdensity(
+					particles_data, particles_rand,
+					los_data, los_rand,
+					alpha,
+					params.ELL, M_
+				);
+				dn_LM_shotnoise.calc_fourier_transform();
+
+				TwoPointStatistics<ParticlesCatalogue> stats(params);
+				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
+					particles_data, particles_rand,
+					los_data, los_rand,
+					alpha,
+					params.ELL, M_
+				);
+
+				fftw_complex* xi = fftw_alloc_complex(params.nmesh_tot);
+				bytes += sizeof(fftw_complex) *
+					double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				for (int i = 0; i < (params.nmesh_tot); i++) {
+					xi[i][0] = 0.;
+					xi[i][1] = 0.;
+				}
+
+				stats.calc_shotnoise_for_bispec_ijk(
+					dn_LM_shotnoise, shotnoise_00, shotnoise, params.ELL, M_, xi
+				);
+
+				for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
+					double kmag_a;
+					double kmag_b = kbin[i_kbin];
+					if (params.form == "diag") {
+						kmag_a = kmag_b;
+					} else if (params.form == "full") {
+						kmag_a = kbin[params.ith_kbin];
+					}
+
+					std::complex<double> shotnoise_sum = 0.;
+					double rvec[3];
+					double dr[3];
+					dr[0] = params.boxsize[0] / double(params.nmesh[0]);
+					dr[1] = params.boxsize[1] / double(params.nmesh[1]);
+					dr[2] = params.boxsize[2] / double(params.nmesh[2]);
+					for (int i = 0; i < params.nmesh[0]; i++) {
+						for (int j = 0; j < params.nmesh[1]; j++) {
+							for (int k = 0; k < params.nmesh[2]; k++) {
+								long long coord_flat =
+									(i * params.nmesh[1] + j) * params.nmesh[2] + k;
+								rvec[0] = (i < params.nmesh[0]/2) ?
+									i * dr[0] : (i - params.nmesh[0]) * dr[0];
+								rvec[1] = (j < params.nmesh[1]/2) ?
+									j * dr[1] : (j - params.nmesh[1]) * dr[1];
+								rvec[2] = (k < params.nmesh[2]/2) ?
+									k * dr[2] : (k - params.nmesh[2]) * dr[2];
+								double rmag = sqrt(
+									rvec[0] * rvec[0] +  rvec[1] * rvec[1] +  rvec[2] * rvec[2]
+								);
+
+								std::complex<double> ff(xi[i][0], xi[i][1]);  // ???: ff?
+								double j1 = sj1.eval(kmag_a * rmag);
+								double j2 = sj2.eval(kmag_b * rmag);
+
+								shotnoise_sum += j1 * j2 * Ylm_a[i] * Ylm_b[i] * ff;
+							}
+						}
+					}
+
+					std::complex<double> I_(0., 1.);
+					double factor = params.volume / double(params.nmesh_tot);
+					shotnoise_sum *= pow(I_, params.ell1 + params.ell2) * factor;
+
+					shotnoise_save[i_kbin] += coupling * shotnoise_sum;
+
+					durationInSec = double(clock() - timeStart);
+					if (thisTask == 0) {
+						printf(
+							"[Status] :: Computed for wavenumber and orders "
+							"k2 = %.3f, m1 = %d, m2 = %d, M = %d "
+							"(... %.3f seconds elapsed in total).\n",
+							kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+						);
+					}
+				}
+
+				fftw_free(xi); xi = NULL;
+				bytes -= sizeof(fftw_complex)
+					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+			}
+
+			delete[] Ylm_a; Ylm_a = NULL;
+			delete[] Ylm_b; Ylm_b = NULL;
+			bytes -= 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+		}
+	}
+
+	shotnoise_00.finalise_density_field();
+
 	durationInSec = double(clock() - timeStart);
-	if (thisTask == 0) { printf("done | %.3f sec\n", durationInSec / CLOCKS_PER_SEC);}
+	if (thisTask == 0) {
+		printf(
+			"[Status] :: Computed shot noise terms "
+			"(... %.3f seconds elapsed in total).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
+	}
 
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
+	/// Initialise output bispectrum.
+	if (thisTask == 0) {
+		printf("[Status] :: Measuring bispectrum.\n");
+	}
 
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* bispectrum */
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* time */
-	if (thisTask == 0) { printf("computing bispectrum...\n");}
+	std::complex<double>* bk_save = new std::complex<double>[params.num_kbin];
+	for (int i = 0; i < params.num_kbin; i++) {
+		bk_save[i] = 0.;
+	}
 
-	/****************************************/
-	/* calc the normal density fluctuation */
-	/* dn = n - bar{n} */
-	DensityField<ParticlesCatalogue> dn_00(param);
-	dn_00.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
-	/* Fourier transform*/
+	/// Compute bispectrum.
+	DensityField<ParticlesCatalogue> dn_00(params);
+	dn_00.calc_ylm_weighted_overdensity(
+		particles_data, particles_rand, los_data, los_rand, alpha, 0, 0
+	);
 	dn_00.calc_fourier_transform();
 
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+			std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+			bytes += 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
-	/* define bk_save:: bispectrum */
-	std::complex<double> * bk_save = new std::complex<double>[param.num_kbin];
-	for (int i = 0; i < param.num_kbin; i++) {
-		bk_save[i] = 0.0;
+			std::string flag_nontrivial = "FALSE";
+			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+				double coupling = double(2*params.ELL + 1)
+					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+				if (fabs(coupling) > 1.e-10) {
+					flag_nontrivial = "TRUE";
+				}
+			}
+
+			if (flag_nontrivial == "TRUE") {
+				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+					params.ell1, m1_, params, Ylm_a
+				);
+				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+					params.ell2, m2_, params, Ylm_b
+				);
+			}
+
+			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+				double coupling = double(2*params.ELL + 1)
+					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+				if (fabs(coupling) < 1.e-10) {
+					continue;
+				}
+
+				DensityField<ParticlesCatalogue> dn_LM(params);
+				dn_LM.calc_ylm_weighted_overdensity(
+					particles_data, particles_rand,
+					los_data, los_rand,
+					alpha,
+					params.ELL, M_
+				);
+				dn_LM.calc_fourier_transform();
+				dn_LM.calc_assignment_compensation();
+				dn_LM.calc_inverse_fourier_transform();
+
+				DensityField<ParticlesCatalogue> dn_tilde1(params);
+				double kmag_a;
+				double dk = kbin[1] - kbin[0];
+				if (params.form == "full") {
+					kmag_a = kbin[params.ith_kbin];
+					/// Compute ``dn_tilde1``.
+					dn_tilde1.calc_inverse_fourier_transform_for_bispec(
+						dn_00, kmag_a, dk, Ylm_a
+					);
+				}
+
+				for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
+					double kmag_b = kbin[i_kbin];
+
+					if (params.form == "diag") {
+						kmag_a = kmag_b;
+						/// Compute ``dn_tilde1``.
+						dn_tilde1.calc_inverse_fourier_transform_for_bispec(
+							dn_00, kmag_a, dk, Ylm_a
+						);
+					}
+
+					/// Compute ``dn_tilde2``.
+					DensityField<ParticlesCatalogue> dn_tilde2(params);
+					dn_tilde2.calc_inverse_fourier_transform_for_bispec(
+						dn_00, kmag_b, dk, Ylm_b
+					);
+
+					std::complex<double> bk_sum = 0.;
+					double factor = params.volume / double(params.nmesh_tot);
+					for (int i = 0; i < params.nmesh_tot; i++) {
+						std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);  // ???
+						std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);  // ???
+						std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);  // ???
+						bk_sum += factor * f1 * f2 * f3;
+					}
+
+					bk_save[i_kbin] += coupling * bk_sum;
+
+					double durationInSec = double(clock() - timeStart);
+					if (thisTask == 0) {
+						printf(
+							"[Status] :: Computed for wavenumber and order "
+							"k2 = %.3f, m1 = %d, m2 = %d, M = %d "
+							"(... %.3f seconds elapsed in total).\n",
+							kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+						);
+					}
+				}
+			}
+
+			delete[] Ylm_a; Ylm_a = NULL;
+			delete[] Ylm_b; Ylm_b = NULL;
+			bytes -= 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+		}
 	}
 
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
+	/// Normalise and then save the output.
+	double norm = ParticlesCatalogue::calc_norm_for_bispec(
+		particles_data, vol_survey
+	);
 
-		/****************************************************/
-		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
-
-		std::string flag = "FALSE";
-		for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
-			/*****/
-			double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-			w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-
-			if (fabs(w) > 1.0e-10) {
-				flag = "TRUE";
-			}
-		}
-
-		if (flag == "TRUE") {
-
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
-		}
-
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
-
-		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
-			continue;
-		}
-
-		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM(param);
-		dn_LM.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
-		/* Fourier transform*/
-		dn_LM.calc_fourier_transform();
-		/* divided by a assignment function */
-		dn_LM.calc_assignment_compensation();
-		/* Inverse Fourier transform*/
-		dn_LM.calc_inverse_fourier_transform();
-
-		/* calc dn_tilde1 */
-		DensityField<ParticlesCatalogue> dn_tilde1(param);
-		double kmag1;
-		double dk = kbin[1] - kbin[0];
-		if (param.form == "full") {
-			kmag1 = kbin[param.ith_kbin];
-			dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag1, dk, Ylm1);
-		}
-
-		for (int ik = 0; ik < param.num_kbin; ik++) {
-
-			double kmag2 = kbin[ik];
-
-			/* calc dn_tilde1 */
-			if (param.form == "diag") {
-				kmag1 = kmag2;
-				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag1, dk, Ylm1);
-			}
-
-			/* calc dn_tilde2 */
-			DensityField<ParticlesCatalogue> dn_tilde2(param);
-			dn_tilde2.calc_inverse_fourier_transform_for_bispec(dn_00, kmag2, dk, Ylm2);
-
-			/* calc bispectrum */
-			std::complex<double> bk_sum = 0.0;
-			double fac = param.volume / double(param.nmesh_tot);
-			for (int i = 0; i < param.nmesh_tot; i++) {
-				std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);
-				std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);
-				std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);
-				bk_sum += (fac * f1 * f2 * f3);
-			}
-
-			bk_save[ik] += (w * bk_sum);
-
-			double durationInSec = double(clock() - timeStart);
-			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag2, _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
-
-		}
-
-	}
-
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
-
-
-	}}
-
-	double norm = ParticlesCatalogue::calc_norm_for_bispec(P_D, vol_survey);
-
-	FILE * fp;
+	FILE* saved_file_ptr;
 	char buf[1024];
-	if (param.form == "diag") {
-		sprintf(buf, "%s/bk%d%d%d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < param.num_kbin; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n", kbin[i], kbin[i],
-					norm * (bk_save[i].real() - sn_save[i].real()), norm * (bk_save[i].imag() - sn_save[i].imag()),
-					norm * sn_save[i].real(), norm * sn_save[i].imag());
+	if (params.form == "diag") {
+		sprintf(
+			buf, "%s/bk%d%d%d",
+			params.output_dir.c_str(), params.ell1, params.ell2, params.ELL
+		);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_kbin; i++) {
+			fprintf(
+				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
+				kbin[i], kbin[i],
+				norm * (bk_save[i].real() - shotnoise_save[i].real()),
+				norm * (bk_save[i].imag() - shotnoise_save[i].imag()),
+				norm * shotnoise_save[i].real(),
+				norm * shotnoise_save[i].imag()
+			);
 		}
-	} else if (param.form == "full") {
-		sprintf(buf, "%s/bk%d%d%d_%02d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL, param.ith_kbin);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < param.num_kbin; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n", kbin[param.ith_kbin], kbin[i],
-					norm * (bk_save[i].real() - sn_save[i].real()), norm * (bk_save[i].imag() - sn_save[i].imag()),
-					norm * sn_save[i].real(), norm * sn_save[i].imag());
+	} else if (params.form == "full") {
+		sprintf(
+			buf, "%s/bk%d%d%d_%02d",
+			params.output_dir.c_str(),
+			params.ell1, params.ell2, params.ELL,
+			params.ith_kbin
+		);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_kbin; i++) {
+			fprintf(
+				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
+				kbin[params.ith_kbin], kbin[i],
+				norm * (bk_save[i].real() - shotnoise_save[i].real()),
+				norm * (bk_save[i].imag() - shotnoise_save[i].imag()),
+				norm * shotnoise_save[i].real(),
+				norm * shotnoise_save[i].imag()
+			);
 		}
 	}
-	fclose(fp);
+	fclose(saved_file_ptr);
 
-	delete[] sn_save;
+	delete[] shotnoise_save;
 	delete[] bk_save;
 
 	return 0;
 }
 
-
+/**
+ * Calculate three-point function from catalogues.
+ *
+ * @param particles_data Data-source particle container.
+ * @param particles_rand Random-source particle container.
+ * @param los_data Data-source particle lines of sight.
+ * @param los_rand Random-source particle lines of sight.
+ * @param params Input parameter set.
+ * @param alpha Alpha ratio.
+ * @param rbin Separation bins.
+ * @param vol_survey Effective survey volume.
+ * @returns Exit status.
+ */
 int calc_3pt_func(
-        ParticlesCatalogue & P_D, ParticlesCatalogue & P_R,
-        LineOfSight* los_data, LineOfSight* los_rand,
-        ParameterSet & param, double alpha, double * rbin, double vol_survey) {
+	ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand,
+	LineOfSight* los_data, LineOfSight* los_rand,
+	ParameterSet& params,
+	double alpha,
+	double* rbin,
+	double vol_survey
+) {
+	if (thisTask == 0) {
+		printf("[Status] :: Measuring three-point function.\n");
+	}
 
-
-	if (thisTask == 0) { printf("start to compute three-point function...\n");}
-
-	if (fabs(wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0)) < 1.0e-10) {
+	if (
+		fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)) < 1.e-10
+	) {
 		if (thisTask == 0) {
-			printf("This multipole combination is not allowed.\n");
-			printf("It should be wigner_3j(ell1, ell2, ELL, 0,0,0) != 0\n");
+			printf(
+				"[Error] :: Disallowed multipole degree combination "
+				"for three-point function measurements. "
+				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
+			);
 		}
 		exit(1);
 	}
 
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* shotnoise */
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* time */
+	/// Initialise output shot noise terms.
 	durationInSec = double(clock() - timeStart);
-	if (thisTask == 0) { printf("computing shotnoise terms...| %.3f sec\n", durationInSec / CLOCKS_PER_SEC);}
-
-	/* define sn_save:: shotnoise term */
-	std::complex<double> * sn_save = new std::complex<double>[param.num_rbin];
-	for (int i = 0; i < param.num_rbin; i++) {
-		sn_save[i] = 0.0;
+	if (thisTask == 0) {
+		printf(
+			"[Status] :: Computing shot noise terms "
+			"(... %.3f seconds elapsed in total).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
 	}
 
-	/****************************************/
-	/* calc F00 */
-	DensityField<ParticlesCatalogue> N_00_sn(param);
-	N_00_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
-	/* Fourier transform*/
-	N_00_sn.calc_fourier_transform();
+	std::complex<double>* shotnoise_save =
+		new std::complex<double>[params.num_rbin];
+	for (int i = 0; i < params.num_rbin; i++) {
+		shotnoise_save[i] = 0.;
+	}
 
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
+	/// Compute shot noise terms.
+	DensityField<ParticlesCatalogue> shotnoise_00(params);
+	shotnoise_00.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+		particles_data, particles_rand,
+		los_data, los_rand,
+		alpha,
+		0, 0
+	);
+	shotnoise_00.calc_fourier_transform();
 
-		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+			std::complex<double>* Ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* Ylm_b = new std::complex<double>[params.nmesh_tot];
+			bytes += 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
-
-		std::string flag = "FALSE";
-		for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
-			/*****/
-			double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-			w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-
-			if (fabs(w) > 1.0e-10) {
-				flag = "TRUE";
-			}
-		}
-
-		if (flag == "TRUE") {
-
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell1, _m1_, param, Ylm1);
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell2, _m2_, param, Ylm2);
-
-		}
-
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
-
-		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
-			continue;
-		}
-
-		/**********************************************/
-		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM_sn(param);
-		dn_LM_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
-		/* Fourier transform*/
-		dn_LM_sn.calc_fourier_transform();
-
-		TwoPointStatistics<ParticlesCatalogue> stat(param);
-		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
-
-		stat.calc_corr_func_for_3pt_func(dn_LM_sn, N_00_sn, rbin, shotnoise, param.ell1, _m1_, Ylm1, Ylm2);
-
-		for (int i =0; i < param.num_rbin; i++) {
-			if (param.form == "diag") {
-				sn_save[i] += w * stat.xi[i];
-			} else if (param.form == "full") {
-				if (i == param.ith_rbin) {
-					sn_save[i] += w * stat.xi[i];
-				} else {
-					sn_save[i] += 0.0;
+			std::string flag_nontrivial = "FALSE";
+			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+				double coupling = double(2*params.ELL + 1)
+					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+					*	wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+				if (fabs(coupling) > 1.e-10) {
+					flag_nontrivial = "TRUE";
 				}
 			}
-	       	}
 
-		/* time */
-		durationInSec = double(clock() - timeStart);
-		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+			if (flag_nontrivial == "TRUE") {
+				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+					params.ell1, m1_, params, Ylm_a
+				);
+				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+					params.ell2, m2_, params, Ylm_b
+				);
+			}
 
+			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+				double coupling = double(2*params.ELL + 1)
+					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+				if (fabs(coupling) < 1.e-10) {
+					continue;
+				}
+
+				DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
+				dn_LM_shotnoise.calc_ylm_weighted_overdensity(
+					particles_data, particles_rand,
+					los_data, los_rand,
+					alpha,
+					params.ELL, M_
+				);
+				dn_LM_shotnoise.calc_fourier_transform();
+
+				TwoPointStatistics<ParticlesCatalogue> stats(params);
+				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
+					particles_data, particles_rand,
+					los_data, los_rand,
+					alpha,
+					params.ELL, M_
+				);
+
+				stats.calc_corr_func_for_3pt_func(
+					dn_LM_shotnoise, shotnoise_00,
+					rbin, shotnoise,
+					params.ell1, m1_,
+					Ylm_a, Ylm_b
+				);
+
+				for (int i = 0; i < params.num_rbin; i++) {
+					if (params.form == "diag") {
+						shotnoise_save[i] += coupling * stats.xi[i];
+					} else if (params.form == "full") {
+						if (i == params.ith_rbin) {
+							shotnoise_save[i] += coupling * stats.xi[i];
+						} else {
+							shotnoise_save[i] += 0.;
+						}
+					}
+				}
+
+				durationInSec = double(clock() - timeStart);
+				if (thisTask == 0) {
+					printf(
+						"[Status] :: Computed for orders m1 = %d, m2 = %d, M = %d "
+						"(... %.3f seconds elapsed in total).\n",
+						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);
+				}
+			}
+
+			delete[] Ylm_a; Ylm_a = NULL;
+			delete[] Ylm_b; Ylm_b = NULL;
+			bytes -= 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+		}
 	}
 
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+	shotnoise_00.finalise_density_field();
 
-	}}
-
-
-	/****/
-	N_00_sn.finalise_density_field();
-	/****************************************/
-
-	/* time */
 	durationInSec = double(clock() - timeStart);
-	if (thisTask == 0) { printf("done | %.3f sec\n", durationInSec / CLOCKS_PER_SEC);}
+	if (thisTask == 0) {
+		printf(
+			"[Status] :: Computed shot noise terms "
+			"(... %.3f seconds elapsed in total).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
+	}
 
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
+	/// Initialise output three-point function.
+	if (thisTask == 0) {
+		printf("[Status] :: Measuring three-point function.\n");
+	}
 
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* three-point function */
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* time */
-	if (thisTask == 0) { printf("computing three-point function...\n");}
-
-	/****************************************/
-	/* calc the normal density fluctuation */
-	/* dn = n - bar{n} */
-	DensityField<ParticlesCatalogue> dn_00(param);
-	dn_00.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
-	/* Fourier transform*/
+	DensityField<ParticlesCatalogue> dn_00(params);
+	dn_00.calc_ylm_weighted_overdensity(
+		particles_data, particles_rand,
+		los_data, los_rand,
+		alpha,
+		0, 0
+	);
 	dn_00.calc_fourier_transform();
 
-	/* store spherical bessel functions */
-	SphericalBesselCalculator sj1(param.ell1);
-	SphericalBesselCalculator sj2(param.ell2);
+	SphericalBesselCalculator sj1(params.ell1);
+	SphericalBesselCalculator sj2(params.ell2);
 
-
-	/* define zeta_save:: bispectrum */
-	std::complex<double> * zeta_save = new std::complex<double>[param.num_rbin];
-	for (int i = 0; i < param.num_rbin; i++) {
-		zeta_save[i] = 0.0;
+	std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
+	for (int i = 0; i < params.num_rbin; i++) {
+		zeta_save[i] = 0.;
 	}
 
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+			std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+			bytes += 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
-
-		/****************************************************/
-		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
-
-
-		std::string flag = "FALSE";
-		for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
-			/*****/
-			double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-			w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-
-			if (fabs(w) > 1.0e-10) {
-				flag = "TRUE";
-			}
-		}
-
-		if (flag == "TRUE") {
-
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
-
-		}
-
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
-
-		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
-			continue;
-		}
-
-		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM(param);
-		dn_LM.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
-		/* Fourier transform*/
-		dn_LM.calc_fourier_transform();
-		/* divided by a assignment function */
-		dn_LM.calc_assignment_compensation();
-		/* Inverse Fourier transform*/
-		dn_LM.calc_inverse_fourier_transform();
-
-		/* calc dn_tilde1 */
-		DensityField<ParticlesCatalogue> dn_tilde1(param);
-		double rmag1;
-		if (param.form == "full") {
-			rmag1 = rbin[param.ith_rbin];
-			dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag1, Ylm1, sj1);
-		}
-
-		for (int ir = 0; ir < param.num_rbin; ir++) {
-
-			double rmag2 = rbin[ir];
-
-			/* calc dn_tilde1 */
-			if (param.form == "diag") {
-				rmag1 = rmag2;
-				dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag1, Ylm1, sj1);
+			std::string flag_nontrivial = "FALSE";
+			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+				double coupling = double(2*params.ELL + 1)
+					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+				if (fabs(coupling) > 1.e-10) {
+					flag_nontrivial = "TRUE";
+				}
 			}
 
-			/* calc dn_tilde2 */
-			DensityField<ParticlesCatalogue> dn_tilde2(param);
-			dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag2, Ylm2, sj2);
-
-			/* calc bispectrum */
-			std::complex<double> zeta_sum = 0.0;
-			double fac = param.volume / double(param.nmesh_tot);
-			std::complex<double> _I_(0.0, 1.0);
-			for (int i = 0; i < param.nmesh_tot; i++) {
-				std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);
-				std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);
-				std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);
-				zeta_sum += (pow(_I_, param.ell1+param.ell2) * fac * f1 * f2 * f3);
+			if (flag_nontrivial == "TRUE") {
+				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+					params.ell1, m1_, params, Ylm_a
+				);
+				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+					params.ell2, m2_, params, Ylm_b
+				);
 			}
 
-			zeta_save[ir] += (w * zeta_sum);
+			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+				double coupling = double(2*params.ELL + 1)
+					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+				if (fabs(coupling) < 1.e-10) {
+					continue;
+				}
 
-			double durationInSec = double(clock() - timeStart);
-			if (thisTask == 0) { printf("r2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", rmag2, _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+				DensityField<ParticlesCatalogue> dn_LM(params);
+				dn_LM.calc_ylm_weighted_overdensity(
+					particles_data, particles_rand,
+					los_data, los_rand,
+					alpha,
+					params.ELL, M_
+				);
+				dn_LM.calc_fourier_transform();
+				dn_LM.calc_assignment_compensation();
+				dn_LM.calc_inverse_fourier_transform();
 
+				DensityField<ParticlesCatalogue> dn_tilde1(params);
+				double rmag_a;
+				if (params.form == "full") {
+					rmag_a = rbin[params.ith_rbin];
+					dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
+						dn_00, rmag_a, Ylm_a, sj1
+					);
+				}
+
+				for (int i_rbin = 0; i_rbin < params.num_rbin; i_rbin++) {
+					double rmag_b = rbin[i_rbin];
+					/// Compute ``dn_tilde1``.
+					if (params.form == "diag") {
+						rmag_a = rmag_b;
+						dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
+							dn_00, rmag_a, Ylm_a, sj1
+						);
+					}
+
+					/// Compute ``dn_tilde2``.
+					DensityField<ParticlesCatalogue> dn_tilde2(params);
+					dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
+						dn_00, rmag_b, Ylm_b, sj2
+					);
+
+					std::complex<double> I_(0., 1.);
+					std::complex<double> zeta_sum = 0.;
+					double factor = params.volume / double(params.nmesh_tot);
+					for (int i = 0; i < params.nmesh_tot; i++) {
+						std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);  // ???
+						std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);  // ???
+						std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);  // ???
+						zeta_sum += pow(I_, params.ell1+params.ell2) * factor * f1 * f2 * f3;
+					}
+
+					zeta_save[i_rbin] += coupling * zeta_sum;
+
+					double durationInSec = double(clock() - timeStart);
+					if (thisTask == 0) {
+						printf(
+							"[Status] :: Computed for separation and order "
+							"r2 = %.3f, m1 = %d, m2 = %d, M = %d "
+							"(... %.3f seconds elapsed in total).\n",
+							rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+						);
+					}
+				}
+			}
+
+			delete[] Ylm_a; Ylm_a = NULL;
+			delete[] Ylm_b; Ylm_b = NULL;
+			bytes -= 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
-
 	}
 
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+	/// Normalise and then save the output.
+	double norm = ParticlesCatalogue::calc_norm_for_bispec(
+		particles_data, vol_survey
+	);
 
-
-	}}
-
-
-	double norm = ParticlesCatalogue::calc_norm_for_bispec(P_D, vol_survey);
-
-	FILE * fp;
+	FILE* saved_file_ptr;
 	char buf[1024];
-	if (param.form == "diag") {
-		sprintf(buf, "%s/zeta%d%d%d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < param.num_rbin; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n", rbin[i], rbin[i], norm * (zeta_save[i].real() - sn_save[i].real()), norm * sn_save[i].real());
+	if (params.form == "diag") {
+		sprintf(
+			buf, "%s/zeta%d%d%d",
+			params.output_dir.c_str(),
+			params.ell1, params.ell2, params.ELL
+		);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_rbin; i++) {
+			fprintf(
+				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				rbin[i], rbin[i],
+				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
+				norm * shotnoise_save[i].real()
+			);
 		}
-	} else if (param.form == "full") {
-		sprintf(buf, "%s/zeta%d%d%d_%02d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL, param.ith_rbin);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < param.num_rbin; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n",  rbin[param.ith_rbin], rbin[i], norm * (zeta_save[i].real() - sn_save[i].real()), norm * sn_save[i].real());
+	} else if (params.form == "full") {
+		sprintf(
+			buf, "%s/zeta%d%d%d_%02d",
+			params.output_dir.c_str(),
+			params.ell1, params.ell2, params.ELL,
+			params.ith_rbin
+		);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_rbin; i++) {
+			fprintf(
+				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				rbin[params.ith_rbin], rbin[i],
+				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
+				norm * shotnoise_save[i].real()
+			);
 		}
 	}
-	fclose(fp);
+	fclose(saved_file_ptr);
 
-	delete[] sn_save;
+	delete[] shotnoise_save;
 	delete[] zeta_save;
 
 	return 0;
 }
 
-
-
+/**
+ * Calculate three-point function window from catalogues.
+ *
+ * @param particles_rand Random-source particle container.
+ * @param los_rand Random-source particle lines of sight.
+ * @param params Input parameter set.
+ * @param alpha Alpha ratio.
+ * @param rbin Separation bins.
+ * @param vol_survey Effective survey volume.
+ * @returns Exit status.
+ */
 int calc_3pt_func_window(
-        ParticlesCatalogue & P_R,
-        LineOfSight* los_rand,
-        ParameterSet & param, double alpha, double * rbin, double vol_survey) {
-
-	if (thisTask == 0) { printf("start to compute three-point window...\n");}
-
-//	int n_temp = param.num_rbin;
-	int n_temp = 10;
-	int NR = 3;
-	/*************************************************************************/
-	/* reset rbin */
-	rbin[0] = 0.0;
-	rbin[1] = 1.0;
-	rbin[2] = 10.0;
-	rbin[3] = 20.0;
-	rbin[4] = 30.0;
-	rbin[5] = 40.0;
-	rbin[6] = 50.0;
-	rbin[7] = 60.0;
-	double rmin = 70.0;
-	double dlnr = (log(param.rmax) - log(rmin)) / double((param.num_rbin-8) - 1);
-
-	param.ith_rbin = thisTask;
-
-	for (int i = 8; i < param.num_rbin; i++) {
-		rbin[i] = rmin * exp(dlnr * double(i-8));
+	ParticlesCatalogue& particles_rand,
+	LineOfSight* los_rand,
+	ParameterSet& params,
+	double alpha,
+	double* rbin,
+	double vol_survey
+) {
+	if (thisTask == 0) {
+		printf("[Status] :: Measuring three-point function window.\n");
 	}
 
-	if (fabs(wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0)) < 1.0e-10) {
+	int n_temp = 10;  // ???: NOTE: discretionary
+	int NR = 3;  // ???
+
+	rbin[0] = 0.;  // ???
+	rbin[1] = 1.;
+	rbin[2] = 10.;
+	rbin[3] = 20.;
+	rbin[4] = 30.;
+	rbin[5] = 40.;
+	rbin[6] = 50.;
+	rbin[7] = 60.;
+	double rmin = 70.;
+	double dlnr = (log(params.rmax) - log(rmin))
+		/ double((params.num_rbin - 8) - 1);
+
+	params.ith_rbin = thisTask;  // ???
+
+	for (int i = 8; i < params.num_rbin; i++) {
+		rbin[i] = rmin * exp(dlnr * (i - 8));
+	}
+
+	if (
+		fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)) < 1.e-10
+	) {
 		if (thisTask == 0) {
-			printf("This multipole combination is not allowed.\n");
-			printf("It should be wigner_3j(ell1, ell2, ELL, 0,0,0) != 0\n");
+			printf(
+				"[Error] :: Disallowed multipole degree combination "
+				"for three-point function window measurements. "
+				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
+			);
 		}
 		exit(1);
 	}
 
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* shotnoise */
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* time */
+	/// Initialise output shot noise terms.
 	durationInSec = double(clock() - timeStart);
-	if (thisTask == 0) { printf("computing shotnoise terms...| %.3f sec\n", durationInSec / CLOCKS_PER_SEC);}
-
-	/* define sn_save:: shotnoise term */
-	std::complex<double> * sn_save = new std::complex<double>[n_temp];
-	for (int i = 0; i < n_temp; i++) {
-		sn_save[i] = 0.0;
+	if (thisTask == 0) {
+		printf(
+			"[Status] :: Computing shot noise terms "
+			"(... %.3f seconds elapsed in total).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
 	}
 
-	/****************************************/
-	/* calc F00 */
-	DensityField<ParticlesCatalogue> N_00_sn(param);
-	N_00_sn.calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(P_R, los_rand, alpha, 0, 0);
+	std::complex<double>* shotnoise_save = new std::complex<double>[n_temp];
+	for (int i = 0; i < n_temp; i++) {
+		shotnoise_save[i] = 0.;
+	}
 
-	/* Fourier transform*/
-	N_00_sn.calc_fourier_transform();
+	/// Compute shot noise terms.
+	DensityField<ParticlesCatalogue> shotnoise_00(params);
+	shotnoise_00.calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(
+		particles_rand, los_rand, alpha, 0, 0
+	);
+	shotnoise_00.calc_fourier_transform();
 
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+			std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+			bytes += 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+
+			std::string flag_nontrivial = "FALSE";
+			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+				double coupling = double(2*params.ELL + 1)
+					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+					*	wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+				if (fabs(coupling) > 1.e-10) {
+					flag_nontrivial = "TRUE";
+				}
+			}
+
+			if (flag_nontrivial == "TRUE") {
+				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+					params.ell1, m1_, params, Ylm_a
+				);
+				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+					params.ell2, m2_, params, Ylm_b
+				);
+			}
+
+			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+				double coupling = double(2*params.ELL + 1)
+					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+				if (fabs(coupling) < 1.e-10) {
+					continue;
+				}
+
+				DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
+				dn_LM_shotnoise.calc_ylm_weighted_mean_density(
+					particles_rand, los_rand, alpha, params.ELL, M_)
+				;
+				dn_LM_shotnoise.calc_fourier_transform();
+
+				TwoPointStatistics<ParticlesCatalogue> stats(params);
+				std::complex<double> shotnoise =
+					stats.calc_shotnoise_for_2pt_func_window(
+						particles_rand, los_rand, alpha, params.ELL, M_
+					);
+
+				stats.calc_corr_func_for_3pt_func(
+					dn_LM_shotnoise, shotnoise_00,
+					rbin,
+					shotnoise,
+					params.ell1, m1_,
+					Ylm_a, Ylm_b
+				);
+
+				for (int i = 0; i < n_temp; i++) {
+					if (params.form == "diag") {
+						shotnoise_save[i] += coupling * stats.xi[i + NR * n_temp];
+					} else if (params.form == "full") {
+						if (i + NR * n_temp == params.ith_rbin) {  // ???
+							shotnoise_save[i] += coupling * stats.xi[i + NR * n_temp];
+						} else {
+							shotnoise_save[i] += 0.;  // ???: redundant?
+						}
+					}
+				}
+
+				durationInSec = double(clock() - timeStart);
+				if (thisTask == 0) {
+					printf(
+						"[Status] :: Computed for orders m1 = %d, m2 = %d, M = %d "
+						"(... %.3f seconds elapsed in total).\n",
+						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+					);
+				}
+			}
+
+			delete[] Ylm_a; Ylm_a = NULL;
+			delete[] Ylm_b; Ylm_b = NULL;
+			bytes -= 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+		}
+	}
+
+	shotnoise_00.finalise_density_field();
+
+	durationInSec = double(clock() - timeStart);
+	if (thisTask == 0) {
+		printf(
+			"[Status] :: Computed shot noise terms "
+			"(... %.3f seconds elapsed in total).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
+	}
+
+	/// Initialise output three-point function window.
+	if (thisTask == 0) {
+		printf("[Status] :: Measuring three-point function window.\n");
+	}
+
+	DensityField<ParticlesCatalogue> dn_00(params);
+	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
+	dn_00.calc_fourier_transform();
+
+	SphericalBesselCalculator sj1(params.ell1);
+	SphericalBesselCalculator sj2(params.ell2);
+
+	std::complex<double>* zeta_save = new std::complex<double>[n_temp];
+	for (int i = 0; i < n_temp; i++) {
+		zeta_save[i] = 0.;
+	}
+
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+			std::complex<double>* Ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* Ylm_b = new std::complex<double>[params.nmesh_tot];
+			bytes += 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+
+			std::string flag_nontrivial = "FALSE";
+			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+				double coupling = double(2*params.ELL + 1)
+					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+				if (fabs(coupling) > 1.e-10) {
+					flag_nontrivial = "TRUE";
+				}
+			}
+
+			if (flag_nontrivial == "TRUE") {
+				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+					params.ell1, m1_, params, Ylm_a
+				);
+				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+					params.ell2, m2_, params, Ylm_b
+				);
+			}
+
+			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+				double coupling = double(2*params.ELL + 1)
+					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+					* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+				if (fabs(coupling) < 1.e-10) {
+					continue;
+				}
+
+				DensityField<ParticlesCatalogue> dn_LM(params);
+				dn_LM.calc_ylm_weighted_mean_density(
+					particles_rand, los_rand, alpha, params.ELL, M_
+				);
+				dn_LM.calc_fourier_transform();
+				dn_LM.calc_assignment_compensation();
+				dn_LM.calc_inverse_fourier_transform();
+
+				DensityField<ParticlesCatalogue> dn_tilde1(params);
+				double rmag_a;
+				if (params.form == "full") {
+					rmag_a = rbin[params.ith_rbin];
+					dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
+						dn_00, rmag_a, Ylm_a, sj1
+					);
+				}
+
+				for (int i_rbin = 0; i_rbin < n_temp; i_rbin++) {
+					double rmag_b = rbin[i_rbin + NR * n_temp];
+					/// Compute ``dn_tilde1``.
+					if (params.form == "diag") {
+						rmag_a = rmag_b;
+						dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
+							dn_00, rmag_a, Ylm_a, sj1
+						);
+					}
+
+					/// Compute ``dn_tilde2``.
+					DensityField<ParticlesCatalogue> dn_tilde2(params);
+					dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
+						dn_00, rmag_b, Ylm_b, sj2
+					);
+
+					std::complex<double> I_(0., 1.);
+					std::complex<double> zeta_sum = 0.;
+					double factor = params.volume / double(params.nmesh_tot);
+					for (int i = 0; i < params.nmesh_tot; i++) {
+						std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);  // ???
+						std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);  // ???
+						std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);  // ???
+						zeta_sum += pow(I_, params.ell1+params.ell2) * factor * f1 * f2 * f3;
+					}
+
+					zeta_save[i_rbin] += coupling * zeta_sum;
+
+					double durationInSec = double(clock() - timeStart);
+					if (thisTask == 0) {
+						printf(
+							"[Status] :: Computed for separation and order "
+							"r2 = %.3f, m1 = %d, m2 = %d, M = %d "
+							"(... %.3f seconds elapsed in total).\n",
+							rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+						);
+					}
+				}
+			}
+
+			delete[] Ylm_a; Ylm_a = NULL;
+			delete[] Ylm_b; Ylm_b = NULL;
+			bytes -= 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+		}
+	}
+
+	/// Normalise and then save the output.
+	double norm = ParticlesCatalogue::calc_norm_for_bispec(
+			particles_rand, vol_survey
+	);
+	norm /= alpha * alpha * alpha;
+
+	FILE* saved_file_ptr;
+	char buf[1024];
+	if (params.form == "diag") {
+		sprintf(
+			buf, "%s/zeta_window_%d%d%d_%d",
+			params.output_dir.c_str(),
+			params.ell1, params.ell2, params.ELL,
+			NR
+		);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < n_temp; i++) {
+			fprintf(
+				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				rbin[i+NR*n_temp], rbin[i+NR*n_temp],
+				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
+				norm * shotnoise_save[i].real()
+			);
+		}
+	} else if (params.form == "full") {
+		sprintf(
+			buf, "%s/zeta_window_%d%d%d_%02d_%d",
+			params.output_dir.c_str(),
+			params.ell1, params.ell2, params.ELL,
+			params.ith_rbin, NR
+		);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < n_temp; i++) {
+			fprintf(
+				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				rbin[params.ith_rbin], rbin[i+NR*n_temp],
+				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
+				norm * shotnoise_save[i].real()
+			);
+		}
+	}
+	fclose(saved_file_ptr);
+
+	delete[] shotnoise_save;
+	delete[] zeta_save;
+
+	return 0;
+}
+
+/**
+ * Calculate three-point function window for three-point window function
+ * from catalogues.
+ *
+ * @param particles_rand Random-source particle container.
+ * @param los_rand Random-source particle lines of sight.
+ * @param params Input parameter set.
+ * @param alpha Alpha ratio.
+ * @param rbin Separation bins.
+ * @param vol_survey Effective survey volume.
+ * @returns Exit status.
+ */
+int calc_3pt_func_window_for_3pcf(  // ???
+	ParticlesCatalogue& particles_rand,
+	LineOfSight* los_rand,
+	ParameterSet& params,
+	double alpha,
+	double* rbin,
+	double vol_survey
+) {
+	if (thisTask == 0) {
+		printf(
+			"[Status] :: Measuring three-point function window "
+			"for three-point function.\n"
+		);
+	}
+
+	if (
+		fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)) < 1.e-10
+	) {
+		if (thisTask == 0) {
+			printf(
+				"[Error] :: Disallowed multipole degree combination "
+				"for three-point function window measurements. "
+				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
+			);
+		}
+		exit(1);
+	}
+
+	/// Initialise output shot noise terms.
+	durationInSec = double(clock() - timeStart);
+	if (thisTask == 0) {
+		printf(
+			"[Status] :: Computing shot noise terms "
+			"(... %.3f seconds elapsed in total).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
+	}
+
+	std::complex<double>* shotnoise_save =
+		new std::complex<double>[params.num_rbin];
+	for (int i = 0; i < params.num_rbin; i++) {
+		shotnoise_save[i] = 0.;
+	}
+
+	/// Compute shot noise terms.
+	DensityField<ParticlesCatalogue> shotnoise_00(params);
+	shotnoise_00.calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(
+		particles_rand, los_rand, alpha, 0, 0
+	);
+	shotnoise_00.calc_fourier_transform();
+
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 
 		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
+		std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+		bytes += double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
-		std::string flag = "FALSE";
-		for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+		std::string flag_nontrivial = "FALSE";
+		for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 			/*****/
-			double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-			w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
+			double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+			w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
 
-			if (fabs(w) > 1.0e-10) {
-				flag = "TRUE";
+			if (fabs(w) > 1.e-10) {
+				flag_nontrivial = "TRUE";
 			}
 		}
 
-		if (flag == "TRUE") {
+		if (flag_nontrivial == "TRUE") {
 
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell1, _m1_, param, Ylm1);
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell2, _m2_, param, Ylm2);
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space(params.ell1, m1_, params, Ylm_a);
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space(params.ell2, m2_, params, Ylm_b);
 
 		}
 
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 
 		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM_sn(param);
-		dn_LM_sn.calc_ylm_weighted_mean_density(P_R, los_rand, alpha, param.ELL, _M_);
+		DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
+		dn_LM_shotnoise.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, params.ELL, M_);
 		/* Fourier transform*/
-		dn_LM_sn.calc_fourier_transform();
+		dn_LM_shotnoise.calc_fourier_transform();
 
-		TwoPointStatistics<ParticlesCatalogue> stat(param);
-		std::complex<double> shotnoise = stat.calc_shotnoise_for_2pt_func_window(P_R, los_rand, alpha, param.ELL, _M_);
+		TwoPointStatistics<ParticlesCatalogue> stats(params);
+		std::complex<double> shotnoise = stats.calc_shotnoise_for_2pt_func_window(particles_rand, los_rand, alpha, params.ELL, M_);
 
-		stat.calc_corr_func_for_3pt_func(dn_LM_sn, N_00_sn, rbin, shotnoise, param.ell1, _m1_, Ylm1, Ylm2);
+		stats.calc_corr_func_for_3pt_func(dn_LM_shotnoise, shotnoise_00, rbin, shotnoise, params.ell1, m1_, Ylm_a, Ylm_b);
 
-		for (int i = 0; i < n_temp; i++) {
-			if (param.form == "diag") {
-				sn_save[i] += w * stat.xi[i + NR * n_temp];
-			} else if (param.form == "full") {
-				if (i + NR*n_temp == param.ith_rbin) {
-					sn_save[i] += w * stat.xi[i + NR * n_temp];
+		for (int i = 0; i < params.num_rbin; i++) {
+			if (params.form == "diag") {
+				shotnoise_save[i] += w * stats.xi[i];
+			} else if (params.form == "full") {
+				if (i == params.ith_rbin) {
+					shotnoise_save[i] += w * stats.xi[i];
 				} else {
-					sn_save[i] += 0.0;
+					shotnoise_save[i] += 0.;
 				}
 			}
 	       	}
 
 		/* time */
 		durationInSec = double(clock() - timeStart);
-		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 
 	}
 
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		delete[] Ylm_a; Ylm_a = NULL;
+		delete[] Ylm_b; Ylm_b = NULL;
+		bytes -= double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
 	}}
 
 	/****/
-	N_00_sn.finalise_density_field();
+	shotnoise_00.finalise_density_field();
 	/****************************************/
 
 	/* time */
@@ -824,61 +1302,61 @@ int calc_3pt_func_window(
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityField<ParticlesCatalogue> dn_00(param);
-	dn_00.calc_ylm_weighted_mean_density(P_R, los_rand, alpha, 0, 0);
+	DensityField<ParticlesCatalogue> dn_00(params);
+	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calc_fourier_transform();
 
 	/* store spherical bessel functions */
-	SphericalBesselCalculator sj1(param.ell1);
-	SphericalBesselCalculator sj2(param.ell2);
+	SphericalBesselCalculator sj1(params.ell1);
+	SphericalBesselCalculator sj2(params.ell2);
 
 
 	/* define zeta_save:: bispectrum */
-	std::complex<double> * zeta_save = new std::complex<double>[n_temp];
-	for (int i = 0; i < n_temp; i++) {
-		zeta_save[i] = 0.0;
+	std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
+	for (int i = 0; i < params.num_rbin; i++) {
+		zeta_save[i] = 0.;
 	}
 
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 
 		/****************************************************/
 		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
+		std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+		bytes += double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
-		std::string flag = "FALSE";
-		for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+		std::string flag_nontrivial = "FALSE";
+		for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 			/*****/
-			double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-			w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
+			double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+			w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
 
-			if (fabs(w) > 1.0e-10) {
-				flag = "TRUE";
+			if (fabs(w) > 1.e-10) {
+				flag_nontrivial = "TRUE";
 			}
 		}
 
-		if (flag == "TRUE") {
+		if (flag_nontrivial == "TRUE") {
 
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(params.ell1, m1_, params, Ylm_a);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(params.ell2, m2_, params, Ylm_b);
 
 		}
 
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 
 		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM(param);
-		dn_LM.calc_ylm_weighted_mean_density(P_R, los_rand, alpha, param.ELL, _M_);
+		DensityField<ParticlesCatalogue> dn_LM(params);
+		dn_LM.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, params.ELL, M_);
 		/* Fourier transform*/
 		dn_LM.calc_fourier_transform();
 		/* divided by a assignment function */
@@ -887,353 +1365,76 @@ int calc_3pt_func_window(
 		dn_LM.calc_inverse_fourier_transform();
 
 		/* calc dn_tilde1 */
-		DensityField<ParticlesCatalogue> dn_tilde1(param);
-		double rmag1;
-		if (param.form == "full") {
-			rmag1 = rbin[param.ith_rbin];
-			dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag1, Ylm1, sj1);
+		DensityField<ParticlesCatalogue> dn_tilde1(params);
+		double rmag_a;
+		if (params.form == "full") {
+			rmag_a = rbin[params.ith_rbin];
+			dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag_a, Ylm_a, sj1);
 		}
 
-		for (int ir = 0; ir < n_temp; ir++) {
+		for (int i_rbin = 0; i_rbin < params.num_rbin; i_rbin++) {
 
-			double rmag2 = rbin[ir + NR * n_temp];
+			double rmag_b = rbin[i_rbin];
 
 			/* calc dn_tilde1 */
-			if (param.form == "diag") {
-				rmag1 = rmag2;
-				dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag1, Ylm1, sj1);
+			if (params.form == "diag") {
+				rmag_a = rmag_b;
+				dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag_a, Ylm_a, sj1);
 			}
 
 			/* calc dn_tilde2 */
-			DensityField<ParticlesCatalogue> dn_tilde2(param);
-			dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag2, Ylm2, sj2);
+			DensityField<ParticlesCatalogue> dn_tilde2(params);
+			dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag_b, Ylm_b, sj2);
 
 			/* calc bispectrum */
-			std::complex<double> zeta_sum = 0.0;
-			double fac = param.volume / double(param.nmesh_tot);
-			std::complex<double> _I_(0.0, 1.0);
-			for (int i = 0; i < param.nmesh_tot; i++) {
+			std::complex<double> zeta_sum = 0.;
+			double fac = params.volume / double(params.nmesh_tot);
+			std::complex<double> I_(0., 1.);
+			for (int i = 0; i < params.nmesh_tot; i++) {
 				std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);
 				std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);
 				std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);
-				zeta_sum += (pow(_I_, param.ell1+param.ell2) * fac * f1 * f2 * f3);
+				zeta_sum += (pow(I_, params.ell1+params.ell2) * fac * f1 * f2 * f3);
 			}
 
-			zeta_save[ir] += (w * zeta_sum);
+			zeta_save[i_rbin] += (w * zeta_sum);
 
 			double durationInSec = double(clock() - timeStart);
-			if (thisTask == 0) { printf("r2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", rmag2, _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+			if (thisTask == 0) { printf("r2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 
 		}
 
 	}
 
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		delete[] Ylm_a; Ylm_a = NULL;
+		delete[] Ylm_b; Ylm_b = NULL;
+		bytes -= double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
 
 	}}
 
-	double norm = ParticlesCatalogue::calc_norm_for_bispec(P_R, vol_survey);
+	double norm = ParticlesCatalogue::calc_norm_for_bispec(particles_rand, vol_survey);
 	norm /= (alpha * alpha * alpha);
 
-	FILE * fp;
+	FILE* saved_file_ptr;
 	char buf[1024];
-	if (param.form == "diag") {
-		sprintf(buf, "%s/zeta_window_%d%d%d_%d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL, NR);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < n_temp; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n", rbin[i+NR*n_temp], rbin[i+NR*n_temp], norm * (zeta_save[i].real() - sn_save[i].real()), norm * sn_save[i].real());
+	if (params.form == "diag") {
+		sprintf(buf, "%s/zeta%d%d%d_window", params.output_dir.c_str(), params.ell1, params.ell2, params.ELL);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_rbin; i++) {
+			fprintf(saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n", rbin[i], rbin[i], norm * (zeta_save[i].real() - shotnoise_save[i].real()), norm * shotnoise_save[i].real());
 		}
-	} else if (param.form == "full") {
-		sprintf(buf, "%s/zeta_window_%d%d%d_%02d_%d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL, param.ith_rbin, NR);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < n_temp; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n", rbin[param.ith_rbin], rbin[i+NR*n_temp], norm * (zeta_save[i].real() - sn_save[i].real()), norm * sn_save[i].real());
-		}
-	}
-
-	fclose(fp);
-
-	delete[] sn_save;
-	delete[] zeta_save;
-
-	return 0;
-}
-
-int calc_3pt_func_window_for_3pcf(
-        ParticlesCatalogue & P_R,
-        LineOfSight* los_rand,
-        ParameterSet & param, double alpha, double * rbin, double vol_survey) {
-
-	if (thisTask == 0) { printf("start to compute three-point window function...\n");}
-
-	if (fabs(wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0)) < 1.0e-10) {
-		if (thisTask == 0) {
-			printf("This multipole combination is not allowed.\n");
-			printf("It should be wigner_3j(ell1, ell2, ELL, 0,0,0) != 0\n");
-		}
-		exit(1);
-	}
-
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* shotnoise */
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* time */
-	durationInSec = double(clock() - timeStart);
-	if (thisTask == 0) { printf("computing shotnoise terms...| %.3f sec\n", durationInSec / CLOCKS_PER_SEC);}
-
-	/* define sn_save:: shotnoise term */
-	std::complex<double> * sn_save = new std::complex<double>[param.num_rbin];
-	for (int i = 0; i < param.num_rbin; i++) {
-		sn_save[i] = 0.0;
-	}
-
-	/****************************************/
-	/* calc F00 */
-	DensityField<ParticlesCatalogue> N_00_sn(param);
-	N_00_sn.calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(P_R, los_rand, alpha, 0, 0);
-
-	/* Fourier transform*/
-	N_00_sn.calc_fourier_transform();
-
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
-
-		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
-
-		std::string flag = "FALSE";
-		for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
-			/*****/
-			double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-			w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-
-			if (fabs(w) > 1.0e-10) {
-				flag = "TRUE";
-			}
-		}
-
-		if (flag == "TRUE") {
-
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell1, _m1_, param, Ylm1);
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell2, _m2_, param, Ylm2);
-
-		}
-
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
-
-		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
-			continue;
-		}
-
-		/**********************************************/
-		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM_sn(param);
-		dn_LM_sn.calc_ylm_weighted_mean_density(P_R, los_rand, alpha, param.ELL, _M_);
-		/* Fourier transform*/
-		dn_LM_sn.calc_fourier_transform();
-
-		TwoPointStatistics<ParticlesCatalogue> stat(param);
-		std::complex<double> shotnoise = stat.calc_shotnoise_for_2pt_func_window(P_R, los_rand, alpha, param.ELL, _M_);
-
-		stat.calc_corr_func_for_3pt_func(dn_LM_sn, N_00_sn, rbin, shotnoise, param.ell1, _m1_, Ylm1, Ylm2);
-
-		for (int i =0; i < param.num_rbin; i++) {
-			if (param.form == "diag") {
-				sn_save[i] += w * stat.xi[i];
-			} else if (param.form == "full") {
-				if (i == param.ith_rbin) {
-					sn_save[i] += w * stat.xi[i];
-				} else {
-					sn_save[i] += 0.0;
-				}
-			}
-	       	}
-
-		/* time */
-		durationInSec = double(clock() - timeStart);
-		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
-
-	}
-
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
-
-	}}
-
-	/****/
-	N_00_sn.finalise_density_field();
-	/****************************************/
-
-	/* time */
-	durationInSec = double(clock() - timeStart);
-	if (thisTask == 0) { printf("done | %.3f sec\n", durationInSec / CLOCKS_PER_SEC);}
-
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* three-point function */
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/*****************************************************************************/
-	/* time */
-	if (thisTask == 0) { printf("computing three-point function...\n");}
-
-	/****************************************/
-	/* calc the normal density fluctuation */
-	/* dn = n - bar{n} */
-	DensityField<ParticlesCatalogue> dn_00(param);
-	dn_00.calc_ylm_weighted_mean_density(P_R, los_rand, alpha, 0, 0);
-	/* Fourier transform*/
-	dn_00.calc_fourier_transform();
-
-	/* store spherical bessel functions */
-	SphericalBesselCalculator sj1(param.ell1);
-	SphericalBesselCalculator sj2(param.ell2);
-
-
-	/* define zeta_save:: bispectrum */
-	std::complex<double> * zeta_save = new std::complex<double>[param.num_rbin];
-	for (int i = 0; i < param.num_rbin; i++) {
-		zeta_save[i] = 0.0;
-	}
-
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
-
-		/****************************************************/
-		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
-
-		std::string flag = "FALSE";
-		for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
-			/*****/
-			double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-			w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-
-			if (fabs(w) > 1.0e-10) {
-				flag = "TRUE";
-			}
-		}
-
-		if (flag == "TRUE") {
-
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
-
-		}
-
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
-
-		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
-			continue;
-		}
-
-		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM(param);
-		dn_LM.calc_ylm_weighted_mean_density(P_R, los_rand, alpha, param.ELL, _M_);
-		/* Fourier transform*/
-		dn_LM.calc_fourier_transform();
-		/* divided by a assignment function */
-		dn_LM.calc_assignment_compensation();
-		/* Inverse Fourier transform*/
-		dn_LM.calc_inverse_fourier_transform();
-
-		/* calc dn_tilde1 */
-		DensityField<ParticlesCatalogue> dn_tilde1(param);
-		double rmag1;
-		if (param.form == "full") {
-			rmag1 = rbin[param.ith_rbin];
-			dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag1, Ylm1, sj1);
-		}
-
-		for (int ir = 0; ir < param.num_rbin; ir++) {
-
-			double rmag2 = rbin[ir];
-
-			/* calc dn_tilde1 */
-			if (param.form == "diag") {
-				rmag1 = rmag2;
-				dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag1, Ylm1, sj1);
-			}
-
-			/* calc dn_tilde2 */
-			DensityField<ParticlesCatalogue> dn_tilde2(param);
-			dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag2, Ylm2, sj2);
-
-			/* calc bispectrum */
-			std::complex<double> zeta_sum = 0.0;
-			double fac = param.volume / double(param.nmesh_tot);
-			std::complex<double> _I_(0.0, 1.0);
-			for (int i = 0; i < param.nmesh_tot; i++) {
-				std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);
-				std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);
-				std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);
-				zeta_sum += (pow(_I_, param.ell1+param.ell2) * fac * f1 * f2 * f3);
-			}
-
-			zeta_save[ir] += (w * zeta_sum);
-
-			double durationInSec = double(clock() - timeStart);
-			if (thisTask == 0) { printf("r2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", rmag2, _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
-
-		}
-
-	}
-
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
-
-
-	}}
-
-	double norm = ParticlesCatalogue::calc_norm_for_bispec(P_R, vol_survey);
-	norm /= (alpha * alpha * alpha);
-
-	FILE * fp;
-	char buf[1024];
-	if (param.form == "diag") {
-		sprintf(buf, "%s/zeta%d%d%d_window", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < param.num_rbin; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n", rbin[i], rbin[i], norm * (zeta_save[i].real() - sn_save[i].real()), norm * sn_save[i].real());
-		}
-	} else if (param.form == "full") {
-		sprintf(buf, "%s/zeta%d%d%d_window_%02d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL, param.ith_rbin);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < param.num_rbin; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n",  rbin[param.ith_rbin], rbin[i], norm * (zeta_save[i].real() - sn_save[i].real()), norm * sn_save[i].real());
+	} else if (params.form == "full") {
+		sprintf(buf, "%s/zeta%d%d%d_window_%02d", params.output_dir.c_str(), params.ell1, params.ell2, params.ELL, params.ith_rbin);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_rbin; i++) {
+			fprintf(saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",  rbin[params.ith_rbin], rbin[i], norm * (zeta_save[i].real() - shotnoise_save[i].real()), norm * shotnoise_save[i].real());
 		}
 	}
 
-	fclose(fp);
+	fclose(saved_file_ptr);
 
-	delete[] sn_save;
+	delete[] shotnoise_save;
 	delete[] zeta_save;
 
 	return 0;
@@ -1242,10 +1443,10 @@ int calc_3pt_func_window_for_3pcf(
 
 
 
-int calc_bispec_in_box(ParticlesCatalogue & P_D, ParameterSet & param, double * kbin) {
+int calc_bispec_in_box(ParticlesCatalogue& particles_data, ParameterSet& params, double* kbin) {
 	if (thisTask == 0) { printf("start to compute bispectrum...\n");}
 
-	if (fabs(wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0)) < 1.0e-10) {
+	if (fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)) < 1.e-10) {
 		if (thisTask == 0) {
 			printf("This multipole combination is not allowed.\n");
 			printf("It should be wigner_3j(ell1, ell2, ELL, 0,0,0) != 0\n");
@@ -1264,184 +1465,184 @@ int calc_bispec_in_box(ParticlesCatalogue & P_D, ParameterSet & param, double * 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) { printf("computing shotnoise terms...| %.3f sec\n", durationInSec / CLOCKS_PER_SEC);}
 
-	/* define sn_save:: shotnoise term */
-	std::complex<double> * sn_save = new std::complex<double>[param.num_kbin];
-	for (int i = 0; i < param.num_kbin; i++) {
-		sn_save[i] = 0.0;
+	/* define shotnoise_save:: shotnoise term */
+	std::complex<double>* shotnoise_save = new std::complex<double>[params.num_kbin];
+	for (int i = 0; i < params.num_kbin; i++) {
+		shotnoise_save[i] = 0.;
 	}
 
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityField<ParticlesCatalogue> dn_00_sn(param);
-	dn_00_sn.calc_density_field_in_box(P_D, param);
+	DensityField<ParticlesCatalogue> dn_00_shotnoise(params);
+	dn_00_shotnoise.calc_density_field_in_box(particles_data, params);
 	/* Fourier transform*/
-	dn_00_sn.calc_fourier_transform();
+	dn_00_shotnoise.calc_fourier_transform();
 
 	/* calc shot noise terms */
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
-		int _M_ = 0;
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+		int M_ = 0;
 
 		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> N_LM_sn(param);
-		N_LM_sn.calc_density_field_in_box_for_bispec(P_D);
+		DensityField<ParticlesCatalogue> shotnoise_LM(params);
+		shotnoise_LM.calc_density_field_in_box_for_bispec(particles_data);
 		/* Fourier transform*/
-		N_LM_sn.calc_fourier_transform();
+		shotnoise_LM.calc_fourier_transform();
 
-		TwoPointStatistics<ParticlesCatalogue> stat(param);
-		std::complex<double> shotnoise = double(P_D.n_tot);
+		TwoPointStatistics<ParticlesCatalogue> stats(params);
+		std::complex<double> shotnoise = double(particles_data.n_tot);
 
-		if ((param.ell1 == 0) && (param.ell2 == 0)) {
-			for (int i =0; i < param.num_kbin; i++) {
-				sn_save[i] += w * shotnoise;
+		if ((params.ell1 == 0) && (params.ell2 == 0)) {
+			for (int i = 0; i < params.num_kbin; i++) {
+				shotnoise_save[i] += w * shotnoise;
 	       		}
 		}
 
-		if ((param.ell2 == 0)) {
-			stat.calc_power_spec(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell1, _m1_);
-			if (param.form == "diag") {
-				for (int i =0; i < param.num_kbin; i++) {
-					sn_save[i] += w * stat.pk[i];
+		if ((params.ell2 == 0)) {
+			stats.calc_power_spec(dn_00_shotnoise, shotnoise_LM, kbin, shotnoise, params.ell1, m1_);
+			if (params.form == "diag") {
+				for (int i = 0; i < params.num_kbin; i++) {
+					shotnoise_save[i] += w * stats.pk[i];
 			       	}
-			} else if (param.form == "full") {
-				for (int i =0; i < param.num_kbin; i++) {
-					sn_save[i] += w * stat.pk[param.ith_kbin];
+			} else if (params.form == "full") {
+				for (int i = 0; i < params.num_kbin; i++) {
+					shotnoise_save[i] += w * stats.pk[params.ith_kbin];
 			       	}
 			}
 		}
 
-		if ((param.ell1 == 0)) {
-			stat.calc_power_spec(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell2, _m2_);
-			for (int i =0; i < param.num_kbin; i++) {
-				sn_save[i] += w * stat.pk[i];
+		if ((params.ell1 == 0)) {
+			stats.calc_power_spec(dn_00_shotnoise, shotnoise_LM, kbin, shotnoise, params.ell2, m2_);
+			for (int i = 0; i < params.num_kbin; i++) {
+				shotnoise_save[i] += w * stats.pk[i];
 		       	}
 		}
 
 		/* time */
 		durationInSec = double(clock() - timeStart);
-		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 
 	}}
 
 	/****/
-	dn_00_sn.finalise_density_field();
+	dn_00_shotnoise.finalise_density_field();
 	/****************************************/
 
 	/****************************************/
 	/* calc F00 */
-	DensityField<ParticlesCatalogue> N_00_sn(param);
-	N_00_sn.calc_density_field_in_box_for_bispec(P_D);
+	DensityField<ParticlesCatalogue> shotnoise_00(params);
+	shotnoise_00.calc_density_field_in_box_for_bispec(particles_data);
 	/* Fourier transform*/
-	N_00_sn.calc_fourier_transform();
+	shotnoise_00.calc_fourier_transform();
 
 	/* store spherical bessel functions */
-	SphericalBesselCalculator sj1(param.ell1);
-	SphericalBesselCalculator sj2(param.ell2);
+	SphericalBesselCalculator sj1(params.ell1);
+	SphericalBesselCalculator sj2(params.ell2);
 
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 
-		int _M_ = 0;
+		int M_ = 0;
 
 		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
+		std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+		bytes += double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
-		ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell1, _m1_, param, Ylm1);
-		ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell2, _m2_, param, Ylm2);
+		ToolCollection::store_reduced_spherical_harmonic_in_config_space(params.ell1, m1_, params, Ylm_a);
+		ToolCollection::store_reduced_spherical_harmonic_in_config_space(params.ell2, m2_, params, Ylm_b);
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM_sn(param);
-		dn_LM_sn.calc_density_field_in_box(P_D, param);
+		DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
+		dn_LM_shotnoise.calc_density_field_in_box(particles_data, params);
 		/* Fourier transform*/
-		dn_LM_sn.calc_fourier_transform();
+		dn_LM_shotnoise.calc_fourier_transform();
 
-		TwoPointStatistics<ParticlesCatalogue> stat(param);
-		std::complex<double> shotnoise = double(P_D.n_tot);
+		TwoPointStatistics<ParticlesCatalogue> stats(params);
+		std::complex<double> shotnoise = double(particles_data.n_tot);
 
-		fftw_complex * xi = fftw_alloc_complex(param.nmesh_tot);
-		bytes += double(sizeof(fftw_complex) * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
-		for (int i = 0; i < (param.nmesh_tot); i++) {
-			xi[i][0] = 0.0;
-			xi[i][1] = 0.0;
+		fftw_complex * xi = fftw_alloc_complex(params.nmesh_tot);
+		bytes += double(sizeof(fftw_complex) * (params.nmesh_tot) / 1024. / 1024. / 1024.);
+		for (int i = 0; i < (params.nmesh_tot); i++) {
+			xi[i][0] = 0.;
+			xi[i][1] = 0.;
 		}
 
-		stat.calc_shotnoise_for_bispec_ijk(dn_LM_sn, N_00_sn, shotnoise, param.ELL, _M_, xi);
+		stats.calc_shotnoise_for_bispec_ijk(dn_LM_shotnoise, shotnoise_00, shotnoise, params.ELL, M_, xi);
 
-		for (int ik = 0; ik < param.num_kbin; ik++) {
+		for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
 
-			double kmag2 = kbin[ik];
-			double kmag1;
-			if (param.form == "diag") {
-				kmag1 = kmag2;
-			} else if (param.form == "full") {
-				kmag1 = kbin[param.ith_kbin];
+			double kmag_b = kbin[i_kbin];
+			double kmag_a;
+			if (params.form == "diag") {
+				kmag_a = kmag_b;
+			} else if (params.form == "full") {
+				kmag_a = kbin[params.ith_kbin];
 			}
 
 			/* calc shotnoise */
-			std::complex<double> sn_sum = 0.0;
+			std::complex<double> shotnoise_sum = 0.;
 			double rvec[3];
 			double dr[3];
-			dr[0] = param.boxsize[0] / double(param.nmesh[0]);
-			dr[1] = param.boxsize[1] / double(param.nmesh[1]);
-			dr[2] = param.boxsize[2] / double(param.nmesh[2]);
-			for (int i = 0; i < param.nmesh[0]; i++) {
-			for (int j = 0; j < param.nmesh[1]; j++) {
-			for (int k = 0; k < param.nmesh[2]; k++) {
-				long long coord_flat = (i * param.nmesh[1] + j) * param.nmesh[2] + k;
-				rvec[0] = (i < param.nmesh[0]/2) ? (double) i * dr[0] : (double) (i - param.nmesh[0]) * dr[0];
-				rvec[1] = (j < param.nmesh[1]/2) ? (double) j * dr[1] : (double) (j - param.nmesh[1]) * dr[1];
-				rvec[2] = (k < param.nmesh[2]/2) ? (double) k * dr[2] : (double) (k - param.nmesh[2]) * dr[2];
+			dr[0] = params.boxsize[0] / double(params.nmesh[0]);
+			dr[1] = params.boxsize[1] / double(params.nmesh[1]);
+			dr[2] = params.boxsize[2] / double(params.nmesh[2]);
+			for (int i = 0; i < params.nmesh[0]; i++) {
+			for (int j = 0; j < params.nmesh[1]; j++) {
+			for (int k = 0; k < params.nmesh[2]; k++) {
+				long long coord_flat = (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+				rvec[0] = (i < params.nmesh[0]/2) ? (double) i * dr[0] : (double) (i - params.nmesh[0]) * dr[0];
+				rvec[1] = (j < params.nmesh[1]/2) ? (double) j * dr[1] : (double) (j - params.nmesh[1]) * dr[1];
+				rvec[2] = (k < params.nmesh[2]/2) ? (double) k * dr[2] : (double) (k - params.nmesh[2]) * dr[2];
 				double rmag = sqrt(rvec[0] * rvec[0] +  rvec[1] * rvec[1] +  rvec[2] * rvec[2]);
 				std::complex<double> ff(xi[i][0], xi[i][1]);
-				double j1 = sj1.eval(kmag1 * rmag);
-				double j2 = sj2.eval(kmag2 * rmag);
+				double j1 = sj1.eval(kmag_a * rmag);
+				double j2 = sj2.eval(kmag_b * rmag);
 
-				sn_sum += (j1 * j2 * ff * Ylm1[i] * Ylm2[i]);
+				shotnoise_sum += (j1 * j2 * ff * Ylm_a[i] * Ylm_b[i]);
 
 			}}}
 
-			std::complex<double> _I_(0.0,1.0);
-			double fac = param.volume / double(param.nmesh_tot);
-			sn_sum *= pow(_I_, param.ell1 + param.ell2) * fac;
+			std::complex<double> I_(0., 1.);
+			double fac = params.volume / double(params.nmesh_tot);
+			shotnoise_sum *= pow(I_, params.ell1 + params.ell2) * fac;
 
-			sn_save[ik] += (w * sn_sum);
+			shotnoise_save[i_kbin] += (w * shotnoise_sum);
 
 			/* time */
 			durationInSec = double(clock() - timeStart);
-			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag2, _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 		}
 
 		fftw_free(xi); xi = NULL;
-		bytes -= double(sizeof(fftw_complex) * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		bytes -= double(sizeof(fftw_complex) * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
 
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		delete[] Ylm_a; Ylm_a = NULL;
+		delete[] Ylm_b; Ylm_b = NULL;
+		bytes -= double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
 	}}
 
 	/****/
-	N_00_sn.finalise_density_field();
+	shotnoise_00.finalise_density_field();
 	/****************************************/
 
 	/* time */
@@ -1468,42 +1669,42 @@ int calc_bispec_in_box(ParticlesCatalogue & P_D, ParameterSet & param, double * 
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityField<ParticlesCatalogue> dn_00(param);
-	dn_00.calc_density_field_in_box(P_D, param);
+	DensityField<ParticlesCatalogue> dn_00(params);
+	dn_00.calc_density_field_in_box(particles_data, params);
 	/* Fourier transform*/
 	dn_00.calc_fourier_transform();
 
 
 	/* define bk_save:: bispectrum */
-	std::complex<double> * bk_save = new std::complex<double>[param.num_kbin];
-	for (int i = 0; i < param.num_kbin; i++) {
-		bk_save[i] = 0.0;
+	std::complex<double>* bk_save = new std::complex<double>[params.num_kbin];
+	for (int i = 0; i < params.num_kbin; i++) {
+		bk_save[i] = 0.;
 	}
 
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 
-		int _M_ = 0;
+		int M_ = 0;
 
 
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/****************************************************/
 		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
+		std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+		bytes += double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
-		ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-		ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
+		ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(params.ell1, m1_, params, Ylm_a);
+		ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(params.ell2, m2_, params, Ylm_b);
 
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM(param);
-		dn_LM.calc_density_field_in_box(P_D, param);
+		DensityField<ParticlesCatalogue> dn_LM(params);
+		dn_LM.calc_density_field_in_box(particles_data, params);
 		/* Fourier transform*/
 		dn_LM.calc_fourier_transform();
 		/* divided by a assignment function */
@@ -1512,83 +1713,83 @@ int calc_bispec_in_box(ParticlesCatalogue & P_D, ParameterSet & param, double * 
 		dn_LM.calc_inverse_fourier_transform();
 
 		/* calc dn_tilde1 */
-		DensityField<ParticlesCatalogue> dn_tilde1(param);
-		double kmag1;
+		DensityField<ParticlesCatalogue> dn_tilde1(params);
+		double kmag_a;
 		double dk = kbin[1] - kbin[0];
-		if (param.form == "full") {
-			kmag1 = kbin[param.ith_kbin];
-			dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag1, dk, Ylm1);
+		if (params.form == "full") {
+			kmag_a = kbin[params.ith_kbin];
+			dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag_a, dk, Ylm_a);
 		}
 
-		for (int ik = 0; ik < param.num_kbin; ik++) {
+		for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
 
-			double kmag2 = kbin[ik];
+			double kmag_b = kbin[i_kbin];
 
 			/* calc dn_tilde1 */
-			if (param.form == "diag") {
-				kmag1 = kmag2;
-				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag1, dk, Ylm1);
+			if (params.form == "diag") {
+				kmag_a = kmag_b;
+				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag_a, dk, Ylm_a);
 			}
 
 			/* calc dn_tilde2 */
-			DensityField<ParticlesCatalogue> dn_tilde2(param);
-			dn_tilde2.calc_inverse_fourier_transform_for_bispec(dn_00, kmag2, dk, Ylm2);
+			DensityField<ParticlesCatalogue> dn_tilde2(params);
+			dn_tilde2.calc_inverse_fourier_transform_for_bispec(dn_00, kmag_b, dk, Ylm_b);
 
 			/* calc bispectrum */
-			std::complex<double> bk_sum = 0.0;
-			double fac = param.volume / double(param.nmesh_tot);
-			for (int i = 0; i < param.nmesh_tot; i++) {
+			std::complex<double> bk_sum = 0.;
+			double fac = params.volume / double(params.nmesh_tot);
+			for (int i = 0; i < params.nmesh_tot; i++) {
 				std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);
 				std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);
 				std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);
 				bk_sum += (fac * f1 * f2 * f3);
 			}
 
-			bk_save[ik] += (w * bk_sum);
+			bk_save[i_kbin] += (w * bk_sum);
 
 			double durationInSec = double(clock() - timeStart);
-			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag2, _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 
 		}
 
 
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		delete[] Ylm_a; Ylm_a = NULL;
+		delete[] Ylm_b; Ylm_b = NULL;
+		bytes -= double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
 
 	}}
 
-	double norm = param.volume / double(P_D.n_tot) / double(P_D.n_tot);
-	norm *= (param.volume/double(P_D.n_tot));
+	double norm = params.volume / double(particles_data.n_tot) / double(particles_data.n_tot);
+	norm *= (params.volume/double(particles_data.n_tot));
 
-	FILE * fp;
+	FILE* saved_file_ptr;
 	char buf[1024];
-	if (param.form == "diag") {
-		sprintf(buf, "%s/bk%d%d%d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < param.num_kbin; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n", kbin[i], kbin[i], norm * (bk_save[i].real() - sn_save[i].real()), norm * sn_save[i].real());
+	if (params.form == "diag") {
+		sprintf(buf, "%s/bk%d%d%d", params.output_dir.c_str(), params.ell1, params.ell2, params.ELL);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_kbin; i++) {
+			fprintf(saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n", kbin[i], kbin[i], norm * (bk_save[i].real() - shotnoise_save[i].real()), norm * shotnoise_save[i].real());
 		}
-	} else if (param.form == "full") {
-		sprintf(buf, "%s/bk%d%d%d_%02d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL, param.ith_kbin);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < param.num_kbin; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n", kbin[param.ith_kbin], kbin[i], norm * (bk_save[i].real() - sn_save[i].real()), norm * sn_save[i].real());
+	} else if (params.form == "full") {
+		sprintf(buf, "%s/bk%d%d%d_%02d", params.output_dir.c_str(), params.ell1, params.ell2, params.ELL, params.ith_kbin);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_kbin; i++) {
+			fprintf(saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n", kbin[params.ith_kbin], kbin[i], norm * (bk_save[i].real() - shotnoise_save[i].real()), norm * shotnoise_save[i].real());
 		}
 	}
-	fclose(fp);
+	fclose(saved_file_ptr);
 
-	delete[] sn_save;
+	delete[] shotnoise_save;
 	delete[] bk_save;
 
 	return 0;
 }
 
-int calc_3pt_func_in_box(ParticlesCatalogue & P_D, ParameterSet & param, double * rbin) {
+int calc_3pt_func_in_box(ParticlesCatalogue& particles_data, ParameterSet& params, double* rbin) {
 	if (thisTask == 0) { printf("start to compute three-point function...\n");}
 
-	if (fabs(wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0)) < 1.0e-10) {
+	if (fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)) < 1.e-10) {
 		if (thisTask == 0) {
 			printf("This multipole combination is not allowed.\n");
 			printf("It should be wigner_3j(ell1, ell2, ELL, 0,0,0) != 0\n");
@@ -1607,77 +1808,77 @@ int calc_3pt_func_in_box(ParticlesCatalogue & P_D, ParameterSet & param, double 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) { printf("computing shotnoise terms...| %.3f sec\n", durationInSec / CLOCKS_PER_SEC);}
 
-	/* define sn_save:: shotnoise term */
-	std::complex<double> * sn_save = new std::complex<double>[param.num_rbin];
-	for (int i = 0; i < param.num_rbin; i++) {
-		sn_save[i] = 0.0;
+	/* define shotnoise_save:: shotnoise term */
+	std::complex<double>* shotnoise_save = new std::complex<double>[params.num_rbin];
+	for (int i = 0; i < params.num_rbin; i++) {
+		shotnoise_save[i] = 0.;
 	}
 
 	/****************************************/
 	/* calc F00 */
-	DensityField<ParticlesCatalogue> N_00_sn(param);
-	N_00_sn.calc_density_field_in_box_for_bispec(P_D);
+	DensityField<ParticlesCatalogue> shotnoise_00(params);
+	shotnoise_00.calc_density_field_in_box_for_bispec(particles_data);
 	/* Fourier transform*/
-	N_00_sn.calc_fourier_transform();
+	shotnoise_00.calc_fourier_transform();
 
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 
-		int _M_ = 0;
+		int M_ = 0;
 
 		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
+		std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+		bytes += double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
-		ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell1, _m1_, param, Ylm1);
-		ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell2, _m2_, param, Ylm2);
+		ToolCollection::store_reduced_spherical_harmonic_in_config_space(params.ell1, m1_, params, Ylm_a);
+		ToolCollection::store_reduced_spherical_harmonic_in_config_space(params.ell2, m2_, params, Ylm_b);
 
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM_sn(param);
-		dn_LM_sn.calc_density_field_in_box(P_D, param);
+		DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
+		dn_LM_shotnoise.calc_density_field_in_box(particles_data, params);
 		/* Fourier transform*/
-		dn_LM_sn.calc_fourier_transform();
+		dn_LM_shotnoise.calc_fourier_transform();
 
-		TwoPointStatistics<ParticlesCatalogue> stat(param);
-		std::complex<double> shotnoise = double(P_D.n_tot);
+		TwoPointStatistics<ParticlesCatalogue> stats(params);
+		std::complex<double> shotnoise = double(particles_data.n_tot);
 
-		stat.calc_corr_func_for_3pt_func(dn_LM_sn, N_00_sn, rbin, shotnoise, param.ell1, _m1_, Ylm1, Ylm2);
+		stats.calc_corr_func_for_3pt_func(dn_LM_shotnoise, shotnoise_00, rbin, shotnoise, params.ell1, m1_, Ylm_a, Ylm_b);
 
-		for (int i =0; i < param.num_rbin; i++) {
-			if (param.form == "diag") {
-				sn_save[i] += w * stat.xi[i];
-			} else if (param.form == "full") {
-				if (i == param.ith_rbin) {
-					sn_save[i] += w * stat.xi[i];
+		for (int i = 0; i < params.num_rbin; i++) {
+			if (params.form == "diag") {
+				shotnoise_save[i] += w * stats.xi[i];
+			} else if (params.form == "full") {
+				if (i == params.ith_rbin) {
+					shotnoise_save[i] += w * stats.xi[i];
 				} else {
-					sn_save[i] += 0.0;
+					shotnoise_save[i] += 0.;
 				}
 			}
 	       	}
 
 		/* time */
 		durationInSec = double(clock() - timeStart);
-		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 
 
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		delete[] Ylm_a; Ylm_a = NULL;
+		delete[] Ylm_b; Ylm_b = NULL;
+		bytes -= double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
 	}}
 
 	/****/
-	N_00_sn.finalise_density_field();
+	shotnoise_00.finalise_density_field();
 	/****************************************/
 
 	/* time */
@@ -1704,46 +1905,46 @@ int calc_3pt_func_in_box(ParticlesCatalogue & P_D, ParameterSet & param, double 
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityField<ParticlesCatalogue> dn_00(param);
-	dn_00.calc_density_field_in_box(P_D, param);
+	DensityField<ParticlesCatalogue> dn_00(params);
+	dn_00.calc_density_field_in_box(particles_data, params);
 	/* Fourier transform*/
 	dn_00.calc_fourier_transform();
 
 	/* store spherical bessel functions */
-	SphericalBesselCalculator sj1(param.ell1);
-	SphericalBesselCalculator sj2(param.ell2);
+	SphericalBesselCalculator sj1(params.ell1);
+	SphericalBesselCalculator sj2(params.ell2);
 
 	/* define zeta_save:: bispectrum */
-	std::complex<double> * zeta_save = new std::complex<double>[param.num_rbin];
-	for (int i = 0; i < param.num_rbin; i++) {
-		zeta_save[i] = 0.0;
+	std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
+	for (int i = 0; i < params.num_rbin; i++) {
+		zeta_save[i] = 0.;
 	}
 
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 
-		int _M_ = 0;
+		int M_ = 0;
 
 		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/****************************************************/
 		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
+		std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+		bytes += double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
-		ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-		ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
+		ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(params.ell1, m1_, params, Ylm_a);
+		ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(params.ell2, m2_, params, Ylm_b);
 
 
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM(param);
-		dn_LM.calc_density_field_in_box(P_D, param);
+		DensityField<ParticlesCatalogue> dn_LM(params);
+		dn_LM.calc_density_field_in_box(particles_data, params);
 		/* Fourier transform*/
 		dn_LM.calc_fourier_transform();
 		/* divided by a assignment function */
@@ -1752,74 +1953,74 @@ int calc_3pt_func_in_box(ParticlesCatalogue & P_D, ParameterSet & param, double 
 		dn_LM.calc_inverse_fourier_transform();
 
 		/* calc dn_tilde1 */
-		DensityField<ParticlesCatalogue> dn_tilde1(param);
-		double rmag1;
-		if (param.form == "full") {
-			rmag1 = rbin[param.ith_rbin];
-			dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag1, Ylm1, sj1);
+		DensityField<ParticlesCatalogue> dn_tilde1(params);
+		double rmag_a;
+		if (params.form == "full") {
+			rmag_a = rbin[params.ith_rbin];
+			dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag_a, Ylm_a, sj1);
 		}
 
-		for (int ir = 0; ir < param.num_rbin; ir++) {
+		for (int i_rbin = 0; i_rbin < params.num_rbin; i_rbin++) {
 
-			double rmag2 = rbin[ir];
+			double rmag_b = rbin[i_rbin];
 
 			/* calc dn_tilde1 */
-			if (param.form == "diag") {
-				rmag1 = rmag2;
-				dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag1, Ylm1, sj1);
+			if (params.form == "diag") {
+				rmag_a = rmag_b;
+				dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag_a, Ylm_a, sj1);
 			}
 
 			/* calc dn_tilde2 */
-			DensityField<ParticlesCatalogue> dn_tilde2(param);
-			dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag2, Ylm2, sj2);
+			DensityField<ParticlesCatalogue> dn_tilde2(params);
+			dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag_b, Ylm_b, sj2);
 
 			/* calc bispectrum */
-			std::complex<double> zeta_sum = 0.0;
-			double fac = param.volume / double(param.nmesh_tot);
-			std::complex<double> _I_(0.0, 1.0);
-			for (int i = 0; i < param.nmesh_tot; i++) {
+			std::complex<double> zeta_sum = 0.;
+			double fac = params.volume / double(params.nmesh_tot);
+			std::complex<double> I_(0., 1.);
+			for (int i = 0; i < params.nmesh_tot; i++) {
 				std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);
 				std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);
 				std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);
-				zeta_sum += (pow(_I_, param.ell1+param.ell2) * fac * f1 * f2 * f3);
+				zeta_sum += (pow(I_, params.ell1+params.ell2) * fac * f1 * f2 * f3);
 			}
 
-			zeta_save[ir] += (w * zeta_sum);
+			zeta_save[i_rbin] += (w * zeta_sum);
 
 			double durationInSec = double(clock() - timeStart);
-			if (thisTask == 0) { printf("r2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", rmag2, _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+			if (thisTask == 0) { printf("r2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 
 		}
 
 
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		delete[] Ylm_a; Ylm_a = NULL;
+		delete[] Ylm_b; Ylm_b = NULL;
+		bytes -= double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
 
 	}}
 
-	double norm = param.volume / double(P_D.n_tot) / double(P_D.n_tot);
-	norm *= (param.volume / double(P_D.n_tot));
+	double norm = params.volume / double(particles_data.n_tot) / double(particles_data.n_tot);
+	norm *= (params.volume / double(particles_data.n_tot));
 
-	FILE * fp;
+	FILE* saved_file_ptr;
 	char buf[1024];
-	if (param.form == "diag") {
-		sprintf(buf, "%s/zeta%d%d%d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < param.num_rbin; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n", rbin[i], rbin[i], norm * (zeta_save[i].real() - sn_save[i].real()), norm * sn_save[i].real());
+	if (params.form == "diag") {
+		sprintf(buf, "%s/zeta%d%d%d", params.output_dir.c_str(), params.ell1, params.ell2, params.ELL);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_rbin; i++) {
+			fprintf(saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n", rbin[i], rbin[i], norm * (zeta_save[i].real() - shotnoise_save[i].real()), norm * shotnoise_save[i].real());
 		}
-	} else if (param.form == "full") {
-		sprintf(buf, "%s/zeta%d%d%d_%02d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL, param.ith_rbin);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < param.num_rbin; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n",  rbin[param.ith_rbin], rbin[i], norm * (zeta_save[i].real() - sn_save[i].real()), norm * sn_save[i].real());
+	} else if (params.form == "full") {
+		sprintf(buf, "%s/zeta%d%d%d_%02d", params.output_dir.c_str(), params.ell1, params.ell2, params.ELL, params.ith_rbin);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_rbin; i++) {
+			fprintf(saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",  rbin[params.ith_rbin], rbin[i], norm * (zeta_save[i].real() - shotnoise_save[i].real()), norm * shotnoise_save[i].real());
 		}
 	}
-	fclose(fp);
+	fclose(saved_file_ptr);
 
-	delete[] sn_save;
+	delete[] shotnoise_save;
 	delete[] zeta_save;
 
 	return 0;
@@ -1827,14 +2028,14 @@ int calc_3pt_func_in_box(ParticlesCatalogue & P_D, ParameterSet & param, double 
 
 
 int calc_bispecChoiceOfLOS(
-        ParticlesCatalogue & P_D, ParticlesCatalogue & P_R,
+        ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand,
         LineOfSight* los_data, LineOfSight* los_rand,
-        ParameterSet & param, double alpha, double * kbin, int los, double vol_survey
+        ParameterSet& params, double alpha, double* kbin, int los, double vol_survey
        ) {
 
 	if (thisTask == 0) { printf("start to compute bispectrum...\n");}
 
-	if (fabs(wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0)) < 1.0e-10) {
+	if (fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)) < 1.e-10) {
 		if (thisTask == 0) {
 			printf("This multipole combination is not allowed.\n");
 			printf("It should be wigner_3j(ell1, ell2, ELL, 0,0,0) != 0\n");
@@ -1853,124 +2054,124 @@ int calc_bispecChoiceOfLOS(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) { printf("computing shotnoise terms...| %.3f sec\n", durationInSec / CLOCKS_PER_SEC);}
 
-	/* define sn_save:: shotnoise term */
-	std::complex<double> * sn_save = new std::complex<double>[param.num_kbin];
-	for (int i = 0; i < param.num_kbin; i++) {
-		sn_save[i] = 0.0;
+	/* define shotnoise_save:: shotnoise term */
+	std::complex<double>* shotnoise_save = new std::complex<double>[params.num_kbin];
+	for (int i = 0; i < params.num_kbin; i++) {
+		shotnoise_save[i] = 0.;
 	}
 
 	/* calc shot noise terms */
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 
 		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/****************************************/
 		/* calc the normal density fluctuation */
 		/* dn = n - bar{n} */
-		DensityField<ParticlesCatalogue> dn_sn(param);
+		DensityField<ParticlesCatalogue> dn_sn(params);
 		if (los == 0) {
-			dn_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			dn_sn.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 		} else {
-			dn_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			dn_sn.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, 0, 0);
 		}
 		/* Fourier transform*/
 		dn_sn.calc_fourier_transform();
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> N_sn(param);
+		DensityField<ParticlesCatalogue> N_sn(params);
 		if (los == 0) {
-			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(particles_data, particles_rand, los_data, los_rand, alpha, 0, 0);
 		} else {
-			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 		}
 		/* Fourier transform*/
 		N_sn.calc_fourier_transform();
 
-		TwoPointStatistics<ParticlesCatalogue> stat(param);
-		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		TwoPointStatistics<ParticlesCatalogue> stats(params);
+		std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 
-		if ((param.ell1 == 0) && (param.ell2 == 0)) {
-			for (int i =0; i < param.num_kbin; i++) {
-				sn_save[i] += w * shotnoise;
+		if ((params.ell1 == 0) && (params.ell2 == 0)) {
+			for (int i = 0; i < params.num_kbin; i++) {
+				shotnoise_save[i] += w * shotnoise;
 	       		}
 		}
 
-		if ((param.ell2 == 0)) {
-			stat.calc_power_spec(dn_sn, N_sn, kbin, shotnoise, param.ell1, _m1_);
-			if (param.form == "diag") {
-				for (int i =0; i < param.num_kbin; i++) {
-					sn_save[i] += w * stat.pk[i];
+		if ((params.ell2 == 0)) {
+			stats.calc_power_spec(dn_sn, N_sn, kbin, shotnoise, params.ell1, m1_);
+			if (params.form == "diag") {
+				for (int i = 0; i < params.num_kbin; i++) {
+					shotnoise_save[i] += w * stats.pk[i];
 			       	}
-			} else if (param.form == "full") {
-				for (int i =0; i < param.num_kbin; i++) {
-					sn_save[i] += w * stat.pk[param.ith_kbin];
+			} else if (params.form == "full") {
+				for (int i = 0; i < params.num_kbin; i++) {
+					shotnoise_save[i] += w * stats.pk[params.ith_kbin];
 			       	}
 			}
 		}
 
 		/* time */
 		durationInSec = double(clock() - timeStart);
-		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 
 	}}}
 
 
 	/* calc shot noise terms */
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 
 		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/****************************************/
 		/* calc the normal density fluctuation */
 		/* dn = n - bar{n} */
-		DensityField<ParticlesCatalogue> dn_sn(param);
+		DensityField<ParticlesCatalogue> dn_sn(params);
 		if (los == 1) {
-			dn_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			dn_sn.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 		} else {
-			dn_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			dn_sn.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, 0, 0);
 		}
 		/* Fourier transform*/
 		dn_sn.calc_fourier_transform();
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> N_sn(param);
+		DensityField<ParticlesCatalogue> N_sn(params);
 		if (los == 1) {
-			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(particles_data, particles_rand, los_data, los_rand, alpha, 0, 0);
 		} else {
-			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 		}
 		/* Fourier transform*/
 		N_sn.calc_fourier_transform();
 
-		TwoPointStatistics<ParticlesCatalogue> stat(param);
-		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		TwoPointStatistics<ParticlesCatalogue> stats(params);
+		std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 
-		if ((param.ell1 == 0)) {
-			stat.calc_power_spec(dn_sn, N_sn, kbin, shotnoise, param.ell2, _m2_);
-			for (int i =0; i < param.num_kbin; i++) {
-				sn_save[i] += w * stat.pk[i];
+		if ((params.ell1 == 0)) {
+			stats.calc_power_spec(dn_sn, N_sn, kbin, shotnoise, params.ell2, m2_);
+			for (int i = 0; i < params.num_kbin; i++) {
+				shotnoise_save[i] += w * stats.pk[i];
 		       	}
 		}
 
 		/* time */
 		durationInSec = double(clock() - timeStart);
-		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 
 	}}}
 
@@ -1990,129 +2191,129 @@ int calc_bispecChoiceOfLOS(
 
 
 	/* store spherical bessel functions */
-	SphericalBesselCalculator sj1(param.ell1);
-	SphericalBesselCalculator sj2(param.ell2);
+	SphericalBesselCalculator sj1(params.ell1);
+	SphericalBesselCalculator sj2(params.ell2);
 
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 
 		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
+		std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+		bytes += double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
-		std::string flag = "FALSE";
-		for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+		std::string flag_nontrivial = "FALSE";
+		for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 			/*****/
-			double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-			w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
+			double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+			w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
 
-			if (fabs(w) > 1.0e-10) {
-				flag = "TRUE";
+			if (fabs(w) > 1.e-10) {
+				flag_nontrivial = "TRUE";
 			}
 		}
 
-		if (flag == "TRUE") {
+		if (flag_nontrivial == "TRUE") {
 
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell1, _m1_, param, Ylm1);
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell2, _m2_, param, Ylm2);
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space(params.ell1, m1_, params, Ylm_a);
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space(params.ell2, m2_, params, Ylm_b);
 
 		}
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 
 		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/****************************************/
 		/* calc N00 */
-		DensityField<ParticlesCatalogue> N_sn(param);
+		DensityField<ParticlesCatalogue> N_sn(params);
 		if (los == 2) {
-			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(particles_data, particles_rand, los_data, los_rand, alpha, 0, 0);
 		} else {
-			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			N_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 		}
 		/* Fourier transform*/
 		N_sn.calc_fourier_transform();
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_sn(param);
+		DensityField<ParticlesCatalogue> dn_sn(params);
 		if (los == 2) {
-			dn_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			dn_sn.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 		} else {
-			dn_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			dn_sn.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, 0, 0);
 		}
 		/* Fourier transform*/
 		dn_sn.calc_fourier_transform();
 
-		TwoPointStatistics<ParticlesCatalogue> stat(param);
-		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		TwoPointStatistics<ParticlesCatalogue> stats(params);
+		std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 
-		fftw_complex * xi = fftw_alloc_complex(param.nmesh_tot);
-		bytes += double(sizeof(fftw_complex) * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
-		for (int i = 0; i < (param.nmesh_tot); i++) {
-			xi[i][0] = 0.0;
-			xi[i][1] = 0.0;
+		fftw_complex * xi = fftw_alloc_complex(params.nmesh_tot);
+		bytes += double(sizeof(fftw_complex) * (params.nmesh_tot) / 1024. / 1024. / 1024.);
+		for (int i = 0; i < (params.nmesh_tot); i++) {
+			xi[i][0] = 0.;
+			xi[i][1] = 0.;
 		}
 
-		stat.calc_shotnoise_for_bispec_ijk(dn_sn, N_sn, shotnoise, param.ELL, _M_, xi);
+		stats.calc_shotnoise_for_bispec_ijk(dn_sn, N_sn, shotnoise, params.ELL, M_, xi);
 
-		for (int ik = 0; ik < param.num_kbin; ik++) {
+		for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
 
-			double kmag2 = kbin[ik];
-			double kmag1;
-			if (param.form == "diag") {
-				kmag1 = kmag2;
-			} else if (param.form == "full") {
-				kmag1 = kbin[param.ith_kbin];
+			double kmag_b = kbin[i_kbin];
+			double kmag_a;
+			if (params.form == "diag") {
+				kmag_a = kmag_b;
+			} else if (params.form == "full") {
+				kmag_a = kbin[params.ith_kbin];
 			}
 
 			/* calc shotnoise */
-			std::complex<double> sn_sum = 0.0;
+			std::complex<double> shotnoise_sum = 0.;
 			double rvec[3];
 			double dr[3];
-			dr[0] = param.boxsize[0] / double(param.nmesh[0]);
-			dr[1] = param.boxsize[1] / double(param.nmesh[1]);
-			dr[2] = param.boxsize[2] / double(param.nmesh[2]);
-			for (int i = 0; i < param.nmesh[0]; i++) {
-			for (int j = 0; j < param.nmesh[1]; j++) {
-			for (int k = 0; k < param.nmesh[2]; k++) {
-				long long coord_flat = (i * param.nmesh[1] + j) * param.nmesh[2] + k;
-				rvec[0] = (i < param.nmesh[0]/2) ? (double) i * dr[0] : (double) (i - param.nmesh[0]) * dr[0];
-				rvec[1] = (j < param.nmesh[1]/2) ? (double) j * dr[1] : (double) (j - param.nmesh[1]) * dr[1];
-				rvec[2] = (k < param.nmesh[2]/2) ? (double) k * dr[2] : (double) (k - param.nmesh[2]) * dr[2];
+			dr[0] = params.boxsize[0] / double(params.nmesh[0]);
+			dr[1] = params.boxsize[1] / double(params.nmesh[1]);
+			dr[2] = params.boxsize[2] / double(params.nmesh[2]);
+			for (int i = 0; i < params.nmesh[0]; i++) {
+			for (int j = 0; j < params.nmesh[1]; j++) {
+			for (int k = 0; k < params.nmesh[2]; k++) {
+				long long coord_flat = (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+				rvec[0] = (i < params.nmesh[0]/2) ? (double) i * dr[0] : (double) (i - params.nmesh[0]) * dr[0];
+				rvec[1] = (j < params.nmesh[1]/2) ? (double) j * dr[1] : (double) (j - params.nmesh[1]) * dr[1];
+				rvec[2] = (k < params.nmesh[2]/2) ? (double) k * dr[2] : (double) (k - params.nmesh[2]) * dr[2];
 				double rmag = sqrt(rvec[0] * rvec[0] +  rvec[1] * rvec[1] +  rvec[2] * rvec[2]);
 				std::complex<double> ff(xi[i][0], xi[i][1]);
-				double j1 = sj1.eval(kmag1 * rmag);
-				double j2 = sj2.eval(kmag2 * rmag);
+				double j1 = sj1.eval(kmag_a * rmag);
+				double j2 = sj2.eval(kmag_b * rmag);
 
-				sn_sum += (j1 * j2 * ff * Ylm1[i] * Ylm2[i]);
+				shotnoise_sum += (j1 * j2 * ff * Ylm_a[i] * Ylm_b[i]);
 
 			}}}
 
-			std::complex<double> _I_(0.0,1.0);
-			double fac = param.volume / double(param.nmesh_tot);
-			sn_sum *= pow(_I_, param.ell1 + param.ell2) * fac;
+			std::complex<double> I_(0., 1.);
+			double fac = params.volume / double(params.nmesh_tot);
+			shotnoise_sum *= pow(I_, params.ell1 + params.ell2) * fac;
 
-			sn_save[ik] += (w * sn_sum);
+			shotnoise_save[i_kbin] += (w * shotnoise_sum);
 
 			/* time */
 			durationInSec = double(clock() - timeStart);
-			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag2, _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 		}
 
 		fftw_free(xi); xi = NULL;
-		bytes -= double(sizeof(fftw_complex) * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		bytes -= double(sizeof(fftw_complex) * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
 	}
 
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		delete[] Ylm_a; Ylm_a = NULL;
+		delete[] Ylm_b; Ylm_b = NULL;
+		bytes -= double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
 	}}
 
@@ -2139,73 +2340,73 @@ int calc_bispecChoiceOfLOS(
 	if (thisTask == 0) { printf("computing bispectrum...\n");}
 
 	/* define bk_save:: bispectrum */
-	std::complex<double> * bk_save = new std::complex<double>[param.num_kbin];
-	for (int i = 0; i < param.num_kbin; i++) {
-		bk_save[i] = 0.0;
+	std::complex<double>* bk_save = new std::complex<double>[params.num_kbin];
+	for (int i = 0; i < params.num_kbin; i++) {
+		bk_save[i] = 0.;
 	}
 
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 
 		/****************************************************/
 		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
+		std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+		bytes += double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
-		std::string flag = "FALSE";
-		for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+		std::string flag_nontrivial = "FALSE";
+		for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 			/*****/
-			double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-			w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
+			double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+			w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
 
-			if (fabs(w) > 1.0e-10) {
-				flag = "TRUE";
+			if (fabs(w) > 1.e-10) {
+				flag_nontrivial = "TRUE";
 			}
 		}
 
-		if (flag == "TRUE") {
+		if (flag_nontrivial == "TRUE") {
 
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(params.ell1, m1_, params, Ylm_a);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(params.ell2, m2_, params, Ylm_b);
 
 		}
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 
 		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/****************************************/
 		/* calc the normal density fluctuation */
 		/* dn = n - bar{n} */
-		DensityField<ParticlesCatalogue> dn1(param);
+		DensityField<ParticlesCatalogue> dn1(params);
 		if (los == 0) {
-			dn1.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			dn1.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 		} else {
-			dn1.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			dn1.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, 0, 0);
 		}
 		/* Fourier transform*/
 		dn1.calc_fourier_transform();
 
-		DensityField<ParticlesCatalogue> dn2(param);
+		DensityField<ParticlesCatalogue> dn2(params);
 		if (los == 1) {
-			dn2.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			dn2.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 		} else {
-			dn2.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			dn2.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, 0, 0);
 		}
 		/* Fourier transform*/
 		dn2.calc_fourier_transform();
 
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn3(param);
+		DensityField<ParticlesCatalogue> dn3(params);
 		if (los == 2) {
-			dn3.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+			dn3.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 		} else {
-			dn3.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+			dn3.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, 0, 0);
 		}
 		/* Fourier transform*/
 		dn3.calc_fourier_transform();
@@ -2215,74 +2416,74 @@ int calc_bispecChoiceOfLOS(
 		dn3.calc_inverse_fourier_transform();
 
 		/* calc dn_tilde1 */
-		DensityField<ParticlesCatalogue> dn_tilde1(param);
-		double kmag1;
+		DensityField<ParticlesCatalogue> dn_tilde1(params);
+		double kmag_a;
 		double dk = kbin[1] - kbin[0];
-		if (param.form == "full") {
-			kmag1 = kbin[param.ith_kbin];
-				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn1, kmag1, dk, Ylm1);
+		if (params.form == "full") {
+			kmag_a = kbin[params.ith_kbin];
+				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn1, kmag_a, dk, Ylm_a);
 		}
 
-		for (int ik = 0; ik < param.num_kbin; ik++) {
+		for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
 
-			double kmag2 = kbin[ik];
+			double kmag_b = kbin[i_kbin];
 
 			/* calc dn_tilde1 */
-			if (param.form == "diag") {
-				kmag1 = kmag2;
-				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn1, kmag1, dk, Ylm1);
+			if (params.form == "diag") {
+				kmag_a = kmag_b;
+				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn1, kmag_a, dk, Ylm_a);
 			}
 
 			/* calc dn_tilde2 */
-			DensityField<ParticlesCatalogue> dn_tilde2(param);
-			dn_tilde2.calc_inverse_fourier_transform_for_bispec(dn2, kmag2, dk, Ylm2);
+			DensityField<ParticlesCatalogue> dn_tilde2(params);
+			dn_tilde2.calc_inverse_fourier_transform_for_bispec(dn2, kmag_b, dk, Ylm_b);
 
 			/* calc bispectrum */
-			std::complex<double> bk_sum = 0.0;
-			double fac = param.volume / double(param.nmesh_tot);
-			for (int i = 0; i < param.nmesh_tot; i++) {
+			std::complex<double> bk_sum = 0.;
+			double fac = params.volume / double(params.nmesh_tot);
+			for (int i = 0; i < params.nmesh_tot; i++) {
 				std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);
 				std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);
 				std::complex<double> f3(dn3[i][0], dn3[i][1]);
 				bk_sum += (fac * f1 * f2 * f3);
 			}
 
-			bk_save[ik] += (w * bk_sum);
+			bk_save[i_kbin] += (w * bk_sum);
 
 			double durationInSec = double(clock() - timeStart);
-			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag2, _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 
 		}
 
 	}
 
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		delete[] Ylm_a; Ylm_a = NULL;
+		delete[] Ylm_b; Ylm_b = NULL;
+		bytes -= double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
 
 	}}
 
-	double norm = ParticlesCatalogue::calc_norm_for_bispec(P_D, vol_survey);
+	double norm = ParticlesCatalogue::calc_norm_for_bispec(particles_data, vol_survey);
 
-	FILE * fp;
+	FILE* saved_file_ptr;
 	char buf[1024];
-	if (param.form == "diag") {
-		sprintf(buf, "%s/bk%d%d%d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < param.num_kbin; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n", kbin[i], kbin[i], norm * (bk_save[i].real() - sn_save[i].real()), norm * sn_save[i].real());
+	if (params.form == "diag") {
+		sprintf(buf, "%s/bk%d%d%d", params.output_dir.c_str(), params.ell1, params.ell2, params.ELL);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_kbin; i++) {
+			fprintf(saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n", kbin[i], kbin[i], norm * (bk_save[i].real() - shotnoise_save[i].real()), norm * shotnoise_save[i].real());
 		}
-	} else if (param.form == "full") {
-		sprintf(buf, "%s/bk%d%d%d_%02d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL, param.ith_kbin);
-		fp = fopen(buf, "w");
-		for (int i = 0; i < param.num_kbin; i++) {
-			fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n", kbin[param.ith_kbin], kbin[i], norm * (bk_save[i].real() - sn_save[i].real()), norm * sn_save[i].real());
+	} else if (params.form == "full") {
+		sprintf(buf, "%s/bk%d%d%d_%02d", params.output_dir.c_str(), params.ell1, params.ell2, params.ELL, params.ith_kbin);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_kbin; i++) {
+			fprintf(saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n", kbin[params.ith_kbin], kbin[i], norm * (bk_save[i].real() - shotnoise_save[i].real()), norm * shotnoise_save[i].real());
 		}
 	}
-	fclose(fp);
+	fclose(saved_file_ptr);
 
-	delete[] sn_save;
+	delete[] shotnoise_save;
 	delete[] bk_save;
 
 	return 0;
@@ -2292,13 +2493,13 @@ int calc_bispecChoiceOfLOS(
 
 
 int calc_bispecMmode(
-        ParticlesCatalogue & P_D, ParticlesCatalogue & P_R,
+        ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand,
         LineOfSight* los_data, LineOfSight* los_rand,
-        ParameterSet & param, double alpha, double * kbin, double vol_survey) {
+        ParameterSet& params, double alpha, double* kbin, double vol_survey) {
 
     if (thisTask == 0) { printf("start to compute bispectrum...\n");}
 
-	if (fabs(wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0)) < 1.0e-10) {
+	if (fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)) < 1.e-10) {
 		if (thisTask == 0) {
 			printf("This multipole combination is not allowed.\n");
 			printf("It should be wigner_3j(ell1, ell2, ELL, 0,0,0) != 0\n");
@@ -2317,207 +2518,207 @@ int calc_bispecMmode(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) { printf("computing shotnoise terms...| %.3f sec\n", durationInSec / CLOCKS_PER_SEC);}
 
-	/* define sn_save:: shotnoise term */
-	std::vector< std::vector< std::complex<double> > > sn_save;
+	/* define shotnoise_save:: shotnoise term */
+	std::vector< std::vector< std::complex<double> > > shotnoise_save;
 
-	sn_save.resize(2*param.ELL+1);
-	for (int i = 0; i < param.num_kbin; i++) {
-		sn_save[i].resize(param.num_kbin);
+	shotnoise_save.resize(2*params.ELL + 1);
+	for (int i = 0; i < params.num_kbin; i++) {
+		shotnoise_save[i].resize(params.num_kbin);
 	}
 
-	for (int i = 0; i < param.num_kbin; i++) {
-	for (int m = 0; m < 2*param.ELL+1; m++) {
-		sn_save[m][i] = 0.0;
+	for (int i = 0; i < params.num_kbin; i++) {
+	for (int m = 0; m < 2*params.ELL + 1; m++) {
+		shotnoise_save[m][i] = 0.;
 	}}
 
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityField<ParticlesCatalogue> dn_00_sn(param);
-	dn_00_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+	DensityField<ParticlesCatalogue> dn_00_shotnoise(params);
+	dn_00_shotnoise.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
-	dn_00_sn.calc_fourier_transform();
+	dn_00_shotnoise.calc_fourier_transform();
 
 	/* calc shot noise terms */
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 
 		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> N_LM_sn(param);
-		N_LM_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		DensityField<ParticlesCatalogue> shotnoise_LM(params);
+		shotnoise_LM.calc_ylm_weighted_overdensity_for_bispec_shotnoise(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 		/* Fourier transform*/
-		N_LM_sn.calc_fourier_transform();
+		shotnoise_LM.calc_fourier_transform();
 
-		TwoPointStatistics<ParticlesCatalogue> stat(param);
-		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		TwoPointStatistics<ParticlesCatalogue> stats(params);
+		std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 
-		if ((param.ell1 == 0) && (param.ell2 == 0)) {
-			for (int i =0; i < param.num_kbin; i++) {
-				sn_save[_M_+param.ELL][i] += shotnoise;
+		if ((params.ell1 == 0) && (params.ell2 == 0)) {
+			for (int i = 0; i < params.num_kbin; i++) {
+				shotnoise_save[M_+params.ELL][i] += shotnoise;
 	       		}
 		}
 
-		if ((param.ell2 == 0)) {
-			stat.calc_power_spec(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell1, _m1_);
-			if (param.form == "diag") {
-				for (int i =0; i < param.num_kbin; i++) {
-					sn_save[_M_+param.ELL][i] += stat.pk[i];
+		if ((params.ell2 == 0)) {
+			stats.calc_power_spec(dn_00_shotnoise, shotnoise_LM, kbin, shotnoise, params.ell1, m1_);
+			if (params.form == "diag") {
+				for (int i = 0; i < params.num_kbin; i++) {
+					shotnoise_save[M_+params.ELL][i] += stats.pk[i];
 			       	}
-			} else if (param.form == "full") {
-				for (int i =0; i < param.num_kbin; i++) {
-					sn_save[_M_+param.ELL][i] += stat.pk[param.ith_kbin];
+			} else if (params.form == "full") {
+				for (int i = 0; i < params.num_kbin; i++) {
+					shotnoise_save[M_+params.ELL][i] += stats.pk[params.ith_kbin];
 			       	}
 			}
 		}
 
-		if ((param.ell1 == 0)) {
-			stat.calc_power_spec(dn_00_sn, N_LM_sn, kbin, shotnoise, param.ell2, _m2_);
-			for (int i =0; i < param.num_kbin; i++) {
-				sn_save[_M_+param.ELL][i] += stat.pk[i];
+		if ((params.ell1 == 0)) {
+			stats.calc_power_spec(dn_00_shotnoise, shotnoise_LM, kbin, shotnoise, params.ell2, m2_);
+			for (int i = 0; i < params.num_kbin; i++) {
+				shotnoise_save[M_+params.ELL][i] += stats.pk[i];
 		       	}
 		}
 
 		/* time */
 		durationInSec = double(clock() - timeStart);
-		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+		if (thisTask == 0) { printf("m1 = %d, m2 = %d, M = %d| %.3f sec\n", m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 
 	}}}
 
 	/****/
-	dn_00_sn.finalise_density_field();
+	dn_00_shotnoise.finalise_density_field();
 	/****************************************/
 
 	/****************************************/
 	/* calc F00 */
-	DensityField<ParticlesCatalogue> N_00_sn(param);
-	N_00_sn.calc_ylm_weighted_overdensity_for_bispec_shotnoise(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+	DensityField<ParticlesCatalogue> shotnoise_00(params);
+	shotnoise_00.calc_ylm_weighted_overdensity_for_bispec_shotnoise(particles_data, particles_rand, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
-	N_00_sn.calc_fourier_transform();
+	shotnoise_00.calc_fourier_transform();
 
 	/* store spherical bessel functions */
-	SphericalBesselCalculator sj1(param.ell1);
-	SphericalBesselCalculator sj2(param.ell2);
+	SphericalBesselCalculator sj1(params.ell1);
+	SphericalBesselCalculator sj2(params.ell2);
 
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 
 		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
+		std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+		bytes += double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
-		std::string flag = "FALSE";
-		for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+		std::string flag_nontrivial = "FALSE";
+		for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 			/*****/
-			double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-			w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
+			double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+			w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
 
-			if (fabs(w) > 1.0e-10) {
-				flag = "TRUE";
+			if (fabs(w) > 1.e-10) {
+				flag_nontrivial = "TRUE";
 			}
 		}
 
-		if (flag == "TRUE") {
+		if (flag_nontrivial == "TRUE") {
 
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell1, _m1_, param, Ylm1);
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(param.ell2, _m2_, param, Ylm2);
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space(params.ell1, m1_, params, Ylm_a);
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space(params.ell2, m2_, params, Ylm_b);
 
 		}
 
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 
 		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/**********************************************/
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM_sn(param);
-		dn_LM_sn.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
+		dn_LM_shotnoise.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 		/* Fourier transform*/
-		dn_LM_sn.calc_fourier_transform();
+		dn_LM_shotnoise.calc_fourier_transform();
 
-		TwoPointStatistics<ParticlesCatalogue> stat(param);
-		std::complex<double> shotnoise = stat.calc_shotnoise_for_bispec(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		TwoPointStatistics<ParticlesCatalogue> stats(params);
+		std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 
-		fftw_complex * xi = fftw_alloc_complex(param.nmesh_tot);
-		bytes += double(sizeof(fftw_complex) * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
-		for (int i = 0; i < (param.nmesh_tot); i++) {
-			xi[i][0] = 0.0;
-			xi[i][1] = 0.0;
+		fftw_complex * xi = fftw_alloc_complex(params.nmesh_tot);
+		bytes += double(sizeof(fftw_complex) * (params.nmesh_tot) / 1024. / 1024. / 1024.);
+		for (int i = 0; i < (params.nmesh_tot); i++) {
+			xi[i][0] = 0.;
+			xi[i][1] = 0.;
 		}
 
-		stat.calc_shotnoise_for_bispec_ijk(dn_LM_sn, N_00_sn, shotnoise, param.ELL, _M_, xi);
+		stats.calc_shotnoise_for_bispec_ijk(dn_LM_shotnoise, shotnoise_00, shotnoise, params.ELL, M_, xi);
 
-		for (int ik = 0; ik < param.num_kbin; ik++) {
+		for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
 
-			double kmag2 = kbin[ik];
-			double kmag1;
-			if (param.form == "diag") {
-				kmag1 = kmag2;
-			} else if (param.form == "full") {
-				kmag1 = kbin[param.ith_kbin];
+			double kmag_b = kbin[i_kbin];
+			double kmag_a;
+			if (params.form == "diag") {
+				kmag_a = kmag_b;
+			} else if (params.form == "full") {
+				kmag_a = kbin[params.ith_kbin];
 			}
 
 			/* calc shotnoise */
-			std::complex<double> sn_sum = 0.0;
+			std::complex<double> shotnoise_sum = 0.;
 			double rvec[3];
 			double dr[3];
-			dr[0] = param.boxsize[0] / double(param.nmesh[0]);
-			dr[1] = param.boxsize[1] / double(param.nmesh[1]);
-			dr[2] = param.boxsize[2] / double(param.nmesh[2]);
-			for (int i = 0; i < param.nmesh[0]; i++) {
-			for (int j = 0; j < param.nmesh[1]; j++) {
-			for (int k = 0; k < param.nmesh[2]; k++) {
-				long long coord_flat = (i * param.nmesh[1] + j) * param.nmesh[2] + k;
-				rvec[0] = (i < param.nmesh[0]/2) ? (double) i * dr[0] : (double) (i - param.nmesh[0]) * dr[0];
-				rvec[1] = (j < param.nmesh[1]/2) ? (double) j * dr[1] : (double) (j - param.nmesh[1]) * dr[1];
-				rvec[2] = (k < param.nmesh[2]/2) ? (double) k * dr[2] : (double) (k - param.nmesh[2]) * dr[2];
+			dr[0] = params.boxsize[0] / double(params.nmesh[0]);
+			dr[1] = params.boxsize[1] / double(params.nmesh[1]);
+			dr[2] = params.boxsize[2] / double(params.nmesh[2]);
+			for (int i = 0; i < params.nmesh[0]; i++) {
+			for (int j = 0; j < params.nmesh[1]; j++) {
+			for (int k = 0; k < params.nmesh[2]; k++) {
+				long long coord_flat = (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+				rvec[0] = (i < params.nmesh[0]/2) ? (double) i * dr[0] : (double) (i - params.nmesh[0]) * dr[0];
+				rvec[1] = (j < params.nmesh[1]/2) ? (double) j * dr[1] : (double) (j - params.nmesh[1]) * dr[1];
+				rvec[2] = (k < params.nmesh[2]/2) ? (double) k * dr[2] : (double) (k - params.nmesh[2]) * dr[2];
 				double rmag = sqrt(rvec[0] * rvec[0] +  rvec[1] * rvec[1] +  rvec[2] * rvec[2]);
 				std::complex<double> ff(xi[i][0], xi[i][1]);
-				double j1 = sj1.eval(kmag1 * rmag);
-				double j2 = sj2.eval(kmag2 * rmag);
+				double j1 = sj1.eval(kmag_a * rmag);
+				double j2 = sj2.eval(kmag_b * rmag);
 
-				sn_sum += (j1 * j2 * ff * Ylm1[i] * Ylm2[i]);
+				shotnoise_sum += (j1 * j2 * ff * Ylm_a[i] * Ylm_b[i]);
 
 			}}}
 
-			std::complex<double> _I_(0.0,1.0);
-			double fac = param.volume / double(param.nmesh_tot);
-			sn_sum *= pow(_I_, param.ell1 + param.ell2) * fac;
+			std::complex<double> I_(0., 1.);
+			double fac = params.volume / double(params.nmesh_tot);
+			shotnoise_sum *= pow(I_, params.ell1 + params.ell2) * fac;
 
-			sn_save[_M_+param.ELL][ik] += (sn_sum);
+			shotnoise_save[M_+params.ELL][i_kbin] += (shotnoise_sum);
 
 			/* time */
 			durationInSec = double(clock() - timeStart);
-			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag2, _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 		}
 
 		fftw_free(xi); xi = NULL;
-		bytes -= double(sizeof(fftw_complex) * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		bytes -= double(sizeof(fftw_complex) * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
 	}
 
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		delete[] Ylm_a; Ylm_a = NULL;
+		delete[] Ylm_b; Ylm_b = NULL;
+		bytes -= double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
 	}}
 
 	/****/
-	N_00_sn.finalise_density_field();
+	shotnoise_00.finalise_density_field();
 	/****************************************/
 
 	/* time */
@@ -2544,65 +2745,65 @@ int calc_bispecMmode(
 	/****************************************/
 	/* calc the normal density fluctuation */
 	/* dn = n - bar{n} */
-	DensityField<ParticlesCatalogue> dn_00(param);
-	dn_00.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, 0, 0);
+	DensityField<ParticlesCatalogue> dn_00(params);
+	dn_00.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, 0, 0);
 	/* Fourier transform*/
 	dn_00.calc_fourier_transform();
 
 
 	/* define bk_save:: bispectrum */
-//	std::complex<double> bk_save[2*param.ELL+1][param.num_kbin];
+//	std::complex<double> bk_save[2*params.ELL + 1][params.num_kbin];
 	std::vector< std::vector< std::complex<double> > > bk_save;
 
-	bk_save.resize(2*param.ELL+1);
-	for (int i = 0; i < param.num_kbin; i++) {
-		bk_save[i].resize(param.num_kbin);
+	bk_save.resize(2*params.ELL + 1);
+	for (int i = 0; i < params.num_kbin; i++) {
+		bk_save[i].resize(params.num_kbin);
 	}
 
-	for (int i = 0; i < param.num_kbin; i++) {
-	for (int m = 0; m < 2*param.ELL+1; m++) {
-		bk_save[m][i] = 0.0;
+	for (int i = 0; i < params.num_kbin; i++) {
+	for (int m = 0; m < 2*params.ELL + 1; m++) {
+		bk_save[m][i] = 0.;
 	}}
 
-	for (int _m1_ = - param.ell1; _m1_ <= param.ell1; _m1_++) {
-	for (int _m2_ = - param.ell2; _m2_ <= param.ell2; _m2_++) {
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+	for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 
 		/****************************************************/
 		/* store spherical harmonics */
-		std::complex<double> * Ylm1 = new std::complex<double> [param.nmesh_tot];
-		std::complex<double> * Ylm2 = new std::complex<double> [param.nmesh_tot];
-		bytes += double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
+		std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+		bytes += double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
-		std::string flag = "FALSE";
-		for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+		std::string flag_nontrivial = "FALSE";
+		for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 			/*****/
-			double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-			w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
+			double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+			w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
 
-			if (fabs(w) > 1.0e-10) {
-				flag = "TRUE";
+			if (fabs(w) > 1.e-10) {
+				flag_nontrivial = "TRUE";
 			}
 		}
 
-		if (flag == "TRUE") {
+		if (flag_nontrivial == "TRUE") {
 
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell1, _m1_, param, Ylm1);
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(param.ell2, _m2_, param, Ylm2);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(params.ell1, m1_, params, Ylm_a);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(params.ell2, m2_, params, Ylm_b);
 
 		}
 
-	for (int _M_ = - param.ELL; _M_ <= param.ELL; _M_++) {
+	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 
 		/*****/
-		double w = wigner_3j(param.ell1, param.ell2, param.ELL, 0, 0, 0) * wigner_3j(param.ell1, param.ell2, param.ELL, _m1_, _m2_, _M_);
-		w *= double(2*param.ELL+1) * double(2*param.ell1+1) * double(2*param.ell2+1);
-		if (fabs(w) < 1.0e-10) {
+		double w = wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0) * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+		w *= double(2*params.ELL + 1) * double(2*params.ell1 + 1) * double(2*params.ell2 + 1);
+		if (fabs(w) < 1.e-10) {
 			continue;
 		}
 
 		/* calc the yLM-weighted density perturbation */
-		DensityField<ParticlesCatalogue> dn_LM(param);
-		dn_LM.calc_ylm_weighted_overdensity(P_D, P_R, los_data, los_rand, alpha, param.ELL, _M_);
+		DensityField<ParticlesCatalogue> dn_LM(params);
+		dn_LM.calc_ylm_weighted_overdensity(particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_);
 		/* Fourier transform*/
 		dn_LM.calc_fourier_transform();
 		/* divided by a assignment function */
@@ -2611,73 +2812,73 @@ int calc_bispecMmode(
 		dn_LM.calc_inverse_fourier_transform();
 
 		/* calc dn_tilde1 */
-		DensityField<ParticlesCatalogue> dn_tilde1(param);
-		double kmag1;
+		DensityField<ParticlesCatalogue> dn_tilde1(params);
+		double kmag_a;
 		double dk = kbin[1] - kbin[0];
-		if (param.form == "full") {
-			kmag1 = kbin[param.ith_kbin];
-			dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag1, dk, Ylm1);
+		if (params.form == "full") {
+			kmag_a = kbin[params.ith_kbin];
+			dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag_a, dk, Ylm_a);
 		}
 
-		for (int ik = 0; ik < param.num_kbin; ik++) {
+		for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
 
-			double kmag2 = kbin[ik];
+			double kmag_b = kbin[i_kbin];
 
 			/* calc dn_tilde1 */
-			if (param.form == "diag") {
-				kmag1 = kmag2;
-				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag1, dk, Ylm1);
+			if (params.form == "diag") {
+				kmag_a = kmag_b;
+				dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag_a, dk, Ylm_a);
 			}
 
 			/* calc dn_tilde2 */
-			DensityField<ParticlesCatalogue> dn_tilde2(param);
-			dn_tilde2.calc_inverse_fourier_transform_for_bispec(dn_00, kmag2, dk, Ylm2);
+			DensityField<ParticlesCatalogue> dn_tilde2(params);
+			dn_tilde2.calc_inverse_fourier_transform_for_bispec(dn_00, kmag_b, dk, Ylm_b);
 
 			/* calc bispectrum */
-			std::complex<double> bk_sum = 0.0;
-			double fac = param.volume / double(param.nmesh_tot);
-			for (int i = 0; i < param.nmesh_tot; i++) {
+			std::complex<double> bk_sum = 0.;
+			double fac = params.volume / double(params.nmesh_tot);
+			for (int i = 0; i < params.nmesh_tot; i++) {
 				std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);
 				std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);
 				std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);
 				bk_sum += (fac * f1 * f2 * f3);
 			}
 
-			bk_save[_M_+param.ELL][ik] += (bk_sum);
+			bk_save[M_+params.ELL][i_kbin] += (bk_sum);
 
 			double durationInSec = double(clock() - timeStart);
-			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag2, _m1_, _m2_, _M_, durationInSec / CLOCKS_PER_SEC);}
+			if (thisTask == 0) { printf("k2 = %.3f, m1 = %d, m2 = %d, M = %d| %.3f sec\n", kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);}
 
 		}
 
 	}
 
-		delete[] Ylm1; Ylm1 = NULL;
-		delete[] Ylm2; Ylm2 = NULL;
-		bytes -= double(sizeof(std::complex<double>) * 2 * (param.nmesh_tot) / 1024.0 / 1024.0 / 1024.0);
+		delete[] Ylm_a; Ylm_a = NULL;
+		delete[] Ylm_b; Ylm_b = NULL;
+		bytes -= double(sizeof(std::complex<double>) * 2 * (params.nmesh_tot) / 1024. / 1024. / 1024.);
 
 
 	}}
 
-	double norm = ParticlesCatalogue::calc_norm_for_bispec(P_D, vol_survey);
+	double norm = ParticlesCatalogue::calc_norm_for_bispec(particles_data, vol_survey);
 
-	for (int _M_ = 0; _M_<2*param.ELL+1;_M_++) {
-		FILE * fp;
+	for (int M_ = 0; M_<2*params.ELL + 1;M_++) {
+		FILE* saved_file_ptr;
 		char buf[1024];
-		if (param.form == "diag") {
-			sprintf(buf, "%s/bk%d%d%d_M%d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL, _M_);
-			fp = fopen(buf, "w");
-			for (int i = 0; i < param.num_kbin; i++) {
-				fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n", kbin[i], kbin[i], norm * (bk_save[_M_][i].real() - sn_save[_M_][i].real()), norm * sn_save[_M_][i].real());
+		if (params.form == "diag") {
+			sprintf(buf, "%s/bk%d%d%d_M%d", params.output_dir.c_str(), params.ell1, params.ell2, params.ELL, M_);
+			saved_file_ptr = fopen(buf, "w");
+			for (int i = 0; i < params.num_kbin; i++) {
+				fprintf(saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n", kbin[i], kbin[i], norm * (bk_save[M_][i].real() - shotnoise_save[M_][i].real()), norm * shotnoise_save[M_][i].real());
 			}
-		} else if (param.form == "full") {
-			sprintf(buf, "%s/bk%d%d%d_M%d_%02d", param.output_dir.c_str(), param.ell1, param.ell2, param.ELL, _M_, param.ith_kbin);
-			fp = fopen(buf, "w");
-			for (int i = 0; i < param.num_kbin; i++) {
-				fprintf(fp, "%.5f \t %.5f \t %.7e \t %.7e\n", kbin[param.ith_kbin], kbin[i], norm * (bk_save[_M_][i].real() - sn_save[_M_][i].real()), norm * sn_save[_M_][i].real());
+		} else if (params.form == "full") {
+			sprintf(buf, "%s/bk%d%d%d_M%d_%02d", params.output_dir.c_str(), params.ell1, params.ell2, params.ELL, M_, params.ith_kbin);
+			saved_file_ptr = fopen(buf, "w");
+			for (int i = 0; i < params.num_kbin; i++) {
+				fprintf(saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n", kbin[params.ith_kbin], kbin[i], norm * (bk_save[M_][i].real() - shotnoise_save[M_][i].real()), norm * shotnoise_save[M_][i].real());
 			}
 		}
-		fclose(fp);
+		fclose(saved_file_ptr);
 	}
 
 	return 0;

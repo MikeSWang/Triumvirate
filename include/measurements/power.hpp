@@ -39,7 +39,7 @@ int calc_power_spec(
 		}
 	}
 
-	/// Compute monopole of the Fourier-harmonic transform of the density
+	/// Compute monopole of the Fourier--harmonic transform of the density
 	/// fluctuation.
 	DensityField<ParticlesCatalogue> dn_00(params);
 	dn_00.calc_ylm_weighted_overdensity(
@@ -57,7 +57,7 @@ int calc_power_spec(
 	}
 
 	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-		/// Compute Fourier-harmonic transform of the density fluctuation.
+		/// Compute Fourier--harmonic transform of the density fluctuation.
 		DensityField<ParticlesCatalogue> dn_lm(params);
 		dn_lm.calc_ylm_weighted_overdensity(
 			particles_data, particles_rand,
@@ -159,7 +159,7 @@ int calc_2pt_func(
 		}
 	}
 
-	/// Compute monopole of the Fourier-harmonic transform of the density
+	/// Compute monopole of the Fourier--harmonic transform of the density
 	/// fluctuation.
 	DensityField<ParticlesCatalogue> dn_00(params);
 	dn_00.calc_ylm_weighted_overdensity(
@@ -177,7 +177,7 @@ int calc_2pt_func(
 	}
 
 	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-		/// Compute Fourier-harmonic transform of the density fluctuation.
+		/// Compute Fourier--harmonic transform of the density fluctuation.
 		DensityField<ParticlesCatalogue> dn_lm(params);
 		dn_lm.calc_ylm_weighted_overdensity(
 			particles_data, particles_rand,
@@ -276,7 +276,7 @@ int calc_power_spec_window(
 		}
 	}
 
-	/// Compute monopole of the Fourier-harmonic transform of the mean density.
+	/// Compute monopole of the Fourier--harmonic transform of the mean density.
 	DensityField<ParticlesCatalogue> dn_00(params);
 	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
 	dn_00.calc_fourier_transform();
@@ -367,7 +367,7 @@ int calc_2pt_func_window(
 		}
 	}
 
-	/// Compute monopole of the Fourier-harmonic transform of the mean density.
+	/// Compute monopole of the Fourier--harmonic transform of the mean density.
 	DensityField<ParticlesCatalogue> dn_00(params);
 	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
 	dn_00.calc_fourier_transform();
@@ -380,7 +380,7 @@ int calc_2pt_func_window(
 
 	/// Compute two-point correlation function.
 	for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-		/// Compute Fourier-harmonic transform of the density fluctuation.
+		/// Compute Fourier--harmonic transform of the density fluctuation.
 		DensityField<ParticlesCatalogue> dn_lm(params);
 		dn_lm.calc_ylm_weighted_mean_density(
 			particles_rand, los_rand, alpha, params.ELL, M_
