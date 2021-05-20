@@ -109,24 +109,24 @@ int main(int argc, char *argv[]) {
 	LineOfSight* los_data = new LineOfSight[particles_data.n_tot];
 	LineOfSight* los_rand = new LineOfSight[particles_rand.n_tot];
 	for (int id = 0; id < particles_data.n_tot; id++) {
-			double mag_los = sqrt(
+			double los_mag = sqrt(
 				particles_data[id].pos[0] * particles_data[id].pos[0]
 				+ particles_data[id].pos[1] * particles_data[id].pos[1]
 				+ particles_data[id].pos[2] * particles_data[id].pos[2]
 			);
-			los_data[id].pos[0] = particles_data[id].pos[0] / mag_los;
-			los_data[id].pos[1] = particles_data[id].pos[1] / mag_los;
-			los_data[id].pos[2] = particles_data[id].pos[2] / mag_los;
+			los_data[id].pos[0] = particles_data[id].pos[0] / los_mag;
+			los_data[id].pos[1] = particles_data[id].pos[1] / los_mag;
+			los_data[id].pos[2] = particles_data[id].pos[2] / los_mag;
 	}
 	for (int id = 0; id < particles_rand.n_tot; id++) {
-			double mag_los = sqrt(
+			double los_mag = sqrt(
 				particles_rand[id].pos[0] * particles_rand[id].pos[0]
 				+ particles_rand[id].pos[1] * particles_rand[id].pos[1]
 				+ particles_rand[id].pos[2] * particles_rand[id].pos[2]
 			);
-			los_rand[id].pos[0] = particles_rand[id].pos[0] / mag_los;
-			los_rand[id].pos[1] = particles_rand[id].pos[1] / mag_los;
-			los_rand[id].pos[2] = particles_rand[id].pos[2] / mag_los;
+			los_rand[id].pos[0] = particles_rand[id].pos[0] / los_mag;
+			los_rand[id].pos[1] = particles_rand[id].pos[1] / los_mag;
+			los_rand[id].pos[2] = particles_rand[id].pos[2] / los_mag;
 	}
 
 	/// Compute number density alpha ratio.
