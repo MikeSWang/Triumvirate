@@ -22,6 +22,7 @@
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_spline.h>
 
+/// Provide standalone functions.
 #define wigner_3j(j1,j2,j3,m1,m2,m3) ( \
   gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3) \
 )
@@ -36,7 +37,7 @@
 #include "measurements/bispec.hpp"
 
 /**
- * Triumvirate main program.
+ * Main measurement program.
  */
 int main(int argc, char *argv[]) {
   if (thisTask == 0) {
@@ -106,9 +107,9 @@ int main(int argc, char *argv[]) {
   }
 
   /// Compute line of sight.
-  LineOfSight* los_data = new LineOfSight[particles_data.n_tot];
-  LineOfSight* los_rand = new LineOfSight[particles_rand.n_tot];
-  for (int id = 0; id < particles_data.n_tot; id++) {
+  LineOfSight* los_data = new LineOfSight[particles_data.nparticles];
+  LineOfSight* los_rand = new LineOfSight[particles_rand.nparticles];
+  for (int id = 0; id < particles_data.nparticles; id++) {
       double los_mag = sqrt(
         particles_data[id].pos[0] * particles_data[id].pos[0]
         + particles_data[id].pos[1] * particles_data[id].pos[1]
@@ -118,7 +119,7 @@ int main(int argc, char *argv[]) {
       los_data[id].pos[1] = particles_data[id].pos[1] / los_mag;
       los_data[id].pos[2] = particles_data[id].pos[2] / los_mag;
   }
-  for (int id = 0; id < particles_rand.n_tot; id++) {
+  for (int id = 0; id < particles_rand.nparticles; id++) {
       double los_mag = sqrt(
         particles_rand[id].pos[0] * particles_rand[id].pos[0]
         + particles_rand[id].pos[1] * particles_rand[id].pos[1]
@@ -145,14 +146,14 @@ int main(int argc, char *argv[]) {
 
   /// Compute catalogue field volume.
   DensityField<ParticlesCatalogue> field_rand(params);
-  double vol_survey = field_rand.calc_survey_volume_norm(particles_rand);
+  double survey_vol_norm = field_rand.calc_survey_volume_norm(particles_rand);
   field_rand.finalise_density_field();
 
   /// Print out catalogue field properties.
   if (thisTask == 0) {
 		std::cout << "[Status] :: See printout below." << std::endl;
     std::cout << "-- Data Catalogue --" << std::endl;
-    std::cout << "Number count : N = " << particles_data.n_tot << std::endl;
+    std::cout << "Number count : N = " << particles_data.nparticles << std::endl;
     std::cout << "Volume : V = " << params.volume << std::endl;
     std::cout << "Size along x-axis : L_x = " << params.boxsize[0] << std::endl;
     std::cout << "Size along y-axis : L_y = " << params.boxsize[1] << std::endl;
@@ -171,8 +172,8 @@ int main(int argc, char *argv[]) {
     std::cout << particles_rand.pos_min[2] << " <= z_rand <= " << particles_rand.pos_max[2] << std::endl;
     std::cout << "" << std::endl;
 
-    std::cout << "Survey volume normalisation : V_survey = " << vol_survey << std::endl;
-    std::cout << "Size of field (geometric mean) : L_survey = " << pow(vol_survey, 1./3.) << std::endl;
+    std::cout << "Survey volume normalisation : V_survey = " << survey_vol_norm << std::endl;
+    std::cout << "Size of field (geometric mean) : L_survey = " << pow(survey_vol_norm, 1./3.) << std::endl;
   }
 
   durationInSec = double(clock() - timeStart);
@@ -189,7 +190,7 @@ int main(int argc, char *argv[]) {
     printf("Making measurements...\n\n");
   }
 
-  /// ???
+  /// ???: What's happening here.
   if (params.catalogue_type == "survey") {
     if (thisTask >= params.num_rbin) {
       params.ith_rbin = 0;
@@ -208,16 +209,16 @@ int main(int argc, char *argv[]) {
   /// an additional command-line argument.
   if (params.catalogue_type == "mock" || params.catalogue_type == "survey") {
     /*
-    calc_power_spec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, vol_survey);
-    calc_2pt_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, vol_survey);
-    calc_2pt_func_window(particles_rand, los_rand, params, alpha, rbin, vol_survey);
+    calc_power_spec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, survey_vol_norm);
+    calc_2pt_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
+    calc_2pt_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
     */
 
-    calc_bispec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, vol_survey);
+    calc_bispec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, survey_vol_norm);
     /*
-    calc_3pt_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, vol_survey);
-    calc_3pt_func_window(particles_rand, los_rand, params, alpha, rbin, vol_survey);
-    calc_3pt_func_window_for_3pcf(particles_rand, los_rand, params, alpha, rbin, vol_survey);
+    calc_3pt_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
+    calc_3pt_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
+    calc_3pt_func_window_for_3pcf(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
     */
   }
 

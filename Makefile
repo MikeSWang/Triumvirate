@@ -38,9 +38,9 @@ endif
 #   Programs
 # ************
 
-all: trium test_common test_parameters test_bessel
+all: measurements test_common test_parameters test_bessel
 
-trium: src/trium.cpp
+measurements: src/measurements.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix build/, $(notdir $@)) $< $(CLIBS) $(LIB)
 
 test_bessel: tests/test_bessel.cpp

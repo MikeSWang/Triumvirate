@@ -129,13 +129,13 @@ class ToolCollection {
 
           /// Note the origin is at the centre of the mesh grid.
           /// ???: Have the two halves of the grid in each dimension been
-          /// rearranged?
+          /// rearranged for FFT convention.
           kvec[0] = (i < params.nmesh[0]/2) ?
-            (i * dk[0]) : ((i - params.nmesh[0]) * dk[0]);
+            i * dk[0] : (i - params.nmesh[0]) * dk[0];
           kvec[1] = (j < params.nmesh[1]/2) ?
-            (j * dk[1]) : ((j - params.nmesh[1]) * dk[1]);
+            j * dk[1] : (j - params.nmesh[1]) * dk[1];
           kvec[2] = (k < params.nmesh[2]/2) ?
-            (k * dk[2]) : ((k - params.nmesh[2]) * dk[2]);
+            k * dk[2] : (k - params.nmesh[2]) * dk[2];
 
           ylm_out[coord_flat] =
             calc_reduced_spherical_harmonic(ell_, m_, kvec);
@@ -151,8 +151,8 @@ class ToolCollection {
    *
    * @param[in] ell_ Degree of the spherical harmonic.
    * @param[in] m_ Order of the spherical harmonic.
-   * @param[in] params Input parameter set.
-   * @param[out] ylm_out Stored calculated values.
+   * @param[in] params (Reference to) the input parameter set.
+   * @param[out] ylm_out (Pointer to) stored calculated values.
    * @returns Exit status.
    */
   static int store_reduced_spherical_harmonic_in_config_space(
@@ -184,7 +184,7 @@ class ToolCollection {
 
           /// Note the origin is at the centre of the mesh grid.
           /// ???: Have the two halves of the grid in each dimension been
-          /// rearranged?
+          /// rearranged for FFT convention.
           rvec[0] = (i < params.nmesh[0]/2) ?
             (i * dr[0]) : ((i - params.nmesh[0]) * dr[0]);
           rvec[1] = (j < params.nmesh[1]/2) ?
@@ -204,8 +204,8 @@ class ToolCollection {
   /**
    * Set wavenumber bins.
    *
-   * @param[in] params Input parameter set.
-   * @param[out] kbin_out Set wavenumber bins.
+   * @param[in] params (Reference to) the input parameter set.
+   * @param[out] kbin_out (Pointer to) set wavenumber bins.
    * @returns Exit status.
    */
   static int set_kbin(ParameterSet& params, double* kbin_out) {
@@ -219,8 +219,8 @@ class ToolCollection {
   /**
    * Set separation bins.
    *
-   * @param[in] params Input parameter set.
-   * @param[out] rbin_out Set separation bins.
+   * @param[in] params (Reference to) the input parameter set.
+   * @param[out] rbin_out (Pointer to) set separation bins.
    * @returns Exit status.
    */
   static int set_rbin(ParameterSet& params, double* rbin_out) {
