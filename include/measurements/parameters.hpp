@@ -44,14 +44,14 @@ class ParameterSet {
 
   std::string form;  ///< full or diagonal form for the bispectrum
 
-  int ith_kbin;  ///< ???
-  int ith_rbin;  ///< ???
-  int NR;  ///< ???
+  int ith_kbin;  ///< ??? TODO: rename variable
+  int ith_rbin;  ///< ??? TODO: rename variable
+  int NR;  ///< ??? TODO: rename variable
 
   std::string reconstruction;  ///< reconstruction flag
 
   double b1_fiducial;  ///< fiducial scale-independent bias
-  double RG;  ///< ???
+  double RG;  ///< ??? TODO: rename variable
 
   /**
    * Read parameters from a file.
@@ -282,7 +282,7 @@ class ParameterSet {
         this->catalogue_dir + "/" + this->rand_catalogue_file;
     }
 
-    /// Set mock data and random catalogue inputs. Make subdirectories
+    /// Set mock data and random catalogue inputs.  Make subdirectories
     /// to store the output for each data realisation.
     if (this->catalogue_type == "mock") {
       /// ???: Enumerate the input data catalogue.
@@ -312,14 +312,14 @@ class ParameterSet {
 
       this->rand_catalogue_file = buf_file;
 
-      /// Set output subdirectory.
+      /// Set the output subdirectory.
       char buf_dir[2048];
 
       sprintf(buf_dir, "%s/%04d", this->output_dir.c_str(), realisation);
 
       struct stat st;
       if (stat(buf_dir, &st) != 0) {
-        /// Make output subdirectory.
+        /// Make the output subdirectory.
         int ret = mkdir(buf_dir, 0777);
 
         /// Check output subdirectory status and exit upon failure.
@@ -348,8 +348,8 @@ class ParameterSet {
   }
 
   /**
-   * Print out and check extracted parameters as a valid input (i.e. used
-   * parameters).
+   * Print out and check extracted parameters (i.e. used parameters)
+   * as valid input .
    *
    * @returns Exit status.
    */
@@ -423,7 +423,7 @@ class ParameterSet {
   /**
    * Print out extracted parameters which are used in a process.
    *
-   * @param used_param_file_ptr Pointer to the file containing used parameters.
+   * @param used_param_file_ptr (Pointer to) the file object chosen to store used parameters.
    * @returns Exit status.
    */
   int print_parameters(FILE* used_param_file_ptr) {

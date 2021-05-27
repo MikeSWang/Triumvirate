@@ -16,7 +16,7 @@ class ParticlesCatalogue {
     double w;  ///< particle weight
   }* particles;  ///< particle data
 
-  int n_tot;  ///< total number of particles
+  int nparticles;  ///< total number of particles
   double pos_min[3];  ///< minimum values of particle positions
   double pos_max[3];  ///< maximum values of particle positions
 
@@ -31,46 +31,46 @@ class ParticlesCatalogue {
   }
 
   /**
-   * Initialise particle containers.
+   * Initialise the particle container.
    */
   ParticlesCatalogue () {
     this->particles = NULL;
-    this->n_tot = 0;
+    this->nparticles = 0;
     this->pos_min[0] = 0.; this->pos_max[0] = 0.;
     this->pos_min[1] = 0.; this->pos_max[1] = 0.;
     this->pos_min[2] = 0.; this->pos_max[2] = 0.;
   }
 
   /**
-   * Destruct particle containers.
+   * Destruct the particle container.
    */
   ~ParticlesCatalogue() {
     finalise_particles();
   }
 
   /**
-   * Initialise particle data and information.
+   * Initialise particle data and container information.
    *
    * @param num Number of particles.
    */
   void initialise_particles(const int num) {
-    /// Check total number of particles.
+    /// Check the total number of particles.
     if (num <= 0) {
       printf("[Warning] :: Number of particles is negative.\n");
       return;
     }
-    this->n_tot = num;
+    this->nparticles = num;
 
     /// Renew particle data.
     delete[] particles; particles = NULL;
-    this->particles = new ParticleData[this->n_tot];
+    this->particles = new ParticleData[this->nparticles];
 
     /// Determine memory usage.
-    bytes += double(this->n_tot) * sizeof(struct ParticleData)
+    bytes += double(this->nparticles) * sizeof(struct ParticleData)
       / 1024. / 1024. / 1024.;
 
     /// Initialise particle data values.
-    for (int id = 0; id < this->n_tot; id++) {
+    for (int id = 0; id < this->nparticles; id++) {
       particles[id].pos[0] = 0.;
       particles[id].pos[1] = 0.;
       particles[id].pos[2] = 0.;
@@ -84,24 +84,23 @@ class ParticlesCatalogue {
   void finalise_particles() {
     if (particles != NULL) {  // ???: not this->particles?
       delete[] this->particles; this->particles = NULL;
-      bytes -= double(this->n_tot) * sizeof(struct ParticleData)
+      bytes -= double(this->nparticles) * sizeof(struct ParticleData)
         / 1024. / 1024. / 1024.;
     }
   }
 
   /**
-   * Read in particle data from file.
+   * Read in particle data from a file.
    *
-   * @param particles_file Input file path.
+   * @param particles_file (Referene to) the input file path.
    * @returns Exit status.
    */
   int read_particles_catalogue(std::string& particles_file) {
-    std::ifstream fin;
-
-    /// Count for the number of lines/particles.
+    /// Initialise the counter for the number of lines/particles.
     int num_lines = 0;
 
-    /// Read in data from file.
+    /// Read in data from the file.
+    std::ifstream fin;
     fin.open(particles_file.c_str(), std::ios::in);
 
     if (fin.fail()) {
@@ -146,19 +145,17 @@ class ParticlesCatalogue {
   }
 
   /**
-   * Test the reading in of particle data from file.
+   * Test the read-in of particle data from a file.
    *
-   * @param particles_file Input file path.
+   * @param particles_file (Reference to) the nput file path.
    * @returns Exit status.
    */
   int read_particles_test(std::string& particles_file) {
-
-    std::ifstream fin;
-
-    /// Count for the number of lines/particles.
+    /// Initialise the counter for the number of lines/particles.
     int num_lines = 0;
 
-    /// Read in data from file.
+    /// Read in data from the file.
+    std::ifstream fin;
     fin.open(particles_file.c_str(), std::ios::in);
 
     if (fin.fail()) {
@@ -211,8 +208,7 @@ class ParticlesCatalogue {
    * @returns Exit status.
    */
   int calc_min_and_max() {
-
-    if (particles == NULL) {
+    if (particles == NULL) {  // ???: not this->particles?
       return -1;
     }
 
@@ -225,7 +221,7 @@ class ParticlesCatalogue {
     min[2] = this->particles[0].pos[2]; max[2] = this->particles[0].pos[2];
 
     /// Find/update minimum and maximum values line-by-line.
-    for (int id = 0; id < this->n_tot; id++) {
+    for (int id = 0; id < this->nparticles; id++) {
       if (min[0] > particles[id].pos[0]) {
         min[0] = particles[id].pos[0];
       }
@@ -257,20 +253,20 @@ class ParticlesCatalogue {
   /**
    * Calculate the alpha ratio (of weighted number counts or number densities).
    *
-   * @param particles_data Data-source particle container.
-   * @param particles_rand Random-source particle container.
+   * @param particles_data (Reference to) the data-source particle container.
+   * @param particles_rand (Reference to) the random-source particle container.
    * @returns alpha Alpha ratio.
    */
   static double calc_alpha_ratio(
       ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand
     ) {
     double num_wgt_data = 0.;
-    for (int id = 0; id < particles_data.n_tot; id++) {
+    for (int id = 0; id < particles_data.nparticles; id++) {
       num_wgt_data += particles_data[id].w;
     }
 
     double num_wgt_rand = 0.;
-    for (int id = 0; id < particles_rand.n_tot; id++) {
+    for (int id = 0; id < particles_rand.nparticles; id++) {
       num_wgt_rand += particles_rand[id].w;
     }
 
@@ -282,19 +278,19 @@ class ParticlesCatalogue {
   /**
    * Calculate power spectrum normalisation.
    *
-   * @param particles_data Data-source particle container.
-   * @param vol_survey Effective survey volume.
-   * @returns norm Normalisation constant.
+   * @param particles_data (Reference to) the data-source particle container.
+   * @param survey_vol_norm Survey volume normalisation constant.
+   * @returns norm Normalisation factor.
    */
   static double calc_norm_for_power_spec(
-      ParticlesCatalogue& particles_data, double vol_survey
-    ) {
-    double num_wgt_data = 0.0;
-    for (int id = 0; id < particles_data.n_tot; id++) {
+      ParticlesCatalogue& particles_data, double survey_vol_norm
+    ) {  // ???: not using `_rand` instead of `_data`
+    double num_wgt_data = 0.;
+    for (int id = 0; id < particles_data.nparticles; id++) {
       num_wgt_data += particles_data[id].w;
     }
 
-    double norm = vol_survey / num_wgt_data / num_wgt_data;
+    double norm = survey_vol_norm / num_wgt_data / num_wgt_data;
 
     return norm;
   }
@@ -302,21 +298,21 @@ class ParticlesCatalogue {
   /**
    * Calculate bispectrum normalisation.
    *
-   * @param particles_data Data-source particle container.
-   * @param vol_survey Effective survey volume.
-   * @returns norm Normalisation constant.
+   * @param particles_data (Reference to) the data-source particle container.
+   * @param survey_vol_norm Survey volume normalisation constant.
+   * @returns norm Normalisation factor.
    */
   static double calc_norm_for_bispec(
-      ParticlesCatalogue& particles_data, double vol_survey
-    ) {
-    double num_wgt_data = 0.0;
-    for (int id = 0; id < particles_data.n_tot; id++) {
+      ParticlesCatalogue& particles_data, double survey_vol_norm
+    ) {  // ???: not using `_rand` instead of `_data`
+    double num_wgt_data = 0.;
+    for (int id = 0; id < particles_data.nparticles; id++) {
       num_wgt_data += particles_data[id].w;
     }
 
-    double norm = vol_survey / num_wgt_data / num_wgt_data;
+    double norm = survey_vol_norm / num_wgt_data / num_wgt_data;
 
-    norm *= vol_survey / num_wgt_data;
+    norm *= survey_vol_norm / num_wgt_data;
 
     return norm;
   }
@@ -328,11 +324,11 @@ class ParticlesCatalogue {
    * @returns Exit status.
    */
   int offset_particles(const double* dpos) {
-    if (particles == NULL) {
+    if (particles == NULL) {  // ???: not this->particles?
       return -1;
     }
 
-    for (int id = 0; id < this->n_tot; id++) {
+    for (int id = 0; id < this->nparticles; id++) {
       this->particles[id].pos[0] -= dpos[0];
       this->particles[id].pos[1] -= dpos[1];
       this->particles[id].pos[2] -= dpos[2];
@@ -344,9 +340,9 @@ class ParticlesCatalogue {
   /**
    * Offset particle positions for FFT (by grid adjustment).
    *
-   * @param particles_data Data-source particle container.
-   * @param particles_rand Random-soruce particle data.
-   * @param params Input parameter set.
+   * @param particles_data (Reference to) the data-source particle container.
+   * @param particles_rand (Reference to) the random-soruce particle data.
+   * @param params (Reference to) the input parameter set.
    * @param factor Offset grid adjustment factor (default is 3.).
    * @returns Exit status.
    */
@@ -354,8 +350,8 @@ class ParticlesCatalogue {
       ParticlesCatalogue& particles_data,
       ParticlesCatalogue& particles_rand,
       ParameterSet& params,
-      double factor=3.  // ???: why 3.?
-    ) {
+      double factor=3.  // ???: why, why 3.?
+    ) {  // ??? TODO: change function description
     particles_data.calc_min_and_max();
     particles_rand.calc_min_and_max();
 
@@ -383,7 +379,7 @@ class ParticlesCatalogue {
    * Offset particle positions for window function calculations (by
    * centring inside the pre-determined box).
    *
-   * @param params Input parameter set.
+   * @param params (Reference to) the inputput parameter set.
    * @returns Exit status.
    */
   int offset_particles_for_window(ParameterSet& params) {
@@ -399,7 +395,7 @@ class ParticlesCatalogue {
     dx[1] = params.boxsize[1]/2. - ymid;
     dx[2] = params.boxsize[2]/2. - zmid;
 
-    for (int id = 0; id < this->n_tot; id++) {
+    for (int id = 0; id < this->nparticles; id++) {
       for (int axis = 0; axis < 3; axis++) {
         this->particles[id].pos[axis] += dx[axis];
       }
@@ -414,11 +410,11 @@ class ParticlesCatalogue {
   /**
    * Offset particle positions for periodic boundary conditions.
    *
-   * @param params Input parameter set.
+   * @param params (Reference to) the inputput parameter set.
    * @returns Exit status.
    */
   int offset_particles_for_periodicity(ParameterSet& params) {
-    for (int id = 0; id < this->n_tot; id++) {
+    for (int id = 0; id < this->nparticles; id++) {
       for (int axis = 0; axis < 3; axis++) {
         if (this->particles[id].pos[axis] >= params.boxsize[axis]) {
           this->particles[id].pos[axis] -= params.boxsize[axis];
