@@ -11,6 +11,8 @@ double bytes = 0;  ///< memory usage in bytes
 double timeStart;  ///< process start time
 double durationInSec;  ///< process duration in seconds
 
+/// Provide standalone data types.
+
 /**
  * Line-of-sight vector.
  *

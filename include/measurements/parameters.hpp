@@ -29,10 +29,10 @@ class ParameterSet {
 
   std::string assignment;  ///< grid assignment scheme: {'NGP', 'CIC', 'TSC'}
 
-  /// NOTE: Standard variable naming convention overriden.
   int ell1;  ///< spherical degree associated with the first wavevector
   int ell2;  ///< spherical degree associated with the second wavevector
   int ELL;  ///< spherical degree associated with the line-of-sight vector
+    // NOTE: Standard variable naming convention overriden.
 
   double kmin;  ///< minimum wavenumber boundary
   double kmax;  ///< maximum wavenumber boundary
@@ -50,13 +50,13 @@ class ParameterSet {
 
   std::string reconstruction;  ///< reconstruction flag
 
-  double b1_fiducial;  ///< ???
+  double b1_fiducial;  ///< fiducial scale-independent bias
   double RG;  ///< ???
 
   /**
    * Read parameters from a file.
    *
-   * @param argv Command-line arguments.
+   * @param argv Command-line argument list.
    * @returns Parameter acceptance outcome.
    */
   int read_parameters(char* argv[]) {
@@ -74,8 +74,8 @@ class ParameterSet {
     char form_[16];
     char reconstruction_[16];
 
-    double boxsize_x, boxsize_y, boxsize_z;  // boxsize in each dimension
-    int nmesh_x, nmesh_y, nmesh_z;  // mesh number in each dimension
+    double boxsize_x, boxsize_y, boxsize_z;
+    int nmesh_x, nmesh_y, nmesh_z;
 
     /// Extract parameters from file contents by line parsing.
     std::string str_line;  // string representing the line being parsed
@@ -348,7 +348,7 @@ class ParameterSet {
   }
 
   /**
-   * Print out and check extracted parameters as valid input (i.e. used
+   * Print out and check extracted parameters as a valid input (i.e. used
    * parameters).
    *
    * @returns Exit status.
@@ -423,7 +423,7 @@ class ParameterSet {
   /**
    * Print out extracted parameters which are used in a process.
    *
-   * @param used_param_file_ptr Pointer to file containing used parameters.
+   * @param used_param_file_ptr Pointer to the file containing used parameters.
    * @returns Exit status.
    */
   int print_parameters(FILE* used_param_file_ptr) {
