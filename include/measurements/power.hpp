@@ -8,14 +8,14 @@
 /**
  * Calculate power spectrum from catalogues.
  *
- * @param particles_data Data-source particle container.
- * @param particles_rand Random-source particle container.
+ * @param particles_data (Reference to) the data-source particle container.
+ * @param particles_rand (Reference to) the random-source particle container.
  * @param los_data Data-source particle lines of sight.
  * @param los_rand Random-source particle lines of sight.
- * @param params Input parameter set.
+ * @param params (Reference to) the inputput parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
- * @param vol_survey Effective survey volume.
+ * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_power_spec(
@@ -24,7 +24,7 @@ int calc_power_spec(
   ParameterSet& params,
   double alpha,
   double* kbin,
-  double vol_survey
+  double survey_vol_norm
 ) {
   if (thisTask == 0) {
     printf("[Status] :: Measuring power spectrum.\n");
@@ -105,7 +105,7 @@ int calc_power_spec(
 
   /// Normalise and then save the output.
   double norm = ParticlesCatalogue::calc_norm_for_power_spec(
-    particles_data, vol_survey
+    particles_data, survey_vol_norm
   );
 
   char buf[1024];
@@ -128,14 +128,14 @@ int calc_power_spec(
 /**
  * Calculate two-point correlation function.
  *
- * @param particles_data Data-source particle container.
- * @param particles_rand Random-source particle container.
+ * @param particles_data (Reference to) the data-source particle container.
+ * @param particles_rand (Reference to) the random-source particle container.
  * @param los_data Data-source particle lines of sight.
  * @param los_rand Random-source particle lines of sight.
- * @param params Input parameter set.
+ * @param params (Reference to) the inputput parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
- * @param vol_survey Effective survey volume.
+ * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_2pt_func(
@@ -144,7 +144,7 @@ int calc_2pt_func(
   ParameterSet& params,
   double alpha,
   double* rbin,
-  double vol_survey
+  double survey_vol_norm
 ) {
   if (thisTask == 0) {
     printf("[Status] :: Measuring two-point correlation function.\n");
@@ -224,7 +224,7 @@ int calc_2pt_func(
 
   /// Normalise and then save the output.
   double norm = ParticlesCatalogue::calc_norm_for_power_spec(
-    particles_data, vol_survey
+    particles_data, survey_vol_norm
   );
 
   char buf[1024];
@@ -247,12 +247,12 @@ int calc_2pt_func(
 /**
  * Calculate power spectrum window function.
  *
- * @param particles_rand Random-source particle container.
+ * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
- * @param params Input parameter set.
+ * @param params (Reference to) the inputput parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
- * @param vol_survey Effective survey volume.
+ * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_power_spec_window(
@@ -261,7 +261,7 @@ int calc_power_spec_window(
   ParameterSet& params,
   double alpha,
   double* kbin,
-  double vol_survey
+  double survey_vol_norm
 ) {
   if (thisTask == 0) {
     printf("[Status] :: Measuring power spectrum window function.\n");
@@ -305,7 +305,7 @@ int calc_power_spec_window(
 
   /// Normalise and then save the output.
   double norm = ParticlesCatalogue::calc_norm_for_power_spec(
-    particles_rand, vol_survey
+    particles_rand, survey_vol_norm
   );
   norm /= alpha * alpha;
   norm /= params.volume;  // NOTE: this volume normalisation is essential
@@ -338,12 +338,12 @@ int calc_power_spec_window(
 /**
  * Calculate two-point correlation window function.
  *
- * @param particles_rand Random-source particle container.
+ * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
- * @param params Input parameter set.
+ * @param params (Reference to) the inputput parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
- * @param vol_survey Effective survey volume.
+ * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_2pt_func_window(
@@ -352,7 +352,7 @@ int calc_2pt_func_window(
   ParameterSet& params,
   double alpha,
   double* rbin,
-  double vol_survey
+  double survey_vol_norm
 ) {
   if (thisTask == 0) {
     printf("[Status] :: Measuring two-point correlation window function.\n");
@@ -375,7 +375,7 @@ int calc_2pt_func_window(
   /// Initialise output two-point correlation function.
   std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
   for (int i = 0; i < params.num_rbin; i++) {
-    xi_save[i] = 0.0;
+    xi_save[i] = 0.;
   }
 
   /// Compute two-point correlation function.
@@ -421,7 +421,7 @@ int calc_2pt_func_window(
 
   /// Normalise and then save the output.
   double norm = ParticlesCatalogue::calc_norm_for_power_spec(
-    particles_rand, vol_survey
+    particles_rand, survey_vol_norm
   );
   norm /= alpha * alpha;
 
@@ -445,8 +445,8 @@ int calc_2pt_func_window(
 /**
  * Calculate power spectrum in a periodic box.
  *
- * @param particles_data Data-source particle container.
- * @param params Input parameter set.
+ * @param particles_data (Reference to) the data-source particle container.
+ * @param params (Reference to) the inputput parameter set.
  * @param kbin Wavenumber bins.
  * @returns Exit status.
  */
@@ -481,7 +481,7 @@ int calc_power_spec_in_box(
 
   /// Compute shot noise.
   TwoPointStatistics<ParticlesCatalogue> stats(params);
-  std::complex<double> shotnoise = double(particles_data.n_tot);
+  std::complex<double> shotnoise = double(particles_data.nparticles);
 
   /// Compute power spectrum.
   stats.calc_power_spec(dn, dn, kbin, shotnoise, params.ELL, 0);
@@ -501,7 +501,7 @@ int calc_power_spec_in_box(
 
   /// Normalise and then save the output.
   double norm = params.volume
-    / double(particles_data.n_tot) / double(particles_data.n_tot);
+    / double(particles_data.nparticles) / double(particles_data.nparticles);
 
   char buf[1024];
   sprintf(buf, "%s/pk%d", params.output_dir.c_str(), params.ELL);
@@ -523,8 +523,8 @@ int calc_power_spec_in_box(
 /**
  * Calculate two-point correlation function in a periodic box.
  *
- * @param particles_data Data-source particle container.
- * @param params Input parameter set.
+ * @param particles_data (Reference to) the data-source particle container.
+ * @param params (Reference to) the inputput parameter set.
  * @param kbin Wavenumber bins.
  * @returns Exit status.
  */
@@ -559,7 +559,7 @@ int calc_2pt_func_in_box(
 
   /// Compute shot noise.
   TwoPointStatistics<ParticlesCatalogue> stats(params);
-  std::complex<double> shotnoise = double(particles_data.n_tot);
+  std::complex<double> shotnoise = double(particles_data.nparticles);
 
   /// Compute two-point correlation function.
   stats.calc_corr_func(dn, dn, rbin, shotnoise, params.ELL, 0);
@@ -581,7 +581,7 @@ int calc_2pt_func_in_box(
 
   /// Normalise and then save the output.
   double norm = params.volume
-    / double(particles_data.n_tot) / double(particles_data.n_tot);
+    / double(particles_data.nparticles) / double(particles_data.nparticles);
 
   char buf[1024];
   sprintf(buf, "%s/xi%d", params.output_dir.c_str(), params.ELL);
@@ -603,9 +603,9 @@ int calc_2pt_func_in_box(
 /**
  * Calculate power spectrum in a periodic box for reconstruction.
  *
- * @param particles_data Data-source particle container.
- * @param particles_rand Random-source particle container.
- * @param params Input parameter set.
+ * @param particles_data (Reference to) the data-source particle container.
+ * @param particles_rand (Reference to) the random-source particle container.
+ * @param params (Reference to) the inputput parameter set.
  * @param kbin Wavenumber bins.
  * @returns Exit status.
  */
@@ -669,7 +669,7 @@ int calc_power_spec_in_box_for_recon(
 
   /// Normalise and then save the output.
   double norm = params.volume
-    / double(particles_data.n_tot) / double(particles_data.n_tot);
+    / double(particles_data.nparticles) / double(particles_data.nparticles);
 
   char buf[1024];
   sprintf(buf, "%s/pk%d", params.output_dir.c_str(), params.ELL);

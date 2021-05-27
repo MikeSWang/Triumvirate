@@ -25,7 +25,7 @@ class DensityField {
   /**
    * Construct density field.
    *
-   * @param params Input parameter set.
+   * @param params (Reference to) the inputput parameter set.
    */
   DensityField(ParameterSet& params) {
     this->params = params;
@@ -108,7 +108,7 @@ class DensityField {
     double cell_vol_factor = 1. / dV;
 
     int order = 1;
-    for (int id = 0; id < particles.n_tot; id++) {
+    for (int id = 0; id < particles.nparticles; id++) {
       double win[order][3];
       int ijk[order][3];
       for (int axis = 0; axis < 3; axis++) {
@@ -164,7 +164,7 @@ class DensityField {
     double cell_vol_factor = 1. / dV;
 
     int order = 2;
-    for (int id = 0; id < particles.n_tot; id++) {
+    for (int id = 0; id < particles.nparticles; id++) {
       double win[order][3];
       int ijk[order][3];
       for (int axis = 0; axis < 3; axis++) {
@@ -224,7 +224,7 @@ class DensityField {
     double cell_vol_factor = 1. / dV;
 
     int order = 3;
-    for (int id = 0; id < particles.n_tot; id++) {
+    for (int id = 0; id < particles.nparticles; id++) {
       double win[order][3];
       int ijk[order][3];
       for (int axis = 0; axis < 3; axis++) {
@@ -266,8 +266,8 @@ class DensityField {
    * Calculate reduced spherical harmonic transform of a weighted
    * over-density field.
    *
-   * @param particles_data Data-source particle container.
-   * @param particles_rand Random-source particle container.
+   * @param particles_data (Reference to) the data-source particle container.
+   * @param particles_rand (Reference to) the random-source particle container.
    * @param los_data Data-source particle lines of sight.
    * @param los_rand Random-source particle lines of sight.
    * @param alpha Alpha ratio.
@@ -285,8 +285,8 @@ class DensityField {
     fftw_complex* weight = NULL;
 
     /// Calculate data-source weighted density field.
-    weight = fftw_alloc_complex(particles_data.n_tot);
-    for (int id = 0; id < particles_data.n_tot; id++) {
+    weight = fftw_alloc_complex(particles_data.nparticles);
+    for (int id = 0; id < particles_data.nparticles; id++) {
       double los[3] = {
         los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
       };
@@ -300,8 +300,8 @@ class DensityField {
     fftw_free(weight); weight = NULL;
 
     /// Calculate random-source weighted density field.
-    weight = fftw_alloc_complex(particles_rand.n_tot);
-    for (int id = 0; id < particles_rand.n_tot; id++) {
+    weight = fftw_alloc_complex(particles_rand.nparticles);
+    for (int id = 0; id < particles_rand.nparticles; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
@@ -327,8 +327,8 @@ class DensityField {
    * Calculate reduced spherical harmonic transform of a weighted
    * over-density field for calculating bispectrum shot noise.
    *
-   * @param particles_data Data-source particle container.
-   * @param particles_rand Random-source particle container.
+   * @param particles_data (Reference to) the data-source particle container.
+   * @param particles_rand (Reference to) the random-source particle container.
    * @param los_data Data-source particle lines of sight.
    * @param los_rand Random-source particle lines of sight.
    * @param alpha Alpha ratio.
@@ -346,8 +346,8 @@ class DensityField {
     fftw_complex* weight = NULL;
 
     /// Calculate data-source weighted density field.
-    weight = fftw_alloc_complex(particles_data.n_tot);
-    for (int id = 0; id < particles_data.n_tot; id++) {
+    weight = fftw_alloc_complex(particles_data.nparticles);
+    for (int id = 0; id < particles_data.nparticles; id++) {
       double los[3] = {
         los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
       };
@@ -362,8 +362,8 @@ class DensityField {
     fftw_free(weight); weight = NULL;
 
     /// Calculate random-source weighted density field.
-    weight = fftw_alloc_complex(particles_rand.n_tot);
-    for (int id = 0; id < particles_rand.n_tot; id++) {
+    weight = fftw_alloc_complex(particles_rand.nparticles);
+    for (int id = 0; id < particles_rand.nparticles; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
@@ -390,7 +390,7 @@ class DensityField {
    * Calculate reduced spherical harmonic transform of a mean-density
    * field.
    *
-   * @param particles_rand Random-source particle container.
+   * @param particles_rand (Reference to) the random-source particle container.
    * @param los_rand Random-source particle lines of sight.
    * @param alpha Alpha ratio.
    * @param ell Degree of the spherical harmonic.
@@ -405,8 +405,8 @@ class DensityField {
   ) {
     fftw_complex* weight = NULL;
 
-    weight = fftw_alloc_complex(particles_rand.n_tot);
-    for (int id = 0; id < particles_rand.n_tot; id++) {
+    weight = fftw_alloc_complex(particles_rand.nparticles);
+    for (int id = 0; id < particles_rand.nparticles; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
@@ -431,7 +431,7 @@ class DensityField {
    * Calculate reduced spherical harmonic transform of a mean-density
    * field for calculating 3-point window function shot noise.
    *
-   * @param particles_rand Random-source particle container.
+   * @param particles_rand (Reference to) the random-source particle container.
    * @param los_rand Random-source particle lines of sight.
    * @param alpha Alpha ratio.
    * @param ell Degree of the spherical harmonic.
@@ -446,8 +446,8 @@ class DensityField {
   ) {
     fftw_complex* weight = NULL;
 
-    weight = fftw_alloc_complex(particles_rand.n_tot);
-    for (int id = 0; id < particles_rand.n_tot; id++) {
+    weight = fftw_alloc_complex(particles_rand.nparticles);
+    for (int id = 0; id < particles_rand.nparticles; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
@@ -472,8 +472,8 @@ class DensityField {
   /**
    * Calculate normal density field in a periodic box.
    *
-   * @param particles_data Data-source particle container.
-   * @param params Input parameter set.
+   * @param particles_data (Reference to) the data-source particle container.
+   * @param params (Reference to) the inputput parameter set.
    * @returns Exit status.
    */
   int calc_density_field_in_box(
@@ -482,8 +482,8 @@ class DensityField {
   ) {
     fftw_complex* weight = NULL;
 
-    weight = fftw_alloc_complex(particles_data.n_tot);
-    for (int id = 0; id < particles_data.n_tot; id++) {
+    weight = fftw_alloc_complex(particles_data.nparticles);
+    for (int id = 0; id < particles_data.nparticles; id++) {
       weight[id][0] = 1.;
       weight[id][1] = 0.;
     }
@@ -492,7 +492,7 @@ class DensityField {
     fftw_free(weight); weight = NULL;
 
     for (int i = 0; i < this->params.nmesh_tot; i++) {
-      this->field[i][0] -= double(particles_data.n_tot) / params.volume;
+      this->field[i][0] -= double(particles_data.nparticles) / params.volume;
       this->field[i][1] -= 0.;
     }
 
@@ -503,14 +503,14 @@ class DensityField {
    * Calculate normal density field in a periodic box for bispectrum
    * calculations.
    *
-   * @param particles_data Data-source particle container.
+   * @param particles_data (Reference to) the data-source particle container.
    * @returns Exit status.
    */
   int calc_density_field_in_box_for_bispec(ParticleContainer& particles_data) {
     fftw_complex* weight = NULL;
 
-    weight = fftw_alloc_complex(particles_data.n_tot);
-    for (int id = 0; id < particles_data.n_tot; id++) {
+    weight = fftw_alloc_complex(particles_data.nparticles);
+    for (int id = 0; id < particles_data.nparticles; id++) {
       weight[id][0] = 1.;
       weight[id][1] = 0.;
     }
@@ -524,8 +524,8 @@ class DensityField {
   /**
    * Calculate normal density field in a periodic box for reconstruction.
    *
-   * @param particles_data Data-source particle container.
-   * @param particles_rand Random-source particle container.
+   * @param particles_data (Reference to) the data-source particle container.
+   * @param particles_rand (Reference to) the random-source particle container.
    * @param alpha Alpha ratio.
    * @returns Exit status.
    */
@@ -538,8 +538,8 @@ class DensityField {
     fftw_complex* weight = NULL;
 
     /// Assign data-source weighted field.
-    weight = fftw_alloc_complex(particles_data.n_tot);
-    for (int id = 0; id < particles_data.n_tot; id++) {
+    weight = fftw_alloc_complex(particles_data.nparticles);
+    for (int id = 0; id < particles_data.nparticles; id++) {
       weight[id][0] = 1.;
       weight[id][1] = 0.;
     }
@@ -548,8 +548,8 @@ class DensityField {
     fftw_free(weight); weight = NULL;
 
     /// Assign random-source weighted field.
-    weight = fftw_alloc_complex(particles_rand.n_tot);
-    for (int id = 0; id < particles_rand.n_tot; id++) {
+    weight = fftw_alloc_complex(particles_rand.nparticles);
+    for (int id = 0; id < particles_rand.nparticles; id++) {
       weight[id][0] = 1.;
       weight[id][1] = 0.;
     }
@@ -914,14 +914,14 @@ class DensityField {
   /**
    * Calculate survey volume normalisation.
    *
-   * @param particles_rand Random-source particle container.
+   * @param particles_rand (Reference to) the random-source particle container.
    * @returns survey_volume_norm Survey volume normalisation.
    */
   double calc_survey_volume_norm(ParticleContainer& particles_rand) {
     fftw_complex* weight = NULL;
 
-    weight = fftw_alloc_complex(particles_rand.n_tot);
-    for (int id = 0; id < particles_rand.n_tot; id++) {
+    weight = fftw_alloc_complex(particles_rand.nparticles);
+    for (int id = 0; id < particles_rand.nparticles; id++) {
       weight[id][0] = 1.;
       weight[id][1] = 0.;
     }
@@ -938,7 +938,7 @@ class DensityField {
     }
 
     double survey_volume_norm =
-      double(particles_rand.n_tot) * double(particles_rand.n_tot) / norm;
+      double(particles_rand.nparticles) * double(particles_rand.nparticles) / norm;
       // NOTE: `double` needed for int overflow
 
     return survey_volume_norm;
@@ -959,7 +959,7 @@ class TwoPointStatistics {
   /**
    * Construct two-point statistics.
    *
-   * @param params Input parameter set.
+   * @param params (Reference to) the inputput parameter set.
    */
   TwoPointStatistics(ParameterSet& params){
     this->params = params;
@@ -1450,8 +1450,8 @@ class TwoPointStatistics {
   /**
    * Calculate shot noise for power spectrum.
    *
-   * @param particles_data Data-source particle container.
-   * @param particles_rand Random-source particle container.
+   * @param particles_data (Reference to) the data-source particle container.
+   * @param particles_rand (Reference to) the random-source particle container.
    * @param los_data Data-source particle lines of sight.
    * @param los_rand Random-source particle lines of sight.
    * @param alpha Alpha ratio.
@@ -1470,7 +1470,7 @@ class TwoPointStatistics {
     std::complex<double> sum_data = 0.;
     std::complex<double> sum_rand = 0.;
 
-    for (int id = 0; id < particles_data.n_tot; id++) {
+    for (int id = 0; id < particles_data.nparticles; id++) {
       double los[3] = {
         los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
       };
@@ -1479,7 +1479,7 @@ class TwoPointStatistics {
       sum_data += pow(particles_data[id].w, 2) * ylm;
     }
 
-    for (int id = 0; id < particles_rand.n_tot; id++) {
+    for (int id = 0; id < particles_rand.nparticles; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
@@ -1494,7 +1494,7 @@ class TwoPointStatistics {
   /**
    * Calculate shot noise for two-point function window.
    *
-   * @param particles_rand Random-source particle container.
+   * @param particles_rand (Reference to) the random-source particle container.
    * @param los_rand Random-source particle lines of sight.
    * @param alpha Alpha ratio.
    * @param ell Degree of the spherical harmonic.
@@ -1508,7 +1508,7 @@ class TwoPointStatistics {
     int ell, int m
   ) {
     std::complex<double> sum_rand = 0.;
-    for (int id = 0; id < particles_rand.n_tot; id++) {
+    for (int id = 0; id < particles_rand.nparticles; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
@@ -1523,8 +1523,8 @@ class TwoPointStatistics {
   /**
    * Calculate shot noise for bispectrum.
    *
-   * @param particles_data Data-source particle container.
-   * @param particles_rand Random-source particle container.
+   * @param particles_data (Reference to) the data-source particle container.
+   * @param particles_rand (Reference to) the random-source particle container.
    * @param los_data Data-source particle lines of sight.
    * @param los_rand Random-source particle lines of sight.
    * @param alpha Alpha ratio.
@@ -1541,7 +1541,7 @@ class TwoPointStatistics {
     std::complex<double> sum_data = 0.;
     std::complex<double> sum_rand = 0.;
 
-    for (int id = 0; id < particles_data.n_tot; id++) {
+    for (int id = 0; id < particles_data.nparticles; id++) {
       double los[3] = {
         los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
       };
@@ -1550,7 +1550,7 @@ class TwoPointStatistics {
       sum_data += pow(particles_data[id].w, 3) * ylm;
     }
 
-    for (int id = 0; id < particles_rand.n_tot; id++) {
+    for (int id = 0; id < particles_rand.nparticles; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
@@ -1843,8 +1843,8 @@ class TwoPointStatistics {
    * Calculate shot noise for the power spectrum in a periodic box
    * for reconstruction.
    *
-   * @param particles_data Data-source particle container.
-   * @param particles_rand Random-source particle container.
+   * @param particles_data (Reference to) the data-source particle container.
+   * @param particles_rand (Reference to) the random-source particle container.
    * @param alpha Alpha ratio.
    * @returns Shot noise for the power spectrum.
    */
@@ -1853,8 +1853,8 @@ class TwoPointStatistics {
     ParticleContainer& particles_rand,
     double alpha
   ) {
-    std::complex<double> sum_data = double(particles_data.n_tot);
-    std::complex<double> sum_rand = double(particles_rand.n_tot);
+    std::complex<double> sum_data = double(particles_data.nparticles);
+    std::complex<double> sum_rand = double(particles_rand.nparticles);
 
     return sum_data + pow(alpha, 2) * sum_rand;
   }

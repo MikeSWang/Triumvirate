@@ -4,14 +4,14 @@
 /**
  * Calculate bispectrum from catalogues.
  *
- * @param particles_data Data-source particle container.
- * @param particles_rand Random-source particle container.
+ * @param particles_data (Reference to) the data-source particle container.
+ * @param particles_rand (Reference to) the random-source particle container.
  * @param los_data Data-source particle lines of sight.
  * @param los_rand Random-source particle lines of sight.
- * @param params Input parameter set.
+ * @param params (Reference to) the inputput parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
- * @param vol_survey Effective survey volume.
+ * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_bispec(
@@ -20,7 +20,7 @@ int calc_bispec(
   ParameterSet& params,
   double alpha,
   double* kbin,
-  double vol_survey
+  double survey_vol_norm
 ) {
   if (thisTask == 0) {
     printf("[Status] :: Measuring bispectrum.\n");
@@ -416,7 +416,7 @@ int calc_bispec(
 
   /// Normalise and then save the output.
   double norm = ParticlesCatalogue::calc_norm_for_bispec(
-    particles_data, vol_survey
+    particles_data, survey_vol_norm
   );
 
   FILE* saved_file_ptr;
@@ -467,8 +467,8 @@ int calc_bispec(
 /**
  * Calculate bispectrum in a periodic box.
  *
- * @param particles_data Data-source particle container.
- * @param params Input parameter set.
+ * @param particles_data (Reference to) the data-source particle container.
+ * @param params (Reference to) the inputput parameter set.
  * @param kbin Wavenumber bins.
  * @returns Exit status.
  */
@@ -532,7 +532,7 @@ int calc_bispec_in_box(
       shotnoise_LM.calc_fourier_transform();
 
       TwoPointStatistics<ParticlesCatalogue> stats(params);
-      std::complex<double> shotnoise = double(particles_data.n_tot);
+      std::complex<double> shotnoise = double(particles_data.nparticles);
         // NOTE: ``double`` conversion essential here
 
       if (params.ell1 == 0 && params.ell2 == 0) {
@@ -620,7 +620,7 @@ int calc_bispec_in_box(
       dn_LM_shotnoise.calc_fourier_transform();
 
       TwoPointStatistics<ParticlesCatalogue> stats(params);
-      std::complex<double> shotnoise = double(particles_data.n_tot);
+      std::complex<double> shotnoise = double(particles_data.nparticles);
 
       fftw_complex* xi = fftw_alloc_complex(params.nmesh_tot);
       bytes += sizeof(fftw_complex)
@@ -820,8 +820,8 @@ int calc_bispec_in_box(
 
 	/// Normalise and then save the output.
 	double norm = params.volume
-		/ double(particles_data.n_tot) / double(particles_data.n_tot);
-	norm *= params.volume / double(particles_data.n_tot);
+		/ double(particles_data.nparticles) / double(particles_data.nparticles);
+	norm *= params.volume / double(particles_data.nparticles);
 
 	FILE* saved_file_ptr;
 	char buf[1024];
@@ -868,14 +868,14 @@ int calc_bispec_in_box(
 /**
  * Calculate three-point function from catalogues.
  *
- * @param particles_data Data-source particle container.
- * @param particles_rand Random-source particle container.
+ * @param particles_data (Reference to) the data-source particle container.
+ * @param particles_rand (Reference to) the random-source particle container.
  * @param los_data Data-source particle lines of sight.
  * @param los_rand Random-source particle lines of sight.
- * @param params Input parameter set.
+ * @param params (Reference to) the inputput parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
- * @param vol_survey Effective survey volume.
+ * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_3pt_func(
@@ -884,7 +884,7 @@ int calc_3pt_func(
 	ParameterSet& params,
 	double alpha,
 	double* rbin,
-	double vol_survey
+	double survey_vol_norm
 ) {
 	if (thisTask == 0) {
 		printf("[Status] :: Measuring three-point function.\n");
@@ -1155,7 +1155,7 @@ int calc_3pt_func(
 
 	/// Normalise and then save the output.
 	double norm = ParticlesCatalogue::calc_norm_for_bispec(
-		particles_data, vol_survey
+		particles_data, survey_vol_norm
 	);
 
 	FILE* saved_file_ptr;
@@ -1203,12 +1203,12 @@ int calc_3pt_func(
 /**
  * Calculate three-point function window from catalogues.
  *
- * @param particles_rand Random-source particle container.
+ * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
- * @param params Input parameter set.
+ * @param params (Reference to) the inputput parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
- * @param vol_survey Effective survey volume.
+ * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_3pt_func_window(
@@ -1217,7 +1217,7 @@ int calc_3pt_func_window(
 	ParameterSet& params,
 	double alpha,
 	double* rbin,
-	double vol_survey
+	double survey_vol_norm
 ) {
 	if (thisTask == 0) {
 		printf("[Status] :: Measuring three-point function window.\n");
@@ -1494,7 +1494,7 @@ int calc_3pt_func_window(
 
 	/// Normalise and then save the output.
 	double norm = ParticlesCatalogue::calc_norm_for_bispec(
-			particles_rand, vol_survey
+			particles_rand, survey_vol_norm
 	);
 	norm /= alpha * alpha * alpha;
 
@@ -1545,12 +1545,12 @@ int calc_3pt_func_window(
  * Calculate three-point function window for three-point window function
  * from catalogues.
  *
- * @param particles_rand Random-source particle container.
+ * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
- * @param params Input parameter set.
+ * @param params (Reference to) the inputput parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
- * @param vol_survey Effective survey volume.
+ * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_3pt_func_window_for_3pcf(  // ???
@@ -1559,7 +1559,7 @@ int calc_3pt_func_window_for_3pcf(  // ???
 	ParameterSet& params,
 	double alpha,
 	double* rbin,
-	double vol_survey
+	double survey_vol_norm
 ) {
 	if (thisTask == 0) {
 		printf(
@@ -1818,7 +1818,7 @@ int calc_3pt_func_window_for_3pcf(  // ???
 
 	/// Normalise and then save the output.
 	double norm = ParticlesCatalogue::calc_norm_for_bispec(
-		particles_rand, vol_survey
+		particles_rand, survey_vol_norm
 	);
 	norm /= alpha * alpha * alpha;
 
@@ -1867,8 +1867,8 @@ int calc_3pt_func_window_for_3pcf(  // ???
 /**
  * Calculate three-point function in a periodic box.
  *
- * @param particles_data Data-source particle container.
- * @param params Input parameter set.
+ * @param particles_data (Reference to) the data-source particle container.
+ * @param params (Reference to) the inputput parameter set.
  * @param rbin Separation bins.
  * @returns Exit status.
  */
@@ -1944,7 +1944,7 @@ int calc_3pt_func_in_box(
 			dn_LM_shotnoise.calc_fourier_transform();
 
 			TwoPointStatistics<ParticlesCatalogue> stats(params);
-			std::complex<double> shotnoise = double(particles_data.n_tot);
+			std::complex<double> shotnoise = double(particles_data.nparticles);
 
 			stats.calc_corr_func_for_3pt_func(
 				dn_LM_shotnoise, shotnoise_00,
@@ -2100,8 +2100,8 @@ int calc_3pt_func_in_box(
 
 	/// Normalise and then save the output.
 	double norm = params.volume
-		/ double(particles_data.n_tot) / double(particles_data.n_tot);
-	norm *= params.volume / double(particles_data.n_tot);
+		/ double(particles_data.nparticles) / double(particles_data.nparticles);
+	norm *= params.volume / double(particles_data.nparticles);
 
 	FILE* saved_file_ptr;
 	char buf[1024];
@@ -2149,15 +2149,15 @@ int calc_3pt_func_in_box(
  * Calculate bispectrum from catalogues with respect to a choice of
  * line of sight.
  *
- * @param particles_data Data-source particle container.
- * @param particles_rand Random-source particle container.
+ * @param particles_data (Reference to) the data-source particle container.
+ * @param particles_rand (Reference to) the random-source particle container.
  * @param los_data Data-source particle lines of sight.
  * @param los_rand Random-source particle lines of sight.
- * @param params Input parameter set.
+ * @param params (Reference to) the inputput parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
  * @param los Choice of line of sight.
- * @param vol_survey Effective survey volume.
+ * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_bispecChoiceOfLOS(
@@ -2167,7 +2167,7 @@ int calc_bispecChoiceOfLOS(
 	double alpha,
 	double* kbin,
 	int los,
-	double vol_survey
+	double survey_vol_norm
 ) {
 	if (thisTask == 0) {
 		printf(
@@ -2703,7 +2703,7 @@ int calc_bispecChoiceOfLOS(
 
 	/// Normalise and then save the output.
 	double norm = ParticlesCatalogue::calc_norm_for_bispec(
-		particles_data, vol_survey
+		particles_data, survey_vol_norm
 	);
 
 	FILE* saved_file_ptr;
@@ -2752,14 +2752,14 @@ int calc_bispecChoiceOfLOS(
  * Calculate bispectrum from catalogues for modes with individual
  * orders @f$M@f$.
  *
- * @param particles_data Data-source particle container.
- * @param particles_rand Random-source particle container.
+ * @param particles_data (Reference to) the data-source particle container.
+ * @param particles_rand (Reference to) the random-source particle container.
  * @param los_data Data-source particle lines of sight.
  * @param los_rand Random-source particle lines of sight.
- * @param params Input parameter set.
+ * @param params (Reference to) the inputput parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
- * @param vol_survey Effective survey volume.
+ * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_bispec_for_M_mode(
@@ -2768,7 +2768,7 @@ int calc_bispec_for_M_mode(
 	ParameterSet& params,
 	double alpha,
 	double* kbin,
-	double vol_survey
+	double survey_vol_norm
 ) {
 	if (thisTask == 0) {
 		printf(
@@ -3192,7 +3192,7 @@ int calc_bispec_for_M_mode(
 
 	/// Normalise and then save the output.
 	double norm = ParticlesCatalogue::calc_norm_for_bispec(
-		particles_data, vol_survey
+		particles_data, survey_vol_norm
 	);
 
 	for (int M_ = 0; M_<2*params.ELL + 1; M_++) {
