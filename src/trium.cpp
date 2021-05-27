@@ -150,6 +150,7 @@ int main(int argc, char *argv[]) {
 
   /// Print out catalogue field properties.
   if (thisTask == 0) {
+		std::cout << "[Status] :: See printout below." << std::endl;
     std::cout << "-- Data Catalogue --" << std::endl;
     std::cout << "Number count : N = " << particles_data.n_tot << std::endl;
     std::cout << "Volume : V = " << params.volume << std::endl;

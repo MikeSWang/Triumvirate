@@ -14,25 +14,26 @@ class SphericalBesselCalculator {
    * @param ell Order @f$ \ell @f$ of the spherical Bessel function.
    */
   SphericalBesselCalculator(int ell) {
-    /// Set up sampling range and number; calculate sample spacing.
+    /// Set up sampling range and number.
     double xmin = 0.;
-    double xmax = 10000.;  // NOTE: discretionary
-    int nsample = 1000000;  // NOTE: discretionary
-
-    double dx = (xmax - xmin) / (nsample - 1);
+    double xmax = 10000.;  // NOTE: discretionary choice
+    int nsample = 1000000;  // NOTE: discretionary choice
 
     /// Initialise and evaluate sample points.
     double* x = new double[nsample];
     double* j_ell = new double[nsample];
 
+    double dx = (xmax - xmin) / (nsample - 1);
     for (int i = 0; i < nsample; i++) {
       x[i] = xmin + dx * double(i);
       j_ell[i] = gsl_sf_bessel_jl(ell, x[i]);
     }
 
-    /// Initialise interpolator.
-    this->accel = gsl_interp_accel_alloc();
+    /// Initialise the interpolator.
     this->spline = gsl_spline_alloc(gsl_interp_cspline, nsample);
+      // use cubic spline
+    this->accel = gsl_interp_accel_alloc();
+      // store state variables for faster lookup
 
     gsl_spline_init(this->spline, x, j_ell, nsample);
 
@@ -42,7 +43,7 @@ class SphericalBesselCalculator {
   }
 
   /**
-   * Destruct interpolators.
+   * Destruct the interpolated function.
    */
   ~SphericalBesselCalculator() {
     if (this->accel != NULL) {
@@ -65,8 +66,8 @@ class SphericalBesselCalculator {
   }
 
  private:
-  gsl_interp_accel* accel;
   gsl_spline* spline;
+  gsl_interp_accel* accel;
 };
 
 #endif
