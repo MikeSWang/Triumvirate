@@ -1686,7 +1686,7 @@ class TwoPointStatistics {
     int k = int(kvec[2] / dk[2] + 1.e-5);
 
     double xk = M_PI * i / double(this->params.nmesh[0]);
-    double yk = M_PI * k / double(this->params.nmesh[1]);
+    double yk = M_PI * j / double(this->params.nmesh[1]);
     double zk = M_PI * k / double(this->params.nmesh[2]);
 
     double f1 = (i != 0) ? sin(xk): 0.;
@@ -1717,7 +1717,7 @@ class TwoPointStatistics {
     int k = int(kvec[2] / dk[2] + 1.e-5);
 
     double xk = M_PI * i / double(this->params.nmesh[0]);
-    double yk = M_PI * k / double(this->params.nmesh[1]);
+    double yk = M_PI * j / double(this->params.nmesh[1]);
     double zk = M_PI * k / double(this->params.nmesh[2]);
 
     double f1 = (i != 0) ? sin(xk): 0.;
