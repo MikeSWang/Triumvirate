@@ -12,14 +12,14 @@
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_data Data-source particle lines of sight.
  * @param los_rand Random-source particle lines of sight.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_power_spec(
-  ParticlesCatalogue& particles_data, ParticlesCatalogue & particles_rand,
+  ParticleCatalogue& particles_data, ParticleCatalogue & particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
   ParameterSet& params,
   double alpha,
@@ -41,8 +41,8 @@ int calc_power_spec(
 
   /// Compute monopole of the Fourier--harmonic transform of the density
   /// fluctuation.
-  DensityField<ParticlesCatalogue> dn_00(params);
-  dn_00.calc_ylm_weighted_overdensity(
+  DensityField<ParticleCatalogue> dn_00(params);
+  dn_00.calc_ylm_weighted_fluctuation(
     particles_data, particles_rand,
     los_data, los_rand,
     alpha,
@@ -58,8 +58,8 @@ int calc_power_spec(
 
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
     /// Compute Fourier--harmonic transform of the density fluctuation.
-    DensityField<ParticlesCatalogue> dn_lm(params);
-    dn_lm.calc_ylm_weighted_overdensity(
+    DensityField<ParticleCatalogue> dn_lm(params);
+    dn_lm.calc_ylm_weighted_fluctuation(
       particles_data, particles_rand,
       los_data, los_rand,
       alpha,
@@ -68,7 +68,7 @@ int calc_power_spec(
     dn_lm.calc_fourier_transform();
 
     /// Compute shot noise.
-    TwoPointStatistics<ParticlesCatalogue> stats(params);
+    TwoPointStatistics<ParticleCatalogue> stats(params);
     std::complex<double> shotnoise = stats.calc_shotnoise_for_power_spec(
       particles_data, particles_rand,
       los_data, los_rand,
@@ -104,7 +104,7 @@ int calc_power_spec(
   }
 
   /// Normalise and then save the output.
-  double norm = ParticlesCatalogue::calc_norm_for_power_spec(
+  double norm = ParticleCatalogue::calc_norm_for_power_spec(
     particles_data, survey_vol_norm
   );
 
@@ -132,14 +132,14 @@ int calc_power_spec(
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_data Data-source particle lines of sight.
  * @param los_rand Random-source particle lines of sight.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_2pt_func(
-  ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand,
+  ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
   ParameterSet& params,
   double alpha,
@@ -161,8 +161,8 @@ int calc_2pt_func(
 
   /// Compute monopole of the Fourier--harmonic transform of the density
   /// fluctuation.
-  DensityField<ParticlesCatalogue> dn_00(params);
-  dn_00.calc_ylm_weighted_overdensity(
+  DensityField<ParticleCatalogue> dn_00(params);
+  dn_00.calc_ylm_weighted_fluctuation(
     particles_data, particles_rand,
     los_data, los_rand,
     alpha,
@@ -178,8 +178,8 @@ int calc_2pt_func(
 
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
     /// Compute Fourier--harmonic transform of the density fluctuation.
-    DensityField<ParticlesCatalogue> dn_lm(params);
-    dn_lm.calc_ylm_weighted_overdensity(
+    DensityField<ParticleCatalogue> dn_lm(params);
+    dn_lm.calc_ylm_weighted_fluctuation(
       particles_data, particles_rand,
       los_data, los_rand,
       alpha,
@@ -188,7 +188,7 @@ int calc_2pt_func(
     dn_lm.calc_fourier_transform();
 
     /// Compute shot noise.
-    TwoPointStatistics<ParticlesCatalogue> stats(params);
+    TwoPointStatistics<ParticleCatalogue> stats(params);
     std::complex<double> shotnoise = stats.calc_shotnoise_for_power_spec(
       particles_data, particles_rand,
       los_data, los_rand,
@@ -223,7 +223,7 @@ int calc_2pt_func(
   }
 
   /// Normalise and then save the output.
-  double norm = ParticlesCatalogue::calc_norm_for_power_spec(
+  double norm = ParticleCatalogue::calc_norm_for_power_spec(
     particles_data, survey_vol_norm
   );
 
@@ -249,14 +249,14 @@ int calc_2pt_func(
  *
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_power_spec_window(
-  ParticlesCatalogue& particles_rand,
+  ParticleCatalogue& particles_rand,
   LineOfSight* los_rand,
   ParameterSet& params,
   double alpha,
@@ -277,7 +277,7 @@ int calc_power_spec_window(
   }
 
   /// Compute monopole of the Fourier--harmonic transform of the mean density.
-  DensityField<ParticlesCatalogue> dn_00(params);
+  DensityField<ParticleCatalogue> dn_00(params);
   dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
   dn_00.calc_fourier_transform();
 
@@ -289,14 +289,14 @@ int calc_power_spec_window(
   std::cout << "Current memory usage: " << bytes << " bytes." << std::endl;
 
   /// Compute shot noise.
-  TwoPointStatistics<ParticlesCatalogue> stats(params);
+  TwoPointStatistics<ParticleCatalogue> stats(params);
   std::complex<double> shotnoise = stats.calc_shotnoise_for_2pt_func_window(
     particles_rand, los_rand, alpha, params.ELL, 0
   );
   std::cout << "Current memory usage: " << bytes << " bytes." << std::endl;
 
   /// Compute power spectrum window function.
-  stats.calc_power_spec(dn_00, dn_00, kbin, shotnoise, params.ell1, 0);  // ???: ell1
+  stats.calc_power_spec(dn_00, dn_00, kbin, shotnoise, params.ell1, 0);  // ??? ell1 or just ELL
 
   for (int i = 0; i < params.num_kbin; i++) {
     pk_save[i] += stats.pk[i];
@@ -304,7 +304,7 @@ int calc_power_spec_window(
   std::cout << "Current memory usage: " << bytes << " bytes." << std::endl;
 
   /// Normalise and then save the output.
-  double norm = ParticlesCatalogue::calc_norm_for_power_spec(
+  double norm = ParticleCatalogue::calc_norm_for_power_spec(
     particles_rand, survey_vol_norm
   );
   norm /= alpha * alpha;
@@ -340,14 +340,14 @@ int calc_power_spec_window(
  *
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_2pt_func_window(
-  ParticlesCatalogue& particles_rand,
+  ParticleCatalogue& particles_rand,
   LineOfSight* los_rand,
   ParameterSet& params,
   double alpha,
@@ -368,7 +368,7 @@ int calc_2pt_func_window(
   }
 
   /// Compute monopole of the Fourier--harmonic transform of the mean density.
-  DensityField<ParticlesCatalogue> dn_00(params);
+  DensityField<ParticleCatalogue> dn_00(params);
   dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
   dn_00.calc_fourier_transform();
 
@@ -381,14 +381,14 @@ int calc_2pt_func_window(
   /// Compute two-point correlation function.
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
     /// Compute Fourier--harmonic transform of the density fluctuation.
-    DensityField<ParticlesCatalogue> dn_lm(params);
+    DensityField<ParticleCatalogue> dn_lm(params);
     dn_lm.calc_ylm_weighted_mean_density(
       particles_rand, los_rand, alpha, params.ELL, M_
     );
     dn_lm.calc_fourier_transform();
 
     /// Compute shot noise.
-    TwoPointStatistics<ParticlesCatalogue> stats(params);
+    TwoPointStatistics<ParticleCatalogue> stats(params);
     std::complex<double> shotnoise = stats.calc_shotnoise_for_2pt_func_window(
       particles_rand, los_rand, alpha, params.ELL, M_
     );
@@ -420,7 +420,7 @@ int calc_2pt_func_window(
   }
 
   /// Normalise and then save the output.
-  double norm = ParticlesCatalogue::calc_norm_for_power_spec(
+  double norm = ParticleCatalogue::calc_norm_for_power_spec(
     particles_rand, survey_vol_norm
   );
   norm /= alpha * alpha;
@@ -446,12 +446,12 @@ int calc_2pt_func_window(
  * Calculate power spectrum in a periodic box.
  *
  * @param particles_data (Reference to) the data-source particle container.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param kbin Wavenumber bins.
  * @returns Exit status.
  */
 int calc_power_spec_in_box(
-  ParticlesCatalogue& particles_data,
+  ParticleCatalogue& particles_data,
   ParameterSet& params,
   double* kbin
 ) {
@@ -469,8 +469,8 @@ int calc_power_spec_in_box(
   }
 
   /// Fourier transform the density field.
-  DensityField<ParticlesCatalogue> dn(params);
-  dn.calc_density_field_in_box(particles_data, params);
+  DensityField<ParticleCatalogue> dn(params);
+  dn.calc_fluctuation_in_box(particles_data, params);
   dn.calc_fourier_transform();
 
   /// Initialise output power spectrum.
@@ -480,7 +480,7 @@ int calc_power_spec_in_box(
   }
 
   /// Compute shot noise.
-  TwoPointStatistics<ParticlesCatalogue> stats(params);
+  TwoPointStatistics<ParticleCatalogue> stats(params);
   std::complex<double> shotnoise = double(particles_data.nparticles);
 
   /// Compute power spectrum.
@@ -524,12 +524,12 @@ int calc_power_spec_in_box(
  * Calculate two-point correlation function in a periodic box.
  *
  * @param particles_data (Reference to) the data-source particle container.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param kbin Wavenumber bins.
  * @returns Exit status.
  */
 int calc_2pt_func_in_box(
-  ParticlesCatalogue& particles_data,
+  ParticleCatalogue& particles_data,
   ParameterSet& params,
   double* rbin
 ) {
@@ -547,8 +547,8 @@ int calc_2pt_func_in_box(
   }
 
   /// Fourier transform the density field.
-  DensityField<ParticlesCatalogue> dn(params);
-  dn.calc_density_field_in_box(particles_data, params);
+  DensityField<ParticleCatalogue> dn(params);
+  dn.calc_fluctuation_in_box(particles_data, params);
   dn.calc_fourier_transform();
 
   /// Initialise output two-point correlation function.
@@ -558,7 +558,7 @@ int calc_2pt_func_in_box(
   }
 
   /// Compute shot noise.
-  TwoPointStatistics<ParticlesCatalogue> stats(params);
+  TwoPointStatistics<ParticleCatalogue> stats(params);
   std::complex<double> shotnoise = double(particles_data.nparticles);
 
   /// Compute two-point correlation function.
@@ -605,13 +605,13 @@ int calc_2pt_func_in_box(
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param particles_rand (Reference to) the random-source particle container.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param kbin Wavenumber bins.
  * @returns Exit status.
  */
 int calc_power_spec_in_box_for_recon(
-  ParticlesCatalogue& particles_data,
-  ParticlesCatalogue& particles_rand,
+  ParticleCatalogue& particles_data,
+  ParticleCatalogue& particles_rand,
   ParameterSet& params,
   double alpha,
   double * kbin
@@ -630,8 +630,8 @@ int calc_power_spec_in_box_for_recon(
   }
 
   /// Fourier transform the density field.
-  DensityField<ParticlesCatalogue> dn(params);
-  dn.calc_density_field_in_box_for_recon(
+  DensityField<ParticleCatalogue> dn(params);
+  dn.calc_fluctuation_in_box_for_recon(
     particles_data, particles_rand, alpha
   );
   dn.calc_fourier_transform();
@@ -643,7 +643,7 @@ int calc_power_spec_in_box_for_recon(
   }
 
   /// Compute shot noise.
-  TwoPointStatistics<ParticlesCatalogue> stats(params);
+  TwoPointStatistics<ParticleCatalogue> stats(params);
   std::complex<double> shotnoise =
     stats.calc_shotnoise_for_power_spec_in_box_for_recon(
       particles_data, particles_rand, alpha
