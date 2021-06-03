@@ -32,7 +32,7 @@ class ParameterSet {
   int ell1;  ///< spherical degree associated with the first wavevector
   int ell2;  ///< spherical degree associated with the second wavevector
   int ELL;  ///< spherical degree associated with the line-of-sight vector
-    // NOTE: Standard variable naming convention overriden.
+    // NOTE: standard variable naming convention overriden
 
   double kmin;  ///< minimum wavenumber boundary
   double kmax;  ///< maximum wavenumber boundary
@@ -349,7 +349,7 @@ class ParameterSet {
 
   /**
    * Print out and check extracted parameters (i.e. used parameters)
-   * as valid input .
+   * as valid input.
    *
    * @returns Exit status.
    */

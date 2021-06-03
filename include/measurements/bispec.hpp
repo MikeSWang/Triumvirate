@@ -150,8 +150,8 @@ int calc_bispec(
   SphericalBesselCalculator sj2(params.ell2);
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      std::complex<double>* Ylm_a = new std::complex<double>[params.nmesh_tot];
-      std::complex<double>* Ylm_b = new std::complex<double>[params.nmesh_tot];
+      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
       bytes += 2 * sizeof(std::complex<double>)
         * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -168,10 +168,10 @@ int calc_bispec(
 
       if (flag_nontrivial == "TRUE") {
         ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-          params.ell1, m1_, params, Ylm_a
+          params.ell1, m1_, params, ylm_a
         );
         ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-          params.ell2, m2_, params, Ylm_b
+          params.ell2, m2_, params, ylm_b
         );
       }
 
@@ -243,11 +243,11 @@ int calc_bispec(
                   rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
                 );
 
-                std::complex<double> ff(xi[i][0], xi[i][1]);  // ???: ff?
+                std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???: ff?
                 double j1 = sj1.eval(kmag_a * rmag);
                 double j2 = sj2.eval(kmag_b * rmag);
 
-                shotnoise_sum += j1 * j2 * Ylm_a[i] * Ylm_b[i] * ff;
+                shotnoise_sum += j1 * j2 * ylm_a[i] * ylm_b[i] * ff;
               }
             }
           }
@@ -274,8 +274,8 @@ int calc_bispec(
           * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
       }
 
-      delete[] Ylm_a; Ylm_a = NULL;
-      delete[] Ylm_b; Ylm_b = NULL;
+      delete[] ylm_a; ylm_a = NULL;
+      delete[] ylm_b; ylm_b = NULL;
       bytes -= 2 * sizeof(std::complex<double>)
         * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
     }
@@ -311,8 +311,8 @@ int calc_bispec(
 
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
-      std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+      std::complex<double>* ylm_a = new std::complex<double> [params.nmesh_tot];
+      std::complex<double>* ylm_b = new std::complex<double> [params.nmesh_tot];
       bytes += 2 * sizeof(std::complex<double>)
         * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -329,10 +329,10 @@ int calc_bispec(
 
       if (flag_nontrivial == "TRUE") {
         ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell1, m1_, params, Ylm_a
+          params.ell1, m1_, params, ylm_a
         );
         ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell2, m2_, params, Ylm_b
+          params.ell2, m2_, params, ylm_b
         );
       }
 
@@ -363,7 +363,7 @@ int calc_bispec(
           kmag_a = kbin[params.ith_kbin];
           /// Compute ``\delta\tilde{n}_1``.
           dn_tilde1.calc_inverse_fourier_transform_for_bispec(
-            dn_00, kmag_a, dk, Ylm_a
+            dn_00, kmag_a, dk, ylm_a
           );
         }
 
@@ -374,14 +374,14 @@ int calc_bispec(
           if (params.form == "diag") {
             kmag_a = kmag_b;
             dn_tilde1.calc_inverse_fourier_transform_for_bispec(
-              dn_00, kmag_a, dk, Ylm_a
+              dn_00, kmag_a, dk, ylm_a
             );
           }
 
           /// Compute ``\delta\tilde{n}_2``.
           DensityField<ParticlesCatalogue> dn_tilde2(params);
           dn_tilde2.calc_inverse_fourier_transform_for_bispec(
-            dn_00, kmag_b, dk, Ylm_b
+            dn_00, kmag_b, dk, ylm_b
           );
 
           double factor = params.volume / double(params.nmesh_tot);
@@ -407,8 +407,8 @@ int calc_bispec(
         }
       }
 
-      delete[] Ylm_a; Ylm_a = NULL;
-      delete[] Ylm_b; Ylm_b = NULL;
+      delete[] ylm_a; ylm_a = NULL;
+      delete[] ylm_b; ylm_b = NULL;
       bytes -= 2 * sizeof(std::complex<double>)
         * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
     }
@@ -603,16 +603,16 @@ int calc_bispec_in_box(
         continue;
       }
 
-      std::complex<double>* Ylm_a = new std::complex<double>[params.nmesh_tot];
-      std::complex<double>* Ylm_b = new std::complex<double>[params.nmesh_tot];
+      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
       bytes += 2 * sizeof(std::complex<double>)
         * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
       ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-        params.ell1, m1_, params, Ylm_a
+        params.ell1, m1_, params, ylm_a
       );
       ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-        params.ell2, m2_, params, Ylm_b
+        params.ell2, m2_, params, ylm_b
       );
 
       DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
@@ -668,11 +668,11 @@ int calc_bispec_in_box(
                 rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
               );
 
-              std::complex<double> ff(xi[i][0], xi[i][1]);  // ???: ff?
+              std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???: ff?
               double j1 = sj1.eval(kmag_a * rmag);
               double j2 = sj2.eval(kmag_b * rmag);
 
-              shotnoise_sum += j1 * j2 * ff * Ylm_a[i] * Ylm_b[i];
+              shotnoise_sum += j1 * j2 * ff * ylm_a[i] * ylm_b[i];
             }
           }
         }
@@ -698,8 +698,8 @@ int calc_bispec_in_box(
       bytes -= sizeof(fftw_complex)
         * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
-      delete[] Ylm_a; Ylm_a = NULL;
-      delete[] Ylm_b; Ylm_b = NULL;
+      delete[] ylm_a; ylm_a = NULL;
+      delete[] ylm_b; ylm_b = NULL;
   		bytes -= 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
@@ -743,16 +743,16 @@ int calc_bispec_in_box(
 				continue;
 			}
 
-			std::complex<double>* Ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* Ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
 			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell1, m1_, params, Ylm_a
+				params.ell1, m1_, params, ylm_a
 			);
 			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell2, m2_, params, Ylm_b
+				params.ell2, m2_, params, ylm_b
 			);
 
 			DensityField<ParticlesCatalogue> dn_LM(params);
@@ -768,7 +768,7 @@ int calc_bispec_in_box(
 				/// Compute ``\delta\tilde{n}_1``.
 				kmag_a = kbin[params.ith_kbin];
 				dn_tilde1.calc_inverse_fourier_transform_for_bispec(
-					dn_00, kmag_a, dk, Ylm_a
+					dn_00, kmag_a, dk, ylm_a
 				);
 			}
 
@@ -779,14 +779,14 @@ int calc_bispec_in_box(
 				if (params.form == "diag") {
 					kmag_a = kmag_b;
 					dn_tilde1.calc_inverse_fourier_transform_for_bispec(
-						dn_00, kmag_a, dk, Ylm_a
+						dn_00, kmag_a, dk, ylm_a
 					);
 				}
 
 				/// Compute ``\delta\tilde{n}_2``.
 				DensityField<ParticlesCatalogue> dn_tilde2(params);
 				dn_tilde2.calc_inverse_fourier_transform_for_bispec(
-					dn_00, kmag_b, dk, Ylm_b
+					dn_00, kmag_b, dk, ylm_b
 				);
 
 				double factor = params.volume / double(params.nmesh_tot);
@@ -811,8 +811,8 @@ int calc_bispec_in_box(
 				}
 			}
 
-			delete[] Ylm_a; Ylm_a = NULL;
-			delete[] Ylm_b; Ylm_b = NULL;
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
@@ -931,8 +931,8 @@ int calc_3pt_func(
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* Ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* Ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -949,10 +949,10 @@ int calc_3pt_func(
 
 			if (flag_nontrivial == "TRUE") {
 				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params, Ylm_a
+					params.ell1, m1_, params, ylm_a
 				);
 				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params, Ylm_b
+					params.ell2, m2_, params, ylm_b
 				);
 			}
 
@@ -986,7 +986,7 @@ int calc_3pt_func(
 					dn_LM_shotnoise, shotnoise_00,
 					rbin, shotnoise,
 					params.ell1, m1_,
-					Ylm_a, Ylm_b
+					ylm_a, ylm_b
 				);
 
 				for (int i = 0; i < params.num_rbin; i++) {
@@ -1010,8 +1010,8 @@ int calc_3pt_func(
 				}
 			}
 
-			delete[] Ylm_a; Ylm_a = NULL;
-			delete[] Ylm_b; Ylm_b = NULL;
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
@@ -1052,8 +1052,8 @@ int calc_3pt_func(
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
-			std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double> [params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -1070,10 +1070,10 @@ int calc_3pt_func(
 
 			if (flag_nontrivial == "TRUE") {
 				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params, Ylm_a
+					params.ell1, m1_, params, ylm_a
 				);
 				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params, Ylm_b
+					params.ell2, m2_, params, ylm_b
 				);
 			}
 
@@ -1102,7 +1102,7 @@ int calc_3pt_func(
 				if (params.form == "full") {
 					rmag_a = rbin[params.ith_rbin];
 					dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
-						dn_00, rmag_a, Ylm_a, sj1
+						dn_00, rmag_a, ylm_a, sj1
 					);
 				}
 
@@ -1112,14 +1112,14 @@ int calc_3pt_func(
 					if (params.form == "diag") {
 						rmag_a = rmag_b;
 						dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
-							dn_00, rmag_a, Ylm_a, sj1
+							dn_00, rmag_a, ylm_a, sj1
 						);
 					}
 
 					/// Compute ``\delta\tilde{n}_2``.
 					DensityField<ParticlesCatalogue> dn_tilde2(params);
 					dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
-						dn_00, rmag_b, Ylm_b, sj2
+						dn_00, rmag_b, ylm_b, sj2
 					);
 
 					std::complex<double> I_(0., 1.);
@@ -1146,8 +1146,8 @@ int calc_3pt_func(
 				}
 			}
 
-			delete[] Ylm_a; Ylm_a = NULL;
-			delete[] Ylm_b; Ylm_b = NULL;
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
@@ -1281,8 +1281,8 @@ int calc_3pt_func_window(
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
-			std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double> [params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -1299,10 +1299,10 @@ int calc_3pt_func_window(
 
 			if (flag_nontrivial == "TRUE") {
 				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params, Ylm_a
+					params.ell1, m1_, params, ylm_a
 				);
 				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params, Ylm_b
+					params.ell2, m2_, params, ylm_b
 				);
 			}
 
@@ -1332,7 +1332,7 @@ int calc_3pt_func_window(
 					rbin,
 					shotnoise,
 					params.ell1, m1_,
-					Ylm_a, Ylm_b
+					ylm_a, ylm_b
 				);
 
 				for (int i = 0; i < n_temp; i++) {
@@ -1357,8 +1357,8 @@ int calc_3pt_func_window(
 				}
 			}
 
-			delete[] Ylm_a; Ylm_a = NULL;
-			delete[] Ylm_b; Ylm_b = NULL;
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
@@ -1394,8 +1394,8 @@ int calc_3pt_func_window(
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* Ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* Ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -1412,10 +1412,10 @@ int calc_3pt_func_window(
 
 			if (flag_nontrivial == "TRUE") {
 				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params, Ylm_a
+					params.ell1, m1_, params, ylm_a
 				);
 				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params, Ylm_b
+					params.ell2, m2_, params, ylm_b
 				);
 			}
 
@@ -1441,7 +1441,7 @@ int calc_3pt_func_window(
 				if (params.form == "full") {
 					rmag_a = rbin[params.ith_rbin];
 					dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
-						dn_00, rmag_a, Ylm_a, sj1
+						dn_00, rmag_a, ylm_a, sj1
 					);
 				}
 
@@ -1451,14 +1451,14 @@ int calc_3pt_func_window(
 					if (params.form == "diag") {
 						rmag_a = rmag_b;
 						dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
-							dn_00, rmag_a, Ylm_a, sj1
+							dn_00, rmag_a, ylm_a, sj1
 						);
 					}
 
 					/// Compute ``\delta\tilde{n}_2``.
 					DensityField<ParticlesCatalogue> dn_tilde2(params);
 					dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
-						dn_00, rmag_b, Ylm_b, sj2
+						dn_00, rmag_b, ylm_b, sj2
 					);
 
 					std::complex<double> I_(0., 1.);
@@ -1485,8 +1485,8 @@ int calc_3pt_func_window(
 				}
 			}
 
-			delete[] Ylm_a; Ylm_a = NULL;
-			delete[] Ylm_b; Ylm_b = NULL;
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
@@ -1606,8 +1606,8 @@ int calc_3pt_func_window_for_3pcf(  // ???
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* Ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* Ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -1624,10 +1624,10 @@ int calc_3pt_func_window_for_3pcf(  // ???
 
 			if (flag_nontrivial == "TRUE") {
 				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params, Ylm_a
+					params.ell1, m1_, params, ylm_a
 				);
 				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params, Ylm_b
+					params.ell2, m2_, params, ylm_b
 				);
 			}
 
@@ -1656,7 +1656,7 @@ int calc_3pt_func_window_for_3pcf(  // ???
 					dn_LM_shotnoise, shotnoise_00,
 					rbin, shotnoise,
 					params.ell1, m1_,
-					Ylm_a, Ylm_b
+					ylm_a, ylm_b
 				);
 
 				for (int i = 0; i < params.num_rbin; i++) {
@@ -1681,8 +1681,8 @@ int calc_3pt_func_window_for_3pcf(  // ???
 				}
 			}
 
-			delete[] Ylm_a; Ylm_a = NULL;
-			delete[] Ylm_b; Ylm_b = NULL;
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
 					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
@@ -1721,8 +1721,8 @@ int calc_3pt_func_window_for_3pcf(  // ???
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
-			std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double> [params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -1739,10 +1739,10 @@ int calc_3pt_func_window_for_3pcf(  // ???
 
 			if (flag_nontrivial == "TRUE") {
 				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params, Ylm_a
+					params.ell1, m1_, params, ylm_a
 				);
 				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params, Ylm_b
+					params.ell2, m2_, params, ylm_b
 				);
 			}
 
@@ -1766,7 +1766,7 @@ int calc_3pt_func_window_for_3pcf(  // ???
 				if (params.form == "full") {
 					/// Compute ``\delta\tilde{n}_1``.
 					rmag_a = rbin[params.ith_rbin];
-					dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag_a, Ylm_a, sj1);
+					dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag_a, ylm_a, sj1);
 				}
 
 				for (int i_rbin = 0; i_rbin < params.num_rbin; i_rbin++) {
@@ -1775,14 +1775,14 @@ int calc_3pt_func_window_for_3pcf(  // ???
 					if (params.form == "diag") {
 						rmag_a = rmag_b;
 						dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
-							dn_00, rmag_a, Ylm_a, sj1
+							dn_00, rmag_a, ylm_a, sj1
 						);
 					}
 
 					/// Compute ``\delta\tilde{n}_2``.
 					DensityField<ParticlesCatalogue> dn_tilde2(params);
 					dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
-						dn_00, rmag_b, Ylm_b, sj2
+						dn_00, rmag_b, ylm_b, sj2
 					);
 
 				std::complex<double> I_(0., 1.);
@@ -1809,8 +1809,8 @@ int calc_3pt_func_window_for_3pcf(  // ???
 			}
 		}
 
-		delete[] Ylm_a; Ylm_a = NULL;
-		delete[] Ylm_b; Ylm_b = NULL;
+		delete[] ylm_a; ylm_a = NULL;
+		delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
@@ -1927,16 +1927,16 @@ int calc_3pt_func_in_box(
 				continue;
 			}
 
-			std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
-			std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double> [params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
 			ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-				params.ell1, m1_, params, Ylm_a
+				params.ell1, m1_, params, ylm_a
 			);
 			ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-				params.ell2, m2_, params, Ylm_b
+				params.ell2, m2_, params, ylm_b
 			);
 
 			DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
@@ -1951,7 +1951,7 @@ int calc_3pt_func_in_box(
 				rbin,
 				shotnoise,
 				params.ell1, m1_,
-				Ylm_a, Ylm_b
+				ylm_a, ylm_b
 			);
 
 			for (int i = 0; i < params.num_rbin; i++) {
@@ -1976,8 +1976,8 @@ int calc_3pt_func_in_box(
 				);
 			}
 
-			delete[] Ylm_a; Ylm_a = NULL;
-			delete[] Ylm_b; Ylm_b = NULL;
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
 					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
@@ -2023,16 +2023,16 @@ int calc_3pt_func_in_box(
 				continue;
 			}
 
-			std::complex<double>* Ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* Ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
 			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell1, m1_, params, Ylm_a
+				params.ell1, m1_, params, ylm_a
 			);
 			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell2, m2_, params, Ylm_b
+				params.ell2, m2_, params, ylm_b
 			);
 
 			DensityField<ParticlesCatalogue> dn_LM(params);
@@ -2047,7 +2047,7 @@ int calc_3pt_func_in_box(
 				/// Compute ``\delta\tilde{n}_1``.
 				rmag_a = rbin[params.ith_rbin];
 				dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
-					dn_00, rmag_a, Ylm_a, sj1
+					dn_00, rmag_a, ylm_a, sj1
 				);
 			}
 
@@ -2058,14 +2058,14 @@ int calc_3pt_func_in_box(
 				if (params.form == "diag") {
 					rmag_a = rmag_b;
 					dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
-						dn_00, rmag_a, Ylm_a, sj1
+						dn_00, rmag_a, ylm_a, sj1
 					);
 				}
 
 				/// Compute ``\delta\tilde{n}_2``.
 				DensityField<ParticlesCatalogue> dn_tilde2(params);
 				dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
-					dn_00, rmag_b, Ylm_b, sj2
+					dn_00, rmag_b, ylm_b, sj2
 				);
 
 				double factor = params.volume / double(params.nmesh_tot);
@@ -2091,8 +2091,8 @@ int calc_3pt_func_in_box(
 				}
 			}
 
-			delete[] Ylm_a; Ylm_a = NULL;
-			delete[] Ylm_b; Ylm_b = NULL;
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
@@ -2373,8 +2373,8 @@ int calc_bispecChoiceOfLOS(
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* Ylm_a = new std::complex<double> [params.nmesh_tot];
-			std::complex<double>* Ylm_b = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double> [params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -2391,10 +2391,10 @@ int calc_bispecChoiceOfLOS(
 
 			if (flag_nontrivial == "TRUE") {
 				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params, Ylm_a
+					params.ell1, m1_, params, ylm_a
 				);
 				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params, Ylm_b
+					params.ell2, m2_, params, ylm_b
 				);
 			}
 
@@ -2496,11 +2496,11 @@ int calc_bispecChoiceOfLOS(
 									rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
 								);
 
-								std::complex<double> ff(xi[i][0], xi[i][1]);  // ???: ff?
+								std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???: ff?
 								double j1 = sj1.eval(kmag_a * rmag);
 								double j2 = sj2.eval(kmag_b * rmag);
 
-								shotnoise_sum += (j1 * j2 * ff * Ylm_a[i] * Ylm_b[i]);
+								shotnoise_sum += (j1 * j2 * ff * ylm_a[i] * ylm_b[i]);
 							}
 						}
 					}
@@ -2527,8 +2527,8 @@ int calc_bispecChoiceOfLOS(
 					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 			}
 
-			delete[] Ylm_a; Ylm_a = NULL;
-			delete[] Ylm_b; Ylm_b = NULL;
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
@@ -2555,8 +2555,8 @@ int calc_bispecChoiceOfLOS(
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* Ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* Ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -2573,10 +2573,10 @@ int calc_bispecChoiceOfLOS(
 
 			if (flag_nontrivial == "TRUE") {
 				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params, Ylm_a
+					params.ell1, m1_, params, ylm_a
 				);
 				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params, Ylm_b
+					params.ell2, m2_, params, ylm_b
 				);
 			}
 
@@ -2651,7 +2651,7 @@ int calc_bispecChoiceOfLOS(
 				if (params.form == "full") {
 					kmag_a = kbin[params.ith_kbin];
 					dn_tilde1.calc_inverse_fourier_transform_for_bispec(
-						dn1, kmag_a, dk, Ylm_a
+						dn1, kmag_a, dk, ylm_a
 					);
 				}
 
@@ -2661,14 +2661,14 @@ int calc_bispecChoiceOfLOS(
 					if (params.form == "diag") {
 						kmag_a = kmag_b;
 						dn_tilde1.calc_inverse_fourier_transform_for_bispec(
-							dn1, kmag_a, dk, Ylm_a
+							dn1, kmag_a, dk, ylm_a
 						);
 					}
 
 					/// Compute ``\delta\tilde{n}_2``.
 					DensityField<ParticlesCatalogue> dn_tilde2(params);
 					dn_tilde2.calc_inverse_fourier_transform_for_bispec(
-						dn2, kmag_b, dk, Ylm_b
+						dn2, kmag_b, dk, ylm_b
 					);
 
 					double factor = params.volume / double(params.nmesh_tot);
@@ -2694,8 +2694,8 @@ int calc_bispecChoiceOfLOS(
 				}
 			}
 
-			delete[] Ylm_a; Ylm_a = NULL;
-			delete[] Ylm_b; Ylm_b = NULL;
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
@@ -2912,8 +2912,8 @@ int calc_bispec_for_M_mode(
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* Ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* Ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -2930,10 +2930,10 @@ int calc_bispec_for_M_mode(
 
 			if (flag_nontrivial == "TRUE") {
 				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params, Ylm_a
+					params.ell1, m1_, params, ylm_a
 				);
 				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params, Ylm_b
+					params.ell2, m2_, params, ylm_b
 				);
 			}
 
@@ -3006,11 +3006,11 @@ int calc_bispec_for_M_mode(
 									rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
 								);
 
-								std::complex<double> ff(xi[i][0], xi[i][1]);  // ???: ff?
+								std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???: ff?
 								double j1 = sj1.eval(kmag_a * rmag);
 								double j2 = sj2.eval(kmag_b * rmag);
 
-								shotnoise_sum += (j1 * j2 * ff * Ylm_a[i] * Ylm_b[i]);
+								shotnoise_sum += (j1 * j2 * ff * ylm_a[i] * ylm_b[i]);
 							}
 						}
 					}
@@ -3037,8 +3037,8 @@ int calc_bispec_for_M_mode(
 					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 			}
 
-			delete[] Ylm_a; Ylm_a = NULL;
-			delete[] Ylm_b; Ylm_b = NULL;
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
@@ -3089,8 +3089,8 @@ int calc_bispec_for_M_mode(
 	/// Compute bispectrum.
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* Ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* Ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -3107,10 +3107,10 @@ int calc_bispec_for_M_mode(
 
 			if (flag_nontrivial == "TRUE") {
 				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params, Ylm_a
+					params.ell1, m1_, params, ylm_a
 				);
 				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params, Ylm_b
+					params.ell2, m2_, params, ylm_b
 				);
 			}
 
@@ -3140,7 +3140,7 @@ int calc_bispec_for_M_mode(
 				if (params.form == "full") {
 					/// Compute ``\delta\tilde{n}_1``.
 					kmag_a = kbin[params.ith_kbin];
-					dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag_a, dk, Ylm_a);
+					dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag_a, dk, ylm_a);
 				}
 
 				for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
@@ -3150,14 +3150,14 @@ int calc_bispec_for_M_mode(
 					if (params.form == "diag") {
 						kmag_a = kmag_b;
 						dn_tilde1.calc_inverse_fourier_transform_for_bispec(
-							dn_00, kmag_a, dk, Ylm_a
+							dn_00, kmag_a, dk, ylm_a
 						);
 					}
 
 					/// Compute ``\delta\tilde{n}_2``.
 					DensityField<ParticlesCatalogue> dn_tilde2(params);
 					dn_tilde2.calc_inverse_fourier_transform_for_bispec(
-						dn_00, kmag_b, dk, Ylm_b
+						dn_00, kmag_b, dk, ylm_b
 					);
 
 					double factor = params.volume / double(params.nmesh_tot);
@@ -3183,8 +3183,8 @@ int calc_bispec_for_M_mode(
 				}
 			}
 
-			delete[] Ylm_a; Ylm_a = NULL;
-			delete[] Ylm_b; Ylm_b = NULL;
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}

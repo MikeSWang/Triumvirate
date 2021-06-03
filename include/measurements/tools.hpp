@@ -76,9 +76,9 @@ class ToolCollection {
 
     /// Calculate spherical harmonics with m >= 0 via the
     /// normalised associated Legendre polynomial, i.e.
-    /// Ylm = √((2l + 1)/(4π)) √((l - |m|)!/(l + |m|)!)
+    /// Y_lm = √((2l + 1)/(4π)) √((l - |m|)!/(l + |m|)!)
     /// * P_l^|m| * exp(imϕ).
-    std::complex<double> I_(0., 1.);  // definition of imaginary unit i
+    std::complex<double> I_(0., 1.);
     std::complex<double> ylm = 0.;
     ylm = gsl_sf_legendre_sphPlm(ell, abs(m), mu) * exp(I_ * double(m) * phi);
 
