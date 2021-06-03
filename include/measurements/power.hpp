@@ -78,7 +78,7 @@ int calc_power_spec(
 
     /// ???
     for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-      /// ???: (-1)^m_1 \delta_{m_1, -M}.
+      /// ???: (-1)^m_1 δ_{m_1, -M}.
       double coupling = (2*params.ELL + 1) * (2*params.ell1 + 1)
         * wigner_3j(params.ell1, 0, params.ELL, 0, 0, 0)
         * wigner_3j(params.ell1, 0, params.ELL, m1_, 0, M_);
@@ -197,7 +197,7 @@ int calc_2pt_func(
     );
 
     for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-      /// ???: (-1)^m_1 \delta_{m_1, -M}.
+      /// ???: (-1)^m_1 δ_{m_1, -M}.
       double coupling = (2*params.ELL + 1) * (2*params.ell1 + 1)
         * wigner_3j(params.ell1, 0, params.ELL, 0, 0, 0)
         * wigner_3j(params.ell1, 0, params.ELL, m1_, 0, M_);
@@ -308,7 +308,7 @@ int calc_power_spec_window(
     particles_rand, survey_vol_norm
   );
   norm /= alpha * alpha;
-  norm /= params.volume;  // NOTE: this volume normalisation is essential
+  norm /= params.volume;  // NOTE: volume normalisation is essential
 
   char buf[1024];
   sprintf(buf, "%s/pk%d_window", params.output_dir.c_str(), params.ELL);
@@ -394,7 +394,7 @@ int calc_2pt_func_window(
     );
 
     for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-      /// ???: (-1)^m_1 \delta_{m_1, -M}.
+      /// ???: (-1)^m_1 δ_{m_1, -M}.
       double coupling = (2*params.ELL + 1) * (2*params.ell1 + 1)
           * wigner_3j(params.ell1, 0, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, 0, params.ELL, m1_, 0, M_);
@@ -567,7 +567,7 @@ int calc_2pt_func_in_box(
   for (int i = 0; i < params.num_rbin; i++) {
     xi_save[i] += double(2 * params.ELL + 1) * stats.xi[i];
       // NOTE: `double` needed here as complex multiplication is defined
-      // as a template unlike normal floats.
+      // as a template unlike normal floats
   }
 
   durationInSec = double(clock() - timeStart);
@@ -655,7 +655,7 @@ int calc_power_spec_in_box_for_recon(
   for (int i = 0; i < params.num_kbin; i++) {
     pk_save[i] += double(2*params.ELL + 1) * stats.pk[i];
       // NOTE: `double` needed here as complex multiplication is defined
-      // as a template unlike normal floats.
+      // as a template unlike normal floats
   }
 
   durationInSec = double(clock() - timeStart);

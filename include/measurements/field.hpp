@@ -101,10 +101,10 @@ class DensityField {
       this->field[i][1] = 0.;
     }
 
-    /// Here over-density is given by \sum_i w_i \delta_D(x - x_i),
-    /// where \delta_D = \delta_K / dV, dV = volume / nmesh.
+    /// Here over-density is given by Σ_i w_i δ_D(x - x_i),
+    /// where δ_D = δ_K / dV, dV = volume / nmesh.
     double dV = this->params.volume / double(this->params.nmesh_tot);
-      // NOTE: Standard variable naming convention overriden.
+      // NOTE: standard variable naming convention overriden
     double cell_vol_factor = 1. / dV;
 
     int order = 1;
@@ -157,10 +157,10 @@ class DensityField {
       this->field[i][1] = 0.;
     }
 
-    /// Here over-density is given by \sum_i w_i \delta_D(x - x_i),
-    /// where \delta_D = \delta_K / dV, dV = volume / nmesh.
+    /// Here over-density is given by Σ_i w_i δ_D(x - x_i),
+    /// where δ_D = δ_K / dV, dV = volume / nmesh.
     double dV = this->params.volume / double(this->params.nmesh_tot);
-      // NOTE: Standard variable naming convention overriden.
+      // NOTE: standard variable naming convention overriden
     double cell_vol_factor = 1. / dV;
 
     int order = 2;
@@ -217,10 +217,10 @@ class DensityField {
       this->field[i][1] = 0.;
     }
 
-    /// Here over-density is given by \sum_i w_i \delta_D(x - x_i),
-    /// where \delta_D = \delta_K / dV, dV = volume / nmesh.
+    /// Here over-density is given by Σ_i w_i δ_D(x - x_i),
+    /// where δ_D = δ_K / dV, dV = volume / nmesh.
     double dV = this->params.volume / double(this->params.nmesh_tot);
-      // NOTE: Standard variable naming convention overriden.
+      // NOTE: standard variable naming convention overriden
     double cell_vol_factor = 1. / dV;
 
     int order = 3;
@@ -353,7 +353,7 @@ class DensityField {
       };
       std::complex<double> ylm =
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
-      ylm = std::conj(ylm);  // NOTE: this cojugation is essential
+      ylm = std::conj(ylm);  // NOTE: cojugation is essential
       weight[id][0] = ylm.real() * pow(particles_data[id].w, 2);
       weight[id][1] = ylm.imag() * pow(particles_data[id].w, 2);
     }
@@ -369,7 +369,7 @@ class DensityField {
       };
       std::complex<double> ylm =
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
-      ylm = std::conj(ylm);  // NOTE: this cojugation is essential
+      ylm = std::conj(ylm);  // NOTE: cojugation is essential
       weight[id][0] = ylm.real() * pow(particles_rand[id].w, 2);
       weight[id][1] = ylm.imag() * pow(particles_rand[id].w, 2);
     }
@@ -453,7 +453,7 @@ class DensityField {
       };
       std::complex<double> ylm =
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
-      ylm = std::conj(ylm);  // NOTE: this cojugation is essential
+      ylm = std::conj(ylm);  // NOTE: cojugation is essential
       weight[id][0] = ylm.real() * pow(particles_rand[id].w, 2);
       weight[id][1] = ylm.imag() * pow(particles_rand[id].w, 2);
     }
@@ -571,9 +571,9 @@ class DensityField {
    * @returns Exit status.
    */
   int calc_fourier_transform() {
-    /// Convert d^3 x = dV \sum_i.
+    /// Convert d^3 x = dV Σ_i.
     double dV = this->params.volume / double(this->params.nmesh_tot);
-      // NOTE: Standard variable naming convention overriden.
+      // NOTE: standard variable naming convention overriden
 
     for (int i = 0;  i < this->params.nmesh_tot; i++) {
       this->field[i][0] *= dV;
@@ -598,9 +598,9 @@ class DensityField {
    * @returns Exit status.
    */
   int calc_inverse_fourier_transform() {
-    /// Convert d^3 k / (2\pi)^3 = (1/V) \sum_i.
+    /// Convert d^3 k / (2\pi)^3 = (1/V) Σ_i.
     double V = this->params.volume;
-      // NOTE: Standard variable naming convention overriden.
+      // NOTE: standard variable naming convention overriden
 
     for (int i = 0; i < this->params.nmesh_tot; i++) {
       this->field[i][0] /= V;
@@ -623,8 +623,8 @@ class DensityField {
    * Calculate the inverse Fourier transform of a transformed field.
    *
    * @param density FFT-transformed density field.
-   * @param kmag_in ???.
-   * @param dk_in ???.
+   * @param kmag_in Wavenumber bin wavenumber.
+   * @param dk_in Wavenumber bin width.
    * @param ylm Reduced spherical harmonic on a grid.
    * @returns Exit status.
    */
@@ -663,6 +663,7 @@ class DensityField {
 
           double k_lower = (kmag_in > dk_in/2) ? (kmag_in - dk_in/2) : 0.;
           double k_upper = kmag_in + dk_in/2;
+            // ??? Factor these two lines above outside the for-loop
           if (kmag > k_lower && kmag <= k_upper) {
             std::complex<double> den(
               density[coord_flat][0], density[coord_flat][1]
@@ -930,7 +931,7 @@ class DensityField {
     fftw_free(weight); weight = NULL;
 
     double dV = this->params.volume / double(this->params.nmesh_tot);
-      // NOTE: Standard variable naming convention overriden.
+      // NOTE: standard variable naming convention overriden
 
     double norm = 0.;
     for (int i = 0; i < this->params.nmesh_tot; i++) {
@@ -938,7 +939,8 @@ class DensityField {
     }
 
     double survey_volume_norm =
-      double(particles_rand.nparticles) * double(particles_rand.nparticles) / norm;
+      double(particles_rand.nparticles) * double(particles_rand.nparticles)
+      / norm;
       // NOTE: `double` needed for int overflow
 
     return survey_volume_norm;
@@ -1034,8 +1036,8 @@ class TwoPointStatistics {
     dk[1] = 2.*M_PI / this->params.boxsize[1];
     dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-    /// Convert \delta^2 = (2\pi)^3 \delta_D(k_1 + k_2) P(k), where
-    /// (2\pi)^3 \delta_D(k_1 + k_2) <-> V, thus
+    /// Convert \delta^2 = (2\pi)^3 δ_D(k_1 + k_2) P(k), where
+    /// (2\pi)^3 δ_D(k_1 + k_2) <-> V, thus
     /// P(k) = (V/N^2) |\delta(k)|^2.
     double kvec[3];
     for (int i = 0; i < this->params.nmesh[0]; i++) {
@@ -1136,11 +1138,11 @@ class TwoPointStatistics {
     dk[1] = 2.*M_PI / this->params.boxsize[1];
     dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-    /// Convert d^3 k = (1/V) \sum_i.
+    /// Convert d^3 k = (1/V) Σ_i.
     double vol_factor = 1. / this->params.volume;
 
-    /// Convert \delta^2 = (2\pi)^3 \delta_D(k_1 + k_2) P(k), where
-    /// (2\pi)^3 \delta_D(k_1 + k_2) <-> V, thus
+    /// Convert \delta^2 = (2\pi)^3 δ_D(k_1 + k_2) P(k), where
+    /// (2\pi)^3 δ_D(k_1 + k_2) <-> V, thus
     /// P(k) = (V/N^2) |\delta(k)|^2.
     double kvec[3];
     for (int i = 0; i < this->params.nmesh[0]; i++) {
@@ -1299,11 +1301,11 @@ class TwoPointStatistics {
     dk[1] = 2.*M_PI / this->params.boxsize[1];
     dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-    /// Convert d^3 k = (1/V) \sum_i.
+    /// Convert d^3 k = (1/V) Σ_i.
     double vol_factor = 1. / this->params.volume;
 
-    /// Convert \delta^2 = (2\pi)^3 \delta_D(k_1 + k_2) P(k), where
-    /// (2\pi)^3 \delta_D(k_1 + k_2) <-> V, thus
+    /// Convert \delta^2 = (2\pi)^3 δ_D(k_1 + k_2) P(k), where
+    /// (2\pi)^3 δ_D(k_1 + k_2) <-> V, thus
     /// P(k) = (V/N^2) |\delta(k)|^2.
     double kvec[3];
     for (int i = 0; i < this->params.nmesh[0]; i++) {
@@ -1430,7 +1432,7 @@ class TwoPointStatistics {
     }
 
     double dV = this->params.volume / double(this->params.nmesh_tot);
-      // NOTE: Standard variable naming convention overriden.
+      // NOTE: standard variable naming convention overriden
     for (int i = 0; i < this->params.num_rbin; i++) {
       if (this->npair_xi[i] != 0) {
         this->xi[i] *= pow(-1., this->params.ell1+this->params.ell2) / dV
@@ -1554,9 +1556,9 @@ class TwoPointStatistics {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
-      std::complex<double> Ylm =
+      std::complex<double> ylm =
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
-      sum_rand += pow(particles_rand[id].w,3) * Ylm;
+      sum_rand += pow(particles_rand[id].w, 3) * ylm;
     }
 
     return sum_data - pow(alpha, 3) * sum_rand;
@@ -1580,7 +1582,7 @@ class TwoPointStatistics {
     int ell, int m,
     fftw_complex* xi
   ) {
-    /// Convert d^3 k = (1/V) \sum_i.
+    /// Convert d^3 k = (1/V) Σ_i.
     double vol_factor = 1. / this->params.volume;
 
     double dk[3];
@@ -1588,8 +1590,8 @@ class TwoPointStatistics {
     dk[1] = 2.*M_PI / this->params.boxsize[1];
     dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-    /// Convert \delta^2 = (2\pi)^3 \delta_D(k_1 + k_2) P(k), where
-    /// (2\pi)^3 \delta_D(k_1 + k_2) <-> V, thus
+    /// Convert \delta^2 = (2\pi)^3 δ_D(k_1 + k_2) P(k), where
+    /// (2\pi)^3 δ_D(k_1 + k_2) <-> V, thus
     /// P(k) = (V/N^2) |\delta(k)|^2.
     double kvec[3];
     for (int i = 0; i < this->params.nmesh[0]; i++) {
@@ -1618,8 +1620,8 @@ class TwoPointStatistics {
           double win = calc_interpolation_window_in_fourier(kvec);
           mode_power /= pow(win, 2);
 
-          xi[i][0] = vol_factor * mode_power.real();
-          xi[i][1] = vol_factor * mode_power.imag();
+          xi[coord_flat][0] = vol_factor * mode_power.real();
+          xi[coord_flat][1] = vol_factor * mode_power.imag();
         }
       }
     }

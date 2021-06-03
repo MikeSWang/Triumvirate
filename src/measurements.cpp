@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
     printf("Making measurements...\n\n");
   }
 
-  /// ???: What's happening here.
+  /// ???
   if (params.catalogue_type == "survey") {
     if (thisTask >= params.num_rbin) {
       params.ith_rbin = 0;
