@@ -90,13 +90,14 @@ int main(int argc, char *argv[]) {
   /// *******************
   ///   Data Processing
   /// *******************
+
   if (thisTask == 0) {
     printf("%s\n", std::string(80, '>').c_str());
     printf("Reading and processing catalogues...\n\n");
   }
 
   /// Read catalogue files.
-  ParticlesCatalogue particles_data, particles_rand;
+  ParticleCatalogue particles_data, particles_rand;
   if (particles_data.read_particles_catalogue(params.data_catalogue_file)) {
     printf("[Error] :: Failed to load data-source catalogue file.\n");
     exit(1);
@@ -133,19 +134,19 @@ int main(int argc, char *argv[]) {
   /// Compute number density alpha ratio.
   double alpha = 0.;
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-    alpha = ParticlesCatalogue::calc_alpha_ratio(particles_data, particles_rand);
+    alpha = ParticleCatalogue::calc_alpha_ratio(particles_data, particles_rand);
   }
 
   /// Offset particle positions for measurement standardisation.
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-    ParticlesCatalogue::offset_particles_for_fft(particles_data, particles_rand, params);
+    ParticleCatalogue::offset_particles_for_fft(particles_data, particles_rand, params);
   }
   if (params.catalogue_type == "sim") {
     particles_data.offset_particles_for_periodicity(params);
   }
 
   /// Compute catalogue field volume.
-  DensityField<ParticlesCatalogue> field_rand(params);
+  DensityField<ParticleCatalogue> field_rand(params);
   double survey_vol_norm = field_rand.calc_survey_volume_norm(particles_rand);
   field_rand.finalise_density_field();
 
@@ -185,6 +186,7 @@ int main(int argc, char *argv[]) {
   /// ****************
   ///   Measurements
   /// ****************
+
   if (thisTask == 0) {
     printf("%s\n", std::string(80, '>').c_str());
     printf("Making measurements...\n\n");
@@ -243,6 +245,7 @@ int main(int argc, char *argv[]) {
   /// ****************
   ///   Finalisation
   /// ****************
+
   delete[] los_data; los_data = NULL;
   delete[] los_rand; los_rand = NULL;
   particles_data.finalise_particles();

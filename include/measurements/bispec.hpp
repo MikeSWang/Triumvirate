@@ -8,14 +8,14 @@
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_data Data-source particle lines of sight.
  * @param los_rand Random-source particle lines of sight.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_bispec(
-  ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand,
+  ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
   ParameterSet& params,
   double alpha,
@@ -56,8 +56,8 @@ int calc_bispec(
   }
 
   /// Compute shot noise terms.
-  DensityField<ParticlesCatalogue> dn_00_shotnoise(params);
-  dn_00_shotnoise.calc_ylm_weighted_overdensity(
+  DensityField<ParticleCatalogue> dn_00_shotnoise(params);
+  dn_00_shotnoise.calc_ylm_weighted_fluctuation(
     particles_data, particles_rand,
     los_data, los_rand,
     alpha,
@@ -76,8 +76,8 @@ int calc_bispec(
           continue;
         }
 
-        DensityField<ParticlesCatalogue> shotnoise_LM(params);
-        shotnoise_LM.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+        DensityField<ParticleCatalogue> shotnoise_LM(params);
+        shotnoise_LM.calc_ylm_weighted_fields_for_bispec_shotnoise(
           particles_data, particles_rand,
           los_data, los_rand,
           alpha,
@@ -85,7 +85,7 @@ int calc_bispec(
         );
         shotnoise_LM.calc_fourier_transform();
 
-        TwoPointStatistics<ParticlesCatalogue> stats(params);
+        TwoPointStatistics<ParticleCatalogue> stats(params);
         std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
           particles_data, particles_rand,
           los_data, los_rand,
@@ -137,8 +137,8 @@ int calc_bispec(
 
   dn_00_shotnoise.finalise_density_field();
 
-  DensityField<ParticlesCatalogue> shotnoise_00(params);
-  shotnoise_00.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+  DensityField<ParticleCatalogue> shotnoise_00(params);
+  shotnoise_00.calc_ylm_weighted_fields_for_bispec_shotnoise(
     particles_data, particles_rand,
     los_data, los_rand,
     alpha,
@@ -184,8 +184,8 @@ int calc_bispec(
           continue;
         }
 
-        DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
-        dn_LM_shotnoise.calc_ylm_weighted_overdensity(
+        DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
+        dn_LM_shotnoise.calc_ylm_weighted_fluctuation(
           particles_data, particles_rand,
           los_data, los_rand,
           alpha,
@@ -193,7 +193,7 @@ int calc_bispec(
         );
         dn_LM_shotnoise.calc_fourier_transform();
 
-        TwoPointStatistics<ParticlesCatalogue> stats(params);
+        TwoPointStatistics<ParticleCatalogue> stats(params);
         std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
           particles_data, particles_rand,
           los_data, los_rand,
@@ -243,7 +243,7 @@ int calc_bispec(
                   rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
                 );
 
-                std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???: ff?
+                std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???
                 double j1 = sj1.eval(kmag_a * rmag);
                 double j2 = sj2.eval(kmag_b * rmag);
 
@@ -303,8 +303,8 @@ int calc_bispec(
   }
 
   /// Compute bispectrum.
-  DensityField<ParticlesCatalogue> dn_00(params);
-  dn_00.calc_ylm_weighted_overdensity(
+  DensityField<ParticleCatalogue> dn_00(params);
+  dn_00.calc_ylm_weighted_fluctuation(
     particles_data, particles_rand, los_data, los_rand, alpha, 0, 0
   );
   dn_00.calc_fourier_transform();
@@ -345,8 +345,8 @@ int calc_bispec(
           continue;
         }
 
-        DensityField<ParticlesCatalogue> dn_LM(params);
-        dn_LM.calc_ylm_weighted_overdensity(
+        DensityField<ParticleCatalogue> dn_LM(params);
+        dn_LM.calc_ylm_weighted_fluctuation(
           particles_data, particles_rand,
           los_data, los_rand,
           alpha,
@@ -356,7 +356,7 @@ int calc_bispec(
         dn_LM.calc_assignment_compensation();
         dn_LM.calc_inverse_fourier_transform();
 
-        DensityField<ParticlesCatalogue> dn_tilde1(params);
+        DensityField<ParticleCatalogue> dn_tilde1(params);
         double kmag_a;
         double dk = kbin[1] - kbin[0];
         if (params.form == "full") {
@@ -379,7 +379,7 @@ int calc_bispec(
           }
 
           /// Compute ``\delta\tilde{n}_2``.
-          DensityField<ParticlesCatalogue> dn_tilde2(params);
+          DensityField<ParticleCatalogue> dn_tilde2(params);
           dn_tilde2.calc_inverse_fourier_transform_for_bispec(
             dn_00, kmag_b, dk, ylm_b
           );
@@ -415,7 +415,7 @@ int calc_bispec(
   }
 
   /// Normalise and then save the output.
-  double norm = ParticlesCatalogue::calc_norm_for_bispec(
+  double norm = ParticleCatalogue::calc_norm_for_bispec(
     particles_data, survey_vol_norm
   );
 
@@ -468,12 +468,12 @@ int calc_bispec(
  * Calculate bispectrum in a periodic box.
  *
  * @param particles_data (Reference to) the data-source particle container.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param kbin Wavenumber bins.
  * @returns Exit status.
  */
 int calc_bispec_in_box(
-  ParticlesCatalogue& particles_data,
+  ParticleCatalogue& particles_data,
   ParameterSet& params,
   double* kbin
 ) {
@@ -511,8 +511,8 @@ int calc_bispec_in_box(
   }
 
   /// Compute shot noise terms.
-  DensityField<ParticlesCatalogue> dn_00_shotnoise(params);
-  dn_00_shotnoise.calc_density_field_in_box(particles_data, params);
+  DensityField<ParticleCatalogue> dn_00_shotnoise(params);
+  dn_00_shotnoise.calc_fluctuation_in_box(particles_data, params);
   dn_00_shotnoise.calc_fourier_transform();
 
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -527,11 +527,11 @@ int calc_bispec_in_box(
         continue;
       }
 
-      DensityField<ParticlesCatalogue> shotnoise_LM(params);
+      DensityField<ParticleCatalogue> shotnoise_LM(params);
       shotnoise_LM.calc_density_field_in_box_for_bispec(particles_data);
       shotnoise_LM.calc_fourier_transform();
 
-      TwoPointStatistics<ParticlesCatalogue> stats(params);
+      TwoPointStatistics<ParticleCatalogue> stats(params);
       std::complex<double> shotnoise = double(particles_data.nparticles);
         // NOTE: ``double`` conversion essential here
 
@@ -584,7 +584,7 @@ int calc_bispec_in_box(
 
   dn_00_shotnoise.finalise_density_field();
 
-  DensityField<ParticlesCatalogue> shotnoise_00(params);
+  DensityField<ParticleCatalogue> shotnoise_00(params);
   shotnoise_00.calc_density_field_in_box_for_bispec(particles_data);
   shotnoise_00.calc_fourier_transform();
 
@@ -615,11 +615,11 @@ int calc_bispec_in_box(
         params.ell2, m2_, params, ylm_b
       );
 
-      DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
-      dn_LM_shotnoise.calc_density_field_in_box(particles_data, params);
+      DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
+      dn_LM_shotnoise.calc_fluctuation_in_box(particles_data, params);
       dn_LM_shotnoise.calc_fourier_transform();
 
-      TwoPointStatistics<ParticlesCatalogue> stats(params);
+      TwoPointStatistics<ParticleCatalogue> stats(params);
       std::complex<double> shotnoise = double(particles_data.nparticles);
 
       fftw_complex* xi = fftw_alloc_complex(params.nmesh_tot);
@@ -668,7 +668,7 @@ int calc_bispec_in_box(
                 rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
               );
 
-              std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???: ff?
+              std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???
               double j1 = sj1.eval(kmag_a * rmag);
               double j2 = sj2.eval(kmag_b * rmag);
 
@@ -727,8 +727,8 @@ int calc_bispec_in_box(
 	}
 
 	/// Compute bispectrum.
-	DensityField<ParticlesCatalogue> dn_00(params);
-	dn_00.calc_density_field_in_box(particles_data, params);
+	DensityField<ParticleCatalogue> dn_00(params);
+	dn_00.calc_fluctuation_in_box(particles_data, params);
 	dn_00.calc_fourier_transform();
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -755,13 +755,13 @@ int calc_bispec_in_box(
 				params.ell2, m2_, params, ylm_b
 			);
 
-			DensityField<ParticlesCatalogue> dn_LM(params);
-			dn_LM.calc_density_field_in_box(particles_data, params);
+			DensityField<ParticleCatalogue> dn_LM(params);
+			dn_LM.calc_fluctuation_in_box(particles_data, params);
 			dn_LM.calc_fourier_transform();
 			dn_LM.calc_assignment_compensation();
 			dn_LM.calc_inverse_fourier_transform();
 
-			DensityField<ParticlesCatalogue> dn_tilde1(params);
+			DensityField<ParticleCatalogue> dn_tilde1(params);
 			double kmag_a;
 			double dk = kbin[1] - kbin[0];
 			if (params.form == "full") {
@@ -784,7 +784,7 @@ int calc_bispec_in_box(
 				}
 
 				/// Compute ``\delta\tilde{n}_2``.
-				DensityField<ParticlesCatalogue> dn_tilde2(params);
+				DensityField<ParticleCatalogue> dn_tilde2(params);
 				dn_tilde2.calc_inverse_fourier_transform_for_bispec(
 					dn_00, kmag_b, dk, ylm_b
 				);
@@ -872,14 +872,14 @@ int calc_bispec_in_box(
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_data Data-source particle lines of sight.
  * @param los_rand Random-source particle lines of sight.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_3pt_func(
-	ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand,
+	ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
 	LineOfSight* los_data, LineOfSight* los_rand,
 	ParameterSet& params,
 	double alpha,
@@ -920,8 +920,8 @@ int calc_3pt_func(
 	}
 
 	/// Compute shot noise terms.
-	DensityField<ParticlesCatalogue> shotnoise_00(params);
-	shotnoise_00.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+	DensityField<ParticleCatalogue> shotnoise_00(params);
+	shotnoise_00.calc_ylm_weighted_fields_for_bispec_shotnoise(
 		particles_data, particles_rand,
 		los_data, los_rand,
 		alpha,
@@ -965,8 +965,8 @@ int calc_3pt_func(
 					continue;
 				}
 
-				DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
-				dn_LM_shotnoise.calc_ylm_weighted_overdensity(
+				DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
+				dn_LM_shotnoise.calc_ylm_weighted_fluctuation(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
@@ -974,7 +974,7 @@ int calc_3pt_func(
 				);
 				dn_LM_shotnoise.calc_fourier_transform();
 
-				TwoPointStatistics<ParticlesCatalogue> stats(params);
+				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
 					particles_data, particles_rand,
 					los_data, los_rand,
@@ -1033,8 +1033,8 @@ int calc_3pt_func(
 		printf("[Status] :: Measuring three-point function.\n");
 	}
 
-	DensityField<ParticlesCatalogue> dn_00(params);
-	dn_00.calc_ylm_weighted_overdensity(
+	DensityField<ParticleCatalogue> dn_00(params);
+	dn_00.calc_ylm_weighted_fluctuation(
 		particles_data, particles_rand,
 		los_data, los_rand,
 		alpha,
@@ -1086,8 +1086,8 @@ int calc_3pt_func(
 					continue;
 				}
 
-				DensityField<ParticlesCatalogue> dn_LM(params);
-				dn_LM.calc_ylm_weighted_overdensity(
+				DensityField<ParticleCatalogue> dn_LM(params);
+				dn_LM.calc_ylm_weighted_fluctuation(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
@@ -1097,7 +1097,7 @@ int calc_3pt_func(
 				dn_LM.calc_assignment_compensation();
 				dn_LM.calc_inverse_fourier_transform();
 
-				DensityField<ParticlesCatalogue> dn_tilde1(params);
+				DensityField<ParticleCatalogue> dn_tilde1(params);
 				double rmag_a;
 				if (params.form == "full") {
 					rmag_a = rbin[params.ith_rbin];
@@ -1117,7 +1117,7 @@ int calc_3pt_func(
 					}
 
 					/// Compute ``\delta\tilde{n}_2``.
-					DensityField<ParticlesCatalogue> dn_tilde2(params);
+					DensityField<ParticleCatalogue> dn_tilde2(params);
 					dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
 						dn_00, rmag_b, ylm_b, sj2
 					);
@@ -1154,7 +1154,7 @@ int calc_3pt_func(
 	}
 
 	/// Normalise and then save the output.
-	double norm = ParticlesCatalogue::calc_norm_for_bispec(
+	double norm = ParticleCatalogue::calc_norm_for_bispec(
 		particles_data, survey_vol_norm
 	);
 
@@ -1205,14 +1205,14 @@ int calc_3pt_func(
  *
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_3pt_func_window(
-	ParticlesCatalogue& particles_rand,
+	ParticleCatalogue& particles_rand,
 	LineOfSight* los_rand,
 	ParameterSet& params,
 	double alpha,
@@ -1273,7 +1273,7 @@ int calc_3pt_func_window(
 	}
 
 	/// Compute shot noise terms.
-	DensityField<ParticlesCatalogue> shotnoise_00(params);
+	DensityField<ParticleCatalogue> shotnoise_00(params);
 	shotnoise_00.calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(
 		particles_rand, los_rand, alpha, 0, 0
 	);
@@ -1315,13 +1315,13 @@ int calc_3pt_func_window(
 					continue;
 				}
 
-				DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
+				DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
 				dn_LM_shotnoise.calc_ylm_weighted_mean_density(
 					particles_rand, los_rand, alpha, params.ELL, M_)
 				;
 				dn_LM_shotnoise.calc_fourier_transform();
 
-				TwoPointStatistics<ParticlesCatalogue> stats(params);
+				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise =
 					stats.calc_shotnoise_for_2pt_func_window(
 						particles_rand, los_rand, alpha, params.ELL, M_
@@ -1342,7 +1342,7 @@ int calc_3pt_func_window(
 						if (i + NR * n_temp == params.ith_rbin) {  // ???
 							shotnoise_save[i] += coupling * stats.xi[i + NR * n_temp];
 						} else {
-							shotnoise_save[i] += 0.;  // ???: redundant?
+							shotnoise_save[i] += 0.;  // ??? redundant
 						}
 					}
 				}
@@ -1380,7 +1380,7 @@ int calc_3pt_func_window(
 		printf("[Status] :: Measuring three-point function window.\n");
 	}
 
-	DensityField<ParticlesCatalogue> dn_00(params);
+	DensityField<ParticleCatalogue> dn_00(params);
 	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
 	dn_00.calc_fourier_transform();
 
@@ -1428,7 +1428,7 @@ int calc_3pt_func_window(
 					continue;
 				}
 
-				DensityField<ParticlesCatalogue> dn_LM(params);
+				DensityField<ParticleCatalogue> dn_LM(params);
 				dn_LM.calc_ylm_weighted_mean_density(
 					particles_rand, los_rand, alpha, params.ELL, M_
 				);
@@ -1436,7 +1436,7 @@ int calc_3pt_func_window(
 				dn_LM.calc_assignment_compensation();
 				dn_LM.calc_inverse_fourier_transform();
 
-				DensityField<ParticlesCatalogue> dn_tilde1(params);
+				DensityField<ParticleCatalogue> dn_tilde1(params);
 				double rmag_a;
 				if (params.form == "full") {
 					rmag_a = rbin[params.ith_rbin];
@@ -1456,7 +1456,7 @@ int calc_3pt_func_window(
 					}
 
 					/// Compute ``\delta\tilde{n}_2``.
-					DensityField<ParticlesCatalogue> dn_tilde2(params);
+					DensityField<ParticleCatalogue> dn_tilde2(params);
 					dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
 						dn_00, rmag_b, ylm_b, sj2
 					);
@@ -1493,7 +1493,7 @@ int calc_3pt_func_window(
 	}
 
 	/// Normalise and then save the output.
-	double norm = ParticlesCatalogue::calc_norm_for_bispec(
+	double norm = ParticleCatalogue::calc_norm_for_bispec(
 			particles_rand, survey_vol_norm
 	);
 	norm /= alpha * alpha * alpha;
@@ -1547,14 +1547,14 @@ int calc_3pt_func_window(
  *
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_3pt_func_window_for_3pcf(  // ???
-	ParticlesCatalogue& particles_rand,
+	ParticleCatalogue& particles_rand,
 	LineOfSight* los_rand,
 	ParameterSet& params,
 	double alpha,
@@ -1598,7 +1598,7 @@ int calc_3pt_func_window_for_3pcf(  // ???
 	}
 
 	/// Compute shot noise terms.
-	DensityField<ParticlesCatalogue> shotnoise_00(params);
+	DensityField<ParticleCatalogue> shotnoise_00(params);
 	shotnoise_00.calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(
 		particles_rand, los_rand, alpha, 0, 0
 	);
@@ -1640,13 +1640,13 @@ int calc_3pt_func_window_for_3pcf(  // ???
 					continue;
 				}
 
-				DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
+				DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
 				dn_LM_shotnoise.calc_ylm_weighted_mean_density(
 					particles_rand, los_rand, alpha, params.ELL, M_
 				);
 				dn_LM_shotnoise.calc_fourier_transform();
 
-				TwoPointStatistics<ParticlesCatalogue> stats(params);
+				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise =
 					stats.calc_shotnoise_for_2pt_func_window(
 						particles_rand, los_rand, alpha, params.ELL, M_
@@ -1707,7 +1707,7 @@ int calc_3pt_func_window_for_3pcf(  // ???
 		);
 	}
 
-	DensityField<ParticlesCatalogue> dn_00(params);
+	DensityField<ParticleCatalogue> dn_00(params);
 	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
 	dn_00.calc_fourier_transform();
 
@@ -1755,13 +1755,13 @@ int calc_3pt_func_window_for_3pcf(  // ???
 					continue;
 				}
 
-				DensityField<ParticlesCatalogue> dn_LM(params);
+				DensityField<ParticleCatalogue> dn_LM(params);
 				dn_LM.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, params.ELL, M_);
 				dn_LM.calc_fourier_transform();
 				dn_LM.calc_assignment_compensation();
 				dn_LM.calc_inverse_fourier_transform();
 
-				DensityField<ParticlesCatalogue> dn_tilde1(params);
+				DensityField<ParticleCatalogue> dn_tilde1(params);
 				double rmag_a;
 				if (params.form == "full") {
 					/// Compute ``\delta\tilde{n}_1``.
@@ -1780,7 +1780,7 @@ int calc_3pt_func_window_for_3pcf(  // ???
 					}
 
 					/// Compute ``\delta\tilde{n}_2``.
-					DensityField<ParticlesCatalogue> dn_tilde2(params);
+					DensityField<ParticleCatalogue> dn_tilde2(params);
 					dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
 						dn_00, rmag_b, ylm_b, sj2
 					);
@@ -1817,7 +1817,7 @@ int calc_3pt_func_window_for_3pcf(  // ???
 	}
 
 	/// Normalise and then save the output.
-	double norm = ParticlesCatalogue::calc_norm_for_bispec(
+	double norm = ParticleCatalogue::calc_norm_for_bispec(
 		particles_rand, survey_vol_norm
 	);
 	norm /= alpha * alpha * alpha;
@@ -1868,12 +1868,12 @@ int calc_3pt_func_window_for_3pcf(  // ???
  * Calculate three-point function in a periodic box.
  *
  * @param particles_data (Reference to) the data-source particle container.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param rbin Separation bins.
  * @returns Exit status.
  */
 int calc_3pt_func_in_box(
-	ParticlesCatalogue& particles_data,
+	ParticleCatalogue& particles_data,
 	ParameterSet& params,
 	double* rbin
 ) {
@@ -1911,7 +1911,7 @@ int calc_3pt_func_in_box(
 	}
 
 	/// Compute shot noise terms.
-	DensityField<ParticlesCatalogue> shotnoise_00(params);
+	DensityField<ParticleCatalogue> shotnoise_00(params);
 	shotnoise_00.calc_density_field_in_box_for_bispec(particles_data);
 	shotnoise_00.calc_fourier_transform();
 
@@ -1939,11 +1939,11 @@ int calc_3pt_func_in_box(
 				params.ell2, m2_, params, ylm_b
 			);
 
-			DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
-			dn_LM_shotnoise.calc_density_field_in_box(particles_data, params);
+			DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
+			dn_LM_shotnoise.calc_fluctuation_in_box(particles_data, params);
 			dn_LM_shotnoise.calc_fourier_transform();
 
-			TwoPointStatistics<ParticlesCatalogue> stats(params);
+			TwoPointStatistics<ParticleCatalogue> stats(params);
 			std::complex<double> shotnoise = double(particles_data.nparticles);
 
 			stats.calc_corr_func_for_3pt_func(
@@ -1999,8 +1999,8 @@ int calc_3pt_func_in_box(
 		printf("[Status] :: Measuring three-point function.\n");
 	}
 
-	DensityField<ParticlesCatalogue> dn_00(params);
-	dn_00.calc_density_field_in_box(particles_data, params);
+	DensityField<ParticleCatalogue> dn_00(params);
+	dn_00.calc_fluctuation_in_box(particles_data, params);
 	dn_00.calc_fourier_transform();
 
 	SphericalBesselCalculator sj1(params.ell1);
@@ -2035,13 +2035,13 @@ int calc_3pt_func_in_box(
 				params.ell2, m2_, params, ylm_b
 			);
 
-			DensityField<ParticlesCatalogue> dn_LM(params);
-			dn_LM.calc_density_field_in_box(particles_data, params);
+			DensityField<ParticleCatalogue> dn_LM(params);
+			dn_LM.calc_fluctuation_in_box(particles_data, params);
 			dn_LM.calc_fourier_transform();
 			dn_LM.calc_assignment_compensation();
 			dn_LM.calc_inverse_fourier_transform();
 
-			DensityField<ParticlesCatalogue> dn_tilde1(params);
+			DensityField<ParticleCatalogue> dn_tilde1(params);
 			double rmag_a;
 			if (params.form == "full") {
 				/// Compute ``\delta\tilde{n}_1``.
@@ -2063,7 +2063,7 @@ int calc_3pt_func_in_box(
 				}
 
 				/// Compute ``\delta\tilde{n}_2``.
-				DensityField<ParticlesCatalogue> dn_tilde2(params);
+				DensityField<ParticleCatalogue> dn_tilde2(params);
 				dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
 					dn_00, rmag_b, ylm_b, sj2
 				);
@@ -2153,7 +2153,7 @@ int calc_3pt_func_in_box(
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_data Data-source particle lines of sight.
  * @param los_rand Random-source particle lines of sight.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
  * @param los Choice of line of sight.
@@ -2161,7 +2161,7 @@ int calc_3pt_func_in_box(
  * @returns Exit status.
  */
 int calc_bispecChoiceOfLOS(
-	ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand,
+	ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
 	LineOfSight* los_data, LineOfSight* los_rand,
 	ParameterSet& params,
 	double alpha,
@@ -2216,16 +2216,16 @@ int calc_bispecChoiceOfLOS(
 					continue;
 				}
 
-				DensityField<ParticlesCatalogue> dn_shotnoise(params);
+				DensityField<ParticleCatalogue> dn_shotnoise(params);
 				if (los == 0) {
-					dn_shotnoise.calc_ylm_weighted_overdensity(
+					dn_shotnoise.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				} else {
-					dn_shotnoise.calc_ylm_weighted_overdensity(
+					dn_shotnoise.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2234,17 +2234,17 @@ int calc_bispecChoiceOfLOS(
 				}
 				dn_shotnoise.calc_fourier_transform();
 
-				DensityField<ParticlesCatalogue> N_shotnoise(params);
+				DensityField<ParticleCatalogue> N_shotnoise(params);
 					// NOTE: standard naming convention overriden
 				if (los == 0) {
-					N_shotnoise.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+					N_shotnoise.calc_ylm_weighted_fields_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				} else {
-					N_shotnoise.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+					N_shotnoise.calc_ylm_weighted_fields_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2253,7 +2253,7 @@ int calc_bispecChoiceOfLOS(
 				}
 				N_shotnoise.calc_fourier_transform();
 
-				TwoPointStatistics<ParticlesCatalogue> stats(params);
+				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
 					particles_data, particles_rand,
 					los_data, los_rand,
@@ -2304,16 +2304,16 @@ int calc_bispecChoiceOfLOS(
 					continue;
 				}
 
-				DensityField<ParticlesCatalogue> dn_shotnoise(params);
+				DensityField<ParticleCatalogue> dn_shotnoise(params);
 				if (los == 1) {
-					dn_shotnoise.calc_ylm_weighted_overdensity(
+					dn_shotnoise.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				} else {
-					dn_shotnoise.calc_ylm_weighted_overdensity(
+					dn_shotnoise.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2322,16 +2322,16 @@ int calc_bispecChoiceOfLOS(
 				}
 				dn_shotnoise.calc_fourier_transform();
 
-				DensityField<ParticlesCatalogue> N_shotnoise(params);
+				DensityField<ParticleCatalogue> N_shotnoise(params);
 				if (los == 1) {
-					N_shotnoise.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+					N_shotnoise.calc_ylm_weighted_fields_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				} else {
-					N_shotnoise.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+					N_shotnoise.calc_ylm_weighted_fields_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2340,7 +2340,7 @@ int calc_bispecChoiceOfLOS(
 				}
 				N_shotnoise.calc_fourier_transform();
 
-				TwoPointStatistics<ParticlesCatalogue> stats(params);
+				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
 					particles_data, particles_rand,
 					los_data, los_rand,
@@ -2407,16 +2407,16 @@ int calc_bispecChoiceOfLOS(
 					continue;
 				}
 
-				DensityField<ParticlesCatalogue> N_shotnoise(params);
+				DensityField<ParticleCatalogue> N_shotnoise(params);
 				if (los == 2) {
-					N_shotnoise.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+					N_shotnoise.calc_ylm_weighted_fields_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				} else {
-					N_shotnoise.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+					N_shotnoise.calc_ylm_weighted_fields_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2425,16 +2425,16 @@ int calc_bispecChoiceOfLOS(
 				}
 				N_shotnoise.calc_fourier_transform();
 
-				DensityField<ParticlesCatalogue> dn_shotnoise(params);
+				DensityField<ParticleCatalogue> dn_shotnoise(params);
 				if (los == 2) {
-					dn_shotnoise.calc_ylm_weighted_overdensity(
+					dn_shotnoise.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				} else {
-					dn_shotnoise.calc_ylm_weighted_overdensity(
+					dn_shotnoise.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2443,7 +2443,7 @@ int calc_bispecChoiceOfLOS(
 				}
 				dn_shotnoise.calc_fourier_transform();
 
-				TwoPointStatistics<ParticlesCatalogue> stats(params);
+				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
 					particles_data, particles_rand,
 					los_data, los_rand,
@@ -2496,7 +2496,7 @@ int calc_bispecChoiceOfLOS(
 									rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
 								);
 
-								std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???: ff?
+								std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???
 								double j1 = sj1.eval(kmag_a * rmag);
 								double j2 = sj2.eval(kmag_b * rmag);
 
@@ -2589,16 +2589,16 @@ int calc_bispecChoiceOfLOS(
 					continue;
 				}
 
-				DensityField<ParticlesCatalogue> dn1(params);
+				DensityField<ParticleCatalogue> dn1(params);
 				if (los == 0) {
-					dn1.calc_ylm_weighted_overdensity(
+					dn1.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 					  los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				} else {
-					dn1.calc_ylm_weighted_overdensity(
+					dn1.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2607,16 +2607,16 @@ int calc_bispecChoiceOfLOS(
 				}
 				dn1.calc_fourier_transform();
 
-				DensityField<ParticlesCatalogue> dn2(params);
+				DensityField<ParticleCatalogue> dn2(params);
 				if (los == 1) {
-					dn2.calc_ylm_weighted_overdensity(
+					dn2.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				} else {
-					dn2.calc_ylm_weighted_overdensity(
+					dn2.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2625,16 +2625,16 @@ int calc_bispecChoiceOfLOS(
 				}
 				dn2.calc_fourier_transform();
 
-				DensityField<ParticlesCatalogue> dn3(params);
+				DensityField<ParticleCatalogue> dn3(params);
 				if (los == 2) {
-					dn3.calc_ylm_weighted_overdensity(
+					dn3.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				} else {
-					dn3.calc_ylm_weighted_overdensity(
+					dn3.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2645,7 +2645,7 @@ int calc_bispecChoiceOfLOS(
 				dn3.calc_assignment_compensation();
 				dn3.calc_inverse_fourier_transform();
 
-				DensityField<ParticlesCatalogue> dn_tilde1(params);
+				DensityField<ParticleCatalogue> dn_tilde1(params);
 				double kmag_a;
 				double dk = kbin[1] - kbin[0];
 				if (params.form == "full") {
@@ -2666,7 +2666,7 @@ int calc_bispecChoiceOfLOS(
 					}
 
 					/// Compute ``\delta\tilde{n}_2``.
-					DensityField<ParticlesCatalogue> dn_tilde2(params);
+					DensityField<ParticleCatalogue> dn_tilde2(params);
 					dn_tilde2.calc_inverse_fourier_transform_for_bispec(
 						dn2, kmag_b, dk, ylm_b
 					);
@@ -2702,7 +2702,7 @@ int calc_bispecChoiceOfLOS(
 	}
 
 	/// Normalise and then save the output.
-	double norm = ParticlesCatalogue::calc_norm_for_bispec(
+	double norm = ParticleCatalogue::calc_norm_for_bispec(
 		particles_data, survey_vol_norm
 	);
 
@@ -2756,14 +2756,14 @@ int calc_bispecChoiceOfLOS(
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_data Data-source particle lines of sight.
  * @param los_rand Random-source particle lines of sight.
- * @param params (Reference to) the inputput parameter set.
+ * @param params (Reference to) the input parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
 int calc_bispec_for_M_mode(
-	ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand,
+	ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
 	LineOfSight* los_data, LineOfSight* los_rand,
 	ParameterSet& params,
 	double alpha,
@@ -2817,8 +2817,8 @@ int calc_bispec_for_M_mode(
 	}
 
 	/// Compute shot noise terms.
-	DensityField<ParticlesCatalogue> dn_00_shotnoise(params);
-	dn_00_shotnoise.calc_ylm_weighted_overdensity(
+	DensityField<ParticleCatalogue> dn_00_shotnoise(params);
+	dn_00_shotnoise.calc_ylm_weighted_fluctuation(
 		particles_data, particles_rand,
 		los_data, los_rand,
 		alpha,
@@ -2837,8 +2837,8 @@ int calc_bispec_for_M_mode(
 					continue;
 				}
 
-				DensityField<ParticlesCatalogue> shotnoise_LM(params);
-				shotnoise_LM.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+				DensityField<ParticleCatalogue> shotnoise_LM(params);
+				shotnoise_LM.calc_ylm_weighted_fields_for_bispec_shotnoise(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
@@ -2846,7 +2846,7 @@ int calc_bispec_for_M_mode(
 				);
 				shotnoise_LM.calc_fourier_transform();
 
-				TwoPointStatistics<ParticlesCatalogue> stats(params);
+				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
 					particles_data, particles_rand,
 					los_data, los_rand,
@@ -2898,8 +2898,8 @@ int calc_bispec_for_M_mode(
 
 	dn_00_shotnoise.finalise_density_field();
 
-	DensityField<ParticlesCatalogue> shotnoise_00(params);
-	shotnoise_00.calc_ylm_weighted_overdensity_for_bispec_shotnoise(
+	DensityField<ParticleCatalogue> shotnoise_00(params);
+	shotnoise_00.calc_ylm_weighted_fields_for_bispec_shotnoise(
 		particles_data, particles_rand,
 		los_data, los_rand,
 		alpha,
@@ -2946,8 +2946,8 @@ int calc_bispec_for_M_mode(
 					continue;
 				};
 
-				DensityField<ParticlesCatalogue> dn_LM_shotnoise(params);
-				dn_LM_shotnoise.calc_ylm_weighted_overdensity(
+				DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
+				dn_LM_shotnoise.calc_ylm_weighted_fluctuation(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
@@ -2955,7 +2955,7 @@ int calc_bispec_for_M_mode(
 				);
 				dn_LM_shotnoise.calc_fourier_transform();
 
-				TwoPointStatistics<ParticlesCatalogue> stats(params);
+				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
 					particles_data, particles_rand,
 					los_data, los_rand,
@@ -3006,7 +3006,7 @@ int calc_bispec_for_M_mode(
 									rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
 								);
 
-								std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???: ff?
+								std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???
 								double j1 = sj1.eval(kmag_a * rmag);
 								double j2 = sj2.eval(kmag_b * rmag);
 
@@ -3060,8 +3060,8 @@ int calc_bispec_for_M_mode(
 		printf("[Status] :: Measuring bispectrum.\n");
 	}
 
-	DensityField<ParticlesCatalogue> dn_00(params);
-	dn_00.calc_ylm_weighted_overdensity(
+	DensityField<ParticleCatalogue> dn_00(params);
+	dn_00.calc_ylm_weighted_fluctuation(
 		particles_data, particles_rand,
 		los_data, los_rand,
 		alpha,
@@ -3123,8 +3123,8 @@ int calc_bispec_for_M_mode(
 					continue;
 				}
 
-				DensityField<ParticlesCatalogue> dn_LM(params);
-				dn_LM.calc_ylm_weighted_overdensity(
+				DensityField<ParticleCatalogue> dn_LM(params);
+				dn_LM.calc_ylm_weighted_fluctuation(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
@@ -3134,7 +3134,7 @@ int calc_bispec_for_M_mode(
 				dn_LM.calc_assignment_compensation();
 				dn_LM.calc_inverse_fourier_transform();
 
-				DensityField<ParticlesCatalogue> dn_tilde1(params);
+				DensityField<ParticleCatalogue> dn_tilde1(params);
 				double kmag_a;
 				double dk = kbin[1] - kbin[0];
 				if (params.form == "full") {
@@ -3155,7 +3155,7 @@ int calc_bispec_for_M_mode(
 					}
 
 					/// Compute ``\delta\tilde{n}_2``.
-					DensityField<ParticlesCatalogue> dn_tilde2(params);
+					DensityField<ParticleCatalogue> dn_tilde2(params);
 					dn_tilde2.calc_inverse_fourier_transform_for_bispec(
 						dn_00, kmag_b, dk, ylm_b
 					);
@@ -3191,7 +3191,7 @@ int calc_bispec_for_M_mode(
 	}
 
 	/// Normalise and then save the output.
-	double norm = ParticlesCatalogue::calc_norm_for_bispec(
+	double norm = ParticleCatalogue::calc_norm_for_bispec(
 		particles_data, survey_vol_norm
 	);
 

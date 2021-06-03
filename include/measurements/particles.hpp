@@ -9,7 +9,7 @@
  * Container of particle data and summary information.
  *
  */
-class ParticlesCatalogue {
+class ParticleCatalogue {
  public:
   struct ParticleData {
     double pos[3];  ///< particle position vector
@@ -33,7 +33,7 @@ class ParticlesCatalogue {
   /**
    * Initialise the particle container.
    */
-  ParticlesCatalogue () {
+  ParticleCatalogue () {
     this->particles = NULL;
     this->nparticles = 0;
     this->pos_min[0] = 0.; this->pos_max[0] = 0.;
@@ -44,7 +44,7 @@ class ParticlesCatalogue {
   /**
    * Destruct the particle container.
    */
-  ~ParticlesCatalogue() {
+  ~ParticleCatalogue() {
     finalise_particles();
   }
 
@@ -62,7 +62,7 @@ class ParticlesCatalogue {
     this->nparticles = num;
 
     /// Renew particle data.
-    delete[] particles; particles = NULL;
+    delete[] particles; particles = NULL;  // ??? not this->particles
     this->particles = new ParticleData[this->nparticles];
 
     /// Determine memory usage.
@@ -75,14 +75,15 @@ class ParticlesCatalogue {
       particles[id].pos[1] = 0.;
       particles[id].pos[2] = 0.;
       particles[id].w = 0.;
-    }
+    }  // ??? not this->particles
   }
 
   /**
    * Finalise particle data and information.
    */
   void finalise_particles() {
-    if (particles != NULL) {  // ???: not this->particles?
+    /// Free particle usage.
+    if (particles != NULL) {  // ??? not this->particles
       delete[] this->particles; this->particles = NULL;
       bytes -= double(this->nparticles) * sizeof(struct ParticleData)
         / 1024. / 1024. / 1024.;
@@ -99,7 +100,7 @@ class ParticlesCatalogue {
     /// Initialise the counter for the number of lines/particles.
     int num_lines = 0;
 
-    /// Read in data from the file.
+    /// Check and size up data from the file.
     std::ifstream fin;
     fin.open(particles_file.c_str(), std::ios::in);
 
@@ -112,9 +113,12 @@ class ParticlesCatalogue {
     std::string str_line;
     double x, y, z, w;
     while (getline(fin, str_line)) {
+      /// Check if the line conforms to the expected format.
       if (sscanf(str_line.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &w) != 4) {
         continue;
       }
+
+      /// Count the line as a particle.
       num_lines++;
     }
 
@@ -127,14 +131,17 @@ class ParticlesCatalogue {
 
     num_lines = 0;
     while (getline(fin, str_line)) {
+      /// Check if the line conforms to the expected format.
       if (sscanf(str_line.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &w) != 4) {
         continue;
       }
 
+      /// Add the current line as a particle.
       particles[num_lines].pos[0] = x;
       particles[num_lines].pos[1] = y;
       particles[num_lines].pos[2] = z;
       particles[num_lines].w = w;
+        // ??? not this->particles
 
       num_lines++;
     }
@@ -208,7 +215,7 @@ class ParticlesCatalogue {
    * @returns Exit status.
    */
   int calc_min_and_max() {
-    if (particles == NULL) {  // ???: not this->particles?
+    if (particles == NULL) {  // ??? not this->particles?
       return -1;
     }
 
@@ -241,7 +248,7 @@ class ParticlesCatalogue {
       if (max[2] < particles[id].pos[2]) {
         max[2] = particles[id].pos[2];
       }
-    }
+    }  // ??? not this->particles
 
     this->pos_min[0] = min[0]; this->pos_max[0] = max[0];
     this->pos_min[1] = min[1]; this->pos_max[1] = max[1];
@@ -258,7 +265,7 @@ class ParticlesCatalogue {
    * @returns alpha Alpha ratio.
    */
   static double calc_alpha_ratio(
-      ParticlesCatalogue& particles_data, ParticlesCatalogue& particles_rand
+      ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand
     ) {
     double num_wgt_data = 0.;
     for (int id = 0; id < particles_data.nparticles; id++) {
@@ -283,14 +290,15 @@ class ParticlesCatalogue {
    * @returns norm Normalisation factor.
    */
   static double calc_norm_for_power_spec(
-      ParticlesCatalogue& particles_data, double survey_vol_norm
-    ) {  // ???: not using `_rand` instead of `_data`
+      ParticleCatalogue& particles_data, double survey_vol_norm
+    ) {  // ??? not using `_rand` instead of `_data`
     double num_wgt_data = 0.;
     for (int id = 0; id < particles_data.nparticles; id++) {
       num_wgt_data += particles_data[id].w;
     }
 
     double norm = survey_vol_norm / num_wgt_data / num_wgt_data;
+      // equivalent to I_2 = ∫d^3x \bar{n}(x)^2
 
     return norm;
   }
@@ -303,8 +311,8 @@ class ParticlesCatalogue {
    * @returns norm Normalisation factor.
    */
   static double calc_norm_for_bispec(
-      ParticlesCatalogue& particles_data, double survey_vol_norm
-    ) {  // ???: not using `_rand` instead of `_data`
+      ParticleCatalogue& particles_data, double survey_vol_norm
+    ) {  // ??? not using `_rand` instead of `_data`
     double num_wgt_data = 0.;
     for (int id = 0; id < particles_data.nparticles; id++) {
       num_wgt_data += particles_data[id].w;
@@ -313,18 +321,19 @@ class ParticlesCatalogue {
     double norm = survey_vol_norm / num_wgt_data / num_wgt_data;
 
     norm *= survey_vol_norm / num_wgt_data;
+      // equivalent to I_3 = ∫d^3x \bar{n}(x)^3
 
     return norm;
   }
 
   /**
-   * Offset particle positions.
+   * Offset particle positions by a given vector to subtract.
    *
    * @param dpos Position offset vector (subtractive).
    * @returns Exit status.
    */
   int offset_particles(const double* dpos) {
-    if (particles == NULL) {  // ???: not this->particles?
+    if (particles == NULL) {  // ??? not this->particles?
       return -1;
     }
 
@@ -347,10 +356,10 @@ class ParticlesCatalogue {
    * @returns Exit status.
    */
   static int offset_particles_for_fft(
-      ParticlesCatalogue& particles_data,
-      ParticlesCatalogue& particles_rand,
+      ParticleCatalogue& particles_data,
+      ParticleCatalogue& particles_rand,
       ParameterSet& params,
-      double factor=3.  // ???: why, why 3.?
+      double factor=3.  // ??? why, and why 3.
     ) {  // ??? TODO: change function description
     particles_data.calc_min_and_max();
     particles_rand.calc_min_and_max();
@@ -377,9 +386,9 @@ class ParticlesCatalogue {
 
   /**
    * Offset particle positions for window function calculations (by
-   * centring inside the pre-determined box).
+   * centring them inside the specified box).
    *
-   * @param params (Reference to) the inputput parameter set.
+   * @param params (Reference to) the input parameter set.
    * @returns Exit status.
    */
   int offset_particles_for_window(ParameterSet& params) {
@@ -410,7 +419,7 @@ class ParticlesCatalogue {
   /**
    * Offset particle positions for periodic boundary conditions.
    *
-   * @param params (Reference to) the inputput parameter set.
+   * @param params (Reference to) the input parameter set.
    * @returns Exit status.
    */
   int offset_particles_for_periodicity(ParameterSet& params) {
