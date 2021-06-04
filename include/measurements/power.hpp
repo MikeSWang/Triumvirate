@@ -138,7 +138,7 @@ int calc_power_spec(
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
-int calc_2pt_func(
+int calc_corr_func(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
   ParameterSet& params,
@@ -290,7 +290,7 @@ int calc_power_spec_window(
 
   /// Compute shot noise.
   TwoPointStatistics<ParticleCatalogue> stats(params);
-  std::complex<double> shotnoise = stats.calc_shotnoise_for_2pt_func_window(
+  std::complex<double> shotnoise = stats.calc_shotnoise_for_corr_func_window(
     particles_rand, los_rand, alpha, params.ELL, 0
   );
   std::cout << "Current memory usage: " << bytes << " bytes." << std::endl;
@@ -346,7 +346,7 @@ int calc_power_spec_window(
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
-int calc_2pt_func_window(
+int calc_corr_func_window(
   ParticleCatalogue& particles_rand,
   LineOfSight* los_rand,
   ParameterSet& params,
@@ -389,7 +389,7 @@ int calc_2pt_func_window(
 
     /// Compute shot noise.
     TwoPointStatistics<ParticleCatalogue> stats(params);
-    std::complex<double> shotnoise = stats.calc_shotnoise_for_2pt_func_window(
+    std::complex<double> shotnoise = stats.calc_shotnoise_for_corr_func_window(
       particles_rand, los_rand, alpha, params.ELL, M_
     );
 
@@ -528,7 +528,7 @@ int calc_power_spec_in_box(
  * @param kbin Wavenumber bins.
  * @returns Exit status.
  */
-int calc_2pt_func_in_box(
+int calc_corr_func_in_box(
   ParticleCatalogue& particles_data,
   ParameterSet& params,
   double* rbin
