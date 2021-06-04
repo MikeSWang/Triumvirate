@@ -683,14 +683,14 @@ class DensityField {
    * Calculate inverse Fourier transform of the (transformed) (density
    * fluctuation) field for bispectrum calculations.
    *
-   * @param field FFT-transformed density field.
+   * @param density FFT-transformed density (fluctuation) field.
    * @param kmag_in Wavenumber bin wavenumber.
    * @param dk_in Wavenumber bin width.
    * @param ylm Reduced spherical harmonic on a grid.
    * @returns Exit status.
    */
   int calc_inverse_fourier_transform_for_bispec(
-    DensityField& fluctuation,
+    DensityField& density,
     double kmag_in, double dk_in,
     std::complex<double>* ylm
   ) {
@@ -732,7 +732,7 @@ class DensityField {
             // ??? factor these two lines above outside the for-loop
           if (kmag > k_lower && kmag <= k_upper) {
             std::complex<double> den(
-              field[coord_flat][0], field[coord_flat][1]
+              density[coord_flat][0], density[coord_flat][1]
             );
 
             double win = this->calc_interpolation_window_in_fourier(kvec);
