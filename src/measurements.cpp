@@ -212,27 +212,27 @@ int main(int argc, char *argv[]) {
   if (params.catalogue_type == "mock" || params.catalogue_type == "survey") {
     /*
     calc_power_spec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, survey_vol_norm);
-    calc_2pt_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
-    calc_2pt_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
+    calc_corr_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
+    calc_corr_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
     */
 
     calc_bispec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, survey_vol_norm);
     /*
-    calc_3pt_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
-    calc_3pt_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
-    calc_3pt_func_window_for_3pcf(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
+    calc_3pt_corr_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
+    calc_3pt_corr_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
+    calc_3pt_corr_func_window_for_3pcf(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
     */
   }
 
   if (params.catalogue_type == "sim") {
     /*
     calc_power_spec_in_box(particles_data, params, kbin);
-    calc_2pt_func_in_box(particles_data, params, rbin);
+    calc_corr_func_in_box(particles_data, params, rbin);
     */
 
     calc_bispec_in_box(particles_data, params, kbin);
     /*
-    calc_3pt_func_in_box(particles_data, params, rbin);
+    calc_3pt_corr_func_in_box(particles_data, params, rbin);
     */
   }
 

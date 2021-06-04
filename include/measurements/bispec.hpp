@@ -86,7 +86,7 @@ int calc_bispec(
         shotnoise_LM.calc_fourier_transform();
 
         TwoPointStatistics<ParticleCatalogue> stats(params);
-        std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
+        std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
           particles_data, particles_rand,
           los_data, los_rand,
           alpha,
@@ -194,7 +194,7 @@ int calc_bispec(
         dn_LM_shotnoise.calc_fourier_transform();
 
         TwoPointStatistics<ParticleCatalogue> stats(params);
-        std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
+        std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
           particles_data, particles_rand,
           los_data, los_rand,
           alpha,
@@ -353,7 +353,7 @@ int calc_bispec(
           params.ELL, M_
         );
         dn_LM.calc_fourier_transform();
-        dn_LM.calc_assignment_compensation();
+        dn_LM.apply_assignment_compensation();
         dn_LM.calc_inverse_fourier_transform();
 
         DensityField<ParticleCatalogue> dn_tilde1(params);
@@ -758,7 +758,7 @@ int calc_bispec_in_box(
 			DensityField<ParticleCatalogue> dn_LM(params);
 			dn_LM.calc_fluctuation_in_box(particles_data, params);
 			dn_LM.calc_fourier_transform();
-			dn_LM.calc_assignment_compensation();
+			dn_LM.apply_assignment_compensation();
 			dn_LM.calc_inverse_fourier_transform();
 
 			DensityField<ParticleCatalogue> dn_tilde1(params);
@@ -866,7 +866,7 @@ int calc_bispec_in_box(
 }
 
 /**
- * Calculate three-point function from catalogues.
+ * Calculate three-point correlation function from catalogues.
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param particles_rand (Reference to) the random-source particle container.
@@ -878,7 +878,7 @@ int calc_bispec_in_box(
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
-int calc_3pt_func(
+int calc_3pt_corr_func(
 	ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
 	LineOfSight* los_data, LineOfSight* los_rand,
 	ParameterSet& params,
@@ -887,7 +887,7 @@ int calc_3pt_func(
 	double survey_vol_norm
 ) {
 	if (thisTask == 0) {
-		printf("[Status] :: Measuring three-point function.\n");
+		printf("[Status] :: Measuring three-point correlation function.\n");
 	}
 
 	if (
@@ -896,7 +896,7 @@ int calc_3pt_func(
 		if (thisTask == 0) {
 			printf(
 				"[Error] :: Disallowed multipole degree combination "
-				"for three-point function measurements. "
+				"for three-point correlation function measurements. "
 				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
 			);
 		}
@@ -975,14 +975,14 @@ int calc_3pt_func(
 				dn_LM_shotnoise.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
-				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
+				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
 					params.ELL, M_
 				);
 
-				stats.calc_corr_func_for_3pt_func(
+				stats.calc_corr_func_for_3pt_corr_func(
 					dn_LM_shotnoise, shotnoise_00,
 					rbin, shotnoise,
 					params.ell1, m1_,
@@ -1028,9 +1028,9 @@ int calc_3pt_func(
 		);
 	}
 
-	/// Initialise output three-point function.
+	/// Initialise output three-point correlation function.
 	if (thisTask == 0) {
-		printf("[Status] :: Measuring three-point function.\n");
+		printf("[Status] :: Measuring three-point correlation function.\n");
 	}
 
 	DensityField<ParticleCatalogue> dn_00(params);
@@ -1094,14 +1094,14 @@ int calc_3pt_func(
 					params.ELL, M_
 				);
 				dn_LM.calc_fourier_transform();
-				dn_LM.calc_assignment_compensation();
+				dn_LM.apply_assignment_compensation();
 				dn_LM.calc_inverse_fourier_transform();
 
 				DensityField<ParticleCatalogue> dn_tilde1(params);
 				double rmag_a;
 				if (params.form == "full") {
 					rmag_a = rbin[params.ith_rbin];
-					dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
+					dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
 						dn_00, rmag_a, ylm_a, sj1
 					);
 				}
@@ -1111,14 +1111,14 @@ int calc_3pt_func(
 					/// Compute ``\delta\tilde{n}_1``.
 					if (params.form == "diag") {
 						rmag_a = rmag_b;
-						dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
+						dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
 							dn_00, rmag_a, ylm_a, sj1
 						);
 					}
 
 					/// Compute ``\delta\tilde{n}_2``.
 					DensityField<ParticleCatalogue> dn_tilde2(params);
-					dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
+					dn_tilde2.calc_inverse_fourier_transform_for_3pt_corr_func(
 						dn_00, rmag_b, ylm_b, sj2
 					);
 
@@ -1201,7 +1201,7 @@ int calc_3pt_func(
 }
 
 /**
- * Calculate three-point function window from catalogues.
+ * Calculate three-point correlation function window from catalogues.
  *
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
@@ -1211,7 +1211,7 @@ int calc_3pt_func(
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
-int calc_3pt_func_window(
+int calc_3pt_corr_func_window(
 	ParticleCatalogue& particles_rand,
 	LineOfSight* los_rand,
 	ParameterSet& params,
@@ -1220,7 +1220,7 @@ int calc_3pt_func_window(
 	double survey_vol_norm
 ) {
 	if (thisTask == 0) {
-		printf("[Status] :: Measuring three-point function window.\n");
+		printf("[Status] :: Measuring three-point correlation function window.\n");
 	}
 
 	int n_temp = 10;  // ???: NOTE: discretionary
@@ -1250,7 +1250,7 @@ int calc_3pt_func_window(
 		if (thisTask == 0) {
 			printf(
 				"[Error] :: Disallowed multipole degree combination "
-				"for three-point function window measurements. "
+				"for three-point correlation function window measurements. "
 				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
 			);
 		}
@@ -1323,11 +1323,11 @@ int calc_3pt_func_window(
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise =
-					stats.calc_shotnoise_for_2pt_func_window(
+					stats.calc_shotnoise_for_corr_func_window(
 						particles_rand, los_rand, alpha, params.ELL, M_
 					);
 
-				stats.calc_corr_func_for_3pt_func(
+				stats.calc_corr_func_for_3pt_corr_func(
 					dn_LM_shotnoise, shotnoise_00,
 					rbin,
 					shotnoise,
@@ -1375,9 +1375,9 @@ int calc_3pt_func_window(
 		);
 	}
 
-	/// Initialise output three-point function window.
+	/// Initialise output three-point correlation function window.
 	if (thisTask == 0) {
-		printf("[Status] :: Measuring three-point function window.\n");
+		printf("[Status] :: Measuring three-point correlation function window.\n");
 	}
 
 	DensityField<ParticleCatalogue> dn_00(params);
@@ -1433,14 +1433,14 @@ int calc_3pt_func_window(
 					particles_rand, los_rand, alpha, params.ELL, M_
 				);
 				dn_LM.calc_fourier_transform();
-				dn_LM.calc_assignment_compensation();
+				dn_LM.apply_assignment_compensation();
 				dn_LM.calc_inverse_fourier_transform();
 
 				DensityField<ParticleCatalogue> dn_tilde1(params);
 				double rmag_a;
 				if (params.form == "full") {
 					rmag_a = rbin[params.ith_rbin];
-					dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
+					dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
 						dn_00, rmag_a, ylm_a, sj1
 					);
 				}
@@ -1450,14 +1450,14 @@ int calc_3pt_func_window(
 					/// Compute ``\delta\tilde{n}_1``.
 					if (params.form == "diag") {
 						rmag_a = rmag_b;
-						dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
+						dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
 							dn_00, rmag_a, ylm_a, sj1
 						);
 					}
 
 					/// Compute ``\delta\tilde{n}_2``.
 					DensityField<ParticleCatalogue> dn_tilde2(params);
-					dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
+					dn_tilde2.calc_inverse_fourier_transform_for_3pt_corr_func(
 						dn_00, rmag_b, ylm_b, sj2
 					);
 
@@ -1542,7 +1542,7 @@ int calc_3pt_func_window(
 }
 
 /**
- * Calculate three-point function window for three-point window function
+ * Calculate three-point correlation function window for three-point window function
  * from catalogues.
  *
  * @param particles_rand (Reference to) the random-source particle container.
@@ -1553,7 +1553,7 @@ int calc_3pt_func_window(
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
-int calc_3pt_func_window_for_3pcf(  // ???
+int calc_3pt_corr_func_window_for_3pcf(  // ???
 	ParticleCatalogue& particles_rand,
 	LineOfSight* los_rand,
 	ParameterSet& params,
@@ -1563,8 +1563,8 @@ int calc_3pt_func_window_for_3pcf(  // ???
 ) {
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Measuring three-point function window "
-			"for three-point function.\n"
+			"[Status] :: Measuring three-point correlation function window "
+			"for three-point correlation function.\n"
 		);
 	}
 
@@ -1574,7 +1574,7 @@ int calc_3pt_func_window_for_3pcf(  // ???
 		if (thisTask == 0) {
 			printf(
 				"[Error] :: Disallowed multipole degree combination "
-				"for three-point function window measurements. "
+				"for three-point correlation function window measurements. "
 				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
 			);
 		}
@@ -1648,11 +1648,11 @@ int calc_3pt_func_window_for_3pcf(  // ???
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise =
-					stats.calc_shotnoise_for_2pt_func_window(
+					stats.calc_shotnoise_for_corr_func_window(
 						particles_rand, los_rand, alpha, params.ELL, M_
 					);
 
-				stats.calc_corr_func_for_3pt_func(
+				stats.calc_corr_func_for_3pt_corr_func(
 					dn_LM_shotnoise, shotnoise_00,
 					rbin, shotnoise,
 					params.ell1, m1_,
@@ -1699,11 +1699,11 @@ int calc_3pt_func_window_for_3pcf(  // ???
 		);
 	}
 
-	/// Initialise output three-point function window for three-point function.
+	/// Initialise output three-point correlation function window for three-point correlation function.
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Measuring three-point function window "
-			"for three-point function.\n"
+			"[Status] :: Measuring three-point correlation function window "
+			"for three-point correlation function.\n"
 		);
 	}
 
@@ -1758,7 +1758,7 @@ int calc_3pt_func_window_for_3pcf(  // ???
 				DensityField<ParticleCatalogue> dn_LM(params);
 				dn_LM.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, params.ELL, M_);
 				dn_LM.calc_fourier_transform();
-				dn_LM.calc_assignment_compensation();
+				dn_LM.apply_assignment_compensation();
 				dn_LM.calc_inverse_fourier_transform();
 
 				DensityField<ParticleCatalogue> dn_tilde1(params);
@@ -1766,7 +1766,7 @@ int calc_3pt_func_window_for_3pcf(  // ???
 				if (params.form == "full") {
 					/// Compute ``\delta\tilde{n}_1``.
 					rmag_a = rbin[params.ith_rbin];
-					dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(dn_00, rmag_a, ylm_a, sj1);
+					dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(dn_00, rmag_a, ylm_a, sj1);
 				}
 
 				for (int i_rbin = 0; i_rbin < params.num_rbin; i_rbin++) {
@@ -1774,14 +1774,14 @@ int calc_3pt_func_window_for_3pcf(  // ???
 					/// Compute ``\delta\tilde{n}_1``.
 					if (params.form == "diag") {
 						rmag_a = rmag_b;
-						dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
+						dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
 							dn_00, rmag_a, ylm_a, sj1
 						);
 					}
 
 					/// Compute ``\delta\tilde{n}_2``.
 					DensityField<ParticleCatalogue> dn_tilde2(params);
-					dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
+					dn_tilde2.calc_inverse_fourier_transform_for_3pt_corr_func(
 						dn_00, rmag_b, ylm_b, sj2
 					);
 
@@ -1865,20 +1865,20 @@ int calc_3pt_func_window_for_3pcf(  // ???
 }
 
 /**
- * Calculate three-point function in a periodic box.
+ * Calculate three-point correlation function in a periodic box.
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param params (Reference to) the input parameter set.
  * @param rbin Separation bins.
  * @returns Exit status.
  */
-int calc_3pt_func_in_box(
+int calc_3pt_corr_func_in_box(
 	ParticleCatalogue& particles_data,
 	ParameterSet& params,
 	double* rbin
 ) {
 	if (thisTask == 0) {
-		printf("[Status] :: Measuring three-point function in box.\n");
+		printf("[Status] :: Measuring three-point correlation function in box.\n");
 	}
 
 	if (
@@ -1887,7 +1887,7 @@ int calc_3pt_func_in_box(
 		if (thisTask == 0) {
 			printf(
 				"[Error] :: Disallowed multipole degree combination "
-				"for three-point function measurements. "
+				"for three-point correlation function measurements. "
 				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
 			);
 		}
@@ -1946,7 +1946,7 @@ int calc_3pt_func_in_box(
 			TwoPointStatistics<ParticleCatalogue> stats(params);
 			std::complex<double> shotnoise = double(particles_data.nparticles);
 
-			stats.calc_corr_func_for_3pt_func(
+			stats.calc_corr_func_for_3pt_corr_func(
 				dn_LM_shotnoise, shotnoise_00,
 				rbin,
 				shotnoise,
@@ -1996,7 +1996,7 @@ int calc_3pt_func_in_box(
 
 	/// Initialise output bispectrum.
 	if (thisTask == 0) {
-		printf("[Status] :: Measuring three-point function.\n");
+		printf("[Status] :: Measuring three-point correlation function.\n");
 	}
 
 	DensityField<ParticleCatalogue> dn_00(params);
@@ -2038,7 +2038,7 @@ int calc_3pt_func_in_box(
 			DensityField<ParticleCatalogue> dn_LM(params);
 			dn_LM.calc_fluctuation_in_box(particles_data, params);
 			dn_LM.calc_fourier_transform();
-			dn_LM.calc_assignment_compensation();
+			dn_LM.apply_assignment_compensation();
 			dn_LM.calc_inverse_fourier_transform();
 
 			DensityField<ParticleCatalogue> dn_tilde1(params);
@@ -2046,7 +2046,7 @@ int calc_3pt_func_in_box(
 			if (params.form == "full") {
 				/// Compute ``\delta\tilde{n}_1``.
 				rmag_a = rbin[params.ith_rbin];
-				dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
+				dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
 					dn_00, rmag_a, ylm_a, sj1
 				);
 			}
@@ -2057,14 +2057,14 @@ int calc_3pt_func_in_box(
 				/// Compute ``\delta\tilde{n}_1``.
 				if (params.form == "diag") {
 					rmag_a = rmag_b;
-					dn_tilde1.calc_inverse_fourier_transform_for_3pt_func(
+					dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
 						dn_00, rmag_a, ylm_a, sj1
 					);
 				}
 
 				/// Compute ``\delta\tilde{n}_2``.
 				DensityField<ParticleCatalogue> dn_tilde2(params);
-				dn_tilde2.calc_inverse_fourier_transform_for_3pt_func(
+				dn_tilde2.calc_inverse_fourier_transform_for_3pt_corr_func(
 					dn_00, rmag_b, ylm_b, sj2
 				);
 
@@ -2254,7 +2254,7 @@ int calc_bispecChoiceOfLOS(
 				N_shotnoise.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
-				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
+				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
@@ -2341,7 +2341,7 @@ int calc_bispecChoiceOfLOS(
 				N_shotnoise.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
-				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
+				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
@@ -2444,7 +2444,7 @@ int calc_bispecChoiceOfLOS(
 				dn_shotnoise.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
-				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
+				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
@@ -2642,7 +2642,7 @@ int calc_bispecChoiceOfLOS(
 					);
 				}
 				dn3.calc_fourier_transform();
-				dn3.calc_assignment_compensation();
+				dn3.apply_assignment_compensation();
 				dn3.calc_inverse_fourier_transform();
 
 				DensityField<ParticleCatalogue> dn_tilde1(params);
@@ -2847,7 +2847,7 @@ int calc_bispec_for_M_mode(
 				shotnoise_LM.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
-				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
+				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
@@ -2956,7 +2956,7 @@ int calc_bispec_for_M_mode(
 				dn_LM_shotnoise.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
-				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec(
+				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
@@ -3131,7 +3131,7 @@ int calc_bispec_for_M_mode(
 					params.ELL, M_
 				);
 				dn_LM.calc_fourier_transform();
-				dn_LM.calc_assignment_compensation();
+				dn_LM.apply_assignment_compensation();
 				dn_LM.calc_inverse_fourier_transform();
 
 				DensityField<ParticleCatalogue> dn_tilde1(params);
