@@ -1885,11 +1885,11 @@ class TwoPointStatistics {
   double calc_interpolation_window_in_fourier(double* kvec) {  // ??? redudant
     if (0) {
     } else if (this->params.assignment == "NGP") {
-      return this->calc_interpolation_window_ngp(kvec);
+      return this->calc_interpolation_window_in_fourier_ngp(kvec);
     } else if (this->params.assignment == "CIC") {
-      return this->calc_interpolation_window_cic(kvec);
+      return this->calc_interpolation_window_in_fourier_cic(kvec);
     } else if (this->params.assignment == "TSC") {
-      return this->calc_interpolation_window_tsc(kvec);
+      return this->calc_interpolation_window_in_fourier_tsc(kvec);
     } else {
       return 1.;
     }
