@@ -39,8 +39,8 @@ int calc_power_spec(
     }
   }
 
-  /// Compute monopole of the Fourier--harmonic transform of the density
-  /// fluctuation.
+  /// Compute monopoles of the Fourier--harmonic transform of the density
+  /// fluctuation, i.e. δn_00.
   DensityField<ParticleCatalogue> dn_00(params);
   dn_00.calc_ylm_weighted_fluctuation(
     particles_data, particles_rand,

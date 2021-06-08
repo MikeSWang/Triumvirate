@@ -247,7 +247,7 @@ int calc_bispec(
                 double j1 = sj1.eval(kmag_a * rmag);
                 double j2 = sj2.eval(kmag_b * rmag);
 
-                shotnoise_sum += j1 * j2 * ylm_a[i] * ylm_b[i] * ff;
+                shotnoise_sum += j1 * j2 * ylm_a[coord_flat] * ylm_b[coord_flat] * ff;
               }
             }
           }
@@ -672,7 +672,7 @@ int calc_bispec_in_box(
               double j1 = sj1.eval(kmag_a * rmag);
               double j2 = sj2.eval(kmag_b * rmag);
 
-              shotnoise_sum += j1 * j2 * ff * ylm_a[i] * ylm_b[i];
+              shotnoise_sum += j1 * j2 * ff * ylm_a[coord_flat] * ylm_b[coord_flat];
             }
           }
         }
@@ -2500,7 +2500,7 @@ int calc_bispecChoiceOfLOS(
 								double j1 = sj1.eval(kmag_a * rmag);
 								double j2 = sj2.eval(kmag_b * rmag);
 
-								shotnoise_sum += (j1 * j2 * ff * ylm_a[i] * ylm_b[i]);
+								shotnoise_sum += (j1 * j2 * ff * ylm_a[coord_flat] * ylm_b[coord_flat]);
 							}
 						}
 					}
@@ -3010,7 +3010,7 @@ int calc_bispec_for_M_mode(
 								double j1 = sj1.eval(kmag_a * rmag);
 								double j2 = sj2.eval(kmag_b * rmag);
 
-								shotnoise_sum += (j1 * j2 * ff * ylm_a[i] * ylm_b[i]);
+								shotnoise_sum += (j1 * j2 * ff * ylm_a[coord_flat] * ylm_b[coord_flat]);
 							}
 						}
 					}
