@@ -11,19 +11,19 @@ tests/test_build/**
 !tests/test_build/.gitignore
 
 tests/test_output/**
-!tests/test_output/results/
-tests/test_output/results/**
-!tests/test_output/results/.gitignore
+!tests/test_output/measurements/
+tests/test_output/measurements/**
+!tests/test_output/measurements/.gitignore
 
 storage/input/**
 !storage/input/params/
 storage/input/params/**
-!storage/input/params/params.ini
+!storage/input/params/params_example.ini
 
 storage/output/**
-!storage/output/results/
-storage/output/results/**
-!storage/output/results/.gitignore
+!storage/output/measurements/
+storage/output/measurements/**
+!storage/output/measurements/.gitignore
 
 storage/misc/**
 
