@@ -617,7 +617,7 @@ int calc_power_spec_in_box_for_recon(
   ParticleCatalogue& particles_rand,
   ParameterSet& params,
   double alpha,
-  double * kbin
+  double* kbin
 ) {
   if (thisTask == 0) {
     printf("[Status] :: Measuring power spectrum.\n");

@@ -1432,7 +1432,7 @@ class TwoPointStatistics {
           mode_power -= shotnoise * calc_shotnoise_func(kvec);
 
           double win = calc_interpolation_window_in_fourier(kvec);
-          mode_power /= pow(win, 2);  // ??? find matching equation
+          mode_power /= pow(win, 2);
 
           twopt3d_sample[coord_flat][0] = vol_factor * mode_power.real();
           twopt3d_sample[coord_flat][1] = vol_factor * mode_power.imag();
@@ -1588,6 +1588,7 @@ class TwoPointStatistics {
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 
       sum_data += pow(particles_data[id].w, 2) * ylm;
+        // ??? find matching equation: single ylm only
     }
 
     for (int id = 0; id < particles_rand.nparticles; id++) {
@@ -1599,6 +1600,7 @@ class TwoPointStatistics {
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 
       sum_rand += pow(particles_rand[id].w, 2) * ylm;
+        // ??? find matching equation: single ylm only
     }
 
     return sum_data + pow(alpha, 2) * sum_rand;
@@ -1650,6 +1652,7 @@ class TwoPointStatistics {
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 
       sum_rand += pow(particles_rand[id].w, 2) * ylm;
+        // ??? find matching equation
     }
 
     return pow(alpha, 2) * sum_rand;
@@ -1759,7 +1762,7 @@ class TwoPointStatistics {
           mode_power -= shotnoise * calc_shotnoise_func(kvec);
 
           double win = calc_interpolation_window_in_fourier(kvec);
-          mode_power /= pow(win, 2);  // ??? find matching equation
+          mode_power /= pow(win, 2);
 
           xi[coord_flat][0] = vol_factor * mode_power.real();
           xi[coord_flat][1] = vol_factor * mode_power.imag();

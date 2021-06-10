@@ -2160,7 +2160,7 @@ int calc_3pt_corr_func_in_box(
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
-int calc_bispecChoiceOfLOS(
+int calc_bispec_for_los_choice(
 	ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
 	LineOfSight* los_data, LineOfSight* los_rand,
 	ParameterSet& params,
