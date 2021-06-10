@@ -1220,10 +1220,10 @@ class TwoPointStatistics {
     int ell, int m
   ) {
     /// Set up 3-d power spectrum sampling for inverse Fourier transform.
-    fftw_complex* pk3d_sample = fftw_alloc_complex(this->params.nmesh_tot);
+    fftw_complex* twopt3d_sample = fftw_alloc_complex(this->params.nmesh_tot);
     for (int i = 0; i < this->params.nmesh_tot; i++) {
-      pk3d_sample[i][0] = 0.;
-      pk3d_sample[i][1] = 0.;
+      twopt3d_sample[i][0] = 0.;
+      twopt3d_sample[i][1] = 0.;
     }
 
     double vol_factor = 1. / this->params.volume;  // convert ∫d^3k = (1/V) Σ_i
@@ -1265,8 +1265,8 @@ class TwoPointStatistics {
           double win = calc_interpolation_window_in_fourier(kvec);
           mode_power /= pow(win, 2);  // ??? find matching equation
 
-          pk3d_sample[coord_flat][0] = vol_factor * mode_power.real();
-          pk3d_sample[coord_flat][1] = vol_factor * mode_power.imag();
+          twopt3d_sample[coord_flat][0] = vol_factor * mode_power.real();
+          twopt3d_sample[coord_flat][1] = vol_factor * mode_power.imag();
         }
       }
     }
@@ -1274,7 +1274,7 @@ class TwoPointStatistics {
     /// Inverse Fourier transform.
     fftw_plan fft_plan_backward = fftw_plan_dft_3d(
       this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2],
-      pk3d_sample, pk3d_sample,
+      twopt3d_sample, twopt3d_sample,
       FFTW_BACKWARD, FFTW_ESTIMATE
     );
     fftw_execute(fft_plan_backward);
@@ -1323,7 +1323,7 @@ class TwoPointStatistics {
           int idx_r = int(rmag / dr_sample + 0.5);
           if (idx_r < n_sample) {
             std::complex<double> pair_corr(
-              pk3d_sample[coord_flat][0], pk3d_sample[coord_flat][1]
+              twopt3d_sample[coord_flat][0], twopt3d_sample[coord_flat][1]
             );  // pair correlation contribution
 
             std::complex<double> ylm =
@@ -1359,7 +1359,7 @@ class TwoPointStatistics {
       }
     }
 
-    delete[] pk3d_sample;
+    delete[] twopt3d_sample;
     delete[] xi_sample;
     delete[] npair_sample;
 
@@ -1389,10 +1389,10 @@ class TwoPointStatistics {
     std::complex<double>* ylm_a, std::complex<double>* ylm_b
   ) {
     /// Set up 3-d power spectrum sampling for inverse Fourier transform.
-    fftw_complex* pk3d_sample = fftw_alloc_complex(this->params.nmesh_tot);
+    fftw_complex* twopt3d_sample = fftw_alloc_complex(this->params.nmesh_tot);
     for (int i = 0; i < this->params.nmesh_tot; i++) {
-      pk3d_sample[i][0] = 0.;
-      pk3d_sample[i][1] = 0.;
+      twopt3d_sample[i][0] = 0.;
+      twopt3d_sample[i][1] = 0.;
     }
 
     double vol_factor = 1. / this->params.volume;  // convert ∫d^3k = (1/V) Σ_i
@@ -1434,8 +1434,8 @@ class TwoPointStatistics {
           double win = calc_interpolation_window_in_fourier(kvec);
           mode_power /= pow(win, 2);  // ??? find matching equation
 
-          pk3d_sample[coord_flat][0] = vol_factor * mode_power.real();
-          pk3d_sample[coord_flat][1] = vol_factor * mode_power.imag();
+          twopt3d_sample[coord_flat][0] = vol_factor * mode_power.real();
+          twopt3d_sample[coord_flat][1] = vol_factor * mode_power.imag();
         }
       }
     }
@@ -1443,7 +1443,7 @@ class TwoPointStatistics {
     /// Inverse Fourier transform.
     fftw_plan fft_plan_backward = fftw_plan_dft_3d(
       this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2],
-      pk3d_sample, pk3d_sample,
+      twopt3d_sample, twopt3d_sample,
       FFTW_BACKWARD, FFTW_ESTIMATE
     );
     fftw_execute(fft_plan_backward);
@@ -1491,7 +1491,7 @@ class TwoPointStatistics {
           int idx_r = int(rmag / dr_sample + 0.5);
           if (idx_r < n_sample) {
             std::complex<double> pair_corr(
-              pk3d_sample[coord_flat][0], pk3d_sample[coord_flat][1]
+              twopt3d_sample[coord_flat][0], twopt3d_sample[coord_flat][1]
             );  // pair correlation contribution
 
             pair_corr *= ylm_a[coord_flat] * ylm_b[coord_flat];
@@ -1547,7 +1547,7 @@ class TwoPointStatistics {
       }
     }
 
-    delete[] pk3d_sample;
+    delete[] twopt3d_sample;
     delete[] xi_sample;
     delete[] npair_sample;
 
