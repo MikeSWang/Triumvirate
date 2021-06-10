@@ -58,14 +58,15 @@ int calc_power_spec(
 
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
     /// Compute Fourier--harmonic transform of the density fluctuation.
-    DensityField<ParticleCatalogue> dn_lm(params);
-    dn_lm.calc_ylm_weighted_fluctuation(
+    DensityField<ParticleCatalogue> dn_LM(params);
+      // NOTE: standard variable naming convention overriden
+    dn_LM.calc_ylm_weighted_fluctuation(
       particles_data, particles_rand,
       los_data, los_rand,
       alpha,
       params.ELL, M_
     );
-    dn_lm.calc_fourier_transform();
+    dn_LM.calc_fourier_transform();
 
     /// Compute shot noise.
     TwoPointStatistics<ParticleCatalogue> stats(params);
@@ -86,7 +87,7 @@ int calc_power_spec(
         continue;
       }
 
-      stats.calc_power_spec(dn_lm, dn_00, kbin, shotnoise, params.ell1, m1_);
+      stats.calc_power_spec(dn_LM, dn_00, kbin, shotnoise, params.ell1, m1_);
 
       for (int i = 0; i < params.num_kbin; i++) {
         pk_save[i] += coupling * stats.pk[i];
@@ -178,14 +179,15 @@ int calc_corr_func(
 
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
     /// Compute Fourier--harmonic transform of the density fluctuation.
-    DensityField<ParticleCatalogue> dn_lm(params);
-    dn_lm.calc_ylm_weighted_fluctuation(
+    DensityField<ParticleCatalogue> dn_LM(params);
+      // NOTE: standard variable naming convention overriden
+    dn_LM.calc_ylm_weighted_fluctuation(
       particles_data, particles_rand,
       los_data, los_rand,
       alpha,
       params.ELL, M_
     );
-    dn_lm.calc_fourier_transform();
+    dn_LM.calc_fourier_transform();
 
     /// Compute shot noise.
     TwoPointStatistics<ParticleCatalogue> stats(params);
@@ -205,7 +207,7 @@ int calc_corr_func(
         continue;
       }
 
-      stats.calc_corr_func(dn_lm, dn_00, rbin, shotnoise, params.ell1, m1_);
+      stats.calc_corr_func(dn_LM, dn_00, rbin, shotnoise, params.ell1, m1_);
 
       for (int i = 0; i < params.num_rbin; i++) {
         xi_save[i] += coupling * stats.xi[i];
@@ -381,11 +383,12 @@ int calc_corr_func_window(
   /// Compute two-point correlation function.
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
     /// Compute Fourier--harmonic transform of the density fluctuation.
-    DensityField<ParticleCatalogue> dn_lm(params);
-    dn_lm.calc_ylm_weighted_mean_density(
+    DensityField<ParticleCatalogue> dn_LM(params);
+      // NOTE: standard variable naming convention overriden
+    dn_LM.calc_ylm_weighted_mean_density(
       particles_rand, los_rand, alpha, params.ELL, M_
     );
-    dn_lm.calc_fourier_transform();
+    dn_LM.calc_fourier_transform();
 
     /// Compute shot noise.
     TwoPointStatistics<ParticleCatalogue> stats(params);
@@ -402,7 +405,7 @@ int calc_corr_func_window(
         continue;
       }
 
-      stats.calc_corr_func(dn_lm, dn_00, rbin, shotnoise, params.ell1, m1_);
+      stats.calc_corr_func(dn_LM, dn_00, rbin, shotnoise, params.ell1, m1_);
 
       for (int i = 0; i < params.num_rbin; i++) {
         xi_save[i] += coupling * stats.xi[i];
