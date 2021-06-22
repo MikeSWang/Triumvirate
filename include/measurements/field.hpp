@@ -409,7 +409,7 @@ class DensityField {
    * @param m Order of the spherical harmonic.
    * @returns Exit status.
    */
-  int calc_ylm_weighted_fields_for_bispec_shotnoise(
+  int calc_ylm_weighted_field_for_bispec_shotnoise(
     ParticleContainer& particles_data, ParticleContainer& particles_rand,
     LineOfSight* los_data, LineOfSight* los_rand,
     double alpha,
@@ -478,12 +478,12 @@ class DensityField {
    * @param m Order of the spherical harmonic.
    * @returns Exit status.
    */
-  int calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(
+  int calc_ylm_weighted_mean_density_for_3pcf_window_shotnoise(
     ParticleContainer& particles_rand,
     LineOfSight* los_rand,
     double alpha,
     int ell, int m
-  ) {  // ??? find matching equation
+  ) {
     /// Initialise the weight field.
     fftw_complex* weight = NULL;
 
@@ -501,14 +501,13 @@ class DensityField {
 
       weight[id][0] = ylm.real() * pow(particles_rand[id].w, 2);
       weight[id][1] = ylm.imag() * pow(particles_rand[id].w, 2);
+        /// ???: find matching equation
     }
 
     this->assign_weighted_field_to_grid(particles_rand, weight);
 
     fftw_free(weight); weight = NULL;
 
-    /// ??? Compute ?, i.e. ? in eq. (?)
-    /// in arXiv:1803.02132.
     for (int i = 0; i < this->params.nmesh_tot; i++) {
       this->field[i][0] *= alpha * alpha;
       this->field[i][1] *= alpha * alpha;
@@ -729,7 +728,7 @@ class DensityField {
           /// i.e. eq. (42) in arXiv:1803.02132.
           double k_lower = (kmag_in > dk_in/2) ? (kmag_in - dk_in/2) : 0.;
           double k_upper = kmag_in + dk_in/2;
-            // ??? factor these two lines above outside the for-loop
+            // ???: factor these two lines above outside the for-loop
           if (kmag > k_lower && kmag <= k_upper) {
             std::complex<double> den(
               density[coord_flat][0], density[coord_flat][1]
@@ -758,7 +757,7 @@ class DensityField {
     fftw_destroy_plan(fft_plan_backward);
 
     /// Apply the 4π equivalent factor in eq. (42) in arXiv:1803.02132
-    /// by mode averaging to compute F_LM.
+    /// by mode averaging to compute F_{\ell m}.
     for (int i = 0; i < this->params.nmesh_tot; i++) {
       this->field[i][0] /= double(nmode);
       this->field[i][1] /= double(nmode);
@@ -823,10 +822,10 @@ class DensityField {
           /// Weight with spherical Bessel functions to compute F_LM
           /// in eq. (49) in arXiv:1803.02132.
           this->field[coord_flat][0] =
-            bessel_j.eval(kmag * rmag_in) * (ylm[i] * den).real()
+            bessel_j.eval(kmag * rmag_in) * (ylm[coord_flat] * den).real()
             / this->params.volume;
           this->field[coord_flat][1] =
-            bessel_j.eval(kmag * rmag_in) * (ylm[i] * den).imag()
+            bessel_j.eval(kmag * rmag_in) * (ylm[coord_flat] * den).imag()
             / this->params.volume;
         }
       }
@@ -1102,8 +1101,8 @@ class TwoPointStatistics {
     int ell, int m
   ) {
     /// Set up fine-sampling of wavenumbers.
-    double dk_sample = 0.0001;  // NOTE: discretionary
-    int n_sample = 100000;  // NOTE: discretionary
+    double dk_sample = 0.0001;  // NOTE: discretionary choice
+    int n_sample = 100000;  // NOTE: discretionary choice
 
     std::complex<double>* pk_sample = new std::complex<double>[n_sample];
     int* nmode_sample = new int[n_sample];
@@ -1117,10 +1116,6 @@ class TwoPointStatistics {
       this->pk[i] = 0.;
       this->nmode_pk[i] = 0;
     }
-
-    /// ??? NOTE: Convert δ δ* = (2\pi)^3 δ_D(k_1 + k_2) P(k), where
-    /// (2π)^3 δ_D(k_1 + k_2) <-> V, thus
-    /// P(k) = (V/N^2) |δ(k)|^2.
 
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
@@ -1234,10 +1229,6 @@ class TwoPointStatistics {
     dk[1] = 2.*M_PI / this->params.boxsize[1];
     dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-    /// ??? NOTE: Convert δ δ* = (2π)^3 δ_D(k_1 + k_2) P(k), where
-    /// (2π)^3 δ_D(k_1 + k_2) <-> V, thus
-    /// P(k) = (V/N^2) |δ(k)|^2.
-
     double kvec[3];
     for (int i = 0; i < this->params.nmesh[0]; i++) {
       for (int j = 0; j < this->params.nmesh[1]; j++) {
@@ -1263,7 +1254,7 @@ class TwoPointStatistics {
           mode_power -= shotnoise * calc_shotnoise_func(kvec);
 
           double win = calc_interpolation_window_in_fourier(kvec);
-          mode_power /= pow(win, 2);  // ??? find matching equation
+          mode_power /= pow(win, 2);
 
           twopt3d_sample[coord_flat][0] = vol_factor * mode_power.real();
           twopt3d_sample[coord_flat][1] = vol_factor * mode_power.imag();
@@ -1281,8 +1272,8 @@ class TwoPointStatistics {
     fftw_destroy_plan(fft_plan_backward);
 
     /// Set up fine-sampling of separations.
-    double dr_sample = 0.5;  // NOTE: discretionary
-    int n_sample = 10000;  // NOTE: discretionary
+    double dr_sample = 0.5;  // NOTE: discretionary choice
+    int n_sample = 10000;  // NOTE: discretionary choice
 
     std::complex<double>* xi_sample = new std::complex<double>[n_sample];
     int* npair_sample = new int[n_sample];
@@ -1329,6 +1320,7 @@ class TwoPointStatistics {
             std::complex<double> ylm =
               ToolCollection::calc_reduced_spherical_harmonic(ell, m, rvec);
             pair_corr *= ylm;  // weight by spherical harmonics
+              // ???: find matching equation: single ylm?
 
             xi_sample[idx_r] += pair_corr;
             npair_sample[idx_r]++;
@@ -1367,20 +1359,20 @@ class TwoPointStatistics {
   }
 
   /**
-   * Calculate the two-point correlation function for the three-point
-   * correlation function.
+   * Calculate the two-point function for calculating shot noise in the
+   * three-point correlation function.
    *
-   * @param density_a First density field.
-   * @param density_b Second density field.
-   * @param rbin Separation bins.
-   * @param shotnoise Power shot noise level.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
-   * @param ylm_a Reduced spherical harmonic on a grid for the first density field.
-   * @param ylm_b Reduced spherical harmonic on a grid for the second density field.
+   * @param[in] density_a First density field.
+   * @param[in] density_b Second density field.
+   * @param[in] rbin Separation bins.
+   * @param[in] shotnoise Power shot noise level.
+   * @param[in] ell Degree of the spherical harmonic.
+   * @param[in] m Order of the spherical harmonic.
+   * @param[out] ylm_a Reduced spherical harmonic on a grid for the first density field.
+   * @param[out] ylm_b Reduced spherical harmonic on a grid for the second density field.
    * @returns Exit status.
    */
-  int calc_corr_func_for_3pt_corr_func(
+  int calc_2pt_func_for_3pt_corr_func(
     DensityField<ParticleContainer>& density_a,
     DensityField<ParticleContainer>& density_b,
     double* rbin,
@@ -1388,7 +1380,7 @@ class TwoPointStatistics {
     int ell, int m,
     std::complex<double>* ylm_a, std::complex<double>* ylm_b
   ) {
-    /// Set up 3-d power spectrum sampling for inverse Fourier transform.
+    /// Set up 3-d Fourier sampling for inverse Fourier transform.
     fftw_complex* twopt3d_sample = fftw_alloc_complex(this->params.nmesh_tot);
     for (int i = 0; i < this->params.nmesh_tot; i++) {
       twopt3d_sample[i][0] = 0.;
@@ -1397,15 +1389,11 @@ class TwoPointStatistics {
 
     double vol_factor = 1. / this->params.volume;  // convert ∫d^3k = (1/V) Σ_i
 
-    /// Compute gridded power spectrum.  See also `calc_power_spec` above.
+    /// Compute gridded Fourier field.  See also `calc_power_spec` above.
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
     dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    /// ??? NOTE: Convert δ δ* = (2π)^3 δ_D(k_1 + k_2) P(k), where
-    /// (2π)^3 δ_D(k_1 + k_2) <-> V, thus
-    /// P(k) = (V/N^2) |δ(k)|^2.
 
     double kvec[3];
     for (int i = 0; i < this->params.nmesh[0]; i++) {
@@ -1450,8 +1438,8 @@ class TwoPointStatistics {
     fftw_destroy_plan(fft_plan_backward);
 
     /// Set up fine-sampling of separations.
-    double dr_sample = 0.5;  // NOTE: discretionary
-    int n_sample = 10000;  // NOTE: discretionary
+    double dr_sample = 0.5;  // NOTE: discretionary choice
+    int n_sample = 10000;  // NOTE: discretionary choice
 
     std::complex<double>* xi_sample = new std::complex<double>[n_sample];
     int* npair_sample = new int[n_sample];
@@ -1470,7 +1458,7 @@ class TwoPointStatistics {
     dr[1] = this->params.boxsize[1] / double(this->params.nmesh[1]);
     dr[2] = this->params.boxsize[2] / double(this->params.nmesh[2]);
 
-    /// Perform two-point correlation function fine sampling.
+    /// Perform two-point function fine sampling.
     double rvec[3];
     for (int i = 0; i < this->params.nmesh[0]; i++) {
       for (int j = 0; j < this->params.nmesh[1]; j++) {
@@ -1492,10 +1480,9 @@ class TwoPointStatistics {
           if (idx_r < n_sample) {
             std::complex<double> pair_corr(
               twopt3d_sample[coord_flat][0], twopt3d_sample[coord_flat][1]
-            );  // pair correlation contribution
+            );
 
             pair_corr *= ylm_a[coord_flat] * ylm_b[coord_flat];
-              // ??? find matching equation: weight by double spherical harmonics
 
             xi_sample[idx_r] += pair_corr;
             npair_sample[idx_r]++;
@@ -1504,11 +1491,11 @@ class TwoPointStatistics {
       }
     }
 
-    /// Perform two-point correlation function binning.
+    /// Perform two-point function binning.
     double drbin[this->params.num_rbin - 1];
     for (int j = 0; j < this->params.num_rbin - 1; j++) {
       drbin[j] = rbin[j + 1] - rbin[j];
-    }  // irregular binning
+    }  // possible irregular binning
 
     for (int j = 0; j < this->params.num_rbin; j++) {
       double r_lower = 0.;
@@ -1534,6 +1521,7 @@ class TwoPointStatistics {
       }
     }
 
+    /// Calculate the majority part of eq. (51) in arXiv:1803.02132.
     double dV = this->params.volume / double(this->params.nmesh_tot);
       // NOTE: standard variable naming convention overriden
     for (int i = 0; i < this->params.num_rbin; i++) {
@@ -1541,7 +1529,6 @@ class TwoPointStatistics {
         this->xi[i] *=
           pow(-1., this->params.ell1 + this->params.ell2) / dV
           / double(this->npair_xi[i]) / double(this->npair_xi[i]);
-          // ??? find matching equation
       } else {
         this->xi[i] = 0.;
       }
@@ -1588,7 +1575,7 @@ class TwoPointStatistics {
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 
       sum_data += pow(particles_data[id].w, 2) * ylm;
-        // ??? find matching equation: single ylm only
+        // ???: find matching equation: single ylm?
     }
 
     for (int id = 0; id < particles_rand.nparticles; id++) {
@@ -1600,7 +1587,7 @@ class TwoPointStatistics {
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 
       sum_rand += pow(particles_rand[id].w, 2) * ylm;
-        // ??? find matching equation: single ylm only
+        // ???: find matching equation: single ylm?
     }
 
     return sum_data + pow(alpha, 2) * sum_rand;
@@ -1627,14 +1614,14 @@ class TwoPointStatistics {
   }
 
   /**
-   * Calculate shot noise for two-point correlation function window.
+   * Calculate shot noise for correlation function window.
    *
    * @param particles_rand (Reference to) the random-source particle container.
    * @param los_rand Random-source particle lines of sight.
    * @param alpha Alpha ratio.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
-   * @returns Shot noise for two-point correlation function window.
+   * @returns Shot noise for correlation function window.
    */
   std::complex<double> calc_shotnoise_for_corr_func_window(
     ParticleContainer& particles_rand,
@@ -1651,8 +1638,8 @@ class TwoPointStatistics {
       std::complex<double> ylm =
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 
-      sum_rand += pow(particles_rand[id].w, 2) * ylm;
-        // ??? find matching equation
+      sum_rand += ylm * pow(particles_rand[id].w, 2);
+        // ???: find matching equation: single ylm?
     }
 
     return pow(alpha, 2) * sum_rand;
@@ -1715,16 +1702,16 @@ class TwoPointStatistics {
    * @param shotnoise Shot noise.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
-   * @param xi Two-point correlation function.
+   * @param three_pt Three-point function placeholder.
    * @returns Exit status.
    */
-  int calc_shotnoise_for_bispec_ijk(
+  int calc_shotnoise_for_bispec_on_grid(
     DensityField<ParticleContainer>& density_a,
     DensityField<ParticleContainer>& density_b,
     std::complex<double> shotnoise,
     int ell, int m,
-    fftw_complex* xi
-  ) {  // ??? find matching equation
+    fftw_complex* three_pt
+  ) {
     double vol_factor = 1. / this->params.volume;  // convert ∫d^3k = (1/V) Σ_i
 
     /// Compute gridded power spectrum.  See also `calc_power_spec` above.
@@ -1732,10 +1719,6 @@ class TwoPointStatistics {
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
     dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    /// ??? NOTE: Convert δ δ* = (2π)^3 δ_D(k_1 + k_2) P(k), where
-    /// (2π)^3 δ_D(k_1 + k_2) <-> V, thus
-    /// P(k) = (V/N^2) |δ(k)|^2.
 
     double kvec[3];
     for (int i = 0; i < this->params.nmesh[0]; i++) {
@@ -1764,16 +1747,17 @@ class TwoPointStatistics {
           double win = calc_interpolation_window_in_fourier(kvec);
           mode_power /= pow(win, 2);
 
-          xi[coord_flat][0] = vol_factor * mode_power.real();
-          xi[coord_flat][1] = vol_factor * mode_power.imag();
+          three_pt[coord_flat][0] = vol_factor * mode_power.real();
+          three_pt[coord_flat][1] = vol_factor * mode_power.imag();
         }
       }
     }
 
-    /// Inverse Fourier transform.
+    /// Inverse Fourier transform.  Calculate S_{\ell_1 \ell_2 L; i = j != k}
+    /// in eq. (45) in arXiv:1803.02132.
     fftw_plan fft_plan_backward = fftw_plan_dft_3d(
       this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2],
-      xi, xi,
+      three_pt, three_pt,
       FFTW_BACKWARD, FFTW_ESTIMATE
     );
     fftw_execute(fft_plan_backward);
@@ -1885,7 +1869,7 @@ class TwoPointStatistics {
    * @param kvec Wavevector.
    * @returns Window value in Fourier space.
    */
-  double calc_interpolation_window_in_fourier(double* kvec) {  // ??? redudant
+  double calc_interpolation_window_in_fourier(double* kvec) {  // ???: redundant?
     if (0) {
     } else if (this->params.assignment == "NGP") {
       return this->calc_interpolation_window_in_fourier_ngp(kvec);
@@ -1907,7 +1891,7 @@ class TwoPointStatistics {
    * @param kvec Wavevector.
    * @returns Window value in Fourier space.
    */
-  double calc_interpolation_window_in_fourier_ngp(const double* kvec) {  // ??? redudant
+  double calc_interpolation_window_in_fourier_ngp(const double* kvec) {  // ???: redundant?
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
@@ -1937,7 +1921,7 @@ class TwoPointStatistics {
    * @param kvec Wavevector.
    * @returns Window value in Fourier space.
    */
-  double calc_interpolation_window_in_fourier_cic(const double* kvec) {  // ??? redudant
+  double calc_interpolation_window_in_fourier_cic(const double* kvec) {  // ???: redundant?
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
@@ -1967,7 +1951,7 @@ class TwoPointStatistics {
    * @param kvec Wavevector.
    * @returns Window value in Fourier space.
    */
-  double calc_interpolation_window_in_fourier_tsc(const double* kvec) {  // ??? redudant
+  double calc_interpolation_window_in_fourier_tsc(const double* kvec) {  // ???: redundant?
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];

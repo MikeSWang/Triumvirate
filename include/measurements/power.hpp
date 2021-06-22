@@ -79,7 +79,7 @@ int calc_power_spec(
 
     /// ???
     for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-      /// ???: (-1)^m_1 δ_{m_1, -M}.
+      /// ??? Calculate equivalent to (-1)^m_1 δ_{m_1, -M}.
       double coupling = (2*params.ELL + 1) * (2*params.ell1 + 1)
         * wigner_3j(params.ell1, 0, params.ELL, 0, 0, 0)
         * wigner_3j(params.ell1, 0, params.ELL, m1_, 0, M_);
@@ -198,8 +198,9 @@ int calc_corr_func(
       params.ELL, M_
     );
 
+    /// ???
     for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-      /// ???: (-1)^m_1 δ_{m_1, -M}.
+      /// ??? Calculate equivalent to (-1)^m_1 δ_{m_1, -M}.
       double coupling = (2*params.ELL + 1) * (2*params.ell1 + 1)
         * wigner_3j(params.ell1, 0, params.ELL, 0, 0, 0)
         * wigner_3j(params.ell1, 0, params.ELL, m1_, 0, M_);
@@ -298,7 +299,8 @@ int calc_power_spec_window(
   std::cout << "Current memory usage: " << bytes << " bytes." << std::endl;
 
   /// Compute power spectrum window function.
-  stats.calc_power_spec(dn_00, dn_00, kbin, shotnoise, params.ell1, 0);  // ??? ell1 or just ELL
+  stats.calc_power_spec(dn_00, dn_00, kbin, shotnoise, params.ELL, 0);
+    // `ell1` or `ELL` as  equivalent
 
   for (int i = 0; i < params.num_kbin; i++) {
     pk_save[i] += stats.pk[i];
@@ -396,8 +398,9 @@ int calc_corr_func_window(
       particles_rand, los_rand, alpha, params.ELL, M_
     );
 
+    /// ???
     for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-      /// ???: (-1)^m_1 δ_{m_1, -M}.
+      /// ??? Calculate equivalent to (-1)^m_1 δ_{m_1, -M}.
       double coupling = (2*params.ELL + 1) * (2*params.ell1 + 1)
           * wigner_3j(params.ell1, 0, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, 0, params.ELL, m1_, 0, M_);

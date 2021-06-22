@@ -128,7 +128,7 @@ class ToolCollection {
             (i * params.nmesh[1] + j) * params.nmesh[2] + k;
 
           /// Note the origin is at the centre of the mesh grid.
-          /// ???: Have the two halves of the grid in each dimension been
+          /// ??? NOTE: Two halves of the grid in each dimension have been
           /// rearranged for FFT convention.
           kvec[0] = (i < params.nmesh[0]/2) ?
             i * dk[0] : (i - params.nmesh[0]) * dk[0];
@@ -183,7 +183,7 @@ class ToolCollection {
             (i * params.nmesh[1] + j) * params.nmesh[2] + k;
 
           /// Note the origin is at the centre of the mesh grid.
-          /// ???: Have the two halves of the grid in each dimension been
+          /// ??? NOTE: Two halves of the grid in each dimension have been
           /// rearranged for FFT convention.
           rvec[0] = (i < params.nmesh[0]/2) ?
             (i * dr[0]) : ((i - params.nmesh[0]) * dr[0]);

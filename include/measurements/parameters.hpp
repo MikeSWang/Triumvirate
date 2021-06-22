@@ -44,8 +44,8 @@ class ParameterSet {
 
   std::string form;  ///< full or diagonal form for the bispectrum
 
-  int ith_kbin;  ///< ??? TODO: rename variable
-  int ith_rbin;  ///< ??? TODO: rename variable
+  int ith_kbin;
+  int ith_rbin;
   int NR;  ///< ??? TODO: rename variable
 
   std::string reconstruction;  ///< reconstruction flag
@@ -285,7 +285,7 @@ class ParameterSet {
     /// Set mock data and random catalogue inputs.  Make subdirectories
     /// to store the output for each data realisation.
     if (this->catalogue_type == "mock") {
-      /// ???: Enumerate the input data catalogue.
+      /// ??? Enumerate the input data catalogue.
       int realisation = numTasks * this->NR + thisTask + 1;
 
       if (realisation > 2048) {
