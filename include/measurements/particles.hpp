@@ -62,7 +62,7 @@ class ParticleCatalogue {
     this->nparticles = num;
 
     /// Renew particle data.
-    delete[] particles; particles = NULL;  // ??? not this->particles
+    delete[] particles; particles = NULL;  // ???: not this->particles?
     this->particles = new ParticleData[this->nparticles];
 
     /// Determine memory usage.
@@ -75,7 +75,7 @@ class ParticleCatalogue {
       particles[id].pos[1] = 0.;
       particles[id].pos[2] = 0.;
       particles[id].w = 0.;
-    }  // ??? not this->particles
+    }  // ???: not this->particles?
   }
 
   /**
@@ -83,7 +83,7 @@ class ParticleCatalogue {
    */
   void finalise_particles() {
     /// Free particle usage.
-    if (particles != NULL) {  // ??? not this->particles
+    if (particles != NULL) {  // ???: not this->particles?
       delete[] this->particles; this->particles = NULL;
       bytes -= double(this->nparticles) * sizeof(struct ParticleData)
         / 1024. / 1024. / 1024.;
@@ -141,7 +141,7 @@ class ParticleCatalogue {
       particles[num_lines].pos[1] = y;
       particles[num_lines].pos[2] = z;
       particles[num_lines].w = w;
-        // ??? not this->particles
+        // ???: not this->particles?
 
       num_lines++;
     }
@@ -215,7 +215,7 @@ class ParticleCatalogue {
    * @returns Exit status.
    */
   int calc_min_and_max() {
-    if (particles == NULL) {  // ??? not this->particles?
+    if (particles == NULL) {  // ???: not this->particles?
       return -1;
     }
 
@@ -248,7 +248,7 @@ class ParticleCatalogue {
       if (max[2] < particles[id].pos[2]) {
         max[2] = particles[id].pos[2];
       }
-    }  // ??? not this->particles
+    }  // ???: not this->particles?
 
     this->pos_min[0] = min[0]; this->pos_max[0] = max[0];
     this->pos_min[1] = min[1]; this->pos_max[1] = max[1];
@@ -291,7 +291,7 @@ class ParticleCatalogue {
    */
   static double calc_norm_for_power_spec(
       ParticleCatalogue& particles_data, double survey_vol_norm
-    ) {  // ??? not using `_rand` instead of `_data`
+    ) {
     double num_wgt_data = 0.;
     for (int id = 0; id < particles_data.nparticles; id++) {
       num_wgt_data += particles_data[id].w;
@@ -312,7 +312,7 @@ class ParticleCatalogue {
    */
   static double calc_norm_for_bispec(
       ParticleCatalogue& particles_data, double survey_vol_norm
-    ) {  // ??? not using `_rand` instead of `_data`
+    ) {
     double num_wgt_data = 0.;
     for (int id = 0; id < particles_data.nparticles; id++) {
       num_wgt_data += particles_data[id].w;
@@ -333,7 +333,7 @@ class ParticleCatalogue {
    * @returns Exit status.
    */
   int offset_particles(const double* dpos) {
-    if (particles == NULL) {  // ??? not this->particles?
+    if (particles == NULL) {  // ???: not this->particles?
       return -1;
     }
 
@@ -359,12 +359,12 @@ class ParticleCatalogue {
       ParticleCatalogue& particles_data,
       ParticleCatalogue& particles_rand,
       ParameterSet& params,
-      double factor=3.  // ??? why, and why 3.
-    ) {  // ??? TODO: change function description
+      double factor=3.  // ???: why, and why 3?
+    ) {  // TODO: change function name/description
     particles_data.calc_min_and_max();
     particles_rand.calc_min_and_max();
 
-    /// ???: Compensate by grid adjustment.
+    /// ??? Compensate by grid adjustment.
     double dpos[3] = {
       particles_rand.pos_min[0],
       particles_rand.pos_min[1],

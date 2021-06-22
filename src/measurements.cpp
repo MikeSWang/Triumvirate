@@ -41,7 +41,7 @@
  */
 int main(int argc, char *argv[]) {
   if (thisTask == 0) {
-    printf("Program started.\n\n");
+    printf("%s\n", std::string(80, '>').c_str());
   }
 
   /// ******************
@@ -51,13 +51,14 @@ int main(int argc, char *argv[]) {
   timeStart = clock();
 
   if (thisTask == 0) {
-    printf("%s\n", std::string(80, '>').c_str());
-    printf("Initialising...\n\n");
+    printf("[Status] :: Initialising program...\n");
   }
 
   /// Initialise parameters.
   if (argc != 2 && thisTask == 0) {
-    printf("[Error] :: Missing parameter file. Add parameter file to the call.\n");
+    printf(
+      "[Error] :: Missing parameter file. Add parameter file to the call.\n"
+    );
     exit(1);
   }
 
@@ -71,7 +72,10 @@ int main(int argc, char *argv[]) {
 
   if (thisTask == 0) {
     printf("[Status] :: Parameters have been initialised.\n");
-    printf("[Info] :: Check 'used_parameters' file in your 'output_dir' directory for reference.\n");
+    printf(
+      "[Info] :: Check 'used_parameters' file in your "
+      "'output_dir' directory for reference.\n"
+    );
   }
 
   /// Set up measurements.
@@ -83,8 +87,10 @@ int main(int argc, char *argv[]) {
 
   durationInSec = double(clock() - timeStart);
   if (thisTask == 0) {
-    printf("\n... total time elapsed: %.3f seconds.\n", durationInSec / CLOCKS_PER_SEC);
-    printf("%s\n\n", std::string(80, '<').c_str());
+    printf(
+      "[Status] :: ... program initialised (%.3f seconds elapsed in total).\n",
+      durationInSec / CLOCKS_PER_SEC
+    );
   }
 
   /// *******************
@@ -92,8 +98,7 @@ int main(int argc, char *argv[]) {
   /// *******************
 
   if (thisTask == 0) {
-    printf("%s\n", std::string(80, '>').c_str());
-    printf("Reading and processing catalogues...\n\n");
+    printf("[Status] :: Reading and processing catalogues...\n");
   }
 
   /// Read catalogue files.
@@ -179,8 +184,11 @@ int main(int argc, char *argv[]) {
 
   durationInSec = double(clock() - timeStart);
   if (thisTask == 0) {
-    printf("\n... total time elapsed: %.3f seconds.\n", durationInSec / CLOCKS_PER_SEC);
-    printf("%s\n\n", std::string(80, '<').c_str());
+    printf(
+      "[Status] :: ... catalogues read and processed "
+      "(%.3f seconds elapsed in total).\n",
+      durationInSec / CLOCKS_PER_SEC
+    );
   }
 
   /// ****************
@@ -188,8 +196,7 @@ int main(int argc, char *argv[]) {
   /// ****************
 
   if (thisTask == 0) {
-    printf("%s\n", std::string(80, '>').c_str());
-    printf("Making measurements...\n\n");
+    printf("[Status] :: Making measurements...\n");
   }
 
   /// ???
@@ -209,37 +216,31 @@ int main(int argc, char *argv[]) {
 
   /// IDEA: Formalise the choosing of measurement programs by parsing
   /// an additional command-line argument.
-  if (params.catalogue_type == "mock" || params.catalogue_type == "survey") {
-    /*
-    calc_power_spec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, survey_vol_norm);
-    calc_corr_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
-    calc_corr_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
-    */
+  if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
+    // calc_power_spec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, survey_vol_norm);
+    // calc_corr_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
+    // calc_corr_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
 
     calc_bispec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, survey_vol_norm);
-    /*
-    calc_3pt_corr_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
-    calc_3pt_corr_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
-    calc_3pt_corr_func_window_for_3pcf(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
-    */
+    // calc_3pt_corr_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
+    // calc_3pt_corr_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
+    // calc_3pt_corr_func_window_for_3pcf(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
   }
 
   if (params.catalogue_type == "sim") {
-    /*
-    calc_power_spec_in_box(particles_data, params, kbin);
-    calc_corr_func_in_box(particles_data, params, rbin);
-    */
+    // calc_power_spec_in_box(particles_data, params, kbin);
+    // calc_corr_func_in_box(particles_data, params, rbin);
 
-    calc_bispec_in_box(particles_data, params, kbin);
-    /*
-    calc_3pt_corr_func_in_box(particles_data, params, rbin);
-    */
+    // calc_bispec_in_box(particles_data, params, kbin);
+    // calc_3pt_corr_func_in_box(particles_data, params, rbin);
   }
 
   durationInSec = double(clock() - timeStart);
   if (thisTask == 0) {
-    printf("\n... total time elapsed: %.3f seconds.\n", durationInSec / CLOCKS_PER_SEC);
-    printf("%s\n\n", std::string(80, '<').c_str());
+    printf(
+      "[Status] :: ... measurements made (%.3f seconds elapsed in total).\n",
+      durationInSec / CLOCKS_PER_SEC
+    );
   }
 
   /// ****************
@@ -254,10 +255,13 @@ int main(int argc, char *argv[]) {
   durationInSec = double(clock() - timeStart);
 
   if (thisTask == 0) {
-    printf("Persistent memory usage: %.0f bytes.\n", bytes);
-    printf("Total time elapsed: %.3f seconds.\n\n", durationInSec / CLOCKS_PER_SEC);
-
-    printf("Program ended.\n");
+    printf("[Info] :: Persistent memory usage: %.0f bytes.\n", bytes);
+    printf(
+      "[Info] :: Total time elapsed is %.3f seconds.\n",
+      durationInSec / CLOCKS_PER_SEC
+    );
+    printf("[Info] :: Program has completed.\n");
+    printf("%s\n", std::string(80, '<').c_str());
   }
 
   return 0;

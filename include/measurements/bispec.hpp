@@ -23,7 +23,9 @@ int calc_bispec(
   double survey_vol_norm
 ) {
   if (thisTask == 0) {
-    printf("[Status] :: Measuring bispectrum.\n");
+    printf(
+			"[Status] :: Measuring bispectrum from survey and random catalogues.\n"
+		);
   }
 
   if (
@@ -44,7 +46,7 @@ int calc_bispec(
   if (thisTask == 0) {
     printf(
       "[Status] :: Computing shot noise terms "
-      "(... %.3f seconds elapsed in total).\n",
+      "(%.3f seconds elapsed...).\n",
       durationInSec / CLOCKS_PER_SEC
     );
   }
@@ -56,14 +58,14 @@ int calc_bispec(
   }
 
   /// Compute shot noise terms.
-  DensityField<ParticleCatalogue> dn_00_shotnoise(params);
-  dn_00_shotnoise.calc_ylm_weighted_fluctuation(
+  DensityField<ParticleCatalogue> dn_00_for_shotnoise(params);
+  dn_00_for_shotnoise.calc_ylm_weighted_fluctuation(
     particles_data, particles_rand,
     los_data, los_rand,
     alpha,
     0, 0
   );
-  dn_00_shotnoise.calc_fourier_transform();
+  dn_00_for_shotnoise.calc_fourier_transform();
 
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
@@ -76,32 +78,42 @@ int calc_bispec(
           continue;
         }
 
-        DensityField<ParticleCatalogue> shotnoise_LM(params);
-        shotnoise_LM.calc_ylm_weighted_fields_for_bispec_shotnoise(
+				/// Calculate N_LM in eq. (46) in arXiv:1803.02132.
+        DensityField<ParticleCatalogue> shotnoise_quadratic_LM(params);
+        shotnoise_quadratic_LM.calc_ylm_weighted_fields_for_bispec_shotnoise(
           particles_data, particles_rand,
           los_data, los_rand,
           alpha,
           params.ELL, M_
         );
-        shotnoise_LM.calc_fourier_transform();
+        shotnoise_quadratic_LM.calc_fourier_transform();
 
+    		/// Calculate \bar{S}_LM in eq. (46) in arXiv:1803.02132.
         TwoPointStatistics<ParticleCatalogue> stats(params);
-        std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
-          particles_data, particles_rand,
-          los_data, los_rand,
-          alpha,
-          params.ELL, M_
-        );
+        std::complex<double> shotnoise_cubic_LM =
+					stats.calc_shotnoise_for_bispec_from_self(
+						particles_data, particles_rand,
+						los_data, los_rand,
+						alpha,
+						params.ELL, M_
+					);
 
+    		/// Calculate S_{\ell_1 \ell_2 L; i = j = k} in eq. (45)
+				/// in arXiv:1803.02132.
         if (params.ell1 == 0 && params.ell2 == 0) {
           for (int i = 0; i < params.num_kbin; i++) {
-            shotnoise_save[i] += coupling * shotnoise;
+            shotnoise_save[i] += coupling * shotnoise_cubic_LM;
           }
         }
 
+    		/// Calculate S_{\ell_1 \ell_2 L; i != j = k} in eq. (45)
+				/// in arXiv:1803.02132.
         if (params.ell2 == 0) {
           stats.calc_power_spec(
-            dn_00_shotnoise, shotnoise_LM, kbin, shotnoise, params.ell1, m1_
+            dn_00_for_shotnoise, shotnoise_quadratic_LM,
+						kbin,
+						shotnoise_cubic_LM,
+						params.ell1, m1_
           );
           if (params.form == "diag") {
             for (int i = 0; i < params.num_kbin; i++) {
@@ -114,9 +126,14 @@ int calc_bispec(
           }
         }
 
+    		/// Calculate S_{\ell_1 \ell_2 L; i = k != j} in eq. (45)
+				/// in arXiv:1803.02132.
         if (params.ell1 == 0) {
           stats.calc_power_spec(
-            dn_00_shotnoise, shotnoise_LM, kbin, shotnoise, params.ell2, m2_
+            dn_00_for_shotnoise, shotnoise_quadratic_LM,
+						kbin,
+						shotnoise_cubic_LM,
+						params.ell2, m2_
           );
           for (int i = 0; i < params.num_kbin; i++) {
             shotnoise_save[i] += coupling * stats.pk[i];
@@ -126,8 +143,8 @@ int calc_bispec(
         durationInSec = double(clock() - timeStart);
         if (thisTask == 0) {
           printf(
-            "[Status] :: Computed for orders m1 = %d, m2 = %d, M = %d "
-            "(... %.3f seconds elapsed in total).\n",
+            "[Status] :: Computed shot noise term for orders "
+            "m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
             m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
           );
         }
@@ -135,16 +152,17 @@ int calc_bispec(
     }
   }
 
-  dn_00_shotnoise.finalise_density_field();
+  dn_00_for_shotnoise.finalise_density_field();
 
-  DensityField<ParticleCatalogue> shotnoise_00(params);
-  shotnoise_00.calc_ylm_weighted_fields_for_bispec_shotnoise(
+	/// Calculate N_00 in eq. (45) in arXiv:1803.02132.
+  DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
+  shotnoise_quadratic_00.calc_ylm_weighted_fields_for_bispec_shotnoise(
     particles_data, particles_rand,
     los_data, los_rand,
     alpha,
     0, 0
   );
-  shotnoise_00.calc_fourier_transform();
+  shotnoise_quadratic_00.calc_fourier_transform();
 
   SphericalBesselCalculator sj1(params.ell1);
   SphericalBesselCalculator sj2(params.ell2);
@@ -184,33 +202,39 @@ int calc_bispec(
           continue;
         }
 
-        DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
-        dn_LM_shotnoise.calc_ylm_weighted_fluctuation(
+        DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
+        dn_LM_for_shotnoise.calc_ylm_weighted_fluctuation(
           particles_data, particles_rand,
           los_data, los_rand,
           alpha,
           params.ELL, M_
         );
-        dn_LM_shotnoise.calc_fourier_transform();
+        dn_LM_for_shotnoise.calc_fourier_transform();
 
+    		/// Calculate S_{\ell_1 \ell_2 L; i = j != k} in eq. (45)
+				/// in arXiv:1803.02132.
         TwoPointStatistics<ParticleCatalogue> stats(params);
-        std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
-          particles_data, particles_rand,
-          los_data, los_rand,
-          alpha,
-          params.ELL, M_
-        );
+        std::complex<double> shotnoise_cubic_LM =
+					stats.calc_shotnoise_for_bispec_from_self(
+						particles_data, particles_rand,
+						los_data, los_rand,
+						alpha,
+						params.ELL, M_
+					);
 
-        fftw_complex* xi = fftw_alloc_complex(params.nmesh_tot);
+        fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh_tot);
         bytes += sizeof(fftw_complex) *
           double(params.nmesh_tot) / 1024. / 1024. / 1024.;
         for (int i = 0; i < params.nmesh_tot; i++) {
-          xi[i][0] = 0.;
-          xi[i][1] = 0.;
+          three_pt_holder[i][0] = 0.;
+          three_pt_holder[i][1] = 0.;
         }
 
         stats.calc_shotnoise_for_bispec_ijk(
-          dn_LM_shotnoise, shotnoise_00, shotnoise, params.ELL, M_, xi
+          dn_LM_for_shotnoise, shotnoise_quadratic_00,
+					shotnoise_cubic_LM,
+					params.ELL, M_,
+					three_pt_holder
         );
 
         for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
@@ -243,11 +267,16 @@ int calc_bispec(
                   rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
                 );
 
-                std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???
+                std::complex<double> shotnoise_grid(
+									three_pt_holder[coord_flat][0],
+									three_pt_holder[coord_flat][1]
+								);
                 double j1 = sj1.eval(kmag_a * rmag);
                 double j2 = sj2.eval(kmag_b * rmag);
 
-                shotnoise_sum += j1 * j2 * ylm_a[coord_flat] * ylm_b[coord_flat] * ff;
+                shotnoise_sum +=
+									j1 * j2 * ylm_a[coord_flat] * ylm_b[coord_flat]
+									* shotnoise_grid;
               }
             }
           }
@@ -261,15 +290,15 @@ int calc_bispec(
           durationInSec = double(clock() - timeStart);
           if (thisTask == 0) {
             printf(
-              "[Status] :: Computed for wavenumber and orders "
+              "[Status] :: Computed shot noise term for wavenumber and orders "
               "k2 = %.3f, m1 = %d, m2 = %d, M = %d "
-              "(... %.3f seconds elapsed in total).\n",
+              "(%.3f seconds elapsed).\n",
               kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
             );
           }
         }
 
-        fftw_free(xi); xi = NULL;
+        fftw_free(three_pt_holder); three_pt_holder = NULL;
         bytes -= sizeof(fftw_complex)
           * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
       }
@@ -281,20 +310,23 @@ int calc_bispec(
     }
   }
 
-  shotnoise_00.finalise_density_field();
+  shotnoise_quadratic_00.finalise_density_field();
 
   durationInSec = double(clock() - timeStart);
   if (thisTask == 0) {
     printf(
-      "[Status] :: Computed shot noise terms "
-      "(... %.3f seconds elapsed in total).\n",
+      "[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
       durationInSec / CLOCKS_PER_SEC
     );
   }
 
   /// Initialise output bispectrum.
+	double durationInSec = double(clock() - timeStart);
   if (thisTask == 0) {
-    printf("[Status] :: Measuring bispectrum.\n");
+    printf(
+			"[Status] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
   }
 
   std::complex<double>* bk_save = new std::complex<double>[params.num_kbin];
@@ -345,6 +377,7 @@ int calc_bispec(
           continue;
         }
 
+				/// Calculate G_{LM} in eq. (42) in arXiv:1803.02132.
         DensityField<ParticleCatalogue> dn_LM(params);
         dn_LM.calc_ylm_weighted_fluctuation(
           particles_data, particles_rand,
@@ -356,13 +389,15 @@ int calc_bispec(
         dn_LM.apply_assignment_compensation();
         dn_LM.calc_inverse_fourier_transform();
 
-        DensityField<ParticleCatalogue> dn_tilde1(params);
+				/// NOTE: Standard naming convention is overriden below.
+
+				/// Calculate F_{\ell m} in eq. (42) in arXiv:1803.02132.
+        DensityField<ParticleCatalogue> F_ellm_a(params);
         double kmag_a;
         double dk = kbin[1] - kbin[0];
         if (params.form == "full") {
           kmag_a = kbin[params.ith_kbin];
-          /// Compute ``\delta\tilde{n}_1``.
-          dn_tilde1.calc_inverse_fourier_transform_for_bispec(
+          F_ellm_a.calc_inverse_fourier_transform_for_bispec(
             dn_00, kmag_a, dk, ylm_a
           );
         }
@@ -370,27 +405,25 @@ int calc_bispec(
         for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
           double kmag_b = kbin[i_kbin];
 
-          /// Compute ``\delta\tilde{n}_1``.
           if (params.form == "diag") {
             kmag_a = kmag_b;
-            dn_tilde1.calc_inverse_fourier_transform_for_bispec(
+            F_ellm_a.calc_inverse_fourier_transform_for_bispec(
               dn_00, kmag_a, dk, ylm_a
             );
           }
 
-          /// Compute ``\delta\tilde{n}_2``.
-          DensityField<ParticleCatalogue> dn_tilde2(params);
-          dn_tilde2.calc_inverse_fourier_transform_for_bispec(
+          DensityField<ParticleCatalogue> F_ellm_b(params);
+          F_ellm_b.calc_inverse_fourier_transform_for_bispec(
             dn_00, kmag_b, dk, ylm_b
           );
 
           double factor = params.volume / double(params.nmesh_tot);
           std::complex<double> bk_sum = 0.;
           for (int i = 0; i < params.nmesh_tot; i++) {
-            std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);  // ???
-            std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);  // ???
-            std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);  // ???
-            bk_sum += factor * f1 * f2 * f3;
+            std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
+            std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
+            std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+            bk_sum += factor * F_ellm_1 * F_ellm_2 * G_LM;
           }
 
           bk_save[i_kbin] += coupling * bk_sum;
@@ -398,9 +431,9 @@ int calc_bispec(
           double durationInSec = double(clock() - timeStart);
           if (thisTask == 0) {
             printf(
-              "[Status] :: Computed for wavenumber and order "
+              "[Status] :: Computed bispectrum term for wavenumber and orders "
               "k2 = %.3f, m1 = %d, m2 = %d, M = %d "
-              "(... %.3f seconds elapsed in total).\n",
+              "(%.3f seconds elapsed).\n",
               kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
             );
           }
@@ -412,6 +445,15 @@ int calc_bispec(
       bytes -= 2 * sizeof(std::complex<double>)
         * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
     }
+  }
+
+  durationInSec = double(clock() - timeStart);
+  if (thisTask == 0) {
+    printf(
+      "[Status] :: Computed bispectrum terms "
+      "(... %.3f seconds elapsed).\n",
+      durationInSec / CLOCKS_PER_SEC
+    );
   }
 
   /// Normalise and then save the output.
@@ -511,9 +553,9 @@ int calc_bispec_in_box(
   }
 
   /// Compute shot noise terms.
-  DensityField<ParticleCatalogue> dn_00_shotnoise(params);
-  dn_00_shotnoise.calc_fluctuation_in_box(particles_data, params);
-  dn_00_shotnoise.calc_fourier_transform();
+  DensityField<ParticleCatalogue> dn_00_for_shotnoise(params);
+  dn_00_for_shotnoise.calc_fluctuation_in_box(particles_data, params);
+  dn_00_for_shotnoise.calc_fourier_transform();
 
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
@@ -527,9 +569,9 @@ int calc_bispec_in_box(
         continue;
       }
 
-      DensityField<ParticleCatalogue> shotnoise_LM(params);
-      shotnoise_LM.calc_density_field_in_box_for_bispec(particles_data);
-      shotnoise_LM.calc_fourier_transform();
+      DensityField<ParticleCatalogue> density(params);  // ??? rename variables
+      density.calc_density_field_in_box_for_bispec(particles_data);
+      density.calc_fourier_transform();
 
       TwoPointStatistics<ParticleCatalogue> stats(params);
       std::complex<double> shotnoise = double(particles_data.nparticles);
@@ -543,7 +585,7 @@ int calc_bispec_in_box(
 
       if (params.ell2 == 0) {
         stats.calc_power_spec(
-          dn_00_shotnoise, shotnoise_LM,
+          dn_00_for_shotnoise, density,
           kbin,
           shotnoise,
           params.ell1, m1_
@@ -561,7 +603,7 @@ int calc_bispec_in_box(
 
       if (params.ell1 == 0) {
         stats.calc_power_spec(
-          dn_00_shotnoise, shotnoise_LM,
+          dn_00_for_shotnoise, density,
           kbin,
           shotnoise,
           params.ell2, m2_
@@ -582,11 +624,11 @@ int calc_bispec_in_box(
     }
   }
 
-  dn_00_shotnoise.finalise_density_field();
+  dn_00_for_shotnoise.finalise_density_field();
 
-  DensityField<ParticleCatalogue> shotnoise_00(params);
-  shotnoise_00.calc_density_field_in_box_for_bispec(particles_data);
-  shotnoise_00.calc_fourier_transform();
+  DensityField<ParticleCatalogue> density_(params);
+  density_.calc_density_field_in_box_for_bispec(particles_data);
+  density_.calc_fourier_transform();
 
   SphericalBesselCalculator sj1(params.ell1);
   SphericalBesselCalculator sj2(params.ell2);
@@ -615,25 +657,26 @@ int calc_bispec_in_box(
         params.ell2, m2_, params, ylm_b
       );
 
-      DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
-      dn_LM_shotnoise.calc_fluctuation_in_box(particles_data, params);
-      dn_LM_shotnoise.calc_fourier_transform();
+      DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
+      dn_LM_for_shotnoise.calc_fluctuation_in_box(particles_data, params);
+      dn_LM_for_shotnoise.calc_fourier_transform();
 
       TwoPointStatistics<ParticleCatalogue> stats(params);
       std::complex<double> shotnoise = double(particles_data.nparticles);
 
-      fftw_complex* xi = fftw_alloc_complex(params.nmesh_tot);
+      fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh_tot);
       bytes += sizeof(fftw_complex)
         * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
       for (int i = 0; i < params.nmesh_tot; i++) {
-        xi[i][0] = 0.;
-        xi[i][1] = 0.;
+        three_pt_holder[i][0] = 0.;
+        three_pt_holder[i][1] = 0.;
       }
 
       stats.calc_shotnoise_for_bispec_ijk(
-        dn_LM_shotnoise, shotnoise_00, shotnoise,
+        dn_LM_for_shotnoise, density_,
+				shotnoise,
         params.ELL, M_,
-        xi
+        three_pt_holder
       );
 
       for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
@@ -668,11 +711,15 @@ int calc_bispec_in_box(
                 rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
               );
 
-              std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???
+              std::complex<double> shotnoise_grid(
+								three_pt_holder[coord_flat][0], three_pt_holder[coord_flat][1]
+							);
               double j1 = sj1.eval(kmag_a * rmag);
               double j2 = sj2.eval(kmag_b * rmag);
 
-              shotnoise_sum += j1 * j2 * ff * ylm_a[coord_flat] * ylm_b[coord_flat];
+              shotnoise_sum +=
+								j1 * j2 * ylm_a[coord_flat] * ylm_b[coord_flat]
+								* shotnoise_grid;
             }
           }
         }
@@ -694,7 +741,7 @@ int calc_bispec_in_box(
         }
       }
 
-      fftw_free(xi); xi = NULL;
+      fftw_free(three_pt_holder); three_pt_holder = NULL;
       bytes -= sizeof(fftw_complex)
         * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -705,7 +752,7 @@ int calc_bispec_in_box(
 		}
 	}
 
-	shotnoise_00.finalise_density_field();
+	density_.finalise_density_field();
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
@@ -920,14 +967,14 @@ int calc_3pt_corr_func(
 	}
 
 	/// Compute shot noise terms.
-	DensityField<ParticleCatalogue> shotnoise_00(params);
-	shotnoise_00.calc_ylm_weighted_fields_for_bispec_shotnoise(
+	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
+	shotnoise_quadratic_00.calc_ylm_weighted_fields_for_bispec_shotnoise(
 		particles_data, particles_rand,
 		los_data, los_rand,
 		alpha,
 		0, 0
 	);
-	shotnoise_00.calc_fourier_transform();
+	shotnoise_quadratic_00.calc_fourier_transform();
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
@@ -965,26 +1012,28 @@ int calc_3pt_corr_func(
 					continue;
 				}
 
-				DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
-				dn_LM_shotnoise.calc_ylm_weighted_fluctuation(
+				DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
+				dn_LM_for_shotnoise.calc_ylm_weighted_fluctuation(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
 					params.ELL, M_
 				);
-				dn_LM_shotnoise.calc_fourier_transform();
+				dn_LM_for_shotnoise.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
-				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
-					particles_data, particles_rand,
-					los_data, los_rand,
-					alpha,
-					params.ELL, M_
-				);
+				std::complex<double> shotnoise_cubic_LM =
+					stats.calc_shotnoise_for_bispec_from_self(
+						particles_data, particles_rand,
+						los_data, los_rand,
+						alpha,
+						params.ELL, M_
+					);
 
 				stats.calc_corr_func_for_3pt_corr_func(
-					dn_LM_shotnoise, shotnoise_00,
-					rbin, shotnoise,
+					dn_LM_for_shotnoise, shotnoise_quadratic_00,
+					rbin,
+					shotnoise_cubic_LM,
 					params.ell1, m1_,
 					ylm_a, ylm_b
 				);
@@ -1017,7 +1066,7 @@ int calc_3pt_corr_func(
 		}
 	}
 
-	shotnoise_00.finalise_density_field();
+	shotnoise_quadratic_00.finalise_density_field();
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
@@ -1273,11 +1322,11 @@ int calc_3pt_corr_func_window(
 	}
 
 	/// Compute shot noise terms.
-	DensityField<ParticleCatalogue> shotnoise_00(params);
-	shotnoise_00.calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(
+	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
+	shotnoise_quadratic_00.calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(
 		particles_rand, los_rand, alpha, 0, 0
 	);
-	shotnoise_00.calc_fourier_transform();
+	shotnoise_quadratic_00.calc_fourier_transform();
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
@@ -1315,11 +1364,11 @@ int calc_3pt_corr_func_window(
 					continue;
 				}
 
-				DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
-				dn_LM_shotnoise.calc_ylm_weighted_mean_density(
+				DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
+				dn_LM_for_shotnoise.calc_ylm_weighted_mean_density(
 					particles_rand, los_rand, alpha, params.ELL, M_)
 				;
-				dn_LM_shotnoise.calc_fourier_transform();
+				dn_LM_for_shotnoise.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise =
@@ -1328,7 +1377,7 @@ int calc_3pt_corr_func_window(
 					);
 
 				stats.calc_corr_func_for_3pt_corr_func(
-					dn_LM_shotnoise, shotnoise_00,
+					dn_LM_for_shotnoise, shotnoise_quadratic_00,
 					rbin,
 					shotnoise,
 					params.ell1, m1_,
@@ -1364,7 +1413,7 @@ int calc_3pt_corr_func_window(
 		}
 	}
 
-	shotnoise_00.finalise_density_field();
+	shotnoise_quadratic_00.finalise_density_field();
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
@@ -1598,11 +1647,11 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 	}
 
 	/// Compute shot noise terms.
-	DensityField<ParticleCatalogue> shotnoise_00(params);
-	shotnoise_00.calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(
+	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
+	shotnoise_quadratic_00.calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(
 		particles_rand, los_rand, alpha, 0, 0
 	);
-	shotnoise_00.calc_fourier_transform();
+	shotnoise_quadratic_00.calc_fourier_transform();
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
@@ -1640,11 +1689,11 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 					continue;
 				}
 
-				DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
-				dn_LM_shotnoise.calc_ylm_weighted_mean_density(
+				DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
+				dn_LM_for_shotnoise.calc_ylm_weighted_mean_density(
 					particles_rand, los_rand, alpha, params.ELL, M_
 				);
-				dn_LM_shotnoise.calc_fourier_transform();
+				dn_LM_for_shotnoise.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise =
@@ -1653,8 +1702,9 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 					);
 
 				stats.calc_corr_func_for_3pt_corr_func(
-					dn_LM_shotnoise, shotnoise_00,
-					rbin, shotnoise,
+					dn_LM_for_shotnoise, shotnoise_quadratic_00,
+					rbin,
+					shotnoise,
 					params.ell1, m1_,
 					ylm_a, ylm_b
 				);
@@ -1688,7 +1738,7 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 		}
 	}
 
-	shotnoise_00.finalise_density_field();
+	shotnoise_quadratic_00.finalise_density_field();
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
@@ -1911,9 +1961,9 @@ int calc_3pt_corr_func_in_box(
 	}
 
 	/// Compute shot noise terms.
-	DensityField<ParticleCatalogue> shotnoise_00(params);
-	shotnoise_00.calc_density_field_in_box_for_bispec(particles_data);
-	shotnoise_00.calc_fourier_transform();
+	DensityField<ParticleCatalogue> density_(params);
+	density_.calc_density_field_in_box_for_bispec(particles_data);
+	density_.calc_fourier_transform();
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
@@ -1939,15 +1989,15 @@ int calc_3pt_corr_func_in_box(
 				params.ell2, m2_, params, ylm_b
 			);
 
-			DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
-			dn_LM_shotnoise.calc_fluctuation_in_box(particles_data, params);
-			dn_LM_shotnoise.calc_fourier_transform();
+			DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
+			dn_LM_for_shotnoise.calc_fluctuation_in_box(particles_data, params);
+			dn_LM_for_shotnoise.calc_fourier_transform();
 
 			TwoPointStatistics<ParticleCatalogue> stats(params);
 			std::complex<double> shotnoise = double(particles_data.nparticles);
 
 			stats.calc_corr_func_for_3pt_corr_func(
-				dn_LM_shotnoise, shotnoise_00,
+				dn_LM_for_shotnoise, density_,
 				rbin,
 				shotnoise,
 				params.ell1, m1_,
@@ -1983,7 +2033,7 @@ int calc_3pt_corr_func_in_box(
 		}
 	}
 
-	shotnoise_00.finalise_density_field();
+	density_.finalise_density_field();
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
@@ -2254,22 +2304,26 @@ int calc_bispec_for_los_choice(
 				N_shotnoise.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
-				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
-					particles_data, particles_rand,
-					los_data, los_rand,
-					alpha,
-					params.ELL, M_
-				);
+				std::complex<double> shotnoise_cubic_LM =
+					stats.calc_shotnoise_for_bispec_from_self(
+						particles_data, particles_rand,
+						los_data, los_rand,
+						alpha,
+						params.ELL, M_
+					);
 
 				if (params.ell1 == 0 && params.ell2 == 0) {
 					for (int i = 0; i < params.num_kbin; i++) {
-						shotnoise_save[i] += coupling * shotnoise;
+						shotnoise_save[i] += coupling * shotnoise_cubic_LM;
 					}
 				}
 
 				if (params.ell2 == 0) {
 					stats.calc_power_spec(
-						dn_shotnoise, N_shotnoise, kbin, shotnoise, params.ell1, m1_
+						dn_shotnoise, N_shotnoise,
+						kbin,
+						shotnoise_cubic_LM,
+						params.ell1, m1_
 					);
 					if (params.form == "diag") {
 						for (int i = 0; i < params.num_kbin; i++) {
@@ -2341,16 +2395,20 @@ int calc_bispec_for_los_choice(
 				N_shotnoise.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
-				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
-					particles_data, particles_rand,
-					los_data, los_rand,
-					alpha,
-					params.ELL, M_
-				);
+				std::complex<double> shotnoise_cubic_LM =
+					stats.calc_shotnoise_for_bispec_from_self(
+						particles_data, particles_rand,
+						los_data, los_rand,
+						alpha,
+						params.ELL, M_
+					);
 
 				if (params.ell1 == 0) {
 					stats.calc_power_spec(
-						dn_shotnoise, N_shotnoise, kbin, shotnoise, params.ell2, m2_
+						dn_shotnoise, N_shotnoise,
+						kbin,
+						shotnoise_cubic_LM,
+						params.ell2, m2_
 					);
 					for (int i = 0; i < params.num_kbin; i++) {
 						shotnoise_save[i] += coupling * stats.pk[i];
@@ -2444,25 +2502,27 @@ int calc_bispec_for_los_choice(
 				dn_shotnoise.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
-				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
-					particles_data, particles_rand,
-					los_data, los_rand,
-					alpha,
-					params.ELL, M_
-				);
+				std::complex<double> shotnoise_cubic_LM =
+					stats.calc_shotnoise_for_bispec_from_self(
+						particles_data, particles_rand,
+						los_data, los_rand,
+						alpha,
+						params.ELL, M_
+					);
 
-				fftw_complex* xi = fftw_alloc_complex(params.nmesh_tot);
+				fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh_tot);
 				bytes += sizeof(fftw_complex)
 					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 				for (int i = 0; i < params.nmesh_tot; i++) {
-					xi[i][0] = 0.;
-					xi[i][1] = 0.;
+					three_pt_holder[i][0] = 0.;
+					three_pt_holder[i][1] = 0.;
 				}
 
 				stats.calc_shotnoise_for_bispec_ijk(
-					dn_shotnoise, N_shotnoise, shotnoise,
+					dn_shotnoise, N_shotnoise,
+					shotnoise_cubic_LM,
 					params.ELL, M_,
-					xi
+					three_pt_holder
 				);
 
 				for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
@@ -2496,11 +2556,16 @@ int calc_bispec_for_los_choice(
 									rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
 								);
 
-								std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???
+								std::complex<double> shotnoise_grid(
+									three_pt_holder[coord_flat][0],
+									three_pt_holder[coord_flat][1]
+								);
 								double j1 = sj1.eval(kmag_a * rmag);
 								double j2 = sj2.eval(kmag_b * rmag);
 
-								shotnoise_sum += (j1 * j2 * ff * ylm_a[coord_flat] * ylm_b[coord_flat]);
+								shotnoise_sum +=
+									j1 * j2 * ylm_a[coord_flat] * ylm_b[coord_flat]
+									* shotnoise_grid;
 							}
 						}
 					}
@@ -2522,7 +2587,7 @@ int calc_bispec_for_los_choice(
 					}
 				}
 
-				fftw_free(xi); xi = NULL;
+				fftw_free(three_pt_holder); three_pt_holder = NULL;
 				bytes -= sizeof(fftw_complex)
 					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 			}
@@ -2817,14 +2882,14 @@ int calc_bispec_for_M_mode(
 	}
 
 	/// Compute shot noise terms.
-	DensityField<ParticleCatalogue> dn_00_shotnoise(params);
-	dn_00_shotnoise.calc_ylm_weighted_fluctuation(
+	DensityField<ParticleCatalogue> dn_00_for_shotnoise(params);
+	dn_00_for_shotnoise.calc_ylm_weighted_fluctuation(
 		particles_data, particles_rand,
 		los_data, los_rand,
 		alpha,
 		0, 0
 	);
-	dn_00_shotnoise.calc_fourier_transform();
+	dn_00_for_shotnoise.calc_fourier_transform();
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
@@ -2837,32 +2902,36 @@ int calc_bispec_for_M_mode(
 					continue;
 				}
 
-				DensityField<ParticleCatalogue> shotnoise_LM(params);
-				shotnoise_LM.calc_ylm_weighted_fields_for_bispec_shotnoise(
+				DensityField<ParticleCatalogue> shotnoise_quadratic_LM(params);
+				shotnoise_quadratic_LM.calc_ylm_weighted_fields_for_bispec_shotnoise(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
 					params.ELL, M_
 				);
-				shotnoise_LM.calc_fourier_transform();
+				shotnoise_quadratic_LM.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
-				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
-					particles_data, particles_rand,
-					los_data, los_rand,
-					alpha,
-					params.ELL, M_
-				);
+				std::complex<double> shotnoise_cubic_LM =
+					stats.calc_shotnoise_for_bispec_from_self(
+						particles_data, particles_rand,
+						los_data, los_rand,
+						alpha,
+						params.ELL, M_
+					);
 
 				if (params.ell1 == 0 && params.ell2 == 0) {
 					for (int i = 0; i < params.num_kbin; i++) {
-						shotnoise_save[M_ + params.ELL][i] += shotnoise;
+						shotnoise_save[M_ + params.ELL][i] += shotnoise_cubic_LM;
 					}
 				}
 
 				if (params.ell2 == 0) {
 					stats.calc_power_spec(
-						dn_00_shotnoise, shotnoise_LM, kbin, shotnoise, params.ell1, m1_
+						dn_00_for_shotnoise, shotnoise_quadratic_LM,
+						kbin,
+						shotnoise_cubic_LM,
+						params.ell1, m1_
 					);
 					if (params.form == "diag") {
 						for (int i = 0; i < params.num_kbin; i++) {
@@ -2877,7 +2946,10 @@ int calc_bispec_for_M_mode(
 
 				if ((params.ell1 == 0)) {
 					stats.calc_power_spec(
-						dn_00_shotnoise, shotnoise_LM, kbin, shotnoise, params.ell2, m2_
+						dn_00_for_shotnoise, shotnoise_quadratic_LM,
+						kbin,
+						shotnoise_cubic_LM,
+						params.ell2, m2_
 					);
 					for (int i = 0; i < params.num_kbin; i++) {
 						shotnoise_save[M_+params.ELL][i] += stats.pk[i];
@@ -2896,16 +2968,16 @@ int calc_bispec_for_M_mode(
 		}
 	}
 
-	dn_00_shotnoise.finalise_density_field();
+	dn_00_for_shotnoise.finalise_density_field();
 
-	DensityField<ParticleCatalogue> shotnoise_00(params);
-	shotnoise_00.calc_ylm_weighted_fields_for_bispec_shotnoise(
+	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
+	shotnoise_quadratic_00.calc_ylm_weighted_fields_for_bispec_shotnoise(
 		particles_data, particles_rand,
 		los_data, los_rand,
 		alpha,
 		0, 0
 	);
-	shotnoise_00.calc_fourier_transform();
+	shotnoise_quadratic_00.calc_fourier_transform();
 
 	SphericalBesselCalculator sj1(params.ell1);
 	SphericalBesselCalculator sj2(params.ell2);
@@ -2946,33 +3018,37 @@ int calc_bispec_for_M_mode(
 					continue;
 				};
 
-				DensityField<ParticleCatalogue> dn_LM_shotnoise(params);
-				dn_LM_shotnoise.calc_ylm_weighted_fluctuation(
+				DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
+				dn_LM_for_shotnoise.calc_ylm_weighted_fluctuation(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
 					params.ELL, M_
 				);
-				dn_LM_shotnoise.calc_fourier_transform();
+				dn_LM_for_shotnoise.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
-				std::complex<double> shotnoise = stats.calc_shotnoise_for_bispec_from_self(
-					particles_data, particles_rand,
-					los_data, los_rand,
-					alpha,
-					params.ELL, M_
-				);
+				std::complex<double> shotnoise_cubic_LM =
+					stats.calc_shotnoise_for_bispec_from_self(
+						particles_data, particles_rand,
+						los_data, los_rand,
+						alpha,
+						params.ELL, M_
+					);
 
-				fftw_complex* xi = fftw_alloc_complex(params.nmesh_tot);
+				fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh_tot);
 				bytes += sizeof(fftw_complex) *
 					double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 				for (int i = 0; i < params.nmesh_tot; i++) {
-					xi[i][0] = 0.;
-					xi[i][1] = 0.;
+					three_pt_holder[i][0] = 0.;
+					three_pt_holder[i][1] = 0.;
 				}
 
 				stats.calc_shotnoise_for_bispec_ijk(
-					dn_LM_shotnoise, shotnoise_00, shotnoise, params.ELL, M_, xi
+					dn_LM_for_shotnoise, shotnoise_quadratic_00,
+					shotnoise_cubic_LM,
+					params.ELL, M_,
+					three_pt_holder
 				);
 
 				for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
@@ -3006,11 +3082,16 @@ int calc_bispec_for_M_mode(
 									rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
 								);
 
-								std::complex<double> ff(xi[coord_flat][0], xi[coord_flat][1]);  // ???
+								std::complex<double> shotnoise_grid(
+									three_pt_holder[coord_flat][0],
+									three_pt_holder[coord_flat][1]
+								);
 								double j1 = sj1.eval(kmag_a * rmag);
 								double j2 = sj2.eval(kmag_b * rmag);
 
-								shotnoise_sum += (j1 * j2 * ff * ylm_a[coord_flat] * ylm_b[coord_flat]);
+								shotnoise_sum +=
+									j1 * j2 * ylm_a[coord_flat] * ylm_b[coord_flat]
+									* shotnoise_grid;
 							}
 						}
 					}
@@ -3032,7 +3113,7 @@ int calc_bispec_for_M_mode(
 					}
 				}
 
-				fftw_free(xi); xi = NULL;
+				fftw_free(three_pt_holder); three_pt_holder = NULL;
 				bytes -= sizeof(fftw_complex)
 					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 			}
@@ -3044,7 +3125,7 @@ int calc_bispec_for_M_mode(
 		}
 	}
 
-	shotnoise_00.finalise_density_field();
+	shotnoise_quadratic_00.finalise_density_field();
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
