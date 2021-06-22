@@ -2,7 +2,7 @@
 #define TRIUM_BISPEC_H_INCLUDED_
 
 /**
- * Calculate bispectrum from catalogues.
+ * Calculate bispectrum from catalogues and save the results.
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param particles_rand (Reference to) the random-source particle container.
@@ -24,7 +24,7 @@ int calc_bispec(
 ) {
   if (thisTask == 0) {
     printf(
-			"[Status] :: Measuring bispectrum from survey and random catalogues.\n"
+			"[Status] :: Measuring bispectrum from data and random catalogues.\n"
 		);
   }
 
@@ -45,8 +45,7 @@ int calc_bispec(
   durationInSec = double(clock() - timeStart);
   if (thisTask == 0) {
     printf(
-      "[Status] :: Computing shot noise terms "
-      "(%.3f seconds elapsed...).\n",
+      "[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
       durationInSec / CLOCKS_PER_SEC
     );
   }
@@ -80,7 +79,7 @@ int calc_bispec(
 
 				/// Calculate N_LM in eq. (46) in arXiv:1803.02132.
         DensityField<ParticleCatalogue> shotnoise_quadratic_LM(params);
-        shotnoise_quadratic_LM.calc_ylm_weighted_fields_for_bispec_shotnoise(
+        shotnoise_quadratic_LM.calc_ylm_weighted_field_for_bispec_shotnoise(
           particles_data, particles_rand,
           los_data, los_rand,
           alpha,
@@ -156,7 +155,7 @@ int calc_bispec(
 
 	/// Calculate N_00 in eq. (45) in arXiv:1803.02132.
   DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
-  shotnoise_quadratic_00.calc_ylm_weighted_fields_for_bispec_shotnoise(
+  shotnoise_quadratic_00.calc_ylm_weighted_field_for_bispec_shotnoise(
     particles_data, particles_rand,
     los_data, los_rand,
     alpha,
@@ -230,7 +229,7 @@ int calc_bispec(
           three_pt_holder[i][1] = 0.;
         }
 
-        stats.calc_shotnoise_for_bispec_ijk(
+        stats.calc_shotnoise_for_bispec_on_grid(
           dn_LM_for_shotnoise, shotnoise_quadratic_00,
 					shotnoise_cubic_LM,
 					params.ELL, M_,
@@ -481,7 +480,7 @@ int calc_bispec(
     }
   } else if (params.form == "full") {
     sprintf(
-      buf, "%s/bk%d%d%d_%02d",
+      buf, "%s/bk%d%d%d_kbin%02d",
       params.output_dir.c_str(),
       params.ell1, params.ell2, params.ELL,
       params.ith_kbin
@@ -507,7 +506,7 @@ int calc_bispec(
 }
 
 /**
- * Calculate bispectrum in a periodic box.
+ * Calculate bispectrum in a periodic box and save the results.
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param params (Reference to) the input parameter set.
@@ -520,7 +519,7 @@ int calc_bispec_in_box(
   double* kbin
 ) {
   if (thisTask == 0) {
-    printf("[Status] :: Measuring bispectrum in box.\n");
+    printf("[Status] :: Measuring bispectrum in a periodic box.\n");
   }
 
   if (
@@ -540,8 +539,7 @@ int calc_bispec_in_box(
   durationInSec = double(clock() - timeStart);
   if (thisTask == 0) {
     printf(
-      "[Status] :: Computing shot noise terms "
-      "(... %.3f seconds elapsed in total).\n",
+      "[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
       durationInSec / CLOCKS_PER_SEC
     );
   }
@@ -569,7 +567,11 @@ int calc_bispec_in_box(
         continue;
       }
 
-      DensityField<ParticleCatalogue> density(params);  // ??? rename variables
+			/// ???: Factor this part out of the double m for-loops?
+			/// ???: Find matching equation.
+			/// Calculate normal density field in the global plane-parallel
+			/// picture in contrast with `shotnoise_cubic_LM`.
+      DensityField<ParticleCatalogue> density(params);
       density.calc_density_field_in_box_for_bispec(particles_data);
       density.calc_fourier_transform();
 
@@ -616,8 +618,8 @@ int calc_bispec_in_box(
       durationInSec = double(clock() - timeStart);
       if (thisTask == 0) {
         printf(
-          "[Status] :: Computed for orders m1 = %d, m2 = %d, M = %d "
-          "(... %.3f seconds elapsed in total).\n",
+          "[Status] :: Computed shot noise term for orders "
+          "m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
           m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
         );
       }
@@ -626,13 +628,13 @@ int calc_bispec_in_box(
 
   dn_00_for_shotnoise.finalise_density_field();
 
+	/// ???: Redundant if factored out of the double m for-loops above?
   DensityField<ParticleCatalogue> density_(params);
   density_.calc_density_field_in_box_for_bispec(particles_data);
   density_.calc_fourier_transform();
 
   SphericalBesselCalculator sj1(params.ell1);
   SphericalBesselCalculator sj2(params.ell2);
-
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
       int M_ = 0;
@@ -672,7 +674,7 @@ int calc_bispec_in_box(
         three_pt_holder[i][1] = 0.;
       }
 
-      stats.calc_shotnoise_for_bispec_ijk(
+      stats.calc_shotnoise_for_bispec_on_grid(
         dn_LM_for_shotnoise, density_,
 				shotnoise,
         params.ELL, M_,
@@ -733,9 +735,9 @@ int calc_bispec_in_box(
         durationInSec = double(clock() - timeStart);
         if (thisTask == 0) {
           printf(
-            "[Status] :: Computed for wavenumber and orders "
+            "[Status] :: Computed shot noise term for wavenumber and orders "
             "k2 = %.3f, m1 = %d, m2 = %d, M = %d "
-            "(... %.3f seconds elapsed in total).\n",
+            "(%.3f seconds elapsed).\n",
             kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
           );
         }
@@ -757,15 +759,18 @@ int calc_bispec_in_box(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms "
-			"(... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
 
 	/// Initialise output bispectrum.
+	double durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
-		printf("[Status] :: Measuring bispectrum.\n");
+    printf(
+			"[Status] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
 	}
 
 	std::complex<double>* bk_save = new std::complex<double>[params.num_kbin];
@@ -802,19 +807,24 @@ int calc_bispec_in_box(
 				params.ell2, m2_, params, ylm_b
 			);
 
+			/// Calculate G_{LM} in eq. (42) in arXiv:1803.02132 (equivalent to
+			/// normal density fluctuation with L, M = 0, 0 in the global
+			/// plane-parallel picture).
 			DensityField<ParticleCatalogue> dn_LM(params);
 			dn_LM.calc_fluctuation_in_box(particles_data, params);
 			dn_LM.calc_fourier_transform();
 			dn_LM.apply_assignment_compensation();
 			dn_LM.calc_inverse_fourier_transform();
 
-			DensityField<ParticleCatalogue> dn_tilde1(params);
+			/// NOTE: Standard naming convention is overriden below.
+
+			/// Calculate F_{\ell m} in eq. (42) in arXiv:1803.02132.
+			DensityField<ParticleCatalogue> F_ellm_a(params);
 			double kmag_a;
 			double dk = kbin[1] - kbin[0];
 			if (params.form == "full") {
-				/// Compute ``\delta\tilde{n}_1``.
 				kmag_a = kbin[params.ith_kbin];
-				dn_tilde1.calc_inverse_fourier_transform_for_bispec(
+				F_ellm_a.calc_inverse_fourier_transform_for_bispec(
 					dn_00, kmag_a, dk, ylm_a
 				);
 			}
@@ -822,27 +832,25 @@ int calc_bispec_in_box(
 			for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
 				double kmag_b = kbin[i_kbin];
 
-				/// Compute ``\delta\tilde{n}_1``.
 				if (params.form == "diag") {
 					kmag_a = kmag_b;
-					dn_tilde1.calc_inverse_fourier_transform_for_bispec(
+					F_ellm_a.calc_inverse_fourier_transform_for_bispec(
 						dn_00, kmag_a, dk, ylm_a
 					);
 				}
 
-				/// Compute ``\delta\tilde{n}_2``.
-				DensityField<ParticleCatalogue> dn_tilde2(params);
-				dn_tilde2.calc_inverse_fourier_transform_for_bispec(
+				DensityField<ParticleCatalogue> F_ellm_b(params);
+				F_ellm_b.calc_inverse_fourier_transform_for_bispec(
 					dn_00, kmag_b, dk, ylm_b
 				);
 
 				double factor = params.volume / double(params.nmesh_tot);
 				std::complex<double> bk_sum = 0.;
 				for (int i = 0; i < params.nmesh_tot; i++) {
-					std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);  // ???
-					std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);  // ???
-					std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);  // ???
-					bk_sum += factor * f1 * f2 * f3;
+					std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
+					std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
+					std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+					bk_sum += factor * F_ellm_1 * F_ellm_2 * G_LM;
 				}
 
 				bk_save[i_kbin] += coupling * bk_sum;
@@ -850,9 +858,8 @@ int calc_bispec_in_box(
 				double durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
 					printf(
-						"[Status] :: Computed for wavenumber and order "
-						"k2 = %.3f, m1 = %d, m2 = %d, M = %d "
-						"(... %.3f seconds elapsed in total).\n",
+						"[Status] :: Computed bispectrum term for wavenumber and order "
+						"k2 = %.3f, m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
 						kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 					);
 				}
@@ -865,7 +872,17 @@ int calc_bispec_in_box(
 		}
 	}
 
+  durationInSec = double(clock() - timeStart);
+  if (thisTask == 0) {
+    printf(
+      "[Status] :: Computed bispectrum terms "
+      "(... %.3f seconds elapsed).\n",
+      durationInSec / CLOCKS_PER_SEC
+    );
+  }
+
 	/// Normalise and then save the output.
+	/// NOTE: Save the imaginary parts only.
 	double norm = params.volume
 		/ double(particles_data.nparticles) / double(particles_data.nparticles);
 	norm *= params.volume / double(particles_data.nparticles);
@@ -889,7 +906,7 @@ int calc_bispec_in_box(
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/bk%d%d%d_%02d",
+			buf, "%s/bk%d%d%d_kbin%02d",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
 			params.ith_kbin
@@ -913,7 +930,8 @@ int calc_bispec_in_box(
 }
 
 /**
- * Calculate three-point correlation function from catalogues.
+ * Calculate three-point correlation function from catalogues
+ * and save the results.
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param particles_rand (Reference to) the random-source particle container.
@@ -934,7 +952,10 @@ int calc_3pt_corr_func(
 	double survey_vol_norm
 ) {
 	if (thisTask == 0) {
-		printf("[Status] :: Measuring three-point correlation function.\n");
+		printf(
+			"[Status] :: Measuring three-point correlation function "
+			"from data and random catalogues.\n"
+		);
 	}
 
 	if (
@@ -954,8 +975,7 @@ int calc_3pt_corr_func(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computing shot noise terms "
-			"(... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
@@ -966,9 +986,10 @@ int calc_3pt_corr_func(
 		shotnoise_save[i] = 0.;
 	}
 
-	/// Compute shot noise terms.
+	/// Compute shot noise terms, including only S_{\ell_1 \ell_2 L; i = j != k}
+	/// in eq. (45) in arXiv:1803.02132 (see eq. 51).
 	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
-	shotnoise_quadratic_00.calc_ylm_weighted_fields_for_bispec_shotnoise(
+	shotnoise_quadratic_00.calc_ylm_weighted_field_for_bispec_shotnoise(
 		particles_data, particles_rand,
 		los_data, los_rand,
 		alpha,
@@ -1030,7 +1051,7 @@ int calc_3pt_corr_func(
 						params.ELL, M_
 					);
 
-				stats.calc_corr_func_for_3pt_corr_func(
+				stats.calc_2pt_func_for_3pt_corr_func(
 					dn_LM_for_shotnoise, shotnoise_quadratic_00,
 					rbin,
 					shotnoise_cubic_LM,
@@ -1042,10 +1063,12 @@ int calc_3pt_corr_func(
 					if (params.form == "diag") {
 						shotnoise_save[i] += coupling * stats.xi[i];
 					} else if (params.form == "full") {
+						/// Calculate shot noise contribution equivalent to the Kronecker
+						/// delta in eq. (51) in arXiv:1803.02132.
 						if (i == params.ith_rbin) {
 							shotnoise_save[i] += coupling * stats.xi[i];
 						} else {
-							shotnoise_save[i] += 0.;
+							shotnoise_save[i] += 0.;  // ???: redundant?
 						}
 					}
 				}
@@ -1053,8 +1076,8 @@ int calc_3pt_corr_func(
 				durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
 					printf(
-						"[Status] :: Computed for orders m1 = %d, m2 = %d, M = %d "
-						"(... %.3f seconds elapsed in total).\n",
+						"[Status] :: Computed shot noise term for orders "
+						"m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
 						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);
 				}
 			}
@@ -1071,17 +1094,27 @@ int calc_3pt_corr_func(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms "
-			"(... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
 
 	/// Initialise output three-point correlation function.
+	double durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
-		printf("[Status] :: Measuring three-point correlation function.\n");
+		printf(
+			"[Status] :: Computing three-point correlation terms "
+			"(%.3f seconds elapsed...).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
 	}
 
+	std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
+	for (int i = 0; i < params.num_rbin; i++) {
+		zeta_save[i] = 0.;
+	}
+
+  /// Compute three-point correlation function.
 	DensityField<ParticleCatalogue> dn_00(params);
 	dn_00.calc_ylm_weighted_fluctuation(
 		particles_data, particles_rand,
@@ -1093,12 +1126,6 @@ int calc_3pt_corr_func(
 
 	SphericalBesselCalculator sj1(params.ell1);
 	SphericalBesselCalculator sj2(params.ell2);
-
-	std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
-	for (int i = 0; i < params.num_rbin; i++) {
-		zeta_save[i] = 0.;
-	}
-
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 			std::complex<double>* ylm_a = new std::complex<double> [params.nmesh_tot];
@@ -1135,6 +1162,7 @@ int calc_3pt_corr_func(
 					continue;
 				}
 
+				/// Calculate G_{LM} in eq. (42) in arXiv:1803.02132.
 				DensityField<ParticleCatalogue> dn_LM(params);
 				dn_LM.calc_ylm_weighted_fluctuation(
 					particles_data, particles_rand,
@@ -1146,28 +1174,30 @@ int calc_3pt_corr_func(
 				dn_LM.apply_assignment_compensation();
 				dn_LM.calc_inverse_fourier_transform();
 
-				DensityField<ParticleCatalogue> dn_tilde1(params);
+				/// NOTE: Standard naming convention is overriden below.
+
+				/// Calculate F_{\ell m} in eq. (49) in arXiv:1803.02132.
+				DensityField<ParticleCatalogue> F_ellm_a(params);
 				double rmag_a;
 				if (params.form == "full") {
 					rmag_a = rbin[params.ith_rbin];
-					dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
+					F_ellm_a.calc_inverse_fourier_transform_for_3pt_corr_func(
 						dn_00, rmag_a, ylm_a, sj1
 					);
 				}
 
 				for (int i_rbin = 0; i_rbin < params.num_rbin; i_rbin++) {
 					double rmag_b = rbin[i_rbin];
-					/// Compute ``\delta\tilde{n}_1``.
+
 					if (params.form == "diag") {
 						rmag_a = rmag_b;
-						dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
+						F_ellm_a.calc_inverse_fourier_transform_for_3pt_corr_func(
 							dn_00, rmag_a, ylm_a, sj1
 						);
 					}
 
-					/// Compute ``\delta\tilde{n}_2``.
-					DensityField<ParticleCatalogue> dn_tilde2(params);
-					dn_tilde2.calc_inverse_fourier_transform_for_3pt_corr_func(
+					DensityField<ParticleCatalogue> F_ellm_b(params);
+					F_ellm_b.calc_inverse_fourier_transform_for_3pt_corr_func(
 						dn_00, rmag_b, ylm_b, sj2
 					);
 
@@ -1175,10 +1205,11 @@ int calc_3pt_corr_func(
 					std::complex<double> zeta_sum = 0.;
 					double factor = params.volume / double(params.nmesh_tot);
 					for (int i = 0; i < params.nmesh_tot; i++) {
-						std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);  // ???
-						std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);  // ???
-						std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);  // ???
-						zeta_sum += pow(I_, params.ell1+params.ell2) * factor * f1 * f2 * f3;
+						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
+						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
+						std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+						zeta_sum += pow(I_, params.ell1 + params.ell2) * factor
+							* F_ellm_1 * F_ellm_2 * G_LM;
 					}
 
 					zeta_save[i_rbin] += coupling * zeta_sum;
@@ -1186,9 +1217,9 @@ int calc_3pt_corr_func(
 					double durationInSec = double(clock() - timeStart);
 					if (thisTask == 0) {
 						printf(
-							"[Status] :: Computed for separation and order "
-							"r2 = %.3f, m1 = %d, m2 = %d, M = %d "
-							"(... %.3f seconds elapsed in total).\n",
+							"[Status] :: Computed three-point correlation function term "
+							"for separation and order r2 = %.3f, m1 = %d, m2 = %d, M = %d "
+							"(%.3f seconds elapsed).\n",
 							rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 						);
 					}
@@ -1201,6 +1232,15 @@ int calc_3pt_corr_func(
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
 	}
+
+  durationInSec = double(clock() - timeStart);
+  if (thisTask == 0) {
+    printf(
+      "[Status] :: Computed three-point correlation function terms "
+      "(... %.3f seconds elapsed).\n",
+      durationInSec / CLOCKS_PER_SEC
+    );
+  }
 
 	/// Normalise and then save the output.
 	double norm = ParticleCatalogue::calc_norm_for_bispec(
@@ -1226,7 +1266,7 @@ int calc_3pt_corr_func(
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/zeta%d%d%d_%02d",
+			buf, "%s/zeta%d%d%d_rbin%02d",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
 			params.ith_rbin
@@ -1250,7 +1290,8 @@ int calc_3pt_corr_func(
 }
 
 /**
- * Calculate three-point correlation function window from catalogues.
+ * Calculate three-point correlation function window from random catalogues
+ * and save the results.
  *
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
@@ -1269,28 +1310,10 @@ int calc_3pt_corr_func_window(
 	double survey_vol_norm
 ) {
 	if (thisTask == 0) {
-		printf("[Status] :: Measuring three-point correlation function window.\n");
-	}
-
-	int n_temp = 10;  // ???: NOTE: discretionary
-	int NR = 3;  // ???
-
-	rbin[0] = 0.;  // ???
-	rbin[1] = 1.;
-	rbin[2] = 10.;
-	rbin[3] = 20.;
-	rbin[4] = 30.;
-	rbin[5] = 40.;
-	rbin[6] = 50.;
-	rbin[7] = 60.;
-	double rmin = 70.;
-	double dlnr = (log(params.rmax) - log(rmin))
-		/ double((params.num_rbin - 8) - 1);
-
-	params.ith_rbin = thisTask;  // ???
-
-	for (int i = 8; i < params.num_rbin; i++) {
-		rbin[i] = rmin * exp(dlnr * (i - 8));
+		printf(
+			"[Status] :: Measuring three-point correlation function window "
+			"from random catalogues.\n"
+		);
 	}
 
 	if (
@@ -1306,12 +1329,34 @@ int calc_3pt_corr_func_window(
 		exit(1);
 	}
 
+	int n_temp = 10;  // ??? NOTE: discretionary choice
+	int NR = 3;  // ??? NOTE: discretionary choice
+
+	params.ith_rbin = thisTask;  // ???
+
+	/// Set up binning.
+	/// NOTE: The setup binning is discretionary.
+	rbin[0] = 0.;
+	rbin[1] = 1.;
+	rbin[2] = 10.;
+	rbin[3] = 20.;
+	rbin[4] = 30.;
+	rbin[5] = 40.;
+	rbin[6] = 50.;
+	rbin[7] = 60.;
+	double rmin = 70.;
+	double dlnr = (log(params.rmax) - log(rmin))
+		/ double((params.num_rbin - 8) - 1);
+
+	for (int i = 8; i < params.num_rbin; i++) {
+		rbin[i] = rmin * exp(dlnr * (i - 8));
+	}
+
 	/// Initialise output shot noise terms.
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computing shot noise terms "
-			"(... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
@@ -1323,15 +1368,15 @@ int calc_3pt_corr_func_window(
 
 	/// Compute shot noise terms.
 	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
-	shotnoise_quadratic_00.calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(
+	shotnoise_quadratic_00.calc_ylm_weighted_mean_density_for_3pcf_window_shotnoise(
 		particles_rand, los_rand, alpha, 0, 0
 	);
 	shotnoise_quadratic_00.calc_fourier_transform();
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double> [params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -1366,8 +1411,8 @@ int calc_3pt_corr_func_window(
 
 				DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
 				dn_LM_for_shotnoise.calc_ylm_weighted_mean_density(
-					particles_rand, los_rand, alpha, params.ELL, M_)
-				;
+					particles_rand, los_rand, alpha, params.ELL, M_
+				);
 				dn_LM_for_shotnoise.calc_fourier_transform();
 
 				TwoPointStatistics<ParticleCatalogue> stats(params);
@@ -1376,7 +1421,7 @@ int calc_3pt_corr_func_window(
 						particles_rand, los_rand, alpha, params.ELL, M_
 					);
 
-				stats.calc_corr_func_for_3pt_corr_func(
+				stats.calc_2pt_func_for_3pt_corr_func(
 					dn_LM_for_shotnoise, shotnoise_quadratic_00,
 					rbin,
 					shotnoise,
@@ -1388,10 +1433,12 @@ int calc_3pt_corr_func_window(
 					if (params.form == "diag") {
 						shotnoise_save[i] += coupling * stats.xi[i + NR * n_temp];
 					} else if (params.form == "full") {
+						/// Calculate shot noise contribution equivalent to
+						/// the Kronecker delta.  See `calc_3pt_corr_func`.
 						if (i + NR * n_temp == params.ith_rbin) {  // ???
 							shotnoise_save[i] += coupling * stats.xi[i + NR * n_temp];
 						} else {
-							shotnoise_save[i] += 0.;  // ??? redundant
+							shotnoise_save[i] += 0.;  // ???: redundant?
 						}
 					}
 				}
@@ -1399,8 +1446,8 @@ int calc_3pt_corr_func_window(
 				durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
 					printf(
-						"[Status] :: Computed for orders m1 = %d, m2 = %d, M = %d "
-						"(... %.3f seconds elapsed in total).\n",
+						"[Status] :: Computed shot noise term for orders "
+						"m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
 						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 					);
 				}
@@ -1418,29 +1465,33 @@ int calc_3pt_corr_func_window(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms "
-			"(... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
 
 	/// Initialise output three-point correlation function window.
+	double durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
-		printf("[Status] :: Measuring three-point correlation function window.\n");
+		printf(
+			"[Status] :: Computing three-point correlation function window terms "
+			"(%.3f seconds elapsed...).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
 	}
-
-	DensityField<ParticleCatalogue> dn_00(params);
-	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
-	dn_00.calc_fourier_transform();
-
-	SphericalBesselCalculator sj1(params.ell1);
-	SphericalBesselCalculator sj2(params.ell2);
 
 	std::complex<double>* zeta_save = new std::complex<double>[n_temp];
 	for (int i = 0; i < n_temp; i++) {
 		zeta_save[i] = 0.;
 	}
 
+  /// Compute three-point correlation function window.
+	DensityField<ParticleCatalogue> dn_00(params);
+	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
+	dn_00.calc_fourier_transform();
+
+	SphericalBesselCalculator sj1(params.ell1);
+	SphericalBesselCalculator sj2(params.ell2);
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
@@ -1477,6 +1528,7 @@ int calc_3pt_corr_func_window(
 					continue;
 				}
 
+				/// Calculate G_{LM}.  See `calc_3pt_corr_func`.
 				DensityField<ParticleCatalogue> dn_LM(params);
 				dn_LM.calc_ylm_weighted_mean_density(
 					particles_rand, los_rand, alpha, params.ELL, M_
@@ -1485,28 +1537,30 @@ int calc_3pt_corr_func_window(
 				dn_LM.apply_assignment_compensation();
 				dn_LM.calc_inverse_fourier_transform();
 
-				DensityField<ParticleCatalogue> dn_tilde1(params);
+				/// NOTE: Standard naming convention is overriden below.
+
+				/// Calculate F_{\ell m}.  See `calc_3pt_corr_func`.
+				DensityField<ParticleCatalogue> F_ellm_a(params);
 				double rmag_a;
 				if (params.form == "full") {
 					rmag_a = rbin[params.ith_rbin];
-					dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
+					F_ellm_a.calc_inverse_fourier_transform_for_3pt_corr_func(
 						dn_00, rmag_a, ylm_a, sj1
 					);
 				}
 
 				for (int i_rbin = 0; i_rbin < n_temp; i_rbin++) {
 					double rmag_b = rbin[i_rbin + NR * n_temp];
-					/// Compute ``\delta\tilde{n}_1``.
+
 					if (params.form == "diag") {
 						rmag_a = rmag_b;
-						dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
+						F_ellm_a.calc_inverse_fourier_transform_for_3pt_corr_func(
 							dn_00, rmag_a, ylm_a, sj1
 						);
 					}
 
-					/// Compute ``\delta\tilde{n}_2``.
-					DensityField<ParticleCatalogue> dn_tilde2(params);
-					dn_tilde2.calc_inverse_fourier_transform_for_3pt_corr_func(
+					DensityField<ParticleCatalogue> F_ellm_b(params);
+					F_ellm_b.calc_inverse_fourier_transform_for_3pt_corr_func(
 						dn_00, rmag_b, ylm_b, sj2
 					);
 
@@ -1514,10 +1568,11 @@ int calc_3pt_corr_func_window(
 					std::complex<double> zeta_sum = 0.;
 					double factor = params.volume / double(params.nmesh_tot);
 					for (int i = 0; i < params.nmesh_tot; i++) {
-						std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);  // ???
-						std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);  // ???
-						std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);  // ???
-						zeta_sum += pow(I_, params.ell1+params.ell2) * factor * f1 * f2 * f3;
+						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
+						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
+						std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+						zeta_sum += pow(I_, params.ell1+params.ell2) * factor
+							* F_ellm_1 * F_ellm_2 * G_LM;
 					}
 
 					zeta_save[i_rbin] += coupling * zeta_sum;
@@ -1525,9 +1580,9 @@ int calc_3pt_corr_func_window(
 					double durationInSec = double(clock() - timeStart);
 					if (thisTask == 0) {
 						printf(
-							"[Status] :: Computed for separation and order "
-							"r2 = %.3f, m1 = %d, m2 = %d, M = %d "
-							"(... %.3f seconds elapsed in total).\n",
+							"[Status] :: Computed three-point correlation function window "
+							"term for separation and order "
+							"r2 = %.3f, m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
 							rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 						);
 					}
@@ -1540,6 +1595,15 @@ int calc_3pt_corr_func_window(
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
 	}
+
+  durationInSec = double(clock() - timeStart);
+  if (thisTask == 0) {
+    printf(
+      "[Status] :: Computed three-point correlation function window terms "
+      "(... %.3f seconds elapsed).\n",
+      durationInSec / CLOCKS_PER_SEC
+    );
+  }
 
 	/// Normalise and then save the output.
 	double norm = ParticleCatalogue::calc_norm_for_bispec(
@@ -1560,14 +1624,14 @@ int calc_3pt_corr_func_window(
 		for (int i = 0; i < n_temp; i++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[i+NR*n_temp], rbin[i+NR*n_temp],
+				rbin[i + NR * n_temp], rbin[i + NR * n_temp],
 				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
 				norm * shotnoise_save[i].real()
 			);
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/zeta_window_%d%d%d_%02d_%d",
+			buf, "%s/zeta_window_%d%d%d_rbin%02d_%d",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
 			params.ith_rbin, NR
@@ -1576,7 +1640,7 @@ int calc_3pt_corr_func_window(
 		for (int i = 0; i < n_temp; i++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[params.ith_rbin], rbin[i+NR*n_temp],
+				rbin[params.ith_rbin], rbin[i + NR * n_temp],
 				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
 				norm * shotnoise_save[i].real()
 			);
@@ -1591,8 +1655,8 @@ int calc_3pt_corr_func_window(
 }
 
 /**
- * Calculate three-point correlation function window for three-point window function
- * from catalogues.
+ * Calculate three-point correlation function window for three-point
+ * correlation function from random catalogues and save the results.
  *
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
@@ -1602,7 +1666,7 @@ int calc_3pt_corr_func_window(
  * @param survey_vol_norm Survey volume normalisation constant.
  * @returns Exit status.
  */
-int calc_3pt_corr_func_window_for_3pcf(  // ???
+int calc_3pt_corr_func_window_for_3pcf(
 	ParticleCatalogue& particles_rand,
 	LineOfSight* los_rand,
 	ParameterSet& params,
@@ -1613,7 +1677,7 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 	if (thisTask == 0) {
 		printf(
 			"[Status] :: Measuring three-point correlation function window "
-			"for three-point correlation function.\n"
+			"for three-point correlation function from random catalogues.\n"
 		);
 	}
 
@@ -1634,8 +1698,7 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computing shot noise terms "
-			"(... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
@@ -1648,7 +1711,7 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 
 	/// Compute shot noise terms.
 	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
-	shotnoise_quadratic_00.calc_ylm_weighted_mean_density_for_3pt_window_shotnoise(
+	shotnoise_quadratic_00.calc_ylm_weighted_mean_density_for_3pcf_window_shotnoise(
 		particles_rand, los_rand, alpha, 0, 0
 	);
 	shotnoise_quadratic_00.calc_fourier_transform();
@@ -1701,7 +1764,7 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 						particles_rand, los_rand, alpha, params.ELL, M_
 					);
 
-				stats.calc_corr_func_for_3pt_corr_func(
+				stats.calc_2pt_func_for_3pt_corr_func(
 					dn_LM_for_shotnoise, shotnoise_quadratic_00,
 					rbin,
 					shotnoise,
@@ -1713,10 +1776,12 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 					if (params.form == "diag") {
 						shotnoise_save[i] += coupling * stats.xi[i];
 					} else if (params.form == "full") {
+						/// Calculate shot noise contribution equivalent to
+						/// the Kronecker delta.  See `calc_3pt_corr_func`.
 						if (i == params.ith_rbin) {
 							shotnoise_save[i] += coupling * stats.xi[i];
 						} else {
-							shotnoise_save[i] += 0.;
+							shotnoise_save[i] += 0.;  // ???: redundant?
 						}
 					}
 				}
@@ -1724,8 +1789,8 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 				durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
 					printf(
-						"[Status] :: Computed for orders m1 = %d, m2 = %d, M = %d "
-						"(... %.3f seconds elapsed in total).\n",
+						"[Status] :: Computed shot noise term for orders "
+						"m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
 						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 					);
 				}
@@ -1734,7 +1799,7 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytes -= 2 * sizeof(std::complex<double>)
-					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -1743,36 +1808,37 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms "
-			"(... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
 
-	/// Initialise output three-point correlation function window for three-point correlation function.
+	/// Initialise output three-point correlation function window.
+	double durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Measuring three-point correlation function window "
-			"for three-point correlation function.\n"
+			"[Status] :: Computing three-point correlation function window terms "
+			"(%.3f seconds elapsed...).\n",
+			durationInSec / CLOCKS_PER_SEC
 		);
 	}
-
-	DensityField<ParticleCatalogue> dn_00(params);
-	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
-	dn_00.calc_fourier_transform();
-
-	SphericalBesselCalculator sj1(params.ell1);
-	SphericalBesselCalculator sj2(params.ell2);
 
 	std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
 	for (int i = 0; i < params.num_rbin; i++) {
 		zeta_save[i] = 0.;
 	}
 
+  /// Compute three-point correlation function window.
+	DensityField<ParticleCatalogue> dn_00(params);
+	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
+	dn_00.calc_fourier_transform();
+
+	SphericalBesselCalculator sj1(params.ell1);
+	SphericalBesselCalculator sj2(params.ell2);
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double> [params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -1805,33 +1871,38 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 					continue;
 				}
 
+				/// Calculate G_{LM}.  See `calc_3pt_corr_func`.s
 				DensityField<ParticleCatalogue> dn_LM(params);
-				dn_LM.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, params.ELL, M_);
+				dn_LM.calc_ylm_weighted_mean_density(
+					particles_rand, los_rand, alpha, params.ELL, M_
+				);
 				dn_LM.calc_fourier_transform();
 				dn_LM.apply_assignment_compensation();
 				dn_LM.calc_inverse_fourier_transform();
 
-				DensityField<ParticleCatalogue> dn_tilde1(params);
+				/// NOTE: Standard naming convention is overriden below.
+
+				/// Calculate F_{\ell m}.  See `calc_3pt_corr_func`.
+				DensityField<ParticleCatalogue> F_ellm_a(params);
 				double rmag_a;
 				if (params.form == "full") {
-					/// Compute ``\delta\tilde{n}_1``.
 					rmag_a = rbin[params.ith_rbin];
-					dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(dn_00, rmag_a, ylm_a, sj1);
+					F_ellm_a.calc_inverse_fourier_transform_for_3pt_corr_func(
+						dn_00, rmag_a, ylm_a, sj1
+					);
 				}
 
 				for (int i_rbin = 0; i_rbin < params.num_rbin; i_rbin++) {
 					double rmag_b = rbin[i_rbin];
-					/// Compute ``\delta\tilde{n}_1``.
 					if (params.form == "diag") {
 						rmag_a = rmag_b;
-						dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
+						F_ellm_a.calc_inverse_fourier_transform_for_3pt_corr_func(
 							dn_00, rmag_a, ylm_a, sj1
 						);
 					}
 
-					/// Compute ``\delta\tilde{n}_2``.
-					DensityField<ParticleCatalogue> dn_tilde2(params);
-					dn_tilde2.calc_inverse_fourier_transform_for_3pt_corr_func(
+					DensityField<ParticleCatalogue> F_ellm_b(params);
+					F_ellm_b.calc_inverse_fourier_transform_for_3pt_corr_func(
 						dn_00, rmag_b, ylm_b, sj2
 					);
 
@@ -1839,10 +1910,11 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 				std::complex<double> zeta_sum = 0.;
 				double factor = params.volume / double(params.nmesh_tot);
 				for (int i = 0; i < params.nmesh_tot; i++) {
-					std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);  // ???
-					std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);  // ???
-					std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);  // ???
-					zeta_sum += pow(I_, params.ell1+params.ell2) * factor * f1 * f2 * f3;
+					std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
+					std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
+					std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+					zeta_sum += pow(I_, params.ell1+params.ell2) * factor
+						* F_ellm_1 * F_ellm_2 * G_LM;
 				}
 
 				zeta_save[i_rbin] += (coupling * zeta_sum);
@@ -1850,9 +1922,9 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 				double durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
 					printf(
-						"[Status] :: Computed for separation and order "
-						"r2 = %.3f, m1 = %d, m2 = %d, M = %d "
-						"(... %.3f seconds elapsed in total).\n",
+						"[Status] :: Computed three-point correlation function window "
+						"term for separation and order "
+						"r2 = %.3f, m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
 						rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 					);
 				}
@@ -1865,6 +1937,15 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
 	}
+
+  durationInSec = double(clock() - timeStart);
+  if (thisTask == 0) {
+    printf(
+      "[Status] :: Computed three-point correlation function window terms "
+      "(... %.3f seconds elapsed).\n",
+      durationInSec / CLOCKS_PER_SEC
+    );
+  }
 
 	/// Normalise and then save the output.
 	double norm = ParticleCatalogue::calc_norm_for_bispec(
@@ -1891,7 +1972,7 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/zeta%d%d%d_window_%02d",
+			buf, "%s/zeta%d%d%d_window_rbin%02d",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
 			params.ith_rbin
@@ -1915,7 +1996,8 @@ int calc_3pt_corr_func_window_for_3pcf(  // ???
 }
 
 /**
- * Calculate three-point correlation function in a periodic box.
+ * Calculate three-point correlation function in a periodic box
+ * and save the results.
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param params (Reference to) the input parameter set.
@@ -1948,8 +2030,7 @@ int calc_3pt_corr_func_in_box(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computing shot noise terms "
-			"(... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
@@ -1960,7 +2041,10 @@ int calc_3pt_corr_func_in_box(
 		shotnoise_save[i] = 0.;
 	}
 
+	/// ???: Find matching equation.
 	/// Compute shot noise terms.
+	/// Calculate normal density field in the global plane-parallel
+	/// picture in contrast with `shotnoise_cubic_LM`.
 	DensityField<ParticleCatalogue> density_(params);
 	density_.calc_density_field_in_box_for_bispec(particles_data);
 	density_.calc_fourier_transform();
@@ -1996,7 +2080,7 @@ int calc_3pt_corr_func_in_box(
 			TwoPointStatistics<ParticleCatalogue> stats(params);
 			std::complex<double> shotnoise = double(particles_data.nparticles);
 
-			stats.calc_corr_func_for_3pt_corr_func(
+			stats.calc_2pt_func_for_3pt_corr_func(
 				dn_LM_for_shotnoise, density_,
 				rbin,
 				shotnoise,
@@ -2008,10 +2092,12 @@ int calc_3pt_corr_func_in_box(
 				if (params.form == "diag") {
 					shotnoise_save[i] += coupling * stats.xi[i];
 				} else if (params.form == "full") {
+					/// Calculate shot noise contribution equivalent to the Kronecker
+					/// delta in eq. (51) in arXiv:1803.02132.
 					if (i == params.ith_rbin) {
 						shotnoise_save[i] += coupling * stats.xi[i];
 					} else {
-						shotnoise_save[i] += 0.;
+						shotnoise_save[i] += 0.;  // ???: redundant?
 					}
 				}
 			}
@@ -2019,9 +2105,8 @@ int calc_3pt_corr_func_in_box(
 			durationInSec = double(clock() - timeStart);
 			if (thisTask == 0) {
 				printf(
-					"[Status] :: Computed for wavenumber and orders "
-					"m1 = %d, m2 = %d, M = %d "
-					"(... %.3f seconds elapsed in total).\n",
+					"[Status] :: Computed shot noise term for wavenumber and orders "
+					"m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
 					m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 				);
 			}
@@ -2038,29 +2123,33 @@ int calc_3pt_corr_func_in_box(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms "
-			"(... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
 
-	/// Initialise output bispectrum.
+	/// Initialise output three-point correlation function.
+	double durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
-		printf("[Status] :: Measuring three-point correlation function.\n");
+		printf(
+			"[Status] :: Computing three-point correlation function terms "
+			"(%.3f seconds elapsed...).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
 	}
-
-	DensityField<ParticleCatalogue> dn_00(params);
-	dn_00.calc_fluctuation_in_box(particles_data, params);
-	dn_00.calc_fourier_transform();
-
-	SphericalBesselCalculator sj1(params.ell1);
-	SphericalBesselCalculator sj2(params.ell2);
 
 	std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
 	for (int i = 0; i < params.num_rbin; i++) {
 		zeta_save[i] = 0.;
 	}
 
+	/// Compute three-point correlation function.
+	DensityField<ParticleCatalogue> dn_00(params);
+	dn_00.calc_fluctuation_in_box(particles_data, params);
+	dn_00.calc_fourier_transform();
+
+	SphericalBesselCalculator sj1(params.ell1);
+	SphericalBesselCalculator sj2(params.ell2);
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 			int M_ = 0;
@@ -2085,18 +2174,23 @@ int calc_3pt_corr_func_in_box(
 				params.ell2, m2_, params, ylm_b
 			);
 
+			/// Calculate G_{LM} in eq. (42) in arXiv:1803.02132 (equivalent to
+			/// normal density fluctuation with L, M = 0, 0 in the global
+			/// plane-parallel picture).
 			DensityField<ParticleCatalogue> dn_LM(params);
 			dn_LM.calc_fluctuation_in_box(particles_data, params);
 			dn_LM.calc_fourier_transform();
 			dn_LM.apply_assignment_compensation();
 			dn_LM.calc_inverse_fourier_transform();
 
-			DensityField<ParticleCatalogue> dn_tilde1(params);
+			/// NOTE: Standard naming convention is overriden below.
+
+			/// Calculate F_{\ell m} in eq. (49) in arXiv:1803.02132.
+			DensityField<ParticleCatalogue> F_ellm_a(params);
 			double rmag_a;
 			if (params.form == "full") {
-				/// Compute ``\delta\tilde{n}_1``.
 				rmag_a = rbin[params.ith_rbin];
-				dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
+				F_ellm_a.calc_inverse_fourier_transform_for_3pt_corr_func(
 					dn_00, rmag_a, ylm_a, sj1
 				);
 			}
@@ -2104,17 +2198,15 @@ int calc_3pt_corr_func_in_box(
 			for (int i_rbin = 0; i_rbin < params.num_rbin; i_rbin++) {
 				double rmag_b = rbin[i_rbin];
 
-				/// Compute ``\delta\tilde{n}_1``.
 				if (params.form == "diag") {
 					rmag_a = rmag_b;
-					dn_tilde1.calc_inverse_fourier_transform_for_3pt_corr_func(
+					F_ellm_a.calc_inverse_fourier_transform_for_3pt_corr_func(
 						dn_00, rmag_a, ylm_a, sj1
 					);
 				}
 
-				/// Compute ``\delta\tilde{n}_2``.
-				DensityField<ParticleCatalogue> dn_tilde2(params);
-				dn_tilde2.calc_inverse_fourier_transform_for_3pt_corr_func(
+				DensityField<ParticleCatalogue> F_ellm_b(params);
+				F_ellm_b.calc_inverse_fourier_transform_for_3pt_corr_func(
 					dn_00, rmag_b, ylm_b, sj2
 				);
 
@@ -2122,10 +2214,11 @@ int calc_3pt_corr_func_in_box(
 				std::complex<double> I_(0., 1.);
 				std::complex<double> zeta_sum = 0.;
 				for (int i = 0; i < params.nmesh_tot; i++) {
-					std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);  // ???
-					std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);  // ???
-					std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);  // ???
-					zeta_sum += factor * pow(I_, params.ell1+params.ell2) * f1 * f2 * f3;
+					std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
+					std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
+					std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+					zeta_sum += factor * pow(I_, params.ell1 + params.ell2)
+						* F_ellm_1 * F_ellm_2 * G_LM;
 				}
 
 				zeta_save[i_rbin] += coupling * zeta_sum;
@@ -2133,9 +2226,9 @@ int calc_3pt_corr_func_in_box(
 				double durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
 					printf(
-						"[Status] :: Computed for separation and order "
-						"r2 = %.3f, m1 = %d, m2 = %d, M = %d "
-						"(... %.3f seconds elapsed in total).\n",
+						"[Status] :: Computed three-point correlation function term "
+						"for separation and order r2 = %.3f, m1 = %d, m2 = %d, M = %d "
+						"(%.3f seconds elapsed).\n",
 						rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 					);
 				}
@@ -2147,6 +2240,15 @@ int calc_3pt_corr_func_in_box(
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 		}
 	}
+
+  durationInSec = double(clock() - timeStart);
+  if (thisTask == 0) {
+    printf(
+      "[Status] :: Computed three-point correlation function terms "
+      "(... %.3f seconds elapsed).\n",
+      durationInSec / CLOCKS_PER_SEC
+    );
+  }
 
 	/// Normalise and then save the output.
 	double norm = params.volume
@@ -2172,7 +2274,7 @@ int calc_3pt_corr_func_in_box(
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/zeta%d%d%d_%02d",
+			buf, "%s/zeta%d%d%d_rbin%02d",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
 			params.ith_rbin
@@ -2197,7 +2299,7 @@ int calc_3pt_corr_func_in_box(
 
 /**
  * Calculate bispectrum from catalogues with respect to a choice of
- * line of sight.
+ * line of sight and save the results.
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param particles_rand (Reference to) the random-source particle container.
@@ -2218,7 +2320,7 @@ int calc_bispec_for_los_choice(
 	double* kbin,
 	int los,
 	double survey_vol_norm
-) {
+) {  // !!! uncommented through
 	if (thisTask == 0) {
 		printf(
 			"[Status] :: Measuring bispectrum for the choice of line of sight.\n"
@@ -2287,14 +2389,14 @@ int calc_bispec_for_los_choice(
 				DensityField<ParticleCatalogue> N_shotnoise(params);
 					// NOTE: standard naming convention overriden
 				if (los == 0) {
-					N_shotnoise.calc_ylm_weighted_fields_for_bispec_shotnoise(
+					N_shotnoise.calc_ylm_weighted_field_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				} else {
-					N_shotnoise.calc_ylm_weighted_fields_for_bispec_shotnoise(
+					N_shotnoise.calc_ylm_weighted_field_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2378,14 +2480,14 @@ int calc_bispec_for_los_choice(
 
 				DensityField<ParticleCatalogue> N_shotnoise(params);
 				if (los == 1) {
-					N_shotnoise.calc_ylm_weighted_fields_for_bispec_shotnoise(
+					N_shotnoise.calc_ylm_weighted_field_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				} else {
-					N_shotnoise.calc_ylm_weighted_fields_for_bispec_shotnoise(
+					N_shotnoise.calc_ylm_weighted_field_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2467,14 +2569,14 @@ int calc_bispec_for_los_choice(
 
 				DensityField<ParticleCatalogue> N_shotnoise(params);
 				if (los == 2) {
-					N_shotnoise.calc_ylm_weighted_fields_for_bispec_shotnoise(
+					N_shotnoise.calc_ylm_weighted_field_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				} else {
-					N_shotnoise.calc_ylm_weighted_fields_for_bispec_shotnoise(
+					N_shotnoise.calc_ylm_weighted_field_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2518,7 +2620,7 @@ int calc_bispec_for_los_choice(
 					three_pt_holder[i][1] = 0.;
 				}
 
-				stats.calc_shotnoise_for_bispec_ijk(
+				stats.calc_shotnoise_for_bispec_on_grid(
 					dn_shotnoise, N_shotnoise,
 					shotnoise_cubic_LM,
 					params.ELL, M_,
@@ -2739,9 +2841,9 @@ int calc_bispec_for_los_choice(
 					double factor = params.volume / double(params.nmesh_tot);
 					std::complex<double> bk_sum = 0.;
 					for (int i = 0; i < params.nmesh_tot; i++) {
-						std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);  // ???
-						std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);  // ???
-						std::complex<double> f3(dn3[i][0], dn3[i][1]);  // ???
+						std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);
+						std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);
+						std::complex<double> f3(dn3[i][0], dn3[i][1]);
 						bk_sum += factor * f1 * f2 * f3;
 					}
 
@@ -2815,7 +2917,7 @@ int calc_bispec_for_los_choice(
 
 /**
  * Calculate bispectrum from catalogues for modes with individual
- * orders @f$M@f$.
+ * orders @f$M@f$ and save the results.
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param particles_rand (Reference to) the random-source particle container.
@@ -2834,7 +2936,7 @@ int calc_bispec_for_M_mode(
 	double alpha,
 	double* kbin,
 	double survey_vol_norm
-) {
+) {  // !!! uncommented through
 	if (thisTask == 0) {
 		printf(
 			"[Status] :: Measuring bispectrum for individual modes with order `m`.\n"
@@ -2903,7 +3005,7 @@ int calc_bispec_for_M_mode(
 				}
 
 				DensityField<ParticleCatalogue> shotnoise_quadratic_LM(params);
-				shotnoise_quadratic_LM.calc_ylm_weighted_fields_for_bispec_shotnoise(
+				shotnoise_quadratic_LM.calc_ylm_weighted_field_for_bispec_shotnoise(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
@@ -2971,7 +3073,7 @@ int calc_bispec_for_M_mode(
 	dn_00_for_shotnoise.finalise_density_field();
 
 	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
-	shotnoise_quadratic_00.calc_ylm_weighted_fields_for_bispec_shotnoise(
+	shotnoise_quadratic_00.calc_ylm_weighted_field_for_bispec_shotnoise(
 		particles_data, particles_rand,
 		los_data, los_rand,
 		alpha,
@@ -3044,7 +3146,7 @@ int calc_bispec_for_M_mode(
 					three_pt_holder[i][1] = 0.;
 				}
 
-				stats.calc_shotnoise_for_bispec_ijk(
+				stats.calc_shotnoise_for_bispec_on_grid(
 					dn_LM_for_shotnoise, shotnoise_quadratic_00,
 					shotnoise_cubic_LM,
 					params.ELL, M_,
@@ -3244,9 +3346,9 @@ int calc_bispec_for_M_mode(
 					double factor = params.volume / double(params.nmesh_tot);
 					std::complex<double> bk_sum = 0.;
 					for (int i = 0; i < params.nmesh_tot; i++) {
-						std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);  // ???
-						std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);  // ???
-						std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);  // ???
+						std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);
+						std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);
+						std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);
 						bk_sum += factor * f1 * f2 * f3;
 					}
 

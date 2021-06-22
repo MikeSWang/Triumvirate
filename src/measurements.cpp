@@ -42,6 +42,7 @@
 int main(int argc, char *argv[]) {
   if (thisTask == 0) {
     printf("%s\n", std::string(80, '>').c_str());
+    printf("[Info] :: Program has started.\n");
   }
 
   /// ******************
@@ -257,7 +258,7 @@ int main(int argc, char *argv[]) {
   if (thisTask == 0) {
     printf("[Info] :: Persistent memory usage: %.0f bytes.\n", bytes);
     printf(
-      "[Info] :: Total time elapsed is %.3f seconds.\n",
+      "[Info] :: Total time elapsed: %.3f seconds.\n",
       durationInSec / CLOCKS_PER_SEC
     );
     printf("[Info] :: Program has completed.\n");
