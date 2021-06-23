@@ -469,7 +469,7 @@ class DensityField {
 
   /**
    * Calculate the reduced spherical harmonic transform of a mean-density
-   * field for calculating 3-point window function shot noise.
+   * field for calculating three-point correlation function window shot noise.
    *
    * @param particles_rand (Reference to) the random-source particle container.
    * @param los_rand Random-source particle lines of sight.
@@ -673,7 +673,8 @@ class DensityField {
     fftw_execute(fft_plan_backward);
     fftw_destroy_plan(fft_plan_backward);
 
-    /// This is primarily used to compute G_LM in eq. (42) in arXiv:1803.02132.
+    /// This is primarily used to compute G_LM in eq. (42)
+    /// in arXiv:1803.02132.
 
     return 0;
   }
@@ -801,7 +802,8 @@ class DensityField {
           long long coord_flat =
             (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
 
-          /// Calculate the wave-vector/-number representing the mesh grid.
+          /// Calculate the wave-vector/-number representing
+          /// the mesh grid.
           kvec[0] = (i < this->params.nmesh[0]/2) ?
             i * dk[0] : (i - this->params.nmesh[0]) * dk[0];
           kvec[1] = (j < this->params.nmesh[1]/2) ?
@@ -1221,7 +1223,8 @@ class TwoPointStatistics {
       twopt3d_sample[i][1] = 0.;
     }
 
-    double vol_factor = 1. / this->params.volume;  // convert ∫d^3k = (1/V) Σ_i
+    double vol_factor = 1. / this->params.volume;
+      // convert ∫d^3k = (1/V) Σ_i
 
     /// Compute gridded power spectrum.  See also `calc_power_spec` above.
     double dk[3];
@@ -1387,7 +1390,8 @@ class TwoPointStatistics {
       twopt3d_sample[i][1] = 0.;
     }
 
-    double vol_factor = 1. / this->params.volume;  // convert ∫d^3k = (1/V) Σ_i
+    double vol_factor = 1. / this->params.volume;
+      // convert ∫d^3k = (1/V) Σ_i
 
     /// Compute gridded Fourier field.  See also `calc_power_spec` above.
     double dk[3];
@@ -1753,8 +1757,8 @@ class TwoPointStatistics {
       }
     }
 
-    /// Inverse Fourier transform.  Calculate S_{\ell_1 \ell_2 L; i = j != k}
-    /// in eq. (45) in arXiv:1803.02132.
+    /// Inverse Fourier transform.  Calculate
+    /// S_{\ell_1 \ell_2 L; i = j != k} in eq. (45) in arXiv:1803.02132.
     fftw_plan fft_plan_backward = fftw_plan_dft_3d(
       this->params.nmesh[0], this->params.nmesh[1], this->params.nmesh[2],
       three_pt, three_pt,

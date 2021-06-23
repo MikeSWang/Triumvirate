@@ -42,7 +42,7 @@
 int main(int argc, char *argv[]) {
   if (thisTask == 0) {
     printf("%s\n", std::string(80, '>').c_str());
-    printf("[Info] :: Program has started.\n");
+    printf("[Status] :: Program has started.\n");
   }
 
   /// ******************
@@ -140,12 +140,16 @@ int main(int argc, char *argv[]) {
   /// Compute number density alpha ratio.
   double alpha = 0.;
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-    alpha = ParticleCatalogue::calc_alpha_ratio(particles_data, particles_rand);
+    alpha =ParticleCatalogue::calc_alpha_ratio(
+      particles_data, particles_rand
+    );
   }
 
   /// Offset particle positions for measurement standardisation.
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-    ParticleCatalogue::offset_particles_for_fft(particles_data, particles_rand, params);
+    ParticleCatalogue::offset_particles_for_fft(
+      particles_data, particles_rand, params
+    );
   }
   if (params.catalogue_type == "sim") {
     particles_data.offset_particles_for_periodicity(params);
@@ -160,27 +164,40 @@ int main(int argc, char *argv[]) {
   if (thisTask == 0) {
 		std::cout << "[Status] :: See printout below." << std::endl;
     std::cout << "-- Data Catalogue --" << std::endl;
-    std::cout << "Number count : N = " << particles_data.nparticles << std::endl;
-    std::cout << "Volume : V = " << params.volume << std::endl;
-    std::cout << "Size along x-axis : L_x = " << params.boxsize[0] << std::endl;
-    std::cout << "Size along y-axis : L_y = " << params.boxsize[1] << std::endl;
-    std::cout << "Size along z-axis : L_z = " << params.boxsize[2] << std::endl;
+    std::cout << "Number count : N = "
+      << particles_data.nparticles << std::endl;
+    std::cout << "Volume : V = "
+      << params.volume << std::endl;
+    std::cout << "Size along x-axis : L_x = "
+      << params.boxsize[0] << std::endl;
+    std::cout << "Size along y-axis : L_y = "
+      << params.boxsize[1] << std::endl;
+    std::cout << "Size along z-axis : L_z = "
+      << params.boxsize[2] << std::endl;
     std::cout << "" << std::endl;
 
     std::cout << "-- Data Density Field --" << std::endl;
-    std::cout << particles_data.pos_min[0] << " <= x_data <= " << particles_data.pos_max[0] << std::endl;
-    std::cout << particles_data.pos_min[1] << " <= y_data <= " << particles_data.pos_max[1] << std::endl;
-    std::cout << particles_data.pos_min[2] << " <= z_data <= " << particles_data.pos_max[2] << std::endl;
+    std::cout << particles_data.pos_min[0] << " <= x_data <= "
+      << particles_data.pos_max[0] << std::endl;
+    std::cout << particles_data.pos_min[1] << " <= y_data <= "
+      << particles_data.pos_max[1] << std::endl;
+    std::cout << particles_data.pos_min[2] << " <= z_data <= "
+      << particles_data.pos_max[2] << std::endl;
     std::cout << "" << std::endl;
 
     std::cout << "-- Random Density Field --" << std::endl;
-    std::cout << particles_rand.pos_min[0] << " <= x_rand <= " << particles_rand.pos_max[0] << std::endl;
-    std::cout << particles_rand.pos_min[1] << " <= y_rand <= " << particles_rand.pos_max[1] << std::endl;
-    std::cout << particles_rand.pos_min[2] << " <= z_rand <= " << particles_rand.pos_max[2] << std::endl;
+    std::cout << particles_rand.pos_min[0] << " <= x_rand <= "
+      << particles_rand.pos_max[0] << std::endl;
+    std::cout << particles_rand.pos_min[1] << " <= y_rand <= "
+      << particles_rand.pos_max[1] << std::endl;
+    std::cout << particles_rand.pos_min[2] << " <= z_rand <= "
+      << particles_rand.pos_max[2] << std::endl;
     std::cout << "" << std::endl;
 
-    std::cout << "Survey volume normalisation : V_survey = " << survey_vol_norm << std::endl;
-    std::cout << "Size of field (geometric mean) : L_survey = " << pow(survey_vol_norm, 1./3.) << std::endl;
+    std::cout << "Survey volume normalisation : V_survey = "
+      << survey_vol_norm << std::endl;
+    std::cout << "Size of field (geometric mean) : L_survey = "
+      << pow(survey_vol_norm, 1./3.) << std::endl;
   }
 
   durationInSec = double(clock() - timeStart);
@@ -217,6 +234,7 @@ int main(int argc, char *argv[]) {
 
   /// IDEA: Formalise the choosing of measurement programs by parsing
   /// an additional command-line argument.
+  /// NOTE: Line break convention is overriden below.
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
     // calc_power_spec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, survey_vol_norm);
     // calc_corr_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
@@ -261,7 +279,7 @@ int main(int argc, char *argv[]) {
       "[Info] :: Total time elapsed: %.3f seconds.\n",
       durationInSec / CLOCKS_PER_SEC
     );
-    printf("[Info] :: Program has completed.\n");
+    printf("[Status] :: Program has completed.\n");
     printf("%s\n", std::string(80, '<').c_str());
   }
 
