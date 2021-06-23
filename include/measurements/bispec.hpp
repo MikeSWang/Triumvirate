@@ -338,7 +338,10 @@ int calc_bispec(
   /// Compute bispectrum.
   DensityField<ParticleCatalogue> dn_00(params);
   dn_00.calc_ylm_weighted_fluctuation(
-    particles_data, particles_rand, los_data, los_rand, alpha, 0, 0
+    particles_data, particles_rand,
+		los_data, los_rand,
+		alpha,
+		0, 0
   );
   dn_00.calc_fourier_transform();
 
@@ -883,7 +886,7 @@ int calc_bispec_in_box(
   }
 
 	/// Normalise and then save the output.
-	/// NOTE: Save the imaginary parts only.
+	/// NOTE: Save the real parts only.
 	double norm = params.volume
 		/ double(particles_data.nparticles) / double(particles_data.nparticles);
 	norm *= params.volume / double(particles_data.nparticles);
@@ -1921,7 +1924,7 @@ int calc_3pt_corr_func_window_for_3pcf(
 						* F_ellm_1 * F_ellm_2 * G_LM;
 				}
 
-				zeta_save[i_rbin] += (coupling * zeta_sum);
+				zeta_save[i_rbin] += coupling * zeta_sum;
 
 				double durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
@@ -2329,7 +2332,7 @@ int calc_bispec_for_los_choice(
 	double* kbin,
 	int los,
 	double survey_vol_norm
-) {  // !!! uncommented through
+) {  // ???: find matching equation
 	if (thisTask == 0) {
 		printf(
 			"[Info] :: Measuring bispectrum for the choice of line of sight "
@@ -2452,7 +2455,7 @@ int calc_bispec_for_los_choice(
 					}
 				}
 
-    		/// ??? S_{\ell_1 \ell_2 L; i = k != j} shuffled?
+    		/// ??? S_{\ell_1 \ell_2 L; i = k != j} (i.e. ell1 == 0 case) shuffled?
 
 				durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
@@ -2523,6 +2526,8 @@ int calc_bispec_for_los_choice(
 						params.ELL, M_
 					);
 
+    		/// ??? S_{\ell_1 \ell_2 L; i = k != j} (i.e. ell1 == 0 case) shuffled?
+
     		/// Calculate S_{\ell_1 \ell_2 L; i = k != j} in eq. (45)
 				/// in arXiv:1803.02132.
 				if (params.ell1 == 0) {
@@ -2536,8 +2541,6 @@ int calc_bispec_for_los_choice(
 						shotnoise_save[i] += coupling * stats.pk[i];
 					}
 				}
-
-    		/// ??? S_{\ell_1 \ell_2 L; i = k != j} shuffled?
 
 				durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
@@ -2589,7 +2592,6 @@ int calc_bispec_for_los_choice(
 					continue;
 				}
 
-				/// Calculate N_LM in eq. (46) in arXiv:1803.02132.
 				DensityField<ParticleCatalogue> shotnoise_quadratic(params);
 				if (los == 2) {
 					shotnoise_quadratic.calc_ylm_weighted_field_for_bispec_shotnoise(
@@ -2785,69 +2787,73 @@ int calc_bispec_for_los_choice(
 					continue;
 				}
 
-				DensityField<ParticleCatalogue> dn1(params);
+				/// Calculate G_{LM} in eq. (42) in arXiv:1803.02132.
+				DensityField<ParticleCatalogue> dn_los1(params);
 				if (los == 0) {
-					dn1.calc_ylm_weighted_fluctuation(
+					dn_los1.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 					  los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				} else {
-					dn1.calc_ylm_weighted_fluctuation(
+					dn_los1.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				}
-				dn1.calc_fourier_transform();
+				dn_los1.calc_fourier_transform();
 
-				DensityField<ParticleCatalogue> dn2(params);
+				DensityField<ParticleCatalogue> dn_los2(params);
 				if (los == 1) {
-					dn2.calc_ylm_weighted_fluctuation(
+					dn_los2.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				} else {
-					dn2.calc_ylm_weighted_fluctuation(
+					dn_los2.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				}
-				dn2.calc_fourier_transform();
+				dn_los2.calc_fourier_transform();
 
-				DensityField<ParticleCatalogue> dn3(params);
+				DensityField<ParticleCatalogue> dn_los3(params);
 				if (los == 2) {
-					dn3.calc_ylm_weighted_fluctuation(
+					dn_los3.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				} else {
-					dn3.calc_ylm_weighted_fluctuation(
+					dn_los3.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				}
-				dn3.calc_fourier_transform();
-				dn3.apply_assignment_compensation();
-				dn3.calc_inverse_fourier_transform();
+				dn_los3.calc_fourier_transform();
+				dn_los3.apply_assignment_compensation();
+				dn_los3.calc_inverse_fourier_transform();
 
-				DensityField<ParticleCatalogue> dn_tilde1(params);
+				/// NOTE: Standard naming convention is overriden below.
+
+				/// Calculate F_{\ell m} in eq. (42) in arXiv:1803.02132.
+				DensityField<ParticleCatalogue> F_ellm_a(params);
 				double kmag_a;
 				double dk = kbin[1] - kbin[0];
 				if (params.form == "full") {
 					kmag_a = kbin[params.ith_kbin];
-					dn_tilde1.calc_inverse_fourier_transform_for_bispec(
-						dn1, kmag_a, dk, ylm_a
+					F_ellm_a.calc_inverse_fourier_transform_for_bispec(
+						dn_los1, kmag_a, dk, ylm_a
 					);
 				}
 
@@ -2856,24 +2862,23 @@ int calc_bispec_for_los_choice(
 
 					if (params.form == "diag") {
 						kmag_a = kmag_b;
-						dn_tilde1.calc_inverse_fourier_transform_for_bispec(
-							dn1, kmag_a, dk, ylm_a
+						F_ellm_a.calc_inverse_fourier_transform_for_bispec(
+							dn_los1, kmag_a, dk, ylm_a
 						);
 					}
 
-					/// Compute ``\delta\tilde{n}_2``.
-					DensityField<ParticleCatalogue> dn_tilde2(params);
-					dn_tilde2.calc_inverse_fourier_transform_for_bispec(
-						dn2, kmag_b, dk, ylm_b
+					DensityField<ParticleCatalogue> F_ellm_b(params);
+					F_ellm_b.calc_inverse_fourier_transform_for_bispec(
+						dn_los2, kmag_b, dk, ylm_b
 					);
 
 					double factor = params.volume / double(params.nmesh_tot);
 					std::complex<double> bk_sum = 0.;
 					for (int i = 0; i < params.nmesh_tot; i++) {
-						std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);
-						std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);
-						std::complex<double> f3(dn3[i][0], dn3[i][1]);
-						bk_sum += factor * f1 * f2 * f3;
+						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
+						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
+						std::complex<double> G_LM(dn_los3[i][0], dn_los3[i][1]);
+						bk_sum += factor * F_ellm_1 * F_ellm_2 * G_LM;
 					}
 
 					bk_save[i_kbin] += coupling * bk_sum;
@@ -2906,7 +2911,7 @@ int calc_bispec_for_los_choice(
   }
 
 	/// Normalise and then save the output.
-	/// NOTE: Save the imaginary parts only.
+	/// NOTE: Save the real parts only.
 	double norm = ParticleCatalogue::calc_norm_for_bispec(
 		particles_data, survey_vol_norm
 	);
@@ -2974,10 +2979,11 @@ int calc_bispec_for_M_mode(
 	double alpha,
 	double* kbin,
 	double survey_vol_norm
-) {  // !!! uncommented through
+) {
 	if (thisTask == 0) {
 		printf(
-			"[Info] :: Measuring bispectrum for individual modes of order `m`.\n"
+			"[Info] :: Measuring bispectrum for individual modes of order `m` "
+			"from data and random catalogues.\n"
 		);
 	}
 
@@ -3003,20 +3009,18 @@ int calc_bispec_for_M_mode(
 		);
 	}
 
-	std::vector<
-		std::vector<
-			std::complex<double>
-		>
-	> shotnoise_save;
+	/// NOTE: Additional spaces are needed below to avoid clash with
+	/// `>>` opertor.
+	std::vector< std::vector< std::complex<double> > > shotnoise_save;
 
 	shotnoise_save.resize(2*params.ELL + 1);
 	for (int i = 0; i < params.num_kbin; i++) {
 		shotnoise_save[i].resize(params.num_kbin);
 	}
 
-	for (int i = 0; i < params.num_kbin; i++) {
-		for (int m = 0; m < 2*params.ELL + 1; m++) {
-			shotnoise_save[m][i] = 0.;
+	for (int m_idx = 0; m_idx < 2*params.ELL + 1; m_idx++) {
+		for (int i = 0; i < params.num_kbin; i++) {
+			shotnoise_save[m_idx][i] = 0.;
 		}
 	}
 
@@ -3041,6 +3045,7 @@ int calc_bispec_for_M_mode(
 					continue;
 				}
 
+				/// Calculate N_LM in eq. (46) in arXiv:1803.02132.
 				DensityField<ParticleCatalogue> shotnoise_quadratic_LM(params);
 				shotnoise_quadratic_LM.calc_ylm_weighted_field_for_bispec_shotnoise(
 					particles_data, particles_rand,
@@ -3050,6 +3055,7 @@ int calc_bispec_for_M_mode(
 				);
 				shotnoise_quadratic_LM.calc_fourier_transform();
 
+    		/// Calculate \bar{S}_LM in eq. (46) in arXiv:1803.02132.
 				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise_cubic_LM =
 					stats.calc_shotnoise_for_bispec_from_self(
@@ -3059,12 +3065,16 @@ int calc_bispec_for_M_mode(
 						params.ELL, M_
 					);
 
+    		/// Calculate S_{\ell_1 \ell_2 L; i = j = k} in eq. (45)
+				/// in arXiv:1803.02132.
 				if (params.ell1 == 0 && params.ell2 == 0) {
 					for (int i = 0; i < params.num_kbin; i++) {
 						shotnoise_save[M_ + params.ELL][i] += shotnoise_cubic_LM;
 					}
 				}
 
+    		/// Calculate S_{\ell_1 \ell_2 L; i != j = k} in eq. (45)
+				/// in arXiv:1803.02132.
 				if (params.ell2 == 0) {
 					stats.calc_power_spec(
 						dn_00_for_shotnoise, shotnoise_quadratic_LM,
@@ -3074,16 +3084,18 @@ int calc_bispec_for_M_mode(
 					);
 					if (params.form == "diag") {
 						for (int i = 0; i < params.num_kbin; i++) {
-							shotnoise_save[M_+params.ELL][i] += stats.pk[i];
+							shotnoise_save[M_ + params.ELL][i] += stats.pk[i];
 						}
 					} else if (params.form == "full") {
 						for (int i = 0; i < params.num_kbin; i++) {
-							shotnoise_save[M_+params.ELL][i] += stats.pk[params.ith_kbin];
+							shotnoise_save[M_ + params.ELL][i] += stats.pk[params.ith_kbin];
 						}
 					}
 				}
 
-				if ((params.ell1 == 0)) {
+    		/// Calculate S_{\ell_1 \ell_2 L; i = k != j} in eq. (45)
+				/// in arXiv:1803.02132.
+				if (params.ell1 == 0) {
 					stats.calc_power_spec(
 						dn_00_for_shotnoise, shotnoise_quadratic_LM,
 						kbin,
@@ -3091,14 +3103,14 @@ int calc_bispec_for_M_mode(
 						params.ell2, m2_
 					);
 					for (int i = 0; i < params.num_kbin; i++) {
-						shotnoise_save[M_+params.ELL][i] += stats.pk[i];
+						shotnoise_save[M_ + params.ELL][i] += stats.pk[i];
 					}
 				}
 
 				durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
 					printf(
-						"[Status] :: Computed for orders "
+						"[Status] :: Computed shot noise term for orders "
 						"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
 						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 					);
@@ -3109,6 +3121,7 @@ int calc_bispec_for_M_mode(
 
 	dn_00_for_shotnoise.finalise_density_field();
 
+	/// Calculate N_00 in eq. (45) in arXiv:1803.02132.
 	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
 	shotnoise_quadratic_00.calc_ylm_weighted_field_for_bispec_shotnoise(
 		particles_data, particles_rand,
@@ -3120,7 +3133,6 @@ int calc_bispec_for_M_mode(
 
 	SphericalBesselCalculator sj1(params.ell1);
 	SphericalBesselCalculator sj2(params.ell2);
-
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
@@ -3166,6 +3178,8 @@ int calc_bispec_for_M_mode(
 				);
 				dn_LM_for_shotnoise.calc_fourier_transform();
 
+    		/// Calculate S_{\ell_1 \ell_2 L; i = j != k} in eq. (45)
+				/// in arXiv:1803.02132.
 				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise_cubic_LM =
 					stats.calc_shotnoise_for_bispec_from_self(
@@ -3244,7 +3258,7 @@ int calc_bispec_for_M_mode(
 					durationInSec = double(clock() - timeStart);
 					if (thisTask == 0) {
 						printf(
-							"[Status] :: Computed for wavenumber and orders "
+							"[Status] :: Computed shot noise term for wavenumber and orders "
 							"`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
 							kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
@@ -3275,10 +3289,19 @@ int calc_bispec_for_M_mode(
 	}
 
 	/// Initialise output bispectrum.
-	if (thisTask == 0) {
-		printf("[Status] :: Measuring bispectrum.\n");
-	}
+	double durationInSec = double(clock() - timeStart);
+  if (thisTask == 0) {
+    printf(
+			"[Status] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
+  }
 
+	/// NOTE: Additional spaces are needed below to avoid clash with
+	/// `>>` opertor.
+	std::vector< std::vector< std::complex<double> > > bk_save;
+
+  /// Compute bispectrum.
 	DensityField<ParticleCatalogue> dn_00(params);
 	dn_00.calc_ylm_weighted_fluctuation(
 		particles_data, particles_rand,
@@ -3288,19 +3311,13 @@ int calc_bispec_for_M_mode(
 	);
 	dn_00.calc_fourier_transform();
 
-	std::vector<
-		std::vector<
-			std::complex<double>
-		>
-	> bk_save;
-
 	bk_save.resize(2*params.ELL + 1);
 	for (int i = 0; i < params.num_kbin; i++) {
 		bk_save[i].resize(params.num_kbin);
 	}
 
-	for (int i = 0; i < params.num_kbin; i++) {
-		for (int m = 0; m < 2*params.ELL + 1; m++) {
+	for (int m = 0; m < 2*params.ELL + 1; m++) {
+		for (int i = 0; i < params.num_kbin; i++) {
 			bk_save[m][i] = 0.;
 		}
 	}
@@ -3333,6 +3350,7 @@ int calc_bispec_for_M_mode(
 				);
 			}
 
+			/// Calculate G_{LM} in eq. (42) in arXiv:1803.02132.
 			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
 				double coupling = double(2*params.ELL + 1)
 					* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
@@ -3353,13 +3371,15 @@ int calc_bispec_for_M_mode(
 				dn_LM.apply_assignment_compensation();
 				dn_LM.calc_inverse_fourier_transform();
 
-				DensityField<ParticleCatalogue> dn_tilde1(params);
+				/// NOTE: Standard naming convention is overriden below.
+
+				/// Calculate F_{\ell m} in eq. (42) in arXiv:1803.02132.
+				DensityField<ParticleCatalogue> F_ellm_a(params);
 				double kmag_a;
 				double dk = kbin[1] - kbin[0];
 				if (params.form == "full") {
-					/// Compute ``\delta\tilde{n}_1``.
 					kmag_a = kbin[params.ith_kbin];
-					dn_tilde1.calc_inverse_fourier_transform_for_bispec(
+					F_ellm_a.calc_inverse_fourier_transform_for_bispec(
 						dn_00, kmag_a, dk, ylm_a
 					);
 				}
@@ -3367,35 +3387,34 @@ int calc_bispec_for_M_mode(
 				for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
 					double kmag_b = kbin[i_kbin];
 
-					/// Compute ``\delta\tilde{n}_1``.
 					if (params.form == "diag") {
 						kmag_a = kmag_b;
-						dn_tilde1.calc_inverse_fourier_transform_for_bispec(
+						F_ellm_a.calc_inverse_fourier_transform_for_bispec(
 							dn_00, kmag_a, dk, ylm_a
 						);
 					}
 
-					/// Compute ``\delta\tilde{n}_2``.
-					DensityField<ParticleCatalogue> dn_tilde2(params);
-					dn_tilde2.calc_inverse_fourier_transform_for_bispec(
+					DensityField<ParticleCatalogue> F_ellm_b(params);
+					F_ellm_b.calc_inverse_fourier_transform_for_bispec(
 						dn_00, kmag_b, dk, ylm_b
 					);
 
 					double factor = params.volume / double(params.nmesh_tot);
 					std::complex<double> bk_sum = 0.;
 					for (int i = 0; i < params.nmesh_tot; i++) {
-						std::complex<double> f1(dn_tilde1[i][0], dn_tilde1[i][1]);
-						std::complex<double> f2(dn_tilde2[i][0], dn_tilde2[i][1]);
-						std::complex<double> f3(dn_LM[i][0], dn_LM[i][1]);
-						bk_sum += factor * f1 * f2 * f3;
+						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
+						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
+						std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+						bk_sum += factor * F_ellm_1 * F_ellm_2 * G_LM;
 					}
 
+					/// NOTE: No coupling multiplication.
 					bk_save[M_ + params.ELL][i_kbin] += bk_sum;
 
 					double durationInSec = double(clock() - timeStart);
 					if (thisTask == 0) {
 						printf(
-							"[Status] :: Computed for wavenumber and orders "
+							"[Status] :: Computed bispectrum term for wavenumber and orders "
 							"`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
 							kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
@@ -3411,7 +3430,16 @@ int calc_bispec_for_M_mode(
 		}
 	}
 
+  durationInSec = double(clock() - timeStart);
+  if (thisTask == 0) {
+    printf(
+      "[Status] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
+      durationInSec / CLOCKS_PER_SEC
+    );
+  }
+
 	/// Normalise and then save the output.
+	/// NOTE: Save the real parts only.
 	double norm = ParticleCatalogue::calc_norm_for_bispec(
 		particles_data, survey_vol_norm
 	);
@@ -3437,7 +3465,7 @@ int calc_bispec_for_M_mode(
 			}
 		} else if (params.form == "full") {
 			sprintf(
-				buf, "%s/bk%d%d%d_M%d_%02d",
+				buf, "%s/bk%d%d%d_M%d_kbin%02d",
 				params.output_dir.c_str(),
 				params.ell1, params.ell2,
 				params.ELL, M_,

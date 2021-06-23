@@ -186,11 +186,11 @@ class ToolCollection {
           /// ??? NOTE: Two halves of the grid in each dimension have been
           /// rearranged for FFT convention.
           rvec[0] = (i < params.nmesh[0]/2) ?
-            (i * dr[0]) : ((i - params.nmesh[0]) * dr[0]);
+            (i * dr[0]) : (i - params.nmesh[0]) * dr[0];
           rvec[1] = (j < params.nmesh[1]/2) ?
-            (j * dr[1]) : ((j - params.nmesh[1]) * dr[1]);
+            (j * dr[1]) : (j - params.nmesh[1]) * dr[1];
           rvec[2] = (k < params.nmesh[2]/2) ?
-            (k * dr[2]) : ((k - params.nmesh[2]) * dr[2]);
+            (k * dr[2]) : (k - params.nmesh[2]) * dr[2];
 
           ylm_out[coord_flat] =
             calc_reduced_spherical_harmonic(ell_, m_, rvec);
