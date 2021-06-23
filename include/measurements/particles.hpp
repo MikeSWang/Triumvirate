@@ -258,7 +258,8 @@ class ParticleCatalogue {
   }
 
   /**
-   * Calculate the alpha ratio (of weighted number counts or number densities).
+   * Calculate the alpha ratio (of weighted number counts or
+   * number densities).
    *
    * @param particles_data (Reference to) the data-source particle container.
    * @param particles_rand (Reference to) the random-source particle container.

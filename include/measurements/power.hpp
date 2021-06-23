@@ -6,7 +6,7 @@
 #endif
 
 /**
- * Calculate power spectrum from catalogues.
+ * Calculate power spectrum from catalogues and save the results.
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param particles_rand (Reference to) the random-source particle container.
@@ -27,7 +27,9 @@ int calc_power_spec(
   double survey_vol_norm
 ) {
   if (thisTask == 0) {
-    printf("[Status] :: Measuring power spectrum.\n");
+    printf(
+      "[Info] :: Measuring power spectrum from data and random catalogues.\n"
+    );
 
     if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
       printf(
@@ -97,8 +99,8 @@ int calc_power_spec(
     durationInSec = double(clock() - timeStart);
     if (thisTask == 0) {
       printf(
-        "[Status] :: Computed order M = %d "
-        "(... %.3f seconds elapsed in total).\n",
+        "[Status] :: Computed power spectrum term of order `M = %d` "
+        "(%.3f seconds elapsed).\n",
         M_, durationInSec / CLOCKS_PER_SEC
       );
     }
@@ -127,7 +129,8 @@ int calc_power_spec(
 }
 
 /**
- * Calculate two-point correlation function.
+ * Calculate two-point correlation function from catalogues
+ * and save the results.
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param particles_rand (Reference to) the random-source particle container.
@@ -148,14 +151,17 @@ int calc_corr_func(
   double survey_vol_norm
 ) {
   if (thisTask == 0) {
-    printf("[Status] :: Measuring two-point correlation function.\n");
+    printf(
+      "[Info] :: Measuring two-point correlation function "
+      "from data and random catalogues.\n"
+    );
 
     if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
       printf(
         "[Error] :: Disallowed multipole degree combination "
         "for two-point correlation function measurements. "
+        "Please set `ell1 = ELL` and `ell2 = 0`.\n"
       );
-      printf("Please set `ell1 = ELL` and `ell2 = 0`.\n");
       exit(1);
     }
   }
@@ -218,8 +224,8 @@ int calc_corr_func(
     durationInSec = double(clock() - timeStart);
     if (thisTask == 0) {
       printf(
-        "[Status] :: Computed order M = %d "
-        "(... %.3f seconds elapsed in total).\n",
+        "[Status] :: Computed two-point correlation function term with "
+        "order `M = %d` (%.3f seconds elapsed).\n",
         M_, durationInSec / CLOCKS_PER_SEC
       );
     }
@@ -248,7 +254,8 @@ int calc_corr_func(
 }
 
 /**
- * Calculate power spectrum window function.
+ * Calculate power spectrum window from random catalogues
+ * and save the results.
  *
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
@@ -267,7 +274,9 @@ int calc_power_spec_window(
   double survey_vol_norm
 ) {
   if (thisTask == 0) {
-    printf("[Status] :: Measuring power spectrum window function.\n");
+    printf(
+      "[Info] :: Measuring power spectrum window from random catalogues.\n"
+    );
 
     if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
       printf(
@@ -279,12 +288,13 @@ int calc_power_spec_window(
     }
   }
 
-  /// Compute monopole of the Fourier--harmonic transform of the mean density.
+  /// Compute monopole of the Fourier--harmonic transform of
+  /// the mean density.
   DensityField<ParticleCatalogue> dn_00(params);
   dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
   dn_00.calc_fourier_transform();
 
-  /// Initialise output power spectrum window function.
+  /// Initialise output power spectrum window.
   std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
   for (int i = 0; i < params.num_kbin; i++) {
     pk_save[i] = 0.;
@@ -298,7 +308,7 @@ int calc_power_spec_window(
   );
   std::cout << "Current memory usage: " << bytes << " bytes." << std::endl;
 
-  /// Compute power spectrum window function.
+  /// Compute power spectrum window.
   stats.calc_power_spec(dn_00, dn_00, kbin, shotnoise, params.ELL, 0);
     // `ell1` or `ELL` as  equivalent
 
@@ -329,7 +339,7 @@ int calc_power_spec_window(
   if (0) {
   } else if (thisTask == 0) {
     printf(
-      "[Info] :: Power spectrum in the lowest wavenumber bin: %.2f.",
+      "[Info] :: Power spectrum window in the lowest wavenumber bin: %.2f.",
       norm * pk_save[0].real()
     );
   }
@@ -340,7 +350,8 @@ int calc_power_spec_window(
 }
 
 /**
- * Calculate two-point correlation window function.
+ * Calculate two-point correlation function window from random catalogues
+ * and save the results.
  *
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
@@ -359,7 +370,10 @@ int calc_corr_func_window(
   double survey_vol_norm
 ) {
   if (thisTask == 0) {
-    printf("[Status] :: Measuring two-point correlation window function.\n");
+    printf(
+      "[Info] :: Measuring two-point correlation function window "
+			"from random catalogues.\n"
+		);
 
     if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
       printf(
@@ -371,7 +385,8 @@ int calc_corr_func_window(
     }
   }
 
-  /// Compute monopole of the Fourier--harmonic transform of the mean density.
+  /// Compute monopole of the Fourier--harmonic transform of
+  /// the mean density.
   DensityField<ParticleCatalogue> dn_00(params);
   dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
   dn_00.calc_fourier_transform();
@@ -418,8 +433,8 @@ int calc_corr_func_window(
     durationInSec = double(clock() - timeStart);
     if (thisTask == 0) {
       printf(
-        "[Status] :: Computed order M = %d "
-        "(... %.3f seconds elapsed in total).\n",
+        "[Status] :: Computed two-point correlation function window term with "
+        "order `M = %d` (%.3f seconds elapsed).\n",
         M_, durationInSec / CLOCKS_PER_SEC
       );
     }
@@ -449,7 +464,7 @@ int calc_corr_func_window(
 }
 
 /**
- * Calculate power spectrum in a periodic box.
+ * Calculate power spectrum in a periodic box and save the results.
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param params (Reference to) the input parameter set.
@@ -462,7 +477,7 @@ int calc_power_spec_in_box(
   double* kbin
 ) {
   if (thisTask == 0) {
-    printf("[Status] :: Measuring power spectrum.\n");
+    printf("[Info] :: Measuring power spectrum in a periodic box.\n");
 
     if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
       printf(
@@ -499,8 +514,8 @@ int calc_power_spec_in_box(
   durationInSec = double(clock() - timeStart);
   if (thisTask == 0) {
     printf(
-      "[Status] :: Computed power spectrum in a periodic box "
-      "(... %.3f seconds elapsed in total).\n",
+      "[Status] :: Computed power spectrum terms "
+      "(... %.3f seconds elapsed).\n",
       durationInSec / CLOCKS_PER_SEC
     );
   }
@@ -527,7 +542,8 @@ int calc_power_spec_in_box(
 }
 
 /**
- * Calculate two-point correlation function in a periodic box.
+ * Calculate two-point correlation function in a periodic box
+ * and save the results.
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param params (Reference to) the input parameter set.
@@ -540,7 +556,10 @@ int calc_corr_func_in_box(
   double* rbin
 ) {
   if (thisTask == 0) {
-    printf("[Status] :: Measuring two-point correlation function.\n");
+    printf(
+      "[Info] :: Measuring two-point correlation function "
+      "in a periodic box.\n"
+    );
 
     if (!(params.ell1 == params.ELL) && (params.ell2 == 0)) {
       printf(
@@ -579,8 +598,8 @@ int calc_corr_func_in_box(
   durationInSec = double(clock() - timeStart);
   if (thisTask == 0) {
     printf(
-      "[Status] :: Computed two-point correlation in a periodic box "
-      "(... %.3f seconds elapsed in total).\n",
+      "[Status] :: Computed two-point correlation function terms "
+      "(... %.3f seconds elapsed).\n",
       durationInSec / CLOCKS_PER_SEC
     );
   }
@@ -607,7 +626,8 @@ int calc_corr_func_in_box(
 }
 
 /**
- * Calculate power spectrum in a periodic box for reconstruction.
+ * Calculate power spectrum in a periodic box for reconstruction
+ * and save the results.
  *
  * @param particles_data (Reference to) the data-source particle container.
  * @param particles_rand (Reference to) the random-source particle container.
@@ -623,7 +643,10 @@ int calc_power_spec_in_box_for_recon(
   double* kbin
 ) {
   if (thisTask == 0) {
-    printf("[Status] :: Measuring power spectrum.\n");
+    printf(
+      "[Info] :: Measuring power spectrum in a periodic box "
+      "for reconstruction.\n"
+    );
 
     if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
       printf(
@@ -667,8 +690,8 @@ int calc_power_spec_in_box_for_recon(
   durationInSec = double(clock() - timeStart);
   if (thisTask == 0) {
     printf(
-      "[Status] :: Computed power spectrum in a periodic box "
-      "for reconstruction (... %.3f seconds elapsed in total).\n",
+      "[Status] :: Computed power spectrum terms "
+      "(... %.3f seconds elapsed).\n",
       durationInSec / CLOCKS_PER_SEC
     );
   }

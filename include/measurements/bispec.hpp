@@ -24,7 +24,7 @@ int calc_bispec(
 ) {
   if (thisTask == 0) {
     printf(
-			"[Status] :: Measuring bispectrum from data and random catalogues.\n"
+			"[Info] :: Measuring bispectrum from data and random catalogues.\n"
 		);
   }
 
@@ -35,7 +35,7 @@ int calc_bispec(
       printf(
         "[Error] :: Disallowed multipole degree combination "
         "for bispectrum measurements. "
-        "Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
+        "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
       );
     }
     exit(1);
@@ -143,7 +143,8 @@ int calc_bispec(
         if (thisTask == 0) {
           printf(
             "[Status] :: Computed shot noise term for orders "
-            "m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
+            "`m1 = %d`, `m2 = %d`, `M = %d` "
+						"(%.3f seconds elapsed).\n",
             m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
           );
         }
@@ -245,12 +246,13 @@ int calc_bispec(
             kmag_a = kbin[params.ith_kbin];
           }
 
-          std::complex<double> shotnoise_sum = 0.;
-          double rvec[3];
           double dr[3];
           dr[0] = params.boxsize[0] / double(params.nmesh[0]);
           dr[1] = params.boxsize[1] / double(params.nmesh[1]);
           dr[2] = params.boxsize[2] / double(params.nmesh[2]);
+
+          double rvec[3];
+          std::complex<double> shotnoise_sum = 0.;
           for (int i = 0; i < params.nmesh[0]; i++) {
             for (int j = 0; j < params.nmesh[1]; j++) {
               for (int k = 0; k < params.nmesh[2]; k++) {
@@ -290,8 +292,8 @@ int calc_bispec(
           if (thisTask == 0) {
             printf(
               "[Status] :: Computed shot noise term for wavenumber and orders "
-              "k2 = %.3f, m1 = %d, m2 = %d, M = %d "
-              "(%.3f seconds elapsed).\n",
+              "`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
+							"(%.3f seconds elapsed).\n",
               kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
             );
           }
@@ -342,8 +344,8 @@ int calc_bispec(
 
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      std::complex<double>* ylm_a = new std::complex<double> [params.nmesh_tot];
-      std::complex<double>* ylm_b = new std::complex<double> [params.nmesh_tot];
+      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
       bytes += 2 * sizeof(std::complex<double>)
         * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -431,8 +433,8 @@ int calc_bispec(
           if (thisTask == 0) {
             printf(
               "[Status] :: Computed bispectrum term for wavenumber and orders "
-              "k2 = %.3f, m1 = %d, m2 = %d, M = %d "
-              "(%.3f seconds elapsed).\n",
+              "`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
+							"(%.3f seconds elapsed).\n",
               kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
             );
           }
@@ -449,8 +451,7 @@ int calc_bispec(
   durationInSec = double(clock() - timeStart);
   if (thisTask == 0) {
     printf(
-      "[Status] :: Computed bispectrum terms "
-      "(... %.3f seconds elapsed).\n",
+      "[Status] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
       durationInSec / CLOCKS_PER_SEC
     );
   }
@@ -519,7 +520,7 @@ int calc_bispec_in_box(
   double* kbin
 ) {
   if (thisTask == 0) {
-    printf("[Status] :: Measuring bispectrum in a periodic box.\n");
+    printf("[Info] :: Measuring bispectrum in a periodic box.\n");
   }
 
   if (
@@ -529,7 +530,7 @@ int calc_bispec_in_box(
       printf(
         "[Error] :: Disallowed multipole degree combination "
         "for bispectrum measurements. "
-        "Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
+        "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
       );
     }
     exit(1);
@@ -619,7 +620,7 @@ int calc_bispec_in_box(
       if (thisTask == 0) {
         printf(
           "[Status] :: Computed shot noise term for orders "
-          "m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
+          "`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
           m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
         );
       }
@@ -736,8 +737,8 @@ int calc_bispec_in_box(
         if (thisTask == 0) {
           printf(
             "[Status] :: Computed shot noise term for wavenumber and orders "
-            "k2 = %.3f, m1 = %d, m2 = %d, M = %d "
-            "(%.3f seconds elapsed).\n",
+            "`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
+						"(%.3f seconds elapsed).\n",
             kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
           );
         }
@@ -858,8 +859,9 @@ int calc_bispec_in_box(
 				double durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
 					printf(
-						"[Status] :: Computed bispectrum term for wavenumber and order "
-						"k2 = %.3f, m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
+						"[Status] :: Computed bispectrum term for wavenumber and orders "
+						"`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
+						"(%.3f seconds elapsed).\n",
 						kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 					);
 				}
@@ -875,8 +877,7 @@ int calc_bispec_in_box(
   durationInSec = double(clock() - timeStart);
   if (thisTask == 0) {
     printf(
-      "[Status] :: Computed bispectrum terms "
-      "(... %.3f seconds elapsed).\n",
+      "[Status] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
       durationInSec / CLOCKS_PER_SEC
     );
   }
@@ -953,7 +954,7 @@ int calc_3pt_corr_func(
 ) {
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Measuring three-point correlation function "
+			"[Info] :: Measuring three-point correlation function "
 			"from data and random catalogues.\n"
 		);
 	}
@@ -965,7 +966,7 @@ int calc_3pt_corr_func(
 			printf(
 				"[Error] :: Disallowed multipole degree combination "
 				"for three-point correlation function measurements. "
-				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
+				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
 			);
 		}
 		exit(1);
@@ -986,8 +987,9 @@ int calc_3pt_corr_func(
 		shotnoise_save[i] = 0.;
 	}
 
-	/// Compute shot noise terms, including only S_{\ell_1 \ell_2 L; i = j != k}
-	/// in eq. (45) in arXiv:1803.02132 (see eq. 51).
+	/// Compute shot noise terms, including only
+	/// S_{\ell_1 \ell_2 L; i = j != k} in eq. (45) in arXiv:1803.02132
+	/// (see eq. 51).
 	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
 	shotnoise_quadratic_00.calc_ylm_weighted_field_for_bispec_shotnoise(
 		particles_data, particles_rand,
@@ -1063,8 +1065,8 @@ int calc_3pt_corr_func(
 					if (params.form == "diag") {
 						shotnoise_save[i] += coupling * stats.xi[i];
 					} else if (params.form == "full") {
-						/// Calculate shot noise contribution equivalent to the Kronecker
-						/// delta in eq. (51) in arXiv:1803.02132.
+						/// Calculate shot noise contribution equivalent to the
+						/// Kronecker delta in eq. (51) in arXiv:1803.02132.
 						if (i == params.ith_rbin) {
 							shotnoise_save[i] += coupling * stats.xi[i];
 						} else {
@@ -1077,7 +1079,7 @@ int calc_3pt_corr_func(
 				if (thisTask == 0) {
 					printf(
 						"[Status] :: Computed shot noise term for orders "
-						"m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
+						"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
 						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);
 				}
 			}
@@ -1128,8 +1130,8 @@ int calc_3pt_corr_func(
 	SphericalBesselCalculator sj2(params.ell2);
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double> [params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -1218,7 +1220,8 @@ int calc_3pt_corr_func(
 					if (thisTask == 0) {
 						printf(
 							"[Status] :: Computed three-point correlation function term "
-							"for separation and order r2 = %.3f, m1 = %d, m2 = %d, M = %d "
+							"for separation and orders "
+							"`r2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
 							rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 						);
@@ -1290,8 +1293,8 @@ int calc_3pt_corr_func(
 }
 
 /**
- * Calculate three-point correlation function window from random catalogues
- * and save the results.
+ * Calculate three-point correlation function window from random
+ * catalogues and save the results.
  *
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
@@ -1311,7 +1314,7 @@ int calc_3pt_corr_func_window(
 ) {
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Measuring three-point correlation function window "
+			"[Info] :: Measuring three-point correlation function window "
 			"from random catalogues.\n"
 		);
 	}
@@ -1323,7 +1326,7 @@ int calc_3pt_corr_func_window(
 			printf(
 				"[Error] :: Disallowed multipole degree combination "
 				"for three-point correlation function window measurements. "
-				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
+				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
 			);
 		}
 		exit(1);
@@ -1447,7 +1450,7 @@ int calc_3pt_corr_func_window(
 				if (thisTask == 0) {
 					printf(
 						"[Status] :: Computed shot noise term for orders "
-						"m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
+						"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
 						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 					);
 				}
@@ -1581,8 +1584,9 @@ int calc_3pt_corr_func_window(
 					if (thisTask == 0) {
 						printf(
 							"[Status] :: Computed three-point correlation function window "
-							"term for separation and order "
-							"r2 = %.3f, m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
+							"term for separation and orders "
+							"`r2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
+							"(%.3f seconds elapsed).\n",
 							rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 						);
 					}
@@ -1676,7 +1680,7 @@ int calc_3pt_corr_func_window_for_3pcf(
 ) {
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Measuring three-point correlation function window "
+			"[Info] :: Measuring three-point correlation function window "
 			"for three-point correlation function from random catalogues.\n"
 		);
 	}
@@ -1688,7 +1692,7 @@ int calc_3pt_corr_func_window_for_3pcf(
 			printf(
 				"[Error] :: Disallowed multipole degree combination "
 				"for three-point correlation function window measurements. "
-				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
+				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
 			);
 		}
 		exit(1);
@@ -1790,7 +1794,7 @@ int calc_3pt_corr_func_window_for_3pcf(
 				if (thisTask == 0) {
 					printf(
 						"[Status] :: Computed shot noise term for orders "
-						"m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
+						"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
 						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 					);
 				}
@@ -1923,8 +1927,9 @@ int calc_3pt_corr_func_window_for_3pcf(
 				if (thisTask == 0) {
 					printf(
 						"[Status] :: Computed three-point correlation function window "
-						"term for separation and order "
-						"r2 = %.3f, m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
+						"term for separation and orders "
+						"`r2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
+						"(%.3f seconds elapsed).\n",
 						rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 					);
 				}
@@ -2010,7 +2015,10 @@ int calc_3pt_corr_func_in_box(
 	double* rbin
 ) {
 	if (thisTask == 0) {
-		printf("[Status] :: Measuring three-point correlation function in box.\n");
+		printf(
+			"[Info] :: Measuring three-point correlation function "
+      "in a periodic box.\n"
+		);
 	}
 
 	if (
@@ -2020,7 +2028,7 @@ int calc_3pt_corr_func_in_box(
 			printf(
 				"[Error] :: Disallowed multipole degree combination "
 				"for three-point correlation function measurements. "
-				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
+				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
 			);
 		}
 		exit(1);
@@ -2061,8 +2069,8 @@ int calc_3pt_corr_func_in_box(
 				continue;
 			}
 
-			std::complex<double>* ylm_a = new std::complex<double> [params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -2092,8 +2100,8 @@ int calc_3pt_corr_func_in_box(
 				if (params.form == "diag") {
 					shotnoise_save[i] += coupling * stats.xi[i];
 				} else if (params.form == "full") {
-					/// Calculate shot noise contribution equivalent to the Kronecker
-					/// delta in eq. (51) in arXiv:1803.02132.
+					/// Calculate shot noise contribution equivalent to the
+					/// Kronecker delta in eq. (51) in arXiv:1803.02132.
 					if (i == params.ith_rbin) {
 						shotnoise_save[i] += coupling * stats.xi[i];
 					} else {
@@ -2106,7 +2114,7 @@ int calc_3pt_corr_func_in_box(
 			if (thisTask == 0) {
 				printf(
 					"[Status] :: Computed shot noise term for wavenumber and orders "
-					"m1 = %d, m2 = %d, M = %d (%.3f seconds elapsed).\n",
+					"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
 					m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 				);
 			}
@@ -2227,7 +2235,8 @@ int calc_3pt_corr_func_in_box(
 				if (thisTask == 0) {
 					printf(
 						"[Status] :: Computed three-point correlation function term "
-						"for separation and order r2 = %.3f, m1 = %d, m2 = %d, M = %d "
+						"for separation and orders "
+						"`r2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 						"(%.3f seconds elapsed).\n",
 						rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 					);
@@ -2323,7 +2332,8 @@ int calc_bispec_for_los_choice(
 ) {  // !!! uncommented through
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Measuring bispectrum for the choice of line of sight.\n"
+			"[Info] :: Measuring bispectrum for the choice of line of sight "
+			"from data and random catalogues.\n"
 		);
 	}
 
@@ -2334,7 +2344,7 @@ int calc_bispec_for_los_choice(
 			printf(
 				"[Error] :: Disallowed multipole degree combination "
 				"for bispectrum measurements. "
-				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
+				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
 			);
 		}
 		exit(1);
@@ -2344,8 +2354,7 @@ int calc_bispec_for_los_choice(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computing shot noise terms "
-			"(... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
@@ -2368,43 +2377,44 @@ int calc_bispec_for_los_choice(
 					continue;
 				}
 
-				DensityField<ParticleCatalogue> dn_shotnoise(params);
+				DensityField<ParticleCatalogue> dn_for_shotnoise(params);
 				if (los == 0) {
-					dn_shotnoise.calc_ylm_weighted_fluctuation(
+					dn_for_shotnoise.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				} else {
-					dn_shotnoise.calc_ylm_weighted_fluctuation(
+					dn_for_shotnoise.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				}
-				dn_shotnoise.calc_fourier_transform();
+				dn_for_shotnoise.calc_fourier_transform();
 
-				DensityField<ParticleCatalogue> N_shotnoise(params);
-					// NOTE: standard naming convention overriden
+				/// Calculate N_LM in eq. (46) in arXiv:1803.02132.
+				DensityField<ParticleCatalogue> shotnoise_quadratic(params);
 				if (los == 0) {
-					N_shotnoise.calc_ylm_weighted_field_for_bispec_shotnoise(
+					shotnoise_quadratic.calc_ylm_weighted_field_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				} else {
-					N_shotnoise.calc_ylm_weighted_field_for_bispec_shotnoise(
+					shotnoise_quadratic.calc_ylm_weighted_field_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				}
-				N_shotnoise.calc_fourier_transform();
+				shotnoise_quadratic.calc_fourier_transform();
 
+    		/// Calculate \bar{S}_LM in eq. (46) in arXiv:1803.02132.
 				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise_cubic_LM =
 					stats.calc_shotnoise_for_bispec_from_self(
@@ -2414,15 +2424,19 @@ int calc_bispec_for_los_choice(
 						params.ELL, M_
 					);
 
+    		/// Calculate S_{\ell_1 \ell_2 L; i = j = k} in eq. (45)
+				/// in arXiv:1803.02132.
 				if (params.ell1 == 0 && params.ell2 == 0) {
 					for (int i = 0; i < params.num_kbin; i++) {
 						shotnoise_save[i] += coupling * shotnoise_cubic_LM;
 					}
 				}
 
+    		/// Calculate S_{\ell_1 \ell_2 L; i != j = k} in eq. (45)
+				/// in arXiv:1803.02132.
 				if (params.ell2 == 0) {
 					stats.calc_power_spec(
-						dn_shotnoise, N_shotnoise,
+						dn_for_shotnoise, shotnoise_quadratic,
 						kbin,
 						shotnoise_cubic_LM,
 						params.ell1, m1_
@@ -2438,11 +2452,13 @@ int calc_bispec_for_los_choice(
 					}
 				}
 
+    		/// ??? S_{\ell_1 \ell_2 L; i = k != j} shuffled?
+
 				durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
 					printf(
-						"[Status] :: Computed for orders m1 = %d, m2 = %d, M = %d "
-						"(... %.3f seconds elapsed in total).\n",
+						"[Status] :: Computed shot noise term for orders "
+						"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
 						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);
 				}
 			}
@@ -2460,42 +2476,44 @@ int calc_bispec_for_los_choice(
 					continue;
 				}
 
-				DensityField<ParticleCatalogue> dn_shotnoise(params);
+				DensityField<ParticleCatalogue> dn_for_shotnoise(params);
 				if (los == 1) {
-					dn_shotnoise.calc_ylm_weighted_fluctuation(
+					dn_for_shotnoise.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				} else {
-					dn_shotnoise.calc_ylm_weighted_fluctuation(
+					dn_for_shotnoise.calc_ylm_weighted_fluctuation(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				}
-				dn_shotnoise.calc_fourier_transform();
+				dn_for_shotnoise.calc_fourier_transform();
 
-				DensityField<ParticleCatalogue> N_shotnoise(params);
+				/// Calculate N_LM in eq. (46) in arXiv:1803.02132.
+				DensityField<ParticleCatalogue> shotnoise_quadratic(params);
 				if (los == 1) {
-					N_shotnoise.calc_ylm_weighted_field_for_bispec_shotnoise(
+					shotnoise_quadratic.calc_ylm_weighted_field_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				} else {
-					N_shotnoise.calc_ylm_weighted_field_for_bispec_shotnoise(
+					shotnoise_quadratic.calc_ylm_weighted_field_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				}
-				N_shotnoise.calc_fourier_transform();
+				shotnoise_quadratic.calc_fourier_transform();
 
+    		/// Calculate \bar{S}_LM in eq. (46) in arXiv:1803.02132.
 				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise_cubic_LM =
 					stats.calc_shotnoise_for_bispec_from_self(
@@ -2505,9 +2523,11 @@ int calc_bispec_for_los_choice(
 						params.ELL, M_
 					);
 
+    		/// Calculate S_{\ell_1 \ell_2 L; i = k != j} in eq. (45)
+				/// in arXiv:1803.02132.
 				if (params.ell1 == 0) {
 					stats.calc_power_spec(
-						dn_shotnoise, N_shotnoise,
+						dn_for_shotnoise, shotnoise_quadratic,
 						kbin,
 						shotnoise_cubic_LM,
 						params.ell2, m2_
@@ -2517,10 +2537,13 @@ int calc_bispec_for_los_choice(
 					}
 				}
 
+    		/// ??? S_{\ell_1 \ell_2 L; i = k != j} shuffled?
+
 				durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
 					printf(
-						"[Status] :: Computed for orders m1 = %d, m2 = %d, M = %d "
+						"[Status] :: Computed for orders "
+						"`m1 = %d`, `m2 = %d`, `M = %d` "
 						"(... %.3f seconds elapsed in total).\n",
 						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);
 				}
@@ -2530,11 +2553,10 @@ int calc_bispec_for_los_choice(
 
 	SphericalBesselCalculator sj1(params.ell1);
 	SphericalBesselCalculator sj2(params.ell2);
-
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double> [params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double> [params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
@@ -2567,23 +2589,24 @@ int calc_bispec_for_los_choice(
 					continue;
 				}
 
-				DensityField<ParticleCatalogue> N_shotnoise(params);
+				/// Calculate N_LM in eq. (46) in arXiv:1803.02132.
+				DensityField<ParticleCatalogue> shotnoise_quadratic(params);
 				if (los == 2) {
-					N_shotnoise.calc_ylm_weighted_field_for_bispec_shotnoise(
+					shotnoise_quadratic.calc_ylm_weighted_field_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				} else {
-					N_shotnoise.calc_ylm_weighted_field_for_bispec_shotnoise(
+					shotnoise_quadratic.calc_ylm_weighted_field_for_bispec_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						params.ELL, M_
 					);
 				}
-				N_shotnoise.calc_fourier_transform();
+				shotnoise_quadratic.calc_fourier_transform();
 
 				DensityField<ParticleCatalogue> dn_shotnoise(params);
 				if (los == 2) {
@@ -2603,6 +2626,8 @@ int calc_bispec_for_los_choice(
 				}
 				dn_shotnoise.calc_fourier_transform();
 
+    		/// Calculate S_{\ell_1 \ell_2 L; i = j != k} in eq. (45)
+				/// in arXiv:1803.02132.
 				TwoPointStatistics<ParticleCatalogue> stats(params);
 				std::complex<double> shotnoise_cubic_LM =
 					stats.calc_shotnoise_for_bispec_from_self(
@@ -2621,7 +2646,7 @@ int calc_bispec_for_los_choice(
 				}
 
 				stats.calc_shotnoise_for_bispec_on_grid(
-					dn_shotnoise, N_shotnoise,
+					dn_shotnoise, shotnoise_quadratic,
 					shotnoise_cubic_LM,
 					params.ELL, M_,
 					three_pt_holder
@@ -2681,9 +2706,9 @@ int calc_bispec_for_los_choice(
 					durationInSec = double(clock() - timeStart);
 					if (thisTask == 0) {
 						printf(
-							"[Status] :: Computed for wavenumber and orders "
-							"k2 = %.3f, m1 = %d, m2 = %d, M = %d "
-							"(... %.3f seconds elapsed in total).\n",
+							"[Status] :: Computed shot noise term for wavenumber and orders "
+							"`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
+							"(%.3f seconds elapsed).\n",
 							kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 						);
 					}
@@ -2704,22 +2729,26 @@ int calc_bispec_for_los_choice(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms "
-			"(... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
 
 	/// Initialise output bispectrum.
-	if (thisTask == 0) {
-		printf("[Status] :: Measuring bispectrum.\n");
-	}
+	double durationInSec = double(clock() - timeStart);
+  if (thisTask == 0) {
+    printf(
+			"[Status] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
+  }
 
 	std::complex<double>* bk_save = new std::complex<double>[params.num_kbin];
 	for (int i = 0; i < params.num_kbin; i++) {
 		bk_save[i] = 0.;
 	}
 
+  /// Compute bispectrum.
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
@@ -2852,9 +2881,9 @@ int calc_bispec_for_los_choice(
 					double durationInSec = double(clock() - timeStart);
 					if (thisTask == 0) {
 						printf(
-							"[Status] :: Computed for wavenumber and order "
-							"k2 = %.3f, m1 = %d, m2 = %d, M = %d "
-							"(... %.3f seconds elapsed in total).\n",
+							"[Status] :: Computed bispectrum term for wavenumber and orders "
+							"`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
+							"(%.3f seconds elapsed).\n",
 							kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 						);
 					}
@@ -2868,7 +2897,16 @@ int calc_bispec_for_los_choice(
 		}
 	}
 
+  durationInSec = double(clock() - timeStart);
+  if (thisTask == 0) {
+    printf(
+      "[Status] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
+      durationInSec / CLOCKS_PER_SEC
+    );
+  }
+
 	/// Normalise and then save the output.
+	/// NOTE: Save the imaginary parts only.
 	double norm = ParticleCatalogue::calc_norm_for_bispec(
 		particles_data, survey_vol_norm
 	);
@@ -2892,7 +2930,7 @@ int calc_bispec_for_los_choice(
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/bk%d%d%d_%02d",
+			buf, "%s/bk%d%d%d_kbin%02d",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
 			params.ith_kbin
@@ -2939,7 +2977,7 @@ int calc_bispec_for_M_mode(
 ) {  // !!! uncommented through
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Measuring bispectrum for individual modes with order `m`.\n"
+			"[Info] :: Measuring bispectrum for individual modes of order `m`.\n"
 		);
 	}
 
@@ -2950,7 +2988,7 @@ int calc_bispec_for_M_mode(
 			printf(
 				"[Error] :: Disallowed multipole degree combination "
 				"for bispectrum measurements. "
-				"Please ensure wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0.\n"
+				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
 			);
 		}
 		exit(1);
@@ -2960,8 +2998,7 @@ int calc_bispec_for_M_mode(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computing shot noise terms "
-			"(... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
@@ -3061,8 +3098,8 @@ int calc_bispec_for_M_mode(
 				durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
 					printf(
-						"[Status] :: Computed for orders m1 = %d, m2 = %d, M = %d "
-						"(... %.3f seconds elapsed in total).\n",
+						"[Status] :: Computed for orders "
+						"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
 						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 					);
 				}
@@ -3208,8 +3245,8 @@ int calc_bispec_for_M_mode(
 					if (thisTask == 0) {
 						printf(
 							"[Status] :: Computed for wavenumber and orders "
-							"k2 = %.3f, m1 = %d, m2 = %d, M = %d "
-							"(... %.3f seconds elapsed in total).\n",
+							"`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
+							"(%.3f seconds elapsed).\n",
 							kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 						);
 					}
@@ -3232,8 +3269,7 @@ int calc_bispec_for_M_mode(
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms "
-			"(... %.3f seconds elapsed in total).\n",
+			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
 			durationInSec / CLOCKS_PER_SEC
 		);
 	}
@@ -3323,7 +3359,9 @@ int calc_bispec_for_M_mode(
 				if (params.form == "full") {
 					/// Compute ``\delta\tilde{n}_1``.
 					kmag_a = kbin[params.ith_kbin];
-					dn_tilde1.calc_inverse_fourier_transform_for_bispec(dn_00, kmag_a, dk, ylm_a);
+					dn_tilde1.calc_inverse_fourier_transform_for_bispec(
+						dn_00, kmag_a, dk, ylm_a
+					);
 				}
 
 				for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
@@ -3357,9 +3395,9 @@ int calc_bispec_for_M_mode(
 					double durationInSec = double(clock() - timeStart);
 					if (thisTask == 0) {
 						printf(
-							"[Status] :: Computed for wavenumber and order "
-							"k2 = %.3f, m1 = %d, m2 = %d, M = %d "
-							"(... %.3f seconds elapsed in total).\n",
+							"[Status] :: Computed for wavenumber and orders "
+							"`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
+							"(%.3f seconds elapsed).\n",
 							kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
 						);
 					}
