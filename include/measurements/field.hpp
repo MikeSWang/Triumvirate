@@ -501,7 +501,6 @@ class DensityField {
 
       weight[id][0] = ylm.real() * pow(particles_rand[id].w, 2);
       weight[id][1] = ylm.imag() * pow(particles_rand[id].w, 2);
-        /// ???: find matching equation
     }
 
     this->assign_weighted_field_to_grid(particles_rand, weight);
@@ -1085,7 +1084,7 @@ class TwoPointStatistics {
   }
 
   /**
-   * Calculate the power spectrum.
+   * Calculate two-point function term(s) in Fourier space.
    *
    * @param density_a First density field.
    * @param density_b Second density field.
@@ -1095,7 +1094,7 @@ class TwoPointStatistics {
    * @param m Order of the spherical harmonic.
    * @returns Exit status.
    */
-  int calc_power_spec(
+  int calc_2pt_func_in_fourier(
     DensityField<ParticleContainer> & density_a,
     DensityField<ParticleContainer> & density_b,
     double* kbin,
@@ -1199,7 +1198,7 @@ class TwoPointStatistics {
   }
 
   /**
-   * Calculate the two-point correlation function.
+   * Calculate two-point function term(s) in configuration space.
    *
    * @param density_a First density field.
    * @param density_b Second density field.
@@ -1209,7 +1208,7 @@ class TwoPointStatistics {
    * @param m Order of the spherical harmonic.
    * @returns Exit status.
    */
-  int calc_corr_func(
+  int calc_2pt_func_in_config(
     DensityField<ParticleContainer>& density_a,
     DensityField<ParticleContainer>& density_b,
     double* rbin,
@@ -1323,7 +1322,6 @@ class TwoPointStatistics {
             std::complex<double> ylm =
               ToolCollection::calc_reduced_spherical_harmonic(ell, m, rvec);
             pair_corr *= ylm;  // weight by spherical harmonics
-              // ???: find matching equation: single ylm?
 
             xi_sample[idx_r] += pair_corr;
             npair_sample[idx_r]++;
@@ -1570,6 +1568,7 @@ class TwoPointStatistics {
     std::complex<double> sum_rand = 0.;
 
     /// Perform direct summation with spherical harmonic weighting.
+    /// NOTE: See Jing (2005) [arXiv: astro-ph/0409240].
     for (int id = 0; id < particles_data.nparticles; id++) {
       double los[3] = {
         los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
@@ -1578,8 +1577,7 @@ class TwoPointStatistics {
       std::complex<double> ylm =
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 
-      sum_data += pow(particles_data[id].w, 2) * ylm;
-        // ???: find matching equation: single ylm?
+      sum_data += ylm * pow(particles_data[id].w, 2);
     }
 
     for (int id = 0; id < particles_rand.nparticles; id++) {
@@ -1590,8 +1588,7 @@ class TwoPointStatistics {
       std::complex<double> ylm =
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 
-      sum_rand += pow(particles_rand[id].w, 2) * ylm;
-        // ???: find matching equation: single ylm?
+      sum_rand += ylm * pow(particles_rand[id].w, 2);
     }
 
     return sum_data + pow(alpha, 2) * sum_rand;
@@ -1643,7 +1640,6 @@ class TwoPointStatistics {
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 
       sum_rand += ylm * pow(particles_rand[id].w, 2);
-        // ???: find matching equation: single ylm?
     }
 
     return pow(alpha, 2) * sum_rand;
@@ -1680,7 +1676,7 @@ class TwoPointStatistics {
       std::complex<double> ylm =
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 
-      sum_data += pow(particles_data[id].w, 3) * ylm;
+      sum_data += ylm * pow(particles_data[id].w, 3);
     }
 
     for (int id = 0; id < particles_rand.nparticles; id++) {
@@ -1691,7 +1687,7 @@ class TwoPointStatistics {
       std::complex<double> ylm =
         ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
 
-      sum_rand += pow(particles_rand[id].w, 3) * ylm;
+      sum_rand += ylm * pow(particles_rand[id].w, 3);
     }
 
     /// Calculate \bar{S}_LM in eq. (46) in arXiv:1803.02132.
