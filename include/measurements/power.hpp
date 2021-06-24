@@ -89,7 +89,12 @@ int calc_power_spec(
         continue;
       }
 
-      stats.calc_power_spec(dn_LM, dn_00, kbin, shotnoise, params.ell1, m1_);
+      stats.calc_2pt_func_in_fourier(
+        dn_LM, dn_00,
+        kbin,
+        shotnoise,
+        params.ell1, m1_
+      );
 
       for (int i = 0; i < params.num_kbin; i++) {
         pk_save[i] += coupling * stats.pk[i];
@@ -214,7 +219,12 @@ int calc_corr_func(
         continue;
       }
 
-      stats.calc_corr_func(dn_LM, dn_00, rbin, shotnoise, params.ell1, m1_);
+      stats.calc_2pt_func_in_config(
+        dn_LM, dn_00,
+        rbin,
+        shotnoise,
+        params.ell1, m1_
+      );
 
       for (int i = 0; i < params.num_rbin; i++) {
         xi_save[i] += coupling * stats.xi[i];
@@ -309,8 +319,12 @@ int calc_power_spec_window(
   std::cout << "Current memory usage: " << bytes << " bytes." << std::endl;
 
   /// Compute power spectrum window.
-  stats.calc_power_spec(dn_00, dn_00, kbin, shotnoise, params.ELL, 0);
-    // `ell1` or `ELL` as  equivalent
+  stats.calc_2pt_func_in_fourier(
+    dn_00, dn_00,
+    kbin,
+    shotnoise,
+    params.ELL, 0
+  );  // `ell1` or `ELL` as  equivalent
 
   for (int i = 0; i < params.num_kbin; i++) {
     pk_save[i] += stats.pk[i];
@@ -423,7 +437,12 @@ int calc_corr_func_window(
         continue;
       }
 
-      stats.calc_corr_func(dn_LM, dn_00, rbin, shotnoise, params.ell1, m1_);
+      stats.calc_2pt_func_in_config(
+        dn_LM, dn_00,
+        rbin,
+        shotnoise,
+        params.ell1, m1_
+      );
 
       for (int i = 0; i < params.num_rbin; i++) {
         xi_save[i] += coupling * stats.xi[i];
@@ -505,7 +524,12 @@ int calc_power_spec_in_box(
   std::complex<double> shotnoise = double(particles_data.nparticles);
 
   /// Compute power spectrum.
-  stats.calc_power_spec(dn, dn, kbin, shotnoise, params.ELL, 0);
+  stats.calc_2pt_func_in_fourier(
+    dn, dn,
+    kbin,
+    shotnoise,
+    params.ELL, 0
+  );
 
   for (int i = 0; i < params.num_kbin; i++) {
     pk_save[i] += double(2*params.ELL + 1) * stats.pk[i];
@@ -587,7 +611,12 @@ int calc_corr_func_in_box(
   std::complex<double> shotnoise = double(particles_data.nparticles);
 
   /// Compute two-point correlation function.
-  stats.calc_corr_func(dn, dn, rbin, shotnoise, params.ELL, 0);
+  stats.calc_2pt_func_in_config(
+    dn, dn,
+    rbin,
+    shotnoise,
+    params.ELL, 0
+  );
 
   for (int i = 0; i < params.num_rbin; i++) {
     xi_save[i] += double(2 * params.ELL + 1) * stats.xi[i];
@@ -679,7 +708,12 @@ int calc_power_spec_in_box_for_recon(
     );
 
   /// Compute power spectrum.
-  stats.calc_power_spec(dn, dn, kbin, shotnoise, params.ELL, 0);
+  stats.calc_2pt_func_in_fourier(
+    dn, dn,
+    kbin,
+    shotnoise,
+    params.ELL, 0
+  );
 
   for (int i = 0; i < params.num_kbin; i++) {
     pk_save[i] += double(2*params.ELL + 1) * stats.pk[i];

@@ -108,7 +108,7 @@ int calc_bispec(
     		/// Calculate S_{\ell_1 \ell_2 L; i != j = k} in eq. (45)
 				/// in arXiv:1803.02132.
         if (params.ell2 == 0) {
-          stats.calc_power_spec(
+          stats.calc_2pt_func_in_fourier(
             dn_00_for_shotnoise, shotnoise_quadratic_LM,
 						kbin,
 						shotnoise_cubic_LM,
@@ -128,7 +128,7 @@ int calc_bispec(
     		/// Calculate S_{\ell_1 \ell_2 L; i = k != j} in eq. (45)
 				/// in arXiv:1803.02132.
         if (params.ell1 == 0) {
-          stats.calc_power_spec(
+          stats.calc_2pt_func_in_fourier(
             dn_00_for_shotnoise, shotnoise_quadratic_LM,
 						kbin,
 						shotnoise_cubic_LM,
@@ -590,7 +590,7 @@ int calc_bispec_in_box(
       }
 
       if (params.ell2 == 0) {
-        stats.calc_power_spec(
+        stats.calc_2pt_func_in_fourier(
           dn_00_for_shotnoise, density,
           kbin,
           shotnoise,
@@ -608,7 +608,7 @@ int calc_bispec_in_box(
       }
 
       if (params.ell1 == 0) {
-        stats.calc_power_spec(
+        stats.calc_2pt_func_in_fourier(
           dn_00_for_shotnoise, density,
           kbin,
           shotnoise,
@@ -2438,7 +2438,7 @@ int calc_bispec_for_los_choice(
     		/// Calculate S_{\ell_1 \ell_2 L; i != j = k} in eq. (45)
 				/// in arXiv:1803.02132.
 				if (params.ell2 == 0) {
-					stats.calc_power_spec(
+					stats.calc_2pt_func_in_fourier(
 						dn_for_shotnoise, shotnoise_quadratic,
 						kbin,
 						shotnoise_cubic_LM,
@@ -2531,7 +2531,7 @@ int calc_bispec_for_los_choice(
     		/// Calculate S_{\ell_1 \ell_2 L; i = k != j} in eq. (45)
 				/// in arXiv:1803.02132.
 				if (params.ell1 == 0) {
-					stats.calc_power_spec(
+					stats.calc_2pt_func_in_fourier(
 						dn_for_shotnoise, shotnoise_quadratic,
 						kbin,
 						shotnoise_cubic_LM,
@@ -3076,7 +3076,7 @@ int calc_bispec_for_M_mode(
     		/// Calculate S_{\ell_1 \ell_2 L; i != j = k} in eq. (45)
 				/// in arXiv:1803.02132.
 				if (params.ell2 == 0) {
-					stats.calc_power_spec(
+					stats.calc_2pt_func_in_fourier(
 						dn_00_for_shotnoise, shotnoise_quadratic_LM,
 						kbin,
 						shotnoise_cubic_LM,
@@ -3096,7 +3096,7 @@ int calc_bispec_for_M_mode(
     		/// Calculate S_{\ell_1 \ell_2 L; i = k != j} in eq. (45)
 				/// in arXiv:1803.02132.
 				if (params.ell1 == 0) {
-					stats.calc_power_spec(
+					stats.calc_2pt_func_in_fourier(
 						dn_00_for_shotnoise, shotnoise_quadratic_LM,
 						kbin,
 						shotnoise_cubic_LM,
