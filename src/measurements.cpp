@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
   }
 
   /// ???
-  if (params.catalogue_type == "survey") {
+  if (params.catalogue_type == "survey" && 0) {
     if (thisTask >= params.num_rbin) {
       params.ith_rbin = 0;
     } else {
@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
     // calc_corr_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
     // calc_corr_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
 
-    calc_bispec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, survey_vol_norm);
+    // calc_bispec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, survey_vol_norm);
     // calc_3pt_corr_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
     // calc_3pt_corr_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
     // calc_3pt_corr_func_window_for_3pcf(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
