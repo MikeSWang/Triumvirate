@@ -34,6 +34,9 @@ class ParameterSet {
   int ELL;  ///< spherical degree associated with the line-of-sight vector
     // NOTE: standard variable naming convention overriden
 
+  int order_i;  ///< first order of the wide-angle correction term
+  int order_j;  ///< second order of the wide-angle correction term
+
   double kmin;  ///< minimum wavenumber boundary
   double kmax;  ///< maximum wavenumber boundary
   int num_kbin;  ///< number of wavenumber bins
@@ -168,6 +171,17 @@ class ParameterSet {
         if (str_line.find("ELL") != std::string::npos) {
           sscanf(
             str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ELL
+          );
+        }
+
+        if (str_line.find("order_i") != std::string::npos) {
+          sscanf(
+            str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->order_i
+          );
+        }
+        if (str_line.find("order_j") != std::string::npos) {
+          sscanf(
+            str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->order_j
           );
         }
 
@@ -462,6 +476,9 @@ class ParameterSet {
     fprintf(used_param_file_ptr, "ell1 = %d\n", this->ell1);
     fprintf(used_param_file_ptr, "ell2 = %d\n", this->ell2);
     fprintf(used_param_file_ptr, "ELL = %d\n", this->ELL);
+
+    fprintf(used_param_file_ptr, "order_i = %d\n", this->order_i);
+    fprintf(used_param_file_ptr, "order_j = %d\n", this->order_j);
 
     fprintf(used_param_file_ptr, "kmin = %.4f\n", this->kmin);
     fprintf(used_param_file_ptr, "kmax = %.4f\n", this->kmax);

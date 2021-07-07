@@ -1296,6 +1296,312 @@ int calc_3pt_corr_func(
 }
 
 /**
+ * Calculate three-point correlation function in a periodic box
+ * and save the results.
+ *
+ * @param particles_data (Reference to) the data-source particle container.
+ * @param params (Reference to) the input parameter set.
+ * @param rbin Separation bins.
+ * @returns Exit status.
+ */
+int calc_3pt_corr_func_in_box(
+	ParticleCatalogue& particles_data,
+	ParameterSet& params,
+	double* rbin
+) {
+	if (thisTask == 0) {
+		printf(
+			"[Info] :: Measuring three-point correlation function "
+      "in a periodic box.\n"
+		);
+	}
+
+	if (
+		fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)) < 1.e-10
+	) {
+		if (thisTask == 0) {
+			printf(
+				"[Error] :: Disallowed multipole degree combination "
+				"for three-point correlation function measurements. "
+				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
+			);
+		}
+		exit(1);
+	}
+
+	/// Initialise output shot noise terms.
+	durationInSec = double(clock() - timeStart);
+	if (thisTask == 0) {
+		printf(
+			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
+	}
+
+	std::complex<double>* shotnoise_save =
+		new std::complex<double>[params.num_rbin];
+	for (int i = 0; i < params.num_rbin; i++) {
+		shotnoise_save[i] = 0.;
+	}
+
+	/// ???: Find matching equation.
+	/// Compute shot noise terms.
+	/// Calculate normal density field in the global plane-parallel
+	/// picture in contrast with `shotnoise_cubic_LM`.
+	DensityField<ParticleCatalogue> density_(params);
+	density_.calc_density_field_in_box_for_bispec(particles_data);
+	density_.calc_fourier_transform();
+
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+			int M_ = 0;
+
+			double coupling = double(2*params.ELL + 1)
+				* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+				* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+				* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+			if (fabs(coupling) < 1.e-10) {
+				continue;
+			}
+
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			bytes += 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				params.ell1, m1_, params, ylm_a
+			);
+			ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				params.ell2, m2_, params, ylm_b
+			);
+
+			DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
+			dn_LM_for_shotnoise.calc_fluctuation_in_box(particles_data, params);
+			dn_LM_for_shotnoise.calc_fourier_transform();
+
+			TwoPointStatistics<ParticleCatalogue> stats(params);
+			std::complex<double> shotnoise = double(particles_data.nparticles);
+
+			stats.calc_2pt_func_for_3pt_corr_func(
+				dn_LM_for_shotnoise, density_,
+				rbin,
+				shotnoise,
+				params.ell1, m1_,
+				ylm_a, ylm_b
+			);
+
+			for (int i = 0; i < params.num_rbin; i++) {
+				if (params.form == "diag") {
+					shotnoise_save[i] += coupling * stats.xi[i];
+				} else if (params.form == "full") {
+					/// Calculate shot noise contribution equivalent to the
+					/// Kronecker delta in eq. (51) in arXiv:1803.02132.
+					if (i == params.ith_rbin) {
+						shotnoise_save[i] += coupling * stats.xi[i];
+					} else {
+						shotnoise_save[i] += 0.;  // ???: redundant?
+					}
+				}
+			}
+
+			durationInSec = double(clock() - timeStart);
+			if (thisTask == 0) {
+				printf(
+					"[Status] :: Computed shot noise term for wavenumber and orders "
+					"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
+					m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+				);
+			}
+
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
+			bytes -= 2 * sizeof(std::complex<double>)
+					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+		}
+	}
+
+	density_.finalise_density_field();
+
+	durationInSec = double(clock() - timeStart);
+	if (thisTask == 0) {
+		printf(
+			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
+	}
+
+	/// Initialise output three-point correlation function.
+	double durationInSec = double(clock() - timeStart);
+	if (thisTask == 0) {
+		printf(
+			"[Status] :: Computing three-point correlation function terms "
+			"(%.3f seconds elapsed...).\n",
+			durationInSec / CLOCKS_PER_SEC
+		);
+	}
+
+	std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
+	for (int i = 0; i < params.num_rbin; i++) {
+		zeta_save[i] = 0.;
+	}
+
+	/// Compute three-point correlation function.
+	DensityField<ParticleCatalogue> dn_00(params);
+	dn_00.calc_fluctuation_in_box(particles_data, params);
+	dn_00.calc_fourier_transform();
+
+	SphericalBesselCalculator sj1(params.ell1);
+	SphericalBesselCalculator sj2(params.ell2);
+	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+			int M_ = 0;
+
+			double coupling = double(2*params.ELL + 1)
+				* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+				* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+				* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+			if (fabs(coupling) < 1.e-10) {
+				continue;
+			}
+
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			bytes += 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				params.ell1, m1_, params, ylm_a
+			);
+			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				params.ell2, m2_, params, ylm_b
+			);
+
+			/// Calculate G_{LM} in eq. (42) in arXiv:1803.02132 (equivalent to
+			/// normal density fluctuation with L, M = 0, 0 in the global
+			/// plane-parallel picture).
+			DensityField<ParticleCatalogue> dn_LM(params);
+			dn_LM.calc_fluctuation_in_box(particles_data, params);
+			dn_LM.calc_fourier_transform();
+			dn_LM.apply_assignment_compensation();
+			dn_LM.calc_inverse_fourier_transform();
+
+			/// NOTE: Standard naming convention is overriden below.
+
+			/// Calculate F_{\ell m} in eq. (49) in arXiv:1803.02132.
+			DensityField<ParticleCatalogue> F_ellm_a(params);
+			double rmag_a;
+			if (params.form == "full") {
+				rmag_a = rbin[params.ith_rbin];
+				F_ellm_a.calc_inverse_fourier_transform_for_3pt_corr_func(
+					dn_00, rmag_a, ylm_a, sj1
+				);
+			}
+
+			for (int i_rbin = 0; i_rbin < params.num_rbin; i_rbin++) {
+				double rmag_b = rbin[i_rbin];
+
+				if (params.form == "diag") {
+					rmag_a = rmag_b;
+					F_ellm_a.calc_inverse_fourier_transform_for_3pt_corr_func(
+						dn_00, rmag_a, ylm_a, sj1
+					);
+				}
+
+				DensityField<ParticleCatalogue> F_ellm_b(params);
+				F_ellm_b.calc_inverse_fourier_transform_for_3pt_corr_func(
+					dn_00, rmag_b, ylm_b, sj2
+				);
+
+				double factor = params.volume / double(params.nmesh_tot);
+				std::complex<double> I_(0., 1.);
+				std::complex<double> zeta_sum = 0.;
+				for (int i = 0; i < params.nmesh_tot; i++) {
+					std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
+					std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
+					std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+					zeta_sum += factor * pow(I_, params.ell1 + params.ell2)
+						* F_ellm_1 * F_ellm_2 * G_LM;
+				}
+
+				zeta_save[i_rbin] += coupling * zeta_sum;
+
+				double durationInSec = double(clock() - timeStart);
+				if (thisTask == 0) {
+					printf(
+						"[Status] :: Computed three-point correlation function term "
+						"for separation and orders "
+						"`r2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
+						"(%.3f seconds elapsed).\n",
+						rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+					);
+				}
+			}
+
+			delete[] ylm_a; ylm_a = NULL;
+			delete[] ylm_b; ylm_b = NULL;
+			bytes -= 2 * sizeof(std::complex<double>)
+				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+		}
+	}
+
+  durationInSec = double(clock() - timeStart);
+  if (thisTask == 0) {
+    printf(
+      "[Status] :: Computed three-point correlation function terms "
+      "(... %.3f seconds elapsed).\n",
+      durationInSec / CLOCKS_PER_SEC
+    );
+  }
+
+	/// Normalise and then save the output.
+	double norm = params.volume
+		/ double(particles_data.nparticles) / double(particles_data.nparticles);
+	norm *= params.volume / double(particles_data.nparticles);
+
+	FILE* saved_file_ptr;
+	char buf[1024];
+	if (params.form == "diag") {
+		sprintf(
+			buf, "%s/zeta%d%d%d",
+			params.output_dir.c_str(),
+			params.ell1, params.ell2, params.ELL
+		);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_rbin; i++) {
+			fprintf(
+				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				rbin[i], rbin[i],
+				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
+				norm * shotnoise_save[i].real()
+			);
+		}
+	} else if (params.form == "full") {
+		sprintf(
+			buf, "%s/zeta%d%d%d_rbin%02d",
+			params.output_dir.c_str(),
+			params.ell1, params.ell2, params.ELL,
+			params.ith_rbin
+		);
+		saved_file_ptr = fopen(buf, "w");
+		for (int i = 0; i < params.num_rbin; i++) {
+			fprintf(
+				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				rbin[params.ith_rbin], rbin[i],
+				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
+				norm * shotnoise_save[i].real()
+			);
+		}
+	}
+	fclose(saved_file_ptr);
+
+	delete[] shotnoise_save;
+	delete[] zeta_save;
+
+	return 0;
+}
+
+/**
  * Calculate three-point correlation function window from random
  * catalogues and save the results.
  *
@@ -1981,312 +2287,6 @@ int calc_3pt_corr_func_window_for_3pcf(
 	} else if (params.form == "full") {
 		sprintf(
 			buf, "%s/zeta%d%d%d_window_rbin%02d",
-			params.output_dir.c_str(),
-			params.ell1, params.ell2, params.ELL,
-			params.ith_rbin
-		);
-		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_rbin; i++) {
-			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[params.ith_rbin], rbin[i],
-				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
-			);
-		}
-	}
-	fclose(saved_file_ptr);
-
-	delete[] shotnoise_save;
-	delete[] zeta_save;
-
-	return 0;
-}
-
-/**
- * Calculate three-point correlation function in a periodic box
- * and save the results.
- *
- * @param particles_data (Reference to) the data-source particle container.
- * @param params (Reference to) the input parameter set.
- * @param rbin Separation bins.
- * @returns Exit status.
- */
-int calc_3pt_corr_func_in_box(
-	ParticleCatalogue& particles_data,
-	ParameterSet& params,
-	double* rbin
-) {
-	if (thisTask == 0) {
-		printf(
-			"[Info] :: Measuring three-point correlation function "
-      "in a periodic box.\n"
-		);
-	}
-
-	if (
-		fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)) < 1.e-10
-	) {
-		if (thisTask == 0) {
-			printf(
-				"[Error] :: Disallowed multipole degree combination "
-				"for three-point correlation function measurements. "
-				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
-			);
-		}
-		exit(1);
-	}
-
-	/// Initialise output shot noise terms.
-	durationInSec = double(clock() - timeStart);
-	if (thisTask == 0) {
-		printf(
-			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
-		);
-	}
-
-	std::complex<double>* shotnoise_save =
-		new std::complex<double>[params.num_rbin];
-	for (int i = 0; i < params.num_rbin; i++) {
-		shotnoise_save[i] = 0.;
-	}
-
-	/// ???: Find matching equation.
-	/// Compute shot noise terms.
-	/// Calculate normal density field in the global plane-parallel
-	/// picture in contrast with `shotnoise_cubic_LM`.
-	DensityField<ParticleCatalogue> density_(params);
-	density_.calc_density_field_in_box_for_bispec(particles_data);
-	density_.calc_fourier_transform();
-
-	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			int M_ = 0;
-
-			double coupling = double(2*params.ELL + 1)
-				* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
-				* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
-				* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-			if (fabs(coupling) < 1.e-10) {
-				continue;
-			}
-
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
-			bytes += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
-
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-				params.ell1, m1_, params, ylm_a
-			);
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(
-				params.ell2, m2_, params, ylm_b
-			);
-
-			DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
-			dn_LM_for_shotnoise.calc_fluctuation_in_box(particles_data, params);
-			dn_LM_for_shotnoise.calc_fourier_transform();
-
-			TwoPointStatistics<ParticleCatalogue> stats(params);
-			std::complex<double> shotnoise = double(particles_data.nparticles);
-
-			stats.calc_2pt_func_for_3pt_corr_func(
-				dn_LM_for_shotnoise, density_,
-				rbin,
-				shotnoise,
-				params.ell1, m1_,
-				ylm_a, ylm_b
-			);
-
-			for (int i = 0; i < params.num_rbin; i++) {
-				if (params.form == "diag") {
-					shotnoise_save[i] += coupling * stats.xi[i];
-				} else if (params.form == "full") {
-					/// Calculate shot noise contribution equivalent to the
-					/// Kronecker delta in eq. (51) in arXiv:1803.02132.
-					if (i == params.ith_rbin) {
-						shotnoise_save[i] += coupling * stats.xi[i];
-					} else {
-						shotnoise_save[i] += 0.;  // ???: redundant?
-					}
-				}
-			}
-
-			durationInSec = double(clock() - timeStart);
-			if (thisTask == 0) {
-				printf(
-					"[Status] :: Computed shot noise term for wavenumber and orders "
-					"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
-					m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
-				);
-			}
-
-			delete[] ylm_a; ylm_a = NULL;
-			delete[] ylm_b; ylm_b = NULL;
-			bytes -= 2 * sizeof(std::complex<double>)
-					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
-		}
-	}
-
-	density_.finalise_density_field();
-
-	durationInSec = double(clock() - timeStart);
-	if (thisTask == 0) {
-		printf(
-			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
-			durationInSec / CLOCKS_PER_SEC
-		);
-	}
-
-	/// Initialise output three-point correlation function.
-	double durationInSec = double(clock() - timeStart);
-	if (thisTask == 0) {
-		printf(
-			"[Status] :: Computing three-point correlation function terms "
-			"(%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
-		);
-	}
-
-	std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
-	for (int i = 0; i < params.num_rbin; i++) {
-		zeta_save[i] = 0.;
-	}
-
-	/// Compute three-point correlation function.
-	DensityField<ParticleCatalogue> dn_00(params);
-	dn_00.calc_fluctuation_in_box(particles_data, params);
-	dn_00.calc_fourier_transform();
-
-	SphericalBesselCalculator sj1(params.ell1);
-	SphericalBesselCalculator sj2(params.ell2);
-	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			int M_ = 0;
-
-			double coupling = double(2*params.ELL + 1)
-				* double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
-				* wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
-				* wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-			if (fabs(coupling) < 1.e-10) {
-				continue;
-			}
-
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
-			bytes += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
-
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell1, m1_, params, ylm_a
-			);
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell2, m2_, params, ylm_b
-			);
-
-			/// Calculate G_{LM} in eq. (42) in arXiv:1803.02132 (equivalent to
-			/// normal density fluctuation with L, M = 0, 0 in the global
-			/// plane-parallel picture).
-			DensityField<ParticleCatalogue> dn_LM(params);
-			dn_LM.calc_fluctuation_in_box(particles_data, params);
-			dn_LM.calc_fourier_transform();
-			dn_LM.apply_assignment_compensation();
-			dn_LM.calc_inverse_fourier_transform();
-
-			/// NOTE: Standard naming convention is overriden below.
-
-			/// Calculate F_{\ell m} in eq. (49) in arXiv:1803.02132.
-			DensityField<ParticleCatalogue> F_ellm_a(params);
-			double rmag_a;
-			if (params.form == "full") {
-				rmag_a = rbin[params.ith_rbin];
-				F_ellm_a.calc_inverse_fourier_transform_for_3pt_corr_func(
-					dn_00, rmag_a, ylm_a, sj1
-				);
-			}
-
-			for (int i_rbin = 0; i_rbin < params.num_rbin; i_rbin++) {
-				double rmag_b = rbin[i_rbin];
-
-				if (params.form == "diag") {
-					rmag_a = rmag_b;
-					F_ellm_a.calc_inverse_fourier_transform_for_3pt_corr_func(
-						dn_00, rmag_a, ylm_a, sj1
-					);
-				}
-
-				DensityField<ParticleCatalogue> F_ellm_b(params);
-				F_ellm_b.calc_inverse_fourier_transform_for_3pt_corr_func(
-					dn_00, rmag_b, ylm_b, sj2
-				);
-
-				double factor = params.volume / double(params.nmesh_tot);
-				std::complex<double> I_(0., 1.);
-				std::complex<double> zeta_sum = 0.;
-				for (int i = 0; i < params.nmesh_tot; i++) {
-					std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
-					std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
-					std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
-					zeta_sum += factor * pow(I_, params.ell1 + params.ell2)
-						* F_ellm_1 * F_ellm_2 * G_LM;
-				}
-
-				zeta_save[i_rbin] += coupling * zeta_sum;
-
-				double durationInSec = double(clock() - timeStart);
-				if (thisTask == 0) {
-					printf(
-						"[Status] :: Computed three-point correlation function term "
-						"for separation and orders "
-						"`r2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
-						"(%.3f seconds elapsed).\n",
-						rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
-					);
-				}
-			}
-
-			delete[] ylm_a; ylm_a = NULL;
-			delete[] ylm_b; ylm_b = NULL;
-			bytes -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
-		}
-	}
-
-  durationInSec = double(clock() - timeStart);
-  if (thisTask == 0) {
-    printf(
-      "[Status] :: Computed three-point correlation function terms "
-      "(... %.3f seconds elapsed).\n",
-      durationInSec / CLOCKS_PER_SEC
-    );
-  }
-
-	/// Normalise and then save the output.
-	double norm = params.volume
-		/ double(particles_data.nparticles) / double(particles_data.nparticles);
-	norm *= params.volume / double(particles_data.nparticles);
-
-	FILE* saved_file_ptr;
-	char buf[1024];
-	if (params.form == "diag") {
-		sprintf(
-			buf, "%s/zeta%d%d%d",
-			params.output_dir.c_str(),
-			params.ell1, params.ell2, params.ELL
-		);
-		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_rbin; i++) {
-			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[i], rbin[i],
-				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
-			);
-		}
-	} else if (params.form == "full") {
-		sprintf(
-			buf, "%s/zeta%d%d%d_rbin%02d",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
 			params.ith_rbin
