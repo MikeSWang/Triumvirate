@@ -1019,10 +1019,15 @@ class DensityField {
             rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
           );
 
-          this->field[coord_flat][0] *=
-            pow(rmag, - this->params.order_i - this->params.order_j);
-          this->field[coord_flat][1] *=
-            pow(rmag, - this->params.order_i - this->params.order_j);
+          if (rmag < 1.e-10) {
+            this->field[coord_flat][0] *= 0.;
+            this->field[coord_flat][1] *= 0.;
+          } else {
+            this->field[coord_flat][0] *=
+              pow(rmag, - this->params.order_i - this->params.order_j);
+            this->field[coord_flat][1] *=
+              pow(rmag, - this->params.order_i - this->params.order_j);
+          }
         }
       }
     }
