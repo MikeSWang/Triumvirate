@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
     printf("[Status] :: Making measurements...\n");
   }
 
-  /// ???
+  /// ???: HACK: Temporarily add ``&& 0`` to suppress this code block.
   if (params.catalogue_type == "survey" && 0) {
     if (thisTask >= params.num_rbin) {
       params.ith_rbin = 0;

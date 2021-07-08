@@ -728,7 +728,7 @@ class DensityField {
           /// i.e. eq. (42) in arXiv:1803.02132.
           double k_lower = (kmag_in > dk_in/2) ? (kmag_in - dk_in/2) : 0.;
           double k_upper = kmag_in + dk_in/2;
-            // ???: factor these two lines above outside the for-loop
+            // FIXME: factor these two lines above outside the for-loop
           if (kmag > k_lower && kmag <= k_upper) {
             std::complex<double> den(
               density[coord_flat][0], density[coord_flat][1]
