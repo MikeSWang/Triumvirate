@@ -243,7 +243,8 @@ int main(int argc, char *argv[]) {
     // calc_bispec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, survey_vol_norm);
     // calc_3pt_corr_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
     // calc_3pt_corr_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
-    // calc_3pt_corr_func_window_for_3pcf(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
+    // calc_3pt_corr_func_window_mpi(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
+    calc_3pt_corr_func_window_in_log_bins(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
     // calc_3pt_corr_func_window_for_wide_angle(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
   }
 
