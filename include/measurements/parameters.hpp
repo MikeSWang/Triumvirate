@@ -37,6 +37,8 @@ class ParameterSet {
   int order_i;  ///< first order of the wide-angle correction term
   int order_j;  ///< second order of the wide-angle correction term
 
+  std::string binning;  ///< binning interval: {'lin', 'log', 'linpad', 'logpad'}
+
   double kmin;  ///< minimum wavenumber boundary
   double kmax;  ///< maximum wavenumber boundary
   int num_kbin;  ///< number of wavenumber bins
@@ -74,6 +76,7 @@ class ParameterSet {
     char rand_catalogue_file_[1024];
     char catalogue_type_[16];
     char assignment_[16];
+    char binning_[16];
     char form_[16];
     char reconstruction_[16];
 
@@ -185,6 +188,12 @@ class ParameterSet {
           );
         }
 
+        if (str_line.find("binning") != std::string::npos) {
+          sscanf(
+            str_line.data(), "%s %s %s", str_dummy, str_dummy, binning_
+          );
+        }
+
         if (str_line.find("kmin") != std::string::npos) {
           sscanf(
             str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->kmin
@@ -275,6 +284,7 @@ class ParameterSet {
     this->nmesh_tot = nmesh_x * nmesh_y * nmesh_z;
 
     this->assignment = assignment_;
+    this->binning = binning_;
     this->form = form_;
     this->reconstruction = reconstruction_;
 
@@ -404,6 +414,18 @@ class ParameterSet {
       return -1;
     }
 
+    if (this->binning == "linpad" || this->assignment == "logpad") {
+      if (this->num_rbin <= 6) {
+        if (thisTask == 0) {
+          printf(
+            "[Error] :: Binning scheme '%s' requires ``n_rbin > 6``.\n",
+            this->binning.c_str()
+          );
+        }
+        return -1;
+      }
+    }
+
     if (this->num_kbin < 2 || this->num_rbin < 2) {
       if (thisTask == 0) {
         printf(
@@ -479,6 +501,8 @@ class ParameterSet {
 
     fprintf(used_param_file_ptr, "order_i = %d\n", this->order_i);
     fprintf(used_param_file_ptr, "order_j = %d\n", this->order_j);
+
+    fprintf(used_param_file_ptr, "binning = %s\n", this->binning.c_str());
 
     fprintf(used_param_file_ptr, "kmin = %.4f\n", this->kmin);
     fprintf(used_param_file_ptr, "kmax = %.4f\n", this->kmax);

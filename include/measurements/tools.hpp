@@ -224,10 +224,54 @@ class ToolCollection {
    * @returns Exit status.
    */
   static int set_rbin(ParameterSet& params, double* rbin_out) {
-    double dr = (params.rmax - params.rmin) / double(params.num_rbin - 1);
-    for (int i = 0; i < params.num_rbin; i++) {
-      rbin_out[i] = params.rmin + dr * i;
+    if (0) {
+    } else if (params.binning == "log")  {
+      double rmin;
+      if (params.rmin == 0.) {
+        rmin = 0.1;
+      } else {
+        rmin = params.rmin;
+      }
+      double dlnr = (log(params.rmax) - log(rmin))
+        / double(params.num_rbin - 1);
+
+      for (int i = 0; i < params.num_rbin; i++) {
+        rbin_out[i] = rmin * exp(dlnr * i);
+      }
+    } else if (params.binning == "linpad") {
+      rbin_out[0] = 0.;
+      rbin_out[1] = 1.;
+      rbin_out[2] = 10.;
+      rbin_out[3] = 20.;
+      rbin_out[4] = 30.;
+      rbin_out[5] = 40.;
+      double rmin = 50.;
+      double dr = (params.rmax - rmin) / double((params.num_rbin - 6) - 1);
+
+      for (int i = 6; i < params.num_rbin; i++) {
+        rbin_out[i] = rmin + dr * (i - 6);
+      }
+    } else if (params.binning == "logpad") {
+      rbin_out[0] = 0.;
+      rbin_out[1] = 1.;
+      rbin_out[2] = 10.;
+      rbin_out[3] = 20.;
+      rbin_out[4] = 30.;
+      rbin_out[5] = 40.;
+      double rmin = 50.;
+      double dlnr = (log(params.rmax) - log(rmin))
+        / double((params.num_rbin - 6) - 1);
+
+      for (int i = 6; i < params.num_rbin; i++) {
+        rbin_out[i] = rmin * exp(dlnr * (i - 6));
+      }
+    } else {  // generically ``params.binning == "lin"``
+      double dr = (params.rmax - params.rmin) / double(params.num_rbin - 1);
+      for (int i = 0; i < params.num_rbin; i++) {
+        rbin_out[i] = params.rmin + dr * i;
+      }
     }
+
     return 0;
   }
 };
