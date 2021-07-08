@@ -37,8 +37,6 @@ class ParameterSet {
   int order_i;  ///< first order of the wide-angle correction term
   int order_j;  ///< second order of the wide-angle correction term
 
-  std::string binning;  ///< binning interval: {'lin', 'log', 'linpad', 'logpad'}
-
   double kmin;  ///< minimum wavenumber boundary
   double kmax;  ///< maximum wavenumber boundary
   int num_kbin;  ///< number of wavenumber bins
@@ -46,6 +44,8 @@ class ParameterSet {
   double rmin;  ///< minimum separation-distance boundary
   double rmax;  ///< maximum separation-distance boundary
   int num_rbin;  ///< number of separation-distance bins
+
+  std::string binning;  ///< binning interval: {'lin', 'log', 'linpad', 'logpad'}
 
   std::string form;  ///< full or diagonal form for the bispectrum
 
@@ -188,12 +188,6 @@ class ParameterSet {
           );
         }
 
-        if (str_line.find("binning") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %s", str_dummy, str_dummy, binning_
-          );
-        }
-
         if (str_line.find("kmin") != std::string::npos) {
           sscanf(
             str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->kmin
@@ -223,6 +217,12 @@ class ParameterSet {
         if (str_line.find("num_rbin") != std::string::npos) {
           sscanf(
             str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->num_rbin
+          );
+        }
+
+        if (str_line.find("binning") != std::string::npos) {
+          sscanf(
+            str_line.data(), "%s %s %s", str_dummy, str_dummy, binning_
           );
         }
 
@@ -414,18 +414,6 @@ class ParameterSet {
       return -1;
     }
 
-    if (this->binning == "linpad" || this->assignment == "logpad") {
-      if (this->num_rbin <= 6) {
-        if (thisTask == 0) {
-          printf(
-            "[Error] :: Binning scheme '%s' requires ``n_rbin > 6``.\n",
-            this->binning.c_str()
-          );
-        }
-        return -1;
-      }
-    }
-
     if (this->num_kbin < 2 || this->num_rbin < 2) {
       if (thisTask == 0) {
         printf(
@@ -444,6 +432,18 @@ class ParameterSet {
         );
       }
       return -1;
+    }
+
+    if (this->binning == "linpad" || this->assignment == "logpad") {
+      if (this->num_rbin <= 6) {
+        if (thisTask == 0) {
+          printf(
+            "[Error] :: Binning scheme '%s' requires ``n_rbin > 6``.\n",
+            this->binning.c_str()
+          );
+        }
+        return -1;
+      }
     }
 
     if (!(this->form == "diag" || this->form == "full")) {
@@ -502,8 +502,6 @@ class ParameterSet {
     fprintf(used_param_file_ptr, "order_i = %d\n", this->order_i);
     fprintf(used_param_file_ptr, "order_j = %d\n", this->order_j);
 
-    fprintf(used_param_file_ptr, "binning = %s\n", this->binning.c_str());
-
     fprintf(used_param_file_ptr, "kmin = %.4f\n", this->kmin);
     fprintf(used_param_file_ptr, "kmax = %.4f\n", this->kmax);
     fprintf(used_param_file_ptr, "num_kbin = %d\n", this->num_kbin);
@@ -511,6 +509,8 @@ class ParameterSet {
     fprintf(used_param_file_ptr, "rmin = %.2f\n", this->rmin);
     fprintf(used_param_file_ptr, "rmax = %.2f\n", this->rmax);
     fprintf(used_param_file_ptr, "num_rbin = %d\n", this->num_rbin);
+
+    fprintf(used_param_file_ptr, "binning = %s\n", this->binning.c_str());
 
     fprintf(used_param_file_ptr, "form = %s\n", this->form.c_str());
 
