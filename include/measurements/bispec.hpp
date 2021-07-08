@@ -2672,7 +2672,8 @@ int calc_3pt_corr_func_window_in_log_bins(
 /**
  * Calculate three-point correlation function window wide-angle correction
  * terms for three-point correlation function from random catalogues and
- * save the results.
+ * save the results.  This function uses logarithmic binning except on
+ * the smallest scales, where discretionary bins are used.
  *
  * @param particles_rand (Reference to) the random-source particle container.
  * @param los_rand Random-source particle lines of sight.
@@ -2709,6 +2710,21 @@ int calc_3pt_corr_func_window_for_wide_angle(
 			);
 		}
 		exit(1);
+	}
+
+	/// Set up logarithmic binning with discretionary bins on small scales.
+	rbin[0] = 0.;
+	rbin[1] = 1.;
+	rbin[2] = 10.;
+	rbin[3] = 20.;
+	rbin[4] = 30.;
+	rbin[5] = 40.;
+	double rmin = 50.;
+	double dlnr = (log(params.rmax) - log(rmin))
+		/ double((params.num_rbin - 6) - 1);
+
+	for (int i = 6; i < params.num_rbin; i++) {
+		rbin[i] = rmin * exp(dlnr * (i - 6));
 	}
 
 	/// Initialise output shot noise terms.
