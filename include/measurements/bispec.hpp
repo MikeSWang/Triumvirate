@@ -2618,7 +2618,7 @@ int calc_3pt_corr_func_window_for_wide_angle(
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
-			buf, "%s/zeta%d%d%d_window",
+			buf, "%s/zeta%d%d%d_window-wa",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL
 		);
@@ -2633,7 +2633,7 @@ int calc_3pt_corr_func_window_for_wide_angle(
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/zeta%d%d%d_window_%d%d_rbin%02d",
+			buf, "%s/zeta%d%d%d_window-wa_%d%d_rbin%02d",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
 			params.order_i, params.order_j,
