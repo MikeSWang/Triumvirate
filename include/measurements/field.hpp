@@ -956,7 +956,7 @@ class DensityField {
   }
 
   /**
-   * Calculate compensation needed in Fourier transform for
+   * Apply compensation needed in Fourier transform for
    * assignment schemes.
    *
    * @returns Exit status.
@@ -985,6 +985,44 @@ class DensityField {
 
           this->field[coord_flat][0] /= win;
           this->field[coord_flat][1] /= win;
+        }
+      }
+    }
+
+    return 0;
+  }
+
+  /**
+   * Apply separation power-law weight for wide-angle corrections.
+   *
+   * @returns Exit status.
+   */
+  int apply_separation_weight_for_wide_angle() {
+    double dr[3];
+    dr[0] = this->params.boxsize[0] / double(this->params.nmesh[0]);
+    dr[1] = this->params.boxsize[1] / double(this->params.nmesh[1]);
+    dr[2] = this->params.boxsize[2] / double(this->params.nmesh[2]);
+
+    double rvec[3];
+    for (int i = 0; i < this->params.nmesh[0]; i++) {
+      for (int j = 0; j < this->params.nmesh[1]; j++) {
+        for (int k = 0; k < this->params.nmesh[2]; k++) {
+          long long coord_flat =
+            (i * this->params.nmesh[1] + j) * this->params.nmesh[2] + k;
+          rvec[0] = (i < this->params.nmesh[0]/2) ?
+            i * dr[0] : (i - this->params.nmesh[0]) * dr[0];
+          rvec[1] = (j < this->params.nmesh[1]/2) ?
+            j * dr[1] : (j - this->params.nmesh[1]) * dr[1];
+          rvec[2] = (k < this->params.nmesh[2]/2) ?
+            k * dr[2] : (k - this->params.nmesh[2]) * dr[2];
+          double rmag = sqrt(
+            rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
+          );
+
+          this->field[coord_flat][0] *=
+            pow(rmag, - this->params.order_i - this->params.order_j);
+          this->field[coord_flat][1] *=
+            pow(rmag, - this->params.order_i - this->params.order_j);
         }
       }
     }
