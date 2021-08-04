@@ -468,8 +468,10 @@ int calc_bispec(
   char buf[1024];
   if (params.form == "diag") {
     sprintf(
-      buf, "%s/bk%d%d%d",
-      params.output_dir.c_str(), params.ell1, params.ell2, params.ELL
+      buf, "%s/bk%d%d%d%s",
+      params.output_dir.c_str(),
+			params.ell1, params.ell2, params.ELL,
+			params.output_tag.c_str()
     );
     saved_file_ptr = fopen(buf, "w");
     for (int i = 0; i < params.num_kbin; i++) {
@@ -484,10 +486,11 @@ int calc_bispec(
     }
   } else if (params.form == "full") {
     sprintf(
-      buf, "%s/bk%d%d%d_kbin%02d",
+      buf, "%s/bk%d%d%d_kbin%02d%s",
       params.output_dir.c_str(),
       params.ell1, params.ell2, params.ELL,
-      params.ith_kbin
+      params.ith_kbin,
+			params.output_tag.c_str()
     );
     saved_file_ptr = fopen(buf, "w");
     for (int i = 0; i < params.num_kbin; i++) {
@@ -895,9 +898,10 @@ int calc_bispec_in_box(
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
-			buf, "%s/bk%d%d%d",
+			buf, "%s/bk%d%d%d%s",
 			params.output_dir.c_str(),
-			params.ell1, params.ell2, params.ELL
+			params.ell1, params.ell2, params.ELL,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < params.num_kbin; i++) {
@@ -910,10 +914,11 @@ int calc_bispec_in_box(
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/bk%d%d%d_kbin%02d",
+			buf, "%s/bk%d%d%d_kbin%02d%s",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
-			params.ith_kbin
+			params.ith_kbin,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < params.num_kbin; i++) {
@@ -1257,9 +1262,10 @@ int calc_3pt_corr_func(
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
-			buf, "%s/zeta%d%d%d",
+			buf, "%s/zeta%d%d%d%s",
 			params.output_dir.c_str(),
-			params.ell1, params.ell2, params.ELL
+			params.ell1, params.ell2, params.ELL,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < params.num_rbin; i++) {
@@ -1272,10 +1278,11 @@ int calc_3pt_corr_func(
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/zeta%d%d%d_rbin%02d",
+			buf, "%s/zeta%d%d%d_rbin%02d%s",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
-			params.ith_rbin
+			params.ith_rbin,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < params.num_rbin; i++) {
@@ -1563,9 +1570,10 @@ int calc_3pt_corr_func_in_box(
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
-			buf, "%s/zeta%d%d%d",
+			buf, "%s/zeta%d%d%d%s",
 			params.output_dir.c_str(),
-			params.ell1, params.ell2, params.ELL
+			params.ell1, params.ell2, params.ELL,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < params.num_rbin; i++) {
@@ -1578,10 +1586,11 @@ int calc_3pt_corr_func_in_box(
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/zeta%d%d%d_rbin%02d",
+			buf, "%s/zeta%d%d%d_rbin%02d%s",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
-			params.ith_rbin
+			params.ith_rbin,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < params.num_rbin; i++) {
@@ -1905,9 +1914,10 @@ int calc_3pt_corr_func_window(
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
-			buf, "%s/zeta%d%d%d_window",
+			buf, "%s/zeta%d%d%d_window%s",
 			params.output_dir.c_str(),
-			params.ell1, params.ell2, params.ELL
+			params.ell1, params.ell2, params.ELL,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < params.num_rbin; i++) {
@@ -1920,10 +1930,11 @@ int calc_3pt_corr_func_window(
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/zeta%d%d%d_window_rbin%02d",
+			buf, "%s/zeta%d%d%d_window_rbin%02d%s",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
-			params.ith_rbin
+			params.ith_rbin,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < params.num_rbin; i++) {
@@ -2271,10 +2282,11 @@ int calc_3pt_corr_func_window_mpi(
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
-			buf, "%s/zeta_window_%d%d%d_%d",
+			buf, "%s/zeta_window_%d%d%d_%d%s",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
-			NR
+			NR,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < n_temp; i++) {
@@ -2287,10 +2299,11 @@ int calc_3pt_corr_func_window_mpi(
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/zeta_window_%d%d%d_rbin%02d_%d",
+			buf, "%s/zeta_window_%d%d%d_rbin%02d_%d%s",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
-			params.ith_rbin, NR
+			params.ith_rbin, NR,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < n_temp; i++) {
@@ -2618,9 +2631,10 @@ int calc_3pt_corr_func_window_for_wide_angle(
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
-			buf, "%s/zeta%d%d%d_window-wa",
+			buf, "%s/zeta%d%d%d_window-wa%s",
 			params.output_dir.c_str(),
-			params.ell1, params.ell2, params.ELL
+			params.ell1, params.ell2, params.ELL,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < params.num_rbin; i++) {
@@ -2633,11 +2647,12 @@ int calc_3pt_corr_func_window_for_wide_angle(
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/zeta%d%d%d_window-wa%d%d_rbin%02d",
+			buf, "%s/zeta%d%d%d_window-wa%d%d_rbin%02d%s",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
 			params.order_i, params.order_j,
-			params.ith_rbin
+			params.ith_rbin,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < params.num_rbin; i++) {
@@ -3268,9 +3283,10 @@ int calc_bispec_for_los_choice(
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
-			buf, "%s/bk%d%d%d",
+			buf, "%s/bk%d%d%d%s",
 			params.output_dir.c_str(),
-			params.ell1, params.ell2, params.ELL
+			params.ell1, params.ell2, params.ELL,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < params.num_kbin; i++) {
@@ -3283,10 +3299,11 @@ int calc_bispec_for_los_choice(
 		}
 	} else if (params.form == "full") {
 		sprintf(
-			buf, "%s/bk%d%d%d_kbin%02d",
+			buf, "%s/bk%d%d%d_kbin%02d%s",
 			params.output_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
-			params.ith_kbin
+			params.ith_kbin,
+			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
 		for (int i = 0; i < params.num_kbin; i++) {
@@ -3797,10 +3814,11 @@ int calc_bispec_for_M_mode(
 		char buf[1024];
 		if (params.form == "diag") {
 			sprintf(
-				buf, "%s/bk%d%d%d_M%d",
+				buf, "%s/bk%d%d%d_M%d%s",
 				params.output_dir.c_str(),
 				params.ell1, params.ell2,
-				params.ELL, M_
+				params.ELL, M_,
+				params.output_tag.c_str()
 			);
 			saved_file_ptr = fopen(buf, "w");
 			for (int i = 0; i < params.num_kbin; i++) {
@@ -3813,11 +3831,12 @@ int calc_bispec_for_M_mode(
 			}
 		} else if (params.form == "full") {
 			sprintf(
-				buf, "%s/bk%d%d%d_M%d_kbin%02d",
+				buf, "%s/bk%d%d%d_M%d_kbin%02d%s",
 				params.output_dir.c_str(),
 				params.ell1, params.ell2,
 				params.ELL, M_,
-				params.ith_kbin
+				params.ith_kbin,
+				params.output_tag.c_str()
 			);
 			saved_file_ptr = fopen(buf, "w");
 			for (int i = 0; i < params.num_kbin; i++) {

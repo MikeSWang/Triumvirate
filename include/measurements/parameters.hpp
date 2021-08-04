@@ -16,6 +16,7 @@ class ParameterSet {
  public:
   std::string catalogue_dir;  ///< catalogue directory
   std::string output_dir;  ///< output directory
+  std::string output_tag;  ///< output file suffix tag
   std::string data_catalogue_file;  ///< data catalogue file
   std::string rand_catalogue_file;  ///< random catalogue file
 
@@ -72,6 +73,7 @@ class ParameterSet {
     /// Initialise temporary variables to hold the extracted parameters.
     char catalogue_dir_[1024];
     char output_dir_[1024];
+    char output_tag_[1024];
     char data_catalogue_file_[1024];
     char rand_catalogue_file_[1024];
     char catalogue_type_[16];
@@ -106,6 +108,11 @@ class ParameterSet {
         if (str_line.find("output_dir") != std::string::npos) {
           sscanf(
             str_line.data(), "%s %s %s", str_dummy, str_dummy, output_dir_
+          );
+        }
+        if (str_line.find("output_tag") != std::string::npos) {
+          sscanf(
+            str_line.data(), "%s %s %s", str_dummy, str_dummy, output_tag_
           );
         }
         if (str_line.find("data_catalogue_file") != std::string::npos) {
@@ -266,6 +273,7 @@ class ParameterSet {
     /// Store parameters as attributes.
     this->catalogue_dir = catalogue_dir_;
     this->output_dir = output_dir_;
+    this->output_tag = output_tag_;
     this->data_catalogue_file = data_catalogue_file_;
     this->rand_catalogue_file = rand_catalogue_file_;
 
@@ -468,7 +476,11 @@ class ParameterSet {
       this->catalogue_dir.c_str()
     );
     fprintf(
-      used_param_file_ptr, "output_dir = %s\n", this->output_dir.c_str());
+      used_param_file_ptr, "output_dir = %s\n", this->output_dir.c_str()
+    );
+    fprintf(
+      used_param_file_ptr, "output_tag = %s\n", this->output_tag.c_str()
+    );
     fprintf(
       used_param_file_ptr, "data_catalogue_file = %s\n",
       this->data_catalogue_file.c_str()
