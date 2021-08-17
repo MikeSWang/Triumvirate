@@ -353,7 +353,7 @@ class ParticleCatalogue {
    * @param particles_rand (Reference to) the random-soruce particle data.
    * @param params (Reference to) the input parameter set.
    * @param factor Offset grid adjustment factor (default is 3.).  Unused if `centre` is `true`.
-   * @param centre If `true` (default is `false), offset grid by centring.
+   * @param centre If `true` (default is `false`), offset grid by centring.
    * @returns Exit status.
    */
   static int offset_particles_for_fft(
