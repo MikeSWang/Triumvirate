@@ -30,11 +30,12 @@
 #include "measurements/common.hpp"
 #include "measurements/parameters.hpp"
 #include "measurements/tools.hpp"
+#include "measurements/harmonic.hpp"
 #include "measurements/bessel.hpp"
 #include "measurements/particles.hpp"
 #include "measurements/field.hpp"
-#include "measurements/power.hpp"
-#include "measurements/bispec.hpp"
+#include "measurements/twopt.hpp"
+#include "measurements/threept.hpp"
 
 /**
  * Main measurement program.
@@ -240,11 +241,36 @@ int main(int argc, char *argv[]) {
     // calc_corr_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
     // calc_corr_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
 
-    // calc_bispec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, survey_vol_norm);
-    // calc_3pt_corr_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
-    // calc_3pt_corr_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
-    // calc_3pt_corr_func_window_mpi(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
-    // calc_3pt_corr_func_window_for_wide_angle(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
+    if (params.measurement == "bispec") {
+      calc_bispec(
+        particles_data, particles_rand,
+        los_data, los_rand,
+        params,
+        alpha,
+        kbin,
+        survey_vol_norm
+      );
+    }
+    if (params.measurement == "3pcf") {
+      calc_3pt_corr_func(
+        particles_data, particles_rand,
+        los_data, los_rand,
+        params,
+        alpha,
+        rbin,
+        survey_vol_norm
+      );
+    }
+    if (params.measurement == "3pcf-win") {
+      calc_3pt_corr_func_window(
+        particles_rand, los_rand, params, alpha, rbin, survey_vol_norm
+      );
+    }
+    if (params.measurement == "3pcf-win-wa") {
+      calc_3pt_corr_func_window_for_wide_angle(
+        particles_rand, los_rand, params, alpha, rbin, survey_vol_norm
+      );
+    }
   }
 
   if (params.catalogue_type == "sim") {

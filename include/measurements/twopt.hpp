@@ -1,5 +1,5 @@
-#ifndef TRIUM_POWER_H_INCLUDED_
-#define TRIUM_POWER_H_INCLUDED_
+#ifndef TRIUM_TWOPT_H_INCLUDED_
+#define TRIUM_TWOPT_H_INCLUDED_
 
 #ifndef TRIUM_FIELD_H_INCLUDED_
 #include "field.hpp"

@@ -1,5 +1,5 @@
-#ifndef TRIUM_BISPEC_H_INCLUDED_
-#define TRIUM_BISPEC_H_INCLUDED_
+#ifndef TRIUM_THREEPT_H_INCLUDED_
+#define TRIUM_THREEPT_H_INCLUDED_
 
 /**
  * Calculate bispectrum from catalogues and save the results.
@@ -185,10 +185,10 @@ int calc_bispec(
       }
 
       if (flag_nontrivial == "TRUE") {
-        ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+        SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
           params.ell1, m1_, params, ylm_a
         );
-        ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+        SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
           params.ell2, m2_, params, ylm_b
         );
       }
@@ -368,10 +368,10 @@ int calc_bispec(
       }
 
       if (flag_nontrivial == "TRUE") {
-        ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+        SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
           params.ell1, m1_, params, ylm_a
         );
-        ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+        SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
           params.ell2, m2_, params, ylm_b
         );
       }
@@ -658,10 +658,10 @@ int calc_bispec_in_box(
       bytes += 2 * sizeof(std::complex<double>)
         * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
-      ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+      SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
         params.ell1, m1_, params, ylm_a
       );
-      ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+      SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
         params.ell2, m2_, params, ylm_b
       );
 
@@ -810,10 +810,10 @@ int calc_bispec_in_box(
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 				params.ell1, m1_, params, ylm_a
 			);
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 				params.ell2, m2_, params, ylm_b
 			);
 
@@ -1029,10 +1029,10 @@ int calc_3pt_corr_func(
 			}
 
 			if (flag_nontrivial == "TRUE") {
-				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 					params.ell1, m1_, params, ylm_a
 				);
-				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 					params.ell2, m2_, params, ylm_b
 				);
 			}
@@ -1158,10 +1158,10 @@ int calc_3pt_corr_func(
 			}
 
 			if (flag_nontrivial == "TRUE") {
-				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 					params.ell1, m1_, params, ylm_a
 				);
-				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 					params.ell2, m2_, params, ylm_b
 				);
 			}
@@ -1380,10 +1380,10 @@ int calc_3pt_corr_func_in_box(
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 				params.ell1, m1_, params, ylm_a
 			);
-			ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 				params.ell2, m2_, params, ylm_b
 			);
 
@@ -1481,10 +1481,10 @@ int calc_3pt_corr_func_in_box(
 			bytes += 2 * sizeof(std::complex<double>)
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 				params.ell1, m1_, params, ylm_a
 			);
-			ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 				params.ell2, m2_, params, ylm_b
 			);
 
@@ -1695,10 +1695,10 @@ int calc_3pt_corr_func_window(
 			}
 
 			if (flag_nontrivial == "TRUE") {
-				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 					params.ell1, m1_, params, ylm_a
 				);
-				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 					params.ell2, m2_, params, ylm_b
 				);
 			}
@@ -1814,10 +1814,10 @@ int calc_3pt_corr_func_window(
 			}
 
 			if (flag_nontrivial == "TRUE") {
-				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 					params.ell1, m1_, params, ylm_a
 				);
-				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 					params.ell2, m2_, params, ylm_b
 				);
 			}
@@ -2062,10 +2062,10 @@ int calc_3pt_corr_func_window_mpi(
 			}
 
 			if (flag_nontrivial == "TRUE") {
-				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 					params.ell1, m1_, params, ylm_a
 				);
-				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 					params.ell2, m2_, params, ylm_b
 				);
 			}
@@ -2181,10 +2181,10 @@ int calc_3pt_corr_func_window_mpi(
 			}
 
 			if (flag_nontrivial == "TRUE") {
-				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 					params.ell1, m1_, params, ylm_a
 				);
-				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 					params.ell2, m2_, params, ylm_b
 				);
 			}
@@ -2411,10 +2411,10 @@ int calc_3pt_corr_func_window_for_wide_angle(
 			}
 
 			if (flag_nontrivial == "TRUE") {
-				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 					params.ell1, m1_, params, ylm_a
 				);
-				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 					params.ell2, m2_, params, ylm_b
 				);
 			}
@@ -2530,10 +2530,10 @@ int calc_3pt_corr_func_window_for_wide_angle(
 			}
 
 			if (flag_nontrivial == "TRUE") {
-				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 					params.ell1, m1_, params, ylm_a
 				);
-				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 					params.ell2, m2_, params, ylm_b
 				);
 			}
@@ -2946,10 +2946,10 @@ int calc_bispec_for_los_choice(
 			}
 
 			if (flag_nontrivial == "TRUE") {
-				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 					params.ell1, m1_, params, ylm_a
 				);
-				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 					params.ell2, m2_, params, ylm_b
 				);
 			}
@@ -3145,10 +3145,10 @@ int calc_bispec_for_los_choice(
 			}
 
 			if (flag_nontrivial == "TRUE") {
-				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 					params.ell1, m1_, params, ylm_a
 				);
-				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 					params.ell2, m2_, params, ylm_b
 				);
 			}
@@ -3529,10 +3529,10 @@ int calc_bispec_for_M_mode(
 			}
 
 			if (flag_nontrivial == "TRUE") {
-				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 					params.ell1, m1_, params, ylm_a
 				);
-				ToolCollection::store_reduced_spherical_harmonic_in_config_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
 					params.ell2, m2_, params, ylm_b
 				);
 			}
@@ -3723,10 +3723,10 @@ int calc_bispec_for_M_mode(
 			}
 
 			if (flag_nontrivial == "TRUE") {
-				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 					params.ell1, m1_, params, ylm_a
 				);
-				ToolCollection::store_reduced_spherical_harmonic_in_fourier_space(
+				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
 					params.ell2, m2_, params, ylm_b
 				);
 			}

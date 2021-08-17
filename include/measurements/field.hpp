@@ -311,7 +311,7 @@ class DensityField {
       };
 
       std::complex<double> ylm =
-        ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
 
       weight[id][0] = ylm.real() * particles_data[id].w;
       weight[id][1] = ylm.imag() * particles_data[id].w;
@@ -329,7 +329,7 @@ class DensityField {
       };
 
       std::complex<double> ylm =
-        ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
 
       weight[id][0] = ylm.real() * particles_rand[id].w;
       weight[id][1] = ylm.imag() * particles_rand[id].w;
@@ -376,7 +376,7 @@ class DensityField {
       };
 
       std::complex<double> ylm =
-        ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
 
       weight[id][0] = ylm.real() * particles_rand[id].w;
       weight[id][1] = ylm.imag() * particles_rand[id].w;
@@ -427,7 +427,7 @@ class DensityField {
       };
 
       std::complex<double> ylm =
-        ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
 
       ylm = std::conj(ylm);  // NOTE: cojugation is essential
 
@@ -446,7 +446,7 @@ class DensityField {
       };
 
       std::complex<double> ylm =
-        ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
 
       ylm = std::conj(ylm);  // NOTE: cojugation is essential
 
@@ -495,7 +495,7 @@ class DensityField {
       };
 
       std::complex<double> ylm =
-        ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
 
       ylm = std::conj(ylm);  // NOTE: cojugation is essential
 
@@ -1202,7 +1202,7 @@ class TwoPointStatistics {
               // apply interpolation-window compensation
 
             std::complex<double> ylm =
-              ToolCollection::calc_reduced_spherical_harmonic(ell, m, kvec);
+              SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, kvec);
             mode_power *= ylm;  // weight by spherical harmonics
 
             pk_sample[idx_k] += mode_power;
@@ -1363,7 +1363,7 @@ class TwoPointStatistics {
             );  // pair correlation contribution
 
             std::complex<double> ylm =
-              ToolCollection::calc_reduced_spherical_harmonic(ell, m, rvec);
+              SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, rvec);
             pair_corr *= ylm;  // weight by spherical harmonics
 
             xi_sample[idx_r] += pair_corr;
@@ -1618,7 +1618,7 @@ class TwoPointStatistics {
       };
 
       std::complex<double> ylm =
-        ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
 
       sum_data += ylm * pow(particles_data[id].w, 2);
     }
@@ -1629,7 +1629,7 @@ class TwoPointStatistics {
       };
 
       std::complex<double> ylm =
-        ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
 
       sum_rand += ylm * pow(particles_rand[id].w, 2);
     }
@@ -1680,7 +1680,7 @@ class TwoPointStatistics {
       };
 
       std::complex<double> ylm =
-        ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
 
       sum_rand += ylm * pow(particles_rand[id].w, 2);
     }
@@ -1717,7 +1717,7 @@ class TwoPointStatistics {
       };
 
       std::complex<double> ylm =
-        ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
 
       sum_data += ylm * pow(particles_data[id].w, 3);
     }
@@ -1728,7 +1728,7 @@ class TwoPointStatistics {
       };
 
       std::complex<double> ylm =
-        ToolCollection::calc_reduced_spherical_harmonic(ell, m, los);
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
 
       sum_rand += ylm * pow(particles_rand[id].w, 3);
     }
