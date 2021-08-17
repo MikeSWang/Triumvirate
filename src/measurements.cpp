@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
   /// Compute number density alpha ratio.
   double alpha = 0.;
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-    alpha =ParticleCatalogue::calc_alpha_ratio(
+    alpha = ParticleCatalogue::calc_alpha_ratio(
       particles_data, particles_rand
     );
   }
@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
     printf("[Status] :: Making measurements...\n");
   }
 
-  /// ???: HACK: Temporarily add ``&& 0`` to suppress this code block.
+  /// HACK: Temporarily add ``&& 0`` to suppress this code block.
   if (params.catalogue_type == "survey" && 0) {
     if (thisTask >= params.num_rbin) {
       params.ith_rbin = 0;

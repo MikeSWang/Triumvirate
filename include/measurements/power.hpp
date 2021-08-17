@@ -79,9 +79,9 @@ int calc_power_spec(
       params.ELL, M_
     );
 
-    /// ???
+    /// Calculate equivalent to (-1)^m_1 δ_{m_1, -M} which, after being
+    /// summed over m_1, agrees with Hand et al. (2017) [1704.02357].
     for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-      /// ??? Calculate equivalent to (-1)^m_1 δ_{m_1, -M}.
       double coupling = (2*params.ELL + 1) * (2*params.ell1 + 1)
         * wigner_3j(params.ell1, 0, params.ELL, 0, 0, 0)
         * wigner_3j(params.ell1, 0, params.ELL, m1_, 0, M_);
@@ -209,9 +209,9 @@ int calc_corr_func(
       params.ELL, M_
     );
 
-    /// ???
+    /// Calculate equivalent to (-1)^m_1 δ_{m_1, -M} which, after being
+    /// summed over m_1, agrees with Hand et al. (2017) [1704.02357].
     for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-      /// ??? Calculate equivalent to (-1)^m_1 δ_{m_1, -M}.
       double coupling = (2*params.ELL + 1) * (2*params.ell1 + 1)
         * wigner_3j(params.ell1, 0, params.ELL, 0, 0, 0)
         * wigner_3j(params.ell1, 0, params.ELL, m1_, 0, M_);
@@ -427,9 +427,9 @@ int calc_corr_func_window(
       particles_rand, los_rand, alpha, params.ELL, M_
     );
 
-    /// ???
+    /// Calculate equivalent to (-1)^m_1 δ_{m_1, -M} which, after being
+    /// summed over m_1, agrees with Hand et al. (2017) [1704.02357].
     for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-      /// ??? Calculate equivalent to (-1)^m_1 δ_{m_1, -M}.
       double coupling = (2*params.ELL + 1) * (2*params.ell1 + 1)
           * wigner_3j(params.ell1, 0, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, 0, params.ELL, m1_, 0, M_);

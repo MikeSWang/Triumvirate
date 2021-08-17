@@ -52,12 +52,7 @@ class ParameterSet {
 
   int ith_kbin;
   int ith_rbin;
-  int NR;  ///< ??? TODO: rename variable
-
-  std::string reconstruction;  ///< reconstruction flag
-
-  double b1_fiducial;  ///< fiducial scale-independent bias
-  double RG;  ///< ??? TODO: rename variable
+  int batch_number;
 
   /**
    * Read parameters from a file.
@@ -80,7 +75,6 @@ class ParameterSet {
     char assignment_[16];
     char binning_[16];
     char form_[16];
-    char reconstruction_[16];
 
     double boxsize_x, boxsize_y, boxsize_z;
     int nmesh_x, nmesh_y, nmesh_z;
@@ -247,25 +241,10 @@ class ParameterSet {
             str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ith_rbin
           );
         }
-        if (str_line.find("NR") != std::string::npos) {
-          sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->NR);
-        }
-
-        if (str_line.find("reconstruction") != std::string::npos) {
+        if (str_line.find("batch_number") != std::string::npos) {
           sscanf(
-            str_line.data(), "%s %s %s", str_dummy, str_dummy, reconstruction_
-          );
-        }
-
-        if (str_line.find("b1_fiducial") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %lg",
-            str_dummy, str_dummy, &this->b1_fiducial
-          );
-        }
-        if (str_line.find("RG") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->RG
+            str_line.data(), "%s %s %d",
+            str_dummy, str_dummy, &this->batch_number
           );
         }
     }
@@ -294,7 +273,6 @@ class ParameterSet {
     this->assignment = assignment_;
     this->binning = binning_;
     this->form = form_;
-    this->reconstruction = reconstruction_;
 
     return this->check_parameters();
   }
@@ -317,8 +295,8 @@ class ParameterSet {
     /// Set mock data and random catalogue inputs.  Make subdirectories
     /// to store the output for each data realisation.
     if (this->catalogue_type == "mock") {
-      /// ??? Enumerate the input data catalogue.
-      int realisation = numTasks * this->NR + thisTask + 1;
+      /// Enumerate the input data catalogue.
+      int realisation = numTasks * this->batch_number + thisTask + 1;
 
       if (realisation > 2048) {
         realisation = 1;
@@ -528,13 +506,6 @@ class ParameterSet {
 
     fprintf(used_param_file_ptr, "ith_kbin = %d\n", this->ith_kbin);
     fprintf(used_param_file_ptr, "ith_rbin = %d\n", this->ith_rbin);
-
-    fprintf(
-      used_param_file_ptr, "reconstruction = %s\n",
-      this->reconstruction.c_str()
-    );
-    fprintf(used_param_file_ptr, "b1_fiducial = %.4f\n", this->b1_fiducial);
-    fprintf(used_param_file_ptr, "RG = %.4f\n", this->RG);
 
     return 0;
   }
