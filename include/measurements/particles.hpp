@@ -352,34 +352,28 @@ class ParticleCatalogue {
    * @param particles_data (Reference to) the data-source particle container.
    * @param particles_rand (Reference to) the random-soruce particle data.
    * @param params (Reference to) the input parameter set.
-   * @param factor Offset grid adjustment factor (default is 3.).  Unused if `centre` is `true`.
-   * @param centre If `true` (default is `false`), offset grid by centring.
+   * @param factor Offset grid adjustment factor (default is 3.).
    * @returns Exit status.
    */
   static int offset_particles_for_fft(
       ParticleCatalogue& particles_data,
       ParticleCatalogue& particles_rand,
       ParameterSet& params,
-      double factor=3.,  // NOTE: discretionary choice
-      bool centre=false
+      double factor=3.  // NOTE: discretionary choice
     ) {
     particles_data.calc_min_and_max();
     particles_rand.calc_min_and_max();
 
     /// Re-adjust the grid.
-    double dpos[3] = {0., 0., 0.};
-    if (centre) {
-      dpos[0] += (particles_rand.pos_max[0] - particles_rand.pos_min[0]) / 2.;
-      dpos[1] += (particles_rand.pos_max[1] - particles_rand.pos_min[1]) / 2.;
-      dpos[2] += (particles_rand.pos_max[2] - particles_rand.pos_min[2]) / 2.;
-    } else {
-      dpos[0] += particles_rand.pos_min[0]
-        - factor * params.boxsize[0] / double(params.nmesh[0]);
-      dpos[1] += particles_rand.pos_min[1]
-        - factor * params.boxsize[1] / double(params.nmesh[1]);
-      dpos[2] += particles_rand.pos_min[2]
-        - factor * params.boxsize[2] / double(params.nmesh[2]);
-    }
+    double dpos[3] = {
+      particles_rand.pos_min[0],
+      particles_rand.pos_min[1],
+      particles_rand.pos_min[2]
+    };
+
+    dpos[0] -= factor * params.boxsize[0] / double(params.nmesh[0]);
+    dpos[1] -= factor * params.boxsize[1] / double(params.nmesh[1]);
+    dpos[2] -= factor * params.boxsize[2] / double(params.nmesh[2]);
 
     particles_data.offset_particles(dpos);
     particles_rand.offset_particles(dpos);
