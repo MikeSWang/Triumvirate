@@ -7,7 +7,7 @@
 
 #include <gsl/gsl_sf_legendre.h>
 
-#include "measurements/tools.hpp"
+#include "measurements/harmonic.hpp"
 
 /**
  * Test the evaluation of normalised spherical harmonics.
@@ -23,13 +23,13 @@ int main(int argc, char* argv[]) {
   double pos[3] = {x, y, z};
 
   /// Initialise the tool class.
-  ToolCollection toolset;
+  SphericalHarmonicCalculator harmonic;
 
   /// Display the numerical result.
   std::cout <<
     "Y_" << ell << m << "("
     << x << ", " << y << ", " << z
-    << ") = " << toolset.calc_reduced_spherical_harmonic(ell, m, pos)
+    << ") = " << harmonic.calc_reduced_spherical_harmonic(ell, m, pos)
   << std::endl;
 
   return 0;
