@@ -3,8 +3,8 @@
 
 /// Initialise process trackers.
 
-int thisTask = 0;  ///< ??? current task
-int numTasks = 1;  ///< ??? total number of tasks
+int thisTask = 0;  ///< current task
+int numTasks = 1;  ///< number of tasks (in a batch)
 
 double bytes = 0;  ///< memory usage in bytes
 

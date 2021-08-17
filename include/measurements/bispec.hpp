@@ -258,6 +258,10 @@ int calc_bispec(
               for (int k = 0; k < params.nmesh[2]; k++) {
                 long long coord_flat =
                   (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+
+								/// NOTE: This conforms to the absurd FFT array ordering
+								/// convention that negative wavenumbers/frequencies come
+								/// after zero and positive wavenumbers/frequencies.
                 rvec[0] = (i < params.nmesh[0]/2) ?
                   i * dr[0] : (i - params.nmesh[0]) * dr[0];
                 rvec[1] = (j < params.nmesh[1]/2) ?
@@ -557,7 +561,15 @@ int calc_bispec_in_box(
     shotnoise_save[i] = 0.;
   }
 
+	/// Calculate normal density field in the global plane-parallel
+	/// picture in contrast with `shotnoise_cubic_LM`.
+	DensityField<ParticleCatalogue> density(params);
+	density.calc_density_field_in_box_for_bispec(particles_data);
+	density.calc_fourier_transform();
+
   /// Compute shot noise terms.
+	/// WARNING: This was inherited from Sugiyama et al. without
+	/// matching equation.
   DensityField<ParticleCatalogue> dn_00_for_shotnoise(params);
   dn_00_for_shotnoise.calc_fluctuation_in_box(particles_data, params);
   dn_00_for_shotnoise.calc_fourier_transform();
@@ -573,14 +585,6 @@ int calc_bispec_in_box(
       if (fabs(coupling) < 1.e-10) {
         continue;
       }
-
-			/// FIXME: Factor this part out of the double m for-loops.
-			/// ???: Find matching equation.
-			/// Calculate normal density field in the global plane-parallel
-			/// picture in contrast with `shotnoise_cubic_LM`.
-      DensityField<ParticleCatalogue> density(params);
-      density.calc_density_field_in_box_for_bispec(particles_data);
-      density.calc_fourier_transform();
 
       TwoPointStatistics<ParticleCatalogue> stats(params);
       std::complex<double> shotnoise = double(particles_data.nparticles);
@@ -635,11 +639,6 @@ int calc_bispec_in_box(
 
   dn_00_for_shotnoise.finalise_density_field();
 
-	/// ???: FIXME: Redundant if factored out of the double m for-loops above?
-  DensityField<ParticleCatalogue> density_(params);
-  density_.calc_density_field_in_box_for_bispec(particles_data);
-  density_.calc_fourier_transform();
-
   SphericalBesselCalculator sj1(params.ell1);
   SphericalBesselCalculator sj2(params.ell2);
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -682,7 +681,7 @@ int calc_bispec_in_box(
       }
 
       stats.calc_shotnoise_for_bispec_on_grid(
-        dn_LM_for_shotnoise, density_,
+        dn_LM_for_shotnoise, density,
 				shotnoise,
         params.ELL, M_,
         three_pt_holder
@@ -709,6 +708,10 @@ int calc_bispec_in_box(
             for (int k = 0; k < params.nmesh[2]; k++) {
               long long coord_flat =
                 (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+
+							/// NOTE: This conforms to the absurd FFT array ordering
+							/// convention that negative wavenumbers/frequencies come
+							/// after zero and positive wavenumbers/frequencies.
               rvec[0] = (i < params.nmesh[0]/2) ?
                 i * dr[0] : (i - params.nmesh[0]) * dr[0];
               rvec[1] = (j < params.nmesh[1]/2) ?
@@ -761,7 +764,7 @@ int calc_bispec_in_box(
 		}
 	}
 
-	density_.finalise_density_field();
+	density.finalise_density_field();
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
@@ -1351,14 +1354,15 @@ int calc_3pt_corr_func_in_box(
 		shotnoise_save[i] = 0.;
 	}
 
-	/// ???: Find matching equation.
-	/// Compute shot noise terms.
 	/// Calculate normal density field in the global plane-parallel
 	/// picture in contrast with `shotnoise_cubic_LM`.
-	DensityField<ParticleCatalogue> density_(params);
-	density_.calc_density_field_in_box_for_bispec(particles_data);
-	density_.calc_fourier_transform();
+	/// WARNING: This was inherited from Sugiyama et al. without
+	/// matching equation.
+	DensityField<ParticleCatalogue> density(params);
+	density.calc_density_field_in_box_for_bispec(particles_data);
+	density.calc_fourier_transform();
 
+	/// Compute shot noise terms.
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
 			int M_ = 0;
@@ -1391,7 +1395,7 @@ int calc_3pt_corr_func_in_box(
 			std::complex<double> shotnoise = double(particles_data.nparticles);
 
 			stats.calc_2pt_func_for_3pt_corr_func(
-				dn_LM_for_shotnoise, density_,
+				dn_LM_for_shotnoise, density,
 				rbin,
 				shotnoise,
 				params.ell1, m1_,
@@ -1428,7 +1432,7 @@ int calc_3pt_corr_func_in_box(
 		}
 	}
 
-	density_.finalise_density_field();
+	density.finalise_density_field();
 
 	durationInSec = double(clock() - timeStart);
 	if (thisTask == 0) {
@@ -1974,7 +1978,7 @@ int calc_3pt_corr_func_window_mpi(
 	double alpha,
 	double* rbin,
 	double survey_vol_norm
-) {  // FIXME: inherited from Sugiyama et al.
+) {  // WARNING: inherited from Sugiyama et al. without matching equation
 	if (thisTask == 0) {
 		printf(
 			"[Info] :: Measuring three-point correlation function window "
@@ -1995,10 +1999,10 @@ int calc_3pt_corr_func_window_mpi(
 		exit(1);
 	}
 
-	int n_temp = 10;  // ??? NOTE: discretionary choice
-	int NR = 3;  // ??? NOTE: discretionary choice
+	int n_temp = 10;  // NOTE: discretionary choice
+	int NR = 3;  // NOTE: discretionary choice
 
-	params.ith_rbin = thisTask;  // ???
+	params.ith_rbin = thisTask;
 
 	/// Set up binning.
 	/// NOTE: The setup binning is discretionary.
@@ -2101,7 +2105,7 @@ int calc_3pt_corr_func_window_mpi(
 					} else if (params.form == "full") {
 						/// Calculate shot noise contribution equivalent to
 						/// the Kronecker delta.  See `calc_3pt_corr_func`.
-						if (i + NR * n_temp == params.ith_rbin) {  // ???
+						if (i + NR * n_temp == params.ith_rbin) {
 							shotnoise_save[i] += coupling * stats.xi[i + NR * n_temp];
 						} else {
 							shotnoise_save[i] += 0.;
@@ -2695,7 +2699,7 @@ int calc_bispec_for_los_choice(
 	double* kbin,
 	int los,
 	double survey_vol_norm
-) {  // ???: find matching equation
+) {  // WARNING: inherited from Sugiyama et al. without matching equation
 	if (thisTask == 0) {
 		printf(
 			"[Info] :: Measuring bispectrum for the choice of line of sight "
@@ -2818,7 +2822,9 @@ int calc_bispec_for_los_choice(
 					}
 				}
 
-    		/// ??? S_{\ell_1 \ell_2 L; i = k != j} (i.e. ell1 == 0 case) shuffled?
+				/// WARNING: This was inherited from Sugiyama et al. without
+				/// matching equation.  S_{\ell_1 \ell_2 L; i = k != j}
+				/// (i.e. ell1 == 0 case) may have been shuffled.
 
 				durationInSec = double(clock() - timeStart);
 				if (thisTask == 0) {
@@ -2889,7 +2895,9 @@ int calc_bispec_for_los_choice(
 						params.ELL, M_
 					);
 
-    		/// ??? S_{\ell_1 \ell_2 L; i = k != j} (i.e. ell1 == 0 case) shuffled?
+				/// WARNING: This was inherited from Sugiyama et al. without
+				/// matching equation.  S_{\ell_1 \ell_2 L; i = k != j}
+				/// (i.e. ell1 == 0 case) may have been shuffled.
 
     		/// Calculate S_{\ell_1 \ell_2 L; i = k != j} in eq. (45)
 				/// in arXiv:1803.02132.
@@ -3038,6 +3046,10 @@ int calc_bispec_for_los_choice(
 							for (int k = 0; k < params.nmesh[2]; k++) {
 								long long coord_flat =
 									(i * params.nmesh[1] + j) * params.nmesh[2] + k;
+
+								/// NOTE: This conforms to the absurd FFT array ordering
+								/// convention that negative wavenumbers/frequencies come
+								/// after zero and positive wavenumbers/frequencies.
 								rvec[0] = (i < params.nmesh[0]/2) ?
 									i * dr[0] : (i - params.nmesh[0]) * dr[0];
 								rvec[1] = (j < params.nmesh[1]/2) ?
@@ -3590,6 +3602,10 @@ int calc_bispec_for_M_mode(
 							for (int k = 0; k < params.nmesh[2]; k++) {
 								long long coord_flat =
 									(i * params.nmesh[1] + j) * params.nmesh[2] + k;
+
+								/// NOTE: This conforms to the absurd FFT array ordering
+								/// convention that negative wavenumbers/frequencies come
+								/// after zero and positive wavenumbers/frequencies.
 								rvec[0] = (i < params.nmesh[0]/2) ?
 									i * dr[0] : (i - params.nmesh[0]) * dr[0];
 								rvec[1] = (j < params.nmesh[1]/2) ?
@@ -3773,7 +3789,7 @@ int calc_bispec_for_M_mode(
 						bk_sum += factor * F_ellm_1 * F_ellm_2 * G_LM;
 					}
 
-					/// NOTE: No coupling multiplication.
+					/// No coupling multiplication.
 					bk_save[M_ + params.ELL][i_kbin] += bk_sum;
 
 					double durationInSec = double(clock() - timeStart);

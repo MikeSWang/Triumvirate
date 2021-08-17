@@ -705,6 +705,9 @@ class DensityField {
     dk[1] = 2.*M_PI / this->params.boxsize[1];
     dk[2] = 2.*M_PI / this->params.boxsize[2];
 
+    double k_lower = (kmag_in > dk_in/2) ? (kmag_in - dk_in/2) : 0.;
+    double k_upper = kmag_in + dk_in/2;
+
     double kvec[3];
     int nmode = 0;
     for (int i = 0; i < this->params.nmesh[0]; i++) {
@@ -726,9 +729,6 @@ class DensityField {
 
           /// Determine grid contribution to the specified wavenumber bin,
           /// i.e. eq. (42) in arXiv:1803.02132.
-          double k_lower = (kmag_in > dk_in/2) ? (kmag_in - dk_in/2) : 0.;
-          double k_upper = kmag_in + dk_in/2;
-            // FIXME: factor these two lines above outside the for-loop
           if (kmag > k_lower && kmag <= k_upper) {
             std::complex<double> den(
               density[coord_flat][0], density[coord_flat][1]
@@ -1197,7 +1197,7 @@ class TwoPointStatistics {
             mode_power -= shotnoise * calc_shotnoise_func(kvec);
               // subtract shot noise
 
-            double win = calc_interpolation_window_in_fourier(kvec);
+            double win = this->calc_interpolation_window_in_fourier(kvec);
             mode_power /= pow(win, 2);
               // apply interpolation-window compensation
 
@@ -1298,7 +1298,7 @@ class TwoPointStatistics {
 
           mode_power -= shotnoise * calc_shotnoise_func(kvec);
 
-          double win = calc_interpolation_window_in_fourier(kvec);
+          double win = this->calc_interpolation_window_in_fourier(kvec);
           mode_power /= pow(win, 2);
 
           twopt3d_sample[coord_flat][0] = vol_factor * mode_power.real();
@@ -1464,7 +1464,7 @@ class TwoPointStatistics {
 
           mode_power -= shotnoise * calc_shotnoise_func(kvec);
 
-          double win = calc_interpolation_window_in_fourier(kvec);
+          double win = this->calc_interpolation_window_in_fourier(kvec);
           mode_power /= pow(win, 2);
 
           twopt3d_sample[coord_flat][0] = vol_factor * mode_power.real();
@@ -1611,7 +1611,7 @@ class TwoPointStatistics {
     std::complex<double> sum_rand = 0.;
 
     /// Perform direct summation with spherical harmonic weighting.
-    /// NOTE: See Jing (2005) [arXiv: astro-ph/0409240].
+    /// See Jing (2005) [arXiv: astro-ph/0409240].
     for (int id = 0; id < particles_data.nparticles; id++) {
       double los[3] = {
         los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
@@ -1787,7 +1787,7 @@ class TwoPointStatistics {
 
           mode_power -= shotnoise * calc_shotnoise_func(kvec);
 
-          double win = calc_interpolation_window_in_fourier(kvec);
+          double win = this->calc_interpolation_window_in_fourier(kvec);
           mode_power /= pow(win, 2);
 
           three_pt[coord_flat][0] = vol_factor * mode_power.real();
@@ -1912,7 +1912,7 @@ class TwoPointStatistics {
    * @param kvec Wavevector.
    * @returns Window value in Fourier space.
    */
-  double calc_interpolation_window_in_fourier(double* kvec) {  // ???: redundant?
+  double calc_interpolation_window_in_fourier(double* kvec) {
     if (0) {
     } else if (this->params.assignment == "NGP") {
       return this->calc_interpolation_window_in_fourier_ngp(kvec);
@@ -1934,7 +1934,7 @@ class TwoPointStatistics {
    * @param kvec Wavevector.
    * @returns Window value in Fourier space.
    */
-  double calc_interpolation_window_in_fourier_ngp(const double* kvec) {  // ???: redundant?
+  double calc_interpolation_window_in_fourier_ngp(const double* kvec) {
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
@@ -1964,7 +1964,7 @@ class TwoPointStatistics {
    * @param kvec Wavevector.
    * @returns Window value in Fourier space.
    */
-  double calc_interpolation_window_in_fourier_cic(const double* kvec) {  // ???: redundant?
+  double calc_interpolation_window_in_fourier_cic(const double* kvec) {
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
@@ -1994,7 +1994,7 @@ class TwoPointStatistics {
    * @param kvec Wavevector.
    * @returns Window value in Fourier space.
    */
-  double calc_interpolation_window_in_fourier_tsc(const double* kvec) {  // ???: redundant?
+  double calc_interpolation_window_in_fourier_tsc(const double* kvec) {
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];

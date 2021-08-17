@@ -62,7 +62,7 @@ class ParticleCatalogue {
     this->nparticles = num;
 
     /// Renew particle data.
-    delete[] particles; particles = NULL;  // ???: not this->particles?
+    delete[] this->particles; this->particles = NULL;
     this->particles = new ParticleData[this->nparticles];
 
     /// Determine memory usage.
@@ -71,11 +71,11 @@ class ParticleCatalogue {
 
     /// Initialise particle data values.
     for (int id = 0; id < this->nparticles; id++) {
-      particles[id].pos[0] = 0.;
-      particles[id].pos[1] = 0.;
-      particles[id].pos[2] = 0.;
-      particles[id].w = 0.;
-    }  // ???: not this->particles?
+      this->particles[id].pos[0] = 0.;
+      this->particles[id].pos[1] = 0.;
+      this->particles[id].pos[2] = 0.;
+      this->particles[id].w = 0.;
+    }
   }
 
   /**
@@ -83,7 +83,7 @@ class ParticleCatalogue {
    */
   void finalise_particles() {
     /// Free particle usage.
-    if (particles != NULL) {  // ???: not this->particles?
+    if (this->particles != NULL) {
       delete[] this->particles; this->particles = NULL;
       bytes -= double(this->nparticles) * sizeof(struct ParticleData)
         / 1024. / 1024. / 1024.;
@@ -137,11 +137,10 @@ class ParticleCatalogue {
       }
 
       /// Add the current line as a particle.
-      particles[num_lines].pos[0] = x;
-      particles[num_lines].pos[1] = y;
-      particles[num_lines].pos[2] = z;
-      particles[num_lines].w = w;
-        // ???: not this->particles?
+      this->particles[num_lines].pos[0] = x;
+      this->particles[num_lines].pos[1] = y;
+      this->particles[num_lines].pos[2] = z;
+      this->particles[num_lines].w = w;
 
       num_lines++;
     }
@@ -215,7 +214,7 @@ class ParticleCatalogue {
    * @returns Exit status.
    */
   int calc_min_and_max() {
-    if (particles == NULL) {  // ???: not this->particles?
+    if (this->particles == NULL) {
       return -1;
     }
 
@@ -229,26 +228,26 @@ class ParticleCatalogue {
 
     /// Find/update minimum and maximum values line-by-line.
     for (int id = 0; id < this->nparticles; id++) {
-      if (min[0] > particles[id].pos[0]) {
-        min[0] = particles[id].pos[0];
+      if (min[0] > this->particles[id].pos[0]) {
+        min[0] = this->particles[id].pos[0];
       }
-      if (min[1] > particles[id].pos[1]) {
-        min[1] = particles[id].pos[1];
+      if (min[1] > this->particles[id].pos[1]) {
+        min[1] = this->particles[id].pos[1];
       }
-      if (min[2] > particles[id].pos[2]) {
-        min[2] = particles[id].pos[2];
+      if (min[2] > this->particles[id].pos[2]) {
+        min[2] = this->particles[id].pos[2];
       }
 
-      if (max[0] < particles[id].pos[0]) {
-        max[0] = particles[id].pos[0];
+      if (max[0] < this->particles[id].pos[0]) {
+        max[0] = this->particles[id].pos[0];
       }
-      if (max[1] < particles[id].pos[1]) {
-        max[1] = particles[id].pos[1];
+      if (max[1] < this->particles[id].pos[1]) {
+        max[1] = this->particles[id].pos[1];
       }
-      if (max[2] < particles[id].pos[2]) {
-        max[2] = particles[id].pos[2];
+      if (max[2] < this->particles[id].pos[2]) {
+        max[2] = this->particles[id].pos[2];
       }
-    }  // ???: not this->particles?
+    }
 
     this->pos_min[0] = min[0]; this->pos_max[0] = max[0];
     this->pos_min[1] = min[1]; this->pos_max[1] = max[1];
@@ -334,7 +333,7 @@ class ParticleCatalogue {
    * @returns Exit status.
    */
   int offset_particles(const double* dpos) {
-    if (particles == NULL) {  // ???: not this->particles?
+    if (this->particles == NULL) {
       return -1;
     }
 
@@ -353,27 +352,34 @@ class ParticleCatalogue {
    * @param particles_data (Reference to) the data-source particle container.
    * @param particles_rand (Reference to) the random-soruce particle data.
    * @param params (Reference to) the input parameter set.
-   * @param factor Offset grid adjustment factor (default is 3.).
+   * @param factor Offset grid adjustment factor (default is 3.).  Unused if `centre` is `true`.
+   * @param centre If `true` (default is `false), offset grid by centring.
    * @returns Exit status.
    */
   static int offset_particles_for_fft(
       ParticleCatalogue& particles_data,
       ParticleCatalogue& particles_rand,
       ParameterSet& params,
-      double factor=3.  // ???: why, and why 3?
-    ) {  // TODO: change function name/description
+      double factor=3.,  // NOTE: discretionary choice
+      bool centre=false
+    ) {
     particles_data.calc_min_and_max();
     particles_rand.calc_min_and_max();
 
-    /// ??? Compensate by grid adjustment.
-    double dpos[3] = {
-      particles_rand.pos_min[0],
-      particles_rand.pos_min[1],
-      particles_rand.pos_min[2]
-    };
-    dpos[0] -= factor * params.boxsize[0] / double(params.nmesh[0]);
-    dpos[1] -= factor * params.boxsize[1] / double(params.nmesh[1]);
-    dpos[2] -= factor * params.boxsize[2] / double(params.nmesh[2]);
+    /// Re-adjust the grid.
+    double dpos[3] = {0., 0., 0.};
+    if (centre) {
+      dpos[0] += (particles_rand.pos_max[0] - particles_rand.pos_min[0]) / 2.;
+      dpos[1] += (particles_rand.pos_max[1] - particles_rand.pos_min[1]) / 2.;
+      dpos[2] += (particles_rand.pos_max[2] - particles_rand.pos_min[2]) / 2.;
+    } else {
+      dpos[0] += particles_rand.pos_min[0]
+        - factor * params.boxsize[0] / double(params.nmesh[0]);
+      dpos[1] += particles_rand.pos_min[1]
+        - factor * params.boxsize[1] / double(params.nmesh[1]);
+      dpos[2] += particles_rand.pos_min[2]
+        - factor * params.boxsize[2] / double(params.nmesh[2]);
+    }
 
     particles_data.offset_particles(dpos);
     particles_rand.offset_particles(dpos);
