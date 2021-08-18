@@ -21,7 +21,7 @@ class ParameterSet {
   std::string rand_catalogue_file;  ///< random catalogue file
 
   std::string catalogue_type;  ///< catalogue type: {'survey', 'mock', 'sim'}
-  std::string measurement; ///< measurement: {'bispec', '3pcf', '3pcf-win', '3pcf-win-wa'} (to be expanded)
+  std::string output_type; ///< output_type: {'bispec', '3pcf', '3pcf-win', '3pcf-win-wa'} (to be expanded)
 
   double boxsize[3];  ///< boxsize in each dimension
   double volume;  ///< box volume
@@ -73,7 +73,7 @@ class ParameterSet {
     char data_catalogue_file_[1024];
     char rand_catalogue_file_[1024];
     char catalogue_type_[16];
-    char measurement_[16];
+    char output_type_[16];
     char assignment_[16];
     char binning_[16];
     char form_[16];
@@ -130,9 +130,9 @@ class ParameterSet {
           );
         }
 
-        if (str_line.find("measurement") != std::string::npos) {
+        if (str_line.find("output_type") != std::string::npos) {
           sscanf(
-            str_line.data(), "%s %s %s", str_dummy, str_dummy, measurement_
+            str_line.data(), "%s %s %s", str_dummy, str_dummy, output_type_
           );
         }
 
@@ -265,7 +265,7 @@ class ParameterSet {
     this->rand_catalogue_file = rand_catalogue_file_;
 
     this->catalogue_type = catalogue_type_;
-    this->measurement = measurement_;
+    this->output_type = output_type_;
 
     this->boxsize[0] = boxsize_x;
     this->boxsize[1] = boxsize_y;
@@ -497,8 +497,8 @@ class ParameterSet {
       this->catalogue_type.c_str()
     );
     fprintf(
-      used_param_file_ptr, "measurement = %s\n",
-      this->measurement.c_str()
+      used_param_file_ptr, "output_type = %s\n",
+      this->output_type.c_str()
     );
 
     fprintf(used_param_file_ptr, "boxsize_x = %.2f\n", this->boxsize[0]);
