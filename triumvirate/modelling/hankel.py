@@ -51,7 +51,7 @@ def transform_bispec_to_3pcf(bk_dict, rbin, N_fftlog=1024):
         bk_sample = interpolator_bk(k_sample)
 
         r_fftlog, zeta_fftlog = np.zeros(N_fftlog), np.zeros(N_fftlog)
-        hankel_fftlog.cosmo_hankel_transform(
+        hankel_fftlog.hankel_transform(
             ell2, 2, N_fftlog, k_sample, bk_sample, r_fftlog, zeta_fftlog
         )
 
@@ -70,7 +70,7 @@ def transform_bispec_to_3pcf(bk_dict, rbin, N_fftlog=1024):
         bk_sample = interpolator_bk(k_sample)
 
         r_fftlog, zeta_fftlog = np.zeros(N_fftlog), np.zeros(N_fftlog)
-        hankel_fftlog.cosmo_hankel_transform(
+        hankel_fftlog.hankel_transform(
             ell1, 2, N_fftlog, k_sample, bk_sample, r_fftlog, zeta_fftlog
         )
 
@@ -140,7 +140,7 @@ def transform_3pcf_to_bispec(zeta_dict, kbin):
         np.log(r_in[0]), np.log(r_in[-1]), N_fftlog, base=np.e
     )
 
-    bk_mesh_partial = np.zeros((len(r_in), len(r_in)))
+    bk_mesh_partial = np.zeros((len(r_in), len(kbin)))
     for i in range(len(r_in)):
         interpolator_zeta = interpolate.interp1d(
             r_in, zeta_in[i, :],
@@ -149,7 +149,7 @@ def transform_3pcf_to_bispec(zeta_dict, kbin):
         zeta_sample = interpolator_zeta(r_sample)
 
         k_fftlog, bk_fftlog = np.zeros(N_fftlog), np.zeros(N_fftlog)
-        hankel_fftlog.cosmo_hankel_transform(
+        hankel_fftlog.hankel_transform(
             ell2, 2, N_fftlog, r_sample, zeta_sample, k_fftlog, bk_fftlog
         )
 
@@ -168,7 +168,7 @@ def transform_3pcf_to_bispec(zeta_dict, kbin):
         zeta_sample = interpolator_zeta(r_sample)
 
         k_fftlog, bk_fftlog = np.zeros(N_fftlog), np.zeros(N_fftlog)
-        hankel_fftlog.cosmo_hankel_transform(
+        hankel_fftlog.hankel_transform(
             ell1, 2, N_fftlog, r_sample, zeta_sample, k_fftlog, bk_fftlog
         )
 
@@ -191,7 +191,7 @@ def transform_3pcf_to_bispec(zeta_dict, kbin):
         'ell1': ell1,
         'ell2': ell2,
         'ELL': ELL,
-        'N_fftlog': zeta_in['N_fftlog'],
+        'N_fftlog': N_fftlog,
     }
 
     return bk_dict
