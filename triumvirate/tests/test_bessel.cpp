@@ -4,7 +4,7 @@
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_spline.h>
 
-#include "measurements/bessel.hpp"
+#include "bessel.hpp"
 
 /**
  * Test the evaluation of spherical Bessel functions.
