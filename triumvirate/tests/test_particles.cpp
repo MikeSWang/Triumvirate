@@ -1,4 +1,4 @@
-#include "measurements/particles.hpp"
+#include "particles.hpp"
 
 /**
  * Void test.

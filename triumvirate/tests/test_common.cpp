@@ -1,4 +1,4 @@
-#include "measurements/common.hpp"
+#include "common.hpp"
 
 /**
  * Void test.

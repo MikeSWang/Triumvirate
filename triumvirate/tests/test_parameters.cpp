@@ -3,7 +3,7 @@
 
 #include <sys/stat.h>
 
-#include "measurements/parameters.hpp"
+#include "parameters.hpp"
 
 /**
  * Test initial parameter input.

@@ -7,7 +7,7 @@
 
 #include <gsl/gsl_sf_legendre.h>
 
-#include "measurements/harmonic.hpp"
+#include "harmonic.hpp"
 
 /**
  * Test the evaluation of normalised spherical harmonics.
