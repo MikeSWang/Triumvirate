@@ -64,10 +64,10 @@ test_tools: triumvirate/tests/test_tools.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
 
 clean:
-	rm -rf triumvirate/modelling/*.cpp build/* triumvirate/tests/test_build/* core
+	rm -rf triumvirate/modelling/*.cpp triumvirate/tests/test_build/* build/* */__pycache__/ core
 
 distclean:
-	rm -rf triumvirate/modelling/*.cpp build/* triumvirate/tests/test_build/* *~
+	rm -rf triumvirate/modelling/*.cpp triumvirate/tests/test_build/* build/* */__pycache__/ *~
 
 testclean:
 	find triumvirate/tests/test_output ! -name '.gitignore' -type f -exec rm -f {} +
