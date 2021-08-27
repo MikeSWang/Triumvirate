@@ -22,10 +22,10 @@ docs/build/**
 
 **/tests/test_output/**
 !**/tests/test_output/measurements/
-**/tests/test_output/measurements/**
-!**/tests/test_output/measurements/.gitignore
 !**/tests/test_output/modelling/
+**/tests/test_output/measurements/**
 **/tests/test_output/modelling/**
+!**/tests/test_output/measurements/.gitignore
 !**/tests/test_output/modelling/.gitignore
 
 # Data storage
