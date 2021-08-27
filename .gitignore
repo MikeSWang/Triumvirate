@@ -1,23 +1,34 @@
-# Binaries
-build/**
-!build/.gitignore
+# Byte-compiled
+__pycache__/
+*.py[cod]
 
-# Docs builds
+# Distribution/Packaging
+build/
+!build/.gitignore
+develop-eggs/
+eggs/
+.eggs/
+*.egg
+*.egg-info/
+lib/
+
+# Docs
 docs/build/**
 !docs/build/.gitignore
 
+# Testing
+**/tests/test_build/**
+!**/tests/test_build/.gitignore
+
+**/tests/test_output/**
+!**/tests/test_output/measurements/
+**/tests/test_output/measurements/**
+!**/tests/test_output/measurements/.gitignore
+!**/tests/test_output/modelling/
+**/tests/test_output/modelling/**
+!**/tests/test_output/modelling/.gitignore
+
 # Data storage
-tests/test_build/**
-!tests/test_build/.gitignore
-
-tests/test_output/**
-!tests/test_output/measurements/
-tests/test_output/measurements/**
-!tests/test_output/measurements/.gitignore
-!tests/test_output/modelling/
-tests/test_output/modelling/**
-!tests/test_output/modelling/.gitignore
-
 storage/input/**
 !storage/input/params/
 storage/input/params/**
