@@ -377,7 +377,10 @@ class ParameterSet {
     FILE* used_param_file_ptr;
 
     char buf[1024];
-    sprintf(buf, "%s/used_parameters", this->output_dir.c_str());
+    sprintf(
+      buf, "%s/used_parameters%s",
+      this->output_dir.c_str(), this->output_tag.c_str()
+    );
 
     if (!(used_param_file_ptr = fopen(buf, "w"))) {
       if (thisTask == 0) {
