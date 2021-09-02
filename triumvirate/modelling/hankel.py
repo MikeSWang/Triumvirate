@@ -80,8 +80,10 @@ def transform_bispec_to_3pcf(bk_dict, rbin, N_fftlog=1024):
         )
         zeta_mesh_full[:, j] = interpolator_zeta(r_fftlog[:])
 
-    prefactor = np.real(1.j ** (ell1 + ell2))
-    zeta_fftlog = prefactor * zeta_mesh_full
+    # An overall complex sign is needed here as it is not included
+    # in the backend transforms to avoid redundant computation.
+    sign = np.real(1.j ** (ell1 + ell2))
+    zeta_fftlog = sign * zeta_mesh_full
 
     # Prepare output.
     interpolator2d_zeta = interpolate.interp2d(
@@ -178,8 +180,12 @@ def transform_3pcf_to_bispec(zeta_dict, kbin):
         )
         bk_mesh_full[:, j] = interpolato_bk(kbin[:])
 
-    prefactor = (2.*np.pi) ** 6 * np.real((-1.j) ** (ell1 + ell2))
-    bk_out = prefactor * bk_mesh_full
+    # An overall complex sign is needed here as it is not included
+    # in the backend transforms to avoid redundant computation.
+    # Factors of pi are needed here the forward transform is used
+    # in the backend as the backward transform.
+    sign = (2.*np.pi) ** 6 * np.real((-1.j) ** (ell1 + ell2))
+    bk_out = sign * bk_mesh_full
 
     # Prepare output.
     (kbin2_out, kbin1_out) = np.meshgrid(kbin, kbin)
