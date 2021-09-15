@@ -1873,7 +1873,7 @@ int calc_3pt_corr_func_window(
 						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
 						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
 						std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
-						zeta_sum += pow(I_, params.ell1+params.ell2) * factor
+						zeta_sum += pow(I_, params.ell1 + params.ell2) * factor
 							* F_ellm_1 * F_ellm_2 * G_LM;
 					}
 
@@ -2241,7 +2241,7 @@ int calc_3pt_corr_func_window_mpi(
 						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
 						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
 						std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
-						zeta_sum += pow(I_, params.ell1+params.ell2) * factor
+						zeta_sum += pow(I_, params.ell1 + params.ell2) * factor
 							* F_ellm_1 * F_ellm_2 * G_LM;
 					}
 
@@ -2590,7 +2590,7 @@ int calc_3pt_corr_func_window_for_wide_angle(
 						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
 						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
 						std::complex<double> x_G_LM(dn_LM[i][0], dn_LM[i][1]);
-						zeta_sum += pow(I_, params.ell1+params.ell2) * factor
+						zeta_sum += pow(I_, params.ell1 + params.ell2) * factor
 							* F_ellm_1 * F_ellm_2 * x_G_LM;
 					}
 

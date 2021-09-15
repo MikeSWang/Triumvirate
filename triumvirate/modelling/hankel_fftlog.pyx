@@ -7,6 +7,9 @@ cdef extern from "include/hankel_fftlog.hpp":
     int cosmo_forward_hankel_transform(
         int ell, int m, int N, double* k, double* pk, double* r, double* xi
     )
+    int wide_angle_forward_hankel_transform(
+        int ell, int i, int N, double* k, double* pk, double* r, double* xi
+    )
     int transform_power_spec_to_corr_func(
         int N, double* k, double* pk, double* r, double* xi
     )
@@ -21,6 +24,20 @@ def hankel_transform(int ell, int m, int N,
                      np.ndarray[double, ndim=1, mode='c'] gy not None):
     return cosmo_forward_hankel_transform(
         ell, m, N, &x[0], &fx[0], &y[0], &gy[0]
+    )
+
+
+def wide_angle_hankel_transform(int ell, int m, int N,
+                                np.ndarray[double, ndim=1, mode='c'] x
+                                    not None,
+                                np.ndarray[double, ndim=1, mode='c'] fx
+                                    not None,
+                                np.ndarray[double, ndim=1, mode='c'] y
+                                    not None,
+                                np.ndarray[double, ndim=1, mode='c'] gy
+                                    not None):
+    return wide_angle_forward_hankel_transform(
+        ell, i, N, &x[0], &fx[0], &y[0], &gy[0]
     )
 
 

@@ -298,7 +298,7 @@ int cosmo_forward_hankel_transform(
 }
 
 /**
- * Perform the Hankel transform (spherical Bessel transform) for
+ * Perform the forward Hankel transform (spherical Bessel transform) for
  * wide-angle correction terms.
  *
  * @param[in] ell Order of the transform.
@@ -309,7 +309,7 @@ int cosmo_forward_hankel_transform(
  * @param[out] r Separation sample points.
  * @param[out] xi Correlation function samples.
  */
-int wide_angle_hankel_transform(
+int wide_angle_forward_hankel_transform(
   int ell, int i, int N, double* k, double* pk, double* r, double* xi
 ) {
   static double m = 2.;
