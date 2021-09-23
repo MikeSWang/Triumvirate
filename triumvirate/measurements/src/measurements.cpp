@@ -237,9 +237,31 @@ int main(int argc, char *argv[]) {
   /// an additional command-line argument.
   /// NOTE: Line break convention is overriden below.
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-    // calc_power_spec(particles_data, particles_rand, los_data, los_rand, params, alpha, kbin, survey_vol_norm);
-    // calc_corr_func(particles_data, particles_rand, los_data, los_rand, params, alpha, rbin, survey_vol_norm);
-    // calc_corr_func_window(particles_rand, los_rand, params, alpha, rbin, survey_vol_norm);
+    if (params.output_type == "powspec") {
+      calc_power_spec(
+        particles_data, particles_rand,
+        los_data, los_rand,
+        params,
+        alpha,
+        kbin,
+        survey_vol_norm
+      );
+    }
+    if (params.output_type == "2pcf") {
+      calc_corr_func(
+        particles_data, particles_rand,
+        los_data, los_rand,
+        params,
+        alpha,
+        rbin,
+        survey_vol_norm
+      );
+    }
+    if (params.output_type == "2pcf-win") {
+      calc_corr_func_window(
+        particles_rand, los_rand, params, alpha, rbin, survey_vol_norm
+      );
+    }
 
     if (params.output_type == "bispec") {
       calc_bispec(

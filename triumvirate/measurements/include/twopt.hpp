@@ -117,7 +117,10 @@ int calc_power_spec(
   );
 
   char buf[1024];
-  sprintf(buf, "%s/pk%d", params.output_dir.c_str(), params.ELL);
+  sprintf(
+    buf, "%s/pk%d%s",
+    params.output_dir.c_str(), params.ELL, params.output_tag.c_str()
+  );
 
   FILE* saved_file_ptr;
   saved_file_ptr = fopen(buf, "w");
@@ -247,7 +250,10 @@ int calc_corr_func(
   );
 
   char buf[1024];
-  sprintf(buf, "%s/xi%d", params.output_dir.c_str(), params.ELL);
+  sprintf(
+    buf, "%s/xi%d%s",
+    params.output_dir.c_str(), params.ELL, params.output_tag.c_str()
+  );
 
   FILE* saved_file_ptr;
   saved_file_ptr = fopen(buf, "w");
@@ -339,7 +345,10 @@ int calc_power_spec_window(
   norm /= params.volume;  // NOTE: volume normalisation is essential
 
   char buf[1024];
-  sprintf(buf, "%s/pk%d_window", params.output_dir.c_str(), params.ELL);
+  sprintf(
+    buf, "%s/pk%d_window%s",
+    params.output_dir.c_str(), params.ELL, params.output_tag.c_str()
+  );
 
   FILE* saved_file_ptr;
   saved_file_ptr = fopen(buf, "w");
@@ -466,7 +475,10 @@ int calc_corr_func_window(
   norm /= alpha * alpha;
 
   char buf[1024];
-  sprintf(buf, "%s/xi%d_window", params.output_dir.c_str(), params.ELL);
+  sprintf(
+    buf, "%s/xi%d_window%s",
+    params.output_dir.c_str(), params.ELL, params.output_tag.c_str()
+  );
 
   FILE* saved_file_ptr;
   saved_file_ptr = fopen(buf, "w");
@@ -549,7 +561,10 @@ int calc_power_spec_in_box(
     / double(particles_data.nparticles) / double(particles_data.nparticles);
 
   char buf[1024];
-  sprintf(buf, "%s/pk%d", params.output_dir.c_str(), params.ELL);
+  sprintf(
+    buf, "%s/pk%d%s",
+    params.output_dir.c_str(), params.ELL, params.output_tag.c_str()
+  );
 
   FILE* saved_file_ptr;
   saved_file_ptr = fopen(buf, "w");
@@ -638,7 +653,10 @@ int calc_corr_func_in_box(
     / double(particles_data.nparticles) / double(particles_data.nparticles);
 
   char buf[1024];
-  sprintf(buf, "%s/xi%d", params.output_dir.c_str(), params.ELL);
+  sprintf(
+    buf, "%s/xi%d%s",
+    params.output_dir.c_str(), params.ELL, params.output_tag.c_str()
+  );
 
   FILE* saved_file_ptr;
   saved_file_ptr = fopen(buf, "w");
@@ -735,7 +753,10 @@ int calc_power_spec_in_box_for_recon(
     / double(particles_data.nparticles) / double(particles_data.nparticles);
 
   char buf[1024];
-  sprintf(buf, "%s/pk%d", params.output_dir.c_str(), params.ELL);
+  sprintf(
+    buf, "%s/pk%d%s",
+    params.output_dir.c_str(), params.ELL, params.output_tag.c_str()
+  );
 
   FILE* saved_file_ptr;
   saved_file_ptr = fopen(buf, "w");
