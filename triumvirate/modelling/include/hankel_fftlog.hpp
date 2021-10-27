@@ -11,23 +11,23 @@ const std::complex<double> I(0., 1.);
 /**
  * Evaluate a complex number f@$ r e^{i \phi} f@$ in the polar form.
  *
- * @param r Modulus.
- * @param phi Argument.
- * @returns Value.
+ * @param r Modulus of the complex number.
+ * @param phi Argument of the complex number.
+ * @returns Value of the complex number.
  */
-std::complex<double> eval_polar_complex (double r, double phi) {
+std::complex<double> eval_polar_complex(double r, double phi) {
   return r * (cos(phi) + I * sin(phi));
 }
 
 /**
- * Evaluate the gamma function f@$ \Gamma(z) f@$ with complex arguments
+ * Evaluate the gamma function f@$ \Gamma(z) f@$ on the complex plane
  * using the Lanczos approximation.
  *
  * @param z Complex argument of the function.
  * @returns Value of the function.
  */
 std::complex<double> eval_gamma(std::complex<double> z) {
-  /// Set up N = 9 Lanczos coefficients with Lanzcos parameter g = 7.
+  /// Set up ``N = 9`` Lanczos coefficients with Lanzcos parameter ``g = 7``.
   static double g = 7.;
   static int N = 9;
   static double lanczos_coeff[] = {
@@ -40,9 +40,9 @@ std::complex<double> eval_gamma(std::complex<double> z) {
     -0.13857109526572011689554707,
     9.984369578019570859563e-6,
     1.50563273514931155834e-7
-  };
+  };  // NOTE: uneven number of significant figures
 
-  /// Explot Euler's reflection formula as the Lanczos approximation
+  /// Exploit Euler's reflection formula as the Lanczos approximation
   /// is only valid for Re{z} > 1/2.
   if (z.real() < 1./2) {
     return PI / (sin(PI * z) * eval_gamma(1. - z));
@@ -51,16 +51,18 @@ std::complex<double> eval_gamma(std::complex<double> z) {
   /// Evaluate the Lanczos approximation series.
   z -= 1;
   std::complex<double> t = z + g + 1./2;
+
   std::complex<double> x = lanczos_coeff[0];
   for (int n = 1; n < N; n++) {
-	  x += lanczos_coeff[n] / (z + double(n));  // double-conversion essential
+	x += lanczos_coeff[n] / (z + double(n));  // double-conversion essential
   }
 
   return sqrt(2*PI) * pow(t, z + 1./2) * exp(-t) * x;
 }
 
 /**
- * Evaluate the log-gamma function f@$ \ln\Gamma(z) f@$.
+ * Evaluate the log-gamma function f@$ \ln\Gamma(z) f@$
+ * on the complex plane.
  *
  * @param z Complex argument of the function.
  * @returns Value of the function.
@@ -70,13 +72,12 @@ std::complex<double> eval_lngamma(std::complex<double> z) {
 }
 
 /**
- * Extract the polar components of the gamma function value (i.e. the real
- * and imaginary parts of the log-gamma function value).
+ * Extract the real and imaginary parts of the log-gamma function.
  *
  * @param[in] x Real part of the complex argument.
  * @param[in] y Imaginary part of the complex argument.
- * @param[out] lnr (Pointer to) log-modulus of the gamma function value.
- * @param[out] phi (Pointer to) argument of the gamma function value.
+ * @param[out] lnr (Pointer) Real part of the log-gamma function value.
+ * @param[out] phi (Pointer) Imaginary part of the log-gamma function value.
  */
 static void get_lngamma_components(
   double x, double y, double* lnr, double* phi
@@ -87,10 +88,10 @@ static void get_lngamma_components(
 }
 
 /**
- * Calculate a low-ringing pivot value f@$ k_c r_c f@$.
+ * Calculate a low-ringing pivot value f@$ k r = k_c r_c f@$.
  *
  * @param N Sampling number.
- * @param mu Orderof the Hankel transform.
+ * @param mu Order of the Hankel transform.
  * @param q FFTLog power-law bias index.
  * @param L Log-interval period.
  * @param kr_c Initial pivot value.
@@ -102,16 +103,17 @@ static double calc_lowring_kr_pivot(
   double x_minus = (mu + 1 - q)/2;
   double y = PI * N / (2*L);
 
-  /// Note no minus is involved by complex conjugation of the gamma
-  /// function.
-  double lnr, phi_minus, phi_plus;
+  /// Note that no minus is involved by complex conjugation of
+  /// the gamma function.
+  double lnr, phi_minus, phi_plus;  // lnr a placeholder
   get_lngamma_components(x_plus, y, &lnr, &phi_plus);
   get_lngamma_components(x_minus, y, &lnr, &phi_minus);
-  double arg = log(2 / kr_c) * N/L + (phi_plus + phi_minus) / PI;
 
-  double arg_int = round(arg);
-  if (arg != arg_int) {
-    kr_c *= exp(L/N * (arg - arg_int));
+  double arg_ = log(2/kr_c) * N / L + (phi_plus + phi_minus) / PI;
+
+  double arg_int = round(arg_);
+  if (arg_ != arg_int) {
+    kr_c *= exp(L / N * (arg_ - arg_int));
   }
 
   return kr_c;
@@ -120,11 +122,11 @@ static double calc_lowring_kr_pivot(
 /**
  * Calculate the FFTLog Hankel transform kernel f@$ U f@$.
  *
- * @param N Sampling number.
- * @param mu Orderof the Hankel transform.
- * @param q FFTLog power-law bias index.
- * @param L Log-interval period.
- * @param kr_c Pivot f@$ kr f@$ value.
+ * @param[in] N Sampling number.
+ * @param[in] mu Order of the Hankel transform.
+ * @param[in] q FFTLog power-law bias index.
+ * @param[in] L Log-interval period.
+ * @param[in] kr_c Pivot f@$ kr f@$ value.
  * @param[out] u Kernel coefficients.
  */
 void calc_hankel_kernel_u_coeff(
@@ -132,16 +134,16 @@ void calc_hankel_kernel_u_coeff(
 ) {
   double y = PI / L;
   double kr_0 = kr_c * exp(-L);
-  double t = -2 * y * log(kr_0 / 2);
+  double t = -2 * y * log(kr_0/2);
 
   if (q == 0) {
     double x = (mu + 1)/2;
 
     double lnr, phi;
     for (int m = 0; m <= N/2; m++) {
-      get_lngamma_components(x, m*y, &lnr, &phi);
+      get_lngamma_components(x, m * y, &lnr, &phi);
 
-      u[m] = eval_polar_complex(1., m*t + 2*phi);
+      u[m] = eval_polar_complex(1., m * t + 2*phi);
     }
   } else {
     double x_plus = (mu + 1 + q)/2;
@@ -149,12 +151,12 @@ void calc_hankel_kernel_u_coeff(
 
     double lnr_plus, phi_plus, lnr_minus, phi_minus;
     for (int m = 0; m <= N/2; m++) {
-      get_lngamma_components(x_plus, m*y, &lnr_plus, &phi_plus);
-      get_lngamma_components(x_minus, m*y, &lnr_minus, &phi_minus);
+      get_lngamma_components(x_plus, m * y, &lnr_plus, &phi_plus);
+      get_lngamma_components(x_minus, m * y, &lnr_minus, &phi_minus);
 
       u[m] = eval_polar_complex(
         exp(log(2) * q + lnr_plus - lnr_minus),
-        m*t + phi_plus - phi_minus
+        m * t + phi_plus - phi_minus
       );
     }
   }
@@ -171,13 +173,12 @@ void calc_hankel_kernel_u_coeff(
 
 /**
  * Perform the forward Hankel transform, defined as
- *
  * f@$
  *   a(k) = \int_0^\infty k dr (k r)^q J_\mu(k r) a(r) \,.
  * f@$
  *
  * @param[in] N Sampling number.
- * @param[in] mu Orderof the Hankel transform.
+ * @param[in] mu Order of the Hankel transform.
  * @param[in] q FFTLog power-law bias index.
  * @param[in] kr_c Pivot f@$ kr f@$ value.
  * @param[in] lowring Low-ringing condition (binary, 0 or 1).
@@ -185,7 +186,7 @@ void calc_hankel_kernel_u_coeff(
  * @param[out] k Post-transform sample points.
  * @param[out] a Pre-transform samples.
  * @param[out] b Post-trasform samples.
- * @param[out] u FFTLog transform kernel coefficients.
+ * @param[out] u (Pointer) FFTLog transform kernel coefficients.
  */
 void forward_hankel_transform(
   int N, double mu, double q, double kr_c, int lowring,
@@ -214,12 +215,13 @@ void forward_hankel_transform(
   fftw_plan reverse_plan = fftw_plan_dft_1d(
     N, (fftw_complex*) b, (fftw_complex*) b, +1, FFTW_ESTIMATE
   );
-    // `(` and `)` necessary (see www.fftw.org/doc/Complex-numbers.html)
+    // ``(`` and ``)`` necessary;
+    // see https://www.fftw.org/doc/Complex-numbers.html
 
   fftw_execute(forward_plan);
   for (int m = 0; m < N; m++) {
     b[m] *= u[m] / double(N);
-      // division by N as FFTW doesn't normalise the inverse FFT
+      // division by `N` as FFTW doesn't normalise the inverse FFT
   }
   fftw_execute(reverse_plan);
 
@@ -239,7 +241,7 @@ void forward_hankel_transform(
 
   k[0] = kr_0 / r[0];
   for (int j = 1; j < N; j++) {
-    k[j] = k[0] * exp(j*L/N);
+    k[j] = k[0] * exp(j * L / N);
   }
 
   delete[] u_;
@@ -248,29 +250,28 @@ void forward_hankel_transform(
 /**
  * Perform the cosmological forward Hankel transform (spherical
  * Bessel transform), defined as
- *
  * f@$
  *   \xi_\ell(r) = (2\pi r)^{-3/2} \int_0^\infty
  *     r dk k^{m - 1/2} J_\ell(k r) P_\ell(k) \,.
  * f@$
  *
  * Note the comparison with the usual (but generalised) definition
- *
+ * used in wide-angle expansions,
  * f@$
  *   \xi_\ell^{(n)}(r) = 4\pi i^\ell \int_0^\infty dk k^2 / (2\pi)^3
  *     (k r)^{-n} j_\ell(kr) P_\ell^{(n)}(k) \,,
  * f@$
- *
  * i.e. f@$ \xi_\ell(r; m = 2) = i^{-\ell} \xi_\ell^{(n = 0)}(r) f@$,
- * where 'n' is identified with `q` in the standard Hankel transform.
+ * where f@$ n f@$ is identified with f@$ q f@$ in the standard
+ * Hankel transform.
  *
  * @param[in] ell Order of the transform.
  * @param[in] m Dimensional power-law index.
  * @param[in] N Sampling number.
- * @param[in] k Wavenumber sample points.
- * @param[in] pk Power spectrum samples.
- * @param[out] r Separation sample points.
- * @param[out] xi Correlation function samples.
+ * @param[in] k (Pointer) Wavenumber sample points.
+ * @param[in] pk (Pointer) Power spectrum samples.
+ * @param[out] r (Pointer) Separation sample points.
+ * @param[out] xi (Pointer) Correlation function samples.
  */
 int cosmo_forward_hankel_transform(
   int ell, int m, int N, double* k, double* pk, double* r, double* xi
@@ -287,7 +288,7 @@ int cosmo_forward_hankel_transform(
   forward_hankel_transform(N, ell + 1./2, q, 1., 1, k, r, a, b, NULL);
 
   for (int j = 0; j < N; j++) {
-    std::complex<double> xi_j = pow(2 * PI * r[j], -3./2) * b[j];
+    std::complex<double> xi_j = pow(2*PI * r[j], -3./2) * b[j];
     xi[j] = xi_j.real();
   }
 
@@ -304,10 +305,10 @@ int cosmo_forward_hankel_transform(
  * @param[in] ell Order of the transform.
  * @param[in] i Wide-angle correction order.
  * @param[in] N Sampling number.
- * @param[in] k Wavenumber sample points.
- * @param[in] pk Power spectrum samples.
- * @param[out] r Separation sample points.
- * @param[out] xi Correlation function samples.
+ * @param[in] k (Pointer) Wavenumber sample points.
+ * @param[in] pk (Pointer) Power spectrum samples.
+ * @param[out] r (Pointer) Separation sample points.
+ * @param[out] xi (Pointer) Correlation function samples.
  */
 int wide_angle_forward_hankel_transform(
   int ell, int i, int N, double* k, double* pk, double* r, double* xi
@@ -325,7 +326,7 @@ int wide_angle_forward_hankel_transform(
   forward_hankel_transform(N, ell + 1./2, q, 1., 1, k, r, a, b, NULL);
 
   for (int j = 0; j < N; j++) {
-    std::complex<double> xi_j = pow(2 * PI * r[j], -3./2) * b[j];
+    std::complex<double> xi_j = pow(2*PI * r[j], -3./2) * b[j];
     xi[j] = xi_j.real();
   }
 
@@ -340,12 +341,12 @@ int wide_angle_forward_hankel_transform(
  * (isotropic or monopole only).
  *
  * @param[in] N Sample number.
- * @param[in] k Wavenumber sample points.
- * @param[in] pk Power spectrum samples.
- * @param[out] r Separation sample points.
- * @param[out] xi Correlation function samples.
+ * @param[in] k (Pointer) Wavenumber sample points.
+ * @param[in] pk (Pointer) Power spectrum samples.
+ * @param[out] r (Pointer) Separation sample points.
+ * @param[out] xi (Pointer) Correlation function samples.
  */
-int transform_power_spec_to_corr_func(
+int transform_powspec_to_corrfunc(
   int N, double* k, double* pk, double* r, double* xi
 ) {
   cosmo_forward_hankel_transform(0, 2, N, k, pk, r, xi);
@@ -358,12 +359,12 @@ int transform_power_spec_to_corr_func(
  * (isotropic or monopole only).
  *
  * @param[in] N Sample number.
- * @param[in] r Separation sample points.
- * @param[in] xi Correlation function samples.
- * @param[out] k Wavenumber sample points.
- * @param[out] pk Power spectrum samples.
+ * @param[in] r (Pointer) Separation sample points.
+ * @param[in] xi (Pointer) Correlation function samples.
+ * @param[out] k (Pointer) Wavenumber sample points.
+ * @param[out] pk (Pointer) Power spectrum samples.
  */
-int transform_corr_func_to_power_spec(
+int transform_corrfunc_to_powspec(
   int N, double* r, double* xi, double* k, double* pk
 ) {
   cosmo_forward_hankel_transform(0, 2, N, r, xi, k, pk);

@@ -10,12 +10,13 @@ cdef extern from "include/hankel_fftlog.hpp":
     int wide_angle_forward_hankel_transform(
         int ell, int i, int N, double* k, double* pk, double* r, double* xi
     )
-    int transform_power_spec_to_corr_func(
+    int transform_powspec_to_corrfunc(
         int N, double* k, double* pk, double* r, double* xi
     )
-    int transform_corr_func_to_power_spec(
+    int transform_corrfunc_to_powspec(
         int N, double* r, double* xi, double* k, double* pk
     )
+
 
 def hankel_transform(int ell, int m, int N,
                      np.ndarray[double, ndim=1, mode='c'] x not None,
@@ -41,25 +42,17 @@ def wide_angle_hankel_transform(int ell, int m, int N,
     )
 
 
-def trans_power_spec_to_corr_func(int N,
-                                  np.ndarray[double, ndim=1, mode='c'] k
-                                      not None,
-                                  np.ndarray[double, ndim=1, mode='c'] pk
-                                      not None,
-                                  np.ndarray[double, ndim=1, mode='c'] r
-                                      not None,
-                                  np.ndarray[double, ndim=1, mode='c'] xi
-                                      not None):
-    return transform_power_spec_to_corr_func(N, &k[0], &pk[0], &r[0], &xi[0])
+def trans_powspec_to_corrfunc(int N,
+                              np.ndarray[double, ndim=1, mode='c'] k not None,
+                              np.ndarray[double, ndim=1, mode='c'] pk not None,
+                              np.ndarray[double, ndim=1, mode='c'] r not None,
+                              np.ndarray[double, ndim=1, mode='c'] xi not None):
+    return transform_powspec_to_corrfunc(N, &k[0], &pk[0], &r[0], &xi[0])
 
 
-def trans_corr_func_to_power_spec(int N,
-                                  np.ndarray[double, ndim=1, mode='c'] r
-                                      not None,
-                                  np.ndarray[double, ndim=1, mode='c'] xi
-                                      not None,
-                                  np.ndarray[double, ndim=1, mode='c'] k
-                                      not None,
-                                  np.ndarray[double, ndim=1, mode='c'] pk
-                                      not None):
-    return transform_corr_func_to_power_spec(N, &r[0], &xi[0], &k[0], &pk[0])
+def trans_corrfunc_to_powspec(int N,
+                              np.ndarray[double, ndim=1, mode='c'] r not None,
+                              np.ndarray[double, ndim=1, mode='c'] xi not None,
+                              np.ndarray[double, ndim=1, mode='c'] k not None,
+                              np.ndarray[double, ndim=1, mode='c'] pk not None):
+    return transform_corrfunc_to_powspec(N, &r[0], &xi[0], &k[0], &pk[0])

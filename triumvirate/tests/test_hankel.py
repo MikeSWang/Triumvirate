@@ -19,7 +19,7 @@ except ImportError:
 @pytest.mark.parametrize(
     "ell1,ell2,ELL,N_fftlog,case",
     [
-        (0, 0, 0, 256, 'tree'),
+        (0, 0, 0, 1024, 'tree'),
     ]
 )
 def test_transforms(ell1, ell2, ELL, N_fftlog, case):
@@ -30,11 +30,13 @@ def test_transforms(ell1, ell2, ELL, N_fftlog, case):
 
     # Perform transformations.
     bk_dict = np.load(
-        f"test_input/test_bk_{case}.npy", allow_pickle=True
+        f"test_input/test_bk{ell1}{ell2}{ELL}_{case}.npy", allow_pickle=True
     ).item()
+
     zeta_dict = hankel.transform_bispec_to_3pcf(
         bk_dict, rbin, N_fftlog=N_fftlog
     )
+
     bk_dict_reverse = hankel.transform_3pcf_to_bispec(zeta_dict, kbin)
 
     # Verify results.
@@ -45,23 +47,21 @@ def test_transforms(ell1, ell2, ELL, N_fftlog, case):
         bk_dict['bk'].reshape(num_kbins ** 2)
     ]).T
     np.savetxt(
-        "test_output/modelling/bk{:d}{:d}{:d}_{}.dat".format(
-            ell1, ell2, ELL, case
-        ),
-        bk_in, fmt='%.7e'
+        f"test_output/modelling/bk{ell1}{ell2}{ELL}_{case}.dat",
+        bk_in,
+        fmt='%.7e'
     )
 
     num_rbins = len(rbin)
-    zeta_mid = np.array([
+    zeta = np.array([
         zeta_dict['rbin1'].reshape(num_rbins ** 2),
         zeta_dict['rbin2'].reshape(num_rbins ** 2),
         zeta_dict['zeta'].reshape(num_rbins ** 2)
     ]).T
     np.savetxt(
-        "test_output/modelling/zeta{:d}{:d}{:d}_{}.dat".format(
-            ell1, ell2, ELL, case
-        ),
-        zeta_mid, fmt='%.7e'
+        f"test_output/modelling/zeta{ell1}{ell2}{ELL}_{case}.dat",
+        zeta,
+        fmt='%.7e'
     )
 
     bk_out = np.array([
@@ -70,10 +70,9 @@ def test_transforms(ell1, ell2, ELL, N_fftlog, case):
         bk_dict_reverse['bk'].reshape(num_kbins ** 2)
     ]).T
     np.savetxt(
-        "test_output/modelling/bk{:d}{:d}{:d}_{}_reverse.dat".format(
-            ell1, ell2, ELL, case
-        ),
-        bk_out, fmt='%.7e'
+        f"test_output/modelling/bk{ell1}{ell2}{ELL}_{case}_reverse.dat",
+        bk_out,
+        fmt='%.7e'
     )
 
     assert np.allclose(bk_out, bk_in, rtol=0.001), \
