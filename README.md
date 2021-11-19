@@ -1,8 +1,8 @@
 ![Triumvirate](https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/Triumvirate.png)
 
 [![arXiv eprint](
-https://img.shields.io/badge/arXiv-yyyy.nnnnn-important
-)](https://arxiv.org/abs/yyyy.nnnnn)
+https://img.shields.io/badge/arXiv-yymm.nnnnn-important
+)](https://arxiv.org/abs/yymm.nnnnn)
 [![GitHub release (latest by date)](
 https://img.shields.io/github/v/release/MikeSWang/Triumvirate?label=release
 )](https://github.com/MikeSWang/Triumvirate/releases/latest)
@@ -17,10 +17,10 @@ https://img.shields.io/badge/licence-GPLv3-informational
 )](https://github.com/mikeswang/Triumvirate/tree/main/LICENCE)
 
 
-# Galaxy Clustering Bispectrum Measurements and Modelling
+# LSS Bispectrum Measurements and Modelling
 
 <span style="font-variant: small-caps">Triumvirate</span> measures and
-models galaxy clustering bispectra.
+models bispectra in LSS clustering analyses.
 
 
 ## Installation

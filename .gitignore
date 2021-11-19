@@ -17,7 +17,7 @@ triumvirate/modelling/*.cpp
 docs/build/**
 !docs/build/.gitignore
 
-# Testing
+# Tests
 **/tests/test_build/**
 !**/tests/test_build/.gitignore
 
@@ -40,7 +40,6 @@ storage/output/**
 storage/output/measurements/**
 !storage/output/measurements/.gitignore
 
-storage/misc/**
-
-# Editor
+# Editors
 .vscode/
+.ipynb_checkpoints
