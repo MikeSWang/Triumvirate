@@ -52,10 +52,14 @@ int calc_power_spec(
   );
   dn_00.calc_fourier_transform();
 
-  /// Compute power spectrum.
+  /// Compute power spectrum with shot noise.
+  double* k_save = new double[params.num_kbin];
   std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
+  std::complex<double>* sn_save = new std::complex<double>[params.num_kbin];
   for (int i = 0; i < params.num_kbin; i++) {
+    k_save[i] = 0.;
     pk_save[i] = 0.;
+    sn_save[i] = 0.;
   }
 
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -98,6 +102,13 @@ int calc_power_spec(
 
       for (int i = 0; i < params.num_kbin; i++) {
         pk_save[i] += coupling * stats.pk[i];
+        sn_save[i] += coupling * stats.sn[i];
+      }
+
+      if (M_ == 0 & m1_ == 0) {
+        for (int i = 0; i < params.num_kbin; i++) {
+          k_save[i] += stats.k[i];
+        }
       }
     }
 
@@ -112,9 +123,16 @@ int calc_power_spec(
   }
 
   /// Normalise and then save the output.
-  double norm = ParticleCatalogue::calc_norm_for_power_spec(
-    particles_data, survey_vol_norm
-  );
+  double norm = 0.;
+  if (params.norm_convention == "sugiyama") {
+    double norm = ParticleCatalogue::calc_norm_for_power_spec_sugiyama(
+      particles_data, survey_vol_norm
+    );
+  } else {
+    double norm = ParticleCatalogue::calc_norm_for_power_spec_nbodykit(
+      particles_rand, params
+    );
+  }
 
   char buf[1024];
   sprintf(
@@ -126,7 +144,8 @@ int calc_power_spec(
   saved_file_ptr = fopen(buf, "w");
   for (int i = 0; i < params.num_kbin; i++) {
     fprintf(
-      saved_file_ptr, "%.5f \t %.7e\n", kbin[i], norm * pk_save[i].real()
+      saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+      kbin[i], k_save[i], norm * pk_save[i].real(), norm * sn_save[i].real()
     );
   }
   fclose(saved_file_ptr);
@@ -245,7 +264,7 @@ int calc_corr_func(
   }
 
   /// Normalise and then save the output.
-  double norm = ParticleCatalogue::calc_norm_for_power_spec(
+  double norm = ParticleCatalogue::calc_norm_for_power_spec_sugiyama(
     particles_data, survey_vol_norm
   );
 
@@ -338,7 +357,7 @@ int calc_power_spec_window(
   std::cout << "Current memory usage: " << bytes << " bytes." << std::endl;
 
   /// Normalise and then save the output.
-  double norm = ParticleCatalogue::calc_norm_for_power_spec(
+  double norm = ParticleCatalogue::calc_norm_for_power_spec_sugiyama(
     particles_rand, survey_vol_norm
   );
   norm /= alpha * alpha;
@@ -469,7 +488,7 @@ int calc_corr_func_window(
   }
 
   /// Normalise and then save the output.
-  double norm = ParticleCatalogue::calc_norm_for_power_spec(
+  double norm = ParticleCatalogue::calc_norm_for_power_spec_sugiyama(
     particles_rand, survey_vol_norm
   );
   norm /= alpha * alpha;
