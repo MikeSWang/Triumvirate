@@ -26,6 +26,8 @@ class ParameterSet {
   double boxsize[3];  ///< boxsize in each dimension
   double volume;  ///< box volume
 
+  std::string norm_convention;  ///< normalisation convention: {'sugiyama', 'nbodykit'}
+
   int nmesh[3];  ///< mesh number in each dimension
   int nmesh_tot;  ///< total number of meshes
 
@@ -74,6 +76,7 @@ class ParameterSet {
     char rand_catalogue_file_[1024];
     char catalogue_type_[16];
     char output_type_[16];
+    char norm_conv_[16];
     char assignment_[16];
     char binning_[16];
     char form_[16];
@@ -86,175 +89,181 @@ class ParameterSet {
     char str_dummy[1024];  // string placeholder for irrelevant contents
 
     while (getline(fin, str_line)) {
-        /// Check if the line is in the correct format for parameter
-        /// parsing; process if yes, otherwise move on to the next line.
-        if (
-          sscanf(
-            str_line.data(), "%s %s %s", str_dummy, str_dummy, str_dummy
-          ) != 3
-        ) {
-          continue;
-        }
+      /// Check if the line is in the correct format for parameter
+      /// parsing; process if yes, otherwise move on to the next line.
+      if (
+        sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, str_dummy
+        ) != 3
+      ) {
+        continue;
+      }
 
-        if (str_line.find("catalogue_dir") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %s", str_dummy, str_dummy, catalogue_dir_
-          );
-        }
-        if (str_line.find("output_dir") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %s", str_dummy, str_dummy, output_dir_
-          );
-        }
-        if (str_line.find("output_tag") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %s", str_dummy, str_dummy, output_tag_
-          );
-        }
-        if (str_line.find("data_catalogue_file") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %s",
-            str_dummy, str_dummy, data_catalogue_file_
-          );
-        }
-        if (str_line.find("rand_catalogue_file") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %s",
-            str_dummy, str_dummy, rand_catalogue_file_
-          );
-        }
+      if (str_line.find("catalogue_dir") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, catalogue_dir_
+        );
+      }
+      if (str_line.find("output_dir") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, output_dir_
+        );
+      }
+      if (str_line.find("output_tag") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, output_tag_
+        );
+      }
+      if (str_line.find("data_catalogue_file") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %s",
+          str_dummy, str_dummy, data_catalogue_file_
+        );
+      }
+      if (str_line.find("rand_catalogue_file") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %s",
+          str_dummy, str_dummy, rand_catalogue_file_
+        );
+      }
 
-        if (str_line.find("catalogue_type") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %s", str_dummy, str_dummy, catalogue_type_
-          );
-        }
+      if (str_line.find("catalogue_type") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, catalogue_type_
+        );
+      }
 
-        if (str_line.find("output_type") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %s", str_dummy, str_dummy, output_type_
-          );
-        }
+      if (str_line.find("output_type") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, output_type_
+        );
+      }
 
-        if (str_line.find("boxsize_x") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_x
-          );
-        }
-        if (str_line.find("boxsize_y") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_y
-          );
-        }
-        if (str_line.find("boxsize_z") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_z
-          );
-        }
+      if (str_line.find("boxsize_x") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_x
+        );
+      }
+      if (str_line.find("boxsize_y") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_y
+        );
+      }
+      if (str_line.find("boxsize_z") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_z
+        );
+      }
 
-        if (str_line.find("nmesh_x") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %d", str_dummy, str_dummy, &nmesh_x
-          );
-        }
-        if (str_line.find("nmesh_y") != std::string::npos) {
-          sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &nmesh_y);
-        }
-        if (str_line.find("nmesh_z") != std::string::npos) {
-          sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &nmesh_z);
-        }
+      if (str_line.find("norm_convention") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, norm_conv_
+        );
+      }
 
-        if (str_line.find("assignment") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %s", str_dummy, str_dummy, assignment_
-          );
-        }
+      if (str_line.find("nmesh_x") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %d", str_dummy, str_dummy, &nmesh_x
+        );
+      }
+      if (str_line.find("nmesh_y") != std::string::npos) {
+        sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &nmesh_y);
+      }
+      if (str_line.find("nmesh_z") != std::string::npos) {
+        sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &nmesh_z);
+      }
 
-        if (str_line.find("ell1") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ell1
-          );
-        }
-        if (str_line.find("ell2") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ell2
-          );
-        }
-        if (str_line.find("ELL") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ELL
-          );
-        }
+      if (str_line.find("assignment") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, assignment_
+        );
+      }
 
-        if (str_line.find("order_i") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->order_i
-          );
-        }
-        if (str_line.find("order_j") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->order_j
-          );
-        }
+      if (str_line.find("ell1") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ell1
+        );
+      }
+      if (str_line.find("ell2") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ell2
+        );
+      }
+      if (str_line.find("ELL") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ELL
+        );
+      }
 
-        if (str_line.find("kmin") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->kmin
-          );
-        }
-        if (str_line.find("kmax") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->kmax
-          );
-        }
-        if (str_line.find("num_kbin") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->num_kbin
-          );
-        }
+      if (str_line.find("order_i") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->order_i
+        );
+      }
+      if (str_line.find("order_j") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->order_j
+        );
+      }
 
-        if (str_line.find("rmin") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->rmin
-          );
-        }
-        if (str_line.find("rmax") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->rmax
-          );
-        }
-        if (str_line.find("num_rbin") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->num_rbin
-          );
-        }
+      if (str_line.find("kmin") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->kmin
+        );
+      }
+      if (str_line.find("kmax") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->kmax
+        );
+      }
+      if (str_line.find("num_kbin") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->num_kbin
+        );
+      }
 
-        if (str_line.find("binning") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %s", str_dummy, str_dummy, binning_
-          );
-        }
+      if (str_line.find("rmin") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->rmin
+        );
+      }
+      if (str_line.find("rmax") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->rmax
+        );
+      }
+      if (str_line.find("num_rbin") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->num_rbin
+        );
+      }
 
-        if (str_line.find("form") != std::string::npos) {
-          sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, form_);
-        }
+      if (str_line.find("binning") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, binning_
+        );
+      }
 
-        if (str_line.find("ith_kbin") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ith_kbin
-          );
-        }
-        if (str_line.find("ith_rbin") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ith_rbin
-          );
-        }
-        if (str_line.find("batch_number") != std::string::npos) {
-          sscanf(
-            str_line.data(), "%s %s %d",
-            str_dummy, str_dummy, &this->batch_number
-          );
-        }
+      if (str_line.find("form") != std::string::npos) {
+        sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, form_);
+      }
+
+      if (str_line.find("ith_kbin") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ith_kbin
+        );
+      }
+      if (str_line.find("ith_rbin") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ith_rbin
+        );
+      }
+      if (str_line.find("batch_number") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %d",
+          str_dummy, str_dummy, &this->batch_number
+        );
+      }
     }
 
     /// Store parameters as attributes.
@@ -279,6 +288,7 @@ class ParameterSet {
 
     this->nmesh_tot = nmesh_x * nmesh_y * nmesh_z;
 
+    this->norm_convention = norm_conv_;
     this->assignment = assignment_;
     this->binning = binning_;
     this->form = form_;
@@ -410,6 +420,28 @@ class ParameterSet {
         );
       }
       return -1;
+    }
+
+    if (!(
+      this->norm_convention == "sugiyama"
+      || this->norm_convention == "nbodykit"
+    )) {
+      if (thisTask == 0) {
+        printf(
+          "[WARN] :: Normalisation convention must be 'sugiyama' or 'nbodykit': "
+          "`norm_convention` = %s.\n",
+          this->norm_convention.c_str()
+        );
+      }
+
+      this->norm_convention == "sugiyama";
+
+      if (thisTask == 0) {
+        printf(
+          "[WARN] :: Normalisation convention is reset to default value '%s'.\n",
+          this->norm_convention.c_str()
+        );
+      }
     }
 
     if (!(

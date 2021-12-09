@@ -283,13 +283,13 @@ class ParticleCatalogue {
   }
 
   /**
-   * Calculate power spectrum normalisation.
+   * Calculate power spectrum normalisation in the Sugiyama convention.
    *
    * @param particles_data (Reference to) the data-source particle container.
    * @param survey_vol_norm Survey volume normalisation constant.
    * @returns norm Normalisation factor.
    */
-  static double calc_norm_for_power_spec(
+  static double calc_norm_for_power_spec_sugiyama(
       ParticleCatalogue& particles_data, double survey_vol_norm
     ) {
     double num_wgt_data = 0.;
@@ -298,9 +298,30 @@ class ParticleCatalogue {
     }
 
     double norm = survey_vol_norm / num_wgt_data / num_wgt_data;
-      // equivalent to I_2 = ∫d^3x \bar{n}(x)^2
+      // equivalent to 1/I_2 where I_2 = ∫d^3x \bar{n}(x)^2
 
     return norm;
+  }
+
+  /**
+   * Calculate power spectrum normalisation in the 'nbodykit' convention.
+   *
+   * @param particles_data (Reference to) the data-source particle container.
+   * @param survey_vol_norm Survey volume normalisation constant.
+   * @returns norm Normalisation factor.
+   */
+  static double calc_norm_for_power_spec_nbodykit(
+      ParticleCatalogue& particles_rand,
+      ParameterSet& params
+    ) {
+
+    if (thisTask == 0) {
+      printf(
+        "[WARN] :: 'nbodykit' normalisation convention not yet implemented.\n"
+      );
+    }
+
+    return -1;
   }
 
   /**

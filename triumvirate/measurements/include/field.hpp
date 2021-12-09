@@ -1047,7 +1047,7 @@ class DensityField {
 
     weight = fftw_alloc_complex(particles_rand.nparticles);
     for (int id = 0; id < particles_rand.nparticles; id++) {
-      weight[id][0] = 1.;
+      weight[id][0] = particles_rand[id].w;
       weight[id][1] = 0.;
     }
 
@@ -1078,8 +1078,12 @@ class DensityField {
 template <class ParticleContainer>
 class TwoPointStatistics {
  public:
+  double* k;  ///< central wavenumber in bins/shells
+    // TODO: upgrade
   std::complex<double>* pk;  ///< power spectrum statistics
   std::complex<double>* xi;  ///< two-point correlation function statistics
+  std::complex<double>* sn;  ///< shot-noise statistics in Fourier space
+    // TODO: upgrade
   int* nmode_pk;  ///< number of wavevector modes
   int* npair_xi;  ///< number of separation pairs
 
@@ -1092,10 +1096,14 @@ class TwoPointStatistics {
     this->params = params;
 
     /// Set up binned power spectrum and mode counter.
+    this->k = new double[params.num_kbin];
     this->pk = new std::complex<double>[params.num_kbin];
+    this->sn = new std::complex<double>[params.num_kbin];
     this->nmode_pk = new int[params.num_kbin];
     for (int i = 0; i < params.num_kbin; i++) {
+      this->k[i] = 0.;
       this->pk[i] = 0.;
+      this->sn[i] = 0.;
       this->nmode_pk[i] = 0;
     }
 
@@ -1120,7 +1128,9 @@ class TwoPointStatistics {
    */
   void finalise_2pt_stats() {
     /// Free memory usage.
+    delete[] this->k; this->k = NULL;
     delete[] this->pk; this->pk = NULL;
+    delete[] this->sn; this->sn = NULL;
     delete[] this->nmode_pk; this->nmode_pk = NULL;
     delete[] this->xi; this->xi = NULL;
     delete[] this->npair_xi; this->npair_xi = NULL;
@@ -1148,16 +1158,22 @@ class TwoPointStatistics {
     double dk_sample = 0.0001;  // NOTE: discretionary choice
     int n_sample = 100000;  // NOTE: discretionary choice
 
+    double* k_sample = new double[n_sample];
     std::complex<double>* pk_sample = new std::complex<double>[n_sample];
+    std::complex<double>* sn_sample = new std::complex<double>[n_sample];
     int* nmode_sample = new int[n_sample];
     for (int i = 0; i < n_sample; i++) {
+      ks_sample[i] = 0.
       pk_sample[i] = 0.;
+      sn_sample[i] = 0.;
       nmode_sample[i] = 0;
     }
 
     /// Set up binned power spectrum measurements.
     for (int i = 0; i < this->params.num_kbin; i++) {
+      this->k[i] = 0.;
       this->pk[i] = 0.;
+      this->sn[i] = 0.;
       this->nmode_pk[i] = 0;
     }
 
@@ -1192,20 +1208,27 @@ class TwoPointStatistics {
             std::complex<double> delta_b(
               density_b[coord_flat][0], density_b[coord_flat][1]
             );
-            std::complex<double> mode_power = delta_a * conj(delta_b);
 
-            mode_power -= shotnoise * calc_shotnoise_func(kvec);
-              // subtract shot noise
+            std::complex<double> mode_power = delta_a * conj(delta_b);
+            std::complex<double> mode_sn = shotnoise * calc_shotnoise_func(kvec);
+
+            mode_power -= mode_sn;  // subtract shot noise
 
             double win = this->calc_interpolation_window_in_fourier(kvec);
             mode_power /= pow(win, 2);
+            mode_sn /= pow(win, 2);
               // apply interpolation-window compensation
 
             std::complex<double> ylm =
-              SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, kvec);
-            mode_power *= ylm;  // weight by spherical harmonics
+              SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
+                ell, m, kvec
+              );
+            mode_power *= ylm;
+            mode_sn *= ylm;  // weight by spherical harmonics
 
+            ks_sample[idx_k] += kmag;
             pk_sample[idx_k] += mode_power;
+            sn_sample[idx_k] += mode_sn;
             nmode_sample[idx_k]++;
           }
         }
@@ -1213,14 +1236,16 @@ class TwoPointStatistics {
     }
 
     /// Perform power spectrum binning.
-    double dkbin = kbin[1] - kbin[0];
+    double dkbin = kbin[1] - kbin[0];  // FIXME: drop linear binning assumption
     for (int j = 0; j < this->params.num_kbin; j++) {
       double k_lower = (kbin[j] > dkbin/2) ? (kbin[j] - dkbin/2) : 0.;
       double k_upper = kbin[j] + dkbin/2;
       for (int i = 0; i < n_sample; i++) {
         double k_sample = double(i) * dk_sample;
         if (k_sample > k_lower && k_sample <= k_upper) {
+          this->k[j] += ks_sample[i];
           this->pk[j] += pk_sample[i];
+          this->sn[j] += sn_sample[i];
           this->nmode_pk[j] += nmode_sample[i];
         }
       }
@@ -1228,13 +1253,20 @@ class TwoPointStatistics {
 
     for (int i = 0; i < this->params.num_kbin; i++) {
       if (this->nmode_pk[i] != 0) {
+        this->k[j] /= double(this->nmode_pk[i]);
         this->pk[i] /= double(this->nmode_pk[i]);
+        this->sn[i] /= double(this->nmode_pk[i]);
       } else {
+        this->k[i] = (kbin[i] + kbin[i + 1]) / 2.;
+          // FIXME: drop linear binning assumption
         this->pk[i] = 0.;
+        this->sn[i] = 0.;
       }
     }  // average over equivalent modes
 
+    delete[] ks_sample;
     delete[] pk_sample;
+    delete[] sn_sample;
     delete[] nmode_sample;
 
     return 0;
