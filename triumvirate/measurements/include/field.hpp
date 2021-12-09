@@ -1158,12 +1158,12 @@ class TwoPointStatistics {
     double dk_sample = 0.0001;  // NOTE: discretionary choice
     int n_sample = 100000;  // NOTE: discretionary choice
 
-    double* k_sample = new double[n_sample];
+    double* ks_sample = new double[n_sample];
     std::complex<double>* pk_sample = new std::complex<double>[n_sample];
     std::complex<double>* sn_sample = new std::complex<double>[n_sample];
     int* nmode_sample = new int[n_sample];
     for (int i = 0; i < n_sample; i++) {
-      ks_sample[i] = 0.
+      ks_sample[i] = 0.;
       pk_sample[i] = 0.;
       sn_sample[i] = 0.;
       nmode_sample[i] = 0;
@@ -1212,7 +1212,7 @@ class TwoPointStatistics {
             std::complex<double> mode_power = delta_a * conj(delta_b);
             std::complex<double> mode_sn = shotnoise * calc_shotnoise_func(kvec);
 
-            mode_power -= mode_sn;  // subtract shot noise
+            // mode_power -= mode_sn;  // subtract shot noise
 
             double win = this->calc_interpolation_window_in_fourier(kvec);
             mode_power /= pow(win, 2);
@@ -1253,7 +1253,7 @@ class TwoPointStatistics {
 
     for (int i = 0; i < this->params.num_kbin; i++) {
       if (this->nmode_pk[i] != 0) {
-        this->k[j] /= double(this->nmode_pk[i]);
+        this->k[i] /= double(this->nmode_pk[i]);
         this->pk[i] /= double(this->nmode_pk[i]);
         this->sn[i] /= double(this->nmode_pk[i]);
       } else {

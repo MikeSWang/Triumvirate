@@ -125,11 +125,11 @@ int calc_power_spec(
   /// Normalise and then save the output.
   double norm = 0.;
   if (params.norm_convention == "sugiyama") {
-    double norm = ParticleCatalogue::calc_norm_for_power_spec_sugiyama(
+    norm = ParticleCatalogue::calc_norm_for_power_spec_sugiyama(
       particles_data, survey_vol_norm
     );
   } else {
-    double norm = ParticleCatalogue::calc_norm_for_power_spec_nbodykit(
+    norm = ParticleCatalogue::calc_norm_for_power_spec_nbodykit(
       particles_rand, params
     );
   }
