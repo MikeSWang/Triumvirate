@@ -27,12 +27,11 @@ docs/build/**
 storage/input/**
 !storage/input/params/
 storage/input/params/**
+!storage/input/params/params_example.yml
 !storage/input/params/params_example.ini
 
 storage/output/**
-!storage/output/measurements/
-storage/output/measurements/**
-!storage/output/measurements/.gitignore
+!storage/output/.gitignore
 
 # Editors
 .vscode/
