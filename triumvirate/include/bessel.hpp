@@ -1,5 +1,9 @@
-#ifndef TRIUM_BESSEL_H_INCLUDED_
-#define TRIUM_BESSEL_H_INCLUDED_
+#ifndef TRIUMVIRATE_INCLUDE_BESSEL_HPP_INCLUDED_
+#define TRIUMVIRATE_INCLUDE_BESSEL_HPP_INCLUDED_
+
+#include <gsl/gsl_interp.h>
+#include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_spline.h>
 
 /**
  * Interpolated spherical Bessel function @f$ j_\ell(x) @f$
@@ -15,17 +19,18 @@ class SphericalBesselCalculator {
    */
   SphericalBesselCalculator(int ell) {
     /// Set up sampling range and number.
+    /// CAVEAT: Discretionary choices.
     double xmin = 0.;
-    double xmax = 10000.;  // NOTE: discretionary choice
-    int nsample = 1000000;  // NOTE: discretionary choice
+    double xmax = 10000.;
+    int nsample = 1000000;
 
     /// Initialise and evaluate sample points.
+    double dx = (xmax - xmin) / (nsample - 1);
+
     double* x = new double[nsample];
     double* j_ell = new double[nsample];
-
-    double dx = (xmax - xmin) / (nsample - 1);
     for (int i = 0; i < nsample; i++) {
-      x[i] = xmin + dx * double(i);
+      x[i] = xmin + dx * double(i);  // FIXME: remove double conversion
       j_ell[i] = gsl_sf_bessel_jl(ell, x[i]);
     }
 

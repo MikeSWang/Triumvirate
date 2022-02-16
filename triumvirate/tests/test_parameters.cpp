@@ -9,7 +9,7 @@
  * Test initial parameter input.
  */
 int main(int argc, char* argv[]) {
-  ParameterSet parameters_ini;
-  parameters_ini.read_parameters(argv);
+  Parameters params_ini;
+  params_ini.read(argv);
   return 0;
 }
