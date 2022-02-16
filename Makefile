@@ -1,6 +1,4 @@
-# *****************
-#   Configuration
-# *****************
+# -- Configuration ------------------------------------------------------------
 
 SYSTYPE = "cluster"
 
@@ -9,7 +7,7 @@ ifeq ($(SYSTYPE), "local")
 CC = mpic++
 CFLAGS = # -Wall
 
-INCLUDE = -I./triumvirate/measurements/include -I./triumvirate/modelling/include
+INCLUDE = -I./triumvirate/include
 
 LIB = -lm
 
@@ -29,45 +27,40 @@ ifeq ($(SYSTYPE), "cluster")
 CC = g++
 CFLAGS = # -Wall
 
-INCLUDE = -I./triumvirate/measurements/include -I./triumvirate/modelling/include
+INCLUDE = -I./triumvirate/include
 
 LIB = -lm -lgsl -lgslcblas -lfftw3
 
 endif
 
 
-# ************
-#   Programs
-# ************
+# -- Programs -----------------------------------------------------------------
 
-all: measurements modelling test_common test_parameters test_bessel
+all: measurements test_common test_parameters test_bessel
 
-measurements: triumvirate/measurements/src/measurements.cpp
-	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix build/, $(notdir $@)) $< $(CLIBS) $(LIB)
-
-modelling: triumvirate/setup.py
-	python $< install --user
+measurements: triumvirate/src/measurements.cpp
+	$(CC) $(CFLAGS) $(INCLUDE) $(CLIBS) $(LIB) -o $(addprefix build/, $(notdir $@)) $<
 
 test_bessel: triumvirate/tests/test_bessel.cpp
-	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
+	$(CC) $(CFLAGS) $(INCLUDE) $(CLIBS) $(LIB) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $<
 
 test_common: triumvirate/tests/test_common.cpp
-	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
+	$(CC) $(CFLAGS) $(INCLUDE) $(CLIBS) $(LIB) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $<
 
 test_parameters: triumvirate/tests/test_parameters.cpp
-	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
+	$(CC) $(CFLAGS) $(INCLUDE) $(CLIBS) $(LIB) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $<
 
 test_particles: triumvirate/tests/test_particles.cpp
-	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
+	$(CC) $(CFLAGS) $(INCLUDE) $(CLIBS) $(LIB) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $<
 
 test_tools: triumvirate/tests/test_tools.cpp
-	$(CC) $(CFLAGS) $(INCLUDE) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(CLIBS) $(LIB)
+	$(CC) $(CFLAGS) $(INCLUDE) $(CLIBS) $(LIB) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $<
 
 clean:
-	rm -rf triumvirate/modelling/*.cpp triumvirate/tests/test_build/* build/* */__pycache__/ core
+	rm -rf triumvirate/*.cpp triumvirate/tests/test_build/* build/* */__pycache__/ core
 
 distclean:
-	rm -rf triumvirate/modelling/*.cpp triumvirate/tests/test_build/* build/* */__pycache__/ *~
+	rm -rf triumvirate/*.cpp triumvirate/tests/test_build/* build/* */__pycache__/ *~
 
 testclean:
 	find triumvirate/tests/test_output ! -name '.gitignore' -type f -exec rm -f {} +
