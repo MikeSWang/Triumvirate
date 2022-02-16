@@ -11,7 +11,6 @@ eggs/
 *.egg
 *.egg-info/
 lib/
-triumvirate/modelling/*.cpp
 
 # Docs
 docs/build/**
@@ -22,12 +21,7 @@ docs/build/**
 !**/tests/test_build/.gitignore
 
 **/tests/test_output/**
-!**/tests/test_output/measurements/
-!**/tests/test_output/modelling/
-**/tests/test_output/measurements/**
-**/tests/test_output/modelling/**
-!**/tests/test_output/measurements/.gitignore
-!**/tests/test_output/modelling/.gitignore
+!**/tests/test_output/.gitignore
 
 # Data storage
 storage/input/**
