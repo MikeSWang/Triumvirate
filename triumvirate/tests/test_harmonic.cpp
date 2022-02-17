@@ -1,11 +1,5 @@
-#include <complex>
 #include <cstdlib>
-#include <fstream>
 #include <iostream>
-
-#include <sys/stat.h>
-
-#include <gsl/gsl_sf_legendre.h>
 
 #include "harmonic.hpp"
 
