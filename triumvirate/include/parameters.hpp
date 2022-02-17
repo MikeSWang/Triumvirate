@@ -438,7 +438,7 @@ class Parameters {
     )) {
       if (currTask == 0) {
         printf(
-          "[WARN] :: Normalisation convention must be 'grid' or 'particle': "
+          "[Warning] :: Normalisation convention must be 'grid' or 'particle': "
           "`norm_convention` = %s.\n",
           this->norm_convention.c_str()
         );
@@ -449,7 +449,8 @@ class Parameters {
 
       if (currTask == 0) {
         printf(
-          "[WARN] :: Normalisation convention is set to default value '%s'.\n",
+          "[Warning] :: Normalisation convention is set to "
+          "default value '%s'.\n",
           this->norm_convention.c_str()
         );
       }
