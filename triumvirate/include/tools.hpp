@@ -1,6 +1,8 @@
 #ifndef TRIUMVIRATE_INCLUDE_TOOLS_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_TOOLS_HPP_INCLUDED_
 
+#include <cmath>
+
 #include <gsl/gsl_sf_coupling.h>
 
 #include "parameters.hpp"
