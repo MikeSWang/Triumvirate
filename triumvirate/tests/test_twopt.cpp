@@ -1,4 +1,4 @@
-#include "particles.hpp"
+#include "twopt.hpp"
 
 /// TODO: Write test.
 /**

@@ -17,10 +17,10 @@ https://img.shields.io/badge/licence-GPLv3-informational
 )](https://github.com/mikeswang/Triumvirate/tree/main/LICENCE)
 
 
-# LSS Bispectrum Measurements and Modelling
+# LSS Bispectrum Measurements
 
-<span style="font-variant: small-caps">Triumvirate</span> measures and
-models bispectra in LSS clustering analyses.
+<span style="font-variant: small-caps">Triumvirate</span> measures bispectra
+in LSS clustering analyses.
 
 
 ## Installation
@@ -42,5 +42,5 @@ illustrative examples of how
 
 ## Licence
 
-Copyright 2021. All rights reserved.
+Copyright 2021–22. All rights reserved.
 
