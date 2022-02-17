@@ -1,6 +1,8 @@
 #ifndef TRIUMVIRATE_INCLUDE_COMMON_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_COMMON_HPP_INCLUDED_
 
+#include <ctime>
+
 /// Initialise program trackers.
 
 /// FIXME: Remove out of header files.
