@@ -410,7 +410,7 @@ class Parameters {
     )) {
       if (currTask == 0) {
         printf(
-          "[Error] :: Source type must be 'survey', 'mock' or 'sim': "
+          "[Error] :: Catalogue type must be 'survey', 'mock' or 'sim': "
           "`catalogue_type` = %s.\n",
           this->catalogue_type.c_str()
         );

@@ -12,6 +12,10 @@ eggs/
 *.egg-info/
 lib/
 
+# Compiled
+triumvirate/*.cpp
+triumvirate/*.so
+
 # Docs
 docs/build/**
 !docs/build/.gitignore
