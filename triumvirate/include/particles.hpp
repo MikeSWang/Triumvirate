@@ -132,6 +132,7 @@ class ParticleCatalogue {
 
     fin.open(particles_file.c_str(), std::ios::in);
 
+    num_lines = 0;  // reset
     while (getline(fin, str_line)) {
       /// Check if the line conforms to the expected format.
       if (sscanf(str_line.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &w) != 4) {
@@ -143,6 +144,8 @@ class ParticleCatalogue {
       this->particles[num_lines].pos[1] = y;
       this->particles[num_lines].pos[2] = z;
       this->particles[num_lines].w = w;
+
+      num_lines++;
     }
 
     fin.close();
