@@ -4019,7 +4019,7 @@ int calc_bispec_(
 						shotnoise_cubic_LM,
 						params.ell1, m1_
           );
-          if (0 == 0) {
+          if (params.form == "diag") {
             for (int i = 0; i < params.num_kbin; i++) {
               shotnoise_save[i] += coupling * stats.pk[i];
             }
@@ -4147,7 +4147,7 @@ int calc_bispec_(
         for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
           double kmag_a;
           double kmag_b = kbin[i_kbin];
-          if (0 == 0) {
+          if (params.form == "diag") {
             kmag_a = kmag_b;
           } else if (params.form == "full") {
             kmag_a = kbin[params.ith_kbin];
@@ -4320,7 +4320,7 @@ int calc_bispec_(
         for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
           double kmag_b = kbin[i_kbin];
 
-          if (0 == 0) {
+          if (params.form == "diag") {
             kmag_a = kmag_b;
             F_ellm_a.calc_inverse_fourier_transform_for_bispec(
               dn_00, kmag_a, dk, ylm_a
@@ -4365,7 +4365,7 @@ int calc_bispec_(
   durationInSec = double(clock() - timeStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computed bispectrum terms (... %.3f seconds elapsed).World\n",
+      "[Status] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
       durationInSec / CLOCKS_PER_SEC
     );
   }
@@ -4375,12 +4375,12 @@ int calc_bispec_(
 
   char buf[1024];
 
-  if (0 == 0) {
+  if (params.form == "diag") {
     sprintf(
       buf, "%s/bk%d%d%d%s",
-      "out",
+      params.measurement_dir.c_str(),
 			params.ell1, params.ell2, params.ELL,
-			"test"
+			params.output_tag.c_str()
     );
 
     saved_file_ptr = fopen(buf, "w");
@@ -4394,7 +4394,6 @@ int calc_bispec_(
         shotnoise_save[i].imag()
       );
     }
-		printf("Failure pt 4.");
   } else if (params.form == "full") {
     sprintf(
       buf, "%s/bk%d%d%d_kbin%02d%s",
@@ -4403,6 +4402,7 @@ int calc_bispec_(
       params.ith_kbin,
 			params.output_tag.c_str()
     );
+
     saved_file_ptr = fopen(buf, "w");
     for (int i = 0; i < params.num_kbin; i++) {
       fprintf(
@@ -4416,7 +4416,6 @@ int calc_bispec_(
     }
   }
   fclose(saved_file_ptr);
-	printf("Failure pt 5.\n");
 
   delete[] shotnoise_save;
   delete[] bk_save;

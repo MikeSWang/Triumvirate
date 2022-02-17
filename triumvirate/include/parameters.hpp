@@ -325,7 +325,6 @@ class Parameters {
       }
       return -1;
     }
-    fclose(used_param_file_ptr);
 
     /// Print parameters to file.
     fprintf(
@@ -391,6 +390,8 @@ class Parameters {
     fprintf(used_param_file_ptr, "rmax = %.2f\n", this->rmax);
     fprintf(used_param_file_ptr, "num_rbin = %d\n", this->num_rbin);
     fprintf(used_param_file_ptr, "ith_rbin = %d\n", this->ith_rbin);
+
+    fclose(used_param_file_ptr);
 
     return 0;
   }
