@@ -12,26 +12,26 @@ import time
 # TODO: Add C++ context to logger.
 
 
-class _LogFormatter(logging.Formatter):
-    """Customised logging formatter.
+class _ElapsedLogFormatter(logging.Formatter):
+    """Elapsed-time logging formatter.
 
     """
 
     _start_time = time.time()
 
     def format(self, record):
-        """Modify the default logging record by adding elapsed time in
-        hours, minutes and seconds.
+        """Add elapsed time in hours, minutes and seconds to the log
+        record.
 
         Parameters
         ----------
         record : :class:`Logging.LogRecord`
-            Default logging record object.
+            See :class:`logging.LogRecord`.
 
         Returns
         -------
         str
-            Modified record message with elapsed time.
+            Modified log record with elapsed time.
 
         """
         elapsed_time = record.created - self._start_time
@@ -43,13 +43,44 @@ class _LogFormatter(logging.Formatter):
         return logging.Formatter.format(self, record)
 
 
+class _CppLogAdapter(logging.LoggerAdapter):
+    """C++ logging adapter.
+
+    """
+
+    def process(self, msg, kwargs):
+        """Adapt logger message.
+
+        Parameters
+        ----------
+        msg : str
+            See :class:`logging.LoggerAdapter`.
+        kwargs : dict
+            See :class:`logging.LoggerAdapter`.
+
+        Returns
+        -------
+        str
+            Adapted log message with C++ state indication.
+
+        """
+        # Extract passed state variable or resort to default from `extra`.
+        cpp_state = kwargs.pop('cpp_state', self.extra['cpp_state'])
+
+        if cpp_state:
+            return "(C++) %s" % msg, kwargs
+        else:
+            return "%s" % msg, kwargs
+
+
 def setup_logger():
-    """Return a system-stream logger.
+    """Set up and return a customised logger with elapsed time and
+    C++ state indication.
 
     Returns
     -------
-    logger : :class:`logging.Logger`
-        Logger.
+    customised_logger : :class:`logging.LoggerAdapter`
+        Customised logger.
 
     """
     # Clear logger handlers.
@@ -57,9 +88,9 @@ def setup_logger():
     if logger.hasHandlers():
         logger.handlers.clear()
 
-    # Set logger handler and its formatter.
-    logging_formatter = _LogFormatter(
-        fmt='[%(asctime)s %(elapsed)s %(levelname)s]%(incpp_state)s %(message)s',
+    # Set logger handler with the customised formatter.
+    logging_formatter = _ElapsedLogFormatter(
+        fmt='[%(asctime)s %(elapsed)s %(levelname)s] %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
@@ -68,4 +99,7 @@ def setup_logger():
 
     logger.addHandler(logging_handler)
 
-    return logger
+    # Adapt logger for C++ code indication.
+    customised_logger = _CppLogAdapter(logger, {'cpp_state': False})
+
+    return customised_logger
