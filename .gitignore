@@ -2,46 +2,72 @@
 __pycache__/
 *.py[cod]
 
-# Distribution/Packaging
+# C extensions
+*.so
+
+# Compiled objects
+*.o
+
+# Distribution/packaging
 build/
-!build/.gitignore
 develop-eggs/
+dist/
+downloads/
 eggs/
 .eggs/
 *.egg
 *.egg-info/
 lib/
+wheels/
 
-# Compiled
-triumvirate/*.cpp
-triumvirate/*.so
+# Unit test/coverage reports
+.coverage
+coverage.xml
+*.cover
+.pytest_cache/
+cover/
 
-# Docs
+# Sphinx documentation
 docs/build/**
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Editors
+.vscode/
+
+# Storage
+storage/input/**
+storage/output/**
+
+# Sandboxes
+sandbox/
+
+# Exclusions
+# File: triumvirate/*.cpp
+triumvirate/*.cpp
+
+# Exceptions
+# File: build/.ignore
+!build/.ignore
+
+# File: docs/build/.ignore
 !docs/build/.gitignore
 
-# Tests
+# File: tests/test_build/.gitignore
 **/tests/test_build/**
 !**/tests/test_build/.gitignore
 
+# File: tests/test_output/.gitignore
 **/tests/test_output/**
 !**/tests/test_output/.gitignore
 
-# Data storage
-storage/input/**
+# File: storage/input/params/params_example.yml
+# File: storage/input/params/params_example.ini
 !storage/input/params/
 storage/input/params/**
 !storage/input/params/params_example.yml
 !storage/input/params/params_example.ini
 
-storage/output/**
+# File: storage/output/.gitignore
 !storage/output/.gitignore
-
-# TODO: Remove this block.
-# Examples
-examples/**
-!examples/.gitignore
-
-# Editors
-.vscode/
-.ipynb_checkpoints
