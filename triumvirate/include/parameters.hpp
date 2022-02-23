@@ -306,7 +306,7 @@ class Parameters {
    *
    * @returns Exit status.
    */
-  int print_to_file() {
+  int printout() {
     /// Set file path.
     char buf[1024];
     sprintf(
@@ -396,7 +396,6 @@ class Parameters {
     return 0;
   }
 
- private:
   /**
    * Check extracted parameters (i.e. used parameters) as valid input.
    *
@@ -508,6 +507,7 @@ class Parameters {
     return 0;
   }
 
+ private:
   /**
    * Set I/O paths and directories for data and random catalogue files
    * and processed results.

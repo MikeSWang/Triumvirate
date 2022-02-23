@@ -7,6 +7,6 @@
 int main(int argc, char* argv[]) {
   Parameters params_test;
   params_test.read_from_file(argv);
-  params_test.print_to_file();
+  params_test.printout();
   return 0;
 }

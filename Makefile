@@ -7,16 +7,14 @@ ifeq ($(SYSTYPE), "local")
 CC = mpic++
 CFLAGS = # -Wall
 
-INCLUDE = -I./triumvirate/include
-
-LIB = -lm
-
 GSL_DIR = /usr/local/gsl
 FFTW_DIR = /usr/local/fftw3
 
+INCLUDE = -I./triumvirate/include
 INCLUDE += -I${GSL_DIR}/include
 INCLUDE += -I${FFTW_DIR}/include
 
+LIB = -lm
 LIB += -L${GSL_DIR}/lib -lgsl -lgslcblas
 LIB += -L$(FFTW_DIR)/lib -lfftw3
 
@@ -34,9 +32,14 @@ LIB = -lm -lgsl -lgslcblas -lfftw3
 endif
 
 
-# -- Build--- -----------------------------------------------------------------
+# -- Build --------------------------------------------------------------------
 
-all: measurements
+all: pyinstall cppinstall
+
+pyinstall:
+	pip install -e .
+
+cppinstall: measurements
 
 measurements: triumvirate/src/measurements.cpp
 	$(CC) $(CFLAGS) -o $(addprefix build/, $(notdir $@)) $< $(INCLUDE) $(CLIBS) $(LIB)
@@ -69,10 +72,10 @@ test_twopt: triumvirate/tests/test_twopt.cpp
 	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDE) $(CLIBS) $(LIB)
 
 clean:
-	rm -rf triumvirate/*.cpp triumvirate/tests/test_build/* build/* */__pycache__/ core
-
-distclean:
-	rm -rf triumvirate/*.cpp triumvirate/tests/test_build/* build/* */__pycache__/ *~
+	rm -rf triumvirate/*.cpp triumvirate/*.o triumvirate/*.so
+	rm -rf build/*
+	rm -rf *.egg-info
+	rm -rf **/__pycache__/ core
 
 testclean:
-	find triumvirate/tests/test_output ! -name '.gitignore' -type f -exec rm -f {} +
+	rm -rf triumvirate/tests/test_build/* triumvirate/tests/test_output/*

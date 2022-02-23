@@ -79,27 +79,30 @@ def setup_logger():
 
     Returns
     -------
-    customised_logger : :class:`logging.LoggerAdapter`
+    logger : :class:`logging.LoggerAdapter`
         Customised logger.
 
     """
-    # Clear logger handlers.
-    logger = logging.getLogger()
-    if logger.hasHandlers():
-        logger.handlers.clear()
-
-    # Set logger handler with the customised formatter.
-    logging_formatter = _ElapsedLogFormatter(
+    # Set formatter.
+    formatter = _ElapsedLogFormatter(
         fmt='[%(asctime)s %(elapsed)s %(levelname)s] %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
-    logging_handler = logging.StreamHandler(sys.stdout)
-    logging_handler.setFormatter(logging_formatter)
+    # Set handler.
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(formatter)
 
-    logger.addHandler(logging_handler)
+    # Instantiate logger.
+    logger_ = logging.getLogger()
+
+    if logger_.hasHandlers():
+        logger_.handlers.clear()
+    logger_.addHandler(handler)
+
+    logger_.setLevel(logging.INFO)
 
     # Adapt logger for C++ code indication.
-    customised_logger = _CppLogAdapter(logger, {'cpp_state': False})
+    logger = _CppLogAdapter(logger_, {'cpp_state': False})
 
-    return customised_logger
+    return logger
