@@ -1,0 +1,59 @@
+---
+
+# -- I/O ----------------------------------------------------------------------
+
+directories:
+  catalogues: tests/test_input/catalogues
+  measurements: tests/test_output/measurements
+
+filenames:
+  data_catalogue: catalogue_test_data.dat
+  rand_catalogue: catalogue_test_rand.dat
+
+tags:
+  input: ~
+  output: ~
+
+
+# -- Sampling -----------------------------------------------------------------
+
+boxsize:
+  x: 1000.
+  y: 1000.
+  z: 1000.
+
+nmesh:
+  x: 256
+  y: 256
+  z: 256
+
+assignment: TSC
+
+norm_convention: grid
+
+
+# -- Measurements -------------------------------------------------------------
+
+catalogue_type: survey
+
+measurement_type: bispec
+
+degrees:
+  ell1: 0
+  ell2: 0
+  ELL: 0
+
+wa_orders:
+  i: 0
+  j: 0
+
+binning: lin
+
+form: diag
+
+range: [0.0025, 0.1]  # or: [.5, 1000.5]
+dim: 40
+
+index: 0
+
+...

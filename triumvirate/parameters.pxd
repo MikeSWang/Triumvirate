@@ -1,8 +1,9 @@
 from libcpp.string cimport string
-from paramset cimport ParameterSet
+
+from parameter_set cimport ParameterSet
 
 cdef extern from "include/parameters.hpp":
-    cppclass Parameters:
+    cppclass CppParameters "Parameters":
         string catalogue_dir;
         string measurement_dir;
         string data_catalogue_file;
@@ -29,16 +30,17 @@ cdef extern from "include/parameters.hpp":
         double kmin;
         double kmax;
         int num_kbin;
+        int ith_kbin;
         double rmin;
         double rmax;
         int num_rbin;
-        int ith_kbin;
         int ith_rbin;
 
         double volume;
         int nmesh_tot;
 
-        int batch_number;
+        int validate();
+        int printout();
 
-cdef class MeasurementParameters(ParameterSet):
-    cdef Parameters* thisptr
+cdef class Parameters(ParameterSet):
+    cdef CppParameters* thisptr

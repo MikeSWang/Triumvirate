@@ -1,9 +1,9 @@
 # cython: c_string_type=unicode, c_string_encoding=utf8
 """
-Parameter Set Configuration (:mod:`~triumvirate.config.parameters`)
+Parameter Set (:mod:`~triumvirate.parameter_set`)
 ===========================================================================
 
-Configure program parameter set(s).
+Configure program parameter set.
 
 """
 from os.path import abspath
@@ -13,7 +13,7 @@ import yaml
 
 
 cdef class ParameterSet:
-    """Program parameters.
+    """Program parameter set.
 
     Parameters
     ----------
@@ -22,19 +22,20 @@ cdef class ParameterSet:
 
     """
 
+    # Add `args` and `kwargs` for Cython subclass 'init'-compatibility.
     def __cinit__(self, filepath, *args, **kwargs):
 
         self._source = abspath(filepath)
         self._status = 'original'.encode('utf-8')
 
-        with open(filepath, 'r') as file_stream:
-            self._params = yaml.load(file_stream, Loader=yaml.Loader)
+        with open(filepath, 'r') as filestream:
+            self._params = yaml.load(filestream, Loader=yaml.Loader)
 
     def __str__(self):
         return "\n".join([
             f"Source: {self._source}",
             f"Status: {self._status}",
-            f"Values: {pformat(self._params, sort_dicts=False)}",
+            f"Params: {pformat(self._params, sort_dicts=False)}",
         ])
 
     def __getitem__(self, key):

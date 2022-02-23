@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     exit(1);
   }
 
-  params.print_to_file();
+  params.printout();
 
   if (currTask == 0) {
     printf("[Status] :: Parameters have been initialised.\n");
