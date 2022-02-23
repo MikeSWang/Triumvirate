@@ -44,3 +44,18 @@ cdef class ParameterSet:
     def __setitem__(self, key, val):
         self._params.update({key: val})
         self._status = 'modified'.encode('utf-8')
+
+    def print_to_file(self, filepath):
+        """Print validated parameters to a file.
+
+        Parameters
+        ----------
+        filepath : str or :class:`pathlib.Path`
+            Output file path.
+
+        """
+        with open(filepath, 'w') as outfile:
+            yaml.dump(
+                self._params, outfile,
+                sort_keys=False, default_flow_style=False
+            )

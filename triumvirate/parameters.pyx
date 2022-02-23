@@ -9,7 +9,6 @@ Load measurement parameters.
 from cython.operator import dereference as deref
 
 import numpy as np
-import yaml
 
 
 cdef class Parameters(ParameterSet):
@@ -39,21 +38,6 @@ cdef class Parameters(ParameterSet):
         if exit_status != 0:
             raise RuntimeError(
                 "Failed to print out extracted parameters to file."
-            )
-
-    def print_to_file(self, filepath):
-        """Print validated parameters to a file.
-
-        Parameters
-        ----------
-        filepath : str or :class:`pathlib.Path`
-            Output file path.
-
-        """
-        with open(filepath, 'w') as outfile:
-            yaml.dump(
-                self._params, outfile,
-                sort_keys=False, default_flow_style=False
             )
 
     def _parse_attrs(self):
