@@ -17,11 +17,10 @@ https://img.shields.io/badge/licence-GPLv3-informational
 )](https://github.com/mikeswang/Triumvirate/tree/main/LICENCE)
 
 
-# LSS Bispectrum Measurements
+# Measuring Three-Point Correlators in LSS Clustering
 
-<span style="font-variant: small-caps">Triumvirate</span> measures bispectra
-in LSS clustering analyses.
-
+<span style="font-variant: small-caps">Triumvirate</span> measures
+three-point correlators in large-scale structure clustering analyses.
 
 ## Installation
 
@@ -39,8 +38,9 @@ illustrative examples of how
 
 ## Attribution
 
+The underlying C++ code was originally developed by Naonori Sugiyama.
+
 
 ## Licence
 
 Copyright 2021–22. All rights reserved.
-
