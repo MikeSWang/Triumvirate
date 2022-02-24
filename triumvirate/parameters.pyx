@@ -3,7 +3,7 @@
 Measurement Parameters (:mod:`~triumvirate.parameters`)
 ===========================================================================
 
-Load measurement parameters.
+Configure measurement parameters.
 
 """
 from cython.operator import dereference as deref
@@ -18,14 +18,22 @@ cdef class Parameters(ParameterSet):
     ----------
     filepath : str or :class:`pathlib.Path`
         Parameter file path.
+    logger : :class:`logging.Logger`, optional
+        Program logger (default is `None`).
+
+    See Also
+    --------
+    :class:`~triumvirate.parameter_set`
 
     """
 
-    def __cinit__(self, filepath):
+    def __cinit__(self, filepath, logger=None):
 
         super().__init__()
 
         self.thisptr = new CppParameters()
+
+        self._logger = logger
 
         self._parse_attrs()
 
@@ -34,11 +42,24 @@ cdef class Parameters(ParameterSet):
         directory.
 
         """
-        exit_status = self.thisptr.printout()
-        if exit_status != 0:
+        if self._logger:
+            self._logger.info("Printing out parameters...")
+            try:
+                self._logger.info("", cpp_state=True)
+            except:
+                self._logger.info("Entering C++ run...")
+
+        if self.thisptr.printout() != 0:
             raise RuntimeError(
                 "Failed to print out extracted parameters to file."
             )
+
+        if self._logger:
+            try:
+                self._logger.info("", cpp_state=True)
+            except:
+                self._logger.info("... exited C++ run.")
+            self._logger.info("... printed out parameters.")
 
     def _parse_attrs(self):
 
@@ -84,13 +105,13 @@ cdef class Parameters(ParameterSet):
             self.thisptr.kmin = self._params['range'][0]
             self.thisptr.kmax = self._params['range'][1]
             self.thisptr.num_kbin = self._params['dim']
-            self.thisptr.num_rbin = self._params['dim']
+            self.thisptr.num_rbin = self._params['dim']  # placeholder
             self.thisptr.ith_kbin = self._params['index']
         if 'pcf' in str(self.thisptr.measurement_type):
             self.thisptr.rmin = self._params['range'][0]
             self.thisptr.rmax = self._params['range'][1]
             self.thisptr.num_rbin = self._params['dim']
-            self.thisptr.num_kbin = self._params['dim']
+            self.thisptr.num_kbin = self._params['dim']  # placeholder
             self.thisptr.ith_rbin = self._params['index']
 
         self.thisptr.volume = np.prod(list(self._params['boxsize'].values()))
@@ -102,6 +123,19 @@ cdef class Parameters(ParameterSet):
         """Validate extracted parameters.
 
         """
-        exit_status = self.thisptr.validate()
-        if exit_status != 0:
+        if self._logger:
+            self._logger.info("Validating parameters...")
+            try:
+                self._logger.info("", cpp_state=True)
+            except:
+                self._logger.info("Entering C++ run...")
+
+        if self.thisptr.validate() != 0:
             raise ValueError("Invalid measurement parameters.")
+
+        if self._logger:
+            try:
+                self._logger.info("", cpp_state=True)
+            except:
+                self._logger.info("... exited C++ run.")
+            self._logger.info("... validated parameters.")

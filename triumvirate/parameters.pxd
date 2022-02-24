@@ -44,3 +44,4 @@ cdef extern from "include/parameters.hpp":
 
 cdef class Parameters(ParameterSet):
     cdef CppParameters* thisptr
+    cdef object _logger
