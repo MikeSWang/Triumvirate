@@ -2,7 +2,7 @@
 Program Logger (:mod:`~triumvirate.logger`)
 ===========================================================================
 
-Provide the program logger.
+Configure the program logger.
 
 """
 import logging

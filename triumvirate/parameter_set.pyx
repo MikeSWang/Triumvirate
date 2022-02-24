@@ -15,6 +15,9 @@ import yaml
 cdef class ParameterSet:
     """Program parameter set.
 
+    The value of a parameter is accessed through its key in the same
+    way as for :type:`dict`.
+
     Parameters
     ----------
     filepath : str or :class:`pathlib.Path`
@@ -51,11 +54,11 @@ cdef class ParameterSet:
         Parameters
         ----------
         filepath : str or :class:`pathlib.Path`
-            Output file path.
+            Printout file path.
 
         """
-        with open(filepath, 'w') as outfile:
+        with open(filepath, 'w') as file_out:
             yaml.dump(
-                self._params, outfile,
+                self._params, file_out,
                 sort_keys=False, default_flow_style=False
             )
