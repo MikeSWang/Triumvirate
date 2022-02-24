@@ -63,14 +63,16 @@ cdef class Parameters(ParameterSet):
 
     def _parse_attrs(self):
 
+        # RFE: Implement serialisation of catalogue files for e.g.
+        # suite of simulations.
         self.thisptr.catalogue_dir = \
             self._params['directories']['catalogues']
         self.thisptr.measurement_dir = \
             self._params['directories']['measurements']
-        self.thisptr.data_catalogue_file = \
-            self._params['filenames']['data_catalogue']
-        self.thisptr.rand_catalogue_file = \
-            self._params['filenames']['rand_catalogue']
+        self.thisptr.data_catalogue_file = self.thisptr.catalogue_dir \
+            + self._params['filenames']['data_catalogue']
+        self.thisptr.rand_catalogue_file = self.thisptr.catalogue_dir \
+            + self._params['filenames']['rand_catalogue']
         self.thisptr.output_tag = \
             self._params['tags']['output']
 

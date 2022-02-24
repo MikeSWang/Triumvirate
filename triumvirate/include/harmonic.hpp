@@ -6,8 +6,6 @@
 
 #include <gsl/gsl_sf_legendre.h>
 
-#include "parameters.hpp"
-
 /**
  * Calculation and storage of spherical harmonics.
  *
@@ -15,9 +13,8 @@
  * suitably normalised) spherical harmonics
  * @f$ \sqrt(\frac{4*\pi}{2\ell + 1}) Y_{\ell m}^\ast @f$.
  *
- * This also includes the storage of calculated values on a regular grid
- * in configuration or Fourier space, where the grid size is determined
- * from an input pameter set.
+ * This also includes the storage of calculated values on a regular mesh
+ * grid in configuration or Fourier space.
  *
  */
 class SphericalHarmonicCalculator {
@@ -31,7 +28,7 @@ class SphericalHarmonicCalculator {
    * @returns ylm Normalised conjugated value.
    */
   static std::complex<double> calc_reduced_spherical_harmonic(
-    const int ell, const int m, double* pos
+    const int ell, const int m, double pos[3]
   ) {
     /// Return value in the trivial case.
     if (ell == 0 && m == 0) {
@@ -96,12 +93,13 @@ class SphericalHarmonicCalculator {
    *
    * @param[in] ell Degree of the spherical harmonic.
    * @param[in] m Order of the spherical harmonic.
-   * @param[in] params Parameter set.
+   * @param[in] boxsize Box size in each dimension.
+   * @param[in] nmesh Mesh number in each dimension.
    * @param[out] ylm_out Stored calculated values.
    * @returns Exit status.
    */
   static int store_reduced_spherical_harmonic_in_fourier_space(
-    const int ell, const int m, const Parameters& params,
+    const int ell, const int m, const double boxsize[3], const int nmesh[3],
     std::complex<double>* ylm_out
   ) {
     /// Exit in error when no output variable is provided.
@@ -110,32 +108,30 @@ class SphericalHarmonicCalculator {
     }
 
     /// Determine the fundamental wavenumber in each dimension.
-    double dk[3];
-    dk[0] = 2.*M_PI / params.boxsize[0];
-    dk[1] = 2.*M_PI / params.boxsize[1];
-    dk[2] = 2.*M_PI / params.boxsize[2];
+    double dk[3] = {
+      2.*M_PI / boxsize[0],
+      2.*M_PI / boxsize[1],
+      2.*M_PI / boxsize[2],
+    };
 
     /// Assign a wavevector to each grid cell.
     double kvec[3];
-    for (int i = 0; i < params.nmesh[0]; i++) {
-      for (int j = 0; j < params.nmesh[1]; j++) {
-        for (int k = 0; k < params.nmesh[2]; k++) {
+    for (int i = 0; i < nmesh[0]; i++) {
+      for (int j = 0; j < nmesh[1]; j++) {
+        for (int k = 0; k < nmesh[2]; k++) {
           /// Lay the 'bricks' vertically, then inwards, then to
           /// the right, i.e. along z-axis, y-axis and then x-axis.
           /// The assigned flattened-grid array index is
           /// (i * nmesh_y * nmesh_z + j * nmesh_z + k)
           /// where nmesh is the mesh number along each axis.
-          long long idx_grid = (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+          long long idx_grid = (i * nmesh[1] + j) * nmesh[2] + k;
 
           /// This conforms to the (absurd) FFT array-ordering convention
           /// that negative wavenumbers/frequencies come after zero and
           /// positive wavenumbers/frequencies.
-          kvec[0] = (i < params.nmesh[0]/2) ?
-            i * dk[0] : (i - params.nmesh[0]) * dk[0];
-          kvec[1] = (j < params.nmesh[1]/2) ?
-            j * dk[1] : (j - params.nmesh[1]) * dk[1];
-          kvec[2] = (k < params.nmesh[2]/2) ?
-            k * dk[2] : (k - params.nmesh[2]) * dk[2];
+          kvec[0] = (i < nmesh[0]/2) ? i * dk[0] : (i - nmesh[0]) * dk[0];
+          kvec[1] = (j < nmesh[1]/2) ? j * dk[1] : (j - nmesh[1]) * dk[1];
+          kvec[2] = (k < nmesh[2]/2) ? k * dk[2] : (k - nmesh[2]) * dk[2];
 
           ylm_out[idx_grid] = calc_reduced_spherical_harmonic(ell, m, kvec);
         }
@@ -150,12 +146,13 @@ class SphericalHarmonicCalculator {
    *
    * @param[in] ell Degree of the spherical harmonic.
    * @param[in] m Order of the spherical harmonic.
-   * @param[in] params Parameter set.
+   * @param[in] boxsize Box size in each dimension.
+   * @param[in] nmesh Mesh number in each dimension.
    * @param[out] ylm_out Stored calculated values.
    * @returns Exit status.
    */
   static int store_reduced_spherical_harmonic_in_config_space(
-    const int ell, const int m, const Parameters& params,
+    const int ell, const int m, const double boxsize[3], const int nmesh[3],
     std::complex<double>* ylm_out
   ) {
     /// Exit in error when no output variable is provided.
@@ -164,32 +161,30 @@ class SphericalHarmonicCalculator {
     }
 
     /// Determine the grid size in each dimension.
-    double dr[3];
-    dr[0] = params.boxsize[0] / double(params.nmesh[0]);
-    dr[1] = params.boxsize[1] / double(params.nmesh[1]);
-    dr[2] = params.boxsize[2] / double(params.nmesh[2]);
+    double dr[3] = {
+      boxsize[0] / double(nmesh[0]),
+      boxsize[1] / double(nmesh[1]),
+      boxsize[2] / double(nmesh[2]),
+    };
 
     /// Assign a position vector to each grid cell.
     double rvec[3];
-    for (int i = 0; i < params.nmesh[0]; i++) {
-      for (int j = 0; j < params.nmesh[1]; j++) {
-        for (int k = 0; k < params.nmesh[2]; k++) {
+    for (int i = 0; i < nmesh[0]; i++) {
+      for (int j = 0; j < nmesh[1]; j++) {
+        for (int k = 0; k < nmesh[2]; k++) {
           /// Lay the 'bricks' vertically, then inwards, then to
           /// the right, i.e. along z-axis, y-axis and then x-axis.
           /// The assigned flattened-grid array index is
           /// (i * nmesh_y * nmesh_z + j * nmesh_z + k)
           /// where nmesh is the mesh number along each axis.
-          long long idx_grid = (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+          long long idx_grid = (i * nmesh[1] + j) * nmesh[2] + k;
 
           /// This conforms to the (absurd) FFT array-ordering convention
           /// that negative wavenumbers/frequencies come after zero and
           /// positive wavenumbers/frequencies.
-          rvec[0] = (i < params.nmesh[0]/2) ?
-            (i * dr[0]) : (i - params.nmesh[0]) * dr[0];
-          rvec[1] = (j < params.nmesh[1]/2) ?
-            (j * dr[1]) : (j - params.nmesh[1]) * dr[1];
-          rvec[2] = (k < params.nmesh[2]/2) ?
-            (k * dr[2]) : (k - params.nmesh[2]) * dr[2];
+          rvec[0] = (i < nmesh[0]/2) ? (i * dr[0]) : (i - nmesh[0]) * dr[0];
+          rvec[1] = (j < nmesh[1]/2) ? (j * dr[1]) : (j - nmesh[1]) * dr[1];
+          rvec[2] = (k < nmesh[2]/2) ? (k * dr[2]) : (k - nmesh[2]) * dr[2];
 
           ylm_out[idx_grid] = calc_reduced_spherical_harmonic(ell, m, rvec);
         }

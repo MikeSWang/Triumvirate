@@ -29,7 +29,7 @@ class Parameters {
   int nmesh[3];  ///< mesh number in each dimension
   std::string assignment;  ///< grid assignment scheme: {'NGP', 'CIC', 'TSC'}
   std::string norm_convention;  ///< normalisation convention: {'grid', 'particle'}
-    // TODO: check `norm_convention`
+    // TODO: implement options
 
   /// Measurements.
   std::string catalogue_type;  ///< catalogue type: {'survey', 'mock', 'sim'}
@@ -397,7 +397,7 @@ class Parameters {
   }
 
   /**
-   * Check extracted parameters (i.e. used parameters) as valid input.
+   * Check parameters as valid input.
    *
    * @returns Exit status.
    */
@@ -514,7 +514,7 @@ class Parameters {
    *
    * @returns Exit status.
    */
-  int set_io_files() {
+  void set_io_files() {
     /// Set survey data and random catalogue inputs.
     if (this->catalogue_type == "survey") {
       this->data_catalogue_file =
@@ -525,6 +525,7 @@ class Parameters {
 
     /// Set mock data and random catalogue inputs.  Make subdirectories
     /// to store the output for each data realisation.
+    /// QUEST: Understand the numbering here.
     if (this->catalogue_type == "mock") {
       /// Enumerate the input data catalogue.
       int realisation = numTasks * this->batch_number + currTask + 1;
@@ -583,8 +584,6 @@ class Parameters {
 
       this->measurement_dir = buf_dir;
     }
-
-    return 0;
   }
 };
 
