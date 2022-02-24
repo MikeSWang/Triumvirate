@@ -31,7 +31,7 @@ class SphericalHarmonicCalculator {
    * @returns ylm Normalised conjugated value.
    */
   static std::complex<double> calc_reduced_spherical_harmonic(
-    int ell, int m, double* pos
+    const int ell, const int m, double* pos
   ) {
     /// Return value in the trivial case.
     if (ell == 0 && m == 0) {
@@ -101,7 +101,8 @@ class SphericalHarmonicCalculator {
    * @returns Exit status.
    */
   static int store_reduced_spherical_harmonic_in_fourier_space(
-    int ell, int m, Parameters& params, std::complex<double>* ylm_out
+    const int ell, const int m, const Parameters& params,
+    std::complex<double>* ylm_out
   ) {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {
@@ -149,12 +150,13 @@ class SphericalHarmonicCalculator {
    *
    * @param[in] ell Degree of the spherical harmonic.
    * @param[in] m Order of the spherical harmonic.
-   * @param[in] params (Reference to) the input parameter set.
-   * @param[out] ylm_out (Pointer to) stored calculated values.
+   * @param[in] params Parameter set.
+   * @param[out] ylm_out Stored calculated values.
    * @returns Exit status.
    */
   static int store_reduced_spherical_harmonic_in_config_space(
-    int ell, int m, Parameters& params, std::complex<double>* ylm_out
+    const int ell, const int m, const Parameters& params,
+    std::complex<double>* ylm_out
   ) {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {

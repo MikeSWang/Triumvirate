@@ -57,8 +57,8 @@ cdef class ParameterSet:
             Printout file path.
 
         """
-        with open(filepath, 'w') as file_out:
+        with open(filepath, 'w') as out_file:
             yaml.dump(
-                self._params, file_out,
+                self._params, out_file,
                 sort_keys=False, default_flow_style=False
             )
