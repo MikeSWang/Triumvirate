@@ -17,7 +17,7 @@ class SphericalBesselCalculator {
    *
    * @param ell Order @f$ \ell @f$ of the spherical Bessel function.
    */
-  SphericalBesselCalculator(int ell) {
+  SphericalBesselCalculator(const int ell) {
     /// Set up sampling range and number.
     /// CAVEAT: Discretionary choices.
     double xmin = 0.;
