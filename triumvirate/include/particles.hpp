@@ -18,7 +18,9 @@ class ParticleCatalogue {
     double w;  ///< particle weight
   }* particles;  ///< particle data
 
-  int nparticles;  ///< total number of particles
+  int ntotal;  ///< total number of particles
+
+  double wtotal;  ///< total weight of particles
 
   double pos_min[3];  ///< minimum values of particle positions
   double pos_max[3];  ///< maximum values of particle positions
@@ -29,7 +31,8 @@ class ParticleCatalogue {
   ParticleCatalogue () {
     /// Set default values.
     this->particles = NULL;
-    this->nparticles = 0;
+    this->ntotal = 0;
+    this->wtotal = 0.;
     this->pos_min[0] = 0.; this->pos_min[1] = 0.; this->pos_min[2] = 0.;
     this->pos_max[0] = 0.; this->pos_max[1] = 0.; ; this->pos_max[2] = 0.;
   }
@@ -50,34 +53,27 @@ class ParticleCatalogue {
   ParticleData& operator[](int pid) {
     return this->particles[pid];
   }
+
   /**
    * Initialise particle data container.
    *
    * @param num Number of particles.
    */
-  void initialise_particles(const int num) {
+  void _initialise_particles(const int num) {
     /// Check the total number of particles.
     if (num <= 0) {
       printf("[Warning] :: Number of particles is negative.\n");
       return;
     }
-    this->nparticles = num;
+    this->ntotal = num;
 
     /// Renew particle data.
     delete[] this->particles; this->particles = NULL;
-    this->particles = new ParticleData[this->nparticles];
+    this->particles = new ParticleData[this->ntotal];
 
     /// Determine memory usage.
-    bytesMem += double(this->nparticles) * sizeof(struct ParticleData)
+    bytesMem += double(this->ntotal) * sizeof(struct ParticleData)
       / 1024. / 1024. / 1024.;
-
-    // /// Initialise particle data default values.
-    // for (int id = 0; id < this->nparticles; id++) {
-    //   this->particles[id].pos[0] = 0.;
-    //   this->particles[id].pos[1] = 0.;
-    //   this->particles[id].pos[2] = 0.;
-    //   this->particles[id].w = 0.;
-    // }
   }
 
   /**
@@ -87,7 +83,7 @@ class ParticleCatalogue {
     /// Free particle usage.
     if (this->particles != NULL) {
       delete[] this->particles; this->particles = NULL;
-      bytesMem -= double(this->nparticles) * sizeof(struct ParticleData)
+      bytesMem -= double(this->ntotal) * sizeof(struct ParticleData)
         / 1024. / 1024. / 1024.;
     }
   }
@@ -98,7 +94,7 @@ class ParticleCatalogue {
    * @param particles_file Particle data file path.
    * @returns Exit status.
    */
-  int read_particles_catalogue(std::string& particles_file) {
+  int read_particle_data_from_file(std::string& particles_file) {
     /// Initialise the counter for the number of lines/particles.
     int num_lines = 0;
 
@@ -128,7 +124,7 @@ class ParticleCatalogue {
     fin.close();
 
     /// Fill in particle data.
-    this->initialise_particles(num_lines);
+    this->_initialise_particles(num_lines);
 
     fin.open(particles_file.c_str(), std::ios::in);
 
@@ -150,8 +146,11 @@ class ParticleCatalogue {
 
     fin.close();
 
-    /// Calculate extreme data values.
-    this->calc_min_and_max();
+    /// Calculate weight sum.
+    this->_calc_weighted_total();
+
+    /// Calculate extreme particle positions.
+    this->_calc_pos_min_and_max();
 
     return 0;
   }
@@ -165,7 +164,7 @@ class ParticleCatalogue {
    * @param w Particle weights.
    * @returns Exit status.
    */
-  int read_particles_catalogue(
+  int read_particle_data(
     std::vector<double> x, std::vector<double> y, std::vector<double> z,
     std::vector<double> w
   ) {
@@ -177,213 +176,117 @@ class ParticleCatalogue {
     }
 
     /// Fill in particle data.
-    int nparticles = w.size();
+    int ntotal = w.size();
 
-    this->initialise_particles(nparticles);
+    this->_initialise_particles(ntotal);
 
-    for (int pid = 0; pid < nparticles; pid++) {
+    for (int pid = 0; pid < ntotal; pid++) {
       this->particles[pid].pos[0] = x[pid];
       this->particles[pid].pos[1] = y[pid];
       this->particles[pid].pos[2] = z[pid];
       this->particles[pid].w = w[pid];
     }
 
-    /// Calculate extreme data values.
-    this->calc_min_and_max();
+    /// Calculate weight sum.
+    this->_calc_weighted_total();
+
+    /// Calculate extreme particle positions.
+    this->_calc_pos_min_and_max();
 
     return 0;
   }
 
   /**
-   * Calculate extreme data values.
-   *
-   * @returns Exit status.
+   * Calculate the weighted number of particles, i.e. the total weights.
    */
-  int calc_min_and_max() {
+  void _calc_weighted_total() {
     if (this->particles == NULL) {
-      return -1;
+      if (currTask == 0) {
+        printf("[Error] :: Particle data uninitialised.\n");
+      }
+      exit(1);
+    }
+
+    double wtotal = 0.;
+    for (int pid = 0; pid < this->ntotal; pid++) {
+      wtotal += this->particles[pid].w;
+    }
+
+    this->wtotal = wtotal;
+  }
+
+  /**
+   * Calculate extreme particle positions.
+   */
+  void _calc_pos_min_and_max() {
+    if (this->particles == NULL) {
+      if (currTask == 0) {
+        printf("[Error] :: Particle data uninitialised.\n");
+      }
+      exit(1);
     }
 
     /// Initialise minimum and maximum values with the first
     /// data entry/row.
     double min[3], max[3];
+    for (int axis = 0; axis < 3; axis++) {
+      min[axis] = this->particles[0].pos[axis];
+      max[axis] = this->particles[0].pos[axis];
+    }
 
-    min[0] = this->particles[0].pos[0]; max[0] = this->particles[0].pos[0];
-    min[1] = this->particles[0].pos[1]; max[1] = this->particles[0].pos[1];
-    min[2] = this->particles[0].pos[2]; max[2] = this->particles[0].pos[2];
-
-    /// Find/update minimum and maximum values line-by-line.
-    for (int id = 0; id < this->nparticles; id++) {
-      if (min[0] > this->particles[id].pos[0]) {
-        min[0] = this->particles[id].pos[0];
-      }
-      if (min[1] > this->particles[id].pos[1]) {
-        min[1] = this->particles[id].pos[1];
-      }
-      if (min[2] > this->particles[id].pos[2]) {
-        min[2] = this->particles[id].pos[2];
-      }
-
-      if (max[0] < this->particles[id].pos[0]) {
-        max[0] = this->particles[id].pos[0];
-      }
-      if (max[1] < this->particles[id].pos[1]) {
-        max[1] = this->particles[id].pos[1];
-      }
-      if (max[2] < this->particles[id].pos[2]) {
-        max[2] = this->particles[id].pos[2];
+    /// Update minimum and maximum values line-by-line.
+    for (int id = 0; id < this->ntotal; id++) {
+      for (int axis = 0; axis < 3; axis++) {
+        if (min[axis] > this->particles[id].pos[axis]) {
+          min[axis] = this->particles[id].pos[axis];
+        }
+        if (max[axis] < this->particles[id].pos[axis]) {
+          max[axis] = this->particles[id].pos[axis];
+        }
       }
     }
 
-    this->pos_min[0] = min[0]; this->pos_max[0] = max[0];
-    this->pos_min[1] = min[1]; this->pos_max[1] = max[1];
-    this->pos_min[2] = min[2]; this->pos_max[2] = max[2];
-
-    return 0;
+    for (int axis = 0; axis < 3; axis++) {
+      this->pos_min[axis] = min[axis];
+      this->pos_max[axis] = max[axis];
+    }
   }
 
   /**
-   * Calculate the alpha ratio (of weighted number counts or
-   * number densities).
+   * Offset particle positions by a given vector (as the new origin).
    *
-   * @param particles_data Data-source particle catalogue.
-   * @param particles_rand Random-source particle catalogue.
-   * @returns alpha Alpha ratio.
+   * @param dpos (Subtractive) offset position vector.
    */
-  static double calc_alpha_ratio(
-      ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand
-    ) {
-    double num_wgt_data = 0.;
-    for (int id = 0; id < particles_data.nparticles; id++) {
-      num_wgt_data += particles_data[id].w;
-    }
-
-    double num_wgt_rand = 0.;
-    for (int id = 0; id < particles_rand.nparticles; id++) {
-      num_wgt_rand += particles_rand[id].w;
-    }
-
-    double alpha = num_wgt_data / num_wgt_rand;
-
-    return alpha;
-  }
-
-  /**
-   * Calculate power spectrum normalisation.
-   *
-   * @param particles (Data-source) particle catalogue.
-   * @param vol_norm Volume normalisation constant.
-   * @returns norm Normalisation factor.
-   */
-  static double calc_norm_for_powspec(
-      ParticleCatalogue& particles, double vol_norm
-  ) {
-    double num_wgt = 0.;
-    for (int id = 0; id < particles.nparticles; id++) {
-      num_wgt += particles[id].w;
-    }
-
-    // This is equivalent to 1/I_2 where I_2 = ∫d^3x \bar{n}(x)^2.
-    double norm = vol_norm / num_wgt / num_wgt;
-
-    return norm;
-  }
-
-  /**
-   * Calculate bispectrum normalisation.
-   *
-   * @param particles (Data-source) particle catalogue.
-   * @param vol_norm Volume normalisation constant.
-   * @returns norm Normalisation factor.
-   */
-  static double calc_norm_for_bispec(
-      ParticleCatalogue& particles, double vol_norm
-  ) {
-    double num_wgt = 0.;
-    for (int id = 0; id < particles.nparticles; id++) {
-      num_wgt += particles[id].w;
-    }
-
-    double norm = vol_norm / num_wgt / num_wgt;
-
-    // This is NOT equivalent to 1/I_3 where I_3 = ∫d^3x \bar{n}(x)^3.
-    norm *= vol_norm / num_wgt;
-
-    return norm;
-  }
-
-  /**
-   * Offset particle positions by a given vector to subtract.
-   *
-   * @param dpos (Subtractive) position offset vector .
-   * @returns Exit status.
-   */
-  int offset_particles(const double* dpos) {
+  void offset_coords(const double dpos[3]) {
     if (this->particles == NULL) {
       if (currTask == 0) {
         printf("[Error] :: Particle data uninitialised.\n");
       }
-      return -1;
+      exit(1);
     }
 
-    for (int pid = 0; pid < this->nparticles; pid++) {
-      this->particles[pid].pos[0] -= dpos[0];
-      this->particles[pid].pos[1] -= dpos[1];
-      this->particles[pid].pos[2] -= dpos[2];
+    for (int pid = 0; pid < this->ntotal; pid++) {
+      for (int axis = 0; axis < 3; axis++) {
+        this->particles[pid].pos[axis] -= dpos[axis];
+      }
     }
-
-    return 0;
   }
 
   /**
-   * Offset particle positions for FFT (by grid adjustment).
+   * Offset particle positions by centring the catalogue inside the
+   * specified box.
    *
-   * @param particles_data (Data-source) particle catalogue.
-   * @param particles_rand (Random-soruce) particle catalogue.
-   * @param params Parameter set.
-   * @param factor Offset grid adjustment factor (default is 3.).
-   * @returns Exit status.
+   * @param boxsize Boxsize in each dimension.
    */
-  static int offset_particles_for_fft(
-      ParticleCatalogue& particles_data,
-      ParticleCatalogue& particles_rand,
-      Parameters& params,
-      double factor=3.  // CAVEAT: discretionary choice
-    ) {
+  void offset_coords_for_centring(const double boxsize[3]) {
+    if (this->particles == NULL) {
+      if (currTask == 0) {
+        printf("[Error] :: Particle data uninitialised.\n");
+      }
+      exit(1);
+    }
+
     /// Calculate adjustments needed.
-    particles_data.calc_min_and_max();
-    particles_rand.calc_min_and_max();
-
-    double dpos[3] = {
-      particles_rand.pos_min[0],
-      particles_rand.pos_min[1],
-      particles_rand.pos_min[2]
-    };
-
-    /// Re-adjust the grid.
-    dpos[0] -= factor * params.boxsize[0] / double(params.nmesh[0]);
-    dpos[1] -= factor * params.boxsize[1] / double(params.nmesh[1]);
-    dpos[2] -= factor * params.boxsize[2] / double(params.nmesh[2]);
-
-    particles_data.offset_particles(dpos);
-    particles_rand.offset_particles(dpos);
-
-    /// Recalculate extreme data values.
-    particles_data.calc_min_and_max();
-    particles_rand.calc_min_and_max();
-
-    return 0;
-  }
-
-  /**
-   * Offset particle positions for window function calculations (by
-   * centring them inside the specified box).
-   *
-   * @param params Parameter set.
-   * @returns Exit status.
-   */
-  int offset_particles_for_window(Parameters& params) {
-    /// Calculate grid centre.
     double xmid = this->pos_min[0]
       + (this->pos_max[0] - this->pos_min[0]) / 2.;
     double ymid = this->pos_min[1]
@@ -391,47 +294,86 @@ class ParticleCatalogue {
     double zmid = this->pos_min[2]
       + (this->pos_max[2] - this->pos_min[2]) / 2.;
 
-    /// Calculate adjustments needed.
-    double dx[3] = {0., 0., 0.};
-    dx[0] = params.boxsize[0]/2. - xmid;
-    dx[1] = params.boxsize[1]/2. - ymid;
-    dx[2] = params.boxsize[2]/2. - zmid;
+    double dvec[3] = {
+      boxsize[0]/2. - xmid,
+      boxsize[1]/2. - ymid,
+      boxsize[2]/2. - zmid,
+    };
 
-    /// Centre the grid.
-    for (int pid = 0; pid < this->nparticles; pid++) {
+    /// Centre the catalogue in box.
+    for (int pid = 0; pid < this->ntotal; pid++) {
       for (int axis = 0; axis < 3; axis++) {
-        this->particles[pid].pos[axis] += dx[axis];
+        this->particles[pid].pos[axis] += dvec[axis];
       }
     }
 
-    /// Recalculate extreme data values.
-    this->calc_min_and_max();
-
-    return 0;
+    /// Recalculate extreme particle positions.
+    this->_calc_pos_min_and_max();
   }
 
   /**
    * Offset particle positions for periodic boundary conditions.
    *
-   * @param params Parameter set.
-   * @returns Exit status.
+   * @param boxsize Periodic boxsize in each dimension.
    */
-  int offset_particles_for_periodicity(Parameters& params) {
+  void offset_coords_for_periodicity(double boxsize[3]) {
     /// Re-adjust the grid.
-    for (int pid = 0; pid < this->nparticles; pid++) {
+    for (int pid = 0; pid < this->ntotal; pid++) {
       for (int axis = 0; axis < 3; axis++) {
-        if (this->particles[pid].pos[axis] >= params.boxsize[axis]) {
-          this->particles[pid].pos[axis] -= params.boxsize[axis];
-        } else if (this->particles[pid].pos[axis] < 0.) {
-          this->particles[pid].pos[axis] += params.boxsize[axis];
+        if (
+          this->particles[pid].pos[axis] >= boxsize[axis]
+        ) {
+          this->particles[pid].pos[axis] -= boxsize[axis];
+        } else if (
+          this->particles[pid].pos[axis] < 0.
+        ) {
+          this->particles[pid].pos[axis] += boxsize[axis];
         }
       }
     }
 
-    /// Recalculate extreme data values.
-    this->calc_min_and_max();
+    /// Recalculate extreme particle positions.
+    this->_calc_pos_min_and_max();
+  }
 
-    return 0;
+  /**
+   * Align a pair of catalogues by offsetting particle positions
+   * for FFT (though mesh grid shift).
+   *
+   * @param particles_data (Data-source) particle catalogue.
+   * @param particles_rand (Random-source) particle catalogue.
+   * @param boxsize Box size in each dimension.
+   * @param nmesh Mesh number in each dimension.
+   * @param factor Offset grid shift factor (default is 3.).
+   * @returns Exit status.
+   */
+  static void align_catalogues_for_fft(
+    ParticleCatalogue& particles_data,
+    ParticleCatalogue& particles_rand,
+    double boxsize[3],
+    int nmesh[3],
+    double shift_factor=3.  // CAVEAT: discretionary choice
+  ) {
+    /// Calculate adjustments needed.
+    particles_data._calc_pos_min_and_max();
+    particles_rand._calc_pos_min_and_max();
+
+    double dpos[3] = {
+      particles_rand.pos_min[0],
+      particles_rand.pos_min[1],
+      particles_rand.pos_min[2],
+    };
+
+    dpos[0] -= shift_factor * boxsize[0] / double(nmesh[0]);
+    dpos[1] -= shift_factor * boxsize[1] / double(nmesh[1]);
+    dpos[2] -= shift_factor * boxsize[2] / double(nmesh[2]);
+
+    /// Shift mesh grid and recalculate extreme particle positions.
+    particles_data.offset_coords(dpos);
+    particles_rand.offset_coords(dpos);
+
+    particles_data._calc_pos_min_and_max();
+    particles_rand._calc_pos_min_and_max();
   }
 };
 

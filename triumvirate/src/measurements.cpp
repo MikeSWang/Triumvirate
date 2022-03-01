@@ -84,19 +84,19 @@ int main(int argc, char* argv[]) {
 
   /// Read catalogue files.
   ParticleCatalogue particles_data, particles_rand;
-  if (particles_data.read_particles_catalogue(params.data_catalogue_file)) {
+  if (particles_data.read_particle_data_from_file(params.data_catalogue_file)) {
     printf("[Error] :: Failed to load data-source catalogue file.\n");
     exit(1);
   }
-  if (particles_rand.read_particles_catalogue(params.rand_catalogue_file)) {
+  if (particles_rand.read_particle_data_from_file(params.rand_catalogue_file)) {
     printf("[Error] :: Failed to load random-source catalogue file.\n");
     exit(1);
   }
 
   /// Compute line of sight.
-  LineOfSight* los_data = new LineOfSight[particles_data.nparticles];
-  LineOfSight* los_rand = new LineOfSight[particles_rand.nparticles];
-  for (int pid = 0; pid < particles_data.nparticles; pid++) {
+  LineOfSight* los_data = new LineOfSight[particles_data.ntotal];
+  LineOfSight* los_rand = new LineOfSight[particles_rand.ntotal];
+  for (int pid = 0; pid < particles_data.ntotal; pid++) {
       double los_mag = sqrt(
         particles_data[pid].pos[0] * particles_data[pid].pos[0]
         + particles_data[pid].pos[1] * particles_data[pid].pos[1]
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
       los_data[pid].pos[1] = particles_data[pid].pos[1] / los_mag;
       los_data[pid].pos[2] = particles_data[pid].pos[2] / los_mag;
   }
-  for (int pid = 0; pid < particles_rand.nparticles; pid++) {
+  for (int pid = 0; pid < particles_rand.ntotal; pid++) {
       double los_mag = sqrt(
         particles_rand[pid].pos[0] * particles_rand[pid].pos[0]
         + particles_rand[pid].pos[1] * particles_rand[pid].pos[1]
@@ -121,19 +121,17 @@ int main(int argc, char* argv[]) {
   /// Compute number density alpha ratio.
   double alpha = 0.;
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-    alpha = ParticleCatalogue::calc_alpha_ratio(
-      particles_data, particles_rand
-    );
+    alpha = particles_data.wtotal / particles_rand.wtotal;
   }
 
   /// Offset particle positions for measurements.
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-    ParticleCatalogue::offset_particles_for_fft(
-      particles_data, particles_rand, params
+    ParticleCatalogue::align_catalogues_for_fft(
+      particles_data, particles_rand, params.boxsize, params.nmesh
     );
   }
   if (params.catalogue_type == "sim") {
-    particles_data.offset_particles_for_periodicity(params);
+    particles_data.offset_coords_for_periodicity(params.boxsize);
   }
 
   /// TODO: Reimplement survey volume normalisation.
@@ -150,7 +148,7 @@ int main(int argc, char* argv[]) {
 		std::cout << "[Status] :: See printout below." << std::endl;
     std::cout << "-- Data Catalogue --" << std::endl;
     std::cout << "Number count : N = "
-      << particles_data.nparticles << std::endl;
+      << particles_data.ntotal << std::endl;
     std::cout << "Volume : V = "
       << params.volume << std::endl;
     std::cout << "Size along x-axis : L_x = "

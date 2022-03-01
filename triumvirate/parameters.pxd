@@ -1,7 +1,5 @@
 from libcpp.string cimport string
 
-from parameter_set cimport ParameterSet
-
 cdef extern from "include/parameters.hpp":
     cppclass CppParameters "Parameters":
         string catalogue_dir;
@@ -12,6 +10,7 @@ cdef extern from "include/parameters.hpp":
 
         double boxsize[3];
         int nmesh[3];
+
         string assignment;
         string norm_convention;
 
@@ -21,6 +20,7 @@ cdef extern from "include/parameters.hpp":
         int ell1;
         int ell2;
         int ELL;
+
         int i_wa;
         int j_wa;
 
@@ -39,9 +39,12 @@ cdef extern from "include/parameters.hpp":
         double volume;
         int nmesh_tot;
 
-        int validate();
         int printout();
+        int validate();
 
-cdef class Parameters(ParameterSet):
+cdef class ParameterSet:
     cdef CppParameters* thisptr
+    cdef string _source
+    cdef string _status
+    cdef dict _params
     cdef object _logger

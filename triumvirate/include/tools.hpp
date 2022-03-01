@@ -19,7 +19,7 @@
  *
  */
 struct LineOfSight{
-  double pos[3];   ///< 3-d position vector
+  double pos[3];  ///< 3-d position vector
 };
 
 /**
@@ -38,14 +38,12 @@ class BinScheme {
    * @param[out] kbin_out Wavenumber bins.
    * @returns Exit status.
    */
-  static int set_kbin(const Parameters& params, double* kbin_out) {
+  static void set_kbin(const Parameters& params, double* kbin_out) {
     double dk = (params.kmax - params.kmin) / double(params.num_kbin - 1);
 
     for (int i = 0; i < params.num_kbin; i++) {
       kbin_out[i] = params.kmin + dk * i;
     }
-
-    return 0;
   }
 
   /**
@@ -55,7 +53,7 @@ class BinScheme {
    * @param[out] rbin_out Separation bins.
    * @returns Exit status.
    */
-  static int set_rbin(const Parameters& params, double* rbin_out) {
+  static void set_rbin(const Parameters& params, double* rbin_out) {
     if (0) {
     } else if (params.binning == "custom") {
       /// RFE: Insert customised binning code here.
@@ -113,8 +111,6 @@ class BinScheme {
         rbin_out[idx_bin] = params.rmin + dr * idx_bin;
       }
     }
-
-    return 0;
   }
 };
 
