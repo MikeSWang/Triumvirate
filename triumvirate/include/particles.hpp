@@ -344,7 +344,7 @@ class ParticleCatalogue {
    * @param particles_data (Data-source) particle catalogue.
    * @param particles_rand (Random-source) particle catalogue.
    * @param boxsize Box size in each dimension.
-   * @param nmesh Mesh number in each dimension.
+   * @param ngrid Grid number in each dimension.
    * @param factor Offset grid shift factor (default is 3.).
    * @returns Exit status.
    */
@@ -352,7 +352,7 @@ class ParticleCatalogue {
     ParticleCatalogue& particles_data,
     ParticleCatalogue& particles_rand,
     double boxsize[3],
-    int nmesh[3],
+    int ngrid[3],
     double shift_factor=3.  // CAVEAT: discretionary choice
   ) {
     /// Calculate adjustments needed.
@@ -365,9 +365,9 @@ class ParticleCatalogue {
       particles_rand.pos_min[2],
     };
 
-    dpos[0] -= shift_factor * boxsize[0] / double(nmesh[0]);
-    dpos[1] -= shift_factor * boxsize[1] / double(nmesh[1]);
-    dpos[2] -= shift_factor * boxsize[2] / double(nmesh[2]);
+    dpos[0] -= shift_factor * boxsize[0] / double(ngrid[0]);
+    dpos[1] -= shift_factor * boxsize[1] / double(ngrid[1]);
+    dpos[2] -= shift_factor * boxsize[2] / double(ngrid[2]);
 
     /// Shift mesh grid and recalculate extreme particle positions.
     particles_data.offset_coords(dpos);

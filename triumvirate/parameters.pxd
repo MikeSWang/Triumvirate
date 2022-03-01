@@ -9,7 +9,7 @@ cdef extern from "include/parameters.hpp":
         string output_tag;
 
         double boxsize[3];
-        int nmesh[3];
+        int ngrid[3];
 
         string assignment;
         string norm_convention;
@@ -37,7 +37,7 @@ cdef extern from "include/parameters.hpp":
         int ith_rbin;
 
         double volume;
-        int nmesh_tot;
+        int nmesh;
 
         int printout();
         int validate();

@@ -164,7 +164,7 @@ class ParticleCatalogue:
 
     @staticmethod
     def align_catalogues_for_fft(catalogue_data, catalogue_rand,
-                                 boxsize, nmesh, shift_factor=3.):
+                                 boxsize, ngrid, shift_factor=3.):
         """Align a pair of catalogues by offsetting particle positions
         for FFT (though mesh grid shift).
 
@@ -176,15 +176,15 @@ class ParticleCatalogue:
             (Random-source) particle catalogue.
         boxsize : (3,) array of float
             Box size in each dimension.
-        nmesh : (3,) array of int
-            Mesh number in each dimension.
+        ngrid : (3,) array of int
+            Grid number in each dimension.
         shift_factor : float, optional
             Offset grid shift factor (default is 3.).
 
         """
         dpos = np.subtract(
             [catalogue_rand.bounds[axis][0] for axis in ['x', 'y', 'z']],
-            shift_factor * np.divide(boxsize, nmesh)
+            shift_factor * np.divide(boxsize, ngrid)
         )
 
         catalogue_data.offset_coords(dpos)

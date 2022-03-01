@@ -128,10 +128,10 @@ cdef class ParameterSet:
             self._params['boxsize']['y'],
             self._params['boxsize']['z'],
         ]
-        self.thisptr.nmesh = [
-            self._params['nmesh']['x'],
-            self._params['nmesh']['y'],
-            self._params['nmesh']['z'],
+        self.thisptr.ngrid = [
+            self._params['ngrid']['x'],
+            self._params['ngrid']['y'],
+            self._params['ngrid']['z'],
         ]
 
         self.thisptr.assignment = self._params['assignment']
@@ -164,7 +164,7 @@ cdef class ParameterSet:
             self.thisptr.ith_rbin = self._params['index']
 
         self.thisptr.volume = np.prod(list(self._params['boxsize'].values()))
-        self.thisptr.nmesh_tot = np.prod(list(self._params['nmesh'].values()))
+        self.thisptr.nmesh = np.prod(list(self._params['ngrid'].values()))
 
         self._validate()
 
