@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <complex>
+#include <cstdio>
 
 #include <gsl/gsl_sf_legendre.h>
 
@@ -94,17 +95,19 @@ class SphericalHarmonicCalculator {
    * @param[in] ell Degree of the spherical harmonic.
    * @param[in] m Order of the spherical harmonic.
    * @param[in] boxsize Box size in each dimension.
-   * @param[in] nmesh Mesh number in each dimension.
+   * @param[in] ngrid Grid number in each dimension.
    * @param[out] ylm_out Stored calculated values.
-   * @returns Exit status.
    */
-  static int store_reduced_spherical_harmonic_in_fourier_space(
-    const int ell, const int m, const double boxsize[3], const int nmesh[3],
+  static void store_reduced_spherical_harmonic_in_fourier_space(
+    const int ell, const int m, const double boxsize[3], const int ngrid[3],
     std::complex<double>* ylm_out
   ) {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {
-      return -1;
+      if (currTask == 0) {
+        printf("[Error] :: Cannot store calculated spherical harmonics.");
+      }
+      exit(1);
     }
 
     /// Determine the fundamental wavenumber in each dimension.
@@ -116,29 +119,27 @@ class SphericalHarmonicCalculator {
 
     /// Assign a wavevector to each grid cell.
     double kvec[3];
-    for (int i = 0; i < nmesh[0]; i++) {
-      for (int j = 0; j < nmesh[1]; j++) {
-        for (int k = 0; k < nmesh[2]; k++) {
+    for (int i = 0; i < ngrid[0]; i++) {
+      for (int j = 0; j < ngrid[1]; j++) {
+        for (int k = 0; k < ngrid[2]; k++) {
           /// Lay the 'bricks' vertically, then inwards, then to
           /// the right, i.e. along z-axis, y-axis and then x-axis.
           /// The assigned flattened-grid array index is
-          /// (i * nmesh_y * nmesh_z + j * nmesh_z + k)
-          /// where nmesh is the mesh number along each axis.
-          long long idx_grid = (i * nmesh[1] + j) * nmesh[2] + k;
+          /// (i * ngrid_y * ngrid_z + j * ngrid_z + k)
+          /// where ngrid is the grid number along each axis.
+          long long idx_grid = (i * ngrid[1] + j) * ngrid[2] + k;
 
           /// This conforms to the (absurd) FFT array-ordering convention
           /// that negative wavenumbers/frequencies come after zero and
           /// positive wavenumbers/frequencies.
-          kvec[0] = (i < nmesh[0]/2) ? i * dk[0] : (i - nmesh[0]) * dk[0];
-          kvec[1] = (j < nmesh[1]/2) ? j * dk[1] : (j - nmesh[1]) * dk[1];
-          kvec[2] = (k < nmesh[2]/2) ? k * dk[2] : (k - nmesh[2]) * dk[2];
+          kvec[0] = (i < ngrid[0]/2) ? i * dk[0] : (i - ngrid[0]) * dk[0];
+          kvec[1] = (j < ngrid[1]/2) ? j * dk[1] : (j - ngrid[1]) * dk[1];
+          kvec[2] = (k < ngrid[2]/2) ? k * dk[2] : (k - ngrid[2]) * dk[2];
 
           ylm_out[idx_grid] = calc_reduced_spherical_harmonic(ell, m, kvec);
         }
       }
     }
-
-    return 0;
   }
 
   /**
@@ -147,51 +148,52 @@ class SphericalHarmonicCalculator {
    * @param[in] ell Degree of the spherical harmonic.
    * @param[in] m Order of the spherical harmonic.
    * @param[in] boxsize Box size in each dimension.
-   * @param[in] nmesh Mesh number in each dimension.
+   * @param[in] ngrid Grid number in each dimension.
    * @param[out] ylm_out Stored calculated values.
    * @returns Exit status.
    */
-  static int store_reduced_spherical_harmonic_in_config_space(
-    const int ell, const int m, const double boxsize[3], const int nmesh[3],
+  static void store_reduced_spherical_harmonic_in_config_space(
+    const int ell, const int m, const double boxsize[3], const int ngrid[3],
     std::complex<double>* ylm_out
   ) {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {
-      return -1;
+      if (currTask == 0) {
+        printf("[Error] :: Cannot store calculated spherical harmonics.");
+      }
+      exit(1);
     }
 
     /// Determine the grid size in each dimension.
     double dr[3] = {
-      boxsize[0] / double(nmesh[0]),
-      boxsize[1] / double(nmesh[1]),
-      boxsize[2] / double(nmesh[2]),
+      boxsize[0] / double(ngrid[0]),
+      boxsize[1] / double(ngrid[1]),
+      boxsize[2] / double(ngrid[2]),
     };
 
     /// Assign a position vector to each grid cell.
     double rvec[3];
-    for (int i = 0; i < nmesh[0]; i++) {
-      for (int j = 0; j < nmesh[1]; j++) {
-        for (int k = 0; k < nmesh[2]; k++) {
+    for (int i = 0; i < ngrid[0]; i++) {
+      for (int j = 0; j < ngrid[1]; j++) {
+        for (int k = 0; k < ngrid[2]; k++) {
           /// Lay the 'bricks' vertically, then inwards, then to
           /// the right, i.e. along z-axis, y-axis and then x-axis.
           /// The assigned flattened-grid array index is
-          /// (i * nmesh_y * nmesh_z + j * nmesh_z + k)
-          /// where nmesh is the mesh number along each axis.
-          long long idx_grid = (i * nmesh[1] + j) * nmesh[2] + k;
+          /// (i * ngrid_y * ngrid_z + j * ngrid_z + k)
+          /// where ngrid is the grid number along each axis.
+          long long idx_grid = (i * ngrid[1] + j) * ngrid[2] + k;
 
           /// This conforms to the (absurd) FFT array-ordering convention
           /// that negative wavenumbers/frequencies come after zero and
           /// positive wavenumbers/frequencies.
-          rvec[0] = (i < nmesh[0]/2) ? (i * dr[0]) : (i - nmesh[0]) * dr[0];
-          rvec[1] = (j < nmesh[1]/2) ? (j * dr[1]) : (j - nmesh[1]) * dr[1];
-          rvec[2] = (k < nmesh[2]/2) ? (k * dr[2]) : (k - nmesh[2]) * dr[2];
+          rvec[0] = (i < ngrid[0]/2) ? (i * dr[0]) : (i - ngrid[0]) * dr[0];
+          rvec[1] = (j < ngrid[1]/2) ? (j * dr[1]) : (j - ngrid[1]) * dr[1];
+          rvec[2] = (k < ngrid[2]/2) ? (k * dr[2]) : (k - ngrid[2]) * dr[2];
 
           ylm_out[idx_grid] = calc_reduced_spherical_harmonic(ell, m, rvec);
         }
       }
     }
-
-    return 0;
   }
 };
 

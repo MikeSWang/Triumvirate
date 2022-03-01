@@ -26,7 +26,7 @@ class ParameterSet {
 
   /// Sampling.
   double boxsize[3];  ///< boxsize in each dimension
-  int nmesh[3];  ///< mesh number in each dimension
+  int ngrid[3];  ///< grid number in each dimension
   std::string assignment;  ///< grid assignment scheme: {'NGP', 'CIC', 'TSC'}
   std::string norm_convention;  ///< normalisation convention: {'grid', 'particle'}
     // TODO: implement options
@@ -53,7 +53,7 @@ class ParameterSet {
 
   /// Derived quantities.
   double volume;  ///< box volume
-  int nmesh_tot;  ///< total mesh grid number
+  int nmesh;  ///< total mesh grid number
 
   /// Misc.
   int batch_number;  ///< job batch number
@@ -85,7 +85,7 @@ class ParameterSet {
     char form_[16];
 
     double boxsize_x, boxsize_y, boxsize_z;
-    int nmesh_x, nmesh_y, nmesh_z;
+    int ngrid_x, ngrid_y, ngrid_z;
 
     /// Extract parameters from file contents by line parsing.
     std::string str_line;  // string representing the line being parsed
@@ -156,16 +156,16 @@ class ParameterSet {
         );
       }
 
-      if (str_line.find("nmesh_x") != std::string::npos) {
+      if (str_line.find("ngrid_x") != std::string::npos) {
         sscanf(
-          str_line.data(), "%s %s %d", str_dummy, str_dummy, &nmesh_x
+          str_line.data(), "%s %s %d", str_dummy, str_dummy, &ngrid_x
         );
       }
-      if (str_line.find("nmesh_y") != std::string::npos) {
-        sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &nmesh_y);
+      if (str_line.find("ngrid_y") != std::string::npos) {
+        sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &ngrid_y);
       }
-      if (str_line.find("nmesh_z") != std::string::npos) {
-        sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &nmesh_z);
+      if (str_line.find("ngrid_z") != std::string::npos) {
+        sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &ngrid_z);
       }
 
       if (str_line.find("assignment") != std::string::npos) {
@@ -288,11 +288,11 @@ class ParameterSet {
 
     this->volume = boxsize_x * boxsize_y * boxsize_z;
 
-    this->nmesh[0] = nmesh_x;
-    this->nmesh[1] = nmesh_y;
-    this->nmesh[2] = nmesh_z;
+    this->ngrid[0] = ngrid_x;
+    this->ngrid[1] = ngrid_y;
+    this->ngrid[2] = ngrid_z;
 
-    this->nmesh_tot = nmesh_x * nmesh_y * nmesh_z;
+    this->nmesh = ngrid_x * ngrid_y * ngrid_z;
 
     this->set_io_files();
 
@@ -367,9 +367,9 @@ class ParameterSet {
     fprintf(used_param_file_ptr, "boxsize_y = %.2f\n", this->boxsize[1]);
     fprintf(used_param_file_ptr, "boxsize_z = %.2f\n", this->boxsize[2]);
 
-    fprintf(used_param_file_ptr, "nmesh_x = %d\n", this->nmesh[0]);
-    fprintf(used_param_file_ptr, "nmesh_y = %d\n", this->nmesh[1]);
-    fprintf(used_param_file_ptr, "nmesh_z = %d\n", this->nmesh[2]);
+    fprintf(used_param_file_ptr, "ngrid_x = %d\n", this->ngrid[0]);
+    fprintf(used_param_file_ptr, "ngrid_y = %d\n", this->ngrid[1]);
+    fprintf(used_param_file_ptr, "ngrid_z = %d\n", this->ngrid[2]);
 
     fprintf(used_param_file_ptr, "ell1 = %d\n", this->ell1);
     fprintf(used_param_file_ptr, "ell2 = %d\n", this->ell2);

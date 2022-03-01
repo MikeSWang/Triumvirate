@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
   /// Offset particle positions for measurements.
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
     ParticleCatalogue::align_catalogues_for_fft(
-      particles_data, particles_rand, params.boxsize, params.nmesh
+      particles_data, particles_rand, params.boxsize, params.ngrid
     );
   }
   if (params.catalogue_type == "sim") {

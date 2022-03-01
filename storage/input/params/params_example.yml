@@ -27,8 +27,8 @@ boxsize:
   y: 1000.
   z: 1000.
 
-# Mesh number in each dimension.
-nmesh:
+# Grid number in each dimension.
+ngrid:
   x: 512
   y: 512
   z: 512

@@ -191,10 +191,10 @@ int calc_bispec(
   SphericalBesselCalculator sj2(params.ell2);
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
       bytesMem += 2 * sizeof(std::complex<double>)
-        * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+        * double(params.nmesh) / 1024. / 1024. / 1024.;
 
       std::string flag_nontrivial = "FALSE";
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -209,10 +209,10 @@ int calc_bispec(
 
       if (flag_nontrivial == "TRUE") {
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-          params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
         );
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-          params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
         );
       }
 
@@ -245,10 +245,10 @@ int calc_bispec(
 						params.ELL, M_
 					);
 
-        fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh_tot);
+        fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh);
         bytesMem += sizeof(fftw_complex) *
-          double(params.nmesh_tot) / 1024. / 1024. / 1024.;
-        for (int i = 0; i < params.nmesh_tot; i++) {
+          double(params.nmesh) / 1024. / 1024. / 1024.;
+        for (int i = 0; i < params.nmesh; i++) {
           three_pt_holder[i][0] = 0.;
           three_pt_holder[i][1] = 0.;
         }
@@ -270,27 +270,27 @@ int calc_bispec(
           }
 
           double dr[3];
-          dr[0] = params.boxsize[0] / double(params.nmesh[0]);
-          dr[1] = params.boxsize[1] / double(params.nmesh[1]);
-          dr[2] = params.boxsize[2] / double(params.nmesh[2]);
+          dr[0] = params.boxsize[0] / double(params.ngrid[0]);
+          dr[1] = params.boxsize[1] / double(params.ngrid[1]);
+          dr[2] = params.boxsize[2] / double(params.ngrid[2]);
 
           double rvec[3];
           std::complex<double> shotnoise_sum = 0.;
-          for (int i = 0; i < params.nmesh[0]; i++) {
-            for (int j = 0; j < params.nmesh[1]; j++) {
-              for (int k = 0; k < params.nmesh[2]; k++) {
+          for (int i = 0; i < params.ngrid[0]; i++) {
+            for (int j = 0; j < params.ngrid[1]; j++) {
+              for (int k = 0; k < params.ngrid[2]; k++) {
                 long long idx_grid =
-                  (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+                  (i * params.ngrid[1] + j) * params.ngrid[2] + k;
 
 								/// NOTE: This conforms to the absurd FFT array ordering
 								/// convention that negative wavenumbers/frequencies come
 								/// after zero and positive wavenumbers/frequencies.
-                rvec[0] = (i < params.nmesh[0]/2) ?
-                  i * dr[0] : (i - params.nmesh[0]) * dr[0];
-                rvec[1] = (j < params.nmesh[1]/2) ?
-                  j * dr[1] : (j - params.nmesh[1]) * dr[1];
-                rvec[2] = (k < params.nmesh[2]/2) ?
-                  k * dr[2] : (k - params.nmesh[2]) * dr[2];
+                rvec[0] = (i < params.ngrid[0]/2) ?
+                  i * dr[0] : (i - params.ngrid[0]) * dr[0];
+                rvec[1] = (j < params.ngrid[1]/2) ?
+                  j * dr[1] : (j - params.ngrid[1]) * dr[1];
+                rvec[2] = (k < params.ngrid[2]/2) ?
+                  k * dr[2] : (k - params.ngrid[2]) * dr[2];
                 double rmag = sqrt(
                   rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
                 );
@@ -310,7 +310,7 @@ int calc_bispec(
           }
 
           std::complex<double> I_(0., 1.);
-          double factor = params.volume / double(params.nmesh_tot);
+          double factor = params.volume / double(params.nmesh);
           shotnoise_sum *= factor * pow(I_, params.ell1 + params.ell2);
 
           shotnoise_save[i_kbin] += coupling * shotnoise_sum;
@@ -328,13 +328,13 @@ int calc_bispec(
 
         fftw_free(three_pt_holder); three_pt_holder = NULL;
         bytesMem -= sizeof(fftw_complex)
-          * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+          * double(params.nmesh) / 1024. / 1024. / 1024.;
       }
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
       bytesMem -= 2 * sizeof(std::complex<double>)
-        * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+        * double(params.nmesh) / 1024. / 1024. / 1024.;
     }
   }
 
@@ -374,10 +374,10 @@ int calc_bispec(
 
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
       bytesMem += 2 * sizeof(std::complex<double>)
-        * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+        * double(params.nmesh) / 1024. / 1024. / 1024.;
 
       std::string flag_nontrivial = "FALSE";
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -392,10 +392,10 @@ int calc_bispec(
 
       if (flag_nontrivial == "TRUE") {
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
         );
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
         );
       }
 
@@ -448,9 +448,9 @@ int calc_bispec(
             dn_00, kmag_b, dk, ylm_b
           );
 
-          double factor = params.volume / double(params.nmesh_tot);
+          double factor = params.volume / double(params.nmesh);
           std::complex<double> bk_sum = 0.;
-          for (int i = 0; i < params.nmesh_tot; i++) {
+          for (int i = 0; i < params.nmesh; i++) {
             std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
             std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
             std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
@@ -474,7 +474,7 @@ int calc_bispec(
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
       bytesMem -= 2 * sizeof(std::complex<double>)
-        * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+        * double(params.nmesh) / 1024. / 1024. / 1024.;
     }
   }
 
@@ -674,16 +674,16 @@ int calc_bispec_in_box(
         continue;
       }
 
-      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
       bytesMem += 2 * sizeof(std::complex<double>)
-        * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+        * double(params.nmesh) / 1024. / 1024. / 1024.;
 
       SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-        params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+        params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
       );
       SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-        params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+        params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
       );
 
       DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
@@ -693,10 +693,10 @@ int calc_bispec_in_box(
       TwoPointStatistics<ParticleCatalogue> stats(params);
       std::complex<double> shotnoise = double(particles_data.ntotal);
 
-      fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh_tot);
+      fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh);
       bytesMem += sizeof(fftw_complex)
-        * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
-      for (int i = 0; i < params.nmesh_tot; i++) {
+        * double(params.nmesh) / 1024. / 1024. / 1024.;
+      for (int i = 0; i < params.nmesh; i++) {
         three_pt_holder[i][0] = 0.;
         three_pt_holder[i][1] = 0.;
       }
@@ -718,27 +718,27 @@ int calc_bispec_in_box(
         }
 
         double dr[3];
-        dr[0] = params.boxsize[0] / double(params.nmesh[0]);
-        dr[1] = params.boxsize[1] / double(params.nmesh[1]);
-        dr[2] = params.boxsize[2] / double(params.nmesh[2]);
+        dr[0] = params.boxsize[0] / double(params.ngrid[0]);
+        dr[1] = params.boxsize[1] / double(params.ngrid[1]);
+        dr[2] = params.boxsize[2] / double(params.ngrid[2]);
 
         double rvec[3];
         std::complex<double> shotnoise_sum = 0.;
-        for (int i = 0; i < params.nmesh[0]; i++) {
-          for (int j = 0; j < params.nmesh[1]; j++) {
-            for (int k = 0; k < params.nmesh[2]; k++) {
+        for (int i = 0; i < params.ngrid[0]; i++) {
+          for (int j = 0; j < params.ngrid[1]; j++) {
+            for (int k = 0; k < params.ngrid[2]; k++) {
               long long idx_grid =
-                (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+                (i * params.ngrid[1] + j) * params.ngrid[2] + k;
 
 							/// NOTE: This conforms to the absurd FFT array ordering
 							/// convention that negative wavenumbers/frequencies come
 							/// after zero and positive wavenumbers/frequencies.
-              rvec[0] = (i < params.nmesh[0]/2) ?
-                i * dr[0] : (i - params.nmesh[0]) * dr[0];
-              rvec[1] = (j < params.nmesh[1]/2) ?
-                j * dr[1] : (j - params.nmesh[1]) * dr[1];
-              rvec[2] = (k < params.nmesh[2]/2) ?
-                k * dr[2] : (k - params.nmesh[2]) * dr[2];
+              rvec[0] = (i < params.ngrid[0]/2) ?
+                i * dr[0] : (i - params.ngrid[0]) * dr[0];
+              rvec[1] = (j < params.ngrid[1]/2) ?
+                j * dr[1] : (j - params.ngrid[1]) * dr[1];
+              rvec[2] = (k < params.ngrid[2]/2) ?
+                k * dr[2] : (k - params.ngrid[2]) * dr[2];
 
               double rmag = sqrt(
                 rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
@@ -758,7 +758,7 @@ int calc_bispec_in_box(
         }
 
         std::complex<double> I_(0., 1.);
-        double factor = params.volume / double(params.nmesh_tot);
+        double factor = params.volume / double(params.nmesh);
         shotnoise_sum *= factor * pow(I_, params.ell1 + params.ell2);
 
         shotnoise_save[i_kbin] += coupling * shotnoise_sum;
@@ -776,12 +776,12 @@ int calc_bispec_in_box(
 
       fftw_free(three_pt_holder); three_pt_holder = NULL;
       bytesMem -= sizeof(fftw_complex)
-        * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+        * double(params.nmesh) / 1024. / 1024. / 1024.;
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
   		bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -826,16 +826,16 @@ int calc_bispec_in_box(
 				continue;
 			}
 
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+				params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 			);
 			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+				params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 			);
 
 			/// Calculate G_{LM} in eq. (42) in arXiv:1803.02132 (equivalent to
@@ -875,9 +875,9 @@ int calc_bispec_in_box(
 					dn_00, kmag_b, dk, ylm_b
 				);
 
-				double factor = params.volume / double(params.nmesh_tot);
+				double factor = params.volume / double(params.nmesh);
 				std::complex<double> bk_sum = 0.;
-				for (int i = 0; i < params.nmesh_tot; i++) {
+				for (int i = 0; i < params.nmesh; i++) {
 					std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
 					std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
 					std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
@@ -900,7 +900,7 @@ int calc_bispec_in_box(
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -1033,10 +1033,10 @@ int calc_3pt_corrfunc(
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			std::string flag_nontrivial = "FALSE";
 			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -1051,10 +1051,10 @@ int calc_3pt_corrfunc(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+					params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+					params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 				);
 			}
 
@@ -1119,7 +1119,7 @@ int calc_3pt_corrfunc(
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -1162,10 +1162,10 @@ int calc_3pt_corrfunc(
 	SphericalBesselCalculator sj2(params.ell2);
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			std::string flag_nontrivial = "FALSE";
 			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -1180,10 +1180,10 @@ int calc_3pt_corrfunc(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+					params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+					params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 				);
 			}
 
@@ -1237,8 +1237,8 @@ int calc_3pt_corrfunc(
 
 					std::complex<double> I_(0., 1.);
 					std::complex<double> zeta_sum = 0.;
-					double factor = params.volume / double(params.nmesh_tot);
-					for (int i = 0; i < params.nmesh_tot; i++) {
+					double factor = params.volume / double(params.nmesh);
+					for (int i = 0; i < params.nmesh; i++) {
 						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
 						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
 						std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
@@ -1264,7 +1264,7 @@ int calc_3pt_corrfunc(
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -1394,16 +1394,16 @@ int calc_3pt_corrfunc_in_box(
 				continue;
 			}
 
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-				params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+				params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 			);
 			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-				params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+				params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 			);
 
 			DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
@@ -1447,7 +1447,7 @@ int calc_3pt_corrfunc_in_box(
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+					* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -1495,16 +1495,16 @@ int calc_3pt_corrfunc_in_box(
 				continue;
 			}
 
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+				params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 			);
 			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+				params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 			);
 
 			/// Calculate G_{LM} in eq. (42) in arXiv:1803.02132 (equivalent to
@@ -1543,10 +1543,10 @@ int calc_3pt_corrfunc_in_box(
 					dn_00, rmag_b, ylm_b, sj2
 				);
 
-				double factor = params.volume / double(params.nmesh_tot);
+				double factor = params.volume / double(params.nmesh);
 				std::complex<double> I_(0., 1.);
 				std::complex<double> zeta_sum = 0.;
-				for (int i = 0; i < params.nmesh_tot; i++) {
+				for (int i = 0; i < params.nmesh; i++) {
 					std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
 					std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
 					std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
@@ -1571,7 +1571,7 @@ int calc_3pt_corrfunc_in_box(
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -1697,10 +1697,10 @@ int calc_3pt_corrfunc_window(
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			std::string flag_nontrivial = "FALSE";
 			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -1715,10 +1715,10 @@ int calc_3pt_corrfunc_window(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+					params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+					params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 				);
 			}
 
@@ -1778,7 +1778,7 @@ int calc_3pt_corrfunc_window(
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -1816,10 +1816,10 @@ int calc_3pt_corrfunc_window(
 	SphericalBesselCalculator sj2(params.ell2);
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			std::string flag_nontrivial = "FALSE";
 			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -1834,10 +1834,10 @@ int calc_3pt_corrfunc_window(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+					params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+					params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 				);
 			}
 
@@ -1887,8 +1887,8 @@ int calc_3pt_corrfunc_window(
 
 					std::complex<double> I_(0., 1.);
 					std::complex<double> zeta_sum = 0.;
-					double factor = params.volume / double(params.nmesh_tot);
-					for (int i = 0; i < params.nmesh_tot; i++) {
+					double factor = params.volume / double(params.nmesh);
+					for (int i = 0; i < params.nmesh; i++) {
 						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
 						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
 						std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
@@ -1914,7 +1914,7 @@ int calc_3pt_corrfunc_window(
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -2062,10 +2062,10 @@ int calc_3pt_corrfunc_window_mpi(
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			std::string flag_nontrivial = "FALSE";
 			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -2080,10 +2080,10 @@ int calc_3pt_corrfunc_window_mpi(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+					params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+					params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 				);
 			}
 
@@ -2143,7 +2143,7 @@ int calc_3pt_corrfunc_window_mpi(
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -2181,10 +2181,10 @@ int calc_3pt_corrfunc_window_mpi(
 	SphericalBesselCalculator sj2(params.ell2);
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			std::string flag_nontrivial = "FALSE";
 			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -2199,10 +2199,10 @@ int calc_3pt_corrfunc_window_mpi(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+					params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+					params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 				);
 			}
 
@@ -2253,8 +2253,8 @@ int calc_3pt_corrfunc_window_mpi(
 
 					std::complex<double> I_(0., 1.);
 					std::complex<double> zeta_sum = 0.;
-					double factor = params.volume / double(params.nmesh_tot);
-					for (int i = 0; i < params.nmesh_tot; i++) {
+					double factor = params.volume / double(params.nmesh);
+					for (int i = 0; i < params.nmesh; i++) {
 						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
 						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
 						std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
@@ -2280,7 +2280,7 @@ int calc_3pt_corrfunc_window_mpi(
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -2409,10 +2409,10 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			std::string flag_nontrivial = "FALSE";
 			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -2427,10 +2427,10 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+					params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+					params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 				);
 			}
 
@@ -2490,7 +2490,7 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -2528,10 +2528,10 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 	SphericalBesselCalculator sj2(params.ell2);
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			std::string flag_nontrivial = "FALSE";
 			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -2546,10 +2546,10 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+					params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+					params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 				);
 			}
 
@@ -2600,8 +2600,8 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 
 					std::complex<double> I_(0., 1.);
 					std::complex<double> zeta_sum = 0.;
-					double factor = params.volume / double(params.nmesh_tot);
-					for (int i = 0; i < params.nmesh_tot; i++) {
+					double factor = params.volume / double(params.nmesh);
+					for (int i = 0; i < params.nmesh; i++) {
 						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
 						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
 						std::complex<double> x_G_LM(dn_LM[i][0], dn_LM[i][1]);
@@ -2627,7 +2627,7 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+					* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -2942,10 +2942,10 @@ int calc_bispec_for_los_choice(
 	SphericalBesselCalculator sj2(params.ell2);
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			std::string flag_nontrivial = "FALSE";
 			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -2960,10 +2960,10 @@ int calc_bispec_for_los_choice(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+					params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+					params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 				);
 			}
 
@@ -3023,10 +3023,10 @@ int calc_bispec_for_los_choice(
 						params.ELL, M_
 					);
 
-				fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh_tot);
+				fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh);
 				bytesMem += sizeof(fftw_complex)
-					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
-				for (int i = 0; i < params.nmesh_tot; i++) {
+					* double(params.nmesh) / 1024. / 1024. / 1024.;
+				for (int i = 0; i < params.nmesh; i++) {
 					three_pt_holder[i][0] = 0.;
 					three_pt_holder[i][1] = 0.;
 				}
@@ -3048,27 +3048,27 @@ int calc_bispec_for_los_choice(
 					}
 
 					double dr[3];
-					dr[0] = params.boxsize[0] / double(params.nmesh[0]);
-					dr[1] = params.boxsize[1] / double(params.nmesh[1]);
-					dr[2] = params.boxsize[2] / double(params.nmesh[2]);
+					dr[0] = params.boxsize[0] / double(params.ngrid[0]);
+					dr[1] = params.boxsize[1] / double(params.ngrid[1]);
+					dr[2] = params.boxsize[2] / double(params.ngrid[2]);
 
 					double rvec[3];
 					std::complex<double> shotnoise_sum = 0.;
-					for (int i = 0; i < params.nmesh[0]; i++) {
-						for (int j = 0; j < params.nmesh[1]; j++) {
-							for (int k = 0; k < params.nmesh[2]; k++) {
+					for (int i = 0; i < params.ngrid[0]; i++) {
+						for (int j = 0; j < params.ngrid[1]; j++) {
+							for (int k = 0; k < params.ngrid[2]; k++) {
 								long long idx_grid =
-									(i * params.nmesh[1] + j) * params.nmesh[2] + k;
+									(i * params.ngrid[1] + j) * params.ngrid[2] + k;
 
 								/// NOTE: This conforms to the absurd FFT array ordering
 								/// convention that negative wavenumbers/frequencies come
 								/// after zero and positive wavenumbers/frequencies.
-								rvec[0] = (i < params.nmesh[0]/2) ?
-									i * dr[0] : (i - params.nmesh[0]) * dr[0];
-								rvec[1] = (j < params.nmesh[1]/2) ?
-									j * dr[1] : (j - params.nmesh[1]) * dr[1];
-								rvec[2] = (k < params.nmesh[2]/2) ?
-									k * dr[2] : (k - params.nmesh[2]) * dr[2];
+								rvec[0] = (i < params.ngrid[0]/2) ?
+									i * dr[0] : (i - params.ngrid[0]) * dr[0];
+								rvec[1] = (j < params.ngrid[1]/2) ?
+									j * dr[1] : (j - params.ngrid[1]) * dr[1];
+								rvec[2] = (k < params.ngrid[2]/2) ?
+									k * dr[2] : (k - params.ngrid[2]) * dr[2];
 								double rmag = sqrt(
 									rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
 								);
@@ -3088,7 +3088,7 @@ int calc_bispec_for_los_choice(
 					}
 
 					std::complex<double> I_(0., 1.);
-					double factor = params.volume / double(params.nmesh_tot);
+					double factor = params.volume / double(params.nmesh);
 					shotnoise_sum *= factor * pow(I_, params.ell1 + params.ell2);
 
 					shotnoise_save[i_kbin] += coupling * shotnoise_sum;
@@ -3106,13 +3106,13 @@ int calc_bispec_for_los_choice(
 
 				fftw_free(three_pt_holder); three_pt_holder = NULL;
 				bytesMem -= sizeof(fftw_complex)
-					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+					* double(params.nmesh) / 1024. / 1024. / 1024.;
 			}
 
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -3141,10 +3141,10 @@ int calc_bispec_for_los_choice(
   /// Compute bispectrum.
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			std::string flag_nontrivial = "FALSE";
 			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -3159,10 +3159,10 @@ int calc_bispec_for_los_choice(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+					params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+					params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 				);
 			}
 
@@ -3260,9 +3260,9 @@ int calc_bispec_for_los_choice(
 						dn_los2, kmag_b, dk, ylm_b
 					);
 
-					double factor = params.volume / double(params.nmesh_tot);
+					double factor = params.volume / double(params.nmesh);
 					std::complex<double> bk_sum = 0.;
-					for (int i = 0; i < params.nmesh_tot; i++) {
+					for (int i = 0; i < params.nmesh; i++) {
 						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
 						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
 						std::complex<double> G_LM(dn_los3[i][0], dn_los3[i][1]);
@@ -3286,7 +3286,7 @@ int calc_bispec_for_los_choice(
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -3523,10 +3523,10 @@ int calc_bispec_for_M_mode(
 	SphericalBesselCalculator sj2(params.ell2);
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			std::string flag_nontrivial = "FALSE";
 			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -3541,10 +3541,10 @@ int calc_bispec_for_M_mode(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+					params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+					params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 				);
 			}
 
@@ -3577,10 +3577,10 @@ int calc_bispec_for_M_mode(
 						params.ELL, M_
 					);
 
-				fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh_tot);
+				fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh);
 				bytesMem += sizeof(fftw_complex) *
-					double(params.nmesh_tot) / 1024. / 1024. / 1024.;
-				for (int i = 0; i < params.nmesh_tot; i++) {
+					double(params.nmesh) / 1024. / 1024. / 1024.;
+				for (int i = 0; i < params.nmesh; i++) {
 					three_pt_holder[i][0] = 0.;
 					three_pt_holder[i][1] = 0.;
 				}
@@ -3602,27 +3602,27 @@ int calc_bispec_for_M_mode(
 					}
 
 					double dr[3];
-					dr[0] = params.boxsize[0] / double(params.nmesh[0]);
-					dr[1] = params.boxsize[1] / double(params.nmesh[1]);
-					dr[2] = params.boxsize[2] / double(params.nmesh[2]);
+					dr[0] = params.boxsize[0] / double(params.ngrid[0]);
+					dr[1] = params.boxsize[1] / double(params.ngrid[1]);
+					dr[2] = params.boxsize[2] / double(params.ngrid[2]);
 
 					double rvec[3];
 					std::complex<double> shotnoise_sum = 0.;
-					for (int i = 0; i < params.nmesh[0]; i++) {
-						for (int j = 0; j < params.nmesh[1]; j++) {
-							for (int k = 0; k < params.nmesh[2]; k++) {
+					for (int i = 0; i < params.ngrid[0]; i++) {
+						for (int j = 0; j < params.ngrid[1]; j++) {
+							for (int k = 0; k < params.ngrid[2]; k++) {
 								long long idx_grid =
-									(i * params.nmesh[1] + j) * params.nmesh[2] + k;
+									(i * params.ngrid[1] + j) * params.ngrid[2] + k;
 
 								/// NOTE: This conforms to the absurd FFT array ordering
 								/// convention that negative wavenumbers/frequencies come
 								/// after zero and positive wavenumbers/frequencies.
-								rvec[0] = (i < params.nmesh[0]/2) ?
-									i * dr[0] : (i - params.nmesh[0]) * dr[0];
-								rvec[1] = (j < params.nmesh[1]/2) ?
-									j * dr[1] : (j - params.nmesh[1]) * dr[1];
-								rvec[2] = (k < params.nmesh[2]/2) ?
-									k * dr[2] : (k - params.nmesh[2]) * dr[2];
+								rvec[0] = (i < params.ngrid[0]/2) ?
+									i * dr[0] : (i - params.ngrid[0]) * dr[0];
+								rvec[1] = (j < params.ngrid[1]/2) ?
+									j * dr[1] : (j - params.ngrid[1]) * dr[1];
+								rvec[2] = (k < params.ngrid[2]/2) ?
+									k * dr[2] : (k - params.ngrid[2]) * dr[2];
 								double rmag = sqrt(
 									rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
 								);
@@ -3642,7 +3642,7 @@ int calc_bispec_for_M_mode(
 					}
 
 					std::complex<double> I_(0., 1.);
-					double factor = params.volume / double(params.nmesh_tot);
+					double factor = params.volume / double(params.nmesh);
 					shotnoise_sum *= factor * pow(I_, params.ell1 + params.ell2);
 
 					shotnoise_save[M_ + params.ELL][i_kbin] += shotnoise_sum;
@@ -3660,13 +3660,13 @@ int calc_bispec_for_M_mode(
 
 				fftw_free(three_pt_holder); three_pt_holder = NULL;
 				bytesMem -= sizeof(fftw_complex)
-					* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+					* double(params.nmesh) / 1024. / 1024. / 1024.;
 			}
 
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -3717,10 +3717,10 @@ int calc_bispec_for_M_mode(
 	/// Compute bispectrum.
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
 		for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+			std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+			std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
 			bytesMem += 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 
 			std::string flag_nontrivial = "FALSE";
 			for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -3735,10 +3735,10 @@ int calc_bispec_for_M_mode(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+					params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+					params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
 				);
 			}
 
@@ -3791,9 +3791,9 @@ int calc_bispec_for_M_mode(
 						dn_00, kmag_b, dk, ylm_b
 					);
 
-					double factor = params.volume / double(params.nmesh_tot);
+					double factor = params.volume / double(params.nmesh);
 					std::complex<double> bk_sum = 0.;
-					for (int i = 0; i < params.nmesh_tot; i++) {
+					for (int i = 0; i < params.nmesh; i++) {
 						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
 						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
 						std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
@@ -3818,7 +3818,7 @@ int calc_bispec_for_M_mode(
 			delete[] ylm_a; ylm_a = NULL;
 			delete[] ylm_b; ylm_b = NULL;
 			bytesMem -= 2 * sizeof(std::complex<double>)
-				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+				* double(params.nmesh) / 1024. / 1024. / 1024.;
 		}
 	}
 
@@ -3920,7 +3920,7 @@ int calc_bispec_(
   }
 
 	ParticleCatalogue::align_catalogues_for_fft(
-		particles_data, particles_rand, params.boxsize, params.nmesh
+		particles_data, particles_rand, params.boxsize, params.ngrid
 	);
 
   if (
@@ -4064,10 +4064,10 @@ int calc_bispec_(
   SphericalBesselCalculator sj2(params.ell2);
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
       bytesMem += 2 * sizeof(std::complex<double>)
-        * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+        * double(params.nmesh) / 1024. / 1024. / 1024.;
 
       std::string flag_nontrivial = "FALSE";
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -4082,10 +4082,10 @@ int calc_bispec_(
 
       if (flag_nontrivial == "TRUE") {
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-          params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
         );
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-          params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
         );
       }
 
@@ -4119,10 +4119,10 @@ int calc_bispec_(
 						params.ELL, M_
 					);
 
-        fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh_tot);
+        fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh);
         bytesMem += sizeof(fftw_complex) *
-          double(params.nmesh_tot) / 1024. / 1024. / 1024.;
-        for (int i = 0; i < params.nmesh_tot; i++) {
+          double(params.nmesh) / 1024. / 1024. / 1024.;
+        for (int i = 0; i < params.nmesh; i++) {
           three_pt_holder[i][0] = 0.;
           three_pt_holder[i][1] = 0.;
         }
@@ -4144,27 +4144,27 @@ int calc_bispec_(
           }
 
           double dr[3];
-          dr[0] = params.boxsize[0] / double(params.nmesh[0]);
-          dr[1] = params.boxsize[1] / double(params.nmesh[1]);
-          dr[2] = params.boxsize[2] / double(params.nmesh[2]);
+          dr[0] = params.boxsize[0] / double(params.ngrid[0]);
+          dr[1] = params.boxsize[1] / double(params.ngrid[1]);
+          dr[2] = params.boxsize[2] / double(params.ngrid[2]);
 
           double rvec[3];
           std::complex<double> shotnoise_sum = 0.;
-          for (int i = 0; i < params.nmesh[0]; i++) {
-            for (int j = 0; j < params.nmesh[1]; j++) {
-              for (int k = 0; k < params.nmesh[2]; k++) {
+          for (int i = 0; i < params.ngrid[0]; i++) {
+            for (int j = 0; j < params.ngrid[1]; j++) {
+              for (int k = 0; k < params.ngrid[2]; k++) {
                 long long idx_grid =
-                  (i * params.nmesh[1] + j) * params.nmesh[2] + k;
+                  (i * params.ngrid[1] + j) * params.ngrid[2] + k;
 
 								/// NOTE: This conforms to the absurd FFT array ordering
 								/// convention that negative wavenumbers/frequencies come
 								/// after zero and positive wavenumbers/frequencies.
-                rvec[0] = (i < params.nmesh[0]/2) ?
-                  i * dr[0] : (i - params.nmesh[0]) * dr[0];
-                rvec[1] = (j < params.nmesh[1]/2) ?
-                  j * dr[1] : (j - params.nmesh[1]) * dr[1];
-                rvec[2] = (k < params.nmesh[2]/2) ?
-                  k * dr[2] : (k - params.nmesh[2]) * dr[2];
+                rvec[0] = (i < params.ngrid[0]/2) ?
+                  i * dr[0] : (i - params.ngrid[0]) * dr[0];
+                rvec[1] = (j < params.ngrid[1]/2) ?
+                  j * dr[1] : (j - params.ngrid[1]) * dr[1];
+                rvec[2] = (k < params.ngrid[2]/2) ?
+                  k * dr[2] : (k - params.ngrid[2]) * dr[2];
                 double rmag = sqrt(
                   rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
                 );
@@ -4184,7 +4184,7 @@ int calc_bispec_(
           }
 
           std::complex<double> I_(0., 1.);
-          double factor = params.volume / double(params.nmesh_tot);
+          double factor = params.volume / double(params.nmesh);
           shotnoise_sum *= factor * pow(I_, params.ell1 + params.ell2);
 
           shotnoise_save[i_kbin] += coupling * shotnoise_sum;
@@ -4202,13 +4202,13 @@ int calc_bispec_(
 
         fftw_free(three_pt_holder); three_pt_holder = NULL;
         bytesMem -= sizeof(fftw_complex)
-          * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+          * double(params.nmesh) / 1024. / 1024. / 1024.;
       }
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
       bytesMem -= 2 * sizeof(std::complex<double>)
-        * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+        * double(params.nmesh) / 1024. / 1024. / 1024.;
     }
   }
 
@@ -4248,10 +4248,10 @@ int calc_bispec_(
 
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh_tot];
-      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh_tot];
+      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
       bytesMem += 2 * sizeof(std::complex<double>)
-        * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+        * double(params.nmesh) / 1024. / 1024. / 1024.;
 
       std::string flag_nontrivial = "FALSE";
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -4266,10 +4266,10 @@ int calc_bispec_(
 
       if (flag_nontrivial == "TRUE") {
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
+          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
         );
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
+          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
         );
       }
 
@@ -4322,9 +4322,9 @@ int calc_bispec_(
             dn_00, kmag_b, dk, ylm_b
           );
 
-          double factor = params.volume / double(params.nmesh_tot);
+          double factor = params.volume / double(params.nmesh);
           std::complex<double> bk_sum = 0.;
-          for (int i = 0; i < params.nmesh_tot; i++) {
+          for (int i = 0; i < params.nmesh; i++) {
             std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
             std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
             std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
@@ -4348,7 +4348,7 @@ int calc_bispec_(
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
       bytesMem -= 2 * sizeof(std::complex<double>)
-        * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
+        * double(params.nmesh) / 1024. / 1024. / 1024.;
     }
   }
 
