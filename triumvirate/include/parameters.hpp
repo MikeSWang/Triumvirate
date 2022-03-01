@@ -15,7 +15,7 @@
  * parameters, and validates the input.
  *
  */
-class Parameters {
+class ParameterSet {
  public:
   /// I/O.
   std::string catalogue_dir;  ///< catalogue directory

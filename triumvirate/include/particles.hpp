@@ -2,10 +2,11 @@
 #define TRIUMVIRATE_INCLUDE_PARTICLES_HPP_INCLUDED_
 
 #include <cstdio>
+#include <fstream>
 #include <string>
 #include <vector>
 
-#include "parameters.hpp"
+#include "common.hpp"
 
 /**
  * Particle catalogue containing particle data and summary information.

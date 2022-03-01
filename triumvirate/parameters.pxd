@@ -1,7 +1,7 @@
 from libcpp.string cimport string
 
 cdef extern from "include/parameters.hpp":
-    cppclass CppParameters "Parameters":
+    cppclass CppParameterSet "ParameterSet":
         string catalogue_dir;
         string measurement_dir;
         string data_catalogue_file;
@@ -43,7 +43,7 @@ cdef extern from "include/parameters.hpp":
         int validate();
 
 cdef class ParameterSet:
-    cdef CppParameters* thisptr
+    cdef CppParameterSet* thisptr
     cdef string _source
     cdef string _status
     cdef dict _params

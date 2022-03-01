@@ -13,7 +13,7 @@ cdef extern from "include/threept.hpp":
     int calc_bispec_(
         CppParticleCatalogue, CppParticleCatalogue,
         vector[vector[double]], vector[vector[double]],
-        Parameters&,
+        ParameterSet&,
         double, double*
     )
 

@@ -38,7 +38,7 @@ class BinScheme {
    * @param[out] kbin_out Wavenumber bins.
    * @returns Exit status.
    */
-  static void set_kbin(const Parameters& params, double* kbin_out) {
+  static void set_kbin(const ParameterSet& params, double* kbin_out) {
     double dk = (params.kmax - params.kmin) / double(params.num_kbin - 1);
 
     for (int i = 0; i < params.num_kbin; i++) {
@@ -53,7 +53,7 @@ class BinScheme {
    * @param[out] rbin_out Separation bins.
    * @returns Exit status.
    */
-  static void set_rbin(const Parameters& params, double* rbin_out) {
+  static void set_rbin(const ParameterSet& params, double* rbin_out) {
     if (0) {
     } else if (params.binning == "custom") {
       /// RFE: Insert customised binning code here.

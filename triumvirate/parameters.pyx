@@ -9,8 +9,6 @@ Configure program parameter set.
 from os.path import abspath
 from pprint import pformat
 
-from cython.operator import dereference as deref
-
 import numpy as np
 import yaml
 
@@ -33,7 +31,7 @@ cdef class ParameterSet:
     # Add `args` and `kwargs` for Cython subclass 'init'-compatibility.
     def __cinit__(self, filepath, logger=None, *args, **kwargs):
 
-        self.thisptr = new CppParameters()
+        self.thisptr = new CppParameterSet()
 
         self._logger = logger
 
@@ -45,12 +43,18 @@ cdef class ParameterSet:
 
         self._parse_attrs()
 
+    def __dealloc__(self):
+        del self.thisptr
+
     def __str__(self):
         return "\n".join([
             f"Source: {self._source}",
             f"Status: {self._status}",
             f"Params: {pformat(self._params, sort_dicts=False)}",
         ])
+
+    def __len__(self):
+        return len(self._params)
 
     def __getitem__(self, key):
         return self._params[key]
@@ -99,7 +103,6 @@ cdef class ParameterSet:
                 self._logger.info(
                     "Printed out parameters to measurement directory."
                 )
-
 
     def _parse_attrs(self):
         """Parse the parameter set into wrapped C++ parameter class.
@@ -185,4 +188,3 @@ cdef class ParameterSet:
             except:
                 self._logger.info("... exited C++ run.")
             self._logger.info("... validated parameters.")
-
