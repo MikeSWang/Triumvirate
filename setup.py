@@ -48,6 +48,13 @@ ext_modules = [
         # libraries=['m', 'gsl', 'fftw3', 'gslcblas'],
         # define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
     ),
+    Extension(
+        'triumvirate._catalogue',
+        sources=["triumvirate/_catalogue.pyx"],
+        language='c++',
+        extra_compile_args=['-std=c++11',],
+        include_dirs=[numpy.get_include(),],
+    ),
 ]
 
 setup(

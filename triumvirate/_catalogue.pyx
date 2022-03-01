@@ -1,16 +1,16 @@
 """
-Object Morphism (:mod:`~triumvirate.measurements._morph`)
+Catalogue Parser (:mod:`~triumvirate._catalogue`)
 ===========================================================================
 
-Convert relevant Python objects into C++ objects.
+Parse Python catalogue objects into C++ catalogue objects.
 
 """
 import numpy as np
 cimport numpy as np
-from cython.operator cimport dereference as deref
 
 
-cdef class ParticleCatalogue:
+cdef class _ParticleCatalogue:
+
     def __cinit__(self,
                   np.ndarray[double, ndim=1, mode='c'] x not None,
                   np.ndarray[double, ndim=1, mode='c'] y not None,
@@ -18,4 +18,8 @@ cdef class ParticleCatalogue:
                   np.ndarray[double, ndim=1, mode='c'] w not None):
 
         self.thisptr = new CppParticleCatalogue()
-        self.thisptr.read_particles_catalogue(x, y, z, w)
+
+        self.thisptr.read_particle_data(x, y, z, w)
+
+    def __dealloc__(self):
+        del self.thisptr

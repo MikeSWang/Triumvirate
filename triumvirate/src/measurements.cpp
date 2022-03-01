@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
     exit(1);
   }
 
-  Parameters params;
+  ParameterSet params;
   if (params.read_from_file(argv) && currTask == 0) {
     printf("[Error] :: Failed to initialise parameters.\n");
     exit(1);

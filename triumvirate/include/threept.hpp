@@ -40,7 +40,7 @@
 int calc_bispec(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
-  Parameters& params,
+  ParameterSet& params,
   double alpha,
   double* kbin,
   double survey_vol_norm
@@ -547,7 +547,7 @@ int calc_bispec(
  */
 int calc_bispec_in_box(
   ParticleCatalogue& particles_data,
-  Parameters& params,
+  ParameterSet& params,
   double* kbin
 ) {
   if (currTask == 0) {
@@ -979,7 +979,7 @@ int calc_bispec_in_box(
 int calc_3pt_corrfunc(
 	ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
 	LineOfSight* los_data, LineOfSight* los_rand,
-	Parameters& params,
+	ParameterSet& params,
 	double alpha,
 	double* rbin,
 	double survey_vol_norm
@@ -1335,7 +1335,7 @@ int calc_3pt_corrfunc(
  */
 int calc_3pt_corrfunc_in_box(
 	ParticleCatalogue& particles_data,
-	Parameters& params,
+	ParameterSet& params,
 	double* rbin
 ) {
 	if (currTask == 0) {
@@ -1648,7 +1648,7 @@ int calc_3pt_corrfunc_in_box(
 int calc_3pt_corrfunc_window(
 	ParticleCatalogue& particles_rand,
 	LineOfSight* los_rand,
-	Parameters& params,
+	ParameterSet& params,
 	double alpha,
 	double* rbin,
 	double survey_vol_norm
@@ -1991,7 +1991,7 @@ int calc_3pt_corrfunc_window(
 int calc_3pt_corrfunc_window_mpi(
 	ParticleCatalogue& particles_rand,
 	LineOfSight* los_rand,
-	Parameters& params,
+	ParameterSet& params,
 	double alpha,
 	double* rbin,
 	double survey_vol_norm
@@ -2359,7 +2359,7 @@ int calc_3pt_corrfunc_window_mpi(
 int calc_3pt_corrfunc_window_for_wide_angle(
 	ParticleCatalogue& particles_rand,
 	LineOfSight* los_rand,
-	Parameters& params,
+	ParameterSet& params,
 	double alpha,
 	double* rbin,
 	double survey_vol_norm
@@ -2707,7 +2707,7 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 int calc_bispec_for_los_choice(
 	ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
 	LineOfSight* los_data, LineOfSight* los_rand,
-	Parameters& params,
+	ParameterSet& params,
 	double alpha,
 	double* kbin,
 	int los,
@@ -3363,7 +3363,7 @@ int calc_bispec_for_los_choice(
 int calc_bispec_for_M_mode(
 	ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
 	LineOfSight* los_data, LineOfSight* los_rand,
-	Parameters& params,
+	ParameterSet& params,
 	double alpha,
 	double* kbin,
 	double survey_vol_norm
@@ -3896,7 +3896,7 @@ int calc_bispec_(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   std::vector<std::vector<double> > los_data_arr,
 	std::vector<std::vector<double> > los_rand_arr,
-  Parameters& params,
+  ParameterSet& params,
   double alpha,
   double* kbin
 ) {

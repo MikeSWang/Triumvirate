@@ -19,7 +19,7 @@
 int calc_powspec(
   ParticleCatalogue& particles_data, ParticleCatalogue & particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
-  Parameters& params,
+  ParameterSet& params,
   double alpha,
   double* kbin,
   double survey_vol_norm
@@ -162,7 +162,7 @@ int calc_powspec(
 int calc_corrfunc(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
-  Parameters& params,
+  ParameterSet& params,
   double alpha,
   double* rbin,
   double survey_vol_norm
@@ -292,7 +292,7 @@ int calc_corrfunc(
 int calc_powspec_window(
   ParticleCatalogue& particles_rand,
   LineOfSight* los_rand,
-  Parameters& params,
+  ParameterSet& params,
   double alpha,
   double* kbin,
   double survey_vol_norm
@@ -394,7 +394,7 @@ int calc_powspec_window(
 int calc_corrfunc_window(
   ParticleCatalogue& particles_rand,
   LineOfSight* los_rand,
-  Parameters& params,
+  ParameterSet& params,
   double alpha,
   double* rbin,
   double survey_vol_norm
@@ -510,7 +510,7 @@ int calc_corrfunc_window(
  */
 int calc_powspec_in_box(
   ParticleCatalogue& particles_data,
-  Parameters& params,
+  ParameterSet& params,
   double* kbin
 ) {
   if (currTask == 0) {
@@ -597,7 +597,7 @@ int calc_powspec_in_box(
  */
 int calc_corrfunc_in_box(
   ParticleCatalogue& particles_data,
-  Parameters& params,
+  ParameterSet& params,
   double* rbin
 ) {
   if (currTask == 0) {
@@ -691,7 +691,7 @@ int calc_corrfunc_in_box(
 int calc_powspec_in_box_for_recon(
   ParticleCatalogue& particles_data,
   ParticleCatalogue& particles_rand,
-  Parameters& params,
+  ParameterSet& params,
   double alpha,
   double* kbin
 ) {

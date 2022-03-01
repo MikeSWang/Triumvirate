@@ -31,7 +31,7 @@ class DensityField {
    *
    * @param params Parameter set.
    */
-  DensityField(Parameters& params) {
+  DensityField(ParameterSet& params) {
     this->params = params;
 
     /// Set up a complex field and allocate memory.
@@ -335,7 +335,7 @@ class DensityField {
    */
   int calc_fluctuation_in_box(
     ParticleContainer& particles_data,
-    Parameters& params
+    ParameterSet& params
   ) {
     /// Initialise the unit weight field.
     fftw_complex* weight = NULL;
@@ -883,7 +883,7 @@ class DensityField {
   }
 
  private:
-  Parameters params;
+  ParameterSet params;
 
   /**
    * Assign weighted density field to a grid by the nearest-grid-point
@@ -1096,7 +1096,7 @@ class TwoPointStatistics {
    *
    * @param params Parameter set.
    */
-  TwoPointStatistics(Parameters& params){
+  TwoPointStatistics(ParameterSet& params){
     this->params = params;
 
     /// Set up binned power spectrum and mode counter.
@@ -2054,7 +2054,7 @@ class TwoPointStatistics {
   }
 
  private:
-  Parameters params;
+  ParameterSet params;
 };
 
 #endif
