@@ -1,9 +1,9 @@
 """
 ###########################################################################
-``Triumvirate`` | Measuring 3-Point Correlators in Large-Scale Structure
+``Triumvirate`` | Measuring Three-Point Correlators in Large-Scale Structure
 ###########################################################################
 
-``Triumvirate`` is a Python/C++ package that measures the 3-point
+``Triumvirate`` is a Python/C++ package that measures the three-point
 correlators in large-scale structure clustering analysis.
 
 .. topic:: Licence Statement
@@ -29,7 +29,7 @@ __contact__ = "Mike S Wang"
 __copyright__ = "Copyright 2022, N Sugiyama & M S Wang"
 __date__ = "2022-03-01"
 __description__ = (
-    "Measuring 3-point correlators in "
+    "Measuring three-point correlators in "
     "large-scale structure clustering analysis."
 )
 __email__ = "mikeshengbo.wang@ed.ac.uk"

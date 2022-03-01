@@ -27,10 +27,10 @@
 /**
  * Calculate bispectrum from catalogues and save the results.
  *
- * @param particles_data (Reference to) the data-source particle container.
- * @param particles_rand (Reference to) the random-source particle container.
- * @param los_data Data-source particle lines of sight.
- * @param los_rand Random-source particle lines of sight.
+ * @param particles_data (Data-source) particle container.
+ * @param particles_rand (Random-source) particle container.
+ * @param los_data (Data-source) particle lines of sight.
+ * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
@@ -102,7 +102,7 @@ int calc_bispec(
 
 				/// Calculate N_LM in eq. (46) in arXiv:1803.02132.
         DensityField<ParticleCatalogue> shotnoise_quadratic_LM(params);
-        shotnoise_quadratic_LM.calc_ylm_weighted_field_for_bispec_shotnoise(
+        shotnoise_quadratic_LM.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
           particles_data, particles_rand,
           los_data, los_rand,
           alpha,
@@ -179,7 +179,7 @@ int calc_bispec(
 
 	/// Calculate N_00 in eq. (45) in arXiv:1803.02132.
   DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
-  shotnoise_quadratic_00.calc_ylm_weighted_field_for_bispec_shotnoise(
+  shotnoise_quadratic_00.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
     particles_data, particles_rand,
     los_data, los_rand,
     alpha,
@@ -540,7 +540,7 @@ int calc_bispec(
 /**
  * Calculate bispectrum in a periodic box and save the results.
  *
- * @param particles_data (Reference to) the data-source particle container.
+ * @param particles_data (Data-source) particle container.
  * @param params Parameter set.
  * @param kbin Wavenumber bins.
  * @returns Exit status.
@@ -966,10 +966,10 @@ int calc_bispec_in_box(
  * Calculate three-point correlation function from catalogues
  * and save the results.
  *
- * @param particles_data (Reference to) the data-source particle container.
- * @param particles_rand (Reference to) the random-source particle container.
- * @param los_data Data-source particle lines of sight.
- * @param los_rand Random-source particle lines of sight.
+ * @param particles_data (Data-source) particle container.
+ * @param particles_rand (Random-source) particle container.
+ * @param los_data (Data-source) particle lines of sight.
+ * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
@@ -1023,7 +1023,7 @@ int calc_3pt_corrfunc(
 	/// S_{\ell_1 \ell_2 L; i = j != k} in eq. (45) in arXiv:1803.02132
 	/// (see eq. 51).
 	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
-	shotnoise_quadratic_00.calc_ylm_weighted_field_for_bispec_shotnoise(
+	shotnoise_quadratic_00.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
 		particles_data, particles_rand,
 		los_data, los_rand,
 		alpha,
@@ -1328,7 +1328,7 @@ int calc_3pt_corrfunc(
  * Calculate three-point correlation function in a periodic box
  * and save the results.
  *
- * @param particles_data (Reference to) the data-source particle container.
+ * @param particles_data (Data-source) particle container.
  * @param params Parameter set.
  * @param rbin Separation bins.
  * @returns Exit status.
@@ -1637,8 +1637,8 @@ int calc_3pt_corrfunc_in_box(
  * Calculate three-point correlation function window for three-point
  * correlation function from random catalogues and save the results.
  *
- * @param particles_rand (Reference to) the random-source particle container.
- * @param los_rand Random-source particle lines of sight.
+ * @param particles_rand (Random-source) particle container.
+ * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
@@ -1980,8 +1980,8 @@ int calc_3pt_corrfunc_window(
  * catalogues and save the results.  This function parallelises the
  * tasks into different processes.
  *
- * @param particles_rand (Reference to) the random-source particle container.
- * @param los_rand Random-source particle lines of sight.
+ * @param particles_rand (Random-source) particle container.
+ * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
@@ -2348,8 +2348,8 @@ int calc_3pt_corrfunc_window_mpi(
  * save the results.  This function uses logarithmic binning except on
  * the smallest scales, where discretionary bins are used.
  *
- * @param particles_rand (Reference to) the random-source particle container.
- * @param los_rand Random-source particle lines of sight.
+ * @param particles_rand (Random-source) particle container.
+ * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
@@ -2693,10 +2693,10 @@ int calc_3pt_corrfunc_window_for_wide_angle(
  * Calculate bispectrum from catalogues with respect to a choice of
  * line of sight and save the results.
  *
- * @param particles_data (Reference to) the data-source particle container.
- * @param particles_rand (Reference to) the random-source particle container.
- * @param los_data Data-source particle lines of sight.
- * @param los_rand Random-source particle lines of sight.
+ * @param particles_data (Data-source) particle container.
+ * @param particles_rand (Random-source) particle container.
+ * @param los_data (Data-source) particle lines of sight.
+ * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
@@ -2781,14 +2781,14 @@ int calc_bispec_for_los_choice(
 				/// Calculate N_LM in eq. (46) in arXiv:1803.02132.
 				DensityField<ParticleCatalogue> shotnoise_quadratic(params);
 				if (los == 0) {
-					shotnoise_quadratic.calc_ylm_weighted_field_for_bispec_shotnoise(
+					shotnoise_quadratic.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				} else {
-					shotnoise_quadratic.calc_ylm_weighted_field_for_bispec_shotnoise(
+					shotnoise_quadratic.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2882,14 +2882,14 @@ int calc_bispec_for_los_choice(
 				/// Calculate N_LM in eq. (46) in arXiv:1803.02132.
 				DensityField<ParticleCatalogue> shotnoise_quadratic(params);
 				if (los == 1) {
-					shotnoise_quadratic.calc_ylm_weighted_field_for_bispec_shotnoise(
+					shotnoise_quadratic.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				} else {
-					shotnoise_quadratic.calc_ylm_weighted_field_for_bispec_shotnoise(
+					shotnoise_quadratic.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -2978,14 +2978,14 @@ int calc_bispec_for_los_choice(
 
 				DensityField<ParticleCatalogue> shotnoise_quadratic(params);
 				if (los == 2) {
-					shotnoise_quadratic.calc_ylm_weighted_field_for_bispec_shotnoise(
+					shotnoise_quadratic.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
 						0, 0
 					);
 				} else {
-					shotnoise_quadratic.calc_ylm_weighted_field_for_bispec_shotnoise(
+					shotnoise_quadratic.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
 						particles_data, particles_rand,
 						los_data, los_rand,
 						alpha,
@@ -3350,10 +3350,10 @@ int calc_bispec_for_los_choice(
  * Calculate bispectrum from catalogues for modes with individual
  * orders @f$M@f$ and save the results.
  *
- * @param particles_data (Reference to) the data-source particle container.
- * @param particles_rand (Reference to) the random-source particle container.
- * @param los_data Data-source particle lines of sight.
- * @param los_rand Random-source particle lines of sight.
+ * @param particles_data (Data-source) particle container.
+ * @param particles_rand (Random-source) particle container.
+ * @param los_data (Data-source) particle lines of sight.
+ * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
@@ -3435,7 +3435,7 @@ int calc_bispec_for_M_mode(
 
 				/// Calculate N_LM in eq. (46) in arXiv:1803.02132.
 				DensityField<ParticleCatalogue> shotnoise_quadratic_LM(params);
-				shotnoise_quadratic_LM.calc_ylm_weighted_field_for_bispec_shotnoise(
+				shotnoise_quadratic_LM.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
 					particles_data, particles_rand,
 					los_data, los_rand,
 					alpha,
@@ -3511,7 +3511,7 @@ int calc_bispec_for_M_mode(
 
 	/// Calculate N_00 in eq. (45) in arXiv:1803.02132.
 	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
-	shotnoise_quadratic_00.calc_ylm_weighted_field_for_bispec_shotnoise(
+	shotnoise_quadratic_00.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
 		particles_data, particles_rand,
 		los_data, los_rand,
 		alpha,
@@ -3882,10 +3882,10 @@ int calc_bispec_for_M_mode(
 /**
  * Calculate bispectrum from catalogues and save the results.
  *
- * @param particles_data (Reference to) the data-source particle container.
- * @param particles_rand (Reference to) the random-source particle container.
- * @param los_data Data-source particle lines of sight.
- * @param los_rand Random-source particle lines of sight.
+ * @param particles_data (Data-source) particle container.
+ * @param particles_rand (Random-source) particle container.
+ * @param los_data (Data-source) particle lines of sight.
+ * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
@@ -3974,7 +3974,7 @@ int calc_bispec_(
 
 				/// Calculate N_LM in eq. (46) in arXiv:1803.02132.
         DensityField<ParticleCatalogue> shotnoise_quadratic_LM(params);
-        shotnoise_quadratic_LM.calc_ylm_weighted_field_for_bispec_shotnoise(
+        shotnoise_quadratic_LM.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
           particles_data, particles_rand,
           los_data, los_rand,
           alpha,
@@ -4052,7 +4052,7 @@ int calc_bispec_(
 
 	/// Calculate N_00 in eq. (45) in arXiv:1803.02132.
   DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
-  shotnoise_quadratic_00.calc_ylm_weighted_field_for_bispec_shotnoise(
+  shotnoise_quadratic_00.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
     particles_data, particles_rand,
     los_data, los_rand,
     alpha,

@@ -6,10 +6,10 @@
 /**
  * Calculate power spectrum from catalogues and save the results.
  *
- * @param particles_data (Reference to) the data-source particle container.
- * @param particles_rand (Reference to) the random-source particle container.
- * @param los_data Data-source particle lines of sight.
- * @param los_rand Random-source particle lines of sight.
+ * @param particles_data (Data-source) particle container.
+ * @param particles_rand (Random-source) particle container.
+ * @param los_data (Data-source) particle lines of sight.
+ * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
@@ -149,10 +149,10 @@ int calc_powspec(
  * Calculate two-point correlation function from catalogues
  * and save the results.
  *
- * @param particles_data (Reference to) the data-source particle container.
- * @param particles_rand (Reference to) the random-source particle container.
- * @param los_data Data-source particle lines of sight.
- * @param los_rand Random-source particle lines of sight.
+ * @param particles_data (Data-source) particle container.
+ * @param particles_rand (Random-source) particle container.
+ * @param los_data (Data-source) particle lines of sight.
+ * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
  * @param rbin Separation bins.
@@ -281,8 +281,8 @@ int calc_corrfunc(
  * Calculate power spectrum window from random catalogues
  * and save the results.
  *
- * @param particles_rand (Reference to) the random-source particle container.
- * @param los_rand Random-source particle lines of sight.
+ * @param particles_rand (Random-source) particle container.
+ * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
@@ -383,8 +383,8 @@ int calc_powspec_window(
  * Calculate two-point correlation function window from random catalogues
  * and save the results.
  *
- * @param particles_rand (Reference to) the random-source particle container.
- * @param los_rand Random-source particle lines of sight.
+ * @param particles_rand (Random-source) particle container.
+ * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
  * @param kbin Wavenumber bins.
@@ -503,7 +503,7 @@ int calc_corrfunc_window(
 /**
  * Calculate power spectrum in a periodic box and save the results.
  *
- * @param particles_data (Reference to) the data-source particle container.
+ * @param particles_data (Data-source) particle container.
  * @param params Parameter set.
  * @param kbin Wavenumber bins.
  * @returns Exit status.
@@ -590,7 +590,7 @@ int calc_powspec_in_box(
  * Calculate two-point correlation function in a periodic box
  * and save the results.
  *
- * @param particles_data (Reference to) the data-source particle container.
+ * @param particles_data (Data-source) particle container.
  * @param params Parameter set.
  * @param kbin Wavenumber bins.
  * @returns Exit status.
@@ -682,8 +682,8 @@ int calc_corrfunc_in_box(
  * Calculate power spectrum in a periodic box for reconstruction
  * and save the results.
  *
- * @param particles_data (Reference to) the data-source particle container.
- * @param particles_rand (Reference to) the random-source particle container.
+ * @param particles_data (Data-source) particle container.
+ * @param particles_rand (Random-source) particle container.
  * @param params Parameter set.
  * @param kbin Wavenumber bins.
  * @returns Exit status.

@@ -332,7 +332,8 @@ class ParameterSet {
       this->catalogue_dir.c_str()
     );
     fprintf(
-      used_param_file_ptr, "measurement_dir = %s\n", this->measurement_dir.c_str()
+      used_param_file_ptr, "measurement_dir = %s\n",
+      this->measurement_dir.c_str()
     );
     fprintf(
       used_param_file_ptr, "data_catalogue_file = %s\n",
@@ -438,8 +439,8 @@ class ParameterSet {
     )) {
       if (currTask == 0) {
         printf(
-          "[Warning] :: Normalisation convention must be 'grid' or 'particle': "
-          "`norm_convention` = %s.\n",
+          "[Warning] :: Normalisation convention must be "
+          "'grid' or 'particle': `norm_convention` = %s.\n",
           this->norm_convention.c_str()
         );
       }

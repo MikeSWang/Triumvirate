@@ -64,7 +64,7 @@ setup(
     author="Mike S Wang",
     author_email="mikeshengbo.wang@ed.ac.uk",
     description=(
-        "Measuring 3-point correlators in "
+        "Measuring three-point correlators in "
         "large-scale structure clustering analysis."
     ),
     long_description=long_description,

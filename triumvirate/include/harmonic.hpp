@@ -7,6 +7,8 @@
 
 #include <gsl/gsl_sf_legendre.h>
 
+#include "common.hpp"
+
 /**
  * Calculation and storage of spherical harmonics.
  *
