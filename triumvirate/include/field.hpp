@@ -115,8 +115,8 @@ class DensityField {
     fftw_complex* weight = NULL;
 
     /// Calculate the data-source transformed weighted field.
-    weight = fftw_alloc_complex(particles_data.nparticles);
-    for (int id = 0; id < particles_data.nparticles; id++) {
+    weight = fftw_alloc_complex(particles_data.ntotal);
+    for (int id = 0; id < particles_data.ntotal; id++) {
       double los[3] = {
         los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
       };
@@ -133,8 +133,8 @@ class DensityField {
     fftw_free(weight); weight = NULL;
 
     /// Calculate the random-source transformed weighted field.
-    weight = fftw_alloc_complex(particles_rand.nparticles);
-    for (int id = 0; id < particles_rand.nparticles; id++) {
+    weight = fftw_alloc_complex(particles_rand.ntotal);
+    for (int id = 0; id < particles_rand.ntotal; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
@@ -180,8 +180,8 @@ class DensityField {
     fftw_complex* weight = NULL;
 
     /// Calculate the transformed weighted mean field.
-    weight = fftw_alloc_complex(particles_rand.nparticles);
-    for (int id = 0; id < particles_rand.nparticles; id++) {
+    weight = fftw_alloc_complex(particles_rand.ntotal);
+    for (int id = 0; id < particles_rand.ntotal; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
@@ -231,8 +231,8 @@ class DensityField {
     fftw_complex* weight = NULL;
 
     /// Calculate the data-source transformed weighted field.
-    weight = fftw_alloc_complex(particles_data.nparticles);
-    for (int id = 0; id < particles_data.nparticles; id++) {
+    weight = fftw_alloc_complex(particles_data.ntotal);
+    for (int id = 0; id < particles_data.ntotal; id++) {
       double los[3] = {
         los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
       };
@@ -250,8 +250,8 @@ class DensityField {
     fftw_free(weight); weight = NULL;
 
     /// Calculate the random-source transformed weighted field.
-    weight = fftw_alloc_complex(particles_rand.nparticles);
-    for (int id = 0; id < particles_rand.nparticles; id++) {
+    weight = fftw_alloc_complex(particles_rand.ntotal);
+    for (int id = 0; id < particles_rand.ntotal; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
@@ -299,8 +299,8 @@ class DensityField {
     fftw_complex* weight = NULL;
 
     /// Calculate the conjugated transformed weighted mean field.
-    weight = fftw_alloc_complex(particles_rand.nparticles);
-    for (int id = 0; id < particles_rand.nparticles; id++) {
+    weight = fftw_alloc_complex(particles_rand.ntotal);
+    for (int id = 0; id < particles_rand.ntotal; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
@@ -340,8 +340,8 @@ class DensityField {
     /// Initialise the unit weight field.
     fftw_complex* weight = NULL;
 
-    weight = fftw_alloc_complex(particles_data.nparticles);
-    for (int id = 0; id < particles_data.nparticles; id++) {
+    weight = fftw_alloc_complex(particles_data.ntotal);
+    for (int id = 0; id < particles_data.ntotal; id++) {
       weight[id][0] = 1.;
       weight[id][1] = 0.;
     }
@@ -352,7 +352,7 @@ class DensityField {
 
     /// Subtract the global mean density to compute fluctuations, i.e. δn.
     for (int i = 0; i < this->params.nmesh_tot; i++) {
-      this->field[i][0] -= double(particles_data.nparticles) / params.volume;
+      this->field[i][0] -= double(particles_data.ntotal) / params.volume;
       this->field[i][1] -= 0.;
     }
 
@@ -378,8 +378,8 @@ class DensityField {
     fftw_complex* weight = NULL;
 
     /// Calculate the interpolated data-source field.
-    weight = fftw_alloc_complex(particles_data.nparticles);
-    for (int id = 0; id < particles_data.nparticles; id++) {
+    weight = fftw_alloc_complex(particles_data.ntotal);
+    for (int id = 0; id < particles_data.ntotal; id++) {
       weight[id][0] = 1.;
       weight[id][1] = 0.;
     }
@@ -388,8 +388,8 @@ class DensityField {
     fftw_free(weight); weight = NULL;
 
     /// Calculate the interpolated random-source field.
-    weight = fftw_alloc_complex(particles_rand.nparticles);
-    for (int id = 0; id < particles_rand.nparticles; id++) {
+    weight = fftw_alloc_complex(particles_rand.ntotal);
+    for (int id = 0; id < particles_rand.ntotal; id++) {
       weight[id][0] = 1.;
       weight[id][1] = 0.;
     }
@@ -417,8 +417,8 @@ class DensityField {
     /// Initialise the unit weight field.
     fftw_complex* weight = NULL;
 
-    weight = fftw_alloc_complex(particles_data.nparticles);
-    for (int id = 0; id < particles_data.nparticles; id++) {
+    weight = fftw_alloc_complex(particles_data.ntotal);
+    for (int id = 0; id < particles_data.ntotal; id++) {
       weight[id][0] = 1.;
       weight[id][1] = 0.;
     }
@@ -856,8 +856,8 @@ class DensityField {
     /// Initialise the unit weight field.
     fftw_complex* weight = NULL;
 
-    weight = fftw_alloc_complex(particles_rand.nparticles);
-    for (int id = 0; id < particles_rand.nparticles; id++) {
+    weight = fftw_alloc_complex(particles_rand.ntotal);
+    for (int id = 0; id < particles_rand.ntotal; id++) {
       weight[id][0] = particles_rand[id].w;
       weight[id][1] = 0.;
     }
@@ -876,7 +876,7 @@ class DensityField {
     }
 
     double survey_volume_norm =
-      double(particles_rand.nparticles) * double(particles_rand.nparticles)
+      double(particles_rand.ntotal) * double(particles_rand.ntotal)
       / norm;  // NOTE: `double` needed to prevent int overflow
 
     return survey_volume_norm;
@@ -912,7 +912,7 @@ class DensityField {
       // order of the interpolation scheme, i.e. number of mesh grid,
       // per dimension, to which a single particle is assigned
 
-    for (int id = 0; id < particles.nparticles; id++) {
+    for (int id = 0; id < particles.ntotal; id++) {
       int ijk[order][3];  // coordinates of covered mesh grids
       double win[order][3];  // interpolation window
       for (int axis = 0; axis < 3; axis++) {
@@ -973,7 +973,7 @@ class DensityField {
       // order of the interpolation scheme, i.e. number of mesh grid,
       // per dimension, to which a single particle is assigned
 
-    for (int id = 0; id < particles.nparticles; id++) {
+    for (int id = 0; id < particles.ntotal; id++) {
       int ijk[order][3];  // coordinates of covered mesh grids
       double win[order][3];  // interpolation window
       for (int axis = 0; axis < 3; axis++) {
@@ -1038,7 +1038,7 @@ class DensityField {
       // order of the interpolation scheme, i.e. number of mesh grid,
       // per dimension, to which a single particle is assigned
 
-    for (int id = 0; id < particles.nparticles; id++) {
+    for (int id = 0; id < particles.ntotal; id++) {
       int ijk[order][3];  // coordinates of covered mesh grids
       double win[order][3];  // interpolation window
       for (int axis = 0; axis < 3; axis++) {
@@ -1648,7 +1648,7 @@ class TwoPointStatistics {
 
     /// Perform direct summation with spherical harmonic weighting.
     /// See Jing (2005) [arXiv: astro-ph/0409240].
-    for (int id = 0; id < particles_data.nparticles; id++) {
+    for (int id = 0; id < particles_data.ntotal; id++) {
       double los[3] = {
         los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
       };
@@ -1659,7 +1659,7 @@ class TwoPointStatistics {
       sum_data += ylm * pow(particles_data[id].w, 2);
     }
 
-    for (int id = 0; id < particles_rand.nparticles; id++) {
+    for (int id = 0; id < particles_rand.ntotal; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
@@ -1687,8 +1687,8 @@ class TwoPointStatistics {
     ParticleContainer& particles_rand,
     double alpha
   ) {
-    std::complex<double> sum_data = double(particles_data.nparticles);
-    std::complex<double> sum_rand = double(particles_rand.nparticles);
+    std::complex<double> sum_data = double(particles_data.ntotal);
+    std::complex<double> sum_rand = double(particles_rand.ntotal);
 
     return sum_data + pow(alpha, 2) * sum_rand;
   }
@@ -1710,7 +1710,7 @@ class TwoPointStatistics {
     int ell, int m
   ) {
     std::complex<double> sum_rand = 0.;
-    for (int id = 0; id < particles_rand.nparticles; id++) {
+    for (int id = 0; id < particles_rand.ntotal; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };
@@ -1747,7 +1747,7 @@ class TwoPointStatistics {
     std::complex<double> sum_rand = 0.;
 
     /// Perform direct summation with spherical harmonic weighting.
-    for (int id = 0; id < particles_data.nparticles; id++) {
+    for (int id = 0; id < particles_data.ntotal; id++) {
       double los[3] = {
         los_data[id].pos[0], los_data[id].pos[1], los_data[id].pos[2]
       };
@@ -1758,7 +1758,7 @@ class TwoPointStatistics {
       sum_data += ylm * pow(particles_data[id].w, 3);
     }
 
-    for (int id = 0; id < particles_rand.nparticles; id++) {
+    for (int id = 0; id < particles_rand.ntotal; id++) {
       double los[3] = {
         los_rand[id].pos[0], los_rand[id].pos[1], los_rand[id].pos[2]
       };

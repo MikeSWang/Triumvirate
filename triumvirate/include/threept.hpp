@@ -209,10 +209,10 @@ int calc_bispec(
 
       if (flag_nontrivial == "TRUE") {
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-          params.ell1, m1_, params, ylm_a
+          params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
         );
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-          params.ell2, m2_, params, ylm_b
+          params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
         );
       }
 
@@ -392,10 +392,10 @@ int calc_bispec(
 
       if (flag_nontrivial == "TRUE") {
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell1, m1_, params, ylm_a
+          params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
         );
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell2, m2_, params, ylm_b
+          params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
         );
       }
 
@@ -487,9 +487,7 @@ int calc_bispec(
   }
 
   /// Normalise and then save the output.
-  double norm = ParticleCatalogue::calc_norm_for_bispec(
-    particles_data, survey_vol_norm
-  );
+  double norm = pow(survey_vol_norm, 2) / pow(particles_data.wtotal, 3);
 
   FILE* saved_file_ptr;
   char buf[1024];
@@ -505,10 +503,10 @@ int calc_bispec(
       fprintf(
         saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
         kbin[i], kbin[i],
-        norm * (bk_save[i].real() - shotnoise_save[i].real()),
-        norm * (bk_save[i].imag() - shotnoise_save[i].imag()),
-        norm * shotnoise_save[i].real(),
-        norm * shotnoise_save[i].imag()
+        1. * (bk_save[i].real() - shotnoise_save[i].real()),
+        1. * (bk_save[i].imag() - shotnoise_save[i].imag()),
+        1. * shotnoise_save[i].real(),
+        1. * shotnoise_save[i].imag()
       );
     }
   } else if (params.form == "full") {
@@ -610,7 +608,7 @@ int calc_bispec_in_box(
       }
 
       TwoPointStatistics<ParticleCatalogue> stats(params);
-      std::complex<double> shotnoise = double(particles_data.nparticles);
+      std::complex<double> shotnoise = double(particles_data.ntotal);
         // NOTE: ``double`` conversion essential here
 
       if (params.ell1 == 0 && params.ell2 == 0) {
@@ -682,10 +680,10 @@ int calc_bispec_in_box(
         * double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
       SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-        params.ell1, m1_, params, ylm_a
+        params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
       );
       SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-        params.ell2, m2_, params, ylm_b
+        params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
       );
 
       DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
@@ -693,7 +691,7 @@ int calc_bispec_in_box(
       dn_LM_for_shotnoise.calc_fourier_transform();
 
       TwoPointStatistics<ParticleCatalogue> stats(params);
-      std::complex<double> shotnoise = double(particles_data.nparticles);
+      std::complex<double> shotnoise = double(particles_data.ntotal);
 
       fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh_tot);
       bytesMem += sizeof(fftw_complex)
@@ -834,10 +832,10 @@ int calc_bispec_in_box(
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
 			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell1, m1_, params, ylm_a
+				params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 			);
 			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell2, m2_, params, ylm_b
+				params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 			);
 
 			/// Calculate G_{LM} in eq. (42) in arXiv:1803.02132 (equivalent to
@@ -917,8 +915,8 @@ int calc_bispec_in_box(
 	/// Normalise and then save the output.
 	/// NOTE: Save the real parts only.
 	double norm = params.volume
-		/ double(particles_data.nparticles) / double(particles_data.nparticles);
-	norm *= params.volume / double(particles_data.nparticles);
+		/ double(particles_data.ntotal) / double(particles_data.ntotal);
+	norm *= params.volume / double(particles_data.ntotal);
 
 	FILE* saved_file_ptr;
 	char buf[1024];
@@ -1053,10 +1051,10 @@ int calc_3pt_corrfunc(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params, ylm_a
+					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params, ylm_b
+					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 				);
 			}
 
@@ -1182,10 +1180,10 @@ int calc_3pt_corrfunc(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params, ylm_a
+					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params, ylm_b
+					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 				);
 			}
 
@@ -1280,9 +1278,7 @@ int calc_3pt_corrfunc(
   }
 
 	/// Normalise and then save the output.
-	double norm = ParticleCatalogue::calc_norm_for_bispec(
-		particles_data, survey_vol_norm
-	);
+  double norm = pow(survey_vol_norm, 2) / pow(particles_data.wtotal, 3);
 
 	FILE* saved_file_ptr;
 	char buf[1024];
@@ -1404,10 +1400,10 @@ int calc_3pt_corrfunc_in_box(
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
 			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-				params.ell1, m1_, params, ylm_a
+				params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 			);
 			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-				params.ell2, m2_, params, ylm_b
+				params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 			);
 
 			DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
@@ -1415,7 +1411,7 @@ int calc_3pt_corrfunc_in_box(
 			dn_LM_for_shotnoise.calc_fourier_transform();
 
 			TwoPointStatistics<ParticleCatalogue> stats(params);
-			std::complex<double> shotnoise = double(particles_data.nparticles);
+			std::complex<double> shotnoise = double(particles_data.ntotal);
 
 			stats.calc_2pt_func_for_3pt_corrfunc(
 				dn_LM_for_shotnoise, density,
@@ -1505,10 +1501,10 @@ int calc_3pt_corrfunc_in_box(
 				* double(params.nmesh_tot) / 1024. / 1024. / 1024.;
 
 			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell1, m1_, params, ylm_a
+				params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 			);
 			SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-				params.ell2, m2_, params, ylm_b
+				params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 			);
 
 			/// Calculate G_{LM} in eq. (42) in arXiv:1803.02132 (equivalent to
@@ -1590,8 +1586,8 @@ int calc_3pt_corrfunc_in_box(
 
 	/// Normalise and then save the output.
 	double norm = params.volume
-		/ double(particles_data.nparticles) / double(particles_data.nparticles);
-	norm *= params.volume / double(particles_data.nparticles);
+		/ double(particles_data.ntotal) / double(particles_data.ntotal);
+	norm *= params.volume / double(particles_data.ntotal);
 
 	FILE* saved_file_ptr;
 	char buf[1024];
@@ -1719,10 +1715,10 @@ int calc_3pt_corrfunc_window(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params, ylm_a
+					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params, ylm_b
+					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 				);
 			}
 
@@ -1838,10 +1834,10 @@ int calc_3pt_corrfunc_window(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params, ylm_a
+					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params, ylm_b
+					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 				);
 			}
 
@@ -1932,9 +1928,7 @@ int calc_3pt_corrfunc_window(
   }
 
 	/// Normalise and then save the output.
-	double norm = ParticleCatalogue::calc_norm_for_bispec(
-		particles_rand, survey_vol_norm
-	);
+  double norm = pow(survey_vol_norm, 2) / pow(particles_rand.wtotal, 3);
 	norm /= alpha * alpha * alpha;
 
 	FILE* saved_file_ptr;
@@ -2086,10 +2080,10 @@ int calc_3pt_corrfunc_window_mpi(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params, ylm_a
+					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params, ylm_b
+					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 				);
 			}
 
@@ -2205,10 +2199,10 @@ int calc_3pt_corrfunc_window_mpi(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params, ylm_a
+					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params, ylm_b
+					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 				);
 			}
 
@@ -2300,9 +2294,7 @@ int calc_3pt_corrfunc_window_mpi(
   }
 
 	/// Normalise and then save the output.
-	double norm = ParticleCatalogue::calc_norm_for_bispec(
-			particles_rand, survey_vol_norm
-	);
+  double norm = pow(survey_vol_norm, 2) / pow(particles_rand.wtotal, 3);
 	norm /= alpha * alpha * alpha;
 
 	FILE* saved_file_ptr;
@@ -2435,10 +2427,10 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params, ylm_a
+					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params, ylm_b
+					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 				);
 			}
 
@@ -2554,10 +2546,10 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params, ylm_a
+					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params, ylm_b
+					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 				);
 			}
 
@@ -2649,9 +2641,7 @@ int calc_3pt_corrfunc_window_for_wide_angle(
   }
 
 	/// Normalise and then save the output.
-	double norm = ParticleCatalogue::calc_norm_for_bispec(
-		particles_rand, survey_vol_norm
-	);
+  double norm = pow(survey_vol_norm, 2) / pow(particles_rand.wtotal, 3);
 	norm /= alpha * alpha * alpha;
 
 	FILE* saved_file_ptr;
@@ -2970,10 +2960,10 @@ int calc_bispec_for_los_choice(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params, ylm_a
+					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params, ylm_b
+					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 				);
 			}
 
@@ -3169,10 +3159,10 @@ int calc_bispec_for_los_choice(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params, ylm_a
+					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params, ylm_b
+					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 				);
 			}
 
@@ -3310,9 +3300,7 @@ int calc_bispec_for_los_choice(
 
 	/// Normalise and then save the output.
 	/// NOTE: Save the real parts only.
-	double norm = ParticleCatalogue::calc_norm_for_bispec(
-		particles_data, survey_vol_norm
-	);
+  double norm = pow(survey_vol_norm, 2) / pow(particles_data.wtotal, 3);
 
 	FILE* saved_file_ptr;
 	char buf[1024];
@@ -3553,10 +3541,10 @@ int calc_bispec_for_M_mode(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell1, m1_, params, ylm_a
+					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-					params.ell2, m2_, params, ylm_b
+					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 				);
 			}
 
@@ -3747,10 +3735,10 @@ int calc_bispec_for_M_mode(
 
 			if (flag_nontrivial == "TRUE") {
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell1, m1_, params, ylm_a
+					params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
 				);
 				SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-					params.ell2, m2_, params, ylm_b
+					params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
 				);
 			}
 
@@ -3844,9 +3832,7 @@ int calc_bispec_for_M_mode(
 
 	/// Normalise and then save the output.
 	/// NOTE: Save the real parts only.
-	double norm = ParticleCatalogue::calc_norm_for_bispec(
-		particles_data, survey_vol_norm
-	);
+  double norm = pow(survey_vol_norm, 2) / pow(particles_data.wtotal, 3);
 
 	for (int M_ = 0; M_<2*params.ELL + 1; M_++) {
 		FILE* saved_file_ptr;
@@ -3922,16 +3908,20 @@ int calc_bispec_(
 
 	LineOfSight* los_data = new LineOfSight[los_data_arr.size()];
 	LineOfSight* los_rand = new LineOfSight[los_rand_arr.size()];
-  for (int id = 0; id < particles_data.nparticles; id++) {
+  for (int id = 0; id < particles_data.ntotal; id++) {
       los_data[id].pos[0] = los_data_arr[id][0];
       los_data[id].pos[1] = los_data_arr[id][1];
       los_data[id].pos[2] = los_data_arr[id][2];
   }
-  for (int id = 0; id < particles_rand.nparticles; id++) {
+  for (int id = 0; id < particles_rand.ntotal; id++) {
       los_rand[id].pos[0] = los_rand_arr[id][0];
       los_rand[id].pos[1] = los_rand_arr[id][1];
       los_rand[id].pos[2] = los_rand_arr[id][2];
   }
+
+	ParticleCatalogue::align_catalogues_for_fft(
+		particles_data, particles_rand, params.boxsize, params.nmesh
+	);
 
   if (
     fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)) < 1.e-10
@@ -4092,10 +4082,10 @@ int calc_bispec_(
 
       if (flag_nontrivial == "TRUE") {
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-          params.ell1, m1_, params, ylm_a
+          params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
         );
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
-          params.ell2, m2_, params, ylm_b
+          params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
         );
       }
 
@@ -4276,10 +4266,10 @@ int calc_bispec_(
 
       if (flag_nontrivial == "TRUE") {
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell1, m1_, params, ylm_a
+          params.ell1, m1_, params.boxsize, params.nmesh, ylm_a
         );
         SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell2, m2_, params, ylm_b
+          params.ell2, m2_, params.boxsize, params.nmesh, ylm_b
         );
       }
 

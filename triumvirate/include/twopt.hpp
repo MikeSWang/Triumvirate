@@ -121,10 +121,8 @@ int calc_powspec(
   }
 
   /// Normalise and then save the output.
-  double norm = 0.;
-  norm = ParticleCatalogue::calc_norm_for_powspec(
-    particles_data, survey_vol_norm
-  );
+  double norm = survey_vol_norm
+    / particles_data.wtotal / particles_data.wtotal;
 
   char buf[1024];
   sprintf(
@@ -256,9 +254,8 @@ int calc_corrfunc(
   }
 
   /// Normalise and then save the output.
-  double norm = ParticleCatalogue::calc_norm_for_powspec(
-    particles_data, survey_vol_norm
-  );
+  double norm = survey_vol_norm
+    / particles_data.wtotal / particles_data.wtotal;
 
   char buf[1024];
   sprintf(
@@ -349,9 +346,8 @@ int calc_powspec_window(
   std::cout << "Current memory usage: " << bytesMem << " bytesMem." << std::endl;
 
   /// Normalise and then save the output.
-  double norm = ParticleCatalogue::calc_norm_for_powspec(
-    particles_rand, survey_vol_norm
-  );
+  double norm = survey_vol_norm
+    / particles_rand.wtotal / particles_rand.wtotal;
   norm /= alpha * alpha;
   norm /= params.volume;  // NOTE: volume normalisation is essential
 
@@ -480,9 +476,8 @@ int calc_corrfunc_window(
   }
 
   /// Normalise and then save the output.
-  double norm = ParticleCatalogue::calc_norm_for_powspec(
-    particles_rand, survey_vol_norm
-  );
+  double norm = survey_vol_norm
+    / particles_rand.wtotal / particles_rand.wtotal;
   norm /= alpha * alpha;
 
   char buf[1024];
@@ -544,7 +539,7 @@ int calc_powspec_in_box(
 
   /// Compute shot noise.
   TwoPointStatistics<ParticleCatalogue> stats(params);
-  std::complex<double> shotnoise = double(particles_data.nparticles);
+  std::complex<double> shotnoise = double(particles_data.ntotal);
 
   /// Compute power spectrum.
   stats.calc_2pt_func_in_fourier(
@@ -569,7 +564,7 @@ int calc_powspec_in_box(
 
   /// Normalise and then save the output.
   double norm = params.volume
-    / double(particles_data.nparticles) / double(particles_data.nparticles);
+    / double(particles_data.ntotal) / double(particles_data.ntotal);
 
   char buf[1024];
   sprintf(
@@ -634,7 +629,7 @@ int calc_corrfunc_in_box(
 
   /// Compute shot noise.
   TwoPointStatistics<ParticleCatalogue> stats(params);
-  std::complex<double> shotnoise = double(particles_data.nparticles);
+  std::complex<double> shotnoise = double(particles_data.ntotal);
 
   /// Compute two-point correlation function.
   stats.calc_2pt_func_in_config(
@@ -661,7 +656,7 @@ int calc_corrfunc_in_box(
 
   /// Normalise and then save the output.
   double norm = params.volume
-    / double(particles_data.nparticles) / double(particles_data.nparticles);
+    / double(particles_data.ntotal) / double(particles_data.ntotal);
 
   char buf[1024];
   sprintf(
@@ -761,7 +756,7 @@ int calc_powspec_in_box_for_recon(
 
   /// Normalise and then save the output.
   double norm = params.volume
-    / double(particles_data.nparticles) / double(particles_data.nparticles);
+    / double(particles_data.ntotal) / double(particles_data.ntotal);
 
   char buf[1024];
   sprintf(

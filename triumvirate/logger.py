@@ -9,6 +9,8 @@ import logging
 import sys
 import time
 
+from numpy import isin
+
 # TODO: Add C++ context to logger.
 
 
@@ -67,10 +69,15 @@ class _CppLogAdapter(logging.LoggerAdapter):
         # Extract passed state variable or resort to default from `extra`.
         cpp_state = kwargs.pop('cpp_state', self.extra['cpp_state'])
 
+        if isinstance(cpp_state, str):
+            if cpp_state.lower() == 'start':
+                return "(C++ start) %s" % msg, kwargs
+            if cpp_state.lower() == 'end':
+                return "(C++ end) %s" % msg, kwargs
+
         if cpp_state:
             return "(C++) %s" % msg, kwargs
-        else:
-            return "%s" % msg, kwargs
+        return "%s" % msg, kwargs
 
 
 def setup_logger():

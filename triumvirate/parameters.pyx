@@ -1,18 +1,25 @@
 # cython: c_string_type=unicode, c_string_encoding=utf8
 """
-Measurement Parameters (:mod:`~triumvirate.parameters`)
+Parameter Set (:mod:`~triumvirate.parameters`)
 ===========================================================================
 
-Configure measurement parameters.
+Configure program parameter set.
 
 """
+from os.path import abspath
+from pprint import pformat
+
 from cython.operator import dereference as deref
 
 import numpy as np
+import yaml
 
 
-cdef class Parameters(ParameterSet):
-    """Measurement parameters.
+cdef class ParameterSet:
+    """Program parameter set.
+
+    The value of a parameter is accessed through its key in the same
+    way as for :type:`dict`.
 
     Parameters
     ----------
@@ -21,57 +28,94 @@ cdef class Parameters(ParameterSet):
     logger : :class:`logging.Logger`, optional
         Program logger (default is `None`).
 
-    See Also
-    --------
-    :class:`~triumvirate.parameter_set`
-
     """
 
-    def __cinit__(self, filepath, logger=None):
-
-        super().__init__()
+    # Add `args` and `kwargs` for Cython subclass 'init'-compatibility.
+    def __cinit__(self, filepath, logger=None, *args, **kwargs):
 
         self.thisptr = new CppParameters()
 
         self._logger = logger
 
+        self._source = abspath(filepath)
+        self._status = 'original'.encode('utf-8')
+
+        with open(filepath, 'r') as filestream:
+            self._params = yaml.load(filestream, Loader=yaml.Loader)
+
         self._parse_attrs()
 
-    def printout(self):
-        """Print out validated parameters to a file in measurement
-        directory.
+    def __str__(self):
+        return "\n".join([
+            f"Source: {self._source}",
+            f"Status: {self._status}",
+            f"Params: {pformat(self._params, sort_dicts=False)}",
+        ])
+
+    def __getitem__(self, key):
+        return self._params[key]
+
+    def __setitem__(self, key, val):
+        self._params.update({key: val})
+        self._status = 'modified'.encode('utf-8')
+
+    def printout(self, filepath=None):
+        """Print out validated parameters to a file.
+
+        Parameters
+        ----------
+        filepath : str or :class:`pathlib.Path`, optional
+            Printout file path.  If `None` (default), parameters are
+            printed out to a default file in measurement directory.
 
         """
-        if self._logger:
-            self._logger.info("Printing out parameters...")
-            try:
-                self._logger.info("", cpp_state=True)
-            except:
-                self._logger.info("Entering C++ run...")
+        if filepath:
+            with open(filepath, 'w') as out_file:
+                yaml.dump(
+                    self._params, out_file,
+                    sort_keys=False, default_flow_style=False
+                )
 
-        if self.thisptr.printout() != 0:
-            raise RuntimeError(
-                "Failed to print out extracted parameters to file."
-            )
+            if self._logger:
+                self._logger.info("Printed out parameters to %s.", filepath)
+        else:
+            if self._logger:
+                try:
+                    self._logger.info("", cpp_state='start')
+                except:
+                    self._logger.info("Entering C++ run...")
 
-        if self._logger:
-            try:
-                self._logger.info("", cpp_state=True)
-            except:
-                self._logger.info("... exited C++ run.")
-            self._logger.info("... printed out parameters.")
+            if self.thisptr.printout() != 0:
+                raise RuntimeError(
+                    "Failed to print out extracted parameters to file."
+                )
+
+            if self._logger:
+                try:
+                    self._logger.info("", cpp_state='end')
+                except:
+                    self._logger.info("... exited C++ run.")
+
+                self._logger.info(
+                    "Printed out parameters to measurement directory."
+                )
+
 
     def _parse_attrs(self):
+        """Parse the parameter set into wrapped C++ parameter class.
 
-        # RFE: Implement serialisation of catalogue files for e.g.
-        # suite of simulations.
+        """
+        # RFE: Implement serialisation of catalogue files for
+        # e.g. suite of simulations.
         self.thisptr.catalogue_dir = \
             self._params['directories']['catalogues']
         self.thisptr.measurement_dir = \
             self._params['directories']['measurements']
-        self.thisptr.data_catalogue_file = self.thisptr.catalogue_dir \
+        self.thisptr.data_catalogue_file = \
+            self.thisptr.catalogue_dir \
             + self._params['filenames']['data_catalogue']
-        self.thisptr.rand_catalogue_file = self.thisptr.catalogue_dir \
+        self.thisptr.rand_catalogue_file = \
+            self.thisptr.catalogue_dir \
             + self._params['filenames']['rand_catalogue']
         self.thisptr.output_tag = \
             self._params['tags']['output']
@@ -128,7 +172,7 @@ cdef class Parameters(ParameterSet):
         if self._logger:
             self._logger.info("Validating parameters...")
             try:
-                self._logger.info("", cpp_state=True)
+                self._logger.info("", cpp_state='start')
             except:
                 self._logger.info("Entering C++ run...")
 
@@ -137,7 +181,8 @@ cdef class Parameters(ParameterSet):
 
         if self._logger:
             try:
-                self._logger.info("", cpp_state=True)
+                self._logger.info("", cpp_state='end')
             except:
                 self._logger.info("... exited C++ run.")
             self._logger.info("... validated parameters.")
+
