@@ -178,9 +178,9 @@ int main(int argc, char* argv[]) {
     std::cout << "" << std::endl;
 
     std::cout << "Volume normalisation : V_norm = "
-      << survey_vol_norm << std::endl;
+      << vol_norm << std::endl;
     std::cout << "Size of effective volume (geometric mean) : L_norm = "
-      << pow(survey_vol_norm, 1./3.) << std::endl;
+      << pow(vol_norm, 1./3.) << std::endl;
   }
 
   durationInSec = double(clock() - timeStart);

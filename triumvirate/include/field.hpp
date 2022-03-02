@@ -1971,6 +1971,8 @@ class TwoPointStatistics {
     ) {
       return this->calc_shotnoise_scale_dependence_tsc(kvec);
     }
+
+    return 1.;
   }
 
   /**
@@ -1992,6 +1994,8 @@ class TwoPointStatistics {
    * @returns Function value.
    */
   double calc_shotnoise_scale_dependence_cic(const double* kvec) {
+    const double tol = 1.e-5;
+
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
