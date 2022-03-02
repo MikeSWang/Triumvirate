@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
   /// Compute catalogue field volume.
   DensityField<ParticleCatalogue> field_rand(params);
 
-  double survey_vol_norm = field_rand.calc_survey_volume_norm(particles_rand);
+  double vol_norm = field_rand.calc_volume_normalisation(particles_rand);
 
   field_rand.finalise_density_field();
 
@@ -210,7 +210,7 @@ int main(int argc, char* argv[]) {
         params,
         alpha,
         kbin,
-        survey_vol_norm
+        vol_norm
       );
     }
     if (params.measurement_type == "2pcf") {
@@ -220,12 +220,12 @@ int main(int argc, char* argv[]) {
         params,
         alpha,
         rbin,
-        survey_vol_norm
+        vol_norm
       );
     }
     if (params.measurement_type == "2pcf-win") {
       calc_corrfunc_window(
-        particles_rand, los_rand, params, alpha, rbin, survey_vol_norm
+        particles_rand, los_rand, params, alpha, rbin, vol_norm
       );
     }
 
@@ -236,7 +236,7 @@ int main(int argc, char* argv[]) {
         params,
         alpha,
         kbin,
-        survey_vol_norm
+        vol_norm
       );
     }
     if (params.measurement_type == "3pcf") {
@@ -246,17 +246,17 @@ int main(int argc, char* argv[]) {
         params,
         alpha,
         rbin,
-        survey_vol_norm
+        vol_norm
       );
     }
     if (params.measurement_type == "3pcf-win") {
       calc_3pt_corrfunc_window(
-        particles_rand, los_rand, params, alpha, rbin, survey_vol_norm
+        particles_rand, los_rand, params, alpha, rbin, vol_norm
       );
     }
     if (params.measurement_type == "3pcf-win-wa") {
       calc_3pt_corrfunc_window_for_wide_angle(
-        particles_rand, los_rand, params, alpha, rbin, survey_vol_norm
+        particles_rand, los_rand, params, alpha, rbin, vol_norm
       );
     }
   }

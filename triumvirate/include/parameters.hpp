@@ -481,14 +481,14 @@ class ParameterSet {
 
     if (this->binning == "linpad" || this->assignment == "logpad") {
       /// HACK: Compare with `BinScheme::set_rbin`.
-      int nbins_custom = 5;
+      int nbin_custom = 5;
 
-      if (this->num_rbin < nbins_custom + 2) {
+      if (this->num_rbin < nbin_custom + 2) {
         if (currTask == 0) {
           printf(
             "[Error] :: Binning scheme '%s' requires `num_rbin` >= %d.\n",
             this->binning.c_str(),
-            nbins_custom + 2
+            nbin_custom + 2
           );
         }
         return -1;

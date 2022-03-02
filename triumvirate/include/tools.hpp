@@ -59,35 +59,35 @@ class BinScheme {
       /// RFE: Insert customised binning code here.
     } else if (params.binning == "logpad") {
       /// CAVEAT: Discretionary choices.
-      int nbins_custom = 5;
+      int nbin_custom = 5;
 
-      for (int ibin = 0; ibin < nbins_custom; ibin++) {
+      for (int ibin = 0; ibin < nbin_custom; ibin++) {
         rbin_out[ibin] = 10. * ibin;
       }
 
-      double rmin = 10. * nbins_custom;
+      double rmin = 10. * nbin_custom;
 
       double dlnr = (log(params.rmax) - log(rmin))
-        / double((params.num_rbin - nbins_custom) - 1);
+        / double((params.num_rbin - nbin_custom) - 1);
 
-      for (int ibin = nbins_custom; ibin < params.num_rbin; ibin++) {
-        rbin_out[ibin] = rmin * exp(dlnr * (ibin - nbins_custom));
+      for (int ibin = nbin_custom; ibin < params.num_rbin; ibin++) {
+        rbin_out[ibin] = rmin * exp(dlnr * (ibin - nbin_custom));
       }
     } else if (params.binning == "linpad") {
       /// CAVEAT: Discretionary choices.
-      int nbins_custom = 5;
+      int nbin_custom = 5;
 
-      for (int ibin = 0; ibin < nbins_custom; ibin++) {
+      for (int ibin = 0; ibin < nbin_custom; ibin++) {
         rbin_out[ibin] = 10. * ibin;
       }
 
-      double rmin = 10. * nbins_custom;
+      double rmin = 10. * nbin_custom;
 
       double dr = (params.rmax - rmin)
-        / double((params.num_rbin - nbins_custom) - 1);
+        / double((params.num_rbin - nbin_custom) - 1);
 
-      for (int ibin = nbins_custom; ibin < params.num_rbin; ibin++) {
-        rbin_out[ibin] = rmin + dr * (ibin - nbins_custom);
+      for (int ibin = nbin_custom; ibin < params.num_rbin; ibin++) {
+        rbin_out[ibin] = rmin + dr * (ibin - nbin_custom);
       }
     } else if (params.binning == "log")  {
       double rmin;

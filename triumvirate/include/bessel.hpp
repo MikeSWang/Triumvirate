@@ -30,7 +30,7 @@ class SphericalBesselCalculator {
     double* x = new double[nsample];
     double* j_ell = new double[nsample];
     for (int i = 0; i < nsample; i++) {
-      x[i] = xmin + dx * double(i);  // FIXME: remove double conversion
+      x[i] = xmin + dx * i;
       j_ell[i] = gsl_sf_bessel_jl(ell, x[i]);
     }
 

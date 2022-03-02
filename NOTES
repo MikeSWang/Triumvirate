@@ -1,1 +1,5 @@
-[NOTE] The following code tags are in use: {'TODO', 'RFE', 'NOTE', 'WARNING', 'HACK', 'IDEA'}.
+[NOTE] The following code tags are in use: {
+    'TODO', 'QUEST', 'RFE', 'IDEA',
+    'NOBUG', 'CAVEAT', 'NOTE', 'HACK',
+    'FIXME', 'WARNING'
+  }
