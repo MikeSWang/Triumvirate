@@ -240,7 +240,7 @@ int main(int argc, char* argv[]) {
       );
     }
     if (params.measurement_type == "3pcf") {
-      calc_3pt_corrfunc(
+      calc_3pcf(
         particles_data, particles_rand,
         los_data, los_rand,
         params,
@@ -250,12 +250,12 @@ int main(int argc, char* argv[]) {
       );
     }
     if (params.measurement_type == "3pcf-win") {
-      calc_3pt_corrfunc_window(
+      calc_3pcf_window(
         particles_rand, los_rand, params, alpha, rbin, vol_norm
       );
     }
     if (params.measurement_type == "3pcf-win-wa") {
-      calc_3pt_corrfunc_window_for_wide_angle(
+      calc_3pcf_window_for_wide_angle(
         particles_rand, los_rand, params, alpha, rbin, vol_norm
       );
     }
@@ -266,7 +266,7 @@ int main(int argc, char* argv[]) {
     calc_corrfunc_in_box(particles_data, params, rbin);
 
     calc_bispec_in_box(particles_data, params, kbin);
-    calc_3pt_corrfunc_in_box(particles_data, params, rbin);
+    calc_3pcf_in_box(particles_data, params, rbin);
   }
 
   durationInSec = double(clock() - timeStart);
