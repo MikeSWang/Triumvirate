@@ -42,13 +42,13 @@ int calc_powspec(
   /// Compute monopoles of the Fourier--harmonic transform of the density
   /// fluctuation, i.e. δn_00.
   DensityField<ParticleCatalogue> dn_00(params);
-  dn_00.calc_ylm_weighted_fluctuation(
+  dn_00.calc_ylm_wgtd_fluctuation(
     particles_data, particles_rand,
     los_data, los_rand,
     alpha,
     0, 0
   );
-  dn_00.calc_fourier_transform();
+  dn_00.fourier_transform();
 
   /// Compute power spectrum with shot noise.
   double* k_save = new double[params.num_kbin];
@@ -64,13 +64,13 @@ int calc_powspec(
     /// Compute Fourier--harmonic transform of the density fluctuation.
     DensityField<ParticleCatalogue> dn_LM(params);
       // NOBUG: naming convention overriden
-    dn_LM.calc_ylm_weighted_fluctuation(
+    dn_LM.calc_ylm_wgtd_fluctuation(
       particles_data, particles_rand,
       los_data, los_rand,
       alpha,
       params.ELL, M_
     );
-    dn_LM.calc_fourier_transform();
+    dn_LM.fourier_transform();
 
     /// Compute shot noise.
     TwoPointStatistics<ParticleCatalogue> stats(params);
@@ -91,10 +91,10 @@ int calc_powspec(
         continue;
       }
 
-      stats.calc_2pt_func_in_fourier(
+      stats.calc_2pt_stats_in_fourier(
         dn_LM, dn_00,
-        kbin,
         shotnoise,
+        kbin,
         params.ell1, m1_
       );
 
@@ -186,13 +186,13 @@ int calc_corrfunc(
   /// Compute monopole of the Fourier--harmonic transform of the density
   /// fluctuation.
   DensityField<ParticleCatalogue> dn_00(params);
-  dn_00.calc_ylm_weighted_fluctuation(
+  dn_00.calc_ylm_wgtd_fluctuation(
     particles_data, particles_rand,
     los_data, los_rand,
     alpha,
     0, 0
   );
-  dn_00.calc_fourier_transform();
+  dn_00.fourier_transform();
 
   /// Compute two-point correlation function.
   std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
@@ -204,13 +204,13 @@ int calc_corrfunc(
     /// Compute Fourier--harmonic transform of the density fluctuation.
     DensityField<ParticleCatalogue> dn_LM(params);
       // NOBUG: naming convention overriden
-    dn_LM.calc_ylm_weighted_fluctuation(
+    dn_LM.calc_ylm_wgtd_fluctuation(
       particles_data, particles_rand,
       los_data, los_rand,
       alpha,
       params.ELL, M_
     );
-    dn_LM.calc_fourier_transform();
+    dn_LM.fourier_transform();
 
     /// Compute shot noise.
     TwoPointStatistics<ParticleCatalogue> stats(params);
@@ -231,10 +231,10 @@ int calc_corrfunc(
         continue;
       }
 
-      stats.calc_2pt_func_in_config(
+      stats.calc_2pt_stats_in_config(
         dn_LM, dn_00,
-        rbin,
         shotnoise,
+        rbin,
         params.ell1, m1_
       );
 
@@ -305,7 +305,7 @@ int calc_powspec_window(
     if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
       printf(
         "[Error] :: Disallowed multipole degree combination "
-        "for two-point statistics measurements. "
+        "for two-point correlator measurements. "
         "Please set `ell1 = ELL` and `ell2 = 0`.\n"
       );
       exit(1);
@@ -315,8 +315,8 @@ int calc_powspec_window(
   /// Compute monopole of the Fourier--harmonic transform of
   /// the mean density.
   DensityField<ParticleCatalogue> dn_00(params);
-  dn_00.calc_ylm_weighted_density(particles_rand, los_rand, alpha, 0, 0);
-  dn_00.calc_fourier_transform();
+  dn_00.calc_ylm_wgtd_density(particles_rand, los_rand, alpha, 0, 0);
+  dn_00.fourier_transform();
 
   /// Initialise output power spectrum window.
   std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
@@ -333,10 +333,10 @@ int calc_powspec_window(
   std::cout << "Current memory usage: " << bytesMem << " bytesMem." << std::endl;
 
   /// Compute power spectrum window.
-  stats.calc_2pt_func_in_fourier(
+  stats.calc_2pt_stats_in_fourier(
     dn_00, dn_00,
-    kbin,
     shotnoise,
+    kbin,
     params.ELL, 0
   );  // `ell1` or `ELL` as  equivalent
 
@@ -408,7 +408,7 @@ int calc_corrfunc_window(
     if (!(params.ell1 == params.ELL && params.ell2 == 0)) {
       printf(
         "[Error] :: Disallowed multipole degree combination "
-        "for two-point statistics measurements. "
+        "for two-point correlator measurements. "
         "Please set `ell1 = ELL` and `ell2 = 0`.\n"
       );
       exit(1);
@@ -418,8 +418,8 @@ int calc_corrfunc_window(
   /// Compute monopole of the Fourier--harmonic transform of
   /// the mean density.
   DensityField<ParticleCatalogue> dn_00(params);
-  dn_00.calc_ylm_weighted_density(particles_rand, los_rand, alpha, 0, 0);
-  dn_00.calc_fourier_transform();
+  dn_00.calc_ylm_wgtd_density(particles_rand, los_rand, alpha, 0, 0);
+  dn_00.fourier_transform();
 
   /// Initialise output two-point correlation function.
   std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
@@ -432,10 +432,10 @@ int calc_corrfunc_window(
     /// Compute Fourier--harmonic transform of the density fluctuation.
     DensityField<ParticleCatalogue> dn_LM(params);
       // NOBUG: naming convention overriden
-    dn_LM.calc_ylm_weighted_density(
+    dn_LM.calc_ylm_wgtd_density(
       particles_rand, los_rand, alpha, params.ELL, M_
     );
-    dn_LM.calc_fourier_transform();
+    dn_LM.fourier_transform();
 
     /// Compute shot noise.
     TwoPointStatistics<ParticleCatalogue> stats(params);
@@ -453,10 +453,10 @@ int calc_corrfunc_window(
         continue;
       }
 
-      stats.calc_2pt_func_in_config(
+      stats.calc_2pt_stats_in_config(
         dn_LM, dn_00,
-        rbin,
         shotnoise,
+        rbin,
         params.ell1, m1_
       );
 
@@ -531,7 +531,7 @@ int calc_powspec_in_box(
   dn.calc_unweighted_fluctuation_insitu(
 		particles_data, params.volume
 	);
-  dn.calc_fourier_transform();
+  dn.fourier_transform();
 
   /// Initialise output power spectrum.
   std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
@@ -544,10 +544,10 @@ int calc_powspec_in_box(
   std::complex<double> shotnoise = double(particles_data.ntotal);
 
   /// Compute power spectrum.
-  stats.calc_2pt_func_in_fourier(
+  stats.calc_2pt_stats_in_fourier(
     dn, dn,
-    kbin,
     shotnoise,
+    kbin,
     params.ELL, 0
   );
 
@@ -623,7 +623,7 @@ int calc_corrfunc_in_box(
   dn.calc_unweighted_fluctuation_insitu(
 		particles_data, params.volume
 	);
-  dn.calc_fourier_transform();
+  dn.fourier_transform();
 
   /// Initialise output two-point correlation function.
   std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
@@ -636,10 +636,10 @@ int calc_corrfunc_in_box(
   std::complex<double> shotnoise = double(particles_data.ntotal);
 
   /// Compute two-point correlation function.
-  stats.calc_2pt_func_in_config(
+  stats.calc_2pt_stats_in_config(
     dn, dn,
-    rbin,
     shotnoise,
+    rbin,
     params.ELL, 0
   );
 
@@ -720,7 +720,7 @@ int calc_powspec_in_box_for_recon(
   dn.calc_unweighted_fluctuation(
     particles_data, particles_rand, alpha
   );
-  dn.calc_fourier_transform();
+  dn.fourier_transform();
 
   /// Initialise output power spectrum.
   std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
@@ -736,10 +736,10 @@ int calc_powspec_in_box_for_recon(
     );
 
   /// Compute power spectrum.
-  stats.calc_2pt_func_in_fourier(
+  stats.calc_2pt_stats_in_fourier(
     dn, dn,
-    kbin,
     shotnoise,
+    kbin,
     params.ELL, 0
   );
 
