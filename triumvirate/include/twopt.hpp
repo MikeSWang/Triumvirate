@@ -315,7 +315,7 @@ int calc_powspec_window(
   /// Compute monopole of the Fourier--harmonic transform of
   /// the mean density.
   DensityField<ParticleCatalogue> dn_00(params);
-  dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
+  dn_00.calc_ylm_weighted_density(particles_rand, los_rand, alpha, 0, 0);
   dn_00.calc_fourier_transform();
 
   /// Initialise output power spectrum window.
@@ -418,7 +418,7 @@ int calc_corrfunc_window(
   /// Compute monopole of the Fourier--harmonic transform of
   /// the mean density.
   DensityField<ParticleCatalogue> dn_00(params);
-  dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
+  dn_00.calc_ylm_weighted_density(particles_rand, los_rand, alpha, 0, 0);
   dn_00.calc_fourier_transform();
 
   /// Initialise output two-point correlation function.
@@ -432,7 +432,7 @@ int calc_corrfunc_window(
     /// Compute Fourier--harmonic transform of the density fluctuation.
     DensityField<ParticleCatalogue> dn_LM(params);
       // NOBUG: naming convention overriden
-    dn_LM.calc_ylm_weighted_mean_density(
+    dn_LM.calc_ylm_weighted_density(
       particles_rand, los_rand, alpha, params.ELL, M_
     );
     dn_LM.calc_fourier_transform();
@@ -528,7 +528,9 @@ int calc_powspec_in_box(
 
   /// Fourier transform the density field.
   DensityField<ParticleCatalogue> dn(params);
-  dn.calc_fluctuation_in_box(particles_data, params);
+  dn.calc_unweighted_fluctuation_insitu(
+		particles_data, params.volume
+	);
   dn.calc_fourier_transform();
 
   /// Initialise output power spectrum.
@@ -618,7 +620,9 @@ int calc_corrfunc_in_box(
 
   /// Fourier transform the density field.
   DensityField<ParticleCatalogue> dn(params);
-  dn.calc_fluctuation_in_box(particles_data, params);
+  dn.calc_unweighted_fluctuation_insitu(
+		particles_data, params.volume
+	);
   dn.calc_fourier_transform();
 
   /// Initialise output two-point correlation function.
@@ -713,7 +717,7 @@ int calc_powspec_in_box_for_recon(
 
   /// Fourier transform the density field.
   DensityField<ParticleCatalogue> dn(params);
-  dn.calc_fluctuation_in_box_for_recon(
+  dn.calc_unweighted_fluctuation(
     particles_data, particles_rand, alpha
   );
   dn.calc_fourier_transform();

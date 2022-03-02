@@ -141,8 +141,8 @@ class ParticleCatalogue:
 
         """
         origin = [
-            np.mean(self.bounds[axis]) - boxsize[idx_axis] / 2.
-            for idx_axis, axis in enumerate(['x', 'y', 'z'])
+            np.mean(self.bounds[axis]) - boxsize[iaxis] / 2.
+            for iaxis, axis in enumerate(['x', 'y', 'z'])
         ]
 
         self.offset_coords(origin)

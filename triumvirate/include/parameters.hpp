@@ -62,7 +62,7 @@ class ParameterSet {
    * Read parameters from a file.
    *
    * @param argv Command-line argument list.
-   * @returns Validation outcome.
+   * @returns Validation exit status.
    */
   int read_from_file(char* argv[]) {
     /// Load the parameter file (assumed to be the second argument,
@@ -512,8 +512,6 @@ class ParameterSet {
   /**
    * Set I/O paths and directories for data and random catalogue files
    * and processed results.
-   *
-   * @returns Exit status.
    */
   void set_io_files() {
     /// Set survey data and random catalogue inputs.
