@@ -41,8 +41,8 @@ class BinScheme {
   static void set_kbin(const ParameterSet& params, double* kbin_out) {
     double dk = (params.kmax - params.kmin) / double(params.num_kbin - 1);
 
-    for (int i = 0; i < params.num_kbin; i++) {
-      kbin_out[i] = params.kmin + dk * i;
+    for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+      kbin_out[ibin] = params.kmin + dk * ibin;
     }
   }
 
@@ -61,8 +61,8 @@ class BinScheme {
       /// CAVEAT: Discretionary choices.
       int nbins_custom = 5;
 
-      for (int idx_bin = 0; idx_bin < nbins_custom; idx_bin++) {
-        rbin_out[idx_bin] = 10. * idx_bin;
+      for (int ibin = 0; ibin < nbins_custom; ibin++) {
+        rbin_out[ibin] = 10. * ibin;
       }
 
       double rmin = 10. * nbins_custom;
@@ -70,15 +70,15 @@ class BinScheme {
       double dlnr = (log(params.rmax) - log(rmin))
         / double((params.num_rbin - nbins_custom) - 1);
 
-      for (int idx_bin = nbins_custom; idx_bin < params.num_rbin; idx_bin++) {
-        rbin_out[idx_bin] = rmin * exp(dlnr * (idx_bin - nbins_custom));
+      for (int ibin = nbins_custom; ibin < params.num_rbin; ibin++) {
+        rbin_out[ibin] = rmin * exp(dlnr * (ibin - nbins_custom));
       }
     } else if (params.binning == "linpad") {
       /// CAVEAT: Discretionary choices.
       int nbins_custom = 5;
 
-      for (int idx_bin = 0; idx_bin < nbins_custom; idx_bin++) {
-        rbin_out[idx_bin] = 10. * idx_bin;
+      for (int ibin = 0; ibin < nbins_custom; ibin++) {
+        rbin_out[ibin] = 10. * ibin;
       }
 
       double rmin = 10. * nbins_custom;
@@ -86,8 +86,8 @@ class BinScheme {
       double dr = (params.rmax - rmin)
         / double((params.num_rbin - nbins_custom) - 1);
 
-      for (int idx_bin = nbins_custom; idx_bin < params.num_rbin; idx_bin++) {
-        rbin_out[idx_bin] = rmin + dr * (idx_bin - nbins_custom);
+      for (int ibin = nbins_custom; ibin < params.num_rbin; ibin++) {
+        rbin_out[ibin] = rmin + dr * (ibin - nbins_custom);
       }
     } else if (params.binning == "log")  {
       double rmin;
@@ -101,14 +101,14 @@ class BinScheme {
       double dlnr = (log(params.rmax) - log(rmin))
         / double(params.num_rbin - 1);
 
-      for (int idx_bin = 0; idx_bin < params.num_rbin; idx_bin++) {
-        rbin_out[idx_bin] = rmin * exp(dlnr * idx_bin);
+      for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+        rbin_out[ibin] = rmin * exp(dlnr * ibin);
       }
     } else {  // by default ``params.binning == "lin"``
       double dr = (params.rmax - params.rmin) / double(params.num_rbin - 1);
 
-      for (int idx_bin = 0; idx_bin < params.num_rbin; idx_bin++) {
-        rbin_out[idx_bin] = params.rmin + dr * idx_bin;
+      for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+        rbin_out[ibin] = params.rmin + dr * ibin;
       }
     }
   }

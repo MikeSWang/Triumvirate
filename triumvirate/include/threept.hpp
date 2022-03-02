@@ -75,8 +75,8 @@ int calc_bispec(
 
   std::complex<double>* shotnoise_save =
     new std::complex<double>[params.num_kbin];
-  for (int i = 0; i < params.num_kbin; i++) {
-    shotnoise_save[i] = 0.;
+  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    shotnoise_save[ibin] = 0.;
   }
 
   /// Compute shot noise terms.
@@ -123,8 +123,8 @@ int calc_bispec(
     		/// Calculate S_{\ell_1 \ell_2 L; i = j = k} in eq. (45)
 				/// in arXiv:1803.02132.
         if (params.ell1 == 0 && params.ell2 == 0) {
-          for (int i = 0; i < params.num_kbin; i++) {
-            shotnoise_save[i] += coupling * shotnoise_cubic_LM;
+          for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+            shotnoise_save[ibin] += coupling * shotnoise_cubic_LM;
           }
         }
 
@@ -138,12 +138,12 @@ int calc_bispec(
 						params.ell1, m1_
           );
           if (params.form == "diag") {
-            for (int i = 0; i < params.num_kbin; i++) {
-              shotnoise_save[i] += coupling * stats.pk[i];
+            for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+              shotnoise_save[ibin] += coupling * stats.pk[ibin];
             }
           } else if (params.form == "full") {
-            for (int i = 0; i < params.num_kbin; i++) {
-              shotnoise_save[i] += coupling * stats.pk[params.ith_kbin];
+            for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+              shotnoise_save[ibin] += coupling * stats.pk[params.ith_kbin];
             }
           }
         }
@@ -157,8 +157,8 @@ int calc_bispec(
 						shotnoise_cubic_LM,
 						params.ell2, m2_
           );
-          for (int i = 0; i < params.num_kbin; i++) {
-            shotnoise_save[i] += coupling * stats.pk[i];
+          for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+            shotnoise_save[ibin] += coupling * stats.pk[ibin];
           }
         }
 
@@ -248,9 +248,9 @@ int calc_bispec(
         fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh);
         bytesMem += sizeof(fftw_complex) *
           double(params.nmesh) / 1024. / 1024. / 1024.;
-        for (int i = 0; i < params.nmesh; i++) {
-          three_pt_holder[i][0] = 0.;
-          three_pt_holder[i][1] = 0.;
+        for (int gid = 0; gid < params.nmesh; gid++) {
+          three_pt_holder[gid][0] = 0.;
+          three_pt_holder[gid][1] = 0.;
         }
 
         stats.calc_shotnoise_for_bispec_on_grid(
@@ -358,8 +358,8 @@ int calc_bispec(
   }
 
   std::complex<double>* bk_save = new std::complex<double>[params.num_kbin];
-  for (int i = 0; i < params.num_kbin; i++) {
-    bk_save[i] = 0.;
+  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    bk_save[ibin] = 0.;
   }
 
   /// Compute bispectrum.
@@ -429,7 +429,7 @@ int calc_bispec(
         if (params.form == "full") {
           kmag_a = kbin[params.ith_kbin];
           F_ellm_a.calc_inverse_fourier_transform_for_bispec(
-            dn_00, kmag_a, dk, ylm_a
+            dn_00, ylm_a, kmag_a, dk
           );
         }
 
@@ -439,21 +439,21 @@ int calc_bispec(
           if (params.form == "diag") {
             kmag_a = kmag_b;
             F_ellm_a.calc_inverse_fourier_transform_for_bispec(
-              dn_00, kmag_a, dk, ylm_a
+              dn_00, ylm_a, kmag_a, dk
             );
           }
 
           DensityField<ParticleCatalogue> F_ellm_b(params);
           F_ellm_b.calc_inverse_fourier_transform_for_bispec(
-            dn_00, kmag_b, dk, ylm_b
+            dn_00, ylm_b, kmag_b, dk
           );
 
           double factor = params.volume / double(params.nmesh);
           std::complex<double> bk_sum = 0.;
-          for (int i = 0; i < params.nmesh; i++) {
-            std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
-            std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
-            std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+          for (int gid = 0; gid < params.nmesh; gid++) {
+            std::complex<double> F_ellm_1(F_ellm_a[gid][0], F_ellm_a[gid][1]);
+            std::complex<double> F_ellm_2(F_ellm_b[gid][0], F_ellm_b[gid][1]);
+            std::complex<double> G_LM(dn_LM[gid][0], dn_LM[gid][1]);
             bk_sum += factor * F_ellm_1 * F_ellm_2 * G_LM;
           }
 
@@ -499,14 +499,14 @@ int calc_bispec(
 			params.output_tag.c_str()
     );
     saved_file_ptr = fopen(buf, "w");
-    for (int i = 0; i < params.num_kbin; i++) {
+    for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
         saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
-        kbin[i], kbin[i],
-        1. * (bk_save[i].real() - shotnoise_save[i].real()),
-        1. * (bk_save[i].imag() - shotnoise_save[i].imag()),
-        1. * shotnoise_save[i].real(),
-        1. * shotnoise_save[i].imag()
+        kbin[ibin], kbin[ibin],
+        1. * (bk_save[ibin].real() - shotnoise_save[ibin].real()),
+        1. * (bk_save[ibin].imag() - shotnoise_save[ibin].imag()),
+        1. * shotnoise_save[ibin].real(),
+        1. * shotnoise_save[ibin].imag()
       );
     }
   } else if (params.form == "full") {
@@ -518,14 +518,14 @@ int calc_bispec(
 			params.output_tag.c_str()
     );
     saved_file_ptr = fopen(buf, "w");
-    for (int i = 0; i < params.num_kbin; i++) {
+    for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
         saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
-        kbin[params.ith_kbin], kbin[i],
-        norm * (bk_save[i].real() - shotnoise_save[i].real()),
-        norm * (bk_save[i].imag() - shotnoise_save[i].imag()),
-        norm * shotnoise_save[i].real(),
-        norm * shotnoise_save[i].imag()
+        kbin[params.ith_kbin], kbin[ibin],
+        norm * (bk_save[ibin].real() - shotnoise_save[ibin].real()),
+        norm * (bk_save[ibin].imag() - shotnoise_save[ibin].imag()),
+        norm * shotnoise_save[ibin].real(),
+        norm * shotnoise_save[ibin].imag()
       );
     }
   }
@@ -578,21 +578,23 @@ int calc_bispec_in_box(
 
   std::complex<double>* shotnoise_save =
     new std::complex<double>[params.num_kbin];
-  for (int i = 0; i < params.num_kbin; i++) {
-    shotnoise_save[i] = 0.;
+  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    shotnoise_save[ibin] = 0.;
   }
 
 	/// Calculate normal density field in the global plane-parallel
 	/// picture in contrast with `shotnoise_cubic_LM`.
 	DensityField<ParticleCatalogue> density(params);
-	density.calc_density_field_in_box_for_bispec(particles_data);
+	density.calc_unweighted_density(particles_data);
 	density.calc_fourier_transform();
 
   /// Compute shot noise terms.
 	/// WARNING: This was inherited from Sugiyama et al. without
 	/// matching equation.
   DensityField<ParticleCatalogue> dn_00_for_shotnoise(params);
-  dn_00_for_shotnoise.calc_fluctuation_in_box(particles_data, params);
+  dn_00_for_shotnoise.calc_unweighted_fluctuation_insitu(
+		particles_data, params.volume
+	);
   dn_00_for_shotnoise.calc_fourier_transform();
 
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -612,8 +614,8 @@ int calc_bispec_in_box(
         // NOTE: ``double`` conversion essential here
 
       if (params.ell1 == 0 && params.ell2 == 0) {
-        for (int i = 0; i < params.num_kbin; i++) {
-          shotnoise_save[i] += coupling * shotnoise;
+        for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+          shotnoise_save[ibin] += coupling * shotnoise;
         }
       }
 
@@ -625,12 +627,12 @@ int calc_bispec_in_box(
           params.ell1, m1_
         );
         if (params.form == "diag") {
-          for (int i = 0; i < params.num_kbin; i++) {
-            shotnoise_save[i] += coupling * stats.pk[i];
+          for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+            shotnoise_save[ibin] += coupling * stats.pk[ibin];
           }
         } else if (params.form == "full") {
-          for (int i = 0; i < params.num_kbin; i++) {
-            shotnoise_save[i] += coupling * stats.pk[params.ith_kbin];
+          for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+            shotnoise_save[ibin] += coupling * stats.pk[params.ith_kbin];
           }
         }
       }
@@ -642,8 +644,8 @@ int calc_bispec_in_box(
           shotnoise,
           params.ell2, m2_
         );
-        for (int i = 0; i < params.num_kbin; i++) {
-          shotnoise_save[i] += coupling * stats.pk[i];
+        for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+          shotnoise_save[ibin] += coupling * stats.pk[ibin];
         }
       }
 
@@ -687,7 +689,9 @@ int calc_bispec_in_box(
       );
 
       DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
-      dn_LM_for_shotnoise.calc_fluctuation_in_box(particles_data, params);
+      dn_LM_for_shotnoise.calc_unweighted_fluctuation_insitu(
+				particles_data, params.volume
+			);
       dn_LM_for_shotnoise.calc_fourier_transform();
 
       TwoPointStatistics<ParticleCatalogue> stats(params);
@@ -696,9 +700,9 @@ int calc_bispec_in_box(
       fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh);
       bytesMem += sizeof(fftw_complex)
         * double(params.nmesh) / 1024. / 1024. / 1024.;
-      for (int i = 0; i < params.nmesh; i++) {
-        three_pt_holder[i][0] = 0.;
-        three_pt_holder[i][1] = 0.;
+      for (int gid = 0; gid < params.nmesh; gid++) {
+        three_pt_holder[gid][0] = 0.;
+        three_pt_holder[gid][1] = 0.;
       }
 
       stats.calc_shotnoise_for_bispec_on_grid(
@@ -805,13 +809,15 @@ int calc_bispec_in_box(
 	}
 
 	std::complex<double>* bk_save = new std::complex<double>[params.num_kbin];
-	for (int i = 0; i < params.num_kbin; i++) {
-		bk_save[i] = 0.;
+	for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+		bk_save[ibin] = 0.;
 	}
 
 	/// Compute bispectrum.
 	DensityField<ParticleCatalogue> dn_00(params);
-	dn_00.calc_fluctuation_in_box(particles_data, params);
+	dn_00.calc_unweighted_fluctuation_insitu(
+		particles_data, params.volume
+	);
 	dn_00.calc_fourier_transform();
 
 	for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -842,7 +848,9 @@ int calc_bispec_in_box(
 			/// normal density fluctuation with L, M = 0, 0 in the global
 			/// plane-parallel picture).
 			DensityField<ParticleCatalogue> dn_LM(params);
-			dn_LM.calc_fluctuation_in_box(particles_data, params);
+			dn_LM.calc_unweighted_fluctuation_insitu(
+				particles_data, params.volume
+			);
 			dn_LM.calc_fourier_transform();
 			dn_LM.apply_assignment_compensation();
 			dn_LM.calc_inverse_fourier_transform();
@@ -856,7 +864,7 @@ int calc_bispec_in_box(
 			if (params.form == "full") {
 				kmag_a = kbin[params.ith_kbin];
 				F_ellm_a.calc_inverse_fourier_transform_for_bispec(
-					dn_00, kmag_a, dk, ylm_a
+					dn_00, ylm_a, kmag_a, dk
 				);
 			}
 
@@ -866,21 +874,21 @@ int calc_bispec_in_box(
 				if (params.form == "diag") {
 					kmag_a = kmag_b;
 					F_ellm_a.calc_inverse_fourier_transform_for_bispec(
-						dn_00, kmag_a, dk, ylm_a
+						dn_00, ylm_a, kmag_a, dk
 					);
 				}
 
 				DensityField<ParticleCatalogue> F_ellm_b(params);
 				F_ellm_b.calc_inverse_fourier_transform_for_bispec(
-					dn_00, kmag_b, dk, ylm_b
+					dn_00, ylm_b, kmag_b, dk
 				);
 
 				double factor = params.volume / double(params.nmesh);
 				std::complex<double> bk_sum = 0.;
-				for (int i = 0; i < params.nmesh; i++) {
-					std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
-					std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
-					std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+				for (int gid = 0; gid < params.nmesh; gid++) {
+					std::complex<double> F_ellm_1(F_ellm_a[gid][0], F_ellm_a[gid][1]);
+					std::complex<double> F_ellm_2(F_ellm_b[gid][0], F_ellm_b[gid][1]);
+					std::complex<double> G_LM(dn_LM[gid][0], dn_LM[gid][1]);
 					bk_sum += factor * F_ellm_1 * F_ellm_2 * G_LM;
 				}
 
@@ -928,12 +936,12 @@ int calc_bispec_in_box(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_kbin; i++) {
+		for (int ibin = 0; ibin < params.num_kbin; ibin++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				kbin[i], kbin[i],
-				1. * (bk_save[i].real() - shotnoise_save[i].real()),
-				1. * shotnoise_save[i].real()
+				kbin[ibin], kbin[ibin],
+				1. * (bk_save[ibin].real() - shotnoise_save[ibin].real()),
+				1. * shotnoise_save[ibin].real()
 			);
 		}
 	} else if (params.form == "full") {
@@ -945,12 +953,12 @@ int calc_bispec_in_box(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_kbin; i++) {
+		for (int ibin = 0; ibin < params.num_kbin; ibin++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				kbin[params.ith_kbin], kbin[i],
-				1. * (bk_save[i].real() - shotnoise_save[i].real()),
-				1. * shotnoise_save[i].real()
+				kbin[params.ith_kbin], kbin[ibin],
+				1. * (bk_save[ibin].real() - shotnoise_save[ibin].real()),
+				1. * shotnoise_save[ibin].real()
 			);
 		}
 	}
@@ -1015,8 +1023,8 @@ int calc_3pt_corrfunc(
 
 	std::complex<double>* shotnoise_save =
 		new std::complex<double>[params.num_rbin];
-	for (int i = 0; i < params.num_rbin; i++) {
-		shotnoise_save[i] = 0.;
+	for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+		shotnoise_save[ibin] = 0.;
 	}
 
 	/// Compute shot noise terms, including only
@@ -1093,16 +1101,16 @@ int calc_3pt_corrfunc(
 					ylm_a, ylm_b
 				);
 
-				for (int i = 0; i < params.num_rbin; i++) {
+				for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 					if (params.form == "diag") {
-						shotnoise_save[i] += coupling * stats.xi[i];
+						shotnoise_save[ibin] += coupling * stats.xi[ibin];
 					} else if (params.form == "full") {
 						/// Calculate shot noise contribution equivalent to the
 						/// Kronecker delta in eq. (51) in arXiv:1803.02132.
-						if (i == params.ith_rbin) {
-							shotnoise_save[i] += coupling * stats.xi[i];
+						if (ibin == params.ith_rbin) {
+							shotnoise_save[ibin] += coupling * stats.xi[ibin];
 						} else {
-							shotnoise_save[i] += 0.;
+							shotnoise_save[ibin] += 0.;
 						}
 					}
 				}
@@ -1144,8 +1152,8 @@ int calc_3pt_corrfunc(
 	}
 
 	std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
-	for (int i = 0; i < params.num_rbin; i++) {
-		zeta_save[i] = 0.;
+	for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+		zeta_save[ibin] = 0.;
 	}
 
   /// Compute three-point correlation function.
@@ -1238,10 +1246,10 @@ int calc_3pt_corrfunc(
 					std::complex<double> I_(0., 1.);
 					std::complex<double> zeta_sum = 0.;
 					double factor = params.volume / double(params.nmesh);
-					for (int i = 0; i < params.nmesh; i++) {
-						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
-						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
-						std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+					for (int gid = 0; gid < params.nmesh; gid++) {
+						std::complex<double> F_ellm_1(F_ellm_a[gid][0], F_ellm_a[gid][1]);
+						std::complex<double> F_ellm_2(F_ellm_b[gid][0], F_ellm_b[gid][1]);
+						std::complex<double> G_LM(dn_LM[gid][0], dn_LM[gid][1]);
 						zeta_sum += pow(I_, params.ell1 + params.ell2) * factor
 							* F_ellm_1 * F_ellm_2 * G_LM;
 					}
@@ -1290,12 +1298,12 @@ int calc_3pt_corrfunc(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_rbin; i++) {
+		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[i], rbin[i],
-				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
+				rbin[ibin], rbin[ibin],
+				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
+				norm * shotnoise_save[ibin].real()
 			);
 		}
 	} else if (params.form == "full") {
@@ -1307,12 +1315,12 @@ int calc_3pt_corrfunc(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_rbin; i++) {
+		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[params.ith_rbin], rbin[i],
-				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
+				rbin[params.ith_rbin], rbin[ibin],
+				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
+				norm * shotnoise_save[ibin].real()
 			);
 		}
 	}
@@ -1369,8 +1377,8 @@ int calc_3pt_corrfunc_in_box(
 
 	std::complex<double>* shotnoise_save =
 		new std::complex<double>[params.num_rbin];
-	for (int i = 0; i < params.num_rbin; i++) {
-		shotnoise_save[i] = 0.;
+	for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+		shotnoise_save[ibin] = 0.;
 	}
 
 	/// Calculate normal density field in the global plane-parallel
@@ -1378,7 +1386,7 @@ int calc_3pt_corrfunc_in_box(
 	/// WARNING: This was inherited from Sugiyama et al. without
 	/// matching equation.
 	DensityField<ParticleCatalogue> density(params);
-	density.calc_density_field_in_box_for_bispec(particles_data);
+	density.calc_unweighted_density(particles_data);
 	density.calc_fourier_transform();
 
 	/// Compute shot noise terms.
@@ -1407,7 +1415,9 @@ int calc_3pt_corrfunc_in_box(
 			);
 
 			DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
-			dn_LM_for_shotnoise.calc_fluctuation_in_box(particles_data, params);
+			dn_LM_for_shotnoise.calc_unweighted_fluctuation_insitu(
+				particles_data, params.volume
+			);
 			dn_LM_for_shotnoise.calc_fourier_transform();
 
 			TwoPointStatistics<ParticleCatalogue> stats(params);
@@ -1421,16 +1431,16 @@ int calc_3pt_corrfunc_in_box(
 				ylm_a, ylm_b
 			);
 
-			for (int i = 0; i < params.num_rbin; i++) {
+			for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 				if (params.form == "diag") {
-					shotnoise_save[i] += coupling * stats.xi[i];
+					shotnoise_save[ibin] += coupling * stats.xi[ibin];
 				} else if (params.form == "full") {
 					/// Calculate shot noise contribution equivalent to the
 					/// Kronecker delta in eq. (51) in arXiv:1803.02132.
-					if (i == params.ith_rbin) {
-						shotnoise_save[i] += coupling * stats.xi[i];
+					if (ibin == params.ith_rbin) {
+						shotnoise_save[ibin] += coupling * stats.xi[ibin];
 					} else {
-						shotnoise_save[i] += 0.;
+						shotnoise_save[ibin] += 0.;
 					}
 				}
 			}
@@ -1472,13 +1482,15 @@ int calc_3pt_corrfunc_in_box(
 	}
 
 	std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
-	for (int i = 0; i < params.num_rbin; i++) {
-		zeta_save[i] = 0.;
+	for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+		zeta_save[ibin] = 0.;
 	}
 
 	/// Compute three-point correlation function.
 	DensityField<ParticleCatalogue> dn_00(params);
-	dn_00.calc_fluctuation_in_box(particles_data, params);
+	dn_00.calc_unweighted_fluctuation_insitu(
+		particles_data, params.volume
+	);
 	dn_00.calc_fourier_transform();
 
 	SphericalBesselCalculator sj1(params.ell1);
@@ -1511,7 +1523,9 @@ int calc_3pt_corrfunc_in_box(
 			/// normal density fluctuation with L, M = 0, 0 in the global
 			/// plane-parallel picture).
 			DensityField<ParticleCatalogue> dn_LM(params);
-			dn_LM.calc_fluctuation_in_box(particles_data, params);
+			dn_LM.calc_unweighted_fluctuation_insitu(
+				particles_data, params.volume
+			);
 			dn_LM.calc_fourier_transform();
 			dn_LM.apply_assignment_compensation();
 			dn_LM.calc_inverse_fourier_transform();
@@ -1546,10 +1560,10 @@ int calc_3pt_corrfunc_in_box(
 				double factor = params.volume / double(params.nmesh);
 				std::complex<double> I_(0., 1.);
 				std::complex<double> zeta_sum = 0.;
-				for (int i = 0; i < params.nmesh; i++) {
-					std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
-					std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
-					std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+				for (int gid = 0; gid < params.nmesh; gid++) {
+					std::complex<double> F_ellm_1(F_ellm_a[gid][0], F_ellm_a[gid][1]);
+					std::complex<double> F_ellm_2(F_ellm_b[gid][0], F_ellm_b[gid][1]);
+					std::complex<double> G_LM(dn_LM[gid][0], dn_LM[gid][1]);
 					zeta_sum += factor * pow(I_, params.ell1 + params.ell2)
 						* F_ellm_1 * F_ellm_2 * G_LM;
 				}
@@ -1599,12 +1613,12 @@ int calc_3pt_corrfunc_in_box(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_rbin; i++) {
+		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[i], rbin[i],
-				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
+				rbin[ibin], rbin[ibin],
+				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
+				norm * shotnoise_save[ibin].real()
 			);
 		}
 	} else if (params.form == "full") {
@@ -1616,12 +1630,12 @@ int calc_3pt_corrfunc_in_box(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_rbin; i++) {
+		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[params.ith_rbin], rbin[i],
-				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
+				rbin[params.ith_rbin], rbin[ibin],
+				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
+				norm * shotnoise_save[ibin].real()
 			);
 		}
 	}
@@ -1684,13 +1698,13 @@ int calc_3pt_corrfunc_window(
 
 	std::complex<double>* shotnoise_save =
 		new std::complex<double>[params.num_rbin];
-	for (int i = 0; i < params.num_rbin; i++) {
-		shotnoise_save[i] = 0.;
+	for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+		shotnoise_save[ibin] = 0.;
 	}
 
 	/// Compute shot noise terms.
 	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
-	shotnoise_quadratic_00.calc_ylm_weighted_mean_density_for_3pcf_window_shotnoise(
+	shotnoise_quadratic_00.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
 		particles_rand, los_rand, alpha, 0, 0
 	);
 	shotnoise_quadratic_00.calc_fourier_transform();
@@ -1732,7 +1746,7 @@ int calc_3pt_corrfunc_window(
 				}
 
 				DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
-				dn_LM_for_shotnoise.calc_ylm_weighted_mean_density(
+				dn_LM_for_shotnoise.calc_ylm_weighted_density(
 					particles_rand, los_rand, alpha, params.ELL, M_
 				);
 				dn_LM_for_shotnoise.calc_fourier_transform();
@@ -1751,16 +1765,16 @@ int calc_3pt_corrfunc_window(
 					ylm_a, ylm_b
 				);
 
-				for (int i = 0; i < params.num_rbin; i++) {
+				for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 					if (params.form == "diag") {
-						shotnoise_save[i] += coupling * stats.xi[i];
+						shotnoise_save[ibin] += coupling * stats.xi[ibin];
 					} else if (params.form == "full") {
 						/// Calculate shot noise contribution equivalent to
 						/// the Kronecker delta.  See `calc_3pt_corrfunc`.
-						if (i == params.ith_rbin) {
-							shotnoise_save[i] += coupling * stats.xi[i];
+						if (ibin == params.ith_rbin) {
+							shotnoise_save[ibin] += coupling * stats.xi[ibin];
 						} else {
-							shotnoise_save[i] += 0.;
+							shotnoise_save[ibin] += 0.;
 						}
 					}
 				}
@@ -1803,13 +1817,13 @@ int calc_3pt_corrfunc_window(
 	}
 
 	std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
-	for (int i = 0; i < params.num_rbin; i++) {
-		zeta_save[i] = 0.;
+	for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+		zeta_save[ibin] = 0.;
 	}
 
   /// Compute three-point correlation function window.
 	DensityField<ParticleCatalogue> dn_00(params);
-	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
+	dn_00.calc_ylm_weighted_density(particles_rand, los_rand, alpha, 0, 0);
 	dn_00.calc_fourier_transform();
 
 	SphericalBesselCalculator sj1(params.ell1);
@@ -1852,7 +1866,7 @@ int calc_3pt_corrfunc_window(
 
 				/// Calculate G_{LM}.  See `calc_3pt_corrfunc`.s
 				DensityField<ParticleCatalogue> dn_LM(params);
-				dn_LM.calc_ylm_weighted_mean_density(
+				dn_LM.calc_ylm_weighted_density(
 					particles_rand, los_rand, alpha, params.ELL, M_
 				);
 				dn_LM.calc_fourier_transform();
@@ -1888,10 +1902,10 @@ int calc_3pt_corrfunc_window(
 					std::complex<double> I_(0., 1.);
 					std::complex<double> zeta_sum = 0.;
 					double factor = params.volume / double(params.nmesh);
-					for (int i = 0; i < params.nmesh; i++) {
-						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
-						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
-						std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+					for (int gid = 0; gid < params.nmesh; gid++) {
+						std::complex<double> F_ellm_1(F_ellm_a[gid][0], F_ellm_a[gid][1]);
+						std::complex<double> F_ellm_2(F_ellm_b[gid][0], F_ellm_b[gid][1]);
+						std::complex<double> G_LM(dn_LM[gid][0], dn_LM[gid][1]);
 						zeta_sum += pow(I_, params.ell1 + params.ell2) * factor
 							* F_ellm_1 * F_ellm_2 * G_LM;
 					}
@@ -1941,12 +1955,12 @@ int calc_3pt_corrfunc_window(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_rbin; i++) {
+		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[i], rbin[i],
-				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
+				rbin[ibin], rbin[ibin],
+				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
+				norm * shotnoise_save[ibin].real()
 			);
 		}
 	} else if (params.form == "full") {
@@ -1958,12 +1972,12 @@ int calc_3pt_corrfunc_window(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_rbin; i++) {
+		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[params.ith_rbin], rbin[i],
-				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
+				rbin[params.ith_rbin], rbin[ibin],
+				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
+				norm * shotnoise_save[ibin].real()
 			);
 		}
 	}
@@ -2035,8 +2049,8 @@ int calc_3pt_corrfunc_window_mpi(
 	double dlnr = (log(params.rmax) - log(rmin))
 		/ double((params.num_rbin - 8) - 1);
 
-	for (int i = 8; i < params.num_rbin; i++) {
-		rbin[i] = rmin * exp(dlnr * (i - 8));
+	for (int ibin = 8; ibin < params.num_rbin; ibin++) {
+		rbin[ibin] = rmin * exp(dlnr * (ibin - 8));
 	}
 
 	/// Initialise output shot noise terms.
@@ -2049,13 +2063,13 @@ int calc_3pt_corrfunc_window_mpi(
 	}
 
 	std::complex<double>* shotnoise_save = new std::complex<double>[n_temp];
-	for (int i = 0; i < n_temp; i++) {
-		shotnoise_save[i] = 0.;
+	for (int ibin = 0; ibin < n_temp; ibin++) {
+		shotnoise_save[ibin] = 0.;
 	}
 
 	/// Compute shot noise terms.
 	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
-	shotnoise_quadratic_00.calc_ylm_weighted_mean_density_for_3pcf_window_shotnoise(
+	shotnoise_quadratic_00.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
 		particles_rand, los_rand, alpha, 0, 0
 	);
 	shotnoise_quadratic_00.calc_fourier_transform();
@@ -2097,7 +2111,7 @@ int calc_3pt_corrfunc_window_mpi(
 				}
 
 				DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
-				dn_LM_for_shotnoise.calc_ylm_weighted_mean_density(
+				dn_LM_for_shotnoise.calc_ylm_weighted_density(
 					particles_rand, los_rand, alpha, params.ELL, M_
 				);
 				dn_LM_for_shotnoise.calc_fourier_transform();
@@ -2116,16 +2130,16 @@ int calc_3pt_corrfunc_window_mpi(
 					ylm_a, ylm_b
 				);
 
-				for (int i = 0; i < n_temp; i++) {
+				for (int idx = 0; idx < n_temp; idx++) {
 					if (params.form == "diag") {
-						shotnoise_save[i] += coupling * stats.xi[i + NR * n_temp];
+						shotnoise_save[idx] += coupling * stats.xi[idx + NR * n_temp];
 					} else if (params.form == "full") {
 						/// Calculate shot noise contribution equivalent to
 						/// the Kronecker delta.  See `calc_3pt_corrfunc`.
-						if (i + NR * n_temp == params.ith_rbin) {
-							shotnoise_save[i] += coupling * stats.xi[i + NR * n_temp];
+						if (idx + NR * n_temp == params.ith_rbin) {
+							shotnoise_save[idx] += coupling * stats.xi[idx + NR * n_temp];
 						} else {
-							shotnoise_save[i] += 0.;
+							shotnoise_save[idx] += 0.;
 						}
 					}
 				}
@@ -2168,13 +2182,13 @@ int calc_3pt_corrfunc_window_mpi(
 	}
 
 	std::complex<double>* zeta_save = new std::complex<double>[n_temp];
-	for (int i = 0; i < n_temp; i++) {
-		zeta_save[i] = 0.;
+	for (int idx = 0; idx < n_temp; idx++) {
+		zeta_save[idx] = 0.;
 	}
 
   /// Compute three-point correlation function window.
 	DensityField<ParticleCatalogue> dn_00(params);
-	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
+	dn_00.calc_ylm_weighted_density(particles_rand, los_rand, alpha, 0, 0);
 	dn_00.calc_fourier_transform();
 
 	SphericalBesselCalculator sj1(params.ell1);
@@ -2217,7 +2231,7 @@ int calc_3pt_corrfunc_window_mpi(
 
 				/// Calculate G_{LM}.  See `calc_3pt_corrfunc`.
 				DensityField<ParticleCatalogue> dn_LM(params);
-				dn_LM.calc_ylm_weighted_mean_density(
+				dn_LM.calc_ylm_weighted_density(
 					particles_rand, los_rand, alpha, params.ELL, M_
 				);
 				dn_LM.calc_fourier_transform();
@@ -2254,10 +2268,10 @@ int calc_3pt_corrfunc_window_mpi(
 					std::complex<double> I_(0., 1.);
 					std::complex<double> zeta_sum = 0.;
 					double factor = params.volume / double(params.nmesh);
-					for (int i = 0; i < params.nmesh; i++) {
-						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
-						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
-						std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+					for (int gid = 0; gid < params.nmesh; gid++) {
+						std::complex<double> F_ellm_1(F_ellm_a[gid][0], F_ellm_a[gid][1]);
+						std::complex<double> F_ellm_2(F_ellm_b[gid][0], F_ellm_b[gid][1]);
+						std::complex<double> G_LM(dn_LM[gid][0], dn_LM[gid][1]);
 						zeta_sum += pow(I_, params.ell1 + params.ell2) * factor
 							* F_ellm_1 * F_ellm_2 * G_LM;
 					}
@@ -2308,12 +2322,12 @@ int calc_3pt_corrfunc_window_mpi(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < n_temp; i++) {
+		for (int idx = 0; idx < n_temp; idx++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[i + NR * n_temp], rbin[i + NR * n_temp],
-				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
+				rbin[idx + NR * n_temp], rbin[idx + NR * n_temp],
+				norm * (zeta_save[idx].real() - shotnoise_save[idx].real()),
+				norm * shotnoise_save[idx].real()
 			);
 		}
 	} else if (params.form == "full") {
@@ -2325,12 +2339,12 @@ int calc_3pt_corrfunc_window_mpi(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < n_temp; i++) {
+		for (int idx = 0; idx < n_temp; idx++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[params.ith_rbin], rbin[i + NR * n_temp],
-				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
+				rbin[params.ith_rbin], rbin[idx + NR * n_temp],
+				norm * (zeta_save[idx].real() - shotnoise_save[idx].real()),
+				norm * shotnoise_save[idx].real()
 			);
 		}
 	}
@@ -2396,13 +2410,13 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 
 	std::complex<double>* shotnoise_save =
 		new std::complex<double>[params.num_rbin];
-	for (int i = 0; i < params.num_rbin; i++) {
-		shotnoise_save[i] = 0.;
+	for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+		shotnoise_save[ibin] = 0.;
 	}
 
 	/// Compute shot noise terms.
 	DensityField<ParticleCatalogue> shotnoise_quadratic_00(params);
-	shotnoise_quadratic_00.calc_ylm_weighted_mean_density_for_3pcf_window_shotnoise(
+	shotnoise_quadratic_00.calc_ylm_weighted_2pt_self_contrib_for_shotnoise(
 		particles_rand, los_rand, alpha, 0, 0
 	);
 	shotnoise_quadratic_00.calc_fourier_transform();
@@ -2444,7 +2458,7 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 				}
 
 				DensityField<ParticleCatalogue> dn_LM_for_shotnoise(params);
-				dn_LM_for_shotnoise.calc_ylm_weighted_mean_density(
+				dn_LM_for_shotnoise.calc_ylm_weighted_density(
 					particles_rand, los_rand, alpha, params.ELL, M_
 				);
 				dn_LM_for_shotnoise.calc_fourier_transform();
@@ -2463,16 +2477,16 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 					ylm_a, ylm_b
 				);
 
-				for (int i = 0; i < params.num_rbin; i++) {
+				for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 					if (params.form == "diag") {
-						shotnoise_save[i] += coupling * stats.xi[i];
+						shotnoise_save[ibin] += coupling * stats.xi[ibin];
 					} else if (params.form == "full") {
 						/// Calculate shot noise contribution equivalent to
 						/// the Kronecker delta.  See `calc_3pt_corrfunc`.
-						if (i == params.ith_rbin) {
-							shotnoise_save[i] += coupling * stats.xi[i];
+						if (ibin == params.ith_rbin) {
+							shotnoise_save[ibin] += coupling * stats.xi[ibin];
 						} else {
-							shotnoise_save[i] += 0.;
+							shotnoise_save[ibin] += 0.;
 						}
 					}
 				}
@@ -2515,13 +2529,13 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 	}
 
 	std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
-	for (int i = 0; i < params.num_rbin; i++) {
-		zeta_save[i] = 0.;
+	for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+		zeta_save[ibin] = 0.;
 	}
 
   /// Compute three-point correlation function window.
 	DensityField<ParticleCatalogue> dn_00(params);
-	dn_00.calc_ylm_weighted_mean_density(particles_rand, los_rand, alpha, 0, 0);
+	dn_00.calc_ylm_weighted_density(particles_rand, los_rand, alpha, 0, 0);
 	dn_00.calc_fourier_transform();
 
 	SphericalBesselCalculator sj1(params.ell1);
@@ -2564,7 +2578,7 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 
 				/// Calculate x^{-i-j} G_{LM}.  See `calc_3pt_corrfunc`.s
 				DensityField<ParticleCatalogue> dn_LM(params);
-				dn_LM.calc_ylm_weighted_mean_density(
+				dn_LM.calc_ylm_weighted_density(
 					particles_rand, los_rand, alpha, params.ELL, M_
 				);
 				dn_LM.calc_fourier_transform();
@@ -2601,10 +2615,10 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 					std::complex<double> I_(0., 1.);
 					std::complex<double> zeta_sum = 0.;
 					double factor = params.volume / double(params.nmesh);
-					for (int i = 0; i < params.nmesh; i++) {
-						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
-						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
-						std::complex<double> x_G_LM(dn_LM[i][0], dn_LM[i][1]);
+					for (int gid = 0; gid < params.nmesh; gid++) {
+						std::complex<double> F_ellm_1(F_ellm_a[gid][0], F_ellm_a[gid][1]);
+						std::complex<double> F_ellm_2(F_ellm_b[gid][0], F_ellm_b[gid][1]);
+						std::complex<double> x_G_LM(dn_LM[gid][0], dn_LM[gid][1]);
 						zeta_sum += pow(I_, params.ell1 + params.ell2) * factor
 							* F_ellm_1 * F_ellm_2 * x_G_LM;
 					}
@@ -2654,12 +2668,12 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_rbin; i++) {
+		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[i], rbin[i],
-				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
+				rbin[ibin], rbin[ibin],
+				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
+				norm * shotnoise_save[ibin].real()
 			);
 		}
 	} else if (params.form == "full") {
@@ -2672,12 +2686,12 @@ int calc_3pt_corrfunc_window_for_wide_angle(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_rbin; i++) {
+		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				rbin[params.ith_rbin], rbin[i],
-				norm * (zeta_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
+				rbin[params.ith_rbin], rbin[ibin],
+				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
+				norm * shotnoise_save[ibin].real()
 			);
 		}
 	}
@@ -2744,8 +2758,8 @@ int calc_bispec_for_los_choice(
 
 	std::complex<double>* shotnoise_save =
 		new std::complex<double>[params.num_kbin];
-	for (int i = 0; i < params.num_kbin; i++) {
-		shotnoise_save[i] = 0.;
+	for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+		shotnoise_save[ibin] = 0.;
 	}
 
 	/// Compute shot noise terms.
@@ -2810,8 +2824,8 @@ int calc_bispec_for_los_choice(
     		/// Calculate S_{\ell_1 \ell_2 L; i = j = k} in eq. (45)
 				/// in arXiv:1803.02132.
 				if (params.ell1 == 0 && params.ell2 == 0) {
-					for (int i = 0; i < params.num_kbin; i++) {
-						shotnoise_save[i] += coupling * shotnoise_cubic_LM;
+					for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+						shotnoise_save[ibin] += coupling * shotnoise_cubic_LM;
 					}
 				}
 
@@ -2825,12 +2839,12 @@ int calc_bispec_for_los_choice(
 						params.ell1, m1_
 					);
 					if (params.form == "diag") {
-						for (int i = 0; i < params.num_kbin; i++) {
-							shotnoise_save[i] += coupling * stats.pk[i];
+						for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+							shotnoise_save[ibin] += coupling * stats.pk[ibin];
 						}
 					} else if (params.form == "full") {
-						for (int i = 0; i < params.num_kbin; i++) {
-							shotnoise_save[i] += coupling * stats.pk[params.ith_kbin];
+						for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+							shotnoise_save[ibin] += coupling * stats.pk[params.ith_kbin];
 						}
 					}
 				}
@@ -2921,8 +2935,8 @@ int calc_bispec_for_los_choice(
 						shotnoise_cubic_LM,
 						params.ell2, m2_
 					);
-					for (int i = 0; i < params.num_kbin; i++) {
-						shotnoise_save[i] += coupling * stats.pk[i];
+					for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+						shotnoise_save[ibin] += coupling * stats.pk[ibin];
 					}
 				}
 
@@ -3026,9 +3040,9 @@ int calc_bispec_for_los_choice(
 				fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh);
 				bytesMem += sizeof(fftw_complex)
 					* double(params.nmesh) / 1024. / 1024. / 1024.;
-				for (int i = 0; i < params.nmesh; i++) {
-					three_pt_holder[i][0] = 0.;
-					three_pt_holder[i][1] = 0.;
+				for (int ibin = 0; ibin < params.nmesh; ibin++) {
+					three_pt_holder[ibin][0] = 0.;
+					three_pt_holder[ibin][1] = 0.;
 				}
 
 				stats.calc_shotnoise_for_bispec_on_grid(
@@ -3134,8 +3148,8 @@ int calc_bispec_for_los_choice(
   }
 
 	std::complex<double>* bk_save = new std::complex<double>[params.num_kbin];
-	for (int i = 0; i < params.num_kbin; i++) {
-		bk_save[i] = 0.;
+	for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+		bk_save[ibin] = 0.;
 	}
 
   /// Compute bispectrum.
@@ -3241,7 +3255,7 @@ int calc_bispec_for_los_choice(
 				if (params.form == "full") {
 					kmag_a = kbin[params.ith_kbin];
 					F_ellm_a.calc_inverse_fourier_transform_for_bispec(
-						dn_los1, kmag_a, dk, ylm_a
+						dn_los1, ylm_a, kmag_a, dk
 					);
 				}
 
@@ -3251,21 +3265,21 @@ int calc_bispec_for_los_choice(
 					if (params.form == "diag") {
 						kmag_a = kmag_b;
 						F_ellm_a.calc_inverse_fourier_transform_for_bispec(
-							dn_los1, kmag_a, dk, ylm_a
+							dn_los1, ylm_a, kmag_a, dk
 						);
 					}
 
 					DensityField<ParticleCatalogue> F_ellm_b(params);
 					F_ellm_b.calc_inverse_fourier_transform_for_bispec(
-						dn_los2, kmag_b, dk, ylm_b
+						dn_los2, ylm_b, kmag_b, dk
 					);
 
 					double factor = params.volume / double(params.nmesh);
 					std::complex<double> bk_sum = 0.;
-					for (int i = 0; i < params.nmesh; i++) {
-						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
-						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
-						std::complex<double> G_LM(dn_los3[i][0], dn_los3[i][1]);
+					for (int gid = 0; gid < params.nmesh; gid++) {
+						std::complex<double> F_ellm_1(F_ellm_a[gid][0], F_ellm_a[gid][1]);
+						std::complex<double> F_ellm_2(F_ellm_b[gid][0], F_ellm_b[gid][1]);
+						std::complex<double> G_LM(dn_los3[gid][0], dn_los3[gid][1]);
 						bk_sum += factor * F_ellm_1 * F_ellm_2 * G_LM;
 					}
 
@@ -3312,12 +3326,12 @@ int calc_bispec_for_los_choice(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_kbin; i++) {
+		for (int ibin = 0; ibin < params.num_kbin; ibin++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				kbin[i], kbin[i],
-				norm * (bk_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
+				kbin[ibin], kbin[ibin],
+				norm * (bk_save[ibin].real() - shotnoise_save[ibin].real()),
+				norm * shotnoise_save[ibin].real()
 			);
 		}
 	} else if (params.form == "full") {
@@ -3329,12 +3343,12 @@ int calc_bispec_for_los_choice(
 			params.output_tag.c_str()
 		);
 		saved_file_ptr = fopen(buf, "w");
-		for (int i = 0; i < params.num_kbin; i++) {
+		for (int ibin = 0; ibin < params.num_kbin; ibin++) {
 			fprintf(
 				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-				kbin[params.ith_kbin], kbin[i],
-				norm * (bk_save[i].real() - shotnoise_save[i].real()),
-				norm * shotnoise_save[i].real()
+				kbin[params.ith_kbin], kbin[ibin],
+				norm * (bk_save[ibin].real() - shotnoise_save[ibin].real()),
+				norm * shotnoise_save[ibin].real()
 			);
 		}
 	}
@@ -3402,13 +3416,13 @@ int calc_bispec_for_M_mode(
 	std::vector< std::vector< std::complex<double> > > shotnoise_save;
 
 	shotnoise_save.resize(2*params.ELL + 1);
-	for (int i = 0; i < params.num_kbin; i++) {
-		shotnoise_save[i].resize(params.num_kbin);
+	for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+		shotnoise_save[ibin].resize(params.num_kbin);
 	}
 
 	for (int m_idx = 0; m_idx < 2*params.ELL + 1; m_idx++) {
-		for (int i = 0; i < params.num_kbin; i++) {
-			shotnoise_save[m_idx][i] = 0.;
+		for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+			shotnoise_save[m_idx][ibin] = 0.;
 		}
 	}
 
@@ -3456,8 +3470,8 @@ int calc_bispec_for_M_mode(
     		/// Calculate S_{\ell_1 \ell_2 L; i = j = k} in eq. (45)
 				/// in arXiv:1803.02132.
 				if (params.ell1 == 0 && params.ell2 == 0) {
-					for (int i = 0; i < params.num_kbin; i++) {
-						shotnoise_save[M_ + params.ELL][i] += shotnoise_cubic_LM;
+					for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+						shotnoise_save[M_ + params.ELL][ibin] += shotnoise_cubic_LM;
 					}
 				}
 
@@ -3471,12 +3485,12 @@ int calc_bispec_for_M_mode(
 						params.ell1, m1_
 					);
 					if (params.form == "diag") {
-						for (int i = 0; i < params.num_kbin; i++) {
-							shotnoise_save[M_ + params.ELL][i] += stats.pk[i];
+						for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+							shotnoise_save[M_ + params.ELL][ibin] += stats.pk[ibin];
 						}
 					} else if (params.form == "full") {
-						for (int i = 0; i < params.num_kbin; i++) {
-							shotnoise_save[M_ + params.ELL][i] += stats.pk[params.ith_kbin];
+						for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+							shotnoise_save[M_ + params.ELL][ibin] += stats.pk[params.ith_kbin];
 						}
 					}
 				}
@@ -3490,8 +3504,8 @@ int calc_bispec_for_M_mode(
 						shotnoise_cubic_LM,
 						params.ell2, m2_
 					);
-					for (int i = 0; i < params.num_kbin; i++) {
-						shotnoise_save[M_ + params.ELL][i] += stats.pk[i];
+					for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+						shotnoise_save[M_ + params.ELL][ibin] += stats.pk[ibin];
 					}
 				}
 
@@ -3580,9 +3594,9 @@ int calc_bispec_for_M_mode(
 				fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh);
 				bytesMem += sizeof(fftw_complex) *
 					double(params.nmesh) / 1024. / 1024. / 1024.;
-				for (int i = 0; i < params.nmesh; i++) {
-					three_pt_holder[i][0] = 0.;
-					three_pt_holder[i][1] = 0.;
+				for (int gid = 0; gid < params.nmesh; gid++) {
+					three_pt_holder[gid][0] = 0.;
+					three_pt_holder[gid][1] = 0.;
 				}
 
 				stats.calc_shotnoise_for_bispec_on_grid(
@@ -3704,13 +3718,13 @@ int calc_bispec_for_M_mode(
 	dn_00.calc_fourier_transform();
 
 	bk_save.resize(2*params.ELL + 1);
-	for (int i = 0; i < params.num_kbin; i++) {
-		bk_save[i].resize(params.num_kbin);
+	for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+		bk_save[ibin].resize(params.num_kbin);
 	}
 
 	for (int m = 0; m < 2*params.ELL + 1; m++) {
-		for (int i = 0; i < params.num_kbin; i++) {
-			bk_save[m][i] = 0.;
+		for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+			bk_save[m][ibin] = 0.;
 		}
 	}
 
@@ -3772,7 +3786,7 @@ int calc_bispec_for_M_mode(
 				if (params.form == "full") {
 					kmag_a = kbin[params.ith_kbin];
 					F_ellm_a.calc_inverse_fourier_transform_for_bispec(
-						dn_00, kmag_a, dk, ylm_a
+						dn_00, ylm_a, kmag_a, dk
 					);
 				}
 
@@ -3782,21 +3796,21 @@ int calc_bispec_for_M_mode(
 					if (params.form == "diag") {
 						kmag_a = kmag_b;
 						F_ellm_a.calc_inverse_fourier_transform_for_bispec(
-							dn_00, kmag_a, dk, ylm_a
+							dn_00, ylm_a, kmag_a, dk
 						);
 					}
 
 					DensityField<ParticleCatalogue> F_ellm_b(params);
 					F_ellm_b.calc_inverse_fourier_transform_for_bispec(
-						dn_00, kmag_b, dk, ylm_b
+						dn_00, ylm_b, kmag_b, dk
 					);
 
 					double factor = params.volume / double(params.nmesh);
 					std::complex<double> bk_sum = 0.;
-					for (int i = 0; i < params.nmesh; i++) {
-						std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
-						std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
-						std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+					for (int ibin = 0; ibin < params.nmesh; ibin++) {
+						std::complex<double> F_ellm_1(F_ellm_a[ibin][0], F_ellm_a[ibin][1]);
+						std::complex<double> F_ellm_2(F_ellm_b[ibin][0], F_ellm_b[ibin][1]);
+						std::complex<double> G_LM(dn_LM[ibin][0], dn_LM[ibin][1]);
 						bk_sum += factor * F_ellm_1 * F_ellm_2 * G_LM;
 					}
 
@@ -3846,12 +3860,12 @@ int calc_bispec_for_M_mode(
 				params.output_tag.c_str()
 			);
 			saved_file_ptr = fopen(buf, "w");
-			for (int i = 0; i < params.num_kbin; i++) {
+			for (int ibin = 0; ibin < params.num_kbin; ibin++) {
 				fprintf(
 					saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-					kbin[i], kbin[i],
-					norm * (bk_save[M_][i].real() - shotnoise_save[M_][i].real()),
-					norm * shotnoise_save[M_][i].real()
+					kbin[ibin], kbin[ibin],
+					norm * (bk_save[M_][ibin].real() - shotnoise_save[M_][ibin].real()),
+					norm * shotnoise_save[M_][ibin].real()
 				);
 			}
 		} else if (params.form == "full") {
@@ -3864,12 +3878,12 @@ int calc_bispec_for_M_mode(
 				params.output_tag.c_str()
 			);
 			saved_file_ptr = fopen(buf, "w");
-			for (int i = 0; i < params.num_kbin; i++) {
+			for (int ibin = 0; ibin < params.num_kbin; ibin++) {
 				fprintf(
 					saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
-					kbin[params.ith_kbin], kbin[i],
-					norm * (bk_save[M_][i].real() - shotnoise_save[M_][i].real()),
-					norm * shotnoise_save[M_][i].real()
+					kbin[params.ith_kbin], kbin[ibin],
+					norm * (bk_save[M_][ibin].real() - shotnoise_save[M_][ibin].real()),
+					norm * shotnoise_save[M_][ibin].real()
 				);
 			}
 		}
@@ -3947,8 +3961,8 @@ int calc_bispec_(
 
   std::complex<double>* shotnoise_save =
     new std::complex<double>[params.num_kbin];
-  for (int i = 0; i < params.num_kbin; i++) {
-    shotnoise_save[i] = 0.;
+  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    shotnoise_save[ibin] = 0.;
   }
 
   /// Compute shot noise terms.
@@ -3995,8 +4009,8 @@ int calc_bispec_(
     		/// Calculate S_{\ell_1 \ell_2 L; i = j = k} in eq. (45)
 				/// in arXiv:1803.02132.
         if (params.ell1 == 0 && params.ell2 == 0) {
-          for (int i = 0; i < params.num_kbin; i++) {
-            shotnoise_save[i] += coupling * shotnoise_cubic_LM;
+          for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+            shotnoise_save[ibin] += coupling * shotnoise_cubic_LM;
           }
         }
 
@@ -4010,12 +4024,12 @@ int calc_bispec_(
 						params.ell1, m1_
           );
           if (params.form == "diag") {
-            for (int i = 0; i < params.num_kbin; i++) {
-              shotnoise_save[i] += coupling * stats.pk[i];
+            for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+              shotnoise_save[ibin] += coupling * stats.pk[ibin];
             }
           } else if (params.form == "full") {
-            for (int i = 0; i < params.num_kbin; i++) {
-              shotnoise_save[i] += coupling * stats.pk[params.ith_kbin];
+            for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+              shotnoise_save[ibin] += coupling * stats.pk[params.ith_kbin];
             }
           }
         }
@@ -4029,8 +4043,8 @@ int calc_bispec_(
 						shotnoise_cubic_LM,
 						params.ell2, m2_
           );
-          for (int i = 0; i < params.num_kbin; i++) {
-            shotnoise_save[i] += coupling * stats.pk[i];
+          for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+            shotnoise_save[ibin] += coupling * stats.pk[ibin];
           }
         }
 
@@ -4122,9 +4136,9 @@ int calc_bispec_(
         fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh);
         bytesMem += sizeof(fftw_complex) *
           double(params.nmesh) / 1024. / 1024. / 1024.;
-        for (int i = 0; i < params.nmesh; i++) {
-          three_pt_holder[i][0] = 0.;
-          three_pt_holder[i][1] = 0.;
+        for (int gid = 0; gid < params.nmesh; gid++) {
+          three_pt_holder[gid][0] = 0.;
+          three_pt_holder[gid][1] = 0.;
         }
 
         stats.calc_shotnoise_for_bispec_on_grid(
@@ -4232,8 +4246,8 @@ int calc_bispec_(
   }
 
   std::complex<double>* bk_save = new std::complex<double>[params.num_kbin];
-  for (int i = 0; i < params.num_kbin; i++) {
-    bk_save[i] = 0.;
+  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    bk_save[ibin] = 0.;
   }
 
   /// Compute bispectrum.
@@ -4303,7 +4317,7 @@ int calc_bispec_(
         if (params.form == "full") {
           kmag_a = kbin[params.ith_kbin];
           F_ellm_a.calc_inverse_fourier_transform_for_bispec(
-            dn_00, kmag_a, dk, ylm_a
+            dn_00, ylm_a, kmag_a, dk
           );
         }
 
@@ -4313,21 +4327,21 @@ int calc_bispec_(
           if (params.form == "diag") {
             kmag_a = kmag_b;
             F_ellm_a.calc_inverse_fourier_transform_for_bispec(
-              dn_00, kmag_a, dk, ylm_a
+              dn_00, ylm_a, kmag_a, dk
             );
           }
 
           DensityField<ParticleCatalogue> F_ellm_b(params);
           F_ellm_b.calc_inverse_fourier_transform_for_bispec(
-            dn_00, kmag_b, dk, ylm_b
+            dn_00, ylm_b, kmag_b, dk
           );
 
           double factor = params.volume / double(params.nmesh);
           std::complex<double> bk_sum = 0.;
-          for (int i = 0; i < params.nmesh; i++) {
-            std::complex<double> F_ellm_1(F_ellm_a[i][0], F_ellm_a[i][1]);
-            std::complex<double> F_ellm_2(F_ellm_b[i][0], F_ellm_b[i][1]);
-            std::complex<double> G_LM(dn_LM[i][0], dn_LM[i][1]);
+          for (int gid = 0; gid < params.nmesh; gid++) {
+            std::complex<double> F_ellm_1(F_ellm_a[gid][0], F_ellm_a[gid][1]);
+            std::complex<double> F_ellm_2(F_ellm_b[gid][0], F_ellm_b[gid][1]);
+            std::complex<double> G_LM(dn_LM[gid][0], dn_LM[gid][1]);
             bk_sum += factor * F_ellm_1 * F_ellm_2 * G_LM;
           }
 
@@ -4374,14 +4388,14 @@ int calc_bispec_(
     );
 
     saved_file_ptr = fopen(buf, "w");
-    for (int i = 0; i < params.num_kbin; i++) {
+    for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
         saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
-        kbin[i], kbin[i],
-        (bk_save[i].real() - shotnoise_save[i].real()),
-        (bk_save[i].imag() - shotnoise_save[i].imag()),
-        shotnoise_save[i].real(),
-        shotnoise_save[i].imag()
+        kbin[ibin], kbin[ibin],
+        (bk_save[ibin].real() - shotnoise_save[ibin].real()),
+        (bk_save[ibin].imag() - shotnoise_save[ibin].imag()),
+        shotnoise_save[ibin].real(),
+        shotnoise_save[ibin].imag()
       );
     }
   } else if (params.form == "full") {
@@ -4394,14 +4408,14 @@ int calc_bispec_(
     );
 
     saved_file_ptr = fopen(buf, "w");
-    for (int i = 0; i < params.num_kbin; i++) {
+    for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
         saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
-        kbin[params.ith_kbin], kbin[i],
-        (bk_save[i].real() - shotnoise_save[i].real()),
-        (bk_save[i].imag() - shotnoise_save[i].imag()),
-        shotnoise_save[i].real(),
-        shotnoise_save[i].imag()
+        kbin[params.ith_kbin], kbin[ibin],
+        (bk_save[ibin].real() - shotnoise_save[ibin].real()),
+        (bk_save[ibin].imag() - shotnoise_save[ibin].imag()),
+        shotnoise_save[ibin].real(),
+        shotnoise_save[ibin].imag()
       );
     }
   }
