@@ -11,8 +11,6 @@ import time
 
 from numpy import isin
 
-# TODO: Add C++ context to logger.
-
 
 class _ElapsedLogFormatter(logging.Formatter):
     """Elapsed-time logging formatter.
