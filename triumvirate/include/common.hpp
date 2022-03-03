@@ -3,7 +3,6 @@
 
 /// Initialise program trackers.
 
-/// FIXME: Remove out of header files.
 int currTask = 0;  ///< current task
 int numTasks = 1;  ///< number of tasks (in a batch)
 

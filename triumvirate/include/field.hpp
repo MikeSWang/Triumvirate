@@ -10,11 +10,11 @@
 #include "parameters.hpp"
 
 /**
- * Density field object instantiated from a particle container.
+ * Density-like field instantiated from particle sources.
  *
  */
 template <class ParticleContainer>
-class DensityField {
+class PseudoDensityField {
  public:
   fftw_complex* field;  ///> gridded complex field
 
@@ -23,7 +23,7 @@ class DensityField {
    *
    * @param params Parameter set.
    */
-  DensityField(ParameterSet& params) {
+  PseudoDensityField(ParameterSet& params) {
     /// Attach external parameters.
     this->params = params;
 
@@ -41,7 +41,7 @@ class DensityField {
   /**
    * Destruct density field.
    */
-  ~DensityField() {
+  ~PseudoDensityField() {
     finalise_density_field();
   }
 
@@ -102,14 +102,14 @@ class DensityField {
   }
 
   /**
-   * Calculate weighted density field fluctuation(s) weighted by the
+   * Compute weighted density field fluctuation(s) weighted by the
    * reduced spherical harmonics from data and random sources,
    *
    * f@[
    *   {\delta n_{LM}}(\vec{x}) = \left(
    *     \sum_{i \in \mathrm{data}} - \alpha \sum_{i \in \mathrm{rand}}
    *   \right) \delta_{\mathrm{D}}(\vec{x} - \vec{x}_i)
-   *   y_{LM}^*(\hat{\vec{x}}_i) w(\vec{x}_i) \,.
+   *   y_{LM}^*(\hat{\vec{x}}) w(\vec{x}) \,.
    * f@]
    *
    * See eq. (34) in Sugiyama et al. (2018)
@@ -123,17 +123,17 @@ class DensityField {
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    */
-  void calc_ylm_wgtd_fluctuation(
+  void compute_ylm_wgtd_fluctuation(
     ParticleContainer& particles_data, ParticleContainer& particles_rand,
     LineOfSight* los_data, LineOfSight* los_rand,
     double alpha,
     int ell, int m
   ) {
     /// Initialise the random density field and the kernel weight field.
-    DensityField<ParticleCatalogue> density_rand(this->params);
+    PseudoDensityField<ParticleCatalogue> field_rand(this->params);
     fftw_complex* weight_kern = NULL;
 
-    /// Calculate the transformed data-source field.
+    /// Compute the transformed data-source field.
     weight_kern = fftw_alloc_complex(particles_data.ntotal);
     for (int pid = 0; pid < particles_data.ntotal; pid++) {
       double los_[3] = {
@@ -153,7 +153,7 @@ class DensityField {
 
     fftw_free(weight_kern); weight_kern = NULL;
 
-    /// Calculate the random-source transformed weighted field.
+    /// Compute the random-source transformed weighted field.
     weight_kern = fftw_alloc_complex(particles_rand.ntotal);
     for (int pid = 0; pid < particles_rand.ntotal; pid++) {
       double los_[3] = {
@@ -169,38 +169,38 @@ class DensityField {
       weight_kern[pid][1] = ylm.imag() * particles_rand[pid].w;
     }
 
-    density_rand.assign_weighted_field_to_grid(particles_rand, weight_kern);
+    field_rand.assign_weighted_field_to_grid(particles_rand, weight_kern);
 
     fftw_free(weight_kern); weight_kern = NULL;
 
     /// Subtract to compute fluctuations, i.e. δn_LM.
     for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] -= alpha * density_rand.field[gid][0];
-      this->field[gid][1] -= alpha * density_rand.field[gid][1];
+      this->field[gid][0] -= alpha * field_rand[gid][0];
+      this->field[gid][1] -= alpha * field_rand[gid][1];
     }
   }
 
   /**
-   * Calculate the weighted density field weighted by the
+   * Compute the weighted density field weighted by the
    * reduced spherical harmonics from a (random) source,
    *
    * f@[
    *   \bar{n}_{LM}(\vec{x}) = \alpha \sum_{i \in \mathrm{rand}}
    *     \delta_{\mathrm{D}}(\vec{x} - \vec{x}_i)
-   *     y_{LM}^*(\hat{\vec{x}}_i) w(\vec{x}_i) \,.
+   *     y_{LM}^*(\hat{\vec{x}}) w(\vec{x}) \,.
    * f@]
-   *
-   * This is analogous to DensityField::calc_ylm_wgtd_fluctuation
-   * but for the (mean-)density field represented by a (random) particle
-   * container.
    *
    * @param particles_rand (Random-source) particle container.
    * @param los_rand (Random-source) particle lines of sight.
    * @param alpha Alpha ratio.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
+   *
+   * @see PseudoDensityField::compute_ylm_wgtd_fluctuation
+   *      Analogous but here for the (mean-)density field represented by
+   *      a (random) particle container.
    */
-  void calc_ylm_wgtd_density(
+  void compute_ylm_wgtd_density(
     ParticleContainer& particles_rand,
     LineOfSight* los_rand,
     double alpha,
@@ -209,7 +209,7 @@ class DensityField {
     /// Initialise the kernel weight field.
     fftw_complex* weight_kern = NULL;
 
-    /// Calculate the transformed weighted field.
+    /// Compute the transformed weighted field.
     weight_kern = fftw_alloc_complex(particles_rand.ntotal);
     for (int pid = 0; pid < particles_rand.ntotal; pid++) {
       double los_[3] = {
@@ -238,165 +238,23 @@ class DensityField {
   }
 
   /**
-   * Calculate two-point self-contribution component to shot noise,
-   * weighted by the reduced spherical harmonics, from data and random
-   * sources,
+   * Compute unweighted density field fluctuation(s).
    *
-   * f@[
-   *   N_{LM}(\vec{x}) = \left(
-   *     \sum_{i \in \mathrm{data}} + \alpha^2 \sum_{i \in \mathrm{rand}}
-   *   \right) \delta_{\mathrm{D}}(\vec{x} - \vec{x}_i)
-   *   y_{LM}(\vec{x}) w(\vec{x}_i)^2 \,.
-   * f@]
-   *
-   * See eq. (46) in Sugiyama et al. (2018)
-   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
-   *
-   * @param particles_data (Data-source) particle container.
-   * @param particles_rand (Random-source) particle container.
-   * @param los_data (Data-source) particle lines of sight.
-   * @param los_rand (Random-source) particle lines of sight.
-   * @param alpha Alpha ratio.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
-   */
-  void calc_ylm_wgtd_2pt_self_contrib_for_shotnoise(
-    ParticleContainer& particles_data, ParticleContainer& particles_rand,
-    LineOfSight* los_data, LineOfSight* los_rand,
-    double alpha,
-    int ell, int m
-  ) {
-    /// Initialise the random density field and the kernel weight field.
-    DensityField<ParticleCatalogue> density_rand(this->params);
-    fftw_complex* weight_kern = NULL;
-
-    /// Calculate the transformed data-source field.
-    weight_kern = fftw_alloc_complex(particles_data.ntotal);
-    for (int pid = 0; pid < particles_data.ntotal; pid++) {
-      double los_[3] = {
-        los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
-      };
-
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
-
-      ylm = std::conj(ylm);  // NOTE: cojugation is essential
-
-      weight_kern[pid][0] = ylm.real() * pow(particles_data[pid].w, 2);
-      weight_kern[pid][1] = ylm.imag() * pow(particles_data[pid].w, 2);
-    }
-
-    this->assign_weighted_field_to_grid(particles_data, weight_kern);
-
-    fftw_free(weight_kern); weight_kern = NULL;
-
-    /// Calculate the random-source transformed weighted field.
-    weight_kern = fftw_alloc_complex(particles_rand.ntotal);
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      double los_[3] = {
-        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-      };
-
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
-
-      ylm = std::conj(ylm);  // NOTE: cojugation is essential
-
-      weight_kern[pid][0] = ylm.real() * pow(particles_rand[pid].w, 2);
-      weight_kern[pid][1] = ylm.imag() * pow(particles_rand[pid].w, 2);
-    }
-
-    density_rand.assign_weighted_field_to_grid(particles_rand, weight_kern);
-
-    fftw_free(weight_kern); weight_kern = NULL;
-
-    /// Add to compute total shot noise contribution, i.e. N_LM.
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] += alpha * alpha * density_rand.field[gid][0];
-      this->field[gid][1] += alpha * alpha * density_rand.field[gid][1];
-    }
-  }
-
-  /**
-   * Calculate two-point self-contribution component to shot noise,
-   * weighted by the reduced spherical harmonics, from a (random) source.
-   *
-   * This is analogous to
-   * DensityField::calc_ylm_wgtd_2pt_self_contrib_for_shotnoise(),
-   * but used for calculating shot noise in window functions.
-   *
-   * This is analogous to
-   * DensityField::calc_ylm_wgtd_2pt_self_contrib_for_shotnoise
-   * but for the (mean-)density field represented by a (random) particle
-   * container only.
-   *
-   * @param particles_rand (Random-source) particle container.
-   * @param los_rand (Random-source) particle lines of sight.
-   * @param alpha Alpha ratio.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
-   */
-  void calc_ylm_wgtd_2pt_self_contrib_for_shotnoise(
-    ParticleContainer& particles_rand,
-    LineOfSight* los_rand,
-    double alpha,
-    int ell, int m
-  ) {
-    /// Initialise the kernel weight field.
-    fftw_complex* weight_kern = NULL;
-
-    /// Calculate the transformed weighted field.
-    weight_kern = fftw_alloc_complex(particles_rand.ntotal);
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      double los_[3] = {
-        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-      };
-
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
-
-      ylm = std::conj(ylm);  // NOTE: cojugation is essential
-
-      weight_kern[pid][0] = ylm.real() * pow(particles_rand[pid].w, 2);
-      weight_kern[pid][1] = ylm.imag() * pow(particles_rand[pid].w, 2);
-    }
-
-    this->assign_weighted_field_to_grid(particles_rand, weight_kern);
-
-    fftw_free(weight_kern); weight_kern = NULL;
-
-    /// Apply mean-density matching normalisation (i.e. alpha ratio)
-    /// to compute N_LM.
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] *= alpha * alpha;
-      this->field[gid][1] *= alpha * alpha;
-    }
-  }
-
-  /**
-   * Calculate unweighted density field fluctuation(s).
-   *
-   * This is typically used in the case of reconstruction.
+   * @note This is typically used in the case of reconstruction.
    *
    * @param particles_data (Data-source) particle container.
    * @param particles_rand (Random-source) particle container.
    * @param alpha Alpha ratio.
    */
-  void calc_unweighted_fluctuation(
+  void compute_unweighted_fluctuation(
     ParticleContainer& particles_data, ParticleContainer& particles_rand,
     double alpha
   ) {
     /// Initialise the random field and the weight field.
-    DensityField<ParticleCatalogue> density_rand(this->params);
+    PseudoDensityField<ParticleCatalogue> field_rand(this->params);
     fftw_complex* weight = NULL;
 
-    /// Calculate the data-source field.
+    /// Compute the data-source field.
     weight = fftw_alloc_complex(particles_data.ntotal);
     for (int pid = 0; pid < particles_data.ntotal; pid++) {
       weight[pid][0] = 1.;
@@ -407,40 +265,40 @@ class DensityField {
 
     fftw_free(weight); weight = NULL;
 
-    /// Calculate the random-source field.
+    /// Compute the random-source field.
     weight = fftw_alloc_complex(particles_rand.ntotal);
     for (int pid = 0; pid < particles_rand.ntotal; pid++) {
       weight[pid][0] = 1.;
       weight[pid][1] = 0.;
     }
 
-    density_rand.assign_weighted_field_to_grid(particles_rand, weight);
+    field_rand.assign_weighted_field_to_grid(particles_rand, weight);
 
     fftw_free(weight); weight = NULL;
 
     /// Subtract to compute fluctuations, i.e. δn.
     for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] -= alpha * density_rand.field[gid][0];
-      this->field[gid][1] -= alpha * density_rand.field[gid][1];
+      this->field[gid][0] -= alpha * field_rand[gid][0];
+      this->field[gid][1] -= alpha * field_rand[gid][1];
     }
   }
 
   /**
-   * Calculate unweighted density field fluctuation(s) within a source.
+   * Compute unweighted density field fluctuation(s) within a source.
    *
-   * This is typically used for simulations in a box.
+   * @note This is typically used for simulations in a box.
    *
    * @param particles_data (Data-source) particle container.
    * @param volume Box volume.
    */
-  void calc_unweighted_fluctuation_insitu(
+  void compute_unweighted_fluctuation_insitu(
     ParticleContainer& particles_data,
     double volume
   ) {
     /// Initialise the weight field.
     fftw_complex* weight = NULL;
 
-    /// Calculate the unit-weighted field.
+    /// Compute the unit-weighted field.
     weight = fftw_alloc_complex(particles_data.ntotal);
     for (int pid = 0; pid < particles_data.ntotal; pid++) {
       weight[pid][0] = 1.;
@@ -459,18 +317,18 @@ class DensityField {
   }
 
   /**
-   * Calculate the unweighted density field.
+   * Compute the unweighted density field.
    *
-   * This is typically used for simulations in a periodic box and
-   * for bispectrum calculations.
+   * @note This is typically used for simulations in a periodic box and
+   *       for bispectrum calculations.
    *
    * @param particles_data (Data-source) particle container.
    */
-  void calc_unweighted_density(ParticleContainer& particles_data) {
+  void compute_unweighted_density(ParticleContainer& particles_data) {
     /// Initialise the weight field.
     fftw_complex* weight = NULL;
 
-    /// Calculate the unit-weighted field, i.e. n.
+    /// Compute the unit-weighted field, i.e. n.
     weight = fftw_alloc_complex(particles_data.ntotal);
     for (int pid = 0; pid < particles_data.ntotal; pid++) {
       weight[pid][0] = 1.;
@@ -483,7 +341,147 @@ class DensityField {
   }
 
   /**
-   * Calculate Fourier transform of the field.
+   * Compute two-point self-contribution component in shot noise,
+   * weighted by the reduced spherical harmonics,
+   * from data and random sources,
+   *
+   * f@[
+   *   N_{LM}(\vec{x}) = \left(
+   *     \sum_{i \in \mathrm{data}} + \alpha^2 \sum_{i \in \mathrm{rand}}
+   *   \right) \delta_{\mathrm{D}}(\vec{x} - \vec{x}_i)
+   *   y_{LM}(\vec{x}) w(\vec{x})^2 \,.
+   * f@]
+   *
+   * See eq. (46) in Sugiyama et al. (2018)
+   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   *
+   * @param particles_data (Data-source) particle container.
+   * @param particles_rand (Random-source) particle container.
+   * @param los_data (Data-source) particle lines of sight.
+   * @param los_rand (Random-source) particle lines of sight.
+   * @param alpha Alpha ratio.
+   * @param ell Degree of the spherical harmonic.
+   * @param m Order of the spherical harmonic.
+   */
+  void compute_ylm_wgtd_2pt_self_component_for_shotnoise(
+    ParticleContainer& particles_data, ParticleContainer& particles_rand,
+    LineOfSight* los_data, LineOfSight* los_rand,
+    double alpha,
+    int ell, int m
+  ) {
+    /// Initialise the random density field and the kernel weight field.
+    PseudoDensityField<ParticleCatalogue> field_rand(this->params);
+    fftw_complex* weight_kern = NULL;
+
+    /// Compute the transformed data-source field.
+    weight_kern = fftw_alloc_complex(particles_data.ntotal);
+    for (int pid = 0; pid < particles_data.ntotal; pid++) {
+      double los_[3] = {
+        los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
+      };
+
+      std::complex<double> ylm =
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
+          ell, m, los_
+        );
+
+      ylm = std::conj(ylm);  // cojugation is essential
+
+      weight_kern[pid][0] = ylm.real() * pow(particles_data[pid].w, 2);
+      weight_kern[pid][1] = ylm.imag() * pow(particles_data[pid].w, 2);
+    }
+
+    this->assign_weighted_field_to_grid(particles_data, weight_kern);
+
+    fftw_free(weight_kern); weight_kern = NULL;
+
+    /// Compute the random-source transformed weighted field.
+    weight_kern = fftw_alloc_complex(particles_rand.ntotal);
+    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
+      double los_[3] = {
+        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
+      };
+
+      std::complex<double> ylm =
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
+          ell, m, los_
+        );
+
+      ylm = std::conj(ylm);  // cojugation is essential
+
+      weight_kern[pid][0] = ylm.real() * pow(particles_rand[pid].w, 2);
+      weight_kern[pid][1] = ylm.imag() * pow(particles_rand[pid].w, 2);
+    }
+
+    field_rand.assign_weighted_field_to_grid(particles_rand, weight_kern);
+
+    fftw_free(weight_kern); weight_kern = NULL;
+
+    /// Add to compute total shot-noise contribution, i.e. N_LM.
+    for (int gid = 0; gid < this->params.nmesh; gid++) {
+      this->field[gid][0] += alpha * alpha * field_rand[gid][0];
+      this->field[gid][1] += alpha * alpha * field_rand[gid][1];
+    }
+  }
+
+  /**
+   * Compute two-point self-contribution component in shot noise,
+   * weighted by the reduced spherical harmonics,
+   * from a (random) source.
+   *
+   * @note This is used for calculating shot noise in window functions,
+   *       with the (mean-)density field represented by a (random)
+   *       particle source only.
+   *
+   * @param particles_rand (Random-source) particle container.
+   * @param los_rand (Random-source) particle lines of sight.
+   * @param alpha Alpha ratio.
+   * @param ell Degree of the spherical harmonic.
+   * @param m Order of the spherical harmonic.
+   *
+   * @overload
+   */
+  void compute_ylm_wgtd_2pt_self_component_for_shotnoise(
+    ParticleContainer& particles_rand,
+    LineOfSight* los_rand,
+    double alpha,
+    int ell, int m
+  ) {
+    /// Initialise the kernel weight field.
+    fftw_complex* weight_kern = NULL;
+
+    /// Compute the transformed weighted field.
+    weight_kern = fftw_alloc_complex(particles_rand.ntotal);
+    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
+      double los_[3] = {
+        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
+      };
+
+      std::complex<double> ylm =
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
+          ell, m, los_
+        );
+
+      ylm = std::conj(ylm);  // cojugation is essential
+
+      weight_kern[pid][0] = ylm.real() * pow(particles_rand[pid].w, 2);
+      weight_kern[pid][1] = ylm.imag() * pow(particles_rand[pid].w, 2);
+    }
+
+    this->assign_weighted_field_to_grid(particles_rand, weight_kern);
+
+    fftw_free(weight_kern); weight_kern = NULL;
+
+    /// Apply mean-density matching normalisation (i.e. alpha ratio)
+    /// to compute N_LM.
+    for (int gid = 0; gid < this->params.nmesh; gid++) {
+      this->field[gid][0] *= alpha * alpha;
+      this->field[gid][1] *= alpha * alpha;
+    }
+  }
+
+  /**
+   * Fourier transform the field.
    */
   void fourier_transform() {
     /// Apply FFT volume normalisation, where ∫d^3x corresponds to
@@ -507,7 +505,7 @@ class DensityField {
   }
 
   /**
-   * Calculate inverse Fourier transform of the (FFT-transformed) field.
+   * Inverse Fourier transform the (FFT-transformed) field.
    */
   void inv_fourier_transform() {
     /// Apply inverse FFT volume normalisation, where ∫d^3k / (2\pi)^3
@@ -531,11 +529,8 @@ class DensityField {
   }
 
   /**
-   * Calculate inverse Fourier transform of the (FFT-transformed)
-   * (density fluctuation) field weighted by the reduce spherical
-   * harmonics in a wavenumber bin,
-   *
-   * This is used to compute
+   * Inverse Fourier transform the (FFT-transformed) (density fluctuation)
+   * field weighted by the reduce spherical harmonics in a wavenumber bin,
    *
    * f@[
    *   F_{LM}(\vec{x}; k) = \frac{(2\pi)^3}{4\pi k^2}
@@ -557,7 +552,7 @@ class DensityField {
    * @param dk_in Wavenumber bin width.
    */
   void inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
-    DensityField& density, std::complex<double>* ylm,
+    PseudoDensityField& density, std::complex<double>* ylm,
     double k_in, double dk_in
   ) {
     /// Reset field with zero values.
@@ -633,7 +628,7 @@ class DensityField {
   }
 
   /**
-   * Calculate the inverse Fourier transform of a transformed field
+   * Inverse Fourier transform a (FFT-transformed) field
    * for three-point correlation functions.
    *
    * @param density FFT-transformed density field.
@@ -643,7 +638,7 @@ class DensityField {
    * @returns Exit status.
    */
   void inv_fourier_transform_for_sjl_ylm_wgtd_field(
-    DensityField& density,
+    PseudoDensityField& density,
     std::complex<double>* ylm,
     SphericalBesselCalculator& sjl,
     double r_in
@@ -788,7 +783,7 @@ class DensityField {
    * Calculate (effective) volume normalisation for two-point correlators,
    *
    * f@[
-   *   I_2 = \int \mathrm{d}^3\,\vec{x} \bar{n}(\vec{x})^2 \,.   *
+   *   I_2 = \int \mathrm{d}^3\,\vec{x} \bar{n}(\vec{x})^2 \,.
    * f@]
    *
    * @param particles_rand (Random-source) particle container.
@@ -804,7 +799,7 @@ class DensityField {
       weight[pid][1] = 0.;
     }
 
-    /// Calculate the weighted field.
+    /// Compute the weighted field.
     this->assign_weighted_field_to_grid(particles_rand, weight);
 
     fftw_free(weight); weight = NULL;
@@ -1070,23 +1065,23 @@ class DensityField {
 };
 
 /**
- * Binned two-point statistics from a particle container.
+ * Binned pseudo two-point statistics from particle sources.
  *
  */
 template <class ParticleContainer>
-class TwoPointStatistics {
+class Pseudo2ptStats {
  public:
   double* k;  ///< central wavenumber in bins/shells
   std::complex<double>* sn;  ///< shot-noise statistics in Fourier space
-  std::complex<double>* pk;  ///< power spectrum statistics
-  std::complex<double>* xi;  ///< two-point correlation function statistics
+  std::complex<double>* pk;  ///< pseudo power spectrum statistics
+  std::complex<double>* xi;  ///< pseudo 2PCF statistics
 
   /**
    * Construct two-point statistics.
    *
    * @param params Parameter set.
    */
-  TwoPointStatistics(ParameterSet& params){
+  Pseudo2ptStats(ParameterSet& params){
     this->params = params;
 
     /// Set up binned power spectrum and mode counter.
@@ -1102,7 +1097,7 @@ class TwoPointStatistics {
       this->nmode[ibin] = 0;
     }
 
-    /// Set up binned two-point correlation function and pair counter.
+    /// Set up binned 2PCF and pair counter.
     this->xi = new std::complex<double>[params.num_rbin];
     this->npair = new int[params.num_rbin];
 
@@ -1115,7 +1110,7 @@ class TwoPointStatistics {
   /**
    * Destruct two-point statistics.
    */
-  ~TwoPointStatistics(){
+  ~Pseudo2ptStats(){
     finalise_2pt_stats();
   }
 
@@ -1132,7 +1127,14 @@ class TwoPointStatistics {
   }
 
   /**
-   * Calculate two-point statistics in Fourier space.
+   * Compute binned two-point statistics in Fourier space.
+   *
+   * As well as for calculating the power spectrum, this is also used
+   * for calculating f@$ S_{\ell_1 \ell_2 L}|_{i \neq j = k} f@$
+   * and f@$ S_{\ell_1 \ell_2 L}|_{j \neq i = k} f@$ in eq. (45)
+   * in Sugiyama et al. (2018)
+   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].  Note
+   * that this quantity is diagonal so effectively one-dimensional.
    *
    * @param field_a First density field.
    * @param field_b Second density field.
@@ -1141,9 +1143,9 @@ class TwoPointStatistics {
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    */
-  void calc_2pt_stats_in_fourier(
-    DensityField<ParticleContainer> & field_a,
-    DensityField<ParticleContainer> & field_b,
+  void compute_2pt_stats_in_fourier(
+    PseudoDensityField<ParticleContainer>& field_a,
+    PseudoDensityField<ParticleContainer>& field_b,
     std::complex<double> shotnoise,
     double* kbin,
     int ell, int m
@@ -1284,7 +1286,7 @@ class TwoPointStatistics {
   }
 
   /**
-   * Calculate two-point statistics in configuration space.
+   * Compute binned two-point statistics in configuration space.
    *
    * @param field_a First density field.
    * @param field_b Second density field.
@@ -1293,19 +1295,18 @@ class TwoPointStatistics {
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    */
-  void calc_2pt_stats_in_config(
-    DensityField<ParticleContainer>& field_a,
-    DensityField<ParticleContainer>& field_b,
+  void compute_2pt_stats_in_config(
+    PseudoDensityField<ParticleContainer>& field_a,
+    PseudoDensityField<ParticleContainer>& field_b,
     std::complex<double> shotnoise,
     double* rbin,
     int ell, int m
   ) {
     /// Set up grid sampling (before inverse Fourier transform).
-    /// FIXME: Change variable name.
-    fftw_complex* twopt3d_sample = fftw_alloc_complex(this->params.nmesh);
+    fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
     for (int gid = 0; gid < this->params.nmesh; gid++) {
-      twopt3d_sample[gid][0] = 0.;
-      twopt3d_sample[gid][1] = 0.;
+      twopt_3d[gid][0] = 0.;
+      twopt_3d[gid][1] = 0.;
     }
 
     /// Set inverse FFT volume normalisation, where ∫d^3k / (2\pi)^3
@@ -1313,7 +1314,6 @@ class TwoPointStatistics {
     double vol = this->params.volume;
 
     /// Compute gridded statistics.
-    /// FIXME: "See also `calc_powspec` above."
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
@@ -1342,7 +1342,7 @@ class TwoPointStatistics {
 
           std::complex<double> mode_power = delta_a * conj(delta_b);
 
-          /// Subtract shot noise component.
+          /// Subtract shot-noise component.
           mode_power -= shotnoise * calc_shotnoise_scale_dependence(kv);
 
           /// Apply assignment compensation.
@@ -1350,8 +1350,8 @@ class TwoPointStatistics {
 
           mode_power /= pow(win, 2);
 
-          twopt3d_sample[idx_grid][0] = mode_power.real() / vol;
-          twopt3d_sample[idx_grid][1] = mode_power.imag() / vol;
+          twopt_3d[idx_grid][0] = mode_power.real() / vol;
+          twopt_3d[idx_grid][1] = mode_power.imag() / vol;
         }
       }
     }
@@ -1359,7 +1359,7 @@ class TwoPointStatistics {
     /// Inverse Fourier transform.
     fftw_plan inv_transform = fftw_plan_dft_3d(
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      twopt3d_sample, twopt3d_sample,
+      twopt_3d, twopt_3d,
       FFTW_BACKWARD, FFTW_ESTIMATE
     );
 
@@ -1409,7 +1409,7 @@ class TwoPointStatistics {
           int idx_r = int(r_ / dr_sample + 0.5);
           if (idx_r < n_sample) {
             std::complex<double> pair_corr(
-              twopt3d_sample[idx_grid][0], twopt3d_sample[idx_grid][1]
+              twopt_3d[idx_grid][0], twopt_3d[idx_grid][1]
             );
 
             /// Weight by reduced spherical harmonics.
@@ -1467,17 +1467,128 @@ class TwoPointStatistics {
       }
     }
 
-    delete[] twopt3d_sample;
+    delete[] twopt_3d;
     delete[] xi_sample;
     delete[] npair_sample;
   }
 
   /**
-   * Calculate two-point statistics for calculating shot-noise components
+   * Calculate two-point self-contribution shot noise in power spectrum,
+   * weighted by reduced spherical harmonics,
+   * from data and random sources.
+   *
+   * @param particles_data (Data-source) particle container.
+   * @param particles_rand (Random-source) particle container.
+   * @param los_data (Data-source) particle lines of sight.
+   * @param los_rand (Random-source) particle lines of sight.
+   * @param alpha Alpha ratio.
+   * @param ell Degree of the spherical harmonic.
+   * @param m Order of the spherical harmonic.
+   * @returns Weighted shot noise for power spectrum.
+   */
+  std::complex<double> calc_ylm_wgtd_shotnoise_for_powspec(
+    ParticleContainer& particles_data,
+    ParticleContainer& particles_rand,
+    LineOfSight* los_data,
+    LineOfSight* los_rand,
+    double alpha,
+    int ell, int m
+  ) {
+    std::complex<double> sum_data = 0.;
+    std::complex<double> sum_rand = 0.;
+
+    for (int pid = 0; pid < particles_data.ntotal; pid++) {
+      double los_[3] = {
+        los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
+      };
+
+      std::complex<double> ylm =
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
+          ell, m, los_
+        );
+
+      sum_data += ylm * pow(particles_data[pid].w, 2);
+    }
+
+    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
+      double los_[3] = {
+        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
+      };
+
+      std::complex<double> ylm =
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
+          ell, m, los_
+        );
+
+      sum_rand += ylm * pow(particles_rand[pid].w, 2);
+    }
+
+    return sum_data + pow(alpha, 2) * sum_rand;
+  }
+
+  /**
+   * Calculate two-point self-contribution shot noise in power spectrum,
+   * weighted by reduced spherical harmonics, from a (random) source.
+   *
+   * @param particles_rand (Random-source) particle container.
+   * @param los_rand (Random-source) particle lines of sight.
+   * @param alpha Alpha ratio.
+   * @param ell Degree of the spherical harmonic.
+   * @param m Order of the spherical harmonic.
+   * @returns Weighted shot noise for power spectrum.
+   *
+   * @overload
+   */
+  std::complex<double> calc_ylm_wgtd_shotnoise_for_powspec(
+    ParticleContainer& particles_rand,
+    LineOfSight* los_rand,
+    double alpha,
+    int ell, int m
+  ) {
+    std::complex<double> sum_rand = 0.;
+    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
+      double los_[3] = {
+        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
+      };
+
+      std::complex<double> ylm =
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
+          ell, m, los_
+        );
+
+      sum_rand += ylm * pow(particles_rand[pid].w, 2);
+    }
+
+    return pow(alpha, 2) * sum_rand;
+  }
+
+  /**
+   * Calculate shot noise for power spectrum with no weighting.
+   *
+   * @param particles_data (Data-source) particle container.
+   * @param particles_rand (Random-source) particle container.
+   * @param alpha Alpha ratio.
+   * @returns Unweighted shot noise for power spectrum.
+   */
+  std::complex<double> calc_unweighted_shotnoise_for_powspec(
+    ParticleContainer& particles_data,
+    ParticleContainer& particles_rand,
+    double alpha
+  ) {
+    std::complex<double> sum_data = double(particles_data.ntotal);
+    std::complex<double> sum_rand = double(particles_rand.ntotal);
+
+    return sum_data + pow(alpha, 2) * sum_rand;
+  }
+
+  /**
+   * Compute two-point statistics for calculating shot-noise components
    * in the three-point correlation function.
    *
-   * See eq. (51) in Sugiyama et al. (2018)
-   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   * See f@$ S_{\ell_1 \ell_2 L}|_{i = j \neq k} f@$ in eq. (51)
+   * in Sugiyama et al. (2018)
+   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].  Note
+   * that this quantity is diagonal so effectively one-dimensional.
    *
    * @param field_a First field.
    * @param field_b Second field.
@@ -1488,20 +1599,19 @@ class TwoPointStatistics {
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    */
-  void calc_2pt_stats_for_3pcf(
-    DensityField<ParticleContainer>& field_a,
-    DensityField<ParticleContainer>& field_b,
+  void compute_uncoupled_shotnoise_for_3pcf(
+    PseudoDensityField<ParticleContainer>& field_a,
+    PseudoDensityField<ParticleContainer>& field_b,
     std::complex<double>* ylm_a, std::complex<double>* ylm_b,
     std::complex<double> shotnoise,
     double* rbin,
     int ell, int m
   ) {
     /// Set up grid sampling (before inverse Fourier transform).
-    /// FIXME: Change variable name.
-    fftw_complex* twopt3d_sample = fftw_alloc_complex(this->params.nmesh);
+    fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
     for (int gid = 0; gid < this->params.nmesh; gid++) {
-      twopt3d_sample[gid][0] = 0.;
-      twopt3d_sample[gid][1] = 0.;
+      twopt_3d[gid][0] = 0.;
+      twopt_3d[gid][1] = 0.;
     }
 
     /// Set inverse FFT volume normalisation, where ∫d^3k / (2\pi)^3
@@ -1509,7 +1619,6 @@ class TwoPointStatistics {
     double vol = this->params.volume;
 
     /// Compute gridded statistics.
-    /// FIXME: "See also `calc_powspec` above."
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
@@ -1546,8 +1655,8 @@ class TwoPointStatistics {
 
           mode_power /= pow(win, 2);
 
-          twopt3d_sample[idx_grid][0] = mode_power.real() / vol;
-          twopt3d_sample[idx_grid][1] = mode_power.imag() / vol;
+          twopt_3d[idx_grid][0] = mode_power.real() / vol;
+          twopt_3d[idx_grid][1] = mode_power.imag() / vol;
         }
       }
     }
@@ -1555,7 +1664,7 @@ class TwoPointStatistics {
     /// Inverse Fourier transform.
     fftw_plan inv_transform = fftw_plan_dft_3d(
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      twopt3d_sample, twopt3d_sample,
+      twopt_3d, twopt_3d,
       FFTW_BACKWARD, FFTW_ESTIMATE
     );
 
@@ -1604,7 +1713,7 @@ class TwoPointStatistics {
           int idx_r = int(r_ / dr_sample + 0.5);
           if (idx_r < n_sample) {
             std::complex<double> pair_corr(
-              twopt3d_sample[idx_grid][0], twopt3d_sample[idx_grid][1]
+              twopt_3d[idx_grid][0], twopt_3d[idx_grid][1]
             );
 
             /// Weight by reduced spherical harmonics.
@@ -1663,185 +1772,39 @@ class TwoPointStatistics {
       }
     }
 
-    delete[] twopt3d_sample;
+    delete[] twopt_3d;
     delete[] xi_sample;
     delete[] npair_sample;
   }
 
   /**
-   * Calculate shot noise for power spectrum.
+   * Compute shot noise for bispectrum over a mesh grid.
    *
-   * @param particles_data (Data-source) particle container.
-   * @param particles_rand (Random-source) particle container.
-   * @param los_data (Data-source) particle lines of sight.
-   * @param los_rand (Random-source) particle lines of sight.
-   * @param alpha Alpha ratio.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
-   * @returns Shot noise for power spectrum.
-   */
-  std::complex<double> calc_shotnoise_for_powspec(
-    ParticleContainer& particles_data,
-    ParticleContainer& particles_rand,
-    LineOfSight* los_data,
-    LineOfSight* los_rand,
-    double alpha,
-    int ell, int m
-  ) {
-    /// Initialise shot noise contributions.
-    std::complex<double> sum_data = 0.;
-    std::complex<double> sum_rand = 0.;
-
-    /// Perform direct summation with spherical harmonic weighting.
-    /// See Jing (2005) [arXiv: astro-ph/0409240].
-    for (int pid = 0; pid < particles_data.ntotal; pid++) {
-      double los[3] = {
-        los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
-      };
-
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
-
-      sum_data += ylm * pow(particles_data[pid].w, 2);
-    }
-
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      double los[3] = {
-        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-      };
-
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
-
-      sum_rand += ylm * pow(particles_rand[pid].w, 2);
-    }
-
-    return sum_data + pow(alpha, 2) * sum_rand;
-  }
-
-  /**
-   * Calculate shot noise for power spectrum in a periodic box
-   * for reconstruction.
+   * See f@$ S_{\ell_1 \ell_2 L}|_{i = j \neq k} f@$ in eq. (45)
+   * in Sugiyama et al. (2018)
+   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].  Note
+   * that this quantity is two-dimensional and here the pre-binning
+   * three-dimensional quantity is computed.
    *
-   * @param particles_data (Data-source) particle container.
-   * @param particles_rand (Random-source) particle container.
-   * @param alpha Alpha ratio.
-   * @returns Shot noise for power spectrum.
+   * @param[in] field_a First density field.
+   * @param[in] field_b Second density field.
+   * @param[in] shotnoise Shot noise amplitude.
+   * @param[in] ell Degree of the spherical harmonic.
+   * @param[in] m Order of the spherical harmonic.
+   * @param[out] threept_3d Three-point statistics on mesh grid.
    */
-  std::complex<double> calc_shotnoise_for_powspec_in_box_for_recon(
-    ParticleContainer& particles_data,
-    ParticleContainer& particles_rand,
-    double alpha
-  ) {
-    std::complex<double> sum_data = double(particles_data.ntotal);
-    std::complex<double> sum_rand = double(particles_rand.ntotal);
-
-    return sum_data + pow(alpha, 2) * sum_rand;
-  }
-
-  /**
-   * Calculate shot noise for correlation function window.
-   *
-   * @param particles_rand (Random-source) particle container.
-   * @param los_rand (Random-source) particle lines of sight.
-   * @param alpha Alpha ratio.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
-   * @returns Shot noise for correlation function window.
-   */
-  std::complex<double> calc_shotnoise_for_corrfunc_window(
-    ParticleContainer& particles_rand,
-    LineOfSight* los_rand,
-    double alpha,
-    int ell, int m
-  ) {
-    std::complex<double> sum_rand = 0.;
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      double los[3] = {
-        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-      };
-
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
-
-      sum_rand += ylm * pow(particles_rand[pid].w, 2);
-    }
-
-    return pow(alpha, 2) * sum_rand;
-  }
-
-  /**
-   * Calculate shot noise for bispectrum from pure self-contributions.
-   *
-   * @param particles_data (Data-source) particle container.
-   * @param particles_rand (Random-source) particle container.
-   * @param los_data (Data-source) particle lines of sight.
-   * @param los_rand (Random-source) particle lines of sight.
-   * @param alpha Alpha ratio.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
-   * @returns Shot noise for bispectrum.
-   */
-  std::complex<double> calc_shotnoise_for_bispec_from_self(
-    ParticleContainer& particles_data, ParticleContainer& particles_rand,
-    LineOfSight* los_data, LineOfSight* los_rand,
-    double alpha,
-    int ell, int m
-  ) {
-    /// Initialise shot noise contributions.
-    std::complex<double> sum_data = 0.;
-    std::complex<double> sum_rand = 0.;
-
-    /// Perform direct summation with spherical harmonic weighting.
-    for (int pid = 0; pid < particles_data.ntotal; pid++) {
-      double los[3] = {
-        los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
-      };
-
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
-
-      sum_data += ylm * pow(particles_data[pid].w, 3);
-    }
-
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      double los[3] = {
-        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-      };
-
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(ell, m, los);
-
-      sum_rand += ylm * pow(particles_rand[pid].w, 3);
-    }
-
-    /// Calculate \bar{S}_LM in eq. (46) in arXiv:1803.02132.
-    return sum_data - pow(alpha, 3) * sum_rand;
-  }
-
-  /**
-   * Calculate shot noise for bispectrum for each mesh grid.
-   *
-   * @param field_a First density field.
-   * @param field_b Second density field.
-   * @param shotnoise Shot noise.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
-   * @param three_pt Three-point function placeholder.
-   * @returns Exit status.
-   */
-  int calc_shotnoise_for_bispec_on_grid(
-    DensityField<ParticleContainer>& field_a,
-    DensityField<ParticleContainer>& field_b,
+  void compute_2pt_self_shotnoise_for_bispec_meshgrid(
+    PseudoDensityField<ParticleContainer>& field_a,
+    PseudoDensityField<ParticleContainer>& field_b,
     std::complex<double> shotnoise,
     int ell, int m,
-    fftw_complex* three_pt
+    fftw_complex* threept_3d
   ) {
     /// Set inverse FFT volume normalisation, where ∫d^3k / (2\pi)^3
     /// corresponds to (1/V) Σ_i, V =: `vol`.
     double vol = this->params.volume;
 
-    /// Compute gridded power spectrum.  See also `calc_powspec` above.
+    /// Compute gridded statistics.
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
@@ -1867,30 +1830,99 @@ class TwoPointStatistics {
           std::complex<double> delta_b(
             field_b[idx_grid][0], field_b[idx_grid][1]
           );
+
           std::complex<double> mode_power = delta_a * conj(delta_b);
 
+          /// Subtract shot noise component.
           mode_power -= shotnoise * calc_shotnoise_scale_dependence(kv);
 
+          /// Apply assignment compensation.
           double win = this->calc_assignment_window_in_fourier(kv);
+
           mode_power /= pow(win, 2);
 
-          three_pt[idx_grid][0] = mode_power.real() / vol;
-          three_pt[idx_grid][1] = mode_power.imag() / vol;
+          threept_3d[idx_grid][0] = mode_power.real() / vol;
+          threept_3d[idx_grid][1] = mode_power.imag() / vol;
         }
       }
     }
 
-    /// Inverse Fourier transform.  Calculate
-    /// S_{\ell_1 \ell_2 L; i = j != k} in eq. (45) in arXiv:1803.02132.
-    fftw_plan fft_plan_backward = fftw_plan_dft_3d(
+    /// Inverse Fourier transform.
+    fftw_plan inv_transform = fftw_plan_dft_3d(
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      three_pt, three_pt,
+      threept_3d, threept_3d,
       FFTW_BACKWARD, FFTW_ESTIMATE
     );
-    fftw_execute(fft_plan_backward);
-    fftw_destroy_plan(fft_plan_backward);
 
-    return 0;
+    fftw_execute(inv_transform);
+    fftw_destroy_plan(inv_transform);
+  }
+
+  /**
+   * Calculate three-point self-contribution component to (three-point
+   * correlator) shot noise, weighted by the reduced spherical harmonics,
+   * from data and random sources,
+   *
+   * f@[
+   *   \bar{S}_{LM} = \left(
+   *     \sum_{i \in \mathrm{data}} - \alpha^3 \sum_{i \in \mathrm{rand}}
+   *   \right) y_{LM}^*(\vec{x}_i) w(\vec{x}_i)^3 \,.
+   * f@]
+   *
+   * See eq. (46) in Sugiyama et al. (2018)
+   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   *
+   * @param particles_data (Data-source) particle container.
+   * @param particles_rand (Random-source) particle container.
+   * @param los_data (Data-source) particle lines of sight.
+   * @param los_rand (Random-source) particle lines of sight.
+   * @param alpha Alpha ratio.
+   * @param ell Degree of the spherical harmonic.
+   * @param m Order of the spherical harmonic.
+   * @returns Weighted shot-noise contribution for bispectrum.
+   *
+   * @see PseudoDensityField::compute_ylm_wgtd_2pt_self_component_for_shotnoise
+   *      Analogous but here the quantity is not a field as it is
+   *      spatially invariant.
+   */
+  std::complex<double> calc_ylm_wgtd_3pt_self_component_for_shotnoise(
+    ParticleContainer& particles_data, ParticleContainer& particles_rand,
+    LineOfSight* los_data, LineOfSight* los_rand,
+    double alpha,
+    int ell, int m
+  ) {
+    /// Initialise shot-noise contributions.
+    std::complex<double> sum_data = 0.;
+    std::complex<double> sum_rand = 0.;
+
+    /// Perform direct summation with spherical harmonic weighting.
+    for (int pid = 0; pid < particles_data.ntotal; pid++) {
+      double los_[3] = {
+        los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
+      };
+
+      std::complex<double> ylm =
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
+          ell, m, los_
+        );
+
+      sum_data += ylm * pow(particles_data[pid].w, 3);
+    }
+
+    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
+      double los_[3] = {
+        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
+      };
+
+      std::complex<double> ylm =
+        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
+          ell, m, los_
+        );
+
+      sum_rand += ylm * pow(particles_rand[pid].w, 3);
+    }
+
+    return sum_data - pow(alpha, 3) * sum_rand;
   }
 
  private:
@@ -1947,7 +1979,7 @@ class TwoPointStatistics {
   }
 
   /**
-   * Calculate the shot noise scale-dependent function f@$ C(\vec{k}) f@$.
+   * Calculate the shot-noise scale-dependence function f@$ C(\vec{k}) f@$.
    *
    * See eqs. (45) and (46) in Sugiyama et al. (2018)
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>]
@@ -1955,7 +1987,7 @@ class TwoPointStatistics {
    * [<a href="https://arxiv.org/abs/astro-ph/0409240">astro-ph/0409240</a>].
    *
    * @param kvec Wavevector.
-   * @returns Value of the shot noise function.
+   * @returns Value of the scale-dependence function.
    */
   double calc_shotnoise_scale_dependence(double* kvec) {
     if (
@@ -1976,7 +2008,7 @@ class TwoPointStatistics {
   }
 
   /**
-   * Calculate the shot noise scale-dependent function for the
+   * Calculate the shot-noise scale-dependence function for the
    * nearest-grid-point assignment scheme.
    *
    * @param kvec Wavevector.
@@ -1987,7 +2019,7 @@ class TwoPointStatistics {
   }
 
   /**
-   * Calculate the shot noise scale-dependent function for the
+   * Calculate the shot-noise scale-dependence function for the
    * cloud-in-cell assignment scheme.
    *
    * @param kvec Wavevector.
@@ -2022,7 +2054,7 @@ class TwoPointStatistics {
   }
 
   /**
-   * Calculate the shot noise scale-dependent function for the
+   * Calculate the shot-noise scale-dependence function for the
    * triangular-shaped-cloud assignment scheme.
    *
    * @param kvec Wavevector.

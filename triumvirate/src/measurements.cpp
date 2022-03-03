@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
 
   /// TODO: Reimplement survey volume normalisation.
   /// Compute catalogue field volume.
-  DensityField<ParticleCatalogue> field_rand(params);
+  PseudoDensityField<ParticleCatalogue> field_rand(params);
 
   double vol_norm = field_rand.calc_volume_normalisation(particles_rand);
 

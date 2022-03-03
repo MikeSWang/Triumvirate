@@ -30,6 +30,7 @@ class ParameterSet {
   std::string assignment;  ///< grid assignment scheme: {'NGP', 'CIC', 'TSC'}
   std::string norm_convention;  ///< normalisation convention: {'grid', 'particle'}
     // TODO: implement options
+  /// TODO: Implement shot noise convention options.
 
   /// Measurements.
   std::string catalogue_type;  ///< catalogue type: {'survey', 'mock', 'sim'}

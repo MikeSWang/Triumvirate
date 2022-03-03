@@ -16,7 +16,7 @@
  * suitably normalised) spherical harmonics
  * @f$ \sqrt(\frac{4*\pi}{2\ell + 1}) Y_{\ell m}^\ast @f$.
  *
- * This also includes the storage of calculated values on a regular mesh
+ * This also includes the storage of computed values on a regular mesh
  * grid in configuration or Fourier space.
  *
  */
@@ -92,13 +92,13 @@ class SphericalHarmonicCalculator {
   }
 
   /**
-   * Store reduced spherical harmonics calculated in Fourier space.
+   * Store reduced spherical harmonics computed in Fourier space.
    *
    * @param[in] ell Degree of the spherical harmonic.
    * @param[in] m Order of the spherical harmonic.
    * @param[in] boxsize Box size in each dimension.
    * @param[in] ngrid Grid number in each dimension.
-   * @param[out] ylm_out Stored calculated values.
+   * @param[out] ylm_out Stored computed values.
    */
   static void store_reduced_spherical_harmonic_in_fourier_space(
     const int ell, const int m, const double boxsize[3], const int ngrid[3],
@@ -107,7 +107,7 @@ class SphericalHarmonicCalculator {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {
       if (currTask == 0) {
-        printf("[Error] :: Cannot store calculated spherical harmonics.");
+        printf("[Error] :: Cannot store computed spherical harmonics.");
       }
       exit(1);
     }
@@ -145,13 +145,13 @@ class SphericalHarmonicCalculator {
   }
 
   /**
-   * Store reduced spherical harmonics calculated in configuration space.
+   * Store reduced spherical harmonics computed in configuration space.
    *
    * @param[in] ell Degree of the spherical harmonic.
    * @param[in] m Order of the spherical harmonic.
    * @param[in] boxsize Box size in each dimension.
    * @param[in] ngrid Grid number in each dimension.
-   * @param[out] ylm_out Stored calculated values.
+   * @param[out] ylm_out Stored computed values.
    * @returns Exit status.
    */
   static void store_reduced_spherical_harmonic_in_config_space(
@@ -161,7 +161,7 @@ class SphericalHarmonicCalculator {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {
       if (currTask == 0) {
-        printf("[Error] :: Cannot store calculated spherical harmonics.");
+        printf("[Error] :: Cannot store computed spherical harmonics.");
       }
       exit(1);
     }

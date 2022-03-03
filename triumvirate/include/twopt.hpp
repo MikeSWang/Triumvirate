@@ -17,7 +17,7 @@
  * @returns Exit status.
  */
 int calc_powspec(
-  ParticleCatalogue& particles_data, ParticleCatalogue & particles_rand,
+  ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
   ParameterSet& params,
   double alpha,
@@ -41,8 +41,8 @@ int calc_powspec(
 
   /// Compute monopoles of the Fourier--harmonic transform of the density
   /// fluctuation, i.e. δn_00.
-  DensityField<ParticleCatalogue> dn_00(params);
-  dn_00.calc_ylm_wgtd_fluctuation(
+  PseudoDensityField<ParticleCatalogue> dn_00(params);
+  dn_00.compute_ylm_wgtd_fluctuation(
     particles_data, particles_rand,
     los_data, los_rand,
     alpha,
@@ -62,9 +62,9 @@ int calc_powspec(
 
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
     /// Compute Fourier--harmonic transform of the density fluctuation.
-    DensityField<ParticleCatalogue> dn_LM(params);
+    PseudoDensityField<ParticleCatalogue> dn_LM(params);
       // NOBUG: naming convention overriden
-    dn_LM.calc_ylm_wgtd_fluctuation(
+    dn_LM.compute_ylm_wgtd_fluctuation(
       particles_data, particles_rand,
       los_data, los_rand,
       alpha,
@@ -73,8 +73,8 @@ int calc_powspec(
     dn_LM.fourier_transform();
 
     /// Compute shot noise.
-    TwoPointStatistics<ParticleCatalogue> stats(params);
-    std::complex<double> shotnoise = stats.calc_shotnoise_for_powspec(
+    Pseudo2ptStats<ParticleCatalogue> stats(params);
+    std::complex<double> shotnoise = stats.calc_ylm_wgtd_shotnoise_for_powspec(
       particles_data, particles_rand,
       los_data, los_rand,
       alpha,
@@ -91,7 +91,7 @@ int calc_powspec(
         continue;
       }
 
-      stats.calc_2pt_stats_in_fourier(
+      stats.compute_2pt_stats_in_fourier(
         dn_LM, dn_00,
         shotnoise,
         kbin,
@@ -103,7 +103,7 @@ int calc_powspec(
         sn_save[i] += coupling * stats.sn[i];
       }
 
-      if (M_ == 0 & m1_ == 0) {
+      if (M_ == 0 && m1_ == 0) {
         for (int i = 0; i < params.num_kbin; i++) {
           k_save[i] += stats.k[i];
         }
@@ -185,8 +185,8 @@ int calc_corrfunc(
 
   /// Compute monopole of the Fourier--harmonic transform of the density
   /// fluctuation.
-  DensityField<ParticleCatalogue> dn_00(params);
-  dn_00.calc_ylm_wgtd_fluctuation(
+  PseudoDensityField<ParticleCatalogue> dn_00(params);
+  dn_00.compute_ylm_wgtd_fluctuation(
     particles_data, particles_rand,
     los_data, los_rand,
     alpha,
@@ -194,7 +194,7 @@ int calc_corrfunc(
   );
   dn_00.fourier_transform();
 
-  /// Compute two-point correlation function.
+  /// Compute 2PCF.
   std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
   for (int i = 0; i < params.num_rbin; i++) {
     xi_save[i] = 0.;
@@ -202,9 +202,9 @@ int calc_corrfunc(
 
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
     /// Compute Fourier--harmonic transform of the density fluctuation.
-    DensityField<ParticleCatalogue> dn_LM(params);
+    PseudoDensityField<ParticleCatalogue> dn_LM(params);
       // NOBUG: naming convention overriden
-    dn_LM.calc_ylm_wgtd_fluctuation(
+    dn_LM.compute_ylm_wgtd_fluctuation(
       particles_data, particles_rand,
       los_data, los_rand,
       alpha,
@@ -213,8 +213,8 @@ int calc_corrfunc(
     dn_LM.fourier_transform();
 
     /// Compute shot noise.
-    TwoPointStatistics<ParticleCatalogue> stats(params);
-    std::complex<double> shotnoise = stats.calc_shotnoise_for_powspec(
+    Pseudo2ptStats<ParticleCatalogue> stats(params);
+    std::complex<double> shotnoise = stats.calc_ylm_wgtd_shotnoise_for_powspec(
       particles_data, particles_rand,
       los_data, los_rand,
       alpha,
@@ -231,7 +231,7 @@ int calc_corrfunc(
         continue;
       }
 
-      stats.calc_2pt_stats_in_config(
+      stats.compute_2pt_stats_in_config(
         dn_LM, dn_00,
         shotnoise,
         rbin,
@@ -314,8 +314,8 @@ int calc_powspec_window(
 
   /// Compute monopole of the Fourier--harmonic transform of
   /// the mean density.
-  DensityField<ParticleCatalogue> dn_00(params);
-  dn_00.calc_ylm_wgtd_density(particles_rand, los_rand, alpha, 0, 0);
+  PseudoDensityField<ParticleCatalogue> dn_00(params);
+  dn_00.compute_ylm_wgtd_density(particles_rand, los_rand, alpha, 0, 0);
   dn_00.fourier_transform();
 
   /// Initialise output power spectrum window.
@@ -326,14 +326,14 @@ int calc_powspec_window(
   std::cout << "Current memory usage: " << bytesMem << " bytesMem." << std::endl;
 
   /// Compute shot noise.
-  TwoPointStatistics<ParticleCatalogue> stats(params);
-  std::complex<double> shotnoise = stats.calc_shotnoise_for_corrfunc_window(
+  Pseudo2ptStats<ParticleCatalogue> stats(params);
+  std::complex<double> shotnoise = stats.calc_ylm_wgtd_shotnoise_for_powspec(
     particles_rand, los_rand, alpha, params.ELL, 0
   );
   std::cout << "Current memory usage: " << bytesMem << " bytesMem." << std::endl;
 
   /// Compute power spectrum window.
-  stats.calc_2pt_stats_in_fourier(
+  stats.compute_2pt_stats_in_fourier(
     dn_00, dn_00,
     shotnoise,
     kbin,
@@ -417,29 +417,29 @@ int calc_corrfunc_window(
 
   /// Compute monopole of the Fourier--harmonic transform of
   /// the mean density.
-  DensityField<ParticleCatalogue> dn_00(params);
-  dn_00.calc_ylm_wgtd_density(particles_rand, los_rand, alpha, 0, 0);
+  PseudoDensityField<ParticleCatalogue> dn_00(params);
+  dn_00.compute_ylm_wgtd_density(particles_rand, los_rand, alpha, 0, 0);
   dn_00.fourier_transform();
 
-  /// Initialise output two-point correlation function.
+  /// Initialise output 2PCF.
   std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
   for (int i = 0; i < params.num_rbin; i++) {
     xi_save[i] = 0.;
   }
 
-  /// Compute two-point correlation function.
+  /// Compute 2PCF.
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
     /// Compute Fourier--harmonic transform of the density fluctuation.
-    DensityField<ParticleCatalogue> dn_LM(params);
+    PseudoDensityField<ParticleCatalogue> dn_LM(params);
       // NOBUG: naming convention overriden
-    dn_LM.calc_ylm_wgtd_density(
+    dn_LM.compute_ylm_wgtd_density(
       particles_rand, los_rand, alpha, params.ELL, M_
     );
     dn_LM.fourier_transform();
 
     /// Compute shot noise.
-    TwoPointStatistics<ParticleCatalogue> stats(params);
-    std::complex<double> shotnoise = stats.calc_shotnoise_for_corrfunc_window(
+    Pseudo2ptStats<ParticleCatalogue> stats(params);
+    std::complex<double> shotnoise = stats.calc_ylm_wgtd_shotnoise_for_powspec(
       particles_rand, los_rand, alpha, params.ELL, M_
     );
 
@@ -453,7 +453,7 @@ int calc_corrfunc_window(
         continue;
       }
 
-      stats.calc_2pt_stats_in_config(
+      stats.compute_2pt_stats_in_config(
         dn_LM, dn_00,
         shotnoise,
         rbin,
@@ -527,8 +527,8 @@ int calc_powspec_in_box(
   }
 
   /// Fourier transform the density field.
-  DensityField<ParticleCatalogue> dn(params);
-  dn.calc_unweighted_fluctuation_insitu(
+  PseudoDensityField<ParticleCatalogue> dn(params);
+  dn.compute_unweighted_fluctuation_insitu(
 		particles_data, params.volume
 	);
   dn.fourier_transform();
@@ -540,11 +540,11 @@ int calc_powspec_in_box(
   }
 
   /// Compute shot noise.
-  TwoPointStatistics<ParticleCatalogue> stats(params);
+  Pseudo2ptStats<ParticleCatalogue> stats(params);
   std::complex<double> shotnoise = double(particles_data.ntotal);
 
   /// Compute power spectrum.
-  stats.calc_2pt_stats_in_fourier(
+  stats.compute_2pt_stats_in_fourier(
     dn, dn,
     shotnoise,
     kbin,
@@ -619,24 +619,24 @@ int calc_corrfunc_in_box(
   }
 
   /// Fourier transform the density field.
-  DensityField<ParticleCatalogue> dn(params);
-  dn.calc_unweighted_fluctuation_insitu(
+  PseudoDensityField<ParticleCatalogue> dn(params);
+  dn.compute_unweighted_fluctuation_insitu(
 		particles_data, params.volume
 	);
   dn.fourier_transform();
 
-  /// Initialise output two-point correlation function.
+  /// Initialise output 2PCF.
   std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
   for (int i = 0; i < params.num_rbin; i++) {
     xi_save[i] = 0.;
   }
 
   /// Compute shot noise.
-  TwoPointStatistics<ParticleCatalogue> stats(params);
+  Pseudo2ptStats<ParticleCatalogue> stats(params);
   std::complex<double> shotnoise = double(particles_data.ntotal);
 
-  /// Compute two-point correlation function.
-  stats.calc_2pt_stats_in_config(
+  /// Compute 2PCF.
+  stats.compute_2pt_stats_in_config(
     dn, dn,
     shotnoise,
     rbin,
@@ -716,8 +716,8 @@ int calc_powspec_in_box_for_recon(
   }
 
   /// Fourier transform the density field.
-  DensityField<ParticleCatalogue> dn(params);
-  dn.calc_unweighted_fluctuation(
+  PseudoDensityField<ParticleCatalogue> dn(params);
+  dn.compute_unweighted_fluctuation(
     particles_data, particles_rand, alpha
   );
   dn.fourier_transform();
@@ -729,14 +729,14 @@ int calc_powspec_in_box_for_recon(
   }
 
   /// Compute shot noise.
-  TwoPointStatistics<ParticleCatalogue> stats(params);
+  Pseudo2ptStats<ParticleCatalogue> stats(params);
   std::complex<double> shotnoise =
-    stats.calc_shotnoise_for_powspec_in_box_for_recon(
+    stats.calc_unweighted_shotnoise_for_powspec(
       particles_data, particles_rand, alpha
     );
 
   /// Compute power spectrum.
-  stats.calc_2pt_stats_in_fourier(
+  stats.compute_2pt_stats_in_fourier(
     dn, dn,
     shotnoise,
     kbin,
