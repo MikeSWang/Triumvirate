@@ -19,7 +19,7 @@ class PseudoDensityField {
   fftw_complex* field;  ///> gridded complex field
 
   /**
-   * Construct density field.
+   * Construct density-like field.
    *
    * @param params Parameter set.
    */
@@ -39,7 +39,7 @@ class PseudoDensityField {
   }
 
   /**
-   * Destruct density field.
+   * Destruct density-like field.
    */
   ~PseudoDensityField() {
     finalise_density_field();
@@ -56,7 +56,7 @@ class PseudoDensityField {
   }
 
   /**
-   * Finalise density field data.
+   * Finalise density-like field data.
    */
   void finalise_density_field() {
     /// Free memory usage.
@@ -68,7 +68,7 @@ class PseudoDensityField {
   }
 
   /**
-   * Assign weighted density field to a grid by interpolation scheme.
+   * Assign weighted field to a grid by interpolation scheme.
    *
    * @param particles Particle container.
    * @param weights Weight field.
@@ -529,24 +529,21 @@ class PseudoDensityField {
   }
 
   /**
-   * Inverse Fourier transform the (FFT-transformed) (density fluctuation)
-   * field weighted by the reduce spherical harmonics in a wavenumber bin,
+   * Inverse Fourier transform the (FFT-transformed) field weighted by
+   * the reduce spherical harmonics in a wavenumber bin,
    *
    * f@[
    *   F_{LM}(\vec{x}; k) = \frac{(2\pi)^3}{4\pi k^2}
    *     \int \frac{\mathrm{d}^3\,\vec{k}'}{(2\pi)^3}
    *       \mathrm{e}^{\mathrm{i} \vec{k}' \cdot \vec{x}}
    *       \delta_\mathrm{D}(k' - k) y_{LM}(\hat{\vec{k}})
-   *       \delta n_{LM}(\vec{k}) \,,
+   *       \delta n_{LM}(\vec{k}) \,.
    * f@]
-   *
-   * where f@$ \delta n_{LM} f@$ evaluated using FFT is corrected for
-   * the interpolation window.
    *
    * See eq. (42) in Sugiyama et al. (2018)
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
-   * @param density (FFT-transformed) density (fluctuation) field.
+   * @param density (FFT-transformed) density-like field.
    * @param ylm Reduced spherical harmonic on a grid.
    * @param k_in Wavenumber bin wavenumber.
    * @param dk_in Wavenumber bin width.
@@ -628,10 +625,18 @@ class PseudoDensityField {
   }
 
   /**
-   * Inverse Fourier transform a (FFT-transformed) field
-   * for three-point correlation functions.
+   * Inverse Fourier transform a (FFT-transformed) field weighted by
+   * the reduce spherical harmonics and spherical Bessel functions,
    *
-   * @param density FFT-transformed density field.
+   * f@[
+   *   F_{LM}(\vec{x}; r) = \mathrm{i}^\ell
+   *     \int \frac{\mathrm{d}^3\,\vec{k}}{(2\pi)^3}
+   *       \mathrm{e}^{\mathrm{i} \vec{k} \cdot \vec{x}}
+   *       j_L(k r) y_{LM}(\hat{\vec{k}})
+   *       \delta n_{LM}(\vec{k}) \,.
+   * f@]
+   *
+   * @param density (FFT-transformed) density-like field.
    * @param ylm Reduced spherical harmonic on a grid.
    * @param sjl Spherical Bessel function interpolator.
    * @param r_in Separation magnitude.
@@ -737,10 +742,8 @@ class PseudoDensityField {
   }
 
   /**
-   * Apply separation power-law weight for wide-angle corrections.
-   *
-   * This weights the field by f@$ r^{- i - j} f@$, where f@$i, jf@$
-   * are wide-angle correction orders.
+   * Apply separation power-law weight f@$ r^{- i - j} f@$ for
+   * wide-angle corrections at order f@$ (i, j) f@$.
    */
   void apply_power_law_weight_for_wide_angle() {
     const double eps = 1.e-10;
@@ -826,8 +829,8 @@ class PseudoDensityField {
   ParameterSet params;
 
   /**
-   * Assign weighted density field to a mesh grid by the
-   * nearest-grid-point (NGP) scheme.
+   * Assign weighted field to a mesh grid by the nearest-grid-point
+   * (NGP) scheme.
    *
    * @param particles Particle container.
    * @param weight Particle weight.
@@ -846,7 +849,7 @@ class PseudoDensityField {
       this->field[gid][1] = 0.;
     }
 
-    /// Here the density field is given by Σ_i w_i δ_D(x - x_i),
+    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
     /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
     double vol_cell = this->params.volume / double(this->params.nmesh);
     double inv_vol_cell = 1. / vol_cell;
@@ -886,7 +889,7 @@ class PseudoDensityField {
   }
 
   /**
-   * Assign weighted density field to a mesh grid by the cloud-in-cell
+   * Assign weighted field to a mesh grid by the cloud-in-cell
    * (CIC) scheme.
    *
    * @param particles Particle container.
@@ -906,7 +909,7 @@ class PseudoDensityField {
       this->field[gid][1] = 0.;
     }
 
-    /// Here the density field is given by Σ_i w_i δ_D(x - x_i),
+    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
     /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
     double vol_cell = this->params.volume / double(this->params.nmesh);
     double inv_vol_cell = 1. / vol_cell;
@@ -950,8 +953,8 @@ class PseudoDensityField {
   }
 
   /**
-   * Assign weighted density field to a grid by the
-   * triangular-shaped-cloud (TSC) scheme.
+   * Assign weighted field to a grid by the triangular-shaped-cloud
+   * (TSC) scheme.
    *
    * @param particles Particle container.
    * @param weight Particle weight.
@@ -970,7 +973,7 @@ class PseudoDensityField {
       this->field[gid][1] = 0.;
     }
 
-    /// Here the over-density is given by Σ_i w_i δ_D(x - x_i),
+    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
     /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
     double vol_cell = this->params.volume / double(this->params.nmesh);
     double inv_vol_cell = 1. / vol_cell;
@@ -1136,8 +1139,8 @@ class Pseudo2ptStats {
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].  Note
    * that this quantity is diagonal so effectively one-dimensional.
    *
-   * @param field_a First density field.
-   * @param field_b Second density field.
+   * @param field_a First density-like field.
+   * @param field_b Second density-like field.
    * @param shotnoise Shot noise amplitude.
    * @param kbin Wavenumber bins.
    * @param ell Degree of the spherical harmonic.
@@ -1288,8 +1291,8 @@ class Pseudo2ptStats {
   /**
    * Compute binned two-point statistics in configuration space.
    *
-   * @param field_a First density field.
-   * @param field_b Second density field.
+   * @param field_a First density-like field.
+   * @param field_b Second density-like field.
    * @param shotnoise Shot noise amplitude.
    * @param rbin Separation bins.
    * @param ell Degree of the spherical harmonic.
@@ -1590,8 +1593,8 @@ class Pseudo2ptStats {
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].  Note
    * that this quantity is diagonal so effectively one-dimensional.
    *
-   * @param field_a First field.
-   * @param field_b Second field.
+   * @param field_a First density-like field.
+   * @param field_b Second density-like field.
    * @param ylm_a Reduced spherical harmonics over the first field grid.
    * @param ylm_b Reduced spherical harmonics over the second field grid.
    * @param shotnoise Shot noise amplitude.
@@ -1786,8 +1789,8 @@ class Pseudo2ptStats {
    * that this quantity is two-dimensional and here the pre-binning
    * three-dimensional quantity is computed.
    *
-   * @param[in] field_a First density field.
-   * @param[in] field_b Second density field.
+   * @param[in] field_a First density-like field.
+   * @param[in] field_b Second density-like field.
    * @param[in] shotnoise Shot noise amplitude.
    * @param[in] ell Degree of the spherical harmonic.
    * @param[in] m Order of the spherical harmonic.
