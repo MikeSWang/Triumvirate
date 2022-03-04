@@ -1,3 +1,9 @@
+/**
+ * @file particles.hpp
+ * @brief Particle containers with I/O methods and operations.
+ *
+ */
+
 #ifndef TRIUMVIRATE_INCLUDE_PARTICLES_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_PARTICLES_HPP_INCLUDED_
 

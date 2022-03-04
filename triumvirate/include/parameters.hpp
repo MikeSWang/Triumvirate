@@ -1,3 +1,9 @@
+/**
+ * @file parameters.hpp
+ * @brief Program parameter configuration.
+ *
+ */
+
 #ifndef TRIUMVIRATE_INCLUDE_PARAMETERS_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_PARAMETERS_HPP_INCLUDED_
 
@@ -313,15 +319,15 @@ class ParameterSet {
    */
   int printout() {
     /// Set file path.
-    char buf[1024];
+    char filepath[1024];
     sprintf(
-      buf, "%s/parameters_used%s",
+      filepath, "%s/parameters_used%s",
       this->measurement_dir.c_str(), this->output_tag.c_str()
     );
 
     /// Create output file.
-    FILE* used_param_file_ptr;
-    if (!(used_param_file_ptr = fopen(buf, "w"))) {
+    FILE* used_param_fileptr;
+    if (!(used_param_fileptr = fopen(filepath, "w"))) {
       if (currTask == 0) {
         printf(
           "[Error] :: Output directory '%s' does not exist.\n",
@@ -333,71 +339,71 @@ class ParameterSet {
 
     /// Print parameters to file.
     fprintf(
-      used_param_file_ptr, "catalogue_dir = %s\n",
+      used_param_fileptr, "catalogue_dir = %s\n",
       this->catalogue_dir.c_str()
     );
     fprintf(
-      used_param_file_ptr, "measurement_dir = %s\n",
+      used_param_fileptr, "measurement_dir = %s\n",
       this->measurement_dir.c_str()
     );
     fprintf(
-      used_param_file_ptr, "data_catalogue_file = %s\n",
+      used_param_fileptr, "data_catalogue_file = %s\n",
       this->data_catalogue_file.c_str()
     );
     fprintf(
-      used_param_file_ptr, "rand_catalogue_file = %s\n",
+      used_param_fileptr, "rand_catalogue_file = %s\n",
       this->rand_catalogue_file.c_str()
     );
     fprintf(
-      used_param_file_ptr, "output_tag = %s\n", this->output_tag.c_str()
+      used_param_fileptr, "output_tag = %s\n", this->output_tag.c_str()
     );
 
     fprintf(
-      used_param_file_ptr, "catalogue_type = %s\n",
+      used_param_fileptr, "catalogue_type = %s\n",
       this->catalogue_type.c_str()
     );
     fprintf(
-      used_param_file_ptr, "measurement_type = %s\n",
+      used_param_fileptr, "measurement_type = %s\n",
       this->measurement_type.c_str()
     );
 
     fprintf(
-      used_param_file_ptr, "assignment = %s\n", this->assignment.c_str()
+      used_param_fileptr, "assignment = %s\n", this->assignment.c_str()
     );
     fprintf(
-      used_param_file_ptr, "norm_convention = %s\n",
+      used_param_fileptr, "norm_convention = %s\n",
       this->norm_convention.c_str()
     );
 
-    fprintf(used_param_file_ptr, "boxsize_x = %.2f\n", this->boxsize[0]);
-    fprintf(used_param_file_ptr, "boxsize_y = %.2f\n", this->boxsize[1]);
-    fprintf(used_param_file_ptr, "boxsize_z = %.2f\n", this->boxsize[2]);
+    fprintf(used_param_fileptr, "boxsize_x = %.2f\n", this->boxsize[0]);
+    fprintf(used_param_fileptr, "boxsize_y = %.2f\n", this->boxsize[1]);
+    fprintf(used_param_fileptr, "boxsize_z = %.2f\n", this->boxsize[2]);
 
-    fprintf(used_param_file_ptr, "ngrid_x = %d\n", this->ngrid[0]);
-    fprintf(used_param_file_ptr, "ngrid_y = %d\n", this->ngrid[1]);
-    fprintf(used_param_file_ptr, "ngrid_z = %d\n", this->ngrid[2]);
+    fprintf(used_param_fileptr, "ngrid_x = %d\n", this->ngrid[0]);
+    fprintf(used_param_fileptr, "ngrid_y = %d\n", this->ngrid[1]);
+    fprintf(used_param_fileptr, "ngrid_z = %d\n", this->ngrid[2]);
 
-    fprintf(used_param_file_ptr, "ell1 = %d\n", this->ell1);
-    fprintf(used_param_file_ptr, "ell2 = %d\n", this->ell2);
-    fprintf(used_param_file_ptr, "ELL = %d\n", this->ELL);
+    fprintf(used_param_fileptr, "ell1 = %d\n", this->ell1);
+    fprintf(used_param_fileptr, "ell2 = %d\n", this->ell2);
+    fprintf(used_param_fileptr, "ELL = %d\n", this->ELL);
 
-    fprintf(used_param_file_ptr, "i_wa = %d\n", this->i_wa);
-    fprintf(used_param_file_ptr, "j_wa = %d\n", this->j_wa);
+    fprintf(used_param_fileptr, "i_wa = %d\n", this->i_wa);
+    fprintf(used_param_fileptr, "j_wa = %d\n", this->j_wa);
 
-    fprintf(used_param_file_ptr, "binning = %s\n", this->binning.c_str());
-    fprintf(used_param_file_ptr, "form = %s\n", this->form.c_str());
+    fprintf(used_param_fileptr, "binning = %s\n", this->binning.c_str());
+    fprintf(used_param_fileptr, "form = %s\n", this->form.c_str());
 
-    fprintf(used_param_file_ptr, "kmin = %.4f\n", this->kmin);
-    fprintf(used_param_file_ptr, "kmax = %.4f\n", this->kmax);
-    fprintf(used_param_file_ptr, "num_kbin = %d\n", this->num_kbin);
-    fprintf(used_param_file_ptr, "ith_kbin = %d\n", this->ith_kbin);
+    fprintf(used_param_fileptr, "kmin = %.4f\n", this->kmin);
+    fprintf(used_param_fileptr, "kmax = %.4f\n", this->kmax);
+    fprintf(used_param_fileptr, "num_kbin = %d\n", this->num_kbin);
+    fprintf(used_param_fileptr, "ith_kbin = %d\n", this->ith_kbin);
 
-    fprintf(used_param_file_ptr, "rmin = %.2f\n", this->rmin);
-    fprintf(used_param_file_ptr, "rmax = %.2f\n", this->rmax);
-    fprintf(used_param_file_ptr, "num_rbin = %d\n", this->num_rbin);
-    fprintf(used_param_file_ptr, "ith_rbin = %d\n", this->ith_rbin);
+    fprintf(used_param_fileptr, "rmin = %.2f\n", this->rmin);
+    fprintf(used_param_fileptr, "rmax = %.2f\n", this->rmax);
+    fprintf(used_param_fileptr, "num_rbin = %d\n", this->num_rbin);
+    fprintf(used_param_fileptr, "ith_rbin = %d\n", this->ith_rbin);
 
-    fclose(used_param_file_ptr);
+    fclose(used_param_fileptr);
 
     return 0;
   }

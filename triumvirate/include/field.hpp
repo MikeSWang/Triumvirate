@@ -1,3 +1,9 @@
+/**
+ * @file field.hpp
+ * @brief Field operations, computations and statistics over mesh grid.
+ *
+ */
+
 #ifndef TRIUMVIRATE_INCLUDE_FIELD_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_FIELD_HPP_INCLUDED_
 

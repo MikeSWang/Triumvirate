@@ -1,3 +1,9 @@
+/**
+ * @file tools.hpp
+ * @brief Miscellaneous tools.
+ *
+ */
+
 #ifndef TRIUMVIRATE_INCLUDE_TOOLS_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_TOOLS_HPP_INCLUDED_
 

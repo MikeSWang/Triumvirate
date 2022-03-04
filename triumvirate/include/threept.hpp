@@ -489,7 +489,7 @@ int calc_bispec(
   /// Normalise and then save the output.
   double norm = pow(survey_vol_norm, 2) / pow(particles_data.wtotal, 3);
 
-  FILE* saved_file_ptr;
+  FILE* save_fileptr;
   char buf[1024];
   if (params.form == "diag") {
     sprintf(
@@ -498,10 +498,10 @@ int calc_bispec(
 			params.ell1, params.ell2, params.ELL,
 			params.output_tag.c_str()
     );
-    saved_file_ptr = fopen(buf, "w");
+    save_fileptr = fopen(buf, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
-        saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
+        save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
         kbin[ibin], kbin[ibin],
         1. * (bk_save[ibin].real() - shotnoise_save[ibin].real()),
         1. * (bk_save[ibin].imag() - shotnoise_save[ibin].imag()),
@@ -517,10 +517,10 @@ int calc_bispec(
       params.ith_kbin,
 			params.output_tag.c_str()
     );
-    saved_file_ptr = fopen(buf, "w");
+    save_fileptr = fopen(buf, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
-        saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
+        save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
         kbin[params.ith_kbin], kbin[ibin],
         norm * (bk_save[ibin].real() - shotnoise_save[ibin].real()),
         norm * (bk_save[ibin].imag() - shotnoise_save[ibin].imag()),
@@ -529,7 +529,7 @@ int calc_bispec(
       );
     }
   }
-  fclose(saved_file_ptr);
+  fclose(save_fileptr);
 
   delete[] shotnoise_save;
   delete[] bk_save;
@@ -926,7 +926,7 @@ int calc_bispec_in_box(
 		/ double(particles_data.ntotal) / double(particles_data.ntotal);
 	norm *= params.volume / double(particles_data.ntotal);
 
-	FILE* saved_file_ptr;
+	FILE* save_fileptr;
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
@@ -935,10 +935,10 @@ int calc_bispec_in_box(
 			params.ell1, params.ell2, params.ELL,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int ibin = 0; ibin < params.num_kbin; ibin++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				kbin[ibin], kbin[ibin],
 				1. * (bk_save[ibin].real() - shotnoise_save[ibin].real()),
 				1. * shotnoise_save[ibin].real()
@@ -952,17 +952,17 @@ int calc_bispec_in_box(
 			params.ith_kbin,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int ibin = 0; ibin < params.num_kbin; ibin++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				kbin[params.ith_kbin], kbin[ibin],
 				1. * (bk_save[ibin].real() - shotnoise_save[ibin].real()),
 				1. * shotnoise_save[ibin].real()
 			);
 		}
 	}
-	fclose(saved_file_ptr);
+	fclose(save_fileptr);
 
 	delete[] shotnoise_save;
 	delete[] bk_save;
@@ -1288,7 +1288,7 @@ int calc_3pcf(
 	/// Normalise and then save the output.
   double norm = pow(survey_vol_norm, 2) / pow(particles_data.wtotal, 3);
 
-	FILE* saved_file_ptr;
+	FILE* save_fileptr;
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
@@ -1297,10 +1297,10 @@ int calc_3pcf(
 			params.ell1, params.ell2, params.ELL,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				rbin[ibin], rbin[ibin],
 				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
 				norm * shotnoise_save[ibin].real()
@@ -1314,17 +1314,17 @@ int calc_3pcf(
 			params.ith_rbin,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				rbin[params.ith_rbin], rbin[ibin],
 				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
 				norm * shotnoise_save[ibin].real()
 			);
 		}
 	}
-	fclose(saved_file_ptr);
+	fclose(save_fileptr);
 
 	delete[] shotnoise_save;
 	delete[] zeta_save;
@@ -1603,7 +1603,7 @@ int calc_3pcf_in_box(
 		/ double(particles_data.ntotal) / double(particles_data.ntotal);
 	norm *= params.volume / double(particles_data.ntotal);
 
-	FILE* saved_file_ptr;
+	FILE* save_fileptr;
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
@@ -1612,10 +1612,10 @@ int calc_3pcf_in_box(
 			params.ell1, params.ell2, params.ELL,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				rbin[ibin], rbin[ibin],
 				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
 				norm * shotnoise_save[ibin].real()
@@ -1629,17 +1629,17 @@ int calc_3pcf_in_box(
 			params.ith_rbin,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				rbin[params.ith_rbin], rbin[ibin],
 				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
 				norm * shotnoise_save[ibin].real()
 			);
 		}
 	}
-	fclose(saved_file_ptr);
+	fclose(save_fileptr);
 
 	delete[] shotnoise_save;
 	delete[] zeta_save;
@@ -1946,7 +1946,7 @@ int calc_3pcf_window(
   double norm = pow(survey_vol_norm, 2) / pow(particles_rand.wtotal, 3);
 	norm /= alpha * alpha * alpha;
 
-	FILE* saved_file_ptr;
+	FILE* save_fileptr;
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
@@ -1955,10 +1955,10 @@ int calc_3pcf_window(
 			params.ell1, params.ell2, params.ELL,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				rbin[ibin], rbin[ibin],
 				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
 				norm * shotnoise_save[ibin].real()
@@ -1972,17 +1972,17 @@ int calc_3pcf_window(
 			params.ith_rbin,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				rbin[params.ith_rbin], rbin[ibin],
 				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
 				norm * shotnoise_save[ibin].real()
 			);
 		}
 	}
-	fclose(saved_file_ptr);
+	fclose(save_fileptr);
 
 	delete[] shotnoise_save;
 	delete[] zeta_save;
@@ -2313,7 +2313,7 @@ int calc_3pcf_window_mpi(
   double norm = pow(survey_vol_norm, 2) / pow(particles_rand.wtotal, 3);
 	norm /= alpha * alpha * alpha;
 
-	FILE* saved_file_ptr;
+	FILE* save_fileptr;
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
@@ -2323,10 +2323,10 @@ int calc_3pcf_window_mpi(
 			NR,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int idx = 0; idx < n_temp; idx++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				rbin[idx + NR * n_temp], rbin[idx + NR * n_temp],
 				norm * (zeta_save[idx].real() - shotnoise_save[idx].real()),
 				norm * shotnoise_save[idx].real()
@@ -2340,17 +2340,17 @@ int calc_3pcf_window_mpi(
 			params.ith_rbin, NR,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int idx = 0; idx < n_temp; idx++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				rbin[params.ith_rbin], rbin[idx + NR * n_temp],
 				norm * (zeta_save[idx].real() - shotnoise_save[idx].real()),
 				norm * shotnoise_save[idx].real()
 			);
 		}
 	}
-	fclose(saved_file_ptr);
+	fclose(save_fileptr);
 
 	delete[] shotnoise_save;
 	delete[] zeta_save;
@@ -2661,7 +2661,7 @@ int calc_3pcf_window_for_wide_angle(
   double norm = pow(survey_vol_norm, 2) / pow(particles_rand.wtotal, 3);
 	norm /= alpha * alpha * alpha;
 
-	FILE* saved_file_ptr;
+	FILE* save_fileptr;
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
@@ -2670,10 +2670,10 @@ int calc_3pcf_window_for_wide_angle(
 			params.ell1, params.ell2, params.ELL,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				rbin[ibin], rbin[ibin],
 				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
 				norm * shotnoise_save[ibin].real()
@@ -2688,17 +2688,17 @@ int calc_3pcf_window_for_wide_angle(
 			params.ith_rbin,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int ibin = 0; ibin < params.num_rbin; ibin++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				rbin[params.ith_rbin], rbin[ibin],
 				norm * (zeta_save[ibin].real() - shotnoise_save[ibin].real()),
 				norm * shotnoise_save[ibin].real()
 			);
 		}
 	}
-	fclose(saved_file_ptr);
+	fclose(save_fileptr);
 
 	delete[] shotnoise_save;
 	delete[] zeta_save;
@@ -3319,7 +3319,7 @@ int calc_bispec_for_los_choice(
 	/// NOTE: Save the real parts only.
   double norm = pow(survey_vol_norm, 2) / pow(particles_data.wtotal, 3);
 
-	FILE* saved_file_ptr;
+	FILE* save_fileptr;
 	char buf[1024];
 	if (params.form == "diag") {
 		sprintf(
@@ -3328,10 +3328,10 @@ int calc_bispec_for_los_choice(
 			params.ell1, params.ell2, params.ELL,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int ibin = 0; ibin < params.num_kbin; ibin++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				kbin[ibin], kbin[ibin],
 				norm * (bk_save[ibin].real() - shotnoise_save[ibin].real()),
 				norm * shotnoise_save[ibin].real()
@@ -3345,17 +3345,17 @@ int calc_bispec_for_los_choice(
 			params.ith_kbin,
 			params.output_tag.c_str()
 		);
-		saved_file_ptr = fopen(buf, "w");
+		save_fileptr = fopen(buf, "w");
 		for (int ibin = 0; ibin < params.num_kbin; ibin++) {
 			fprintf(
-				saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+				save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 				kbin[params.ith_kbin], kbin[ibin],
 				norm * (bk_save[ibin].real() - shotnoise_save[ibin].real()),
 				norm * shotnoise_save[ibin].real()
 			);
 		}
 	}
-	fclose(saved_file_ptr);
+	fclose(save_fileptr);
 
 	delete[] shotnoise_save;
 	delete[] bk_save;
@@ -3852,7 +3852,7 @@ int calc_bispec_for_M_mode(
   double norm = pow(survey_vol_norm, 2) / pow(particles_data.wtotal, 3);
 
 	for (int M_ = 0; M_<2*params.ELL + 1; M_++) {
-		FILE* saved_file_ptr;
+		FILE* save_fileptr;
 		char buf[1024];
 		if (params.form == "diag") {
 			sprintf(
@@ -3862,10 +3862,10 @@ int calc_bispec_for_M_mode(
 				params.ELL, M_,
 				params.output_tag.c_str()
 			);
-			saved_file_ptr = fopen(buf, "w");
+			save_fileptr = fopen(buf, "w");
 			for (int ibin = 0; ibin < params.num_kbin; ibin++) {
 				fprintf(
-					saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+					save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 					kbin[ibin], kbin[ibin],
 					norm * (bk_save[M_][ibin].real() - shotnoise_save[M_][ibin].real()),
 					norm * shotnoise_save[M_][ibin].real()
@@ -3880,17 +3880,17 @@ int calc_bispec_for_M_mode(
 				params.ith_kbin,
 				params.output_tag.c_str()
 			);
-			saved_file_ptr = fopen(buf, "w");
+			save_fileptr = fopen(buf, "w");
 			for (int ibin = 0; ibin < params.num_kbin; ibin++) {
 				fprintf(
-					saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
+					save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e\n",
 					kbin[params.ith_kbin], kbin[ibin],
 					norm * (bk_save[M_][ibin].real() - shotnoise_save[M_][ibin].real()),
 					norm * shotnoise_save[M_][ibin].real()
 				);
 			}
 		}
-		fclose(saved_file_ptr);
+		fclose(save_fileptr);
 	}
 
 	return 0;
@@ -4378,7 +4378,7 @@ int calc_bispec_(
   }
 
   /// Normalise and then save the output.
-  FILE* saved_file_ptr;
+  FILE* save_fileptr;
 
   char buf[1024];
 
@@ -4390,10 +4390,10 @@ int calc_bispec_(
 			params.output_tag.c_str()
     );
 
-    saved_file_ptr = fopen(buf, "w");
+    save_fileptr = fopen(buf, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
-        saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
+        save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
         kbin[ibin], kbin[ibin],
         (bk_save[ibin].real() - shotnoise_save[ibin].real()),
         (bk_save[ibin].imag() - shotnoise_save[ibin].imag()),
@@ -4410,10 +4410,10 @@ int calc_bispec_(
 			params.output_tag.c_str()
     );
 
-    saved_file_ptr = fopen(buf, "w");
+    save_fileptr = fopen(buf, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
-        saved_file_ptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
+        save_fileptr, "%.5f \t %.5f \t %.7e \t %.7e \t %.7e \t %.7e\n",
         kbin[params.ith_kbin], kbin[ibin],
         (bk_save[ibin].real() - shotnoise_save[ibin].real()),
         (bk_save[ibin].imag() - shotnoise_save[ibin].imag()),
@@ -4422,7 +4422,7 @@ int calc_bispec_(
       );
     }
   }
-  fclose(saved_file_ptr);
+  fclose(save_fileptr);
 
   delete[] shotnoise_save;
   delete[] bk_save;
