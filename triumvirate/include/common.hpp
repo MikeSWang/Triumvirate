@@ -1,3 +1,9 @@
+/**
+ * @file common.hpp
+ * @brief Global program variables.
+ *
+ */
+
 #ifndef TRIUMVIRATE_INCLUDE_COMMON_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_COMMON_HPP_INCLUDED_
 

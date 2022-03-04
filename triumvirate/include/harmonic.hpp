@@ -1,3 +1,9 @@
+/**
+ * @file harmonic.hpp
+ * @brief (Reduced) spherical harmonic calculations.
+ *
+ */
+
 #ifndef TRIUMVIRATE_INCLUDE_HARMONIC_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_HARMONIC_HPP_INCLUDED_
 

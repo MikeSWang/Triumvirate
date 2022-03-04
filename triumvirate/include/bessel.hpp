@@ -1,3 +1,9 @@
+/**
+ * @file bessel.hpp
+ * @brief Spherical Bessel calculations.
+ *
+ */
+
 #ifndef TRIUMVIRATE_INCLUDE_BESSEL_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_BESSEL_HPP_INCLUDED_
 
