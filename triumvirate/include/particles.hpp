@@ -317,7 +317,7 @@ class ParticleCatalogue {
    *
    * @param boxsize Periodic boxsize in each dimension.
    */
-  void offset_coords_for_periodicity(double boxsize[3]) {
+  void offset_coords_for_periodicity(const double boxsize[3]) {
     /// Re-adjust the grid.
     for (int pid = 0; pid < this->ntotal; pid++) {
       for (int axis = 0; axis < 3; axis++) {
@@ -351,8 +351,8 @@ class ParticleCatalogue {
   static void align_catalogues_for_fft(
     ParticleCatalogue& particles_data,
     ParticleCatalogue& particles_rand,
-    double boxsize[3],
-    int ngrid[3],
+    const double boxsize[3],
+    const int ngrid[3],
     double shift_factor=3.  // CAVEAT: discretionary choice
   ) {
     /// Calculate adjustments needed.

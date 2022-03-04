@@ -2017,7 +2017,7 @@ class Pseudo2ptStats {
    * @param kvec Wavevector.
    * @returns Function value.
    */
-  double calc_shotnoise_scale_dependence_ngp(const double* kvec) {
+  double calc_shotnoise_scale_dependence_ngp(double* kvec) {
     return 1.;
   }
 
@@ -2028,7 +2028,7 @@ class Pseudo2ptStats {
    * @param kvec Wavevector.
    * @returns Function value.
    */
-  double calc_shotnoise_scale_dependence_cic(const double* kvec) {
+  double calc_shotnoise_scale_dependence_cic(double* kvec) {
     const double tol = 1.e-5;
 
     double dk[3];
@@ -2063,7 +2063,7 @@ class Pseudo2ptStats {
    * @param kvec Wavevector.
    * @returns Function value.
    */
-  double calc_shotnoise_scale_dependence_tsc(const double* kvec) {
+  double calc_shotnoise_scale_dependence_tsc(double* kvec) {
     const double tol = 1.e-5;
 
     double dk[3];
