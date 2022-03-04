@@ -28,20 +28,24 @@ class ParameterSet {
   double boxsize[3];  ///< boxsize in each dimension
   int ngrid[3];  ///< grid number in each dimension
   std::string assignment;  ///< grid assignment scheme: {'NGP', 'CIC', 'TSC'}
-  std::string norm_convention;  ///< normalisation convention: {'grid', 'particle'}
-    // TODO: implement options
-  /// TODO: Implement shot noise convention options.
+  std::string norm_convention;  /**< normalisation convention:
+                                     {'grid', 'particle'} */
+  /// TODO: Implement shot noise and normalisation convention options.
 
   /// Measurements.
   std::string catalogue_type;  ///< catalogue type: {'survey', 'mock', 'sim'}
-  std::string measurement_type; ///< measurement_type: {'powspec', '2pcf', '2pcf-win', 'bispec', '3pcf', '3pcf-win', '3pcf-win-wa'}
+  std::string measurement_type; /**< measurement_type: {
+                                       'powspec', '2pcf', '2pcf-win',
+                                       'bispec', '3pcf', '3pcf-win',
+                                       '3pcf-win-wa'
+                                     } */
   int ell1;  ///< spherical degree associated with the first wavevector
   int ell2;  ///< spherical degree associated with the second wavevector
   int ELL;  ///< spherical degree associated with the line-of-sight vector
-    // NOBUG: naming convention overriden
   int i_wa;  ///< first order of the wide-angle correction term
   int j_wa;  ///< second order of the wide-angle correction term
-  std::string binning;  ///< binning interval: {'lin', 'log', 'linpad', 'logpad'}
+  std::string binning;  /**< binning interval:
+                             {'lin', 'log', 'linpad', 'logpad'} */
   std::string form;  ///< full or diagonal form for the bispectrum
   double kmin;  ///< minimum wavenumber
   double kmax;  ///< maximum wavenumber
