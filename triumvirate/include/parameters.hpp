@@ -562,8 +562,8 @@ class ParameterSet {
       char buf_dir[2048];
       sprintf(buf_dir, "%s/%04d", this->measurement_dir.c_str(), realisation);
 
-      struct stat st;  // file permission mode
-      if (stat(buf_dir, &st) != 0) {
+      struct stat status;  // file permission mode
+      if (stat(buf_dir, &status) != 0) {
         /// Make the output subdirectory.
         int ret_status = mkdir(buf_dir, 0777);
 

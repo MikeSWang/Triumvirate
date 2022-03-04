@@ -18,7 +18,7 @@
  * Line-of-sight vector.
  *
  */
-struct LineOfSight{
+struct LineOfSight {
   double pos[3];  ///< 3-d position vector
 };
 
