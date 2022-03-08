@@ -1,6 +1,7 @@
 /**
  * @file particles.hpp
- * @brief Particle containers with I/O methods and operations.
+ * @brief Particle containers with I/O methods and operations, as well as
+ *        line-of-sight vectors.
  *
  */
 
@@ -13,6 +14,14 @@
 #include <vector>
 
 #include "common.hpp"
+
+/**
+ * Line-of-sight vector.
+ *
+ */
+struct LineOfSight {
+  double pos[3];  ///< 3-d position vector
+};
 
 /**
  * Particle catalogue containing particle data and summary information.
