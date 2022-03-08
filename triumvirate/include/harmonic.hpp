@@ -205,4 +205,4 @@ class SphericalHarmonicCalculator {
   }
 };
 
-#endif
+#endif  // TRIUMVIRATE_INCLUDE_HARMONIC_HPP_INCLUDED_

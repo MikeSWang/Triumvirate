@@ -80,4 +80,4 @@ class SphericalBesselCalculator {
   gsl_interp_accel* accel;
 };
 
-#endif
+#endif  // TRIUMVIRATE_INCLUDE_BESSEL_HPP_INCLUDED_

@@ -597,4 +597,4 @@ class ParameterSet {
   }
 };
 
-#endif
+#endif  // TRIUMVIRATE_INCLUDE_PARAMETERS_HPP_INCLUDED_

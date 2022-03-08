@@ -17,4 +17,4 @@ double bytesMem = 0;  ///< memory usage in bytes
 double timeStart;  ///< program start time
 double durationInSec;  ///< program duration in seconds
 
-#endif
+#endif  // TRIUMVIRATE_INCLUDE_COMMON_HPP_INCLUDED_
