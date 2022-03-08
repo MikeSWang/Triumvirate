@@ -40,11 +40,10 @@ class SphericalBesselCalculator {
       j_ell[i] = gsl_sf_bessel_jl(ell, x[i]);
     }
 
-    /// Initialise the interpolator.
+    /// Initialise the interpolator using cubic spline, and
+    /// store state variables for faster lookup.
     this->spline = gsl_spline_alloc(gsl_interp_cspline, nsample);
-      // use cubic spline
     this->accel = gsl_interp_accel_alloc();
-      // store state variables for faster lookup
 
     gsl_spline_init(this->spline, x, j_ell, nsample);
 

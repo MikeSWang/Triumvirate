@@ -1,6 +1,6 @@
 /**
  * @file common.hpp
- * @brief Global program variables.
+ * @brief Program global variables.
  *
  */
 
