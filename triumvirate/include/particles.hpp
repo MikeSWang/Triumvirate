@@ -393,4 +393,4 @@ class ParticleCatalogue {
   }
 };
 
-#endif
+#endif  // TRIUMVIRATE_INCLUDE_PARTICLES_HPP_INCLUDED_

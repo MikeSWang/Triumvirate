@@ -2103,4 +2103,4 @@ class Pseudo2ptStats {
   }
 };
 
-#endif
+#endif  // TRIUMVIRATE_INCLUDE_FIELD_HPP_INCLUDED_
