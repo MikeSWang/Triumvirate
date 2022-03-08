@@ -1086,6 +1086,7 @@ template<class ParticleContainer>
 class Pseudo2ptStats {
  public:
   double* k;  ///< central wavenumber in bins/shells
+  double* r;  ///< central separation in bins/shells
   std::complex<double>* sn;  ///< shot-noise statistics in Fourier space
   std::complex<double>* pk;  ///< pseudo power spectrum statistics
   std::complex<double>* xi;  ///< pseudo 2PCF statistics
@@ -1106,16 +1107,18 @@ class Pseudo2ptStats {
 
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       this->k[ibin] = 0.;
-      this->pk[ibin] = 0.;
       this->sn[ibin] = 0.;
+      this->pk[ibin] = 0.;
       this->nmode[ibin] = 0;
     }
 
     /// Set up binned 2PCF and pair counter.
+    this->r = new double[params.num_rbin];
     this->xi = new std::complex<double>[params.num_rbin];
     this->npair = new int[params.num_rbin];
 
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+      this->r[ibin] = 0.;
       this->xi[ibin] = 0.;
       this->npair[ibin] = 0;
     }
@@ -1136,6 +1139,7 @@ class Pseudo2ptStats {
     delete[] this->sn; this->sn = NULL;
     delete[] this->pk; this->pk = NULL;
     delete[] this->nmode; this->nmode = NULL;
+    delete[] this->r; this->r = NULL;
     delete[] this->xi; this->xi = NULL;
     delete[] this->npair; this->npair = NULL;
   }
@@ -1152,7 +1156,7 @@ class Pseudo2ptStats {
    *
    * @param field_a First density-like field.
    * @param field_b Second density-like field.
-   * @param shotnoise Shot noise amplitude.
+   * @param shotnoise_amp Shot-noise amplitude.
    * @param kbin Wavenumber bins.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
@@ -1160,14 +1164,14 @@ class Pseudo2ptStats {
   void compute_2pt_stats_in_fourier(
     PseudoDensityField<ParticleContainer>& field_a,
     PseudoDensityField<ParticleContainer>& field_b,
-    std::complex<double> shotnoise,
+    std::complex<double> shotnoise_amp,
     double* kbin,
     int ell, int m
   ) {
     /// Set up fine-sampling of wavenumbers.
-    /// CAVEAT: discretionary choices.
+    /// CAVEAT: Discretionary choices.
     const double dk_sample = 1.e-4;
-    const int n_sample = 1e5;
+    const int n_sample = 100000;
 
     double* ks_sample = new double[n_sample];
     int* nmode_sample = new int[n_sample];
@@ -1180,7 +1184,7 @@ class Pseudo2ptStats {
       nmode_sample[i] = 0;
     }
 
-    /// Set up binned statistics.
+    /// Reset binned statistics.
     for (int ibin = 0; ibin < this->params.num_kbin; ibin++) {
       this->k[ibin] = 0.;
       this->pk[ibin] = 0.;
@@ -1221,7 +1225,7 @@ class Pseudo2ptStats {
 
             std::complex<double> mode_power = delta_a * conj(delta_b);
             std::complex<double> mode_sn =
-              shotnoise * calc_shotnoise_scale_dependence(kv);
+              shotnoise_amp * calc_shotnoise_scale_dependence(kv);
 
             /// Apply assignment compensation.
             double win = this->calc_assignment_window_in_fourier(kv);
@@ -1240,8 +1244,8 @@ class Pseudo2ptStats {
 
             /// Add contribution.
             ks_sample[idx_k] += k_;
-            pk_sample[idx_k] += mode_power;
             sn_sample[idx_k] += mode_sn;
+            pk_sample[idx_k] += mode_power;
             nmode_sample[idx_k]++;
           }
         }
@@ -1274,8 +1278,8 @@ class Pseudo2ptStats {
         double k_sample = i * dk_sample;
         if (k_lower < k_sample && k_sample <= k_upper) {
           this->k[ibin] += ks_sample[i];
-          this->pk[ibin] += pk_sample[i];
           this->sn[ibin] += sn_sample[i];
+          this->pk[ibin] += pk_sample[i];
           this->nmode[ibin] += nmode_sample[i];
         }
       }
@@ -1284,12 +1288,12 @@ class Pseudo2ptStats {
     for (int ibin = 0; ibin < this->params.num_kbin; ibin++) {
       if (this->nmode[ibin] != 0) {
         this->k[ibin] /= double(this->nmode[ibin]);
-        this->pk[ibin] /= double(this->nmode[ibin]);
         this->sn[ibin] /= double(this->nmode[ibin]);
+        this->pk[ibin] /= double(this->nmode[ibin]);
       } else {
         this->k[ibin] = (kbin[ibin] + kbin[ibin + 1]) / 2.;
-        this->pk[ibin] = 0.;
         this->sn[ibin] = 0.;
+        this->pk[ibin] = 0.;
       }
     }
 
@@ -1304,7 +1308,7 @@ class Pseudo2ptStats {
    *
    * @param field_a First density-like field.
    * @param field_b Second density-like field.
-   * @param shotnoise Shot noise amplitude.
+   * @param shotnoise_amp Shot-noise amplitude.
    * @param rbin Separation bins.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
@@ -1312,7 +1316,7 @@ class Pseudo2ptStats {
   void compute_2pt_stats_in_config(
     PseudoDensityField<ParticleContainer>& field_a,
     PseudoDensityField<ParticleContainer>& field_b,
-    std::complex<double> shotnoise,
+    std::complex<double> shotnoise_amp,
     double* rbin,
     int ell, int m
   ) {
@@ -1357,7 +1361,7 @@ class Pseudo2ptStats {
           std::complex<double> mode_power = delta_a * conj(delta_b);
 
           /// Subtract shot-noise component.
-          mode_power -= shotnoise * calc_shotnoise_scale_dependence(kv);
+          mode_power -= shotnoise_amp * calc_shotnoise_scale_dependence(kv);
 
           /// Apply assignment compensation.
           double win = this->calc_assignment_window_in_fourier(kv);
@@ -1381,19 +1385,22 @@ class Pseudo2ptStats {
     fftw_destroy_plan(inv_transform);
 
     /// Set up fine-sampling of separations.
-    /// CAVEAT: discretionary choices.
+    /// CAVEAT: Discretionary choices.
     const double dr_sample = 0.5;
-    const int n_sample = 10000;
+    const int n_sample = 20000;
 
+    double* rs_sample = new double[n_sample]
     std::complex<double>* xi_sample = new std::complex<double>[n_sample];
     int* npair_sample = new int[n_sample];
     for (int i = 0; i < n_sample; i++) {
+      rs_sample[i] = 0.;
       xi_sample[i] = 0.;
       npair_sample[i] = 0;
     }
 
-    /// Set up binned two-point statistics.
+    /// Reset binned statistics.
     for (int ibin = 0; ibin < this->params.num_rbin; ibin++) {
+      this->s[ibin] = 0.;
       this->xi[ibin] = 0.;
       this->npair[ibin] = 0;
     }
@@ -1435,6 +1442,7 @@ class Pseudo2ptStats {
             pair_corr *= ylm;
 
             /// Add contribution.
+            rs_sample[idx_r] += r_;
             xi_sample[idx_r] += pair_corr;
             npair_sample[idx_r]++;
           }
@@ -1467,6 +1475,7 @@ class Pseudo2ptStats {
       for (int i = 0; i < n_sample; i++) {
         double r_sample = i * dr_sample;
         if (r_lower < r_sample && r_sample <= r_upper) {
+          this->r[ibin] += rs_sample[i];
           this->xi[ibin] += xi_sample[i];
           this->npair[ibin] += npair_sample[i];
         }
@@ -1475,13 +1484,16 @@ class Pseudo2ptStats {
 
     for (int ibin = 0; ibin < this->params.num_rbin; ibin++) {
       if (this->npair[ibin] != 0) {
+        this->r[ibin] /= double(this->npair[ibin]);
         this->xi[ibin] /= double(this->npair[ibin]);
       } else {
+        this->r[ibin] = (rbin[ibin] + rbin[ibin + 1]) / 2.;
         this->xi[ibin] = 0.;
       }
     }
 
     delete[] twopt_3d;
+    delete[] rs_sample;
     delete[] xi_sample;
     delete[] npair_sample;
   }
@@ -1608,7 +1620,7 @@ class Pseudo2ptStats {
    * @param field_b Second density-like field.
    * @param ylm_a Reduced spherical harmonics over the first field grid.
    * @param ylm_b Reduced spherical harmonics over the second field grid.
-   * @param shotnoise Shot noise amplitude.
+   * @param shotnoise_amp Shot-noise amplitude.
    * @param rbin Separation bins.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
@@ -1617,7 +1629,7 @@ class Pseudo2ptStats {
     PseudoDensityField<ParticleContainer>& field_a,
     PseudoDensityField<ParticleContainer>& field_b,
     std::complex<double>* ylm_a, std::complex<double>* ylm_b,
-    std::complex<double> shotnoise,
+    std::complex<double> shotnoise_amp,
     double* rbin,
     int ell, int m
   ) {
@@ -1662,7 +1674,7 @@ class Pseudo2ptStats {
           std::complex<double> mode_power = delta_a * conj(delta_b);
 
           /// Subtract shot noise component.
-          mode_power -= shotnoise * calc_shotnoise_scale_dependence(kv);
+          mode_power -= shotnoise_amp * calc_shotnoise_scale_dependence(kv);
 
           /// Apply assignment compensation.
           double win = this->calc_assignment_window_in_fourier(kv);
@@ -1802,7 +1814,7 @@ class Pseudo2ptStats {
    *
    * @param[in] field_a First density-like field.
    * @param[in] field_b Second density-like field.
-   * @param[in] shotnoise Shot noise amplitude.
+   * @param[in] shotnoise_amp Shot-noise amplitude.
    * @param[in] ell Degree of the spherical harmonic.
    * @param[in] m Order of the spherical harmonic.
    * @param[out] threept_3d Three-point statistics on mesh grid.
@@ -1810,7 +1822,7 @@ class Pseudo2ptStats {
   void compute_2pt_self_shotnoise_for_bispec_meshgrid(
     PseudoDensityField<ParticleContainer>& field_a,
     PseudoDensityField<ParticleContainer>& field_b,
-    std::complex<double> shotnoise,
+    std::complex<double> shotnoise_amp,
     int ell, int m,
     fftw_complex* threept_3d
   ) {
@@ -1848,7 +1860,7 @@ class Pseudo2ptStats {
           std::complex<double> mode_power = delta_a * conj(delta_b);
 
           /// Subtract shot noise component.
-          mode_power -= shotnoise * calc_shotnoise_scale_dependence(kv);
+          mode_power -= shotnoise_amp * calc_shotnoise_scale_dependence(kv);
 
           /// Apply assignment compensation.
           double win = this->calc_assignment_window_in_fourier(kv);
