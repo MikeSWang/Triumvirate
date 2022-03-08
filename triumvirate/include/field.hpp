@@ -13,6 +13,7 @@
 #include <fftw3.h>
 
 #include "common.hpp"
+#include "particles.hpp"
 #include "parameters.hpp"
 
 /**
