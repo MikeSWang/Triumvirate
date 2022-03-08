@@ -18,8 +18,10 @@
 /**
  * Density-like field instantiated from particle sources.
  *
+ * @tparam ParticleContainer Particle container class.
+ *
  */
-template <class ParticleContainer>
+template<class ParticleContainer>
 class PseudoDensityField {
  public:
   fftw_complex* field;  ///> gridded complex field
@@ -1076,8 +1078,10 @@ class PseudoDensityField {
 /**
  * Binned pseudo two-point statistics from particle sources.
  *
+ * @tparam ParticleContainer Particle container class.
+ *
  */
-template <class ParticleContainer>
+template<class ParticleContainer>
 class Pseudo2ptStats {
  public:
   double* k;  ///< central wavenumber in bins/shells
