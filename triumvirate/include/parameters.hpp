@@ -311,9 +311,8 @@ class ParameterSet {
   }
 
   /**
-   * Print out extracted parameters to a file.
-   *
-   * By default, the file in the measurement output directory.
+   * Print out extracted parameters to a file in the measurement output
+   * directory.
    *
    * @returns Exit status.
    */
