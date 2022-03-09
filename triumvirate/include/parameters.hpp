@@ -330,7 +330,7 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] (+%s) Output directory '%s' does not exist.\n",
+          "[ERRO] (+%s) Output directory '%s' does not exist.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->measurement_dir.c_str()
         );
@@ -424,7 +424,7 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] (+%s) Catalogue type must be 'survey', 'mock' or 'sim': "
+          "[ERRO] (+%s) Catalogue type must be 'survey', 'mock' or 'sim': "
           "`catalogue_type` = %s.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->catalogue_type.c_str()
@@ -441,7 +441,7 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] (+%s) Grid assignment scheme must be 'NGP', 'CIC' or 'TSC': "
+          "[ERRO] (+%s) Grid assignment scheme must be 'NGP', 'CIC' or 'TSC': "
           "`assignment` = %s.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->assignment.c_str()
@@ -456,7 +456,7 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Warning] (+%s) Normalisation convention must be "
+          "[WARN] (+%s) Normalisation convention must be "
           "'grid' or 'particle': `norm_convention` = %s.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->norm_convention.c_str()
@@ -469,7 +469,7 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Warning] (+%s) Normalisation convention is set to "
+          "[WARN] (+%s) Normalisation convention is set to "
           "default value '%s'.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->norm_convention.c_str()
@@ -481,7 +481,7 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] (+%s) `form` must be either 'full' or 'diag': "
+          "[ERRO] (+%s) `form` must be either 'full' or 'diag': "
           "`form` = %s.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->form.c_str()
@@ -495,7 +495,7 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] (+%s) Number of bins (`num_kbin` or `num_rbin`) "
+          "[ERRO] (+%s) Number of bins (`num_kbin` or `num_rbin`) "
           "must be >= 2.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
         );
@@ -511,7 +511,7 @@ class ParameterSet {
         if (currTask == 0) {
           clockElapsed = double(clock() - clockStart);
           printf(
-            "[Error] (+%s) Binning scheme '%s' requires `num_rbin` >= %d.\n",
+            "[ERRO] (+%s) Binning scheme '%s' requires `num_rbin` >= %d.\n",
             calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
             this->binning.c_str(),
             nbin_custom + 2
@@ -525,7 +525,7 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] (+%s) Bin index (`ith_kbin` or `ith_rbin`) must be less than "
+          "[ERRO] (+%s) Bin index (`ith_kbin` or `ith_rbin`) must be less than "
           "the number of bins (`num_kbin` or `num_rbin`).\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
         );
@@ -595,7 +595,7 @@ class ParameterSet {
           if (currTask == 0) {
             clockElapsed = double(clock() - clockStart);
             printf(
-              "[Info] (+%s) Output subdirectory '%s' is successfully made.\n",
+              "[INFO] (+%s) Output subdirectory '%s' is successfully made.\n",
               calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
               buf_dir
             );
@@ -604,7 +604,7 @@ class ParameterSet {
           if (currTask == 0) {
             clockElapsed = double(clock() - clockStart);
             printf(
-              "[Error] (+%s) Failed to make output subdirectory '%s'.\n",
+              "[ERRO] (+%s) Failed to make output subdirectory '%s'.\n",
               calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
               buf_dir
             );
