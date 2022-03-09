@@ -14,7 +14,6 @@
 
 #include "common.hpp"
 #include "parameters.hpp"
-#include "tools.hpp"
 #include "bessel.hpp"
 #include "harmonic.hpp"
 #include "particles.hpp"

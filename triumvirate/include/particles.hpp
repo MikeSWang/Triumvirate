@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "common.hpp"
-#include "tools.hpp"
 
 /**
  * Line-of-sight vector.

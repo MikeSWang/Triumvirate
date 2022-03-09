@@ -8,8 +8,6 @@
 #define TRIUMVIRATE_INCLUDE_TOOLS_HPP_INCLUDED_
 
 #include <cmath>
-#include <cstring>
-#include <ctime>
 
 #include <gsl/gsl_sf_coupling.h>
 
@@ -21,28 +19,6 @@
 #define wigner_3j(j1, j2, j3, m1, m2, m3) ( \
   gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3) \
 )
-
-std::string calc_elapsed_time_in_hhmmss(double clocktime) {
-  int time = int(clocktime / CLOCKS_PER_SEC);
-
-  std::string h = std::to_string(time / 3600);
-  std::string m = std::to_string((time % 3600) / 60);
-  std::string s = std::to_string(time % 60);
-
-  std::string hh;
-  if (h.length() < 2) {
-    hh = std::string(2 - h.length(), '0') + h;
-  } else {
-    hh = h;
-  }
-
-  std::string mm = std::string(2 - m.length(), '0') + m;
-  std::string ss = std::string(2 - s.length(), '0') + s;
-
-  std::string elapsed_time = hh + ":" + mm + ":" + ss;
-
-  return elapsed_time;
-}
 
 /**
  * Binning scheme.
@@ -60,7 +36,7 @@ class BinScheme {
    * @param[out] kbin_out Wavenumber bins.
    * @returns Exit status.
    */
-  static void set_kbin(const ParameterSet& params, double* kbin_out) {
+  static void set_kbin(ParameterSet& params, double* kbin_out) {
     double dk = (params.kmax - params.kmin) / double(params.num_kbin - 1);
 
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
@@ -75,7 +51,7 @@ class BinScheme {
    * @param[out] rbin_out Separation bins.
    * @returns Exit status.
    */
-  static void set_rbin(const ParameterSet& params, double* rbin_out) {
+  static void set_rbin(ParameterSet& params, double* rbin_out) {
     if (0) {
     } else if (params.binning == "custom") {
       /// RFE: Insert customised binning code here.
