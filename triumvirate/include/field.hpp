@@ -14,7 +14,9 @@
 
 #include "common.hpp"
 #include "parameters.hpp"
+#include "tools.hpp"
 #include "bessel.hpp"
+#include "harmonic.hpp"
 #include "particles.hpp"
 
 /**
@@ -102,8 +104,10 @@ class PseudoDensityField {
       this->assign_weighted_field_to_grid_tsc(particles, weights);
     } else {
       if (currTask == 0) {
+        clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] :: Unsupported grid assignment scheme: '%s'.",
+          "[Error] (+%s) Unsupported grid assignment scheme: '%s'.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->params.assignment.c_str()
         );
       }
@@ -1389,7 +1393,7 @@ class Pseudo2ptStats {
     const double dr_sample = 0.5;
     const int n_sample = 20000;
 
-    double* rs_sample = new double[n_sample]
+    double* rs_sample = new double[n_sample];
     std::complex<double>* xi_sample = new std::complex<double>[n_sample];
     int* npair_sample = new int[n_sample];
     for (int i = 0; i < n_sample; i++) {
@@ -1400,7 +1404,7 @@ class Pseudo2ptStats {
 
     /// Reset binned statistics.
     for (int ibin = 0; ibin < this->params.num_rbin; ibin++) {
-      this->s[ibin] = 0.;
+      this->r[ibin] = 0.;
       this->xi[ibin] = 0.;
       this->npair[ibin] = 0;
     }

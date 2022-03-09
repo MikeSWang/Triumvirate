@@ -14,6 +14,7 @@
 #include <gsl/gsl_sf_legendre.h>
 
 #include "common.hpp"
+#include "tools.hpp"
 
 /**
  * Calculation and storage of spherical harmonics.
@@ -113,7 +114,11 @@ class SphericalHarmonicCalculator {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {
       if (currTask == 0) {
-        printf("[Error] :: Cannot store computed spherical harmonics.");
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[Error] (+%s) Cannot store computed spherical harmonics.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        );
       }
       exit(1);
     }
@@ -167,7 +172,11 @@ class SphericalHarmonicCalculator {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {
       if (currTask == 0) {
-        printf("[Error] :: Cannot store computed spherical harmonics.");
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[Error] (+%s) Cannot store computed spherical harmonics.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        );
       }
       exit(1);
     }
