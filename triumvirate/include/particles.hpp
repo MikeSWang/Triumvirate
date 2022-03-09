@@ -80,7 +80,7 @@ class ParticleCatalogue {
     if (num <= 0) {
       clockElapsed = double(clock() - clockStart);
       printf(
-        "[Warning] (+%s) Number of particles is negative.\n",
+        "[WARN] (+%s) Number of particles is negative.\n",
         calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
       );
       return;
@@ -127,7 +127,7 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] (+%s) Cannot open file '%s'.\n",
+          "[ERRO] (+%s) Cannot open file '%s'.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           particles_file.c_str()
         );
@@ -231,7 +231,7 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] (+%s) Particle data are uninitialised.\n",
+          "[ERRO] (+%s) Particle data are uninitialised.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
         );
       }
@@ -254,7 +254,7 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] (+%s) Particle data are uninitialised.\n",
+          "[ERRO] (+%s) Particle data are uninitialised.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
         );
       }
@@ -297,7 +297,7 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] (+%s) Particle data are uninitialised.\n",
+          "[ERRO] (+%s) Particle data are uninitialised.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
         );
       }
@@ -322,7 +322,7 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] (+%s) Particle data are uninitialised.\n",
+          "[ERRO] (+%s) Particle data are uninitialised.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
         );
       }

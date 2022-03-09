@@ -115,7 +115,7 @@ class SphericalHarmonicCalculator {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] (+%s) Cannot store computed spherical harmonics.\n",
+          "[ERRO] (+%s) Cannot store computed spherical harmonics.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
         );
       }
@@ -173,7 +173,7 @@ class SphericalHarmonicCalculator {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[Error] (+%s) Cannot store computed spherical harmonics.\n",
+          "[ERRO] (+%s) Cannot store computed spherical harmonics.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
         );
       }
