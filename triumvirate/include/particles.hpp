@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "common.hpp"
+#include "tools.hpp"
 
 /**
  * Line-of-sight vector.
@@ -78,7 +79,11 @@ class ParticleCatalogue {
   void _initialise_particles(const int num) {
     /// Check the total number of particles.
     if (num <= 0) {
-      printf("[Warning] :: Number of particles is negative.\n");
+      clockElapsed = double(clock() - clockStart);
+      printf(
+        "[Warning] (+%s) Number of particles is negative.\n",
+        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      );
       return;
     }
     this->ntotal = num;
@@ -120,7 +125,14 @@ class ParticleCatalogue {
     fin.open(particles_file.c_str(), std::ios::in);
 
     if (fin.fail()) {
-      printf("[Error] :: Cannot open file '%s'.\n", particles_file.c_str());
+      if (currTask == 0) {
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[Error] (+%s) Cannot open file '%s'.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          particles_file.c_str()
+        );
+      }
       fin.close();
       return -1;
     }
@@ -218,7 +230,11 @@ class ParticleCatalogue {
   void _calc_weighted_total() {
     if (this->particles == NULL) {
       if (currTask == 0) {
-        printf("[Error] :: Particle data are uninitialised.\n");
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[Error] (+%s) Particle data are uninitialised.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        );
       }
       exit(1);
     }
@@ -237,7 +253,11 @@ class ParticleCatalogue {
   void _calc_pos_min_and_max() {
     if (this->particles == NULL) {
       if (currTask == 0) {
-        printf("[Error] :: Particle data are uninitialised.\n");
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[Error] (+%s) Particle data are uninitialised.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        );
       }
       exit(1);
     }
@@ -276,7 +296,11 @@ class ParticleCatalogue {
   void offset_coords(const double dpos[3]) {
     if (this->particles == NULL) {
       if (currTask == 0) {
-        printf("[Error] :: Particle data are uninitialised.\n");
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[Error] (+%s) Particle data are uninitialised.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        );
       }
       exit(1);
     }
@@ -297,7 +321,11 @@ class ParticleCatalogue {
   void offset_coords_for_centring(const double boxsize[3]) {
     if (this->particles == NULL) {
       if (currTask == 0) {
-        printf("[Error] :: Particle data are uninitialised.\n");
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[Error] (+%s) Particle data are uninitialised.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        );
       }
       exit(1);
     }
