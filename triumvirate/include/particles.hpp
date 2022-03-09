@@ -218,7 +218,7 @@ class ParticleCatalogue {
   void _calc_weighted_total() {
     if (this->particles == NULL) {
       if (currTask == 0) {
-        printf("[Error] :: Particle data uninitialised.\n");
+        printf("[Error] :: Particle data are uninitialised.\n");
       }
       exit(1);
     }
@@ -237,7 +237,7 @@ class ParticleCatalogue {
   void _calc_pos_min_and_max() {
     if (this->particles == NULL) {
       if (currTask == 0) {
-        printf("[Error] :: Particle data uninitialised.\n");
+        printf("[Error] :: Particle data are uninitialised.\n");
       }
       exit(1);
     }
@@ -276,7 +276,7 @@ class ParticleCatalogue {
   void offset_coords(const double dpos[3]) {
     if (this->particles == NULL) {
       if (currTask == 0) {
-        printf("[Error] :: Particle data uninitialised.\n");
+        printf("[Error] :: Particle data are uninitialised.\n");
       }
       exit(1);
     }
@@ -297,7 +297,7 @@ class ParticleCatalogue {
   void offset_coords_for_centring(const double boxsize[3]) {
     if (this->particles == NULL) {
       if (currTask == 0) {
-        printf("[Error] :: Particle data uninitialised.\n");
+        printf("[Error] :: Particle data are uninitialised.\n");
       }
       exit(1);
     }

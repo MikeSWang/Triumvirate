@@ -14,6 +14,7 @@
 
 #include "common.hpp"
 #include "parameters.hpp"
+#include "bessel.hpp"
 #include "particles.hpp"
 
 /**
@@ -792,16 +793,17 @@ class PseudoDensityField {
   }
 
   /**
-   * Calculate (effective) volume normalisation for two-point correlators,
+   * Calculate inverse (effective) volume normalisation f@$ 1/I_2 f@$
+   * for two-point correlators, where
    *
    * f@[
    *   I_2 = \int \mathrm{d}^3\,\vec{x} \bar{n}(\vec{x})^2 \,.
    * f@]
    *
    * @param particles_rand (Random-source) particle container.
-   * @returns vol_norm Survey volume normalisation.
+   * @returns inv_vol_norm Inverse-volume normalisation.
    */
-  double calc_volume_normalisation(ParticleContainer& particles_rand) {
+  double calc_inv_volume_normalisation(ParticleContainer& particles_rand) {
     /// Initialise the weight field.
     fftw_complex* weight = NULL;
 
@@ -820,18 +822,18 @@ class PseudoDensityField {
     /// to dV Σ_i, dV =: `vol_cell`.
     double vol_cell = this->params.volume / double(this->params.nmesh);
 
-    double vol_factor = 0.;
+    double vol_eff = 0.;
     for (int gid = 0; gid < this->params.nmesh; gid++) {
-      vol_factor += vol_cell * this->field[gid][0] * this->field[gid][0];
+      vol_eff += vol_cell * this->field[gid][0] * this->field[gid][0];
     }
 
     /// Eliminate dependence on total particle number.
     /// CAVEAT: `double` needed to prevent int overflow.
-    double vol_norm =
+    double inv_vol_norm =
       double(particles_rand.ntotal) * double(particles_rand.ntotal)
-      / vol_factor;
+      / vol_eff;
 
-    return vol_norm;
+    return inv_vol_norm;
   }
 
  private:
