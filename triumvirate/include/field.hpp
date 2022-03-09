@@ -13,8 +13,8 @@
 #include <fftw3.h>
 
 #include "common.hpp"
-#include "particles.hpp"
 #include "parameters.hpp"
+#include "particles.hpp"
 
 /**
  * Density-like field instantiated from particle sources.
@@ -1161,7 +1161,7 @@ class Pseudo2ptStats {
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    */
-  void compute_2pt_stats_in_fourier(
+  void compute_ylm_wgtd_2pt_stats_in_fourier(
     PseudoDensityField<ParticleContainer>& field_a,
     PseudoDensityField<ParticleContainer>& field_b,
     std::complex<double> shotnoise_amp,
@@ -1283,15 +1283,13 @@ class Pseudo2ptStats {
           this->nmode[ibin] += nmode_sample[i];
         }
       }
-    }
 
-    for (int ibin = 0; ibin < this->params.num_kbin; ibin++) {
       if (this->nmode[ibin] != 0) {
         this->k[ibin] /= double(this->nmode[ibin]);
         this->sn[ibin] /= double(this->nmode[ibin]);
         this->pk[ibin] /= double(this->nmode[ibin]);
       } else {
-        this->k[ibin] = (kbin[ibin] + kbin[ibin + 1]) / 2.;
+        this->k[ibin] = (k_lower + k_upper) / 2;
         this->sn[ibin] = 0.;
         this->pk[ibin] = 0.;
       }
@@ -1313,7 +1311,7 @@ class Pseudo2ptStats {
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    */
-  void compute_2pt_stats_in_config(
+  void compute_ylm_wgtd_2pt_stats_in_config(
     PseudoDensityField<ParticleContainer>& field_a,
     PseudoDensityField<ParticleContainer>& field_b,
     std::complex<double> shotnoise_amp,
@@ -1480,14 +1478,12 @@ class Pseudo2ptStats {
           this->npair[ibin] += npair_sample[i];
         }
       }
-    }
 
-    for (int ibin = 0; ibin < this->params.num_rbin; ibin++) {
       if (this->npair[ibin] != 0) {
         this->r[ibin] /= double(this->npair[ibin]);
         this->xi[ibin] /= double(this->npair[ibin]);
       } else {
-        this->r[ibin] = (rbin[ibin] + rbin[ibin + 1]) / 2.;
+        this->r[ibin] = (r_lower + r_upper) / 2;
         this->xi[ibin] = 0.;
       }
     }
@@ -1622,16 +1618,14 @@ class Pseudo2ptStats {
    * @param ylm_b Reduced spherical harmonics over the second field grid.
    * @param shotnoise_amp Shot-noise amplitude.
    * @param rbin Separation bins.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
    */
   void compute_uncoupled_shotnoise_for_3pcf(
     PseudoDensityField<ParticleContainer>& field_a,
     PseudoDensityField<ParticleContainer>& field_b,
     std::complex<double>* ylm_a, std::complex<double>* ylm_b,
     std::complex<double> shotnoise_amp,
-    double* rbin,
-    int ell, int m
+    double* rbin
+    /// int ell, int m  // QUEST: redundant?
   ) {
     /// Set up grid sampling (before inverse Fourier transform).
     fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
