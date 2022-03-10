@@ -53,9 +53,6 @@ cdef class ParameterSet:
             f"Params: {pformat(self._params, sort_dicts=False)}",
         ])
 
-    def __len__(self):
-        return len(self._params)
-
     def __getitem__(self, key):
         return self._params[key]
 

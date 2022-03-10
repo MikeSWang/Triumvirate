@@ -50,9 +50,6 @@ class ParticleCatalogue:
 
         self._calc_bounds()
 
-    def __len__(self):
-        return len(self._data)
-
     def __getitem__(self, key):
         if isinstance(key, (int, slice)):
             return self._data[key]
@@ -67,6 +64,9 @@ class ParticleCatalogue:
                     self._data[i] = value
                 else:
                     raise ValueError('Cannot interpret item key.')
+
+    def __len__(self):
+        return len(self._data)
 
     def __iter__(self):
         return self._data.__iter__()

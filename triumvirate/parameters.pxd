@@ -2,45 +2,45 @@ from libcpp.string cimport string
 
 cdef extern from "include/parameters.hpp":
     cppclass CppParameterSet "ParameterSet":
-        string catalogue_dir;
-        string measurement_dir;
-        string data_catalogue_file;
-        string rand_catalogue_file;
-        string output_tag;
+        string catalogue_dir
+        string measurement_dir
+        string data_catalogue_file
+        string rand_catalogue_file
+        string output_tag
 
-        double boxsize[3];
-        int ngrid[3];
+        double boxsize[3]
+        int ngrid[3]
 
-        string assignment;
-        string norm_convention;
+        string assignment
+        string norm_convention
 
-        string catalogue_type;
-        string measurement_type;
+        string catalogue_type
+        string measurement_type
 
-        int ell1;
-        int ell2;
-        int ELL;
+        int ell1
+        int ell2
+        int ELL
 
-        int i_wa;
-        int j_wa;
+        int i_wa
+        int j_wa
 
-        string binning;
-        string form;
+        string binning
+        string form
 
-        double kmin;
-        double kmax;
-        int num_kbin;
-        int ith_kbin;
-        double rmin;
-        double rmax;
-        int num_rbin;
-        int ith_rbin;
+        double kmin
+        double kmax
+        int num_kbin
+        int ith_kbin
+        double rmin
+        double rmax
+        int num_rbin
+        int ith_rbin
 
-        double volume;
-        int nmesh;
+        double volume
+        int nmesh
 
-        int printout();
-        int validate();
+        int printout()
+        int validate()
 
 cdef class ParameterSet:
     cdef CppParameterSet* thisptr
