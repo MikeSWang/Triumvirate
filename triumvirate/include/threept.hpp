@@ -47,7 +47,7 @@ int calc_bispec(
 ) {
   if (currTask == 0) {
     printf(
-			"[Info] :: Measuring bispectrum from data and random catalogues.\n"
+			"[INFO] :: Measuring bispectrum from data and random catalogues.\n"
 		);
   }
 
@@ -56,7 +56,7 @@ int calc_bispec(
   ) {
     if (currTask == 0) {
       printf(
-        "[Error] :: Disallowed multipole degree combination "
+        "[ERRO] :: Disallowed multipole degree combination "
         "for bispectrum measurements. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
       );
@@ -65,11 +65,11 @@ int calc_bispec(
   }
 
   /// Initialise output shot noise terms.
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
-      durationInSec / CLOCKS_PER_SEC
+      "[STAT] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
@@ -131,7 +131,7 @@ int calc_bispec(
     		/// Calculate S_{\ell_1 \ell_2 L; i != j = k} in eq. (45)
 				/// in arXiv:1803.02132.
         if (params.ell2 == 0) {
-          stats.compute_2pt_stats_in_fourier(
+          stats.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_00_for_shotnoise, shotnoise_quadratic_LM,
 						shotnoise_cubic_LM,
 						kbin,
@@ -151,7 +151,7 @@ int calc_bispec(
     		/// Calculate S_{\ell_1 \ell_2 L; i = k != j} in eq. (45)
 				/// in arXiv:1803.02132.
         if (params.ell1 == 0) {
-          stats.compute_2pt_stats_in_fourier(
+          stats.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_00_for_shotnoise, shotnoise_quadratic_LM,
 						shotnoise_cubic_LM,
 						kbin,
@@ -162,13 +162,13 @@ int calc_bispec(
           }
         }
 
-        durationInSec = double(clock() - timeStart);
+        clockElapsed = double(clock() - clockStart);
         if (currTask == 0) {
           printf(
-            "[Status] :: Computed shot noise term for orders "
+            "[STAT] :: Computed shot noise term for orders "
             "`m1 = %d`, `m2 = %d`, `M = %d` "
 						"(%.3f seconds elapsed).\n",
-            m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+            m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
           );
         }
       }
@@ -315,13 +315,13 @@ int calc_bispec(
 
           shotnoise_save[i_kbin] += coupling * shotnoise_sum;
 
-          durationInSec = double(clock() - timeStart);
+          clockElapsed = double(clock() - clockStart);
           if (currTask == 0) {
             printf(
-              "[Status] :: Computed shot noise term for wavenumber and orders "
+              "[STAT] :: Computed shot noise term for wavenumber and orders "
               "`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
-              kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+              kmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
             );
           }
         }
@@ -340,20 +340,20 @@ int calc_bispec(
 
   shotnoise_quadratic_00.finalise_density_field();
 
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
-      durationInSec / CLOCKS_PER_SEC
+      "[STAT] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
   /// Initialise output bispectrum.
-	double durationInSec = double(clock() - timeStart);
+	double clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-			"[Status] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
   }
 
@@ -459,13 +459,13 @@ int calc_bispec(
 
           bk_save[i_kbin] += coupling * bk_sum;
 
-          double durationInSec = double(clock() - timeStart);
+          double clockElapsed = double(clock() - clockStart);
           if (currTask == 0) {
             printf(
-              "[Status] :: Computed bispectrum term for wavenumber and orders "
+              "[STAT] :: Computed bispectrum term for wavenumber and orders "
               "`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
-              kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+              kmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
             );
           }
         }
@@ -478,11 +478,11 @@ int calc_bispec(
     }
   }
 
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
-      durationInSec / CLOCKS_PER_SEC
+      "[STAT] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
@@ -551,7 +551,7 @@ int calc_bispec_in_box(
   double* kbin
 ) {
   if (currTask == 0) {
-    printf("[Info] :: Measuring bispectrum in a periodic box.\n");
+    printf("[INFO] :: Measuring bispectrum in a periodic box.\n");
   }
 
   if (
@@ -559,7 +559,7 @@ int calc_bispec_in_box(
   ) {
     if (currTask == 0) {
       printf(
-        "[Error] :: Disallowed multipole degree combination "
+        "[ERRO] :: Disallowed multipole degree combination "
         "for bispectrum measurements. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
       );
@@ -568,11 +568,11 @@ int calc_bispec_in_box(
   }
 
   /// Initialise output shot noise terms.
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
-      durationInSec / CLOCKS_PER_SEC
+      "[STAT] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
@@ -620,7 +620,7 @@ int calc_bispec_in_box(
       }
 
       if (params.ell2 == 0) {
-        stats.compute_2pt_stats_in_fourier(
+        stats.compute_ylm_wgtd_2pt_stats_in_fourier(
           dn_00_for_shotnoise, density,
           shotnoise,
           kbin,
@@ -638,7 +638,7 @@ int calc_bispec_in_box(
       }
 
       if (params.ell1 == 0) {
-        stats.compute_2pt_stats_in_fourier(
+        stats.compute_ylm_wgtd_2pt_stats_in_fourier(
           dn_00_for_shotnoise, density,
           shotnoise,
           kbin,
@@ -649,12 +649,12 @@ int calc_bispec_in_box(
         }
       }
 
-      durationInSec = double(clock() - timeStart);
+      clockElapsed = double(clock() - clockStart);
       if (currTask == 0) {
         printf(
-          "[Status] :: Computed shot noise term for orders "
+          "[STAT] :: Computed shot noise term for orders "
           "`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
-          m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+          m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
         );
       }
     }
@@ -767,13 +767,13 @@ int calc_bispec_in_box(
 
         shotnoise_save[i_kbin] += coupling * shotnoise_sum;
 
-        durationInSec = double(clock() - timeStart);
+        clockElapsed = double(clock() - clockStart);
         if (currTask == 0) {
           printf(
-            "[Status] :: Computed shot noise term for wavenumber and orders "
+            "[STAT] :: Computed shot noise term for wavenumber and orders "
             "`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 						"(%.3f seconds elapsed).\n",
-            kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+            kmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
           );
         }
       }
@@ -791,20 +791,20 @@ int calc_bispec_in_box(
 
 	density.finalise_density_field();
 
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
 	/// Initialise output bispectrum.
-	double durationInSec = double(clock() - timeStart);
+	double clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
     printf(
-			"[Status] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
@@ -894,13 +894,13 @@ int calc_bispec_in_box(
 
 				bk_save[i_kbin] += coupling * bk_sum;
 
-				double durationInSec = double(clock() - timeStart);
+				double clockElapsed = double(clock() - clockStart);
 				if (currTask == 0) {
 					printf(
-						"[Status] :: Computed bispectrum term for wavenumber and orders "
+						"[STAT] :: Computed bispectrum term for wavenumber and orders "
 						"`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 						"(%.3f seconds elapsed).\n",
-						kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+						kmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 					);
 				}
 			}
@@ -912,11 +912,11 @@ int calc_bispec_in_box(
 		}
 	}
 
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
-      durationInSec / CLOCKS_PER_SEC
+      "[STAT] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
@@ -994,7 +994,7 @@ int calc_3pcf(
 ) {
 	if (currTask == 0) {
 		printf(
-			"[Info] :: Measuring three-point correlation function "
+			"[INFO] :: Measuring three-point correlation function "
 			"from data and random catalogues.\n"
 		);
 	}
@@ -1004,7 +1004,7 @@ int calc_3pcf(
 	) {
 		if (currTask == 0) {
 			printf(
-				"[Error] :: Disallowed multipole degree combination "
+				"[ERRO] :: Disallowed multipole degree combination "
 				"for three-point correlation function measurements. "
 				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
 			);
@@ -1013,11 +1013,11 @@ int calc_3pcf(
 	}
 
 	/// Initialise output shot noise terms.
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
@@ -1097,8 +1097,8 @@ int calc_3pcf(
 					dn_LM_for_shotnoise, shotnoise_quadratic_00,
 					ylm_a, ylm_b,
 					shotnoise_cubic_LM,
-					rbin,
-					params.ell1, m1_
+					rbin
+					// params.ell1, m1_
 				);
 
 				for (int ibin = 0; ibin < params.num_rbin; ibin++) {
@@ -1115,12 +1115,12 @@ int calc_3pcf(
 					}
 				}
 
-				durationInSec = double(clock() - timeStart);
+				clockElapsed = double(clock() - clockStart);
 				if (currTask == 0) {
 					printf(
-						"[Status] :: Computed shot noise term for orders "
+						"[STAT] :: Computed shot noise term for orders "
 						"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
-						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);
+						m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC);
 				}
 			}
 
@@ -1133,21 +1133,21 @@ int calc_3pcf(
 
 	shotnoise_quadratic_00.finalise_density_field();
 
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
 	/// Initialise output three-point correlation function.
-	double durationInSec = double(clock() - timeStart);
+	double clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computing three-point correlation terms "
+			"[STAT] :: Computing three-point correlation terms "
 			"(%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
@@ -1256,14 +1256,14 @@ int calc_3pcf(
 
 					zeta_save[i_rbin] += coupling * zeta_sum;
 
-					double durationInSec = double(clock() - timeStart);
+					double clockElapsed = double(clock() - clockStart);
 					if (currTask == 0) {
 						printf(
-							"[Status] :: Computed three-point correlation function term "
+							"[STAT] :: Computed three-point correlation function term "
 							"for separation and orders "
 							"`r2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
-							rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+							rmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 						);
 					}
 				}
@@ -1276,12 +1276,12 @@ int calc_3pcf(
 		}
 	}
 
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computed three-point correlation function terms "
+      "[STAT] :: Computed three-point correlation function terms "
       "(... %.3f seconds elapsed).\n",
-      durationInSec / CLOCKS_PER_SEC
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
@@ -1348,7 +1348,7 @@ int calc_3pcf_in_box(
 ) {
 	if (currTask == 0) {
 		printf(
-			"[Info] :: Measuring three-point correlation function "
+			"[INFO] :: Measuring three-point correlation function "
       "in a periodic box.\n"
 		);
 	}
@@ -1358,7 +1358,7 @@ int calc_3pcf_in_box(
 	) {
 		if (currTask == 0) {
 			printf(
-				"[Error] :: Disallowed multipole degree combination "
+				"[ERRO] :: Disallowed multipole degree combination "
 				"for three-point correlation function measurements. "
 				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
 			);
@@ -1367,11 +1367,11 @@ int calc_3pcf_in_box(
 	}
 
 	/// Initialise output shot noise terms.
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
@@ -1427,8 +1427,8 @@ int calc_3pcf_in_box(
 				dn_LM_for_shotnoise, density,
 				ylm_a, ylm_b,
 				shotnoise,
-				rbin,
-				params.ell1, m1_
+				rbin
+				// params.ell1, m1_
 			);
 
 			for (int ibin = 0; ibin < params.num_rbin; ibin++) {
@@ -1445,12 +1445,12 @@ int calc_3pcf_in_box(
 				}
 			}
 
-			durationInSec = double(clock() - timeStart);
+			clockElapsed = double(clock() - clockStart);
 			if (currTask == 0) {
 				printf(
-					"[Status] :: Computed shot noise term for wavenumber and orders "
+					"[STAT] :: Computed shot noise term for wavenumber and orders "
 					"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
-					m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+					m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 				);
 			}
 
@@ -1463,21 +1463,21 @@ int calc_3pcf_in_box(
 
 	density.finalise_density_field();
 
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
 	/// Initialise output three-point correlation function.
-	double durationInSec = double(clock() - timeStart);
+	double clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computing three-point correlation function terms "
+			"[STAT] :: Computing three-point correlation function terms "
 			"(%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
@@ -1570,14 +1570,14 @@ int calc_3pcf_in_box(
 
 				zeta_save[i_rbin] += coupling * zeta_sum;
 
-				double durationInSec = double(clock() - timeStart);
+				double clockElapsed = double(clock() - clockStart);
 				if (currTask == 0) {
 					printf(
-						"[Status] :: Computed three-point correlation function term "
+						"[STAT] :: Computed three-point correlation function term "
 						"for separation and orders "
 						"`r2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 						"(%.3f seconds elapsed).\n",
-						rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+						rmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 					);
 				}
 			}
@@ -1589,12 +1589,12 @@ int calc_3pcf_in_box(
 		}
 	}
 
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computed three-point correlation function terms "
+      "[STAT] :: Computed three-point correlation function terms "
       "(... %.3f seconds elapsed).\n",
-      durationInSec / CLOCKS_PER_SEC
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
@@ -1669,7 +1669,7 @@ int calc_3pcf_window(
 ) {
 	if (currTask == 0) {
 		printf(
-			"[Info] :: Measuring three-point correlation function window "
+			"[INFO] :: Measuring three-point correlation function window "
 			"for three-point correlation function from random catalogues.\n"
 		);
 	}
@@ -1679,7 +1679,7 @@ int calc_3pcf_window(
 	) {
 		if (currTask == 0) {
 			printf(
-				"[Error] :: Disallowed multipole degree combination "
+				"[ERRO] :: Disallowed multipole degree combination "
 				"for three-point correlation function window measurements. "
 				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
 			);
@@ -1688,11 +1688,11 @@ int calc_3pcf_window(
 	}
 
 	/// Initialise output shot noise terms.
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
@@ -1762,8 +1762,8 @@ int calc_3pcf_window(
 					dn_LM_for_shotnoise, shotnoise_quadratic_00,
 					ylm_a, ylm_b,
 					shotnoise,
-					rbin,
-					params.ell1, m1_
+					rbin
+					// params.ell1, m1_
 				);
 
 				for (int ibin = 0; ibin < params.num_rbin; ibin++) {
@@ -1780,12 +1780,12 @@ int calc_3pcf_window(
 					}
 				}
 
-				durationInSec = double(clock() - timeStart);
+				clockElapsed = double(clock() - clockStart);
 				if (currTask == 0) {
 					printf(
-						"[Status] :: Computed shot noise term for orders "
+						"[STAT] :: Computed shot noise term for orders "
 						"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
-						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+						m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 					);
 				}
 			}
@@ -1799,21 +1799,21 @@ int calc_3pcf_window(
 
 	shotnoise_quadratic_00.finalise_density_field();
 
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
 	/// Initialise output three-point correlation function window.
-	double durationInSec = double(clock() - timeStart);
+	double clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computing three-point correlation function window terms "
+			"[STAT] :: Computing three-point correlation function window terms "
 			"(%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
@@ -1913,14 +1913,14 @@ int calc_3pcf_window(
 
 					zeta_save[i_rbin] += coupling * zeta_sum;
 
-					double durationInSec = double(clock() - timeStart);
+					double clockElapsed = double(clock() - clockStart);
 					if (currTask == 0) {
 						printf(
-							"[Status] :: Computed three-point correlation function window "
+							"[STAT] :: Computed three-point correlation function window "
 							"term for separation and orders "
 							"`r2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
-							rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+							rmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 						);
 					}
 				}
@@ -1933,12 +1933,12 @@ int calc_3pcf_window(
 		}
 	}
 
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computed three-point correlation function window terms "
+      "[STAT] :: Computed three-point correlation function window terms "
       "(... %.3f seconds elapsed).\n",
-      durationInSec / CLOCKS_PER_SEC
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
@@ -2013,7 +2013,7 @@ int calc_3pcf_window_mpi(
 ) {  // WARNING: inherited from Sugiyama et al. without matching equation
 	if (currTask == 0) {
 		printf(
-			"[Info] :: Measuring three-point correlation function window "
+			"[INFO] :: Measuring three-point correlation function window "
 			"from random catalogues.\n"
 		);
 	}
@@ -2023,7 +2023,7 @@ int calc_3pcf_window_mpi(
 	) {
 		if (currTask == 0) {
 			printf(
-				"[Error] :: Disallowed multipole degree combination "
+				"[ERRO] :: Disallowed multipole degree combination "
 				"for three-point correlation function window measurements. "
 				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
 			);
@@ -2055,11 +2055,11 @@ int calc_3pcf_window_mpi(
 	}
 
 	/// Initialise output shot noise terms.
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
@@ -2128,8 +2128,8 @@ int calc_3pcf_window_mpi(
 					dn_LM_for_shotnoise, shotnoise_quadratic_00,
 					ylm_a, ylm_b,
 					shotnoise,
-					rbin,
-					params.ell1, m1_
+					rbin
+					// params.ell1, m1_
 				);
 
 				for (int idx = 0; idx < n_temp; idx++) {
@@ -2146,12 +2146,12 @@ int calc_3pcf_window_mpi(
 					}
 				}
 
-				durationInSec = double(clock() - timeStart);
+				clockElapsed = double(clock() - clockStart);
 				if (currTask == 0) {
 					printf(
-						"[Status] :: Computed shot noise term for orders "
+						"[STAT] :: Computed shot noise term for orders "
 						"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
-						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+						m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 					);
 				}
 			}
@@ -2165,21 +2165,21 @@ int calc_3pcf_window_mpi(
 
 	shotnoise_quadratic_00.finalise_density_field();
 
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
 	/// Initialise output three-point correlation function window.
-	double durationInSec = double(clock() - timeStart);
+	double clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computing three-point correlation function window terms "
+			"[STAT] :: Computing three-point correlation function window terms "
 			"(%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
@@ -2280,14 +2280,14 @@ int calc_3pcf_window_mpi(
 
 					zeta_save[i_rbin] += coupling * zeta_sum;
 
-					double durationInSec = double(clock() - timeStart);
+					double clockElapsed = double(clock() - clockStart);
 					if (currTask == 0) {
 						printf(
-							"[Status] :: Computed three-point correlation function window "
+							"[STAT] :: Computed three-point correlation function window "
 							"term for separation and orders "
 							"`r2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
-							rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+							rmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 						);
 					}
 				}
@@ -2300,12 +2300,12 @@ int calc_3pcf_window_mpi(
 		}
 	}
 
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computed three-point correlation function window terms "
+      "[STAT] :: Computed three-point correlation function window terms "
       "(... %.3f seconds elapsed).\n",
-      durationInSec / CLOCKS_PER_SEC
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
@@ -2382,7 +2382,7 @@ int calc_3pcf_window_for_wide_angle(
 ) {
 	if (currTask == 0) {
 		printf(
-			"[Info] :: Measuring three-point correlation function window wide-angle"
+			"[INFO] :: Measuring three-point correlation function window wide-angle"
 			"correction terms for three-point correlation function "
 			"from random catalogues.\n"
 		);
@@ -2393,7 +2393,7 @@ int calc_3pcf_window_for_wide_angle(
 	) {
 		if (currTask == 0) {
 			printf(
-				"[Error] :: Disallowed multipole degree combination "
+				"[ERRO] :: Disallowed multipole degree combination "
 				"for three-point correlation function window measurements. "
 				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
 			);
@@ -2402,11 +2402,11 @@ int calc_3pcf_window_for_wide_angle(
 	}
 
 	/// Initialise output shot noise terms.
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
@@ -2476,8 +2476,8 @@ int calc_3pcf_window_for_wide_angle(
 					dn_LM_for_shotnoise, shotnoise_quadratic_00,
 					ylm_a, ylm_b,
 					shotnoise,
-					rbin,
-					params.ell1, m1_
+					rbin
+					// params.ell1, m1_
 				);
 
 				for (int ibin = 0; ibin < params.num_rbin; ibin++) {
@@ -2494,12 +2494,12 @@ int calc_3pcf_window_for_wide_angle(
 					}
 				}
 
-				durationInSec = double(clock() - timeStart);
+				clockElapsed = double(clock() - clockStart);
 				if (currTask == 0) {
 					printf(
-						"[Status] :: Computed shot noise term for orders "
+						"[STAT] :: Computed shot noise term for orders "
 						"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
-						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+						m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 					);
 				}
 			}
@@ -2513,21 +2513,21 @@ int calc_3pcf_window_for_wide_angle(
 
 	shotnoise_quadratic_00.finalise_density_field();
 
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
 	/// Initialise output three-point correlation function window.
-	double durationInSec = double(clock() - timeStart);
+	double clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computing three-point correlation function window "
+			"[STAT] :: Computing three-point correlation function window "
 			"wide-angle correction terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
@@ -2628,14 +2628,14 @@ int calc_3pcf_window_for_wide_angle(
 
 					zeta_save[i_rbin] += coupling * zeta_sum;
 
-					double durationInSec = double(clock() - timeStart);
+					double clockElapsed = double(clock() - clockStart);
 					if (currTask == 0) {
 						printf(
-							"[Status] :: Computed three-point correlation function window "
+							"[STAT] :: Computed three-point correlation function window "
 							"term for separation and orders "
 							"`r2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
-							rmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+							rmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 						);
 					}
 				}
@@ -2648,12 +2648,12 @@ int calc_3pcf_window_for_wide_angle(
 		}
 	}
 
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computed three-point correlation function window terms "
+      "[STAT] :: Computed three-point correlation function window terms "
       "(... %.3f seconds elapsed).\n",
-      durationInSec / CLOCKS_PER_SEC
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
@@ -2732,7 +2732,7 @@ int calc_bispec_for_los_choice(
 ) {  // WARNING: inherited from Sugiyama et al. without matching equation
 	if (currTask == 0) {
 		printf(
-			"[Info] :: Measuring bispectrum for the choice of line of sight "
+			"[INFO] :: Measuring bispectrum for the choice of line of sight "
 			"from data and random catalogues.\n"
 		);
 	}
@@ -2742,7 +2742,7 @@ int calc_bispec_for_los_choice(
 	) {
 		if (currTask == 0) {
 			printf(
-				"[Error] :: Disallowed multipole degree combination "
+				"[ERRO] :: Disallowed multipole degree combination "
 				"for bispectrum measurements. "
 				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
 			);
@@ -2751,11 +2751,11 @@ int calc_bispec_for_los_choice(
 	}
 
 	/// Initialise output shot noise terms.
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
@@ -2835,7 +2835,7 @@ int calc_bispec_for_los_choice(
     		/// Calculate S_{\ell_1 \ell_2 L; i != j = k} in eq. (45)
 				/// in arXiv:1803.02132.
 				if (params.ell2 == 0) {
-					stats.compute_2pt_stats_in_fourier(
+					stats.compute_ylm_wgtd_2pt_stats_in_fourier(
 						dn_for_shotnoise, shotnoise_quadratic,
 						shotnoise_cubic_LM,
 						kbin,
@@ -2856,12 +2856,12 @@ int calc_bispec_for_los_choice(
 				/// matching equation.  S_{\ell_1 \ell_2 L; i = k != j}
 				/// (i.e. ell1 == 0 case) may have been shuffled.
 
-				durationInSec = double(clock() - timeStart);
+				clockElapsed = double(clock() - clockStart);
 				if (currTask == 0) {
 					printf(
-						"[Status] :: Computed shot noise term for orders "
+						"[STAT] :: Computed shot noise term for orders "
 						"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
-						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);
+						m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC);
 				}
 			}
 		}
@@ -2932,7 +2932,7 @@ int calc_bispec_for_los_choice(
     		/// Calculate S_{\ell_1 \ell_2 L; i = k != j} in eq. (45)
 				/// in arXiv:1803.02132.
 				if (params.ell1 == 0) {
-					stats.compute_2pt_stats_in_fourier(
+					stats.compute_ylm_wgtd_2pt_stats_in_fourier(
 						dn_for_shotnoise, shotnoise_quadratic,
 						shotnoise_cubic_LM,
 						kbin,
@@ -2943,13 +2943,13 @@ int calc_bispec_for_los_choice(
 					}
 				}
 
-				durationInSec = double(clock() - timeStart);
+				clockElapsed = double(clock() - clockStart);
 				if (currTask == 0) {
 					printf(
-						"[Status] :: Computed for orders "
+						"[STAT] :: Computed for orders "
 						"`m1 = %d`, `m2 = %d`, `M = %d` "
 						"(... %.3f seconds elapsed in total).\n",
-						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC);
+						m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC);
 				}
 			}
 		}
@@ -3110,13 +3110,13 @@ int calc_bispec_for_los_choice(
 
 					shotnoise_save[i_kbin] += coupling * shotnoise_sum;
 
-					durationInSec = double(clock() - timeStart);
+					clockElapsed = double(clock() - clockStart);
 					if (currTask == 0) {
 						printf(
-							"[Status] :: Computed shot noise term for wavenumber and orders "
+							"[STAT] :: Computed shot noise term for wavenumber and orders "
 							"`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
-							kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+							kmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 						);
 					}
 				}
@@ -3133,20 +3133,20 @@ int calc_bispec_for_los_choice(
 		}
 	}
 
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
 	/// Initialise output bispectrum.
-	double durationInSec = double(clock() - timeStart);
+	double clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-			"[Status] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
   }
 
@@ -3288,13 +3288,13 @@ int calc_bispec_for_los_choice(
 
 					bk_save[i_kbin] += coupling * bk_sum;
 
-					double durationInSec = double(clock() - timeStart);
+					double clockElapsed = double(clock() - clockStart);
 					if (currTask == 0) {
 						printf(
-							"[Status] :: Computed bispectrum term for wavenumber and orders "
+							"[STAT] :: Computed bispectrum term for wavenumber and orders "
 							"`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
-							kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+							kmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 						);
 					}
 				}
@@ -3307,11 +3307,11 @@ int calc_bispec_for_los_choice(
 		}
 	}
 
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
-      durationInSec / CLOCKS_PER_SEC
+      "[STAT] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
@@ -3387,7 +3387,7 @@ int calc_bispec_for_M_mode(
 ) {
 	if (currTask == 0) {
 		printf(
-			"[Info] :: Measuring bispectrum for individual modes of order `m` "
+			"[INFO] :: Measuring bispectrum for individual modes of order `m` "
 			"from data and random catalogues.\n"
 		);
 	}
@@ -3397,7 +3397,7 @@ int calc_bispec_for_M_mode(
 	) {
 		if (currTask == 0) {
 			printf(
-				"[Error] :: Disallowed multipole degree combination "
+				"[ERRO] :: Disallowed multipole degree combination "
 				"for bispectrum measurements. "
 				"Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
 			);
@@ -3406,11 +3406,11 @@ int calc_bispec_for_M_mode(
 	}
 
 	/// Initialise output shot noise terms.
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
@@ -3481,7 +3481,7 @@ int calc_bispec_for_M_mode(
     		/// Calculate S_{\ell_1 \ell_2 L; i != j = k} in eq. (45)
 				/// in arXiv:1803.02132.
 				if (params.ell2 == 0) {
-					stats.compute_2pt_stats_in_fourier(
+					stats.compute_ylm_wgtd_2pt_stats_in_fourier(
 						dn_00_for_shotnoise, shotnoise_quadratic_LM,
 						shotnoise_cubic_LM,
 						kbin,
@@ -3501,7 +3501,7 @@ int calc_bispec_for_M_mode(
     		/// Calculate S_{\ell_1 \ell_2 L; i = k != j} in eq. (45)
 				/// in arXiv:1803.02132.
 				if (params.ell1 == 0) {
-					stats.compute_2pt_stats_in_fourier(
+					stats.compute_ylm_wgtd_2pt_stats_in_fourier(
 						dn_00_for_shotnoise, shotnoise_quadratic_LM,
 						shotnoise_cubic_LM,
 						kbin,
@@ -3512,12 +3512,12 @@ int calc_bispec_for_M_mode(
 					}
 				}
 
-				durationInSec = double(clock() - timeStart);
+				clockElapsed = double(clock() - clockStart);
 				if (currTask == 0) {
 					printf(
-						"[Status] :: Computed shot noise term for orders "
+						"[STAT] :: Computed shot noise term for orders "
 						"`m1 = %d`, `m2 = %d`, `M = %d` (%.3f seconds elapsed).\n",
-						m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+						m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 					);
 				}
 			}
@@ -3664,13 +3664,13 @@ int calc_bispec_for_M_mode(
 
 					shotnoise_save[M_ + params.ELL][i_kbin] += shotnoise_sum;
 
-					durationInSec = double(clock() - timeStart);
+					clockElapsed = double(clock() - clockStart);
 					if (currTask == 0) {
 						printf(
-							"[Status] :: Computed shot noise term for wavenumber and orders "
+							"[STAT] :: Computed shot noise term for wavenumber and orders "
 							"`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
-							kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+							kmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 						);
 					}
 				}
@@ -3689,20 +3689,20 @@ int calc_bispec_for_M_mode(
 
 	shotnoise_quadratic_00.finalise_density_field();
 
-	durationInSec = double(clock() - timeStart);
+	clockElapsed = double(clock() - clockStart);
 	if (currTask == 0) {
 		printf(
-			"[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
 	}
 
 	/// Initialise output bispectrum.
-	double durationInSec = double(clock() - timeStart);
+	double clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-			"[Status] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
   }
 
@@ -3820,13 +3820,13 @@ int calc_bispec_for_M_mode(
 					/// No coupling multiplication.
 					bk_save[M_ + params.ELL][i_kbin] += bk_sum;
 
-					double durationInSec = double(clock() - timeStart);
+					double clockElapsed = double(clock() - clockStart);
 					if (currTask == 0) {
 						printf(
-							"[Status] :: Computed bispectrum term for wavenumber and orders "
+							"[STAT] :: Computed bispectrum term for wavenumber and orders "
 							"`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
-							kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+							kmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
 						);
 					}
 				}
@@ -3839,11 +3839,11 @@ int calc_bispec_for_M_mode(
 		}
 	}
 
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
-      durationInSec / CLOCKS_PER_SEC
+      "[STAT] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
@@ -3911,15 +3911,15 @@ int calc_bispec_for_M_mode(
  */
 int calc_bispec_(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
-  std::vector<std::vector<double> > los_data_arr,
-	std::vector<std::vector<double> > los_rand_arr,
+  std::vector< std::vector<double> > los_data_arr,
+	std::vector< std::vector<double> > los_rand_arr,
   ParameterSet& params,
   double alpha,
   double* kbin
 ) {
   if (currTask == 0) {
     printf(
-			"[Info] :: Measuring bispectrum from data and random catalogues.\n"
+			"[INFO] :: Measuring bispectrum from data and random catalogues.\n"
 		);
   }
 
@@ -3945,7 +3945,7 @@ int calc_bispec_(
   ) {
     if (currTask == 0) {
       printf(
-        "[Error] :: Disallowed multipole degree combination "
+        "[ERRO] :: Disallowed multipole degree combination "
         "for bispectrum measurements. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n"
       );
@@ -3954,11 +3954,11 @@ int calc_bispec_(
   }
 
   /// Initialise output shot noise terms.
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
-      durationInSec / CLOCKS_PER_SEC
+      "[STAT] :: Computing shot noise terms (%.3f seconds elapsed...).\n",
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
@@ -4020,7 +4020,7 @@ int calc_bispec_(
     		/// Calculate S_{\ell_1 \ell_2 L; i != j = k} in eq. (45)
 				/// in arXiv:1803.02132.
         if (params.ell2 == 0) {
-          stats.compute_2pt_stats_in_fourier(
+          stats.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_00_for_shotnoise, shotnoise_quadratic_LM,
 						shotnoise_cubic_LM,
 						kbin,
@@ -4040,7 +4040,7 @@ int calc_bispec_(
     		/// Calculate S_{\ell_1 \ell_2 L; i = k != j} in eq. (45)
 				/// in arXiv:1803.02132.
         if (params.ell1 == 0) {
-          stats.compute_2pt_stats_in_fourier(
+          stats.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_00_for_shotnoise, shotnoise_quadratic_LM,
 						shotnoise_cubic_LM,
 						kbin,
@@ -4051,13 +4051,13 @@ int calc_bispec_(
           }
         }
 
-        durationInSec = double(clock() - timeStart);
+        clockElapsed = double(clock() - clockStart);
         if (currTask == 0) {
           printf(
-            "[Status] :: Computed shot noise term for orders "
+            "[STAT] :: Computed shot noise term for orders "
             "`m1 = %d`, `m2 = %d`, `M = %d` "
 						"(%.3f seconds elapsed).\n",
-            m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+            m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
           );
         }
       }
@@ -4206,13 +4206,13 @@ int calc_bispec_(
 
           shotnoise_save[i_kbin] += coupling * shotnoise_sum;
 
-          durationInSec = double(clock() - timeStart);
+          clockElapsed = double(clock() - clockStart);
           if (currTask == 0) {
             printf(
-              "[Status] :: Computed shot noise term for wavenumber and orders "
+              "[STAT] :: Computed shot noise term for wavenumber and orders "
               "`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
-              kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+              kmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
             );
           }
         }
@@ -4231,20 +4231,20 @@ int calc_bispec_(
 
   shotnoise_quadratic_00.finalise_density_field();
 
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
-      durationInSec / CLOCKS_PER_SEC
+      "[STAT] :: Computed shot noise terms (... %.3f seconds elapsed).\n",
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
   /// Initialise output bispectrum.
-	double durationInSec = double(clock() - timeStart);
+	double clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-			"[Status] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
-			durationInSec / CLOCKS_PER_SEC
+			"[STAT] :: Computing bispectrum terms (%.3f seconds elapsed...).\n",
+			clockElapsed / CLOCKS_PER_SEC
 		);
   }
 
@@ -4350,13 +4350,13 @@ int calc_bispec_(
 
           bk_save[i_kbin] += coupling * bk_sum;
 
-          double durationInSec = double(clock() - timeStart);
+          double clockElapsed = double(clock() - clockStart);
           if (currTask == 0) {
             printf(
-              "[Status] :: Computed bispectrum term for wavenumber and orders "
+              "[STAT] :: Computed bispectrum term for wavenumber and orders "
               "`k2 = %.3f`, `m1 = %d`, `m2 = %d`, `M = %d` "
 							"(%.3f seconds elapsed).\n",
-              kmag_b, m1_, m2_, M_, durationInSec / CLOCKS_PER_SEC
+              kmag_b, m1_, m2_, M_, clockElapsed / CLOCKS_PER_SEC
             );
           }
         }
@@ -4369,11 +4369,11 @@ int calc_bispec_(
     }
   }
 
-  durationInSec = double(clock() - timeStart);
+  clockElapsed = double(clock() - clockStart);
   if (currTask == 0) {
     printf(
-      "[Status] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
-      durationInSec / CLOCKS_PER_SEC
+      "[STAT] :: Computed bispectrum terms (... %.3f seconds elapsed).\n",
+      clockElapsed / CLOCKS_PER_SEC
     );
   }
 
