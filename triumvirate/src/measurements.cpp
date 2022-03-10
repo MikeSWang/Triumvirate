@@ -1,6 +1,11 @@
+/**
+ * @file measurements.cpp
+ * @brief Perform N-point correlator clustering measurements.
+ *
+ */
+
 #include <cstdio>
 #include <cstdlib>
-#include <ctime>
 #include <iostream>
 #include <cmath>
 #include <string>
@@ -8,10 +13,7 @@
 #include "common.hpp"
 #include "parameters.hpp"
 #include "tools.hpp"
-#include "harmonic.hpp"
-#include "bessel.hpp"
 #include "particles.hpp"
-#include "field.hpp"
 #include "twopt.hpp"
 #include "threept.hpp"
 
@@ -20,45 +22,59 @@
  */
 int main(int argc, char* argv[]) {
   if (currTask == 0) {
-    printf("%s\n", std::string(80, '>').c_str());
-    printf("[Status] :: Program has started.\n");
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "%s\n[STAT] (+%s) Program has started.\n",
+      std::string(80, '>').c_str(),
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+    );
   }
 
-  /// ******************
-  ///   Initialisation
-  /// ******************
-
-  timeStart = clock();
+  /* * Initialisation ****************************************************** */
 
   if (currTask == 0) {
-    printf("[Status] :: Initialising program...\n");
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "[STAT] (+%s) Initialising program...\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+    );
   }
 
-  /// Initialise parameters.
-  if (argc != 2 && currTask == 0) {
-    printf(
-      "[Error] :: Missing parameter file. Add parameter file to the call.\n"
-    );
+  /// Configure parameters.
+  if (argc != 2) {
+    if (currTask == 0) {
+      clockElapsed = double(clock() - clockStart);
+      printf(
+        "[ERRO] (+%s) Missing parameter file in call.\n",
+        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      );
+    }
     exit(1);
   }
 
   ParameterSet params;
-  if (params.read_from_file(argv) && currTask == 0) {
-    printf("[Error] :: Failed to initialise parameters.\n");
+  if (params.read_from_file(argv)) {
+    if (currTask == 0) {
+      clockElapsed = double(clock() - clockStart);
+      printf(
+        "[ERRO] (+%s) Failed to initialise parameters.\n",
+        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      );
+    }
     exit(1);
   }
 
-  params.printout();
-
-  if (currTask == 0) {
-    printf("[Status] :: Parameters have been initialised.\n");
-    printf(
-      "[Info] :: Check 'parameters_used' file in your "
-      "'measurement_dir' directory for reference.\n"
-    );
+  if (!(params.printout())) {
+    if (currTask == 0) {
+      clockElapsed = double(clock() - clockStart);
+      printf(
+        "[INFO] (+%s) Check 'parameters_used' file in your "
+        "measurement output directory for reference.\n",
+        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      );
+    }
   }
 
-  /// TODO: Internalise binning.
   /// Set up measurements.
   double kbin[params.num_kbin];
   BinScheme::set_kbin(params, kbin);
@@ -66,62 +82,74 @@ int main(int argc, char* argv[]) {
   double rbin[params.num_rbin];
   BinScheme::set_rbin(params, rbin);
 
-  durationInSec = double(clock() - timeStart);
+  bool save = true;
+
   if (currTask == 0) {
+    clockElapsed = double(clock() - clockStart);
     printf(
-      "[Status] :: ... program initialised (%.3f seconds elapsed in total).\n",
-      durationInSec / CLOCKS_PER_SEC
+      "[STAT] (+%s) ... program initialised.\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
   }
 
-  /// *******************
-  ///   Data Processing
-  /// *******************
+  /** Data processing ****************************************************** */
 
   if (currTask == 0) {
-    printf("[Status] :: Reading and processing catalogues...\n");
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "[STAT] (+%s) Reading and processing catalogues...\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+    );
   }
 
   /// Read catalogue files.
   ParticleCatalogue particles_data, particles_rand;
   if (particles_data.read_particle_data_from_file(params.data_catalogue_file)) {
-    printf("[Error] :: Failed to load data-source catalogue file.\n");
+    if (currTask == 0) {
+      clockElapsed = double(clock() - clockStart);
+      printf(
+        "[ERRO] (+%s) Failed to load data-source catalogue file.\n",
+        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      );
+    }
     exit(1);
   }
   if (particles_rand.read_particle_data_from_file(params.rand_catalogue_file)) {
-    printf("[Error] :: Failed to load random-source catalogue file.\n");
+    if (currTask == 0) {
+      clockElapsed = double(clock() - clockStart);
+      printf(
+        "[ERRO] (+%s) Failed to load random-source catalogue file.\n",
+        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      );
+    }
     exit(1);
   }
 
   /// Compute line of sight.
   LineOfSight* los_data = new LineOfSight[particles_data.ntotal];
-  LineOfSight* los_rand = new LineOfSight[particles_rand.ntotal];
   for (int pid = 0; pid < particles_data.ntotal; pid++) {
-      double los_mag = sqrt(
-        particles_data[pid].pos[0] * particles_data[pid].pos[0]
-        + particles_data[pid].pos[1] * particles_data[pid].pos[1]
-        + particles_data[pid].pos[2] * particles_data[pid].pos[2]
-      );
-      los_data[pid].pos[0] = particles_data[pid].pos[0] / los_mag;
-      los_data[pid].pos[1] = particles_data[pid].pos[1] / los_mag;
-      los_data[pid].pos[2] = particles_data[pid].pos[2] / los_mag;
-  }
-  for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      double los_mag = sqrt(
-        particles_rand[pid].pos[0] * particles_rand[pid].pos[0]
-        + particles_rand[pid].pos[1] * particles_rand[pid].pos[1]
-        + particles_rand[pid].pos[2] * particles_rand[pid].pos[2]
-      );
-      los_rand[pid].pos[0] = particles_rand[pid].pos[0] / los_mag;
-      los_rand[pid].pos[1] = particles_rand[pid].pos[1] / los_mag;
-      los_rand[pid].pos[2] = particles_rand[pid].pos[2] / los_mag;
+    double los_mag = sqrt(
+      particles_data[pid].pos[0] * particles_data[pid].pos[0]
+      + particles_data[pid].pos[1] * particles_data[pid].pos[1]
+      + particles_data[pid].pos[2] * particles_data[pid].pos[2]
+    );
+
+    los_data[pid].pos[0] = particles_data[pid].pos[0] / los_mag;
+    los_data[pid].pos[1] = particles_data[pid].pos[1] / los_mag;
+    los_data[pid].pos[2] = particles_data[pid].pos[2] / los_mag;
   }
 
-  /// TODO: Internalise `alpha`.
-  /// Compute number density alpha ratio.
-  double alpha = 0.;
-  if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-    alpha = particles_data.wtotal / particles_rand.wtotal;
+  LineOfSight* los_rand = new LineOfSight[particles_rand.ntotal];
+  for (int pid = 0; pid < particles_rand.ntotal; pid++) {
+    double los_mag = sqrt(
+      particles_rand[pid].pos[0] * particles_rand[pid].pos[0]
+      + particles_rand[pid].pos[1] * particles_rand[pid].pos[1]
+      + particles_rand[pid].pos[2] * particles_rand[pid].pos[2]
+    );
+
+    los_rand[pid].pos[0] = particles_rand[pid].pos[0] / los_mag;
+    los_rand[pid].pos[1] = particles_rand[pid].pos[1] / los_mag;
+    los_rand[pid].pos[2] = particles_rand[pid].pos[2] / los_mag;
   }
 
   /// Offset particle positions for measurements.
@@ -134,168 +162,132 @@ int main(int argc, char* argv[]) {
     particles_data.offset_coords_for_periodicity(params.boxsize);
   }
 
-  /// TODO: Reimplement survey volume normalisation.
-  /// Compute catalogue field volume.
+  /// Compute number density alpha ratio.
+  double alpha = 0.;
+  if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
+    alpha = particles_data.wtotal / particles_rand.wtotal;
+  }
+
+  /// Compute inverse-effective-volume normalisation for clustering statistics.
   PseudoDensityField<ParticleCatalogue> field_rand(params);
 
-  double vol_norm = field_rand.calc_volume_normalisation(particles_rand);
+  double norm = field_rand.calc_inv_volume_normalisation(particles_rand);
 
   field_rand.finalise_density_field();
 
-  /// TODO: Reimplement printout.
-  /// Print out catalogue field properties.
   if (currTask == 0) {
-		std::cout << "[Status] :: See printout below." << std::endl;
-    std::cout << "-- Data Catalogue --" << std::endl;
-    std::cout << "Number count : N = "
-      << particles_data.ntotal << std::endl;
-    std::cout << "Volume : V = "
-      << params.volume << std::endl;
-    std::cout << "Size along x-axis : L_x = "
-      << params.boxsize[0] << std::endl;
-    std::cout << "Size along y-axis : L_y = "
-      << params.boxsize[1] << std::endl;
-    std::cout << "Size along z-axis : L_z = "
-      << params.boxsize[2] << std::endl;
-    std::cout << "" << std::endl;
-
-    std::cout << "-- Data Density Field --" << std::endl;
-    std::cout << particles_data.pos_min[0] << " <= x_data <= "
-      << particles_data.pos_max[0] << std::endl;
-    std::cout << particles_data.pos_min[1] << " <= y_data <= "
-      << particles_data.pos_max[1] << std::endl;
-    std::cout << particles_data.pos_min[2] << " <= z_data <= "
-      << particles_data.pos_max[2] << std::endl;
-    std::cout << "" << std::endl;
-
-    std::cout << "-- Random Density Field --" << std::endl;
-    std::cout << particles_rand.pos_min[0] << " <= x_rand <= "
-      << particles_rand.pos_max[0] << std::endl;
-    std::cout << particles_rand.pos_min[1] << " <= y_rand <= "
-      << particles_rand.pos_max[1] << std::endl;
-    std::cout << particles_rand.pos_min[2] << " <= z_rand <= "
-      << particles_rand.pos_max[2] << std::endl;
-    std::cout << "" << std::endl;
-
-    std::cout << "Volume normalisation : V_norm = "
-      << vol_norm << std::endl;
-    std::cout << "Size of effective volume (geometric mean) : L_norm = "
-      << pow(vol_norm, 1./3.) << std::endl;
-  }
-
-  durationInSec = double(clock() - timeStart);
-  if (currTask == 0) {
+    clockElapsed = double(clock() - clockStart);
     printf(
-      "[Status] :: ... catalogues read and processed "
-      "(%.3f seconds elapsed in total).\n",
-      durationInSec / CLOCKS_PER_SEC
+      "[STAT] (+%s) ... catalogues read and processed.\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
   }
 
-  /// ****************
-  ///   Measurements
-  /// ****************
+  /* * Measurements ******************************************************** */
 
   if (currTask == 0) {
-    printf("[Status] :: Making measurements...\n");
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "[STAT] (+%s) Making measurements...\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+    );
   }
 
-  /// TODO: Internalsie arguments etc.
+  if (params.measurement_type == "powspec") {
+    if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
+      compute_powspec(
+        particles_data, particles_rand, los_data, los_rand,
+        params, kbin,
+        alpha, norm / particles_data.wtotal / particles_data.wtotal,
+        save
+      );
+    }
+    if (params.catalogue_type == "sim") {
+      compute_powspec_in_box(particles_data, params, kbin, save);
+    }
+  }
+  if (params.measurement_type == "2pcf") {
+    if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
+      compute_corrfunc(
+        particles_data, particles_rand, los_data, los_rand,
+        params, rbin, alpha, norm, save
+      );
+    }
+    if (params.catalogue_type == "sim") {
+      compute_corrfunc_in_box(particles_data, params, rbin, save);
+    }
+  }
+  if (params.measurement_type == "2pcf-win") {
+    compute_corrfunc_window(
+      particles_rand, los_rand, params, rbin, alpha, norm, save
+    );
+  }
 
-  if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-    if (params.measurement_type == "powspec") {
-      calc_powspec(
-        particles_data, particles_rand,
-        los_data, los_rand,
-        params,
-        alpha,
-        kbin,
-        vol_norm
-      );
-    }
-    if (params.measurement_type == "2pcf") {
-      calc_corrfunc(
-        particles_data, particles_rand,
-        los_data, los_rand,
-        params,
-        alpha,
-        rbin,
-        vol_norm
-      );
-    }
-    if (params.measurement_type == "2pcf-win") {
-      calc_corrfunc_window(
-        particles_rand, los_rand, params, alpha, rbin, vol_norm
-      );
-    }
-
-    if (params.measurement_type == "bispec") {
+  if (params.measurement_type == "bispec") {
+    if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       calc_bispec(
-        particles_data, particles_rand,
-        los_data, los_rand,
-        params,
-        alpha,
-        kbin,
-        vol_norm
+        particles_data, particles_rand, los_data, los_rand,
+        params, alpha, kbin, norm
       );
     }
-    if (params.measurement_type == "3pcf") {
+    if (params.catalogue_type == "sim") {
+      calc_bispec_in_box(particles_data, params, kbin);
+    }
+  }
+  if (params.measurement_type == "3pcf") {
+    if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       calc_3pcf(
-        particles_data, particles_rand,
-        los_data, los_rand,
-        params,
-        alpha,
-        rbin,
-        vol_norm
+        particles_data, particles_rand, los_data, los_rand,
+        params, alpha, rbin, norm
       );
     }
-    if (params.measurement_type == "3pcf-win") {
-      calc_3pcf_window(
-        particles_rand, los_rand, params, alpha, rbin, vol_norm
-      );
-    }
-    if (params.measurement_type == "3pcf-win-wa") {
-      calc_3pcf_window_for_wide_angle(
-        particles_rand, los_rand, params, alpha, rbin, vol_norm
-      );
+    if (params.catalogue_type == "sim") {
+      calc_3pcf_in_box(particles_data, params, rbin);
     }
   }
-
-  if (params.catalogue_type == "sim") {
-    calc_powspec_in_box(particles_data, params, kbin);
-    calc_corrfunc_in_box(particles_data, params, rbin);
-
-    calc_bispec_in_box(particles_data, params, kbin);
-    calc_3pcf_in_box(particles_data, params, rbin);
+  if (params.measurement_type == "3pcf-win") {
+    calc_3pcf_window(
+      particles_rand, los_rand, params, alpha, rbin, norm
+    );
   }
-
-  durationInSec = double(clock() - timeStart);
-  if (currTask == 0) {
-    printf(
-      "[Status] :: ... measurements made (%.3f seconds elapsed in total).\n",
-      durationInSec / CLOCKS_PER_SEC
+  if (params.measurement_type == "3pcf-win-wa") {
+    calc_3pcf_window_for_wide_angle(
+      particles_rand, los_rand, params, alpha, rbin, norm
     );
   }
 
-  /// ****************
-  ///   Finalisation
-  /// ****************
+  if (currTask == 0) {
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "[STAT] (+%s) ... measurements made.\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+    );
+  }
 
-  delete[] los_data; los_data = NULL;
-  delete[] los_rand; los_rand = NULL;
+  /* * Finalisation ******************************************************** */
+
   particles_data.finalise_particles();
   particles_rand.finalise_particles();
 
-  durationInSec = double(clock() - timeStart);
+  delete[] los_data; los_data = NULL;
+  delete[] los_rand; los_rand = NULL;
 
   if (currTask == 0) {
-    printf("[Info] :: Persistent memory usage: %.0f bytes.\n", bytesMem);
+    clockElapsed = double(clock() - clockStart);
     printf(
-      "[Info] :: Total time elapsed: %.3f seconds.\n",
-      durationInSec / CLOCKS_PER_SEC
+      "[INFO] (+%s) Persistent memory usage: %.0f bytes.\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+      bytesMem
     );
-    printf("[Status] :: Program has completed.\n");
-    printf("%s\n", std::string(80, '<').c_str());
+  }
+
+  if (currTask == 0) {
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "[STAT] (+%s) Program has completed.\n%s\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+      std::string(80, '<').c_str()
+    );
   }
 
   return 0;

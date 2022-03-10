@@ -543,7 +543,7 @@ class ParameterSet {
    */
   void set_io_files() {
     /// Set survey data and random catalogue inputs.
-    if (this->catalogue_type == "survey") {
+    if (this->catalogue_type == "survey" || this->catalogue_type == "sim") {
       this->data_catalogue_file =
         this->catalogue_dir + "/" + this->data_catalogue_file;
       this->rand_catalogue_file =
