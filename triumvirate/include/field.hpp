@@ -722,39 +722,6 @@ class PseudoDensityField {
   }
 
   /**
-   * Apply compensation needed in Fourier transform for
-   * assignment schemes.
-   */
-  void apply_assignment_compensation() {
-    double dk[3];
-    dk[0] = 2.*M_PI / this->params.boxsize[0];
-    dk[1] = 2.*M_PI / this->params.boxsize[1];
-    dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    double kv[3];
-    for (int i = 0; i < this->params.ngrid[0]; i++) {
-      for (int j = 0; j < this->params.ngrid[1]; j++) {
-        for (int k = 0; k < this->params.ngrid[2]; k++) {
-          long long idx_grid =
-            (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
-
-          kv[0] = (i < this->params.ngrid[0]/2) ?
-            i * dk[0] : (i - this->params.ngrid[0]) * dk[0];
-          kv[1] = (j < this->params.ngrid[1]/2) ?
-            j * dk[1] : (j - this->params.ngrid[1]) * dk[1];
-          kv[2] = (k < this->params.ngrid[2]/2) ?
-            k * dk[2] : (k - this->params.ngrid[2]) * dk[2];
-
-          double win = this->calc_assignment_window_in_fourier(kv);
-
-          this->field[idx_grid][0] /= win;
-          this->field[idx_grid][1] /= win;
-        }
-      }
-    }
-  }
-
-  /**
    * Apply separation power-law weight f@$ r^{- i - j} f@$ for
    * wide-angle corrections at order f@$ (i, j) f@$.
    */
@@ -790,6 +757,39 @@ class PseudoDensityField {
             this->field[idx_grid][1] *=
               pow(r_, - this->params.i_wa - this->params.j_wa);
           }
+        }
+      }
+    }
+  }
+
+  /**
+   * Apply compensation needed in Fourier transform for
+   * assignment schemes.
+   */
+  void apply_assignment_compensation() {
+    double dk[3];
+    dk[0] = 2.*M_PI / this->params.boxsize[0];
+    dk[1] = 2.*M_PI / this->params.boxsize[1];
+    dk[2] = 2.*M_PI / this->params.boxsize[2];
+
+    double kv[3];
+    for (int i = 0; i < this->params.ngrid[0]; i++) {
+      for (int j = 0; j < this->params.ngrid[1]; j++) {
+        for (int k = 0; k < this->params.ngrid[2]; k++) {
+          long long idx_grid =
+            (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
+
+          kv[0] = (i < this->params.ngrid[0]/2) ?
+            i * dk[0] : (i - this->params.ngrid[0]) * dk[0];
+          kv[1] = (j < this->params.ngrid[1]/2) ?
+            j * dk[1] : (j - this->params.ngrid[1]) * dk[1];
+          kv[2] = (k < this->params.ngrid[2]/2) ?
+            k * dk[2] : (k - this->params.ngrid[2]) * dk[2];
+
+          double win = this->calc_assignment_window_in_fourier(kv);
+
+          this->field[idx_grid][0] /= win;
+          this->field[idx_grid][1] /= win;
         }
       }
     }
@@ -1090,11 +1090,14 @@ class PseudoDensityField {
 template<class ParticleContainer>
 class Pseudo2ptStats {
  public:
-  double* k;  ///< central wavenumber in bins/shells
-  double* r;  ///< central separation in bins/shells
+  int* nmode;  ///< number of wavevector modes in bins/shells
+  int* npair;  ///< number of separation pairs in bins/shells
+  double* k;  ///< average wavenumber in bins/shells
+  double* r;  ///< average separation in bins/shells
   std::complex<double>* sn;  ///< shot-noise statistics in Fourier space
   std::complex<double>* pk;  ///< pseudo power spectrum statistics
-  std::complex<double>* xi;  ///< pseudo 2PCF statistics
+  std::complex<double>* xi;  /**< pseudo two-point correlation
+                                  function statistics */
 
   /**
    * Construct two-point statistics.
@@ -1952,8 +1955,6 @@ class Pseudo2ptStats {
 
  private:
   ParameterSet params;
-  int* nmode;  ///< number of wavevector modes
-  int* npair;  ///< number of separation pairs
 
   /**
    * Calculate the interpolarion window in Fourier space for
