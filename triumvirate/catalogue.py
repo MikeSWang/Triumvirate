@@ -19,9 +19,11 @@ class ParticleCatalogue:
 
     Parameters
     ----------
-    x, y, z, ws, wc : array of float
-        The Cartesian coordinates, systematic weights and clustering
-        weights of particles.
+    x, y, z : array of float
+        Cartesian coordinates of particles.
+    ws, wc : (array of) float, optional
+        Systematic weights and clustering weights of particles (defaults
+        are 1).
 
     Attributes
     ----------
@@ -34,7 +36,7 @@ class ParticleCatalogue:
 
     """
 
-    def __init__(self, x, y, z, ws, wc):
+    def __init__(self, x, y, z, ws=1., wc=1.):
 
         # Initialise particle data.
         self._data = Table()
@@ -86,8 +88,9 @@ class ParticleCatalogue:
         names : sequence of str
             Catalogue file field names.
         name_mapping : dict of {str: str}, optional
-            Mapping between the default column names 'x', 'y', 'z', 'ws' and
-            'wc' (keys) and the corresponding names (values) in `names`.
+            Mapping between any of the default column names 'x', 'y', 'z',
+            'ws' and 'wc' (keys) and the corresponding names (values)
+            in `names`.
         format : str, optional
             File format specifier (default is 'ascii').  See also
             :class:`astropy.table.Table`.
@@ -98,11 +101,6 @@ class ParticleCatalogue:
         """
         self = object.__new__(cls)
 
-        if not {'x', 'y', 'z', 'ws', 'wc'} < set(name_mapping.keys()):
-            raise ValueError(
-                "`name_mapping` must contain all default column names."
-            )
-
         # Initialise particle data.
         self._data = Table.read(
             filepath, names=names, format=format, **tab_kwargs
@@ -111,11 +109,36 @@ class ParticleCatalogue:
         for name_, name_alt in name_mapping.items():
             self._data.rename_column(name_alt, name_)
 
+        for wgt_colname in ['ws', 'wc']:
+            if wgt_colname not in self._data.colnames:
+                self._data[wgt_colname] = 1.
+
         # Compute catalogue properties.
         self.num_particles = len(self._data)
         self.wgt_particles = np.sum(self._data['ws'])
 
         self._calc_bounds()
+
+        return self
+
+    def compute_los(self):
+        """Compute the line of sight to each particle.
+
+        Returns
+        -------
+        :class:`numpy.ndarray`
+            Normalised lines of sight.
+
+        """
+        los_norm = np.sqrt(
+            self._data['x']**2 + self._data['y']**2 + self._data['z']**2
+        )
+
+        return np.transpose([
+            self._data['x'] / los_norm,
+            self._data['y'] / los_norm,
+            self._data['z'] / los_norm
+        ])
 
     def offset_coords(self, origin):
         """Offset particle coordinates for a given origin.
