@@ -112,4 +112,4 @@ class BinScheme {
   }
 };
 
-#endif
+#endif  // TRIUMVIRATE_INCLUDE_TOOLS_HPP_INCLUDED_

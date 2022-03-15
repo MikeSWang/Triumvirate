@@ -29,7 +29,7 @@ ngrid:
 
 assignment: TSC
 
-norm_convention: grid
+norm_convention: mesh
 
 
 # -- Measurements -------------------------------------------------------------
