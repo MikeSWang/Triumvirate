@@ -9,6 +9,7 @@
 
 #include <cstring>
 #include <ctime>
+#include <string>
 
 /// Initialise program trackers.
 

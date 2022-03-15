@@ -9,6 +9,7 @@
 #define TRIUMVIRATE_INCLUDE_PARTICLES_HPP_INCLUDED_
 
 #include <cstdio>
+#include <cstring>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -32,7 +33,7 @@ class ParticleCatalogue {
   struct ParticleData {
     double pos[3];  ///< particle position vector
     double w;  ///< particle weight
-  }* particles;  ///< particle data
+  }* pdata;  ///< particle data
 
   int ntotal;  ///< total number of particles
 
@@ -46,7 +47,7 @@ class ParticleCatalogue {
    */
   ParticleCatalogue () {
     /// Set default values.
-    this->particles = NULL;
+    this->pdata = NULL;
     this->ntotal = 0;
     this->wtotal = 0.;
     this->pos_min[0] = 0.; this->pos_min[1] = 0.; this->pos_min[2] = 0.;
@@ -67,7 +68,7 @@ class ParticleCatalogue {
    * @returns Individual particle data.
    */
   ParticleData& operator[](int pid) {
-    return this->particles[pid];
+    return this->pdata[pid];
   }
 
   /**
@@ -88,8 +89,8 @@ class ParticleCatalogue {
     this->ntotal = num;
 
     /// Renew particle data.
-    delete[] this->particles; this->particles = NULL;
-    this->particles = new ParticleData[this->ntotal];
+    delete[] this->pdata; this->pdata = NULL;
+    this->pdata = new ParticleData[this->ntotal];
 
     /// Determine memory usage.
     bytesMem += double(this->ntotal) * sizeof(struct ParticleData)
@@ -101,8 +102,8 @@ class ParticleCatalogue {
    */
   void finalise_particles() {
     /// Free particle usage.
-    if (this->particles != NULL) {
-      delete[] this->particles; this->particles = NULL;
+    if (this->pdata != NULL) {
+      delete[] this->pdata; this->pdata = NULL;
       bytesMem -= double(this->ntotal) * sizeof(struct ParticleData)
         / 1024. / 1024. / 1024.;
     }
@@ -163,10 +164,10 @@ class ParticleCatalogue {
       }
 
       /// Add the current line as a particle.
-      this->particles[num_lines].pos[0] = x;
-      this->particles[num_lines].pos[1] = y;
-      this->particles[num_lines].pos[2] = z;
-      this->particles[num_lines].w = w;
+      this->pdata[num_lines].pos[0] = x;
+      this->pdata[num_lines].pos[1] = y;
+      this->pdata[num_lines].pos[2] = z;
+      this->pdata[num_lines].w = w;
 
       num_lines++;
     }
@@ -208,10 +209,10 @@ class ParticleCatalogue {
     this->_initialise_particles(ntotal);
 
     for (int pid = 0; pid < ntotal; pid++) {
-      this->particles[pid].pos[0] = x[pid];
-      this->particles[pid].pos[1] = y[pid];
-      this->particles[pid].pos[2] = z[pid];
-      this->particles[pid].w = w[pid];
+      this->pdata[pid].pos[0] = x[pid];
+      this->pdata[pid].pos[1] = y[pid];
+      this->pdata[pid].pos[2] = z[pid];
+      this->pdata[pid].w = w[pid];
     }
 
     /// Calculate weight sum.
@@ -227,7 +228,7 @@ class ParticleCatalogue {
    * Calculate the weighted number of particles, i.e. the total weights.
    */
   void _calc_weighted_total() {
-    if (this->particles == NULL) {
+    if (this->pdata == NULL) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
@@ -240,7 +241,7 @@ class ParticleCatalogue {
 
     double wtotal = 0.;
     for (int pid = 0; pid < this->ntotal; pid++) {
-      wtotal += this->particles[pid].w;
+      wtotal += this->pdata[pid].w;
     }
 
     this->wtotal = wtotal;
@@ -250,7 +251,7 @@ class ParticleCatalogue {
    * Calculate extreme particle positions.
    */
   void _calc_pos_min_and_max() {
-    if (this->particles == NULL) {
+    if (this->pdata == NULL) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
@@ -265,18 +266,18 @@ class ParticleCatalogue {
     /// data entry/row.
     double min[3], max[3];
     for (int axis = 0; axis < 3; axis++) {
-      min[axis] = this->particles[0].pos[axis];
-      max[axis] = this->particles[0].pos[axis];
+      min[axis] = this->pdata[0].pos[axis];
+      max[axis] = this->pdata[0].pos[axis];
     }
 
     /// Update minimum and maximum values line-by-line.
     for (int id = 0; id < this->ntotal; id++) {
       for (int axis = 0; axis < 3; axis++) {
-        if (min[axis] > this->particles[id].pos[axis]) {
-          min[axis] = this->particles[id].pos[axis];
+        if (min[axis] > this->pdata[id].pos[axis]) {
+          min[axis] = this->pdata[id].pos[axis];
         }
-        if (max[axis] < this->particles[id].pos[axis]) {
-          max[axis] = this->particles[id].pos[axis];
+        if (max[axis] < this->pdata[id].pos[axis]) {
+          max[axis] = this->pdata[id].pos[axis];
         }
       }
     }
@@ -293,7 +294,7 @@ class ParticleCatalogue {
    * @param dpos (Subtractive) offset position vector.
    */
   void offset_coords(const double dpos[3]) {
-    if (this->particles == NULL) {
+    if (this->pdata == NULL) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
@@ -306,7 +307,7 @@ class ParticleCatalogue {
 
     for (int pid = 0; pid < this->ntotal; pid++) {
       for (int axis = 0; axis < 3; axis++) {
-        this->particles[pid].pos[axis] -= dpos[axis];
+        this->pdata[pid].pos[axis] -= dpos[axis];
       }
     }
   }
@@ -318,7 +319,7 @@ class ParticleCatalogue {
    * @param boxsize Boxsize in each dimension.
    */
   void offset_coords_for_centring(const double boxsize[3]) {
-    if (this->particles == NULL) {
+    if (this->pdata == NULL) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
@@ -346,7 +347,7 @@ class ParticleCatalogue {
     /// Centre the catalogue in box.
     for (int pid = 0; pid < this->ntotal; pid++) {
       for (int axis = 0; axis < 3; axis++) {
-        this->particles[pid].pos[axis] += dvec[axis];
+        this->pdata[pid].pos[axis] += dvec[axis];
       }
     }
 
@@ -364,13 +365,13 @@ class ParticleCatalogue {
     for (int pid = 0; pid < this->ntotal; pid++) {
       for (int axis = 0; axis < 3; axis++) {
         if (
-          this->particles[pid].pos[axis] >= boxsize[axis]
+          this->pdata[pid].pos[axis] >= boxsize[axis]
         ) {
-          this->particles[pid].pos[axis] -= boxsize[axis];
+          this->pdata[pid].pos[axis] -= boxsize[axis];
         } else if (
-          this->particles[pid].pos[axis] < 0.
+          this->pdata[pid].pos[axis] < 0.
         ) {
-          this->particles[pid].pos[axis] += boxsize[axis];
+          this->pdata[pid].pos[axis] += boxsize[axis];
         }
       }
     }

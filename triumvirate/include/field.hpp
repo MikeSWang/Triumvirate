@@ -19,7 +19,7 @@
 #include "particles.hpp"
 
 /**
- * Density-like field instantiated from particle sources.
+ * Meshed density-like field instantiated from particle sources.
  *
  * @tparam ParticleContainer Particle container class.
  *
@@ -27,7 +27,7 @@
 template<class ParticleContainer>
 class PseudoDensityField {
  public:
-  fftw_complex* field;  ///> gridded complex field
+  fftw_complex* field;  ///> meshed complex field
 
   /**
    * Construct density-like field.
@@ -79,28 +79,30 @@ class PseudoDensityField {
   }
 
   /**
-   * Assign weighted field to a grid by interpolation scheme.
+   * Assign weighted field to a mesh by interpolation scheme.
+   *
+   * @note All interpolation schemes implicitly assumes that the
    *
    * @param particles Particle container.
    * @param weights Weight field.
    * @returns Exit status.
    */
-  void assign_weighted_field_to_grid(
+  void assign_weighted_field_to_mesh(
     ParticleContainer& particles,
     fftw_complex* weights
   ) {
     if (
       this->params.assignment == "NGP"
     ) {
-      this->assign_weighted_field_to_grid_ngp(particles, weights);
+      this->assign_weighted_field_to_mesh_ngp(particles, weights);
     } else if (
       this->params.assignment == "CIC"
     ) {
-      this->assign_weighted_field_to_grid_cic(particles, weights);
+      this->assign_weighted_field_to_mesh_cic(particles, weights);
     } else if (
       this->params.assignment == "TSC"
     ) {
-      this->assign_weighted_field_to_grid_tsc(particles, weights);
+      this->assign_weighted_field_to_mesh_tsc(particles, weights);
     } else {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
@@ -162,7 +164,7 @@ class PseudoDensityField {
       weight_kern[pid][1] = ylm.imag() * particles_data[pid].w;
     }
 
-    this->assign_weighted_field_to_grid(particles_data, weight_kern);
+    this->assign_weighted_field_to_mesh(particles_data, weight_kern);
 
     fftw_free(weight_kern); weight_kern = NULL;
 
@@ -182,7 +184,7 @@ class PseudoDensityField {
       weight_kern[pid][1] = ylm.imag() * particles_rand[pid].w;
     }
 
-    field_rand.assign_weighted_field_to_grid(particles_rand, weight_kern);
+    field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
     fftw_free(weight_kern); weight_kern = NULL;
 
@@ -238,7 +240,7 @@ class PseudoDensityField {
       weight_kern[pid][1] = ylm.imag() * particles_rand[pid].w;
     }
 
-    this->assign_weighted_field_to_grid(particles_rand, weight_kern);
+    this->assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
     fftw_free(weight_kern); weight_kern = NULL;
 
@@ -274,7 +276,7 @@ class PseudoDensityField {
       weight[pid][1] = 0.;
     }
 
-    this->assign_weighted_field_to_grid(particles_data, weight);
+    this->assign_weighted_field_to_mesh(particles_data, weight);
 
     fftw_free(weight); weight = NULL;
 
@@ -285,7 +287,7 @@ class PseudoDensityField {
       weight[pid][1] = 0.;
     }
 
-    field_rand.assign_weighted_field_to_grid(particles_rand, weight);
+    field_rand.assign_weighted_field_to_mesh(particles_rand, weight);
 
     fftw_free(weight); weight = NULL;
 
@@ -318,7 +320,7 @@ class PseudoDensityField {
       weight[pid][1] = 0.;
     }
 
-    this->assign_weighted_field_to_grid(particles_data, weight);
+    this->assign_weighted_field_to_mesh(particles_data, weight);
 
     fftw_free(weight); weight = NULL;
 
@@ -348,7 +350,7 @@ class PseudoDensityField {
       weight[pid][1] = 0.;
     }
 
-    this->assign_weighted_field_to_grid(particles_data, weight);
+    this->assign_weighted_field_to_mesh(particles_data, weight);
 
     fftw_free(weight); weight = NULL;
   }
@@ -404,7 +406,7 @@ class PseudoDensityField {
       weight_kern[pid][1] = ylm.imag() * pow(particles_data[pid].w, 2);
     }
 
-    this->assign_weighted_field_to_grid(particles_data, weight_kern);
+    this->assign_weighted_field_to_mesh(particles_data, weight_kern);
 
     fftw_free(weight_kern); weight_kern = NULL;
 
@@ -426,7 +428,7 @@ class PseudoDensityField {
       weight_kern[pid][1] = ylm.imag() * pow(particles_rand[pid].w, 2);
     }
 
-    field_rand.assign_weighted_field_to_grid(particles_rand, weight_kern);
+    field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
     fftw_free(weight_kern); weight_kern = NULL;
 
@@ -481,7 +483,7 @@ class PseudoDensityField {
       weight_kern[pid][1] = ylm.imag() * pow(particles_rand[pid].w, 2);
     }
 
-    this->assign_weighted_field_to_grid(particles_rand, weight_kern);
+    this->assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
     fftw_free(weight_kern); weight_kern = NULL;
 
@@ -817,7 +819,7 @@ class PseudoDensityField {
     }
 
     /// Compute the weighted field.
-    this->assign_weighted_field_to_grid(particles_rand, weight);
+    this->assign_weighted_field_to_mesh(particles_rand, weight);
 
     fftw_free(weight); weight = NULL;
 
@@ -849,7 +851,7 @@ class PseudoDensityField {
    * @param particles Particle container.
    * @param weight Particle weight.
    */
-  void assign_weighted_field_to_grid_ngp(
+  void assign_weighted_field_to_mesh_ngp(
     ParticleContainer& particles,
     fftw_complex* weight
   ) {
@@ -909,7 +911,7 @@ class PseudoDensityField {
    * @param particles Particle container.
    * @param weight Particle weight.
    */
-  void assign_weighted_field_to_grid_cic(
+  void assign_weighted_field_to_mesh_cic(
     ParticleContainer& particles,
     fftw_complex* weight
   ) {
@@ -973,7 +975,7 @@ class PseudoDensityField {
    * @param particles Particle container.
    * @param weight Particle weight.
    */
-  void assign_weighted_field_to_grid_tsc(
+  void assign_weighted_field_to_mesh_tsc(
     ParticleContainer& particles,
     fftw_complex* weight
   ) {

@@ -33,11 +33,11 @@ ngrid:
   y: 512
   z: 512
 
-# Grid assignment scheme: {'NGP', 'CIC', 'TSC'}.
+# Mesh assignment scheme: {'NGP', 'CIC', 'TSC'}.
 assignment: TSC
 
-# Normalisation convention: {'particle', 'grid'}.
-norm_convention: grid
+# Normalisation convention: {'particle', 'mesh'}.
+norm_convention: mesh
 
 
 # -- Measurements -------------------------------------------------------------
