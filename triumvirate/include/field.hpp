@@ -1,6 +1,6 @@
 /**
  * @file field.hpp
- * @brief Field operations, computations and statistics over mesh grid.
+ * @brief Field operations, computations and statistics over mesh grids.
  *
  */
 
@@ -107,7 +107,7 @@ class PseudoDensityField {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Unsupported grid assignment scheme: '%s'.\n",
+          "[ERRO] (+%s) Unsupported mesh assignment scheme: '%s'.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->params.assignment.c_str()
         );
@@ -559,7 +559,7 @@ class PseudoDensityField {
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
    * @param density (FFT-transformed) density-like field.
-   * @param ylm Reduced spherical harmonic on a grid.
+   * @param ylm Reduced spherical harmonic on a mesh.
    * @param k_in Wavenumber bin wavenumber.
    * @param dk_in Wavenumber bin width.
    */
@@ -652,7 +652,7 @@ class PseudoDensityField {
    * f@]
    *
    * @param density (FFT-transformed) density-like field.
-   * @param ylm Reduced spherical harmonic on a grid.
+   * @param ylm Reduced spherical harmonic on a mesh.
    * @param sjl Spherical Bessel function interpolator.
    * @param r_in Separation magnitude.
    * @returns Exit status.
@@ -845,7 +845,7 @@ class PseudoDensityField {
   ParameterSet params;
 
   /**
-   * Assign weighted field to a mesh grid by the nearest-grid-point
+   * Assign weighted field to a mesh by the nearest-grid-point
    * (NGP) scheme.
    *
    * @param particles Particle container.
@@ -855,7 +855,7 @@ class PseudoDensityField {
     ParticleContainer& particles,
     fftw_complex* weight
   ) {
-    /// Set interpolation order, i.e. number of mesh grid, per dimension,
+    /// Set interpolation order, i.e. number of grids, per dimension,
     /// to which a single particle is assigned
     int order = 1;
 
@@ -905,8 +905,7 @@ class PseudoDensityField {
   }
 
   /**
-   * Assign weighted field to a mesh grid by the cloud-in-cell
-   * (CIC) scheme.
+   * Assign weighted field to a mesh by the cloud-in-cell (CIC) scheme.
    *
    * @param particles Particle container.
    * @param weight Particle weight.
@@ -915,7 +914,7 @@ class PseudoDensityField {
     ParticleContainer& particles,
     fftw_complex* weight
   ) {
-    /// Set interpolation order, i.e. number of mesh grid, per dimension,
+    /// Set interpolation order, i.e. number of grids, per dimension,
     /// to which a single particle is assigned
     int order = 2;
 
@@ -969,7 +968,7 @@ class PseudoDensityField {
   }
 
   /**
-   * Assign weighted field to a grid by the triangular-shaped-cloud
+   * Assign weighted field to a mesh by the triangular-shaped-cloud
    * (TSC) scheme.
    *
    * @param particles Particle container.
@@ -979,7 +978,7 @@ class PseudoDensityField {
     ParticleContainer& particles,
     fftw_complex* weight
   ) {
-    /// Set interpolation order, i.e. number of mesh grid, per dimension,
+    /// Set interpolation order, i.e. number of grids, per dimension,
     /// to which a single particle is assigned
     int order = 3;
 
@@ -1339,7 +1338,7 @@ class Pseudo2ptStats {
     /// corresponds to (1/V) Σ_i, V =: `vol`.
     double vol = this->params.volume;
 
-    /// Compute gridded statistics.
+    /// Compute meshed statistics.
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
@@ -1624,8 +1623,8 @@ class Pseudo2ptStats {
    *
    * @param field_a First density-like field.
    * @param field_b Second density-like field.
-   * @param ylm_a Reduced spherical harmonics over the first field grid.
-   * @param ylm_b Reduced spherical harmonics over the second field grid.
+   * @param ylm_a Reduced spherical harmonics over the first field mesh.
+   * @param ylm_b Reduced spherical harmonics over the second field mesh.
    * @param shotnoise_amp Shot-noise amplitude.
    * @param rbin Separation bins.
    */
@@ -1648,7 +1647,7 @@ class Pseudo2ptStats {
     /// corresponds to (1/V) Σ_i, V =: `vol`.
     double vol = this->params.volume;
 
-    /// Compute gridded statistics.
+    /// Compute meshed statistics.
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
@@ -1808,7 +1807,7 @@ class Pseudo2ptStats {
   }
 
   /**
-   * Compute shot noise for bispectrum over a mesh grid.
+   * Compute shot noise for bispectrum over a mesh.
    *
    * See f@$ S_{\ell_1 \ell_2 L}|_{i = j \neq k} f@$ in eq. (45)
    * in Sugiyama et al. (2018)
@@ -1821,7 +1820,7 @@ class Pseudo2ptStats {
    * @param[in] shotnoise_amp Shot-noise amplitude.
    * @param[in] ell Degree of the spherical harmonic.
    * @param[in] m Order of the spherical harmonic.
-   * @param[out] threept_3d Three-point statistics on mesh grid.
+   * @param[out] threept_3d Three-point statistics on mesh grids.
    */
   void compute_2pt_self_shotnoise_for_bispec_meshgrid(
     PseudoDensityField<ParticleContainer>& field_a,
@@ -1834,7 +1833,7 @@ class Pseudo2ptStats {
     /// corresponds to (1/V) Σ_i, V =: `vol`.
     double vol = this->params.volume;
 
-    /// Compute gridded statistics.
+    /// Compute mesh statistics.
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];

@@ -47,7 +47,7 @@ int calc_bispec(
 ) {
   if (currTask == 0) {
     printf(
-			"[INFO] :: Measuring bispectrum from data and random catalogues.\n"
+			"[STAT] :: Measuring bispectrum from data and random catalogues.\n"
 		);
   }
 
@@ -551,7 +551,7 @@ int calc_bispec_in_box(
   double* kbin
 ) {
   if (currTask == 0) {
-    printf("[INFO] :: Measuring bispectrum in a periodic box.\n");
+    printf("[STAT] :: Measuring bispectrum in a periodic box.\n");
   }
 
   if (
@@ -994,7 +994,7 @@ int calc_3pcf(
 ) {
 	if (currTask == 0) {
 		printf(
-			"[INFO] :: Measuring three-point correlation function "
+			"[STAT] :: Measuring three-point correlation function "
 			"from data and random catalogues.\n"
 		);
 	}
@@ -1348,7 +1348,7 @@ int calc_3pcf_in_box(
 ) {
 	if (currTask == 0) {
 		printf(
-			"[INFO] :: Measuring three-point correlation function "
+			"[STAT] :: Measuring three-point correlation function "
       "in a periodic box.\n"
 		);
 	}
@@ -1669,7 +1669,7 @@ int calc_3pcf_window(
 ) {
 	if (currTask == 0) {
 		printf(
-			"[INFO] :: Measuring three-point correlation function window "
+			"[STAT] :: Measuring three-point correlation function window "
 			"for three-point correlation function from random catalogues.\n"
 		);
 	}
@@ -2013,7 +2013,7 @@ int calc_3pcf_window_mpi(
 ) {  // WARNING: inherited from Sugiyama et al. without matching equation
 	if (currTask == 0) {
 		printf(
-			"[INFO] :: Measuring three-point correlation function window "
+			"[STAT] :: Measuring three-point correlation function window "
 			"from random catalogues.\n"
 		);
 	}
@@ -2382,7 +2382,7 @@ int calc_3pcf_window_for_wide_angle(
 ) {
 	if (currTask == 0) {
 		printf(
-			"[INFO] :: Measuring three-point correlation function window wide-angle"
+			"[STAT] :: Measuring three-point correlation function window wide-angle"
 			"correction terms for three-point correlation function "
 			"from random catalogues.\n"
 		);
@@ -2732,7 +2732,7 @@ int calc_bispec_for_los_choice(
 ) {  // WARNING: inherited from Sugiyama et al. without matching equation
 	if (currTask == 0) {
 		printf(
-			"[INFO] :: Measuring bispectrum for the choice of line of sight "
+			"[STAT] :: Measuring bispectrum for the choice of line of sight "
 			"from data and random catalogues.\n"
 		);
 	}
@@ -3387,7 +3387,7 @@ int calc_bispec_for_M_mode(
 ) {
 	if (currTask == 0) {
 		printf(
-			"[INFO] :: Measuring bispectrum for individual modes of order `m` "
+			"[STAT] :: Measuring bispectrum for individual modes of order `m` "
 			"from data and random catalogues.\n"
 		);
 	}
@@ -3919,7 +3919,7 @@ int calc_bispec_(
 ) {
   if (currTask == 0) {
     printf(
-			"[INFO] :: Measuring bispectrum from data and random catalogues.\n"
+			"[STAT] :: Measuring bispectrum from data and random catalogues.\n"
 		);
   }
 
