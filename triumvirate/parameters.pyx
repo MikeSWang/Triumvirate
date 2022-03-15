@@ -16,9 +16,6 @@ import yaml
 cdef class ParameterSet:
     """Program parameter set.
 
-    The value of a parameter is accessed through its key in the same
-    way as for :type:`dict`.
-
     Parameters
     ----------
     filepath : str or :class:`pathlib.Path`
@@ -28,8 +25,7 @@ cdef class ParameterSet:
 
     """
 
-    # Add `args` and `kwargs` for Cython subclass 'init'-compatibility.
-    def __cinit__(self, filepath, logger=None, *args, **kwargs):
+    def __cinit__(self, filepath, logger=None):
 
         self.thisptr = new CppParameterSet()
 
@@ -106,7 +102,7 @@ cdef class ParameterSet:
 
         """
         # RFE: Implement serialisation of catalogue files for
-        # e.g. suite of simulations.
+        # a suite of simulations.
         self.thisptr.catalogue_dir = \
             self._params['directories']['catalogues']
         self.thisptr.measurement_dir = \

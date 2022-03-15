@@ -275,7 +275,7 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[INFO] (+%s) Persistent memory usage: %.0f bytes.\n",
+      "[STAT] (+%s) Persistent memory usage: %.0f bytes.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
       bytesMem
     );

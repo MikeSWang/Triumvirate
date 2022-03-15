@@ -34,9 +34,9 @@ class ParameterSet {
   /// Sampling.
   double boxsize[3];  ///< boxsize in each dimension
   int ngrid[3];  ///< grid number in each dimension
-  std::string assignment;  ///< grid assignment scheme: {'NGP', 'CIC', 'TSC'}
+  std::string assignment;  ///< mesh assignment scheme: {'NGP', 'CIC', 'TSC'}
   std::string norm_convention;  /**< normalisation convention:
-                                     {'grid', 'particle'} */
+                                     {'mesh', 'particle'} */
   /// TODO: Implement shot noise and normalisation convention options.
 
   /// Measurements.
@@ -442,7 +442,7 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Grid assignment scheme must be 'NGP', 'CIC' or 'TSC': "
+          "[ERRO] (+%s) Mesh assignment scheme must be 'NGP', 'CIC' or 'TSC': "
           "`assignment` = %s.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->assignment.c_str()
@@ -452,20 +452,20 @@ class ParameterSet {
     }
 
     if (!(
-      this->norm_convention == "grid" || this->norm_convention == "particle"
+      this->norm_convention == "mesh" || this->norm_convention == "particle"
     )) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
           "[WARN] (+%s) Normalisation convention must be "
-          "'grid' or 'particle': `norm_convention` = %s.\n",
+          "'mesh' or 'particle': `norm_convention` = %s.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->norm_convention.c_str()
         );
       }
 
-      /// Set to default 'grid'.
-      this->norm_convention == "grid";
+      /// Set to default convention.
+      this->norm_convention == "mesh";
 
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
@@ -553,7 +553,8 @@ class ParameterSet {
 
     /// Set mock data and random catalogue inputs.  Make subdirectories
     /// to store the output for each data realisation.
-    /// QUEST: Understand the numbering here.
+    /// QUEST: Understand the serialisation of catalogue files for
+    /// a suite of simulations.
     if (this->catalogue_type == "mock") {
       /// Enumerate the input data catalogue.
       int realisation = numTasks * this->batch_number + currTask + 1;
@@ -596,7 +597,7 @@ class ParameterSet {
           if (currTask == 0) {
             clockElapsed = double(clock() - clockStart);
             printf(
-              "[INFO] (+%s) Output subdirectory '%s' is successfully made.\n",
+              "[STAT] (+%s) Output subdirectory '%s' is successfully made.\n",
               calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
               buf_dir
             );
