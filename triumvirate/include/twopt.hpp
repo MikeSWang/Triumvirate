@@ -83,7 +83,7 @@ PowspecMeasurements compute_powspec(
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[INFO] (+%s) Measuring power spectrum from "
+      "[STAT] (+%s) Measuring power spectrum from "
       "data and random catalogues.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
@@ -227,7 +227,7 @@ CorrfuncMeasurements compute_corrfunc(
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[INFO] (+%s) Measuring two-point correlation function "
+      "[STAT] (+%s) Measuring two-point correlation function "
       "from data and random catalogues.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
@@ -362,7 +362,7 @@ PowspecWindowMeasurements compute_powspec_window(
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[INFO] (+%s) Measuring power spectrum window from random catalogue.\n",
+      "[STAT] (+%s) Measuring power spectrum window from random catalogue.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
   }
@@ -464,7 +464,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[INFO] (+%s) Measuring two-point correlation function window "
+      "[STAT] (+%s) Measuring two-point correlation function window "
 			"from random catalogue.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
 		);
@@ -595,7 +595,7 @@ PowspecMeasurements compute_powspec_in_box(
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[INFO] (+%s) Measuring power spectrum in a periodic box.\n",
+      "[STAT] (+%s) Measuring power spectrum in a periodic box.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
   }
@@ -695,7 +695,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[INFO] (+%s) Measuring two-point correlation function "
+      "[STAT] (+%s) Measuring two-point correlation function "
       "in a periodic box.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
