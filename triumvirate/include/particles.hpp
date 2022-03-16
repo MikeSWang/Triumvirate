@@ -8,9 +8,12 @@
 #ifndef TRIUMVIRATE_INCLUDE_PARTICLES_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_PARTICLES_HPP_INCLUDED_
 
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <iterator>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -32,12 +35,15 @@ class ParticleCatalogue {
  public:
   struct ParticleData {
     double pos[3];  ///< particle position vector
-    double w;  ///< particle weight
+    double nz;  ///< expected redshift-dependent number density in-situ
+    double ws;  ///< particle systematic weight
+    double wc;  ///< particle clustering weight
+    double w;  ///< particle overall weight
   }* pdata;  ///< particle data
 
   int ntotal;  ///< total number of particles
 
-  double wtotal;  ///< total weight of particles
+  double wtotal;  ///< total systematic weight of particles
 
   double pos_min[3];  ///< minimum values of particle positions
   double pos_max[3];  ///< maximum values of particle positions
@@ -51,7 +57,7 @@ class ParticleCatalogue {
     this->ntotal = 0;
     this->wtotal = 0.;
     this->pos_min[0] = 0.; this->pos_min[1] = 0.; this->pos_min[2] = 0.;
-    this->pos_max[0] = 0.; this->pos_max[1] = 0.; ; this->pos_max[2] = 0.;
+    this->pos_max[0] = 0.; this->pos_max[1] = 0.; this->pos_max[2] = 0.;
   }
 
   /**
@@ -113,11 +119,36 @@ class ParticleCatalogue {
    * Read in particle data from a file.
    *
    * @param particles_file Particle data file path.
+   * @param names Field names, comma-separated without space, in the file.
    * @returns Exit status.
    */
-  int read_particle_data_from_file(std::string& particles_file) {
+  int read_particle_data_from_file(
+    std::string& particles_file,
+    const std::string& names
+  ) {
     /// Initialise the counter for the number of lines/particles.
     int num_lines = 0;
+
+    /// Extract field names and ordering.
+    std::vector<std::string> fields;
+    std::istringstream iss(names);
+    std::string name;
+    while (std::getline(iss, name, ',')) {
+      fields.push_back(name);
+    }
+
+    /// CAVEAT: Hard-wired ordered field names.
+    std::vector<std::string> names_ordered = {"x", "y", "z", "ns", "ws", "wc"};
+    std::vector<int> name_indices(names_ordered.size(), -1);
+    for (int idx_name = 0; idx_name < names_ordered.size(); idx_name++) {
+      ptrdiff_t col_idx = std::distance(
+        fields.begin(),
+        find(fields.begin(), fields.end(), names_ordered[idx_name])
+      );
+      if (0 <= col_idx && col_idx < fields.size()) {
+        name_indices[idx_name] = col_idx;
+      }
+    }
 
     /// Check and size up data from the file.
     std::ifstream fin;
@@ -128,7 +159,7 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Cannot open file '%s'.\n",
+          "[ERRO] (+%s) Failed to open file '%s'.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           particles_file.c_str()
         );
@@ -138,12 +169,12 @@ class ParticleCatalogue {
     }
 
     std::string str_line;
-    double x, y, z, w;
     while (getline(fin, str_line)) {
-      /// Check if the line conforms to the expected format.
-      if (sscanf(str_line.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &w) != 4) {
-        continue;
-      }
+      /// Terminate at the end of file.
+      if (!fin) {break;}
+
+      /// Skip empty lines or comment lines.
+      if (str_line[0] == '#' || str_line.empty()) {continue;}
 
       /// Count the line as a particle.
       num_lines++;
@@ -157,17 +188,53 @@ class ParticleCatalogue {
     fin.open(particles_file.c_str(), std::ios::in);
 
     num_lines = 0;  // reset
+
+    double nz, ws, wc;
+    double entry;
     while (getline(fin, str_line)) {
-      /// Check if the line conforms to the expected format.
-      if (sscanf(str_line.c_str(), "%lf %lf %lf %lf", &x, &y, &z, &w) != 4) {
-        continue;
+      /// Terminate at the end of file.
+      if (!fin) {break;}
+
+      /// Skip empty lines or comment lines.
+      if (str_line[0] == '#' || str_line.empty()) {continue;}
+
+      /// Extract row entries.
+      std::stringstream ss(
+        str_line, std::ios_base::out | std::ios_base::in | std::ios_base::binary
+      );
+
+      std::vector<double> row;
+      while (ss >> entry) {
+        row.push_back(entry);
       }
 
       /// Add the current line as a particle.
-      this->pdata[num_lines].pos[0] = x;
-      this->pdata[num_lines].pos[1] = y;
-      this->pdata[num_lines].pos[2] = z;
-      this->pdata[num_lines].w = w;
+      this->pdata[num_lines].pos[0] = row[name_indices[0]];  // x
+      this->pdata[num_lines].pos[1] = row[name_indices[1]];  // y
+      this->pdata[num_lines].pos[2] = row[name_indices[2]];  // z
+
+      if (name_indices[3] != -1) {
+        nz = row[name_indices[3]];
+      } else {
+        nz = 0.;  // default value
+      }
+
+      if (name_indices[4] != -1) {
+        ws = row[name_indices[4]];
+      } else {
+        ws = 1.;  // default value
+      }
+
+      if (name_indices[5] != -1) {
+        wc = row[name_indices[5]];
+      } else {
+        wc = 1.;  // default value
+      }
+
+      this->pdata[num_lines].nz = nz;
+      this->pdata[num_lines].ws = ws;
+      this->pdata[num_lines].wc = wc;
+      this->pdata[num_lines].w = ws * wc;
 
       num_lines++;
     }
@@ -189,22 +256,25 @@ class ParticleCatalogue {
    * @param x Particle x-positions.
    * @param y Particle y-positions.
    * @param z Particle z-positions.
-   * @param w Particle weights.
+   * @param nz Particle redshift-dependent mean number density in-situ.
+   * @param ws Particle systematic weights.
+   * @param wc Particle clustering weights.
    * @returns Exit status.
    */
   int read_particle_data(
     std::vector<double> x, std::vector<double> y, std::vector<double> z,
-    std::vector<double> w
+    std::vector<double> nz, std::vector<double> ws, std::vector<double> wc
   ) {
     /// Check array sizes.
-    if (
-      !(x.size() == y.size() && y.size() == z.size() && z.size() == w.size())
-    ) {
+    if (!(
+      x.size() == y.size() && y.size() == z.size() && z.size() == nz.size()
+      && nz.size() == ws.size() && ws.size() == wc.size()
+    )) {
       return -1;
     }
 
     /// Fill in particle data.
-    int ntotal = w.size();
+    int ntotal = nz.size();
 
     this->_initialise_particles(ntotal);
 
@@ -212,7 +282,10 @@ class ParticleCatalogue {
       this->pdata[pid].pos[0] = x[pid];
       this->pdata[pid].pos[1] = y[pid];
       this->pdata[pid].pos[2] = z[pid];
-      this->pdata[pid].w = w[pid];
+      this->pdata[pid].nz = nz[pid];
+      this->pdata[pid].ws = ws[pid];
+      this->pdata[pid].wc = wc[pid];
+      this->pdata[pid].w = ws[pid] * wc[pid];
     }
 
     /// Calculate weight sum.
@@ -225,7 +298,7 @@ class ParticleCatalogue {
   }
 
   /**
-   * Calculate the weighted number of particles, i.e. the total weights.
+   * Calculate total systematic weights of particles.
    */
   void _calc_weighted_total() {
     if (this->pdata == NULL) {
@@ -241,7 +314,7 @@ class ParticleCatalogue {
 
     double wtotal = 0.;
     for (int pid = 0; pid < this->ntotal; pid++) {
-      wtotal += this->pdata[pid].w;
+      wtotal += this->pdata[pid].ws;
     }
 
     this->wtotal = wtotal;
@@ -361,7 +434,7 @@ class ParticleCatalogue {
    * @param boxsize Periodic boxsize in each dimension.
    */
   void offset_coords_for_periodicity(const double boxsize[3]) {
-    /// Re-adjust the grid.
+    /// Adjust the box.
     for (int pid = 0; pid < this->ntotal; pid++) {
       for (int axis = 0; axis < 3; axis++) {
         if (
@@ -381,22 +454,20 @@ class ParticleCatalogue {
   }
 
   /**
-   * Align a pair of catalogues by offsetting particle positions
-   * for FFT (though mesh grid shift).
+   * Align a pair of catalogues in a box for FFT by grid shift.
    *
    * @param particles_data (Data-source) particle catalogue.
    * @param particles_rand (Random-source) particle catalogue.
    * @param boxsize Box size in each dimension.
    * @param ngrid Grid number in each dimension.
-   * @param factor Offset grid shift factor (default is 3.).
-   * @returns Exit status.
+   * @param ngrid_pad Grid number factor for padding (default is 3.).
    */
-  static void align_catalogues_for_fft(
+  static void boxify_catalogues_for_fft(
     ParticleCatalogue& particles_data,
     ParticleCatalogue& particles_rand,
     const double boxsize[3],
     const int ngrid[3],
-    double shift_factor=3.  // CAVEAT: discretionary choice
+    double ngrid_pad=3.  // CAVEAT: discretionary choice
   ) {
     /// Calculate adjustments needed.
     particles_data._calc_pos_min_and_max();
@@ -408,9 +479,9 @@ class ParticleCatalogue {
       particles_rand.pos_min[2],
     };
 
-    dpos[0] -= shift_factor * boxsize[0] / double(ngrid[0]);
-    dpos[1] -= shift_factor * boxsize[1] / double(ngrid[1]);
-    dpos[2] -= shift_factor * boxsize[2] / double(ngrid[2]);
+    dpos[0] -= ngrid_pad * boxsize[0] / double(ngrid[0]);
+    dpos[1] -= ngrid_pad * boxsize[1] / double(ngrid[1]);
+    dpos[2] -= ngrid_pad * boxsize[2] / double(ngrid[2]);
 
     /// Shift mesh grid and recalculate extreme particle positions.
     particles_data.offset_coords(dpos);
@@ -418,6 +489,58 @@ class ParticleCatalogue {
 
     particles_data._calc_pos_min_and_max();
     particles_rand._calc_pos_min_and_max();
+  }
+
+  /**
+   * Calculate particle-based power spectrum normalisation.
+   *
+   * @returns norm Power spectrum normalisation.
+   */
+  double _calc_powspec_norm() {
+    if (this->pdata == NULL) {
+      if (currTask == 0) {
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[ERRO] (+%s) Particle data are uninitialised.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        );
+      }
+      exit(1);
+    }
+
+    double norm = 0.;
+    for (int pid = 0; pid < this->ntotal; pid++) {
+      norm += this->pdata[pid].nz
+        * this->pdata[pid].ws * this->pdata[pid].wc * this->pdata[pid].wc;
+    }
+
+    return norm;
+  }
+
+  /**
+   * Calculate particle-based power spectrum shot noise.
+   *
+   * @returns shotnoise Power spectrum shot noise.
+   */
+  double _calc_powspec_shotnoise() {
+    if (this->pdata == NULL) {
+      if (currTask == 0) {
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[ERRO] (+%s) Particle data are uninitialised.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        );
+      }
+      exit(1);
+    }
+
+    double shotnoise = 0.;
+    for (int pid = 0; pid < this->ntotal; pid++) {
+      shotnoise += this->pdata[pid].ws * this->pdata[pid].ws
+        * this->pdata[pid].wc * this->pdata[pid].wc;
+    }
+
+    return shotnoise;
   }
 };
 
