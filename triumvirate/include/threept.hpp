@@ -3936,7 +3936,7 @@ int calc_bispec_(
       los_rand[id].pos[2] = los_rand_arr[id][2];
   }
 
-	ParticleCatalogue::align_catalogues_for_fft(
+	ParticleCatalogue::boxify_catalogues_for_fft(
 		particles_data, particles_rand, params.boxsize, params.ngrid
 	);
 

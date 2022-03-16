@@ -34,7 +34,6 @@ class BinScheme {
    *
    * @param[in] params Parameter set.
    * @param[out] kbin_out Wavenumber bins.
-   * @returns Exit status.
    */
   static void set_kbin(ParameterSet& params, double* kbin_out) {
     double dk = (params.kmax - params.kmin) / double(params.num_kbin - 1);
@@ -49,7 +48,6 @@ class BinScheme {
    *
    * @param[in] params Parameter set.
    * @param[out] rbin_out Separation bins.
-   * @returns Exit status.
    */
   static void set_rbin(ParameterSet& params, double* rbin_out) {
     if (0) {
