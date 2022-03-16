@@ -13,6 +13,13 @@ import numpy as np
 import yaml
 
 
+class InvalidParameter(ValueError):
+    """Value error raised when a program parameter is invalid.
+
+    """
+    pass
+
+
 cdef class ParameterSet:
     """Program parameter set.
 
@@ -31,8 +38,8 @@ cdef class ParameterSet:
 
         self._logger = logger
 
-        self._source = abspath(filepath)
         self._status = 'original'.encode('utf-8')
+        self._source = abspath(filepath)
 
         with open(filepath, 'r') as filestream:
             self._params = yaml.load(filestream, Loader=yaml.Loader)
@@ -79,7 +86,7 @@ cdef class ParameterSet:
             if self._logger:
                 try:
                     self._logger.info("", cpp_state='start')
-                except:
+                except TypeError:
                     self._logger.info("Entering C++ run...")
 
             if self.thisptr.printout() != 0:
@@ -90,7 +97,7 @@ cdef class ParameterSet:
             if self._logger:
                 try:
                     self._logger.info("", cpp_state='end')
-                except:
+                except TypeError:
                     self._logger.info("... exited C++ run.")
 
                 self._logger.info(
@@ -147,13 +154,13 @@ cdef class ParameterSet:
             self.thisptr.kmin = self._params['range'][0]
             self.thisptr.kmax = self._params['range'][1]
             self.thisptr.num_kbin = self._params['dim']
-            self.thisptr.num_rbin = self._params['dim']  # placeholder
+            self.thisptr.num_rbin = self._params['dim']  # mandatory placeholder
             self.thisptr.ith_kbin = self._params['index']
         if 'pcf' in str(self.thisptr.measurement_type):
             self.thisptr.rmin = self._params['range'][0]
             self.thisptr.rmax = self._params['range'][1]
             self.thisptr.num_rbin = self._params['dim']
-            self.thisptr.num_kbin = self._params['dim']  # placeholder
+            self.thisptr.num_kbin = self._params['dim']  # mandatory placeholder
             self.thisptr.ith_rbin = self._params['index']
 
         self.thisptr.volume = np.prod(list(self._params['boxsize'].values()))
@@ -169,15 +176,15 @@ cdef class ParameterSet:
             self._logger.info("Validating parameters...")
             try:
                 self._logger.info("", cpp_state='start')
-            except:
+            except TypeError:
                 self._logger.info("Entering C++ run...")
 
         if self.thisptr.validate() != 0:
-            raise ValueError("Invalid measurement parameters.")
+            raise InvalidParameter("Invalid measurement parameters.")
 
         if self._logger:
             try:
                 self._logger.info("", cpp_state='end')
-            except:
+            except TypeError:
                 self._logger.info("... exited C++ run.")
             self._logger.info("... validated parameters.")

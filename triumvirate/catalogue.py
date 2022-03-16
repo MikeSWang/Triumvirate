@@ -5,12 +5,23 @@ Catalogue (:mod:`~triumvirate.catalogue`)
 Handle catalogue I/O and processing.
 
 """
+import warnings
+
 import numpy as np
 from astropy.table import Table
 
 
+class MissingField(ValueError):
+    """Value error raised when a mandatory field is missing/empty in
+    a catalogue.
+
+    """
+    pass
+
+
 class ParticleCatalogue:
-    """Particle catalogue holding coordinates and weights.
+    """Catalogue holding particle coordinates, weights and
+    redshift-dependent mean number densities.
 
     Notes
     -----
@@ -19,143 +30,244 @@ class ParticleCatalogue:
 
     Parameters
     ----------
-    x, y, z : array of float
-        Cartesian coordinates of particles.
-    ws, wc : (array of) float, optional
+    x, y, z : 1-d array of float
+        Cartesian coordinates of particles.  Lengths of `x`, `y` and `z`
+        must agree.
+    nz : (1-d array of) float, optional
+        Redshift-dependent mean number density (defaults is `None`).
+        If an array, its length must be the same as those of `x`, `y`
+        and `z`.
+    ws, wc : (1-d array of) float, optional
         Systematic weights and clustering weights of particles (defaults
-        are 1).
+        are 1).  If an array, its length must be the same as those of
+        `x`, `y` and `z`.
+    logger : :class:`logging.Logger`, optional
+        Program logger (default is `None`).
 
     Attributes
     ----------
-    num_particles : int
-        Number of particles.
-    wgt_particles : float
-        Systematic-weight sum of particles.
-    bounds : dict of tuple
+    bounds : dict of {str: tuple}
         Particle coordinate bounds.
+    ntotal : int
+        Total particle number.
+    wtotal : float
+        Total systematic weight.
 
     """
+    _pdata = None
+    bounds = None
+    ntotal = 0.
+    wtotal = 0.
 
-    def __init__(self, x, y, z, ws=1., wc=1.):
+    def __init__(self, x, y, z, nz=None, ws=1., wc=1., logger=None):
+
+        self._logger = logger
 
         # Initialise particle data.
-        self._data = Table()
-        self._data['x'] = x
-        self._data['y'] = y
-        self._data['z'] = z
-        self._data['ws'] = ws
-        self._data['wc'] = wc
+        if nz is None:
+            warnings.warn(
+                "Catalogue 'nz' field is set to `None`, "
+                "which may raise errors in some computations."
+            )
+
+        self._pdata = Table()
+        self._pdata['x'] = x
+        self._pdata['y'] = y
+        self._pdata['z'] = z
+        self._pdata['nz'] = nz
+        self._pdata['ws'] = ws
+        self._pdata['wc'] = wc
 
         # Compute catalogue properties.
-        self.num_particles = len(self._data)
-        self.wgt_particles = np.sum(self._data['ws'])
+        self._calc_bounds(init=True)
 
-        self._calc_bounds()
+        self.ntotal = len(self._pdata)
+        self.wtotal = np.sum(self._pdata['ws'])
 
-    def __getitem__(self, key):
-        if isinstance(key, (int, slice)):
-            return self._data[key]
-        return [self._data[i] for i in key]
-
-    def __setitem__(self, key, value):
-        if isinstance(key, (int, slice)):
-            self._data[key] = value
-        else:
-            for i in key:
-                if isinstance(i, int):
-                    self._data[i] = value
-                else:
-                    raise ValueError('Cannot interpret item key.')
-
-    def __len__(self):
-        return len(self._data)
-
-    def __iter__(self):
-        return self._data.__iter__()
-
-    def __next__(self):
-        return self._data.__next__()
+        if self._logger:
+            self._logger.info(
+                "Catalogue initialised: %d particles with "
+                "total systematic weights %.2f.",
+                self.ntotal, self.wtotal
+            )
 
     @classmethod
-    def read_from_file(cls, filepath, names, name_mapping={},
-                       format='ascii', tab_kwargs={}):
+    def read_from_file(cls, filepath, format='ascii', names=None,
+                       name_mapping=None, table_kwargs=None, logger=None):
         """Read particle data from file.
+
+        Notes
+        -----
+        If any of 'nz', 'ws' and 'wc' columns are not provided,
+        these columns are initialised with the default values in
+        :meth:`~triumvirate.catalogue.__init__`.
 
         Parameters
         ----------
         filepath : str or :class:`pathlib.Path`
             Catalogue file path.
-        names : sequence of str
-            Catalogue file field names.
-        name_mapping : dict of {str: str}, optional
-            Mapping between any of the default column names 'x', 'y', 'z',
-            'ws' and 'wc' (keys) and the corresponding names (values)
-            in `names`.
         format : str, optional
             File format specifier (default is 'ascii').  See also
             :class:`astropy.table.Table`.
-        tab_kwargs : dict, optional
+        names : sequence of str, optional
+            Catalogue file field names.  If `None` (default), the header
+            row in the file is used to provide the names.
+        name_mapping : dict of {str: str}, optional
+            Mapping between any of the default column names 'x', 'y', 'z',
+            'nz', 'ws' and 'wc' (keys) and the corresponding field names
+            (values) in `names` (default is `None`).
+        table_kwargs : dict, optional
             Keyword arguments to be passed to
-            :meth:`astropy.table.Table.read`.
+            :meth:`astropy.table.Table.read` (default is `None`).
+        logger : :class:`logging.Logger`, optional
+            Program logger (default is `None`).
 
         """
         self = object.__new__(cls)
 
+        self._logger = logger
+        self._source = str(filepath)  # non-existent in `__init__`
+
         # Initialise particle data.
-        self._data = Table.read(
-            filepath, names=names, format=format, **tab_kwargs
+        if table_kwargs is None:
+            table_kwargs = {}
+
+        self._pdata = Table.read(
+            filepath, format=format, names=names, **table_kwargs
         )
 
-        for name_, name_alt in name_mapping.items():
-            self._data.rename_column(name_alt, name_)
+        # Validate particle data columns.
+        if name_mapping is not None:
+            for name_, name_alt in name_mapping.items():
+                self._pdata.rename_column(name_alt, name_)
 
-        for wgt_colname in ['ws', 'wc']:
-            if wgt_colname not in self._data.colnames:
-                self._data[wgt_colname] = 1.
+        for name_axis in ['x', 'y', 'z']:
+            if name_axis not in self._pdata.colnames:
+                raise MissingField(f"Mandatory field {name_axis} is missing.")
+
+        if 'nz' not in self._pdata.colnames:
+            self._pdata['nz'] = None
+            warnings.warn(
+                "Catalogue 'nz' field is set to `None`, "
+                "which may raise errors in some computations."
+            )
+
+        for name_wgt in ['ws', 'wc']:
+            if name_wgt not in self._pdata.colnames:
+                self._pdata[name_wgt] = 1.
 
         # Compute catalogue properties.
-        self.num_particles = len(self._data)
-        self.wgt_particles = np.sum(self._data['ws'])
-
         self._calc_bounds()
 
+        self.ntotal = len(self._pdata)
+        self.wtotal = np.sum(self._pdata['ws'])
+
+        if self._logger:
+            self._logger.info(
+                "Catalogue loaded: %d particles with "
+                "total systematic weights %.2f.",
+                self.ntotal, self.wtotal
+            )
+
         return self
+
+    def __str__(self):
+        try:
+            return "ParticleCatalogue(source={})".format(self._source)
+        except NameError:
+            return "ParticleCatalogue(address={})".format(
+                object.__str__(self).split()[-1].lstrip().rstrip('>')
+            )
+
+    def __getitem__(self, key):
+        if isinstance(key, (int, slice)):
+            return self._pdata[key]
+        return [self._pdata[key_] for key_ in key]
+
+    def __setitem__(self, key, value):
+        if isinstance(key, (int, slice)):
+            self._pdata[key] = value
+        else:
+            for key_ in key:
+                if isinstance(key_, int):
+                    self._pdata[key_] = value
+                else:
+                    raise ValueError('Cannot interpret item key.')
+
+    def __len__(self):
+        return len(self._pdata)
+
+    def __iter__(self):
+        return self._pdata.__iter__()
+
+    def __next__(self):
+        return self._pdata.__next__()
 
     def compute_los(self):
         """Compute the line of sight to each particle.
 
         Returns
         -------
-        :class:`numpy.ndarray`
+        los : (N, 3) :class:`numpy.ndarray`
             Normalised lines of sight.
 
         """
         los_norm = np.sqrt(
-            self._data['x']**2 + self._data['y']**2 + self._data['z']**2
+            self._pdata['x']**2 + self._pdata['y']**2 + self._pdata['z']**2
         )
 
-        return np.transpose([
-            self._data['x'] / los_norm,
-            self._data['y'] / los_norm,
-            self._data['z'] / los_norm
+        los = np.transpose([
+            self._pdata['x'] / los_norm,
+            self._pdata['y'] / los_norm,
+            self._pdata['z'] / los_norm
         ])
 
-    def offset_coords(self, origin):
-        """Offset particle coordinates for a given origin.
+        return los
+
+    def boxify_catalogues_for_fft(self, boxsize, ngrid, ngrid_pad=3.,
+                                  catalogue_ref=None):
+        """Align a (pair of) catalogue(s) in a box for FFT by offsetting
+        particle positions.
 
         Parameters
         ----------
-        origin : (3,) array of float
-            Coordinates of the new origin.
+        boxsize : (3,) array of float
+            Box size in each dimension.
+        ngrid : (3,) array of int
+            Grid number in each dimension.
+        ngrid_pad : float, optional
+            Grid padding factor (default is 3.).
+        catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, optional
+            Reference catalogue used for box alignment, to be put in the
+            same box.  If `None` (default), the current catalogue itself
+            is used as the reference catalogue.
+
+        Notes
+        -----
+        The reference catalogue is typically the random-source catalogue
+        (if provided).  Padding is applied at the box corner used as the
+        new coordinate origin.
 
         """
-        for axis, coord in zip(['x', 'y', 'z'], origin):
-            self._data[axis] -= coord
+        if catalogue_ref is None:
+            origin = np.array([
+                self.bounds[axis][0] for axis in ['x', 'y', 'z']
+            ])
+        else:
+            origin = np.array([
+                catalogue_ref.bounds[axis][0] for axis in ['x', 'y', 'z']
+            ])
 
-        self._calc_bounds()
+        gridsize = np.divide(boxsize, ngrid)
+
+        dpos = origin - ngrid_pad * gridsize
+
+        self.offset_coords(dpos)
+        if catalogue_ref is not None:
+            catalogue_ref.offset_coords(dpos)
 
     def centre(self, boxsize):
-        """Place particles in a periodic box of given box size.
+        """Centre particles in a box of given box size.
 
         Parameters
         ----------
@@ -179,48 +291,71 @@ class ParticleCatalogue:
             Box size in each dimension.
 
         """
-        self._data['x'] %= boxsize[0]
-        self._data['y'] %= boxsize[1]
-        self._data['z'] %= boxsize[2]
+        self._pdata['x'] %= boxsize[0]
+        self._pdata['y'] %= boxsize[1]
+        self._pdata['z'] %= boxsize[2]
 
         self._calc_bounds()
 
-    @staticmethod
-    def align_catalogues_for_fft(catalogue_data, catalogue_rand,
-                                 boxsize, ngrid, shift_factor=3.):
-        """Align a pair of catalogues by offsetting particle positions
-        for FFT (though mesh grid shift).
+    def offset_coords(self, origin):
+        """Offset particle coordinates for a given origin.
 
         Parameters
         ----------
-        catalogue_data : :class:`triumvirate.catalogue.ParticleCatalogue`
-            (Data-source) particle catalogue.
-        catalogue_rand : :class:`triumvirate.catalogue.ParticleCatalogue`
-            (Random-source) particle catalogue.
-        boxsize : (3,) array of float
-            Box size in each dimension.
-        ngrid : (3,) array of int
-            Grid number in each dimension.
-        shift_factor : float, optional
-            Offset grid shift factor (default is 3.).
+        origin : (3,) array of float
+            Coordinates of the new origin.
 
         """
-        dpos = np.subtract(
-            [catalogue_rand.bounds[axis][0] for axis in ['x', 'y', 'z']],
-            shift_factor * np.divide(boxsize, ngrid)
-        )
+        for axis, coord in zip(['x', 'y', 'z'], origin):
+            self._pdata[axis] -= coord
 
-        catalogue_data.offset_coords(dpos)
-        catalogue_rand.offset_coords(dpos)
+        self._calc_bounds()
 
-    def _calc_bounds(self):
+    def _calc_bounds(self, init=False):
         """Calculate coordinate bounds in each dimension.
 
         """
-        bounds = {}
+        self.bounds = {}
         for axis in ['x', 'y', 'z']:
-            bounds[axis] = (
-                np.min(self._data[axis]), np.max(self._data[axis])
+            self.bounds[axis] = (
+                np.min(self._pdata[axis]), np.max(self._pdata[axis])
             )
 
-        self.bounds = bounds
+        if self._logger:
+            if init:
+                self._logger.info(
+                    "Original extents of particle coordinates: %s (%s).",
+                    self.bounds, self
+                )
+            else:
+                # Catalogue string representation is printed for identification.
+                self._logger.info(
+                    "Offset extents of particle coordinates: %s (%s).",
+                    self.bounds, self
+                )
+
+    def _calc_powspec_norm(self):
+        """Calculate particle-based power spectrum normalisation.
+
+        """
+        if None in self._pdata['nz']:
+            raise MissingField(
+                "Cannot calculate power spectrum normalisation "
+                "because of missing 'nz' value(s) in catalogue."
+            )
+
+        return np.sum(
+            self._pdata['nz'] * self._pdata['ws'] * self._pdata['wc']**2
+        )
+
+    def _calc_powspec_shotnoise(self):
+        """Calculate particle-based power spectrum shot noise.
+
+        """
+        if None in self._pdata['nz']:
+            raise MissingField(
+                "Cannot calculate power spectrum shot noise "
+                "because of missing 'nz' value(s) in catalogue."
+            )
+
+        return np.sum(self._pdata['ws']**2 * self._pdata['wc']**2)

@@ -8,8 +8,7 @@ Configure the program logger.
 import logging
 import sys
 import time
-
-from numpy import isin
+import warnings
 
 
 class _ElapsedLogFormatter(logging.Formatter):
@@ -78,6 +77,35 @@ class _CppLogAdapter(logging.LoggerAdapter):
         return "%s" % msg, kwargs
 
 
+# Modify `warnings.formatwarning`.
+def _format_warning(message, category, filename, lineno, line=None):
+
+    msg = warnings.WarningMessage(
+        message, category, filename, lineno, None, line
+    )
+
+    msg_txt = "{} ({}:{}:{}{{}})".format(
+        msg.message, msg.filename, msg.lineno, msg.category.__name__
+    )
+
+    if msg.line is None:
+        try:
+            import linecache
+            linesource = linecache.getline(msg.filename, msg.lineno)
+        except Exception:
+            linesource = None
+    else:
+        linesource = msg.line
+
+    if linesource:
+        linesource = linesource.strip()
+        msg_txt = msg_txt.format(" --> \"" + linesource + "\"")
+    else:
+        msg_txt = msg_txt.format("")
+
+    return msg_txt
+
+
 def setup_logger():
     """Set up and return a customised logger with elapsed time and
     C++ state indication.
@@ -109,5 +137,9 @@ def setup_logger():
 
     # Adapt logger for C++ code indication.
     logger = _CppLogAdapter(logger_, {'cpp_state': False})
+
+    # Adapt logger to capture warnings.
+    warnings.formatwarning = _format_warning
+    logging.captureWarnings(True)
 
     return logger
