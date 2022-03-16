@@ -104,7 +104,9 @@ int main(int argc, char* argv[]) {
 
   /// Read catalogue files.
   ParticleCatalogue particles_data, particles_rand;
-  if (particles_data.read_particle_data_from_file(params.data_catalogue_file)) {
+  if (particles_data.read_particle_data_from_file(
+    params.data_catalogue_file, params.catalogue_header
+  )) {
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
       printf(
@@ -114,7 +116,9 @@ int main(int argc, char* argv[]) {
     }
     exit(1);
   }
-  if (particles_rand.read_particle_data_from_file(params.rand_catalogue_file)) {
+  if (particles_rand.read_particle_data_from_file(
+    params.rand_catalogue_file, params.catalogue_header
+  )) {
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
       printf(

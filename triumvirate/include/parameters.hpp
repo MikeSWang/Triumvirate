@@ -29,6 +29,7 @@ class ParameterSet {
   std::string measurement_dir;  ///< output directory
   std::string data_catalogue_file;  ///< data catalogue file
   std::string rand_catalogue_file;  ///< random catalogue file
+  std::string catalogue_header;  ///< catalogue file header (comma-separated)
   std::string output_tag;  ///< output file tag
 
   /// Sampling.
@@ -88,6 +89,7 @@ class ParameterSet {
     char measurement_dir_[1024];
     char data_catalogue_file_[1024];
     char rand_catalogue_file_[1024];
+    char catalogue_header_[1024];
     char output_tag_[1024];
     char catalogue_type_[16];
     char measurement_type_[16];
@@ -133,6 +135,11 @@ class ParameterSet {
         sscanf(
           str_line.data(), "%s %s %s",
           str_dummy, str_dummy, rand_catalogue_file_
+        );
+      }
+      if (str_line.find("catalogue_header") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, catalogue_header_
         );
       }
       if (str_line.find("output_tag") != std::string::npos) {
@@ -283,6 +290,7 @@ class ParameterSet {
     this->measurement_dir = measurement_dir_;
     this->data_catalogue_file = data_catalogue_file_;
     this->rand_catalogue_file = rand_catalogue_file_;
+    this->catalogue_header = catalogue_header_;
     this->output_tag = output_tag_;
 
     this->catalogue_type = catalogue_type_;
@@ -355,6 +363,10 @@ class ParameterSet {
     fprintf(
       used_param_fileptr, "rand_catalogue_file = %s\n",
       this->rand_catalogue_file.c_str()
+    );
+    fprintf(
+      used_param_fileptr, "catalogue_header = %s\n",
+      this->catalogue_header.c_str()
     );
     fprintf(
       used_param_fileptr, "output_tag = %s\n", this->output_tag.c_str()
