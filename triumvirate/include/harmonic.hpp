@@ -162,7 +162,6 @@ class SphericalHarmonicCalculator {
    * @param[in] boxsize Box size in each dimension.
    * @param[in] ngrid Grid number in each dimension.
    * @param[out] ylm_out Stored computed values.
-   * @returns Exit status.
    */
   static void store_reduced_spherical_harmonic_in_config_space(
     const int ell, const int m, const double boxsize[3], const int ngrid[3],

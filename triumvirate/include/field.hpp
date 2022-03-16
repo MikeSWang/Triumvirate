@@ -85,7 +85,6 @@ class PseudoDensityField {
    *
    * @param particles Particle container.
    * @param weights Weight field.
-   * @returns Exit status.
    */
   void assign_weighted_field_to_mesh(
     ParticleContainer& particles,
@@ -655,7 +654,6 @@ class PseudoDensityField {
    * @param ylm Reduced spherical harmonic on a mesh.
    * @param sjl Spherical Bessel function interpolator.
    * @param r_in Separation magnitude.
-   * @returns Exit status.
    */
   void inv_fourier_transform_for_sjl_ylm_wgtd_field(
     PseudoDensityField& density,
