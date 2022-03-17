@@ -497,7 +497,7 @@ class ParticleCatalogue {
    * @param alpha Alpha ratio.
    * @returns norm Power spectrum normalisation constant.
    */
-  double _calc_powspec_normalisation_from_particles(double alpha=1.) {
+  double _calc_powspec_normalisation(double alpha=1.) {
     if (this->pdata == NULL) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
@@ -526,7 +526,7 @@ class ParticleCatalogue {
    * @param alpha Alpha ratio.
    * @returns shotnoise Power spectrum shot noise.
    */
-  double _calc_powspec_shotnoise_from_particles(double alpha=1.) {
+  double _calc_powspec_shotnoise(double alpha=1.) {
     if (this->pdata == NULL) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);

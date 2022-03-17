@@ -38,7 +38,8 @@ class ParameterSet {
   std::string assignment;  ///< mesh assignment scheme: {'NGP', 'CIC', 'TSC'}
   std::string norm_convention;  /**< normalisation convention:
                                      {'mesh', 'particle'} */
-  /// TODO: Implement shot noise and normalisation convention options.
+  std::string shotnoise_convention;  /**< shot noise convention:
+                                          {'mesh', 'particle'} */
 
   /// Measurements.
   std::string catalogue_type;  ///< catalogue type: {'survey', 'mock', 'sim'}
@@ -95,6 +96,7 @@ class ParameterSet {
     char measurement_type_[16];
     char assignment_[16];
     char norm_convention_[16];
+    char shotnoise_convention_[16];
     char binning_[16];
     char form_[16];
 
@@ -193,6 +195,11 @@ class ParameterSet {
         );
       }
       if (str_line.find("norm_convention") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, norm_convention_
+        );
+      }
+      if (str_line.find("shotnoise_convention") != std::string::npos) {
         sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, norm_convention_
         );
@@ -297,6 +304,7 @@ class ParameterSet {
     this->measurement_type = measurement_type_;
 
     this->norm_convention = norm_convention_;
+    this->shotnoise_convention = shotnoise_convention_;
     this->assignment = assignment_;
 
     this->binning = binning_;
@@ -387,6 +395,10 @@ class ParameterSet {
     fprintf(
       used_param_fileptr, "norm_convention = %s\n",
       this->norm_convention.c_str()
+    );
+    fprintf(
+      used_param_fileptr, "shotnoise_convention = %s\n",
+      this->shotnoise_convention.c_str()
     );
 
     fprintf(used_param_fileptr, "boxsize_x = %.2f\n", this->boxsize[0]);
@@ -486,6 +498,34 @@ class ParameterSet {
           "default value '%s'.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->norm_convention.c_str()
+        );
+      }
+    }
+
+    if (!(
+      this->shotnoise_convention == "mesh"
+      || this->shotnoise_convention == "particle"
+    )) {
+      if (currTask == 0) {
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[WARN] (+%s) Shot noise convention convention must be "
+          "'mesh' or 'particle': `shotnoise_convention` = %s.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          this->shotnoise_convention.c_str()
+        );
+      }
+
+      /// Set to default convention.
+      this->shotnoise_convention == "mesh";
+
+      if (currTask == 0) {
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[WARN] (+%s) Shot noise convention is set to "
+          "default value '%s'.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          this->shotnoise_convention.c_str()
         );
       }
     }
