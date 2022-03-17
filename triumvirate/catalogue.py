@@ -340,8 +340,8 @@ class ParticleCatalogue:
                     self.bounds, self
                 )
 
-    def _calc_powspec_normalisation(self, alpha=1.):
-        """Calculate particle-based power spectrum normalisation constant.
+    def _calc_powspec_normalisation_from_particles(self, alpha=1.):
+        """Calculate particle-based power spectrum normalisation.
 
         Parameters
         ----------
@@ -364,7 +364,7 @@ class ParticleCatalogue:
             self._pdata['nz'] * self._pdata['ws'] * self._pdata['wc']**2
         )
 
-    def _calc_powspec_shotnoise(self, alpha=1.):
+    def _calc_powspec_shotnoise_from_particles(self, alpha=1.):
         """Calculate (unnormalised) particle-based power spectrum
         shot noise.
 

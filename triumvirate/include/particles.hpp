@@ -494,9 +494,10 @@ class ParticleCatalogue {
   /**
    * Calculate particle-based power spectrum normalisation.
    *
-   * @returns norm Power spectrum normalisation.
+   * @param alpha Alpha ratio.
+   * @returns norm Power spectrum normalisation constant.
    */
-  double _calc_powspec_norm() {
+  double _calc_powspec_normalisation_from_particles(double alpha=1.) {
     if (this->pdata == NULL) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
@@ -508,11 +509,13 @@ class ParticleCatalogue {
       exit(1);
     }
 
-    double norm = 0.;
+    double vol_norm = 0.;
     for (int pid = 0; pid < this->ntotal; pid++) {
-      norm += this->pdata[pid].nz
+      vol_norm += this->pdata[pid].nz
         * this->pdata[pid].ws * this->pdata[pid].wc * this->pdata[pid].wc;
     }
+
+    double norm = 1. / (alpha * vol_norm);
 
     return norm;
   }
@@ -520,9 +523,10 @@ class ParticleCatalogue {
   /**
    * Calculate particle-based power spectrum shot noise.
    *
+   * @param alpha Alpha ratio.
    * @returns shotnoise Power spectrum shot noise.
    */
-  double _calc_powspec_shotnoise() {
+  double _calc_powspec_shotnoise_from_particles(double alpha=1.) {
     if (this->pdata == NULL) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
@@ -539,6 +543,8 @@ class ParticleCatalogue {
       shotnoise += this->pdata[pid].ws * this->pdata[pid].ws
         * this->pdata[pid].wc * this->pdata[pid].wc;
     }
+
+    shotnoise *= alpha * alpha;
 
     return shotnoise;
   }

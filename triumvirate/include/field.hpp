@@ -797,7 +797,7 @@ class PseudoDensityField {
 
   /**
    * Calculate inverse (effective) volume normalisation f@$ 1/I_2 f@$
-   * for two-point correlators, where
+   * (for the power spectrum), where
    *
    * f@[
    *   I_2 = \int \mathrm{d}^3\,\vec{x} \bar{n}(\vec{x})^2 \,.
