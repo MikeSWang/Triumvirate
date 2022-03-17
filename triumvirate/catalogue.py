@@ -87,8 +87,8 @@ class ParticleCatalogue:
         if self._logger:
             self._logger.info(
                 "Catalogue initialised: %d particles with "
-                "total systematic weights %.2f.",
-                self.ntotal, self.wtotal
+                "total systematic weights %.2f (%s).",
+                self.ntotal, self.wtotal, self
             )
 
     @classmethod
@@ -165,8 +165,8 @@ class ParticleCatalogue:
         if self._logger:
             self._logger.info(
                 "Catalogue loaded: %d particles with "
-                "total systematic weights %.2f.",
-                self.ntotal, self.wtotal
+                "total systematic weights %.2f (%s).",
+                self.ntotal, self.wtotal, self
             )
 
         return self
@@ -357,7 +357,8 @@ class ParticleCatalogue:
         if None in self._pdata['nz']:
             raise MissingField(
                 "Cannot calculate power spectrum normalisation "
-                "because of missing 'nz' value(s) in catalogue."
+                "because of missing 'nz' value(s) in catalogue ({})."
+                .format(self)
             )
 
         return 1. / alpha / np.sum(
@@ -382,7 +383,8 @@ class ParticleCatalogue:
         if None in self._pdata['nz']:
             raise MissingField(
                 "Cannot calculate power spectrum shot noise "
-                "because of missing 'nz' value(s) in catalogue."
+                "because of missing 'nz' value(s) in catalogue ({})."
+                .format(self)
             )
 
         return alpha**2 * np.sum(self._pdata['ws']**2 * self._pdata['wc']**2)
