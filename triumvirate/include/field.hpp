@@ -806,7 +806,7 @@ class PseudoDensityField {
    * @param particles_rand (Random-source) particle container.
    * @returns inv_vol_norm Inverse-volume normalisation.
    */
-  double calc_inv_volume_normalisation(ParticleContainer& particles_rand) {
+  double _calc_inv_volume_normalisation(ParticleContainer& particles_rand) {
     /// Initialise the weight field.
     fftw_complex* weight = NULL;
 

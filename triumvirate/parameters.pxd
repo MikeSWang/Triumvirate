@@ -14,6 +14,7 @@ cdef extern from "include/parameters.hpp":
 
         string assignment
         string norm_convention
+        string shotnoise_convention
 
         string catalogue_type
         string measurement_type

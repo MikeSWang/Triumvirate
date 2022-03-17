@@ -136,6 +136,7 @@ cdef class ParameterSet:
 
         self.thisptr.assignment = self._params['assignment']
         self.thisptr.norm_convention = self._params['norm_convention']
+        self.thisptr.shotnoise_convention = self._params['shotnoise_convention']
 
         self.thisptr.catalogue_type = self._params['catalogue_type']
         self.thisptr.measurement_type = self._params['measurement_type']

@@ -173,11 +173,12 @@ int main(int argc, char* argv[]) {
   }
 
   /// Compute inverse-effective-volume normalisation for clustering statistics.
-  PseudoDensityField<ParticleCatalogue> field_rand(params);
-
-  double norm = field_rand.calc_inv_volume_normalisation(particles_rand);
-
-  field_rand.finalise_density_field();
+  double norm;
+  if (params.norm_convention == "mesh") {
+    norm = calc_powspec_normalisation_from_mesh(particles_rand, params);
+  } else if (params.norm_convention == "particle") {
+    norm = calc_powspec_normalisation_from_particles(particles_rand, alpha);
+  }
 
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);

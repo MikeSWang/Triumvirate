@@ -36,8 +36,9 @@ ngrid:
 # Mesh assignment scheme: {'NGP', 'CIC', 'TSC'}.
 assignment: TSC
 
-# Normalisation convention: {'particle', 'mesh'}.
+# Normalisation and shot noise convention: {'particle', 'mesh'}.
 norm_convention: mesh
+shotnoise_convention: mesh
 
 
 # -- Measurements -------------------------------------------------------------
