@@ -515,6 +515,18 @@ class ParticleCatalogue {
         * this->pdata[pid].ws * this->pdata[pid].wc * this->pdata[pid].wc;
     }
 
+    if (vol_norm == 0.) {
+      if (currTask == 0) {
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[ERRO] (+%s) Particle 'nz' values appear to be all zeros. "
+          "Check the input catalogue contains valid 'nz' field.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        );
+      }
+      exit(1);
+    }
+
     double norm = 1. / (alpha * vol_norm);
 
     return norm;

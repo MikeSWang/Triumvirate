@@ -201,7 +201,8 @@ class ParameterSet {
       }
       if (str_line.find("shotnoise_convention") != std::string::npos) {
         sscanf(
-          str_line.data(), "%s %s %s", str_dummy, str_dummy, norm_convention_
+          str_line.data(), "%s %s %s",
+          str_dummy, str_dummy, shotnoise_convention_
         );
       }
 
