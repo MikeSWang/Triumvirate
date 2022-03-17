@@ -157,7 +157,7 @@ class ParticleCatalogue:
                 self._pdata[name_wgt] = 1.
 
         # Compute catalogue properties.
-        self._calc_bounds()
+        self._calc_bounds(init=True)
 
         self.ntotal = len(self._pdata)
         self.wtotal = np.sum(self._pdata['ws'])
@@ -314,6 +314,12 @@ class ParticleCatalogue:
     def _calc_bounds(self, init=False):
         """Calculate coordinate bounds in each dimension.
 
+        Parameters
+        ----------
+        init : bool, optional
+            If `True` (default is `False`), particles positions are
+            original and have not been offset.
+
         """
         self.bounds = {}
         for axis in ['x', 'y', 'z']:
@@ -334,8 +340,18 @@ class ParticleCatalogue:
                     self.bounds, self
                 )
 
-    def _calc_powspec_norm(self):
-        """Calculate particle-based power spectrum normalisation.
+    def _calc_powspec_normalisation(self, alpha=1.):
+        """Calculate particle-based power spectrum normalisation constant.
+
+        Parameters
+        ----------
+        alpha : float, optional
+            Alpha ratio (default is 1.).
+
+        Returns
+        -------
+        float
+            Power spectrum normalisation constant.
 
         """
         if None in self._pdata['nz']:
@@ -344,12 +360,23 @@ class ParticleCatalogue:
                 "because of missing 'nz' value(s) in catalogue."
             )
 
-        return np.sum(
+        return 1. / alpha / np.sum(
             self._pdata['nz'] * self._pdata['ws'] * self._pdata['wc']**2
         )
 
-    def _calc_powspec_shotnoise(self):
-        """Calculate particle-based power spectrum shot noise.
+    def _calc_powspec_shotnoise(self, alpha=1.):
+        """Calculate (unnormalised) particle-based power spectrum
+        shot noise.
+
+        Parameters
+        ----------
+        alpha : float, optional
+            Alpha ratio (default is 1.).
+
+        Returns
+        -------
+        float
+            Shot noise power.
 
         """
         if None in self._pdata['nz']:
@@ -358,4 +385,4 @@ class ParticleCatalogue:
                 "because of missing 'nz' value(s) in catalogue."
             )
 
-        return np.sum(self._pdata['ws']**2 * self._pdata['wc']**2)
+        return alpha**2 * np.sum(self._pdata['ws']**2 * self._pdata['wc']**2)
