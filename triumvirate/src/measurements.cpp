@@ -75,15 +75,6 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  /// Set up measurements.
-  double kbin[params.num_kbin];
-  BinScheme::set_kbin(params, kbin);
-
-  double rbin[params.num_rbin];
-  BinScheme::set_rbin(params, rbin);
-
-  bool save = true;
-
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
@@ -97,7 +88,7 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Reading and processing catalogues...\n",
+      "[STAT] (+%s) Reading catalogues...\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
   }
@@ -129,7 +120,42 @@ int main(int argc, char* argv[]) {
     exit(1);
   }
 
+  if (currTask == 0) {
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "[STAT] (+%s) ... catalogues read.\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+    );
+  }
+
+  /* * Measurements ******************************************************** */
+
+  if (currTask == 0) {
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "[STAT] (+%s) Making measurements...\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+    );
+  }
+
+  /// Set up measurements.
+  double kbin[params.num_kbin];
+  BinScheme::set_kbin(params, kbin);
+
+  double rbin[params.num_rbin];
+  BinScheme::set_rbin(params, rbin);
+
+  bool save = true;
+
   /// Compute line of sight.
+  if (currTask == 0) {
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "[STAT] (+%s) Computing lines of sight...\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+    );
+  }
+
   LineOfSight* los_data = new LineOfSight[particles_data.ntotal];
   for (int pid = 0; pid < particles_data.ntotal; pid++) {
     double los_mag = sqrt(
@@ -156,6 +182,14 @@ int main(int argc, char* argv[]) {
     los_rand[pid].pos[2] = particles_rand[pid].pos[2] / los_mag;
   }
 
+  if (currTask == 0) {
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "[STAT] (+%s) ... computed lines of sight.\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+    );
+  }
+
   /// Offset particle positions for measurements.
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
     ParticleCatalogue::boxify_catalogues_for_fft(
@@ -172,10 +206,20 @@ int main(int argc, char* argv[]) {
     alpha = particles_data.wtotal / particles_rand.wtotal;
   }
 
+  if (currTask == 0) {
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "[INFO] (+%s) Alpha contrast: %.6e.\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str(), alpha
+    );
+  }
+
   /// Compute inverse-effective-volume normalisation for clustering statistics.
   double norm;
   if (params.norm_convention == "mesh") {
-    norm = calc_powspec_normalisation_from_mesh(particles_rand, params);
+    /// TODO: Check expression for all cases.
+    norm = calc_powspec_normalisation_from_mesh(particles_rand, params)
+      / particles_data.wtotal / particles_data.wtotal;
   } else if (params.norm_convention == "particle") {
     norm = calc_powspec_normalisation_from_particles(particles_rand, alpha);
   }
@@ -183,27 +227,18 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) ... catalogues read and processed.\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      "[INFO] (+%s) Normalisation constant: %.6e.\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str(), norm
     );
   }
 
-  /* * Measurements ******************************************************** */
-
-  if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
-    printf(
-      "[STAT] (+%s) Making measurements...\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
-    );
-  }
-
+  /// Perform clustering-statistics algorithms.
   if (params.measurement_type == "powspec") {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       compute_powspec(
         particles_data, particles_rand, los_data, los_rand,
         params, kbin,
-        alpha, norm / particles_data.wtotal / particles_data.wtotal,
+        alpha, norm,
         save
       );
     }
