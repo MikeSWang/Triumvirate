@@ -8,6 +8,7 @@
 #define TRIUMVIRATE_INCLUDE_TWOPT_HPP_INCLUDED_
 
 #include "common.hpp"
+#include "parameters.hpp"
 #include "tools.hpp"
 #include "particles.hpp"
 #include "field.hpp"
@@ -17,10 +18,11 @@
  *
  */
 struct PowspecMeasurements {
-  double* kbin;  ///< central wavenumber in bins
-  double* keff;  ///< effective wavenumber in bins
-  std::complex<double>* pk_raw;  ///< power spectrum raw measurements
-  std::complex<double>* pk_shot;  ///< power spectrum shot noise
+  std::vector<double> kbin;  ///< central wavenumber in bins
+  std::vector<double> keff;  ///< effective wavenumber in bins
+  std::vector<int> nmode;  ///< number of contributing wavevector modes
+  std::vector< std::complex<double> > pk_raw;  ///< power spectrum raw measurements
+  std::vector< std::complex<double> > pk_shot;  ///< power spectrum shot noise
 };
 
 /**
@@ -30,6 +32,7 @@ struct PowspecMeasurements {
 struct CorrfuncMeasurements {
   double* rbin;  ///< central separation in bins
   double* reff;  ///< effective separation in bins
+  int* npair;  ///< number of contributing separation pairs
   std::complex<double>* xi;  /**< two-point correlation function
                                   measurements */
 };
@@ -41,6 +44,7 @@ struct CorrfuncMeasurements {
 struct PowspecWindowMeasurements {
   double* kbin;  ///< central wavenumber in bins
   double* keff;  ///< effective wavenumber in bins
+  int* nmode;  ///< number of contributing wavevector modes
   std::complex<double>* pk;  ///< power spectrum raw measurements
 };
 
@@ -51,9 +55,46 @@ struct PowspecWindowMeasurements {
 struct CorrfuncWindowMeasurements {
   double* rbin;  ///< central separation in bins
   double* reff;  ///< effective separation in bins
+  int* npair;  ///< number of contributing separation pairs
   std::complex<double>* xi;  /**< two-point correlation function
                                   window measurements */
 };
+
+/**
+ * Calculate mesh-based power spectrum normalisation.
+ *
+ * @param catalogue Particle catalogue.
+ * @param params Parameter set.
+ * @param alpha Alpha ratio.
+ * @return norm Power spectrum normalisation constant.
+ */
+double calc_powspec_normalisation_from_mesh(
+  ParticleCatalogue& catalogue, ParameterSet& params, double alpha=1.
+) {
+  PseudoDensityField<ParticleCatalogue> catalogue_mesh(params);
+
+  double norm = catalogue_mesh._calc_inv_volume_normalisation(catalogue)
+    / alpha / alpha;
+
+  catalogue_mesh.finalise_density_field();
+
+  return norm;
+}
+
+/**
+ * Calculate particle-based power spectrum normalisation.
+ *
+ * @param catalogue Particle catalogue.
+ * @param alpha Alpha ratio.
+ * @return norm Power spectrum normalisation constant.
+ */
+double calc_powspec_normalisation_from_particles(
+  ParticleCatalogue& catalogue, double alpha
+) {
+  double norm = catalogue._calc_powspec_normalisation(alpha);
+
+  return norm;
+}
 
 /**
  * Compute power spectrum from paired catalogues and
@@ -95,16 +136,16 @@ PowspecMeasurements compute_powspec(
   int ell1 = params.ELL;
 
   /// Set up output.
+  int* nmode_save = new int[params.num_kbin];
   double* k_save = new double[params.num_kbin];
   std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
   std::complex<double>* sn_save = new std::complex<double>[params.num_kbin];
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    nmode_save[ibin] = 0;
     k_save[ibin] = 0.;
     pk_save[ibin] = 0.;
     sn_save[ibin] = 0.;
   }
-
-  PowspecMeasurements powspec_out;
 
   /* * Measurement ********************************************************* */
 
@@ -147,6 +188,7 @@ PowspecMeasurements compute_powspec(
 
       if (M_ == 0 && m1 == 0) {
         for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+          nmode_save[ibin] = stats2pt.nmode[ibin];
           k_save[ibin] = stats2pt.k[ibin];
         }
       }
@@ -162,13 +204,26 @@ PowspecMeasurements compute_powspec(
     }
   }
 
+  /// Compute shot noise if the approach is particle-based.
+  std::complex<double> sn_particle =
+    particles_data._calc_powspec_shotnoise()
+    + particles_rand._calc_powspec_shotnoise(alpha);
+
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  powspec_out.kbin = kbin;
-  powspec_out.keff = k_save;
-  powspec_out.pk_raw = pk_save;
-  powspec_out.pk_shot = sn_save;
+  PowspecMeasurements powspec_out;
+  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    powspec_out.kbin.push_back(kbin[ibin]);
+    powspec_out.keff.push_back(k_save[ibin]);
+    powspec_out.nmode.push_back(nmode_save[ibin]);
+    powspec_out.pk_raw.push_back(norm * pk_save[ibin]);
+    if (params.shotnoise_convention == "mesh") {
+      powspec_out.pk_shot.push_back(norm * sn_save[ibin]);
+    } else if (params.shotnoise_convention == "particle") {
+      powspec_out.pk_shot.push_back(norm * sn_particle);
+    }
+  }
 
   /// Save (optionally) to output file.
   if (save) {
@@ -184,10 +239,11 @@ PowspecMeasurements compute_powspec(
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
         save_fileptr,
-        "%.6f \t %.6f \t %.7e \t %.7e \t %.7e \t %.7e\n",
-        kbin[ibin], k_save[ibin],
-        norm * pk_save[ibin].real(), norm * pk_save[ibin].imag(),
-        norm * sn_save[ibin].real(), norm * sn_save[ibin].imag()
+        "%.6f \t %.6f \t %d \t %.7e \t %.7e \t %.7e \t %.7e\n",
+        powspec_out.kbin[ibin], powspec_out.keff[ibin],
+        powspec_out.nmode[ibin],
+        powspec_out.pk_raw[ibin].real(), powspec_out.pk_raw[ibin].imag(),
+        powspec_out.pk_shot[ibin].real(), powspec_out.pk_shot[ibin].imag()
       );
     }
     fclose(save_fileptr);
@@ -602,10 +658,12 @@ PowspecMeasurements compute_powspec_in_box(
 
   /* * Set-up ************************************************************** */
 
+  int* nmode_save = new int[params.num_kbin];
   double* k_save = new double[params.num_kbin];
   std::complex<double>* sn_save = new std::complex<double>[params.num_kbin];
   std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    nmode_save[ibin] = 0;
     k_save[ibin] = 0.;
     sn_save[ibin] = 0.;
     pk_save[ibin] = 0.;
@@ -633,18 +691,29 @@ PowspecMeasurements compute_powspec_in_box(
   );
 
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    nmode_save[ibin] = stats2pt.nmode[ibin];
     k_save[ibin] = stats2pt.k[ibin];
     sn_save[ibin] += double(2*params.ELL + 1) * stats2pt.sn[ibin];
     pk_save[ibin] += double(2*params.ELL + 1) * stats2pt.pk[ibin];
   }
 
+  /// Compute shot noise if the approach is particle-based.
+  std::complex<double> sn_particle = particles_data._calc_powspec_shotnoise();
+
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  powspec_out.kbin = kbin;
-  powspec_out.keff = k_save;
-  powspec_out.pk_raw = pk_save;
-  powspec_out.pk_shot = sn_save;
+  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    powspec_out.kbin[ibin] = kbin[ibin];
+    powspec_out.keff[ibin] = k_save[ibin];
+    powspec_out.nmode[ibin] = nmode_save[ibin];
+    powspec_out.pk_raw[ibin] = norm * pk_save[ibin];
+    if (params.shotnoise_convention == "mesh") {
+      powspec_out.pk_shot[ibin] = norm * sn_save[ibin];
+    } else if (params.shotnoise_convention == "particle") {
+      powspec_out.pk_shot[ibin] = norm * sn_particle;
+    }
+  }
 
   /// Save (optionally) to output file.
   if (save) {
