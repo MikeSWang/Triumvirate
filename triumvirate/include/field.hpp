@@ -832,9 +832,7 @@ class PseudoDensityField {
 
     /// Eliminate dependence on total particle number.
     /// CAVEAT: `double` needed to prevent int overflow.
-    double inv_vol_norm =
-      double(particles_rand.ntotal) * double(particles_rand.ntotal)
-      / vol_eff;
+    double inv_vol_norm = 1. / vol_eff;
 
     return inv_vol_norm;
   }
