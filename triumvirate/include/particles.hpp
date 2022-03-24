@@ -126,6 +126,8 @@ class ParticleCatalogue {
     std::string& particles_file,
     const std::string& names
   ) {
+    this->source = particles_file;
+
     /// Initialise the counter for the number of lines/particles.
     int num_lines = 0;
 
@@ -150,6 +152,17 @@ class ParticleCatalogue {
       }
     }
 
+    if (name_indices[3] == -1) {
+      if (currTask == 0) {
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[INFO] (+%s) Catalogue 'nz' field is unavailable (source=%s).\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          this->source.c_str()
+        );
+      }
+    }
+
     /// Check and size up data from the file.
     std::ifstream fin;
 
@@ -161,7 +174,7 @@ class ParticleCatalogue {
         printf(
           "[ERRO] (+%s) Failed to open file '%s'.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
-          particles_file.c_str()
+          this->source.c_str()
         );
       }
       fin.close();
@@ -247,6 +260,16 @@ class ParticleCatalogue {
     /// Calculate extreme particle positions.
     this->_calc_pos_min_and_max();
 
+    if (currTask == 0) {
+      clockElapsed = double(clock() - clockStart);
+      printf(
+        "[INFO] (+%s) Catalogue loaded: %d particles with "
+        "total systematic weights %.2f (source=%s).\n",
+        calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+        this->ntotal, this->wtotal, this->source.c_str()
+      );
+    }
+
     return 0;
   }
 
@@ -265,6 +288,8 @@ class ParticleCatalogue {
     std::vector<double> x, std::vector<double> y, std::vector<double> z,
     std::vector<double> nz, std::vector<double> ws, std::vector<double> wc
   ) {
+    this->source = "runtime";
+
     /// Check array sizes.
     if (!(
       x.size() == y.size() && y.size() == z.size() && z.size() == nz.size()
@@ -293,6 +318,16 @@ class ParticleCatalogue {
 
     /// Calculate extreme particle positions.
     this->_calc_pos_min_and_max();
+
+    if (currTask == 0) {
+      clockElapsed = double(clock() - clockStart);
+      printf(
+        "[INFO] (+%s) Catalogue constructed: %d particles with "
+        "total systematic weights %.2f (source=%s).\n",
+        calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+        this->ntotal, this->wtotal, this->source.c_str()
+      );
+    }
 
     return 0;
   }
@@ -560,6 +595,9 @@ class ParticleCatalogue {
 
     return shotnoise;
   }
+
+ private:
+  std::string source;
 };
 
 #endif  // TRIUMVIRATE_INCLUDE_PARTICLES_HPP_INCLUDED_

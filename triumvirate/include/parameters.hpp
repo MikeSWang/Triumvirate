@@ -587,6 +587,14 @@ class ParameterSet {
       return -1;
     }
 
+    if (currTask == 0) {
+      clockElapsed = double(clock() - clockStart);
+      printf(
+        "[STAT] (+%s) Parameters validated.\n",
+        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      );
+    }
+
     return 0;
   }
 
