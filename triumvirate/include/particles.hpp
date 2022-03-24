@@ -138,7 +138,7 @@ class ParticleCatalogue {
     }
 
     /// CAVEAT: Hard-wired ordered field names.
-    std::vector<std::string> names_ordered = {"x", "y", "z", "ns", "ws", "wc"};
+    std::vector<std::string> names_ordered = {"x", "y", "z", "nz", "ws", "wc"};
     std::vector<int> name_indices(names_ordered.size(), -1);
     for (int idx_name = 0; idx_name < names_ordered.size(); idx_name++) {
       ptrdiff_t col_idx = std::distance(
