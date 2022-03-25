@@ -21,7 +21,8 @@ struct PowspecMeasurements {
   std::vector<double> kbin;  ///< central wavenumber in bins
   std::vector<double> keff;  ///< effective wavenumber in bins
   std::vector<int> nmode;  ///< number of contributing wavevector modes
-  std::vector< std::complex<double> > pk_raw;  ///< power spectrum raw measurements
+  std::vector< std::complex<double> > pk_raw;  /**< power spectrum
+                                                    raw measurements */
   std::vector< std::complex<double> > pk_shot;  ///< power spectrum shot noise
 };
 
@@ -30,11 +31,11 @@ struct PowspecMeasurements {
  *
  */
 struct CorrfuncMeasurements {
-  double* rbin;  ///< central separation in bins
-  double* reff;  ///< effective separation in bins
-  int* npair;  ///< number of contributing separation pairs
-  std::complex<double>* xi;  /**< two-point correlation function
-                                  measurements */
+  std::vector<double> rbin;  ///< central separation in bins
+  std::vector<double> reff;  ///< effective separation in bins
+  std::vector<int> npair;  ///< number of contributing separation pairs
+  std::vector< std::complex<double> > xi;  /**< two-point correlation function
+                                                measurements */
 };
 
 /**
@@ -42,10 +43,11 @@ struct CorrfuncMeasurements {
  *
  */
 struct PowspecWindowMeasurements {
-  double* kbin;  ///< central wavenumber in bins
-  double* keff;  ///< effective wavenumber in bins
-  int* nmode;  ///< number of contributing wavevector modes
-  std::complex<double>* pk;  ///< power spectrum raw measurements
+  std::vector<double> kbin;  ///< central wavenumber in bins
+  std::vector<double> keff;  ///< effective wavenumber in bins
+  std::vector<int> nmode;  ///< number of contributing wavevector modes
+  std::vector< std::complex<double> > pk;  /**< power spectrum
+                                                window measurements */
 };
 
 /**
@@ -53,11 +55,11 @@ struct PowspecWindowMeasurements {
  *
  */
 struct CorrfuncWindowMeasurements {
-  double* rbin;  ///< central separation in bins
-  double* reff;  ///< effective separation in bins
-  int* npair;  ///< number of contributing separation pairs
-  std::complex<double>* xi;  /**< two-point correlation function
-                                  window measurements */
+  std::vector<double> rbin;  ///< central separation in bins
+  std::vector<double> reff;  ///< effective separation in bins
+  std::vector<int> npair;  ///< number of contributing separation pairs
+  std::vector< std::complex<double> > xi;  /**< two-point correlation function
+                                                window measurements */
 };
 
 /**
@@ -239,7 +241,7 @@ PowspecMeasurements compute_powspec(
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
         save_fileptr,
-        "%.6f \t %.6f \t %d \t %.7e \t %.7e \t %.7e \t %.7e\n",
+        "%.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         powspec_out.kbin[ibin], powspec_out.keff[ibin],
         powspec_out.nmode[ibin],
         powspec_out.pk_raw[ibin].real(), powspec_out.pk_raw[ibin].imag(),
@@ -249,7 +251,7 @@ PowspecMeasurements compute_powspec(
     fclose(save_fileptr);
   }
 
-  delete[] k_save; delete[] pk_save; delete[] sn_save;
+  delete[] nmode_save; delete[] k_save; delete[] pk_save; delete[] sn_save;
 
   return powspec_out;
 }
@@ -295,14 +297,14 @@ CorrfuncMeasurements compute_corrfunc(
   int ell1 = params.ELL;
 
   /// Set up output.
+  int* npair_save = new int[params.num_rbin];
   double* r_save = new double[params.num_rbin];
   std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+    npair_save[ibin] = 0;
     r_save[ibin] = 0.;
     xi_save[ibin] = 0.;
   }
-
-  CorrfuncMeasurements corrfunc_out;
 
   /* * Measurement ********************************************************* */
 
@@ -344,6 +346,7 @@ CorrfuncMeasurements compute_corrfunc(
 
       if (M_ == 0 && m1 == 0) {
         for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+          npair_save[ibin] = stats2pt.npair[ibin];
           r_save[ibin] = stats2pt.r[ibin];
         }
       }
@@ -363,9 +366,13 @@ CorrfuncMeasurements compute_corrfunc(
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  corrfunc_out.rbin = rbin;
-  corrfunc_out.reff = r_save;
-  corrfunc_out.xi = xi_save;
+  CorrfuncMeasurements corrfunc_out;
+  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+    corrfunc_out.rbin.push_back(rbin[ibin]);
+    corrfunc_out.reff.push_back(r_save[ibin]);
+    corrfunc_out.npair.push_back(npair_save[ibin]);
+    corrfunc_out.xi.push_back(norm * xi_save[ibin]);
+  }
 
   /// Save (optionally) to output file.
   if (save) {
@@ -380,18 +387,21 @@ CorrfuncMeasurements compute_corrfunc(
     FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       fprintf(
-        save_fileptr, "%.2f \t %.2f \t %.7e\n",
-        rbin[ibin], r_save[ibin], norm * xi_save[ibin].real()
+        save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
+        corrfunc_out.rbin[ibin], corrfunc_out.reff[ibin],
+        corrfunc_out.npair[ibin],
+        corrfunc_out.xi[ibin].real(), corrfunc_out.xi[ibin].imag()
       );
     }
     fclose(save_fileptr);
   }
 
-  delete[] r_save; delete[] xi_save;
+  delete[] npair_save; delete[] r_save; delete[] xi_save;
 
   return corrfunc_out;
 }
 
+#ifdef _USE_DISABLED_CODE_
 /**
  * Compute power spectrum window from a random catalogue and
  * optionally save the results.
@@ -426,20 +436,16 @@ PowspecWindowMeasurements compute_powspec_window(
   /* * Set-up ************************************************************** */
 
   /// Set up output.
+  int* nmode_save = new int[params.num_kbin];
   double* k_save = new double[params.num_kbin];
   std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    nmode_save[ibin] = 0;
     k_save[ibin] = 0.;
     pk_save[ibin] = 0.;
   }
 
-  PowspecWindowMeasurements powwin_out;
-
   /* * Measurement ********************************************************* */
-
-  /// Normalise the normalisation.
-  norm /= alpha * alpha;
-  norm /= params.volume;  // QUEST: volume normalisation essential?
 
   /// Compute power spectrum window.
   PseudoDensityField<ParticleCatalogue> dn_00(params);
@@ -456,23 +462,31 @@ PowspecWindowMeasurements compute_powspec_window(
   );
 
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    nmode_save[ibin] = stats2pt.nmode[ibin];
     k_save[ibin] = stats2pt.k[ibin];
     pk_save[ibin] += stats2pt.pk[ibin];
   }
 
+  /// Normalise the normalisation.
+  norm /= params.volume;  // QUEST: volume normalisation essential?
+
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  powwin_out.kbin = kbin;
-  powwin_out.keff = k_save;
-  powwin_out.pk = pk_save;
+  PowspecWindowMeasurements powwin_out;
+  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    powwin_out.kbin.push_back(kbin[ibin]);
+    powwin_out.keff.push_back(k_save[ibin]);
+    powwin_out.nmode.push_back(nmode_save[ibin]);
+    powwin_out.pk.push_back(norm * pk_save[ibin]);
+  }
 
   /// Save (optionally) to output file.
   if (save) {
     /// Set output path.
     char buf[1024];
     sprintf(
-      buf, "%s/pk%d_window%s",
+      buf, "%s/pk%d_win%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
 
@@ -480,18 +494,20 @@ PowspecWindowMeasurements compute_powspec_window(
     FILE* save_fileptr = fopen(buf, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
-        save_fileptr, "%.6f \t %.6f \t %.7e \t %.7e\n",
-        kbin[ibin], k_save[ibin],
-        norm * pk_save[ibin].real(), norm * pk_save[ibin].imag()
+        save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
+        powwin_out.kbin[ibin], powwin_out.keff[ibin],
+        powwin_out.nmode[ibin],
+        powwin_out.pk[ibin].real(), powwin_out.pk[ibin].imag()
       );
     }
     fclose(save_fileptr);
   }
 
-  delete[] k_save; delete[] pk_save;
+  delete[] nmode_save; delete[] k_save; delete[] pk_save;
 
   return powwin_out;
 }
+#endif
 
 /**
  * Compute two-point correlation function window from a random catalogue
@@ -532,20 +548,16 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
   int ell1 = params.ELL;
 
   /// Set up output.
+  int* npair_save = new int[params.num_rbin];
   double* r_save = new double[params.num_rbin];
   std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+    npair_save[ibin] = 0;
     r_save[ibin] = 0.;
     xi_save[ibin] = 0.;
   }
 
-  CorrfuncWindowMeasurements corrfwin_out;
-
   /* * Measurement ********************************************************* */
-
-  /// Normalise and then save the output.
-  norm /= particles_rand.wtotal / particles_rand.wtotal;  // QUEST
-  norm /= alpha * alpha;
 
   /// Compute 2PCF window.
   PseudoDensityField<ParticleCatalogue> dn_00(params);
@@ -583,6 +595,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
 
       if (M_ == 0 && m1 == 0) {
         for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+          npair_save[ibin] = stats2pt.npair[ibin];
           r_save[ibin] = stats2pt.r[ibin];
         }
       }
@@ -599,19 +612,26 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     }
   }
 
+  /// Normalise and then save the output.
+  norm /= particles_rand.wtotal / particles_rand.wtotal;  // QUEST
+
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  corrfwin_out.rbin = rbin;
-  corrfwin_out.reff = r_save;
-  corrfwin_out.xi = xi_save;
+  CorrfuncWindowMeasurements corrfwin_out;
+  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+    corrfwin_out.rbin.push_back(rbin[ibin]);
+    corrfwin_out.reff.push_back(r_save[ibin]);
+    corrfwin_out.npair.push_back(npair_save[ibin]);
+    corrfwin_out.xi.push_back(norm * xi_save[ibin]);
+  }
 
   /// Save (optionally) to output file.
   if (save) {
     /// Set output path.
     char buf[1024];
     sprintf(
-      buf, "%s/xi%d_window%s",
+      buf, "%s/xi%d_win%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
 
@@ -619,14 +639,16 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     FILE* save_fileptr = fopen(buf, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       fprintf(
-        save_fileptr, "%.2f \t %.2f \t %.7e\n",
-        rbin[ibin], r_save[ibin], norm * xi_save[ibin].real()
+        save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
+        corrfwin_out.rbin[ibin], corrfwin_out.reff[ibin],
+        corrfwin_out.npair[ibin],
+        corrfwin_out.xi[ibin].real(), corrfwin_out.xi[ibin].imag()
       );
     }
     fclose(save_fileptr);
   }
 
-  delete[] r_save; delete[] xi_save;
+  delete[] npair_save; delete[] r_save; delete[] xi_save;
 
   return corrfwin_out;
 }
@@ -660,23 +682,16 @@ PowspecMeasurements compute_powspec_in_box(
 
   int* nmode_save = new int[params.num_kbin];
   double* k_save = new double[params.num_kbin];
-  std::complex<double>* sn_save = new std::complex<double>[params.num_kbin];
   std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
+  std::complex<double>* sn_save = new std::complex<double>[params.num_kbin];
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
     nmode_save[ibin] = 0;
     k_save[ibin] = 0.;
-    sn_save[ibin] = 0.;
     pk_save[ibin] = 0.;
+    sn_save[ibin] = 0.;
   }
 
-  PowspecMeasurements powspec_out;
-
   /* * Measurement ********************************************************* */
-
-  /// Calculate normalisation.
-  /// QUEST: Invert?
-  double norm = params.volume
-    / double(particles_data.ntotal) / double(particles_data.ntotal);
 
   /// Compute power spectrum.
   PseudoDensityField<ParticleCatalogue> dn(params);
@@ -693,16 +708,22 @@ PowspecMeasurements compute_powspec_in_box(
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
     nmode_save[ibin] = stats2pt.nmode[ibin];
     k_save[ibin] = stats2pt.k[ibin];
-    sn_save[ibin] += double(2*params.ELL + 1) * stats2pt.sn[ibin];
     pk_save[ibin] += double(2*params.ELL + 1) * stats2pt.pk[ibin];
+    sn_save[ibin] += double(2*params.ELL + 1) * stats2pt.sn[ibin];
   }
 
   /// Compute shot noise if the approach is particle-based.
   std::complex<double> sn_particle = particles_data._calc_powspec_shotnoise();
 
+  /// Normalise the normalisation.
+  /// QUEST: Invert?
+  double norm = params.volume
+    / double(particles_data.ntotal) / double(particles_data.ntotal);
+
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
+  PowspecMeasurements powspec_out;
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
     powspec_out.kbin[ibin] = kbin[ibin];
     powspec_out.keff[ibin] = k_save[ibin];
@@ -729,16 +750,17 @@ PowspecMeasurements compute_powspec_in_box(
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
         save_fileptr,
-        "%.6f \t %.6f \t %.7e \t %.7e \t %.7e \t %.7e\n",
-        kbin[ibin], k_save[ibin],
-        norm * pk_save[ibin].real(), norm * pk_save[ibin].imag(),
-        norm * sn_save[ibin].real(), norm * sn_save[ibin].imag()
+        "%.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
+        powspec_out.kbin[ibin], powspec_out.keff[ibin],
+        powspec_out.nmode[ibin],
+        powspec_out.pk_raw[ibin].real(), powspec_out.pk_raw[ibin].imag(),
+        powspec_out.pk_shot[ibin].real(), powspec_out.pk_shot[ibin].imag()
       );
     }
     fclose(save_fileptr);
   }
 
-  delete[] k_save; delete[] pk_save; delete[] sn_save;
+  delete[] nmode_save; delete[] k_save; delete[] pk_save; delete[] sn_save;
 
   return powspec_out;
 }
@@ -772,9 +794,11 @@ CorrfuncMeasurements compute_corrfunc_in_box(
 
   /* * Set-up ************************************************************** */
 
+  int* npair_save = new int[params.num_rbin];
   double* r_save = new double[params.num_kbin];
   std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+    npair_save[ibin] = 0;
     r_save[ibin] = 0.;
     xi_save[ibin] = 0.;
   }
@@ -782,11 +806,6 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   CorrfuncMeasurements corrfunc_out;
 
   /* * Measurement ********************************************************* */
-
-  /// Calculate normalisation.
-  /// QUEST: Invert?
-  double norm = params.volume
-    / double(particles_data.ntotal) / double(particles_data.ntotal);
 
   /// Compute 2PCF.
   PseudoDensityField<ParticleCatalogue> dn(params);
@@ -801,6 +820,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   );
 
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+    npair_save[ibin] = stats2pt.npair[ibin];
     r_save[ibin] = stats2pt.r[ibin];
     xi_save[ibin] += double(2*params.ELL + 1) * stats2pt.xi[ibin];
   }
@@ -813,12 +833,21 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     );
   }
 
+  /// Normalise normalisation.
+  /// QUEST: Invert?
+  double norm = params.volume
+    / double(particles_data.ntotal) / double(particles_data.ntotal);
+
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  corrfunc_out.rbin = rbin;
-  corrfunc_out.reff = r_save;
-  corrfunc_out.xi = xi_save;
+  CorrfuncMeasurements corrfunc_out;
+  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+    corrfunc_out.rbin.push_back(rbin[ibin]);
+    corrfunc_out.reff.push_back(r_save[ibin]);
+    corrfunc_out.npair.push_back(npair_save[ibin]);
+    corrfunc_out.xi.push_back(norm * xi_save[ibin]);
+  }
 
   /// Save (optionally) to output file.
   if (save) {
@@ -833,15 +862,16 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     FILE* save_fileptr = fopen(buf, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       fprintf(
-        save_fileptr, "%.2f \t %.2f \t %.7e\n",
-        rbin[ibin], r_save[ibin],
-        norm * xi_save[ibin].real()
+        save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
+        corrfunc_out.rbin[ibin], corrfunc_out.reff[ibin],
+        corrfunc_out.npair[ibin],
+        corrfunc_out.xi[ibin].real(), corrfunc_out.xi[ibin].imag()
       );
     }
     fclose(save_fileptr);
   }
 
-  delete[] r_save; delete[] xi_save;
+  delete[] npair_save; delete[] r_save; delete[] xi_save;
 
   return corrfunc_out;
 }
