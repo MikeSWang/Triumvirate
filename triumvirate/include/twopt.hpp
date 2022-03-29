@@ -803,8 +803,6 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     xi_save[ibin] = 0.;
   }
 
-  CorrfuncMeasurements corrfunc_out;
-
   /* * Measurement ********************************************************* */
 
   /// Compute 2PCF.
