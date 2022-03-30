@@ -230,7 +230,7 @@ class ParticleCatalogue {
       if (name_indices[3] != -1) {
         nz = row[name_indices[3]];
       } else {
-        nz = 0.;  // default value
+        nz = 5.e-4;  // default value
       }
 
       if (name_indices[4] != -1) {
@@ -406,7 +406,7 @@ class ParticleCatalogue {
         this->pos_min[0], this->pos_max[0],
         this->pos_min[1], this->pos_max[1],
         this->pos_min[2], this->pos_max[2],
-        this->source
+        this->source.c_str()
       );
     }
   }
