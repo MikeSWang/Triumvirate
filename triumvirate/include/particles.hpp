@@ -156,7 +156,8 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[INFO] (+%s) Catalogue 'nz' field is unavailable (source=%s).\n",
+          "[INFO] (+%s) Catalogue 'nz' field is unavailable, "
+          "which may raise errors in some computations (source=%s).\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->source.c_str()
         );
@@ -393,6 +394,18 @@ class ParticleCatalogue {
     for (int axis = 0; axis < 3; axis++) {
       this->pos_min[axis] = min[axis];
       this->pos_max[axis] = max[axis];
+    }
+
+    if (currTask == 0) {
+      clockElapsed = double(clock() - clockStart);
+      printf(
+        "[INFO] (+%s) Extents of particle coordinates: "
+        "{'x': (%.4f, %.4f), 'y': (%.4f, %.4f), 'z': (%.4f, %.4f)}.\n",
+        calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+        this->pos_min[0], this->pos_max[0],
+        this->pos_min[1], this->pos_max[1],
+        this->pos_min[2], this->pos_max[2]
+      );
     }
   }
 
