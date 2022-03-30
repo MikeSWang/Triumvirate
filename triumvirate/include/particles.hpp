@@ -265,7 +265,7 @@ class ParticleCatalogue {
       clockElapsed = double(clock() - clockStart);
       printf(
         "[INFO] (+%s) Catalogue loaded: %d particles with "
-        "total systematic weights %.2f (source=%s).\n",
+        "total systematic weights %.3f (source=%s).\n",
         calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
         this->ntotal, this->wtotal, this->source.c_str()
       );
@@ -324,7 +324,7 @@ class ParticleCatalogue {
       clockElapsed = double(clock() - clockStart);
       printf(
         "[INFO] (+%s) Catalogue constructed: %d particles with "
-        "total systematic weights %.2f (source=%s).\n",
+        "total systematic weights %.3f (source=%s).\n",
         calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
         this->ntotal, this->wtotal, this->source.c_str()
       );
@@ -400,7 +400,7 @@ class ParticleCatalogue {
       clockElapsed = double(clock() - clockStart);
       printf(
         "[INFO] (+%s) Extents of particle coordinates: "
-        "{'x': (%.4f, %.4f), 'y': (%.4f, %.4f), 'z': (%.4f, %.4f)} "
+        "{'x': (%.3f, %.3f), 'y': (%.3f, %.3f), 'z': (%.3f, %.3f)} "
         "(source=%s).\n",
         calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
         this->pos_min[0], this->pos_max[0],

@@ -402,9 +402,9 @@ class ParameterSet {
       this->shotnoise_convention.c_str()
     );
 
-    fprintf(used_param_fileptr, "boxsize_x = %.2f\n", this->boxsize[0]);
-    fprintf(used_param_fileptr, "boxsize_y = %.2f\n", this->boxsize[1]);
-    fprintf(used_param_fileptr, "boxsize_z = %.2f\n", this->boxsize[2]);
+    fprintf(used_param_fileptr, "boxsize_x = %.3f\n", this->boxsize[0]);
+    fprintf(used_param_fileptr, "boxsize_y = %.3f\n", this->boxsize[1]);
+    fprintf(used_param_fileptr, "boxsize_z = %.3f\n", this->boxsize[2]);
 
     fprintf(used_param_fileptr, "ngrid_x = %d\n", this->ngrid[0]);
     fprintf(used_param_fileptr, "ngrid_y = %d\n", this->ngrid[1]);
@@ -420,13 +420,13 @@ class ParameterSet {
     fprintf(used_param_fileptr, "binning = %s\n", this->binning.c_str());
     fprintf(used_param_fileptr, "form = %s\n", this->form.c_str());
 
-    fprintf(used_param_fileptr, "kmin = %.4f\n", this->kmin);
-    fprintf(used_param_fileptr, "kmax = %.4f\n", this->kmax);
+    fprintf(used_param_fileptr, "kmin = %.6f\n", this->kmin);
+    fprintf(used_param_fileptr, "kmax = %.6f\n", this->kmax);
     fprintf(used_param_fileptr, "num_kbin = %d\n", this->num_kbin);
     fprintf(used_param_fileptr, "ith_kbin = %d\n", this->ith_kbin);
 
-    fprintf(used_param_fileptr, "rmin = %.2f\n", this->rmin);
-    fprintf(used_param_fileptr, "rmax = %.2f\n", this->rmax);
+    fprintf(used_param_fileptr, "rmin = %.3f\n", this->rmin);
+    fprintf(used_param_fileptr, "rmax = %.3f\n", this->rmax);
     fprintf(used_param_fileptr, "num_rbin = %d\n", this->num_rbin);
     fprintf(used_param_fileptr, "ith_rbin = %d\n", this->ith_rbin);
 

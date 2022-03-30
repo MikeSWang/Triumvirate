@@ -87,7 +87,7 @@ class ParticleCatalogue:
         if self._logger:
             self._logger.info(
                 "Catalogue initialised: %d particles with "
-                "total systematic weights %.2f (%s).",
+                "total systematic weights %.3f (%s).",
                 self.ntotal, self.wtotal, self
             )
 
@@ -165,7 +165,7 @@ class ParticleCatalogue:
         if self._logger:
             self._logger.info(
                 "Catalogue loaded: %d particles with "
-                "total systematic weights %.2f (%s).",
+                "total systematic weights %.3f (%s).",
                 self.ntotal, self.wtotal, self
             )
 
