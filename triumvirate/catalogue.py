@@ -235,7 +235,7 @@ class ParticleCatalogue:
             Box size in each dimension.
         ngrid : (3,) array of int
             Grid number in each dimension.
-        ngrid_pad : float, optional
+        ngrid_pad : (sequence of) float, optional
             Grid padding factor (default is 3.).
         catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, optional
             Reference catalogue used for box alignment, to be put in the
@@ -260,7 +260,7 @@ class ParticleCatalogue:
 
         gridsize = np.divide(boxsize, ngrid)
 
-        dpos = origin - ngrid_pad * gridsize
+        dpos = origin - np.product(ngrid_pad, gridsize)
 
         self.offset_coords(dpos)
         if catalogue_ref is not None:
