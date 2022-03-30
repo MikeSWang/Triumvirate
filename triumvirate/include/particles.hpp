@@ -400,11 +400,13 @@ class ParticleCatalogue {
       clockElapsed = double(clock() - clockStart);
       printf(
         "[INFO] (+%s) Extents of particle coordinates: "
-        "{'x': (%.4f, %.4f), 'y': (%.4f, %.4f), 'z': (%.4f, %.4f)}.\n",
+        "{'x': (%.4f, %.4f), 'y': (%.4f, %.4f), 'z': (%.4f, %.4f)} "
+        "(source=%s).\n",
         calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
         this->pos_min[0], this->pos_max[0],
         this->pos_min[1], this->pos_max[1],
-        this->pos_min[2], this->pos_max[2]
+        this->pos_min[2], this->pos_max[2],
+        this->source
       );
     }
   }
