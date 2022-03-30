@@ -156,7 +156,7 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[INFO] (+%s) Catalogue 'nz' field is unavailable, "
+          "[WARN] (+%s) Catalogue 'nz' field is unavailable, "
           "which may raise errors in some computations (source=%s).\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->source.c_str()
