@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) ... program initialised.\n",
+      "[STAT] (+%s) ... initialised program.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
   }
@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) ... catalogues read.\n",
+      "[STAT] (+%s) ... read catalogues.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
   }
@@ -298,7 +298,7 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) ... measurements made.\n",
+      "[STAT] (+%s) ... made measurements.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
   }

@@ -83,23 +83,12 @@ cdef class ParameterSet:
             if self._logger:
                 self._logger.info("Printed out parameters to %s.", filepath)
         else:
-            if self._logger:
-                try:
-                    self._logger.info("", cpp_state='start')
-                except TypeError:
-                    self._logger.info("Entering C++ run...")
-
             if self.thisptr.printout() != 0:
                 raise RuntimeError(
                     "Failed to print out extracted parameters to file."
                 )
 
             if self._logger:
-                try:
-                    self._logger.info("", cpp_state='end')
-                except TypeError:
-                    self._logger.info("... exited C++ run.")
-
                 self._logger.info(
                     "Printed out parameters to measurement directory."
                 )
@@ -173,19 +162,15 @@ cdef class ParameterSet:
         """Validate extracted parameters.
 
         """
-        if self._logger:
-            self._logger.info("Validating parameters...")
-            try:
-                self._logger.info("", cpp_state='start')
-            except TypeError:
-                self._logger.info("Entering C++ run...")
+        try:
+            self._logger.info("Validating parameters...", cpp_state='start')
+        except (AttributeError, TypeError):
+            pass
 
         if self.thisptr.validate() != 0:
             raise InvalidParameter("Invalid measurement parameters.")
 
-        if self._logger:
-            try:
-                self._logger.info("", cpp_state='end')
-            except TypeError:
-                self._logger.info("... exited C++ run.")
-            self._logger.info("... validated parameters.")
+        try:
+            self._logger.info("... validated parameters.", cpp_state='end')
+        except (AttributeError, TypeError):
+            pass
