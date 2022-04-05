@@ -260,7 +260,7 @@ class ParticleCatalogue:
 
         gridsize = np.divide(boxsize, ngrid)
 
-        dpos = origin - np.product(ngrid_pad, gridsize)
+        dpos = origin - np.multiply(ngrid_pad, gridsize)
 
         self.offset_coords(dpos)
         if catalogue_ref is not None:

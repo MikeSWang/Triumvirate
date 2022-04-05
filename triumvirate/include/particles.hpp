@@ -230,7 +230,7 @@ class ParticleCatalogue {
       if (name_indices[3] != -1) {
         nz = row[name_indices[3]];
       } else {
-        nz = 5.e-4;  // default value
+        nz = 0.;  // default value
       }
 
       if (name_indices[4] != -1) {
@@ -259,7 +259,7 @@ class ParticleCatalogue {
     this->_calc_weighted_total();
 
     /// Calculate extreme particle positions.
-    this->_calc_pos_min_and_max();
+    this->_calc_pos_min_and_max(true);
 
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
@@ -318,7 +318,7 @@ class ParticleCatalogue {
     this->_calc_weighted_total();
 
     /// Calculate extreme particle positions.
-    this->_calc_pos_min_and_max();
+    this->_calc_pos_min_and_max(true);
 
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
@@ -358,8 +358,10 @@ class ParticleCatalogue {
 
   /**
    * Calculate extreme particle positions.
+   *
+   * @param verbose Print out particle coordinate extents if `true`.
    */
-  void _calc_pos_min_and_max() {
+  void _calc_pos_min_and_max(bool verbose=false) {
     if (this->pdata == NULL) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
@@ -396,7 +398,7 @@ class ParticleCatalogue {
       this->pos_max[axis] = max[axis];
     }
 
-    if (currTask == 0) {
+    if (currTask == 0 && verbose) {
       clockElapsed = double(clock() - clockStart);
       printf(
         "[INFO] (+%s) Extents of particle coordinates: "
@@ -428,11 +430,15 @@ class ParticleCatalogue {
       exit(1);
     }
 
+    /// Make adjustments required.
     for (int pid = 0; pid < this->ntotal; pid++) {
       for (int axis = 0; axis < 3; axis++) {
         this->pdata[pid].pos[axis] -= dpos[axis];
       }
     }
+
+    /// Recalculate extreme particle positions.
+    this->_calc_pos_min_and_max(true);
   }
 
   /**
@@ -454,12 +460,9 @@ class ParticleCatalogue {
     }
 
     /// Calculate adjustments needed.
-    double xmid = this->pos_min[0]
-      + (this->pos_max[0] - this->pos_min[0]) / 2.;
-    double ymid = this->pos_min[1]
-      + (this->pos_max[1] - this->pos_min[1]) / 2.;
-    double zmid = this->pos_min[2]
-      + (this->pos_max[2] - this->pos_min[2]) / 2.;
+    double xmid = (this->pos_min[0] + this->pos_max[0]) / 2.;
+    double ymid = (this->pos_min[1] + this->pos_max[1]) / 2.;
+    double zmid = (this->pos_min[2] + this->pos_max[2]) / 2.;
 
     double dvec[3] = {
       boxsize[0]/2. - xmid,
@@ -475,7 +478,7 @@ class ParticleCatalogue {
     }
 
     /// Recalculate extreme particle positions.
-    this->_calc_pos_min_and_max();
+    this->_calc_pos_min_and_max(true);
   }
 
   /**
@@ -500,7 +503,7 @@ class ParticleCatalogue {
     }
 
     /// Recalculate extreme particle positions.
-    this->_calc_pos_min_and_max();
+    this->_calc_pos_min_and_max(true);
   }
 
   /**
@@ -511,34 +514,39 @@ class ParticleCatalogue {
    * @param boxsize Box size in each dimension.
    * @param ngrid Grid number in each dimension.
    * @param ngrid_pad Grid number factor for padding (default is 3.).
+   * @param centre If `true`, padding is such that the particles are
+   *               centred inside the box, and `ngrid_pad` is ignored.
    */
   static void boxify_catalogues_for_fft(
     ParticleCatalogue& particles_data,
     ParticleCatalogue& particles_rand,
     const double boxsize[3],
     const int ngrid[3],
-    double ngrid_pad=3.  // CAVEAT: discretionary choice
+    double ngrid_pad=3.,  // CAVEAT: discretionary choice
+    bool centre=true
   ) {
-    /// Calculate adjustments needed.
-    particles_data._calc_pos_min_and_max();
-    particles_rand._calc_pos_min_and_max();
+    if (centre) {
+      particles_data.offset_coords_for_centring(boxsize);
+      particles_rand.offset_coords_for_centring(boxsize);
+    } else {
+      /// Calculate adjustments needed.
+      particles_data._calc_pos_min_and_max();
+      particles_rand._calc_pos_min_and_max();
 
-    double dpos[3] = {
-      particles_rand.pos_min[0],
-      particles_rand.pos_min[1],
-      particles_rand.pos_min[2],
-    };
+      double dpos[3] = {
+        particles_rand.pos_min[0],
+        particles_rand.pos_min[1],
+        particles_rand.pos_min[2],
+      };
 
-    dpos[0] -= ngrid_pad * boxsize[0] / double(ngrid[0]);
-    dpos[1] -= ngrid_pad * boxsize[1] / double(ngrid[1]);
-    dpos[2] -= ngrid_pad * boxsize[2] / double(ngrid[2]);
+      dpos[0] -= ngrid_pad * boxsize[0] / double(ngrid[0]);
+      dpos[1] -= ngrid_pad * boxsize[1] / double(ngrid[1]);
+      dpos[2] -= ngrid_pad * boxsize[2] / double(ngrid[2]);
 
-    /// Shift mesh grid and recalculate extreme particle positions.
-    particles_data.offset_coords(dpos);
-    particles_rand.offset_coords(dpos);
-
-    particles_data._calc_pos_min_and_max();
-    particles_rand._calc_pos_min_and_max();
+      /// Shift mesh grid and recalculate extreme particle positions.
+      particles_data.offset_coords(dpos);
+      particles_rand.offset_coords(dpos);
+    }
   }
 
   /**
@@ -549,6 +557,8 @@ class ParticleCatalogue {
    * @param boxsize Box size in each dimension.
    * @param ngrid Grid number in each dimension.
    * @param ngrid_pad Grid number factor for padding.
+   * @param centre If `true`, padding is such that the particles are
+   *               centred inside the box, and `ngrid_pad` is ignored.
    *
    * @overload
    */
@@ -557,28 +567,31 @@ class ParticleCatalogue {
     ParticleCatalogue& particles_rand,
     const double boxsize[3],
     const int ngrid[3],
-    int ngrid_pad[3]
+    int ngrid_pad[3],
+    bool centre=true
   ) {
-    /// Calculate adjustments needed.
-    particles_data._calc_pos_min_and_max();
-    particles_rand._calc_pos_min_and_max();
+    if (centre) {
+      particles_data.offset_coords_for_centring(boxsize);
+      particles_rand.offset_coords_for_centring(boxsize);
+    } else {
+      /// Calculate adjustments needed.
+      particles_data._calc_pos_min_and_max();
+      particles_rand._calc_pos_min_and_max();
 
-    double dpos[3] = {
-      particles_rand.pos_min[0],
-      particles_rand.pos_min[1],
-      particles_rand.pos_min[2],
-    };
+      double dpos[3] = {
+        particles_rand.pos_min[0],
+        particles_rand.pos_min[1],
+        particles_rand.pos_min[2],
+      };
 
-    dpos[0] -= ngrid_pad[0] * boxsize[0] / double(ngrid[0]);
-    dpos[1] -= ngrid_pad[1] * boxsize[1] / double(ngrid[1]);
-    dpos[2] -= ngrid_pad[2] * boxsize[2] / double(ngrid[2]);
+      dpos[0] -= ngrid_pad[0] * boxsize[0] / double(ngrid[0]);
+      dpos[1] -= ngrid_pad[1] * boxsize[1] / double(ngrid[1]);
+      dpos[2] -= ngrid_pad[2] * boxsize[2] / double(ngrid[2]);
 
-    /// Shift mesh grid and recalculate extreme particle positions.
-    particles_data.offset_coords(dpos);
-    particles_rand.offset_coords(dpos);
-
-    particles_data._calc_pos_min_and_max();
-    particles_rand._calc_pos_min_and_max();
+      /// Shift mesh grid and recalculate extreme particle positions.
+      particles_data.offset_coords(dpos);
+      particles_rand.offset_coords(dpos);
+    }
   }
 
   /**
