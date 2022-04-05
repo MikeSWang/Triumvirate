@@ -115,8 +115,8 @@ def _compute_powspec(
         los_rand_cpp[pid].pos[2] = los_z
 
     # Run algorithm.
-    cdef PowspecMeasurements res
-    res = compute_powspec_cpp(
+    cdef PowspecMeasurements meas
+    meas = compute_powspec_cpp(
         deref(particles_data.thisptr), deref(particles_rand.thisptr),
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr),
@@ -125,10 +125,10 @@ def _compute_powspec(
     )
 
     return {
-        'kbin': np.asarray(res.kbin),
-        'keff': np.asarray(res.keff),
-        'nmode': np.asarray(res.nmode),
-        'pk_raw': np.asarray(res.pk_raw),
-        'pk_shot': np.asarray(res.pk_shot),
+        'kbin': np.asarray(meas.kbin),
+        'keff': np.asarray(meas.keff),
+        'nmode': np.asarray(meas.nmode),
+        'pk_raw': np.asarray(meas.pk_raw),
+        'pk_shot': np.asarray(meas.pk_shot),
     }
 

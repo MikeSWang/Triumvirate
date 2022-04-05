@@ -41,8 +41,8 @@ def compute_powspec(catalogue_data, catalogue_rand, params,
 
     Returns
     -------
-    _type_
-        _description_
+    results : dict of {str: :class:`numpy.ndarray`}
+        Measurement results.
 
     """
     # Prepare catalogues.
@@ -54,8 +54,6 @@ def compute_powspec(catalogue_data, catalogue_rand, params,
 
     nz_data = np.nan_to_num(np.array(catalogue_data._pdata['nz'], dtype=float))
     nz_rand = np.nan_to_num(np.array(catalogue_rand._pdata['nz'], dtype=float))
-    nz_data = 5.e-4 * np.ones_like(catalogue_data._pdata['nz'], dtype=float)
-    nz_rand = 5.e-4 * np.ones_like(catalogue_rand._pdata['nz'], dtype=float)
 
     particles_data = _ParticleCatalogue(
         catalogue_data._pdata['x'],
@@ -89,11 +87,10 @@ def compute_powspec(catalogue_data, catalogue_rand, params,
 
     alpha = catalogue_data.wtotal / catalogue_rand.wtotal
 
-    if logger:
-        try:
-            logger.info("", cpp_state='start')
-        except TypeError:
-            logger.info("Entering C++ run...")
+    try:
+        logger.info("Calculating normalisation...", cpp_state='start')
+    except (AttributeError, TypeError):
+        pass
 
     if params['norm_convention'] == 'mesh':
         norm = _calc_powspec_normalisation_from_mesh(particles_rand, params, alpha)
@@ -102,32 +99,31 @@ def compute_powspec(catalogue_data, catalogue_rand, params,
     else:
         raise InvalidParameter("Invalid `norm_convention` parameter.")
 
-    if logger:
-        try:
-            logger.info("", cpp_state='end')
-        except TypeError:
-            logger.info("... exited C++ run.")
+    try:
+        logger.info("... calculated normalisation.", cpp_state='end')
+    except (AttributeError, TypeError):
+        pass
 
     if logger:
         logger.info("Alpha contrast: %.6e.", alpha)
         logger.info("Normalisation constant: %.6e.", norm)
 
     # Perform measurement.
-    if logger:
-        try:
-            logger.info("", cpp_state='start')
-        except TypeError:
-            logger.info("Entering C++ run...")
+    try:
+        logger.info("Making measurements...", cpp_state='start')
+    except (AttributeError, TypeError):
+        pass
 
     # TODO: FIXME
-    _compute_powspec(
+    results = _compute_powspec(
         particles_data, particles_rand, los_data, los_rand,
         params, kbin, alpha, norm, save=True
     )
 
-    if logger:
-        try:
-            logger.info("", cpp_state='end')
-        except TypeError:
-            logger.info("... exited C++ run.")
+    try:
+        logger.info("... made measurements.", cpp_state='end')
+    except (AttributeError, TypeError):
+        pass
+
+    return results
 
