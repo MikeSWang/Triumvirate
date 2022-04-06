@@ -192,8 +192,11 @@ int main(int argc, char* argv[]) {
 
   /// Offset particle positions for measurements.
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-    ParticleCatalogue::boxify_catalogues_for_fft(
-      particles_data, particles_rand, params.boxsize, params.ngrid
+    double ngrid_pad[3] = {3., 3., 3.};
+    ParticleCatalogue::pad_pair_in_box(
+      particles_data, particles_rand,
+      params.boxsize, params.ngrid,
+      ngrid_pad
     );
   }
   if (params.catalogue_type == "sim") {

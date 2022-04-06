@@ -46,9 +46,8 @@ def compute_powspec(catalogue_data, catalogue_rand, params,
 
     """
     # Prepare catalogues.
-    catalogue_data.boxify_catalogues_for_fft(
+    catalogue_data.centre_catalogues(
         [params['boxsize'][axis] for axis in ['x', 'y', 'z']],
-        [params['ngrid'][axis] for axis in ['x', 'y', 'z']],
         catalogue_ref=catalogue_rand
     )
 

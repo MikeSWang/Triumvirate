@@ -460,14 +460,14 @@ class ParticleCatalogue {
     }
 
     /// Calculate adjustments needed.
+    this->_calc_pos_min_and_max();
+
     double xmid = (this->pos_min[0] + this->pos_max[0]) / 2.;
     double ymid = (this->pos_min[1] + this->pos_max[1]) / 2.;
     double zmid = (this->pos_min[2] + this->pos_max[2]) / 2.;
 
     double dvec[3] = {
-      boxsize[0]/2. - xmid,
-      boxsize[1]/2. - ymid,
-      boxsize[2]/2. - zmid,
+      boxsize[0]/2. - xmid, boxsize[1]/2. - ymid, boxsize[2]/2. - zmid
     };
 
     /// Centre the catalogue in box.
@@ -507,46 +507,32 @@ class ParticleCatalogue {
   }
 
   /**
-   * Align a pair of catalogues in a box for FFT by grid shift.
+   * Centre a pair of catalogues in a box, with the secondary catalogue
+   * as the reference.
    *
    * @param particles_data (Data-source) particle catalogue.
    * @param particles_rand (Random-source) particle catalogue.
    * @param boxsize Box size in each dimension.
-   * @param ngrid Grid number in each dimension.
-   * @param ngrid_pad Grid number factor for padding (default is 3.).
-   * @param centre If `true`, padding is such that the particles are
-   *               centred inside the box, and `ngrid_pad` is ignored.
    */
-  static void boxify_catalogues_for_fft(
+  static void centre_pair_in_box(
     ParticleCatalogue& particles_data,
     ParticleCatalogue& particles_rand,
-    const double boxsize[3],
-    const int ngrid[3],
-    double ngrid_pad=3.,  // CAVEAT: discretionary choice
-    bool centre=true
+    const double boxsize[3]
   ) {
-    if (centre) {
-      particles_data.offset_coords_for_centring(boxsize);
-      particles_rand.offset_coords_for_centring(boxsize);
-    } else {
-      /// Calculate adjustments needed.
-      particles_data._calc_pos_min_and_max();
-      particles_rand._calc_pos_min_and_max();
+    /// Calculate adjustments needed using the random-source catalogue.
+    particles_rand._calc_pos_min_and_max();
 
-      double dpos[3] = {
-        particles_rand.pos_min[0],
-        particles_rand.pos_min[1],
-        particles_rand.pos_min[2],
-      };
+    double xmid = (particles_rand.pos_min[0] + particles_rand.pos_max[0]) / 2.;
+    double ymid = (particles_rand.pos_min[1] + particles_rand.pos_max[1]) / 2.;
+    double zmid = (particles_rand.pos_min[2] + particles_rand.pos_max[2]) / 2.;
 
-      dpos[0] -= ngrid_pad * boxsize[0] / double(ngrid[0]);
-      dpos[1] -= ngrid_pad * boxsize[1] / double(ngrid[1]);
-      dpos[2] -= ngrid_pad * boxsize[2] / double(ngrid[2]);
+    double dvec[3] = {
+      xmid - boxsize[0]/2., ymid - boxsize[1]/2., zmid - boxsize[2]/2.
+    };
 
-      /// Shift mesh grid and recalculate extreme particle positions.
-      particles_data.offset_coords(dpos);
-      particles_rand.offset_coords(dpos);
-    }
+    /// Centre the catalogue in box.
+    particles_data.offset_coords(dvec);
+    particles_rand.offset_coords(dvec);
   }
 
   /**
@@ -557,41 +543,30 @@ class ParticleCatalogue {
    * @param boxsize Box size in each dimension.
    * @param ngrid Grid number in each dimension.
    * @param ngrid_pad Grid number factor for padding.
-   * @param centre If `true`, padding is such that the particles are
-   *               centred inside the box, and `ngrid_pad` is ignored.
-   *
-   * @overload
    */
-  static void boxify_catalogues_for_fft(
+  static void pad_pair_in_box(
     ParticleCatalogue& particles_data,
     ParticleCatalogue& particles_rand,
     const double boxsize[3],
     const int ngrid[3],
-    int ngrid_pad[3],
-    bool centre=true
+    const double ngrid_pad[3]
   ) {
-    if (centre) {
-      particles_data.offset_coords_for_centring(boxsize);
-      particles_rand.offset_coords_for_centring(boxsize);
-    } else {
-      /// Calculate adjustments needed.
-      particles_data._calc_pos_min_and_max();
-      particles_rand._calc_pos_min_and_max();
+    /// Calculate adjustments needed using the random-source catalogue.
+    particles_rand._calc_pos_min_and_max();
 
-      double dpos[3] = {
-        particles_rand.pos_min[0],
-        particles_rand.pos_min[1],
-        particles_rand.pos_min[2],
-      };
+    double dvec[3] = {
+      particles_rand.pos_min[0],
+      particles_rand.pos_min[1],
+      particles_rand.pos_min[2],
+    };
 
-      dpos[0] -= ngrid_pad[0] * boxsize[0] / double(ngrid[0]);
-      dpos[1] -= ngrid_pad[1] * boxsize[1] / double(ngrid[1]);
-      dpos[2] -= ngrid_pad[2] * boxsize[2] / double(ngrid[2]);
+    dvec[0] -= ngrid_pad[0] * boxsize[0] / double(ngrid[0]);
+    dvec[1] -= ngrid_pad[1] * boxsize[1] / double(ngrid[1]);
+    dvec[2] -= ngrid_pad[2] * boxsize[2] / double(ngrid[2]);
 
-      /// Shift mesh grid and recalculate extreme particle positions.
-      particles_data.offset_coords(dpos);
-      particles_rand.offset_coords(dpos);
-    }
+    /// Shift mesh grid and recalculate extreme particle positions.
+    particles_data.offset_coords(dvec);
+    particles_rand.offset_coords(dvec);
   }
 
   /**
