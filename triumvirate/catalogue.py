@@ -224,10 +224,38 @@ class ParticleCatalogue:
 
         return los
 
-    def boxify_catalogues_for_fft(self, boxsize, ngrid, ngrid_pad=3.,
-                                  catalogue_ref=None):
-        """Align a (pair of) catalogue(s) in a box for FFT by offsetting
-        particle positions.
+    def centre_catalogues(self, boxsize, catalogue_ref=None):
+        """Centre a (pair of) catalogue(s) in a box.
+
+        Parameters
+        ----------
+        boxsize : (3,) array of float
+            Box size in each dimension.
+        catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, optional
+            Reference catalogue used for box alignment, to be put in the
+            same box.  If `None` (default), the current catalogue itself
+            is used as the reference catalogue.
+
+        Notes
+        -----
+        The reference catalogue is typically the random-source catalogue
+        (if provided).  Padding is applied at the box corner used as the
+        new coordinate origin.
+
+        """
+        if catalogue_ref is None:
+            self.centre(boxsize)
+        else:
+            origin = np.array([
+                np.mean(catalogue_ref.bounds[axis]) - boxsize[idx_axis]/2.
+                for idx_axis, axis in enumerate(['x', 'y', 'z'])
+            ])
+
+            self.offset_coords(origin)
+            catalogue_ref.offset_coords(origin)
+
+    def pad_catalogues(self, boxsize, ngrid, ngrid_pad=3., catalogue_ref=None):
+        """Pad a (pair of) catalogue(s) in a box.
 
         Parameters
         ----------
@@ -258,13 +286,11 @@ class ParticleCatalogue:
                 catalogue_ref.bounds[axis][0] for axis in ['x', 'y', 'z']
             ])
 
-        gridsize = np.divide(boxsize, ngrid)
+        origin -= np.multiply(ngrid_pad, np.divide(boxsize, ngrid))
 
-        dpos = origin - np.multiply(ngrid_pad, gridsize)
-
-        self.offset_coords(dpos)
+        self.offset_coords(origin)
         if catalogue_ref is not None:
-            catalogue_ref.offset_coords(dpos)
+            catalogue_ref.offset_coords(origin)
 
     def centre(self, boxsize):
         """Centre particles in a box of given box size.
@@ -318,7 +344,7 @@ class ParticleCatalogue:
         ----------
         init : bool, optional
             If `True` (default is `False`), particles positions are
-            original and have not been offset.
+            original and have not been offset previously.
 
         """
         self.bounds = {}

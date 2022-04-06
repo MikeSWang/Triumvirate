@@ -3936,10 +3936,6 @@ int calc_bispec_(
       los_rand[id].pos[2] = los_rand_arr[id][2];
   }
 
-	ParticleCatalogue::boxify_catalogues_for_fft(
-		particles_data, particles_rand, params.boxsize, params.ngrid
-	);
-
   if (
     fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)) < 1.e-10
   ) {
