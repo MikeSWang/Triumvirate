@@ -401,7 +401,7 @@ CorrfuncMeasurements compute_corrfunc(
   return corrfunc_out;
 }
 
-#ifdef _USE_DISABLED_CODE_
+#ifdef USE_DISABLED_TRIUMVIRATE_CODE_
 /**
  * Compute power spectrum window from a random catalogue and
  * optionally save the results.
@@ -507,7 +507,7 @@ PowspecWindowMeasurements compute_powspec_window(
 
   return powwin_out;
 }
-#endif
+#endif  // USE_DISABLED_TRIUMVIRATE_CODE_
 
 /**
  * Compute two-point correlation function window from a random catalogue
