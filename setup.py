@@ -37,7 +37,6 @@ for key, val in config_vars.items():
 
 # -- Extensions ---------------------------------------------------------------
 
-# kwarg: define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
 ext_modules = [
     Extension(
         'triumvirate.parameters',
@@ -51,6 +50,7 @@ ext_modules = [
         language='c++',
         extra_compile_args=['-std=c++11',],
         include_dirs=[numpy.get_include(),],
+        define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
     ),
     Extension(
         'triumvirate._twopt',
@@ -59,6 +59,7 @@ ext_modules = [
         extra_compile_args=['-std=c++11',],
         include_dirs=["triumvirate/include", numpy.get_include(),],
         libraries=['m', 'gsl', 'fftw3', 'gslcblas'],
+        define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
     ),
 ]
 
