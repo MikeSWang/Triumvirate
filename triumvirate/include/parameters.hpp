@@ -35,7 +35,7 @@ class ParameterSet {
   /// Sampling.
   double boxsize[3];  ///< boxsize in each dimension
   int ngrid[3];  ///< grid number in each dimension
-  std::string assignment;  ///< mesh assignment scheme: {'NGP', 'CIC', 'TSC'}
+  std::string assignment;  ///< mesh assignment scheme: {'ngp', 'cic', 'tsc'}
   std::string norm_convention;  /**< normalisation convention:
                                      {'mesh', 'particle'} */
   std::string shotnoise_convention;  /**< shot noise convention:
@@ -460,14 +460,14 @@ class ParameterSet {
     }
 
     if (!(
-      this->assignment == "NGP"
-      || this->assignment == "CIC"
-      || this->assignment == "TSC"
+      this->assignment == "ngp"
+      || this->assignment == "cic"
+      || this->assignment == "tsc"
     )) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Mesh assignment scheme must be 'NGP', 'CIC' or 'TSC': "
+          "[ERRO] (+%s) Mesh assignment scheme must be 'ngp', 'cic' or 'tsc': "
           "`assignment` = %s.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->assignment.c_str()

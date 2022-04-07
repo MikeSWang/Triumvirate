@@ -33,8 +33,8 @@ ngrid:
   y: 512
   z: 512
 
-# Mesh assignment scheme: {'NGP', 'CIC', 'TSC'}.
-assignment: TSC
+# Mesh assignment scheme: {'ngp', 'cic', 'tsc'}.
+assignment: tsc
 
 # Normalisation and shot noise convention: {'particle', 'mesh'}.
 norm_convention: mesh
