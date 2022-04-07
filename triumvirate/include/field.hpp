@@ -91,15 +91,15 @@ class PseudoDensityField {
     fftw_complex* weights
   ) {
     if (
-      this->params.assignment == "NGP"
+      this->params.assignment == "ngp"
     ) {
       this->assign_weighted_field_to_mesh_ngp(particles, weights);
     } else if (
-      this->params.assignment == "CIC"
+      this->params.assignment == "cic"
     ) {
       this->assign_weighted_field_to_mesh_cic(particles, weights);
     } else if (
-      this->params.assignment == "TSC"
+      this->params.assignment == "tsc"
     ) {
       this->assign_weighted_field_to_mesh_tsc(particles, weights);
     } else {
@@ -1041,15 +1041,15 @@ class PseudoDensityField {
 
     int order;
     if (
-      this->params.assignment == "NGP"
+      this->params.assignment == "ngp"
     ) {
       order = 1;
     } else if (
-      this->params.assignment == "CIC"
+      this->params.assignment == "cic"
     ) {
       order = 2;
     } else if (
-      this->params.assignment == "TSC"
+      this->params.assignment == "tsc"
     ) {
       order = 3;
     }
@@ -1965,15 +1965,15 @@ class Pseudo2ptStats {
 
     int order;
     if (
-      this->params.assignment == "NGP"
+      this->params.assignment == "ngp"
     ) {
       order = 1;
     } else if (
-      this->params.assignment == "CIC"
+      this->params.assignment == "cic"
     ) {
       order = 2;
     } else if (
-      this->params.assignment == "TSC"
+      this->params.assignment == "tsc"
     ) {
       order = 3;
     }
@@ -2014,15 +2014,15 @@ class Pseudo2ptStats {
    */
   double calc_shotnoise_scale_dependence(double* kvec) {
     if (
-      this->params.assignment == "NGP"
+      this->params.assignment == "ngp"
     ) {
       return this->calc_shotnoise_scale_dependence_ngp(kvec);
     } else if (
-      this->params.assignment == "CIC"
+      this->params.assignment == "cic"
     ) {
       return this->calc_shotnoise_scale_dependence_cic(kvec);
     } else if (
-      this->params.assignment == "TSC"
+      this->params.assignment == "tsc"
     ) {
       return this->calc_shotnoise_scale_dependence_tsc(kvec);
     }

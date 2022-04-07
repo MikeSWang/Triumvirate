@@ -27,7 +27,7 @@ ngrid:
   y: 256
   z: 256
 
-assignment: TSC
+assignment: tsc
 
 norm_convention: mesh
 
