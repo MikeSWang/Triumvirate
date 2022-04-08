@@ -5,7 +5,7 @@ SYSTYPE = "cluster"
 ifeq ($(SYSTYPE), "local")
 
 CC = mpic++
-CFLAGS = # -Wall
+CFLAGS = -DDBGNZ # -Wall
 
 GSL_DIR = /usr/local/gsl
 FFTW_DIR = /usr/local/fftw3
@@ -23,7 +23,7 @@ endif
 ifeq ($(SYSTYPE), "cluster")
 
 CC = g++
-CFLAGS = # -Wall
+CFLAGS = -DDBGNZ # -Wall
 
 INCLUDE = -I./triumvirate/include
 
