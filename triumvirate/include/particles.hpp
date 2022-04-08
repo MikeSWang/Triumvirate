@@ -19,6 +19,14 @@
 
 #include "common.hpp"
 
+/// TODO: Remove in public releases.
+/// Set placeholder 'nz' default value.
+#ifdef DBGNZ
+  double NZ_DEFAULT = 5.e-4;
+#else
+  double NZ_DEFAULT = 0.;
+#endif
+
 /**
  * Line-of-sight vector.
  *
@@ -230,7 +238,7 @@ class ParticleCatalogue {
       if (name_indices[3] != -1) {
         nz = row[name_indices[3]];
       } else {
-        nz = 0.;  // default value
+        nz = NZ_DEFAULT;  // default value
       }
 
       if (name_indices[4] != -1) {
