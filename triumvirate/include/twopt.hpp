@@ -13,6 +13,8 @@
 #include "particles.hpp"
 #include "field.hpp"
 
+const double EPS_COUPLING = 1.e-10;
+
 /**
  * Power spectrum measurements.
  *
@@ -177,7 +179,7 @@ PowspecMeasurements compute_powspec(
         * wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
         * wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
 
-      if (fabs(coupling) < 1.e-10) {continue;}
+      if (fabs(coupling) < EPS_COUPLING) {continue;}
 
       stats2pt.compute_ylm_wgtd_2pt_stats_in_fourier(
         dn_LM, dn_00, sn_amp, kbin, ell1, m1
@@ -334,7 +336,7 @@ CorrfuncMeasurements compute_corrfunc(
         * wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
         * wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
 
-      if (fabs(coupling) < 1.e-10) {continue;}
+      if (fabs(coupling) < EPS_COUPLING) {continue;}
 
       stats2pt.compute_ylm_wgtd_2pt_stats_in_config(
         dn_LM, dn_00, sn_amp, rbin, ell1, m1
@@ -583,7 +585,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
           * wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
           * wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
 
-      if (fabs(coupling) < 1.e-10) {continue;}
+      if (fabs(coupling) < EPS_COUPLING) {continue;}
 
       stats2pt.compute_ylm_wgtd_2pt_stats_in_config(
         dn_LM, dn_00, sn_amp, rbin, ell1, m1

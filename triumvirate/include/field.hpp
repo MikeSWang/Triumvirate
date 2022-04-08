@@ -18,6 +18,8 @@
 #include "harmonic.hpp"
 #include "particles.hpp"
 
+const double EPS_GRIDSHIFT = 1.e-5;
+
 /**
  * Meshed density-like field instantiated from particle sources.
  *
@@ -1037,8 +1039,6 @@ class PseudoDensityField {
    * @returns Window value in Fourier space.
    */
   double calc_assignment_window_in_fourier(double* kvec) {
-    const double tol = 1.e-5;
-
     int order;
     if (
       this->params.assignment == "ngp"
@@ -1059,9 +1059,9 @@ class PseudoDensityField {
     dk[1] = 2.*M_PI / this->params.boxsize[1];
     dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-    int i = int(kvec[0] / dk[0] + tol);
-    int j = int(kvec[1] / dk[1] + tol);
-    int k = int(kvec[2] / dk[2] + tol);
+    int i = int(kvec[0] / dk[0] + EPS_GRIDSHIFT);
+    int j = int(kvec[1] / dk[1] + EPS_GRIDSHIFT);
+    int k = int(kvec[2] / dk[2] + EPS_GRIDSHIFT);
 
     double k_x = M_PI * i / double(this->params.ngrid[0]);
     double k_y = M_PI * j / double(this->params.ngrid[1]);
@@ -1961,8 +1961,6 @@ class Pseudo2ptStats {
    * @returns Window value in Fourier space.
    */
   double calc_assignment_window_in_fourier(double* kvec) {
-    const double tol = 1.e-5;
-
     int order;
     if (
       this->params.assignment == "ngp"
@@ -1983,9 +1981,9 @@ class Pseudo2ptStats {
     dk[1] = 2.*M_PI / this->params.boxsize[1];
     dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-    int i = int(kvec[0] / dk[0] + tol);
-    int j = int(kvec[1] / dk[1] + tol);
-    int k = int(kvec[2] / dk[2] + tol);
+    int i = int(kvec[0] / dk[0] + EPS_GRIDSHIFT);
+    int j = int(kvec[1] / dk[1] + EPS_GRIDSHIFT);
+    int k = int(kvec[2] / dk[2] + EPS_GRIDSHIFT);
 
     double k_x = M_PI * i / double(this->params.ngrid[0]);
     double k_y = M_PI * j / double(this->params.ngrid[1]);
@@ -2049,16 +2047,14 @@ class Pseudo2ptStats {
    * @returns Function value.
    */
   double calc_shotnoise_scale_dependence_cic(double* kvec) {
-    const double tol = 1.e-5;
-
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
     dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-    int i = int(kvec[0] / dk[0] + tol);
-    int j = int(kvec[1] / dk[1] + tol);
-    int k = int(kvec[2] / dk[2] + tol);
+    int i = int(kvec[0] / dk[0] + EPS_GRIDSHIFT);
+    int j = int(kvec[1] / dk[1] + EPS_GRIDSHIFT);
+    int k = int(kvec[2] / dk[2] + EPS_GRIDSHIFT);
 
     double k_x = M_PI * i / double(this->params.ngrid[0]);
     double k_y = M_PI * j / double(this->params.ngrid[1]);
@@ -2084,16 +2080,14 @@ class Pseudo2ptStats {
    * @returns Function value.
    */
   double calc_shotnoise_scale_dependence_tsc(double* kvec) {
-    const double tol = 1.e-5;
-
     double dk[3];
     dk[0] = 2.*M_PI / this->params.boxsize[0];
     dk[1] = 2.*M_PI / this->params.boxsize[1];
     dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-    int i = int(kvec[0] / dk[0] + tol);
-    int j = int(kvec[1] / dk[1] + tol);
-    int k = int(kvec[2] / dk[2] + tol);
+    int i = int(kvec[0] / dk[0] + EPS_GRIDSHIFT);
+    int j = int(kvec[1] / dk[1] + EPS_GRIDSHIFT);
+    int k = int(kvec[2] / dk[2] + EPS_GRIDSHIFT);
 
     double k_x = M_PI * i / double(this->params.ngrid[0]);
     double k_y = M_PI * j / double(this->params.ngrid[1]);
