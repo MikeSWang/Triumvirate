@@ -55,7 +55,7 @@ class PseudoDensityField {
    * Destruct density-like field.
    */
   ~PseudoDensityField() {
-    finalise_density_field();
+    this->finalise_density_field();
   }
 
   /**
@@ -1110,30 +1110,37 @@ class Pseudo2ptStats {
     this->pk = new std::complex<double>[params.num_kbin];
     this->nmode = new int[params.num_kbin];
 
-    for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-      this->k[ibin] = 0.;
-      this->sn[ibin] = 0.;
-      this->pk[ibin] = 0.;
-      this->nmode[ibin] = 0;
-    }
-
     /// Set up binned 2PCF and pair counter.
     this->r = new double[params.num_rbin];
     this->xi = new std::complex<double>[params.num_rbin];
     this->npair = new int[params.num_rbin];
 
-    for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-      this->r[ibin] = 0.;
-      this->xi[ibin] = 0.;
-      this->npair[ibin] = 0;
-    }
+    this->reset_2pt_stats();
   }
 
   /**
    * Destruct two-point statistics.
    */
   ~Pseudo2ptStats(){
-    finalise_2pt_stats();
+    this->finalise_2pt_stats();
+  }
+
+  /**
+   * Reset two-point statistics.
+   */
+  void reset_2pt_stats() {
+    for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+      this->k[ibin] = 0.;
+      this->pk[ibin] = 0.;
+      this->sn[ibin] = 0.;
+      this->nmode[ibin] = 0;
+    }
+
+    for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+      this->r[ibin] = 0.;
+      this->xi[ibin] = 0.;
+      this->npair[ibin] = 0;
+    }
   }
 
   /**
@@ -1190,12 +1197,7 @@ class Pseudo2ptStats {
     }
 
     /// Reset binned statistics.
-    for (int ibin = 0; ibin < this->params.num_kbin; ibin++) {
-      this->k[ibin] = 0.;
-      this->pk[ibin] = 0.;
-      this->sn[ibin] = 0.;
-      this->nmode[ibin] = 0;
-    }
+    this->reset_2pt_stats();
 
     /// Perform fine sampling.
     double dk[3];
@@ -1402,11 +1404,7 @@ class Pseudo2ptStats {
     }
 
     /// Reset binned statistics.
-    for (int ibin = 0; ibin < this->params.num_rbin; ibin++) {
-      this->r[ibin] = 0.;
-      this->xi[ibin] = 0.;
-      this->npair[ibin] = 0;
-    }
+    this->reset_2pt_stats();
 
     /// Perform fine sampling.
     double dr[3];
@@ -1708,10 +1706,8 @@ class Pseudo2ptStats {
       npair_sample[i] = 0;
     }
 
-    for (int ibin = 0; ibin < this->params.num_rbin; ibin++) {
-      this->xi[ibin] = 0.;
-      this->npair[ibin] = 0;
-    }
+    /// Reset binned statistics.
+    this->reset_2pt_stats();
 
     /// Perform fine sampling.
     double dr[3];
