@@ -16,7 +16,8 @@
 int currTask = 0;  ///< current task
 int numTasks = 1;  ///< number of tasks (in a batch)
 
-double bytesMem = 0;  ///< memory usage in bytes
+const double BYTES_PER_GBYTES = 1024. * 1024. * 1024.;  ///< bytes per gibibyte
+double gbytesMem = 0;  ///< memory usage in gibibytes
 
 double clockStart;  ///< program start clock
 double clockElapsed;  ///< program elapsed clock

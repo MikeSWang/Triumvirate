@@ -107,8 +107,8 @@ class ParticleCatalogue {
     this->pdata = new ParticleData[this->ntotal];
 
     /// Determine memory usage.
-    bytesMem += double(this->ntotal) * sizeof(struct ParticleData)
-      / 1024. / 1024. / 1024.;
+    gbytesMem += double(this->ntotal)
+      * sizeof(struct ParticleData) / BYTES_PER_GBYTES;
   }
 
   /**
@@ -118,8 +118,8 @@ class ParticleCatalogue {
     /// Free particle usage.
     if (this->pdata != NULL) {
       delete[] this->pdata; this->pdata = NULL;
-      bytesMem -= double(this->ntotal) * sizeof(struct ParticleData)
-        / 1024. / 1024. / 1024.;
+      gbytesMem -= double(this->ntotal)
+        * sizeof(struct ParticleData) / BYTES_PER_GBYTES;
     }
   }
 
@@ -384,26 +384,26 @@ class ParticleCatalogue {
     /// Initialise minimum and maximum values with the first
     /// data entry/row.
     double min[3], max[3];
-    for (int axis = 0; axis < 3; axis++) {
-      min[axis] = this->pdata[0].pos[axis];
-      max[axis] = this->pdata[0].pos[axis];
+    for (int iaxis = 0; iaxis < 3; iaxis++) {
+      min[iaxis] = this->pdata[0].pos[iaxis];
+      max[iaxis] = this->pdata[0].pos[iaxis];
     }
 
     /// Update minimum and maximum values line-by-line.
     for (int id = 0; id < this->ntotal; id++) {
-      for (int axis = 0; axis < 3; axis++) {
-        if (min[axis] > this->pdata[id].pos[axis]) {
-          min[axis] = this->pdata[id].pos[axis];
+      for (int iaxis = 0; iaxis < 3; iaxis++) {
+        if (min[iaxis] > this->pdata[id].pos[iaxis]) {
+          min[iaxis] = this->pdata[id].pos[iaxis];
         }
-        if (max[axis] < this->pdata[id].pos[axis]) {
-          max[axis] = this->pdata[id].pos[axis];
+        if (max[iaxis] < this->pdata[id].pos[iaxis]) {
+          max[iaxis] = this->pdata[id].pos[iaxis];
         }
       }
     }
 
-    for (int axis = 0; axis < 3; axis++) {
-      this->pos_min[axis] = min[axis];
-      this->pos_max[axis] = max[axis];
+    for (int iaxis = 0; iaxis < 3; iaxis++) {
+      this->pos_min[iaxis] = min[iaxis];
+      this->pos_max[iaxis] = max[iaxis];
     }
 
     if (currTask == 0 && verbose) {
@@ -440,8 +440,8 @@ class ParticleCatalogue {
 
     /// Make adjustments required.
     for (int pid = 0; pid < this->ntotal; pid++) {
-      for (int axis = 0; axis < 3; axis++) {
-        this->pdata[pid].pos[axis] -= dpos[axis];
+      for (int iaxis = 0; iaxis < 3; iaxis++) {
+        this->pdata[pid].pos[iaxis] -= dpos[iaxis];
       }
     }
 
@@ -480,8 +480,8 @@ class ParticleCatalogue {
 
     /// Centre the catalogue in box.
     for (int pid = 0; pid < this->ntotal; pid++) {
-      for (int axis = 0; axis < 3; axis++) {
-        this->pdata[pid].pos[axis] += dvec[axis];
+      for (int iaxis = 0; iaxis < 3; iaxis++) {
+        this->pdata[pid].pos[iaxis] += dvec[iaxis];
       }
     }
 
@@ -497,15 +497,15 @@ class ParticleCatalogue {
   void offset_coords_for_periodicity(const double boxsize[3]) {
     /// Adjust the box.
     for (int pid = 0; pid < this->ntotal; pid++) {
-      for (int axis = 0; axis < 3; axis++) {
+      for (int iaxis = 0; iaxis < 3; iaxis++) {
         if (
-          this->pdata[pid].pos[axis] >= boxsize[axis]
+          this->pdata[pid].pos[iaxis] >= boxsize[iaxis]
         ) {
-          this->pdata[pid].pos[axis] -= boxsize[axis];
+          this->pdata[pid].pos[iaxis] -= boxsize[iaxis];
         } else if (
-          this->pdata[pid].pos[axis] < 0.
+          this->pdata[pid].pos[iaxis] < 0.
         ) {
-          this->pdata[pid].pos[axis] += boxsize[axis];
+          this->pdata[pid].pos[iaxis] += boxsize[iaxis];
         }
       }
     }

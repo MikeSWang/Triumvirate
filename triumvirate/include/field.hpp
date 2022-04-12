@@ -47,8 +47,8 @@ class PseudoDensityField {
       this->field[gid][1] = 0.;
     }
 
-    bytesMem += double(this->params.nmesh) * sizeof(fftw_complex)
-      / 1024. / 1024. / 1024.;
+    gbytesMem += double(this->params.nmesh)
+      * sizeof(fftw_complex) / BYTES_PER_GBYTES;
   }
 
   /**
@@ -75,8 +75,8 @@ class PseudoDensityField {
     /// Free memory usage.
     if (this->field != NULL) {
       fftw_free(this->field); this->field = NULL;
-      bytesMem -= double(this->params.nmesh) * sizeof(fftw_complex)
-        / 1024. / 1024. / 1024.;
+      gbytesMem -= double(this->params.nmesh)
+        * sizeof(fftw_complex) / BYTES_PER_GBYTES;
     }
   }
 
@@ -872,13 +872,13 @@ class PseudoDensityField {
     for (int pid = 0; pid < particles.ntotal; pid++) {
       int ijk[order][3];  // coordinates of covered mesh grids
       double win[order][3];  // interpolation window
-      for (int axis = 0; axis < 3; axis++) {
-        double loc_grid = this->params.ngrid[axis]
-          * particles[pid].pos[axis] / this->params.boxsize[axis];
+      for (int iaxis = 0; iaxis < 3; iaxis++) {
+        double loc_grid = this->params.ngrid[iaxis]
+          * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
 
         /// Set only 0th element as `order == 1`.
-        ijk[0][axis] = int(loc_grid + 0.5);
-        win[0][axis] = 1.;
+        ijk[0][iaxis] = int(loc_grid + 0.5);
+        win[0][iaxis] = 1.;
       }
 
       for (int iloc = 0; iloc < order; iloc++) {
@@ -931,17 +931,17 @@ class PseudoDensityField {
     for (int pid = 0; pid < particles.ntotal; pid++) {
       int ijk[order][3];  // coordinates of covered mesh grids
       double win[order][3];  // interpolation window
-      for (int axis = 0; axis < 3; axis++) {
-        double loc_grid = this->params.ngrid[axis]
-          * particles[pid].pos[axis] / this->params.boxsize[axis];
+      for (int iaxis = 0; iaxis < 3; iaxis++) {
+        double loc_grid = this->params.ngrid[iaxis]
+          * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
         double s = loc_grid - double(int(loc_grid));
 
         /// Set up to 1st element as `order == 2`.
-        ijk[0][axis] = int(loc_grid);
-        ijk[1][axis] = int(loc_grid) + 1;
+        ijk[0][iaxis] = int(loc_grid);
+        ijk[1][iaxis] = int(loc_grid) + 1;
 
-        win[0][axis] = 1. - s;
-        win[1][axis] = s;
+        win[0][iaxis] = 1. - s;
+        win[1][iaxis] = s;
       }
 
       for (int iloc = 0; iloc < order; iloc++) {
@@ -995,19 +995,19 @@ class PseudoDensityField {
     for (int pid = 0; pid < particles.ntotal; pid++) {
       int ijk[order][3];  // coordinates of covered mesh grids
       double win[order][3];  // interpolation window
-      for (int axis = 0; axis < 3; axis++) {
-        double loc_grid = this->params.ngrid[axis]
-          * particles[pid].pos[axis] / this->params.boxsize[axis];
+      for (int iaxis = 0; iaxis < 3; iaxis++) {
+        double loc_grid = this->params.ngrid[iaxis]
+          * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
         double s = loc_grid - double(int(loc_grid + 0.5));
 
         /// Set up to 2nd element as `order == 3`.
-        ijk[0][axis] = int(loc_grid + 0.5) - 1;
-        ijk[1][axis] = int(loc_grid + 0.5);
-        ijk[2][axis] = int(loc_grid + 0.5) + 1;
+        ijk[0][iaxis] = int(loc_grid + 0.5) - 1;
+        ijk[1][iaxis] = int(loc_grid + 0.5);
+        ijk[2][iaxis] = int(loc_grid + 0.5) + 1;
 
-        win[0][axis] = 0.5 * (0.5 - s) * (0.5 - s);
-        win[1][axis] = 0.75 - s * s;
-        win[2][axis] = 0.5 * (0.5 + s) * (0.5 + s);
+        win[0][iaxis] = 0.5 * (0.5 - s) * (0.5 - s);
+        win[1][iaxis] = 0.75 - s * s;
+        win[2][iaxis] = 0.5 * (0.5 + s) * (0.5 + s);
       }
 
       for (int iloc = 0; iloc < order; iloc++) {

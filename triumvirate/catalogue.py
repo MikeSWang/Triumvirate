@@ -317,9 +317,8 @@ class ParticleCatalogue:
             Box size in each dimension.
 
         """
-        self._pdata['x'] %= boxsize[0]
-        self._pdata['y'] %= boxsize[1]
-        self._pdata['z'] %= boxsize[2]
+        for iaxis, axis in enumerate(['x', 'y', 'z']):
+            self._pdata[axis] %= boxsize[iaxis]
 
         self._calc_bounds()
 
