@@ -833,7 +833,6 @@ class PseudoDensityField {
     }
 
     /// Eliminate dependence on total particle number.
-    /// CAVEAT: `double` needed to prevent int overflow.
     double inv_vol_norm = 1. / vol_eff;
 
     return inv_vol_norm;
@@ -1695,7 +1694,7 @@ class Pseudo2ptStats {
     fftw_destroy_plan(inv_transform);
 
     /// Set up fine-sampling of separations.
-    /// CAVEAT: discretionary choices.
+    /// CAVEAT: Discretionary choices.
     const double dr_sample = 0.5;
     const int n_sample = 10000;
 

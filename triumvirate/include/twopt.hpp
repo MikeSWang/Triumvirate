@@ -15,6 +15,7 @@
 
 const double EPS_COUPLING_2PT = 1.e-10;  /**< zero-tolerance for two-point
                                               coupling coefficients */
+                                         // CAVEAT: discretionary choice
 
 /**
  * Power spectrum measurements.
@@ -100,6 +101,9 @@ double calc_powspec_normalisation_from_particles(
 
   return norm;
 }
+
+/// NOBUG: Standard naming convention is not always followed for
+/// intermediary quantities in the functions below.
 
 /**
  * Compute power spectrum from paired catalogues and

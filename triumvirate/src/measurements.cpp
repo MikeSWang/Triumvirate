@@ -222,7 +222,7 @@ int main(int argc, char* argv[]) {
   if (
     params.norm_convention == "mesh"
   ) {
-    /// TODO: Check expression for all cases.
+    /// QUEST: Check expression for all cases.
     norm = calc_powspec_normalisation_from_mesh(particles_rand, params, alpha);
   } else if (
     params.norm_convention == "particle"
