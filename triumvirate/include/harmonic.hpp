@@ -53,8 +53,8 @@ class SphericalHarmonicCalculator {
 
     /// Calculate modulus.
     double xyz_mod_sq = 0.;
-    for (int axis = 0; axis < 3; axis++) {
-      xyz_mod_sq += pos[axis] * pos[axis];
+    for (int iaxis = 0; iaxis < 3; iaxis++) {
+      xyz_mod_sq += pos[iaxis] * pos[iaxis];
     }  // r^2 = x^2 + y^2 + z^2
 
     double xyz_mod = sqrt(xyz_mod_sq);  // r = √(x^2 + y^2 + z^2)
@@ -124,9 +124,7 @@ class SphericalHarmonicCalculator {
 
     /// Determine the fundamental wavenumber in each dimension.
     double dk[3] = {
-      2.*M_PI / boxsize[0],
-      2.*M_PI / boxsize[1],
-      2.*M_PI / boxsize[2],
+      2.*M_PI / boxsize[0], 2.*M_PI / boxsize[1], 2.*M_PI / boxsize[2]
     };
 
     /// Assign a wavevector to each grid cell.
