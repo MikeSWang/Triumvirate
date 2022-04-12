@@ -222,9 +222,13 @@ PowspecMeasurements compute_powspec(
     powspec_out.keff.push_back(k_save[ibin]);
     powspec_out.nmode.push_back(nmode_save[ibin]);
     powspec_out.pk_raw.push_back(norm * pk_save[ibin]);
-    if (params.shotnoise_convention == "mesh") {
+    if (
+      params.shotnoise_convention == "mesh"
+    ) {
       powspec_out.pk_shot.push_back(norm * sn_save[ibin]);
-    } else if (params.shotnoise_convention == "particle") {
+    } else if (
+      params.shotnoise_convention == "particle"
+    ) {
       powspec_out.pk_shot.push_back(norm * sn_particle);
     }
   }
@@ -740,9 +744,13 @@ PowspecMeasurements compute_powspec_in_box(
     powspec_out.keff[ibin] = k_save[ibin];
     powspec_out.nmode[ibin] = nmode_save[ibin];
     powspec_out.pk_raw[ibin] = norm * pk_save[ibin];
-    if (params.shotnoise_convention == "mesh") {
+    if (
+      params.shotnoise_convention == "mesh"
+    ) {
       powspec_out.pk_shot[ibin] = norm * sn_save[ibin];
-    } else if (params.shotnoise_convention == "particle") {
+    } else if (
+      params.shotnoise_convention == "particle"
+    ) {
       powspec_out.pk_shot[ibin] = norm * sn_particle;
     }
   }

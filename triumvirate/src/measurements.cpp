@@ -219,10 +219,14 @@ int main(int argc, char* argv[]) {
 
   /// Compute inverse-effective-volume normalisation for clustering statistics.
   double norm;
-  if (params.norm_convention == "mesh") {
+  if (
+    params.norm_convention == "mesh"
+  ) {
     /// TODO: Check expression for all cases.
     norm = calc_powspec_normalisation_from_mesh(particles_rand, params, alpha);
-  } else if (params.norm_convention == "particle") {
+  } else if (
+    params.norm_convention == "particle"
+  ) {
     norm = calc_powspec_normalisation_from_particles(particles_rand, alpha);
   }
 

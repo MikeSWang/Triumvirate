@@ -50,10 +50,13 @@ class BinScheme {
    * @param[out] rbin_out Separation bins.
    */
   static void set_rbin(ParameterSet& params, double* rbin_out) {
-    if (0) {
-    } else if (params.binning == "custom") {
+    if (
+      params.binning == "custom"
+    ) {
       /// RFE: Insert customised binning code here.
-    } else if (params.binning == "logpad") {
+    } else if (
+      params.binning == "logpad"
+    ) {
       /// CAVEAT: Discretionary choices.
       int nbin_custom = 5;
 
@@ -69,7 +72,9 @@ class BinScheme {
       for (int ibin = nbin_custom; ibin < params.num_rbin; ibin++) {
         rbin_out[ibin] = rmin * exp(dlnr * (ibin - nbin_custom));
       }
-    } else if (params.binning == "linpad") {
+    } else if (
+      params.binning == "linpad"
+    ) {
       /// CAVEAT: Discretionary choices.
       int nbin_custom = 5;
 
@@ -85,7 +90,9 @@ class BinScheme {
       for (int ibin = nbin_custom; ibin < params.num_rbin; ibin++) {
         rbin_out[ibin] = rmin + dr * (ibin - nbin_custom);
       }
-    } else if (params.binning == "log")  {
+    } else if (
+      params.binning == "log"
+    )  {
       double rmin;
       if (params.rmin == 0.) {
         /// CAVEAT: Discretionary choice.
