@@ -72,7 +72,7 @@ class ParticleCatalogue {
    * Destruct the particle container.
    */
   ~ParticleCatalogue() {
-    finalise_particles();
+    this->finalise_particles();
   }
 
   /**
