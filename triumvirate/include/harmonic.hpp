@@ -49,7 +49,7 @@ class SphericalHarmonicCalculator {
     const double eps = 1.e-15;
 
     /// Define complex unit.
-    std::complex<double> I_(0., 1.);
+    std::complex<double> _M_I(0., 1.);
 
     /// Calculate modulus.
     double xyz_mod_sq = 0.;
@@ -86,7 +86,7 @@ class SphericalHarmonicCalculator {
     /// normalised associated Legendre polynomial, i.e.
     /// Y_lm = √((2l + 1)/(4π)) √((l - |m|)!/(l + |m|)!) * P_l^|m| * exp(imϕ).
     std::complex<double> ylm = 0.;
-    ylm = gsl_sf_legendre_sphPlm(ell, abs(m), mu) * exp(I_ * double(m) * phi);
+    ylm = gsl_sf_legendre_sphPlm(ell, abs(m), mu) * exp(_M_I * double(m) * phi);
 
     /// Impose parity and conjugation.
     ylm = pow(-1., (m - abs(m))/2.) * std::conj(ylm);

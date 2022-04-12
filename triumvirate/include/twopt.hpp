@@ -13,7 +13,8 @@
 #include "particles.hpp"
 #include "field.hpp"
 
-const double EPS_COUPLING_2PT = 1.e-10;
+const double EPS_COUPLING_2PT = 1.e-10;  /**< zero-tolerance for two-point
+                                              coupling coefficients */
 
 /**
  * Power spectrum measurements.
