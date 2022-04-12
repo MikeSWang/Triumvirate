@@ -20,8 +20,6 @@
   gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3) \
 )
 
-const std::complex<double> M_I(0., 1.);  ///< imaginary unit
-
 /**
  * Binning scheme.
  *
