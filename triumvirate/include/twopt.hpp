@@ -128,7 +128,7 @@ PowspecMeasurements compute_powspec(
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Measuring power spectrum from "
+      "[STAT] (+%s) Measurement: power spectrum from "
       "data and random catalogues.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
@@ -201,7 +201,7 @@ PowspecMeasurements compute_powspec(
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
       printf(
-        "[STAT] (+%s) Computed power spectrum term of order `M = %d`.\n",
+        "[STAT] (+%s) Power spectrum term at order `M = %d` computed.\n",
         calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
         M_
       );
@@ -287,7 +287,7 @@ CorrfuncMeasurements compute_corrfunc(
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Measuring two-point correlation function "
+      "[STAT] (+%s) Measurement: two-point correlation function "
       "from data and random catalogues.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
@@ -357,8 +357,8 @@ CorrfuncMeasurements compute_corrfunc(
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
       printf(
-        "[STAT] (+%s) Computed two-point correlation function term of "
-        "order `M = %d`.\n",
+        "[STAT] (+%s) Two-point correlation function term at "
+        "order `M = %d` computed.\n",
         calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
         M_
       );
@@ -430,7 +430,8 @@ PowspecWindowMeasurements compute_powspec_window(
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Measuring power spectrum window from random catalogue.\n",
+      "[STAT] (+%s) Measurement: power spectrum window "
+      "from random catalogue.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
   }
@@ -538,7 +539,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Measuring two-point correlation function window "
+      "[STAT] (+%s) Measurement: two-point correlation function window "
 			"from random catalogue.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
 		);
@@ -606,8 +607,8 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
       printf(
-        "[STAT] (+%s) Computed two-point correlation function window term "
-        "with order `M = %d`.\n",
+        "[STAT] (+%s) Two-point correlation function window term "
+        "at order `M = %d` computed.\n",
         calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
         M_
       );
@@ -675,7 +676,7 @@ PowspecMeasurements compute_powspec_in_box(
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Measuring power spectrum in a periodic box.\n",
+      "[STAT] (+%s) Measurement: power spectrum in a periodic box.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
   }
@@ -712,6 +713,14 @@ PowspecMeasurements compute_powspec_in_box(
     k_save[ibin] = stats2pt.k[ibin];
     pk_save[ibin] += double(2*params.ELL + 1) * stats2pt.pk[ibin];
     sn_save[ibin] += double(2*params.ELL + 1) * stats2pt.sn[ibin];
+  }
+
+  if (currTask == 0) {
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "[STAT] (+%s) Power spectrum terms computed.\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+    );
   }
 
   /// Compute shot noise if the approach is particle-based.
@@ -788,7 +797,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Measuring two-point correlation function "
+      "[STAT] (+%s) Measurement: two-point correlation function "
       "in a periodic box.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
@@ -828,7 +837,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Computed two-point correlation function terms.\n",
+      "[STAT] (+%s) Two-point correlation function terms computed.\n",
       calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
     );
   }
