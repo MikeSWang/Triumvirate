@@ -348,7 +348,7 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Output directory '%s' does not exist.\n",
+          "[ERRO] (+%s) Non-existent or unwritable output directory: '%s'.\n",
           calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
           this->measurement_dir.c_str()
         );
@@ -658,7 +658,7 @@ class ParameterSet {
           if (currTask == 0) {
             clockElapsed = double(clock() - clockStart);
             printf(
-              "[STAT] (+%s) Output subdirectory '%s' is successfully made.\n",
+              "[INFO] (+%s) Output subdirectory '%s' is successfully made.\n",
               calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
               buf_dir
             );
