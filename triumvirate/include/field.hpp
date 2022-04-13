@@ -798,28 +798,28 @@ class PseudoDensityField {
   }
 
   /**
-   * Calculate inverse (effective) volume normalisation f@$ 1/I_2 f@$
+   * Calculate (effective) volume normalisation factor f@$ 1/I_2 f@$
    * (for the power spectrum), where
    *
    * f@[
    *   I_2 = \int \mathrm{d}^3\,\vec{x} \bar{n}(\vec{x})^2 \,.
    * f@]
    *
-   * @param particles_rand (Random-source) particle container.
-   * @returns inv_vol_norm Inverse-volume normalisation.
+   * @param particles (Typically random-source) particle container.
+   * @returns norm_factor Volume normalisation factor.
    */
-  double _calc_inv_volume_normalisation(ParticleContainer& particles_rand) {
+  double _calc_wgt_sq_volume_norm(ParticleContainer& particles) {
     /// Initialise the weight field.
     fftw_complex* weight = NULL;
 
-    weight = fftw_alloc_complex(particles_rand.ntotal);
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      weight[pid][0] = particles_rand[pid].w;
+    weight = fftw_alloc_complex(particles.ntotal);
+    for (int pid = 0; pid < particles.ntotal; pid++) {
+      weight[pid][0] = particles[pid].w;
       weight[pid][1] = 0.;
     }
 
     /// Compute the weighted field.
-    this->assign_weighted_field_to_mesh(particles_rand, weight);
+    this->assign_weighted_field_to_mesh(particles, weight);
 
     fftw_free(weight); weight = NULL;
 
@@ -827,15 +827,55 @@ class PseudoDensityField {
     /// to dV Σ_i, dV =: `vol_cell`.
     double vol_cell = this->params.volume / double(this->params.nmesh);
 
-    double vol_eff = 0.;
+    double vol_eff_inv = 0.;
     for (int gid = 0; gid < this->params.nmesh; gid++) {
-      vol_eff += vol_cell * this->field[gid][0] * this->field[gid][0];
+      vol_eff_inv += vol_cell * this->field[gid][0] * this->field[gid][0];
     }
 
-    /// Eliminate dependence on total particle number.
-    double inv_vol_norm = 1. / vol_eff;
+    double norm_factor = 1. / vol_eff_inv;
 
-    return inv_vol_norm;
+    return norm_factor;
+  }
+
+  /**
+   * Calculate (effective) volume-square normalisation factor
+   * f@$ 1/I_3 f@$ (for the bispectrum), where
+   *
+   * f@[
+   *   I_3 = \int \mathrm{d}^3\,\vec{x} \bar{n}(\vec{x})^3 \,.
+   * f@]
+   *
+   * @param particles (Typically random-source) particle container.
+   * @returns norm_factor Quadratic-volume normalisation factor.
+   */
+  double _calc_wgt_cu_volume_norm(ParticleContainer& particles) {
+    /// Initialise the weight field.
+    fftw_complex* weight = NULL;
+
+    weight = fftw_alloc_complex(particles.ntotal);
+    for (int pid = 0; pid < particles.ntotal; pid++) {
+      weight[pid][0] = particles[pid].w;
+      weight[pid][1] = 0.;
+    }
+
+    /// Compute the weighted field.
+    this->assign_weighted_field_to_mesh(particles, weight);
+
+    fftw_free(weight); weight = NULL;
+
+    /// Compute volume normalisation integral, where ∫d^3x corresponds
+    /// to dV Σ_i, dV =: `vol_cell`.
+    double vol_cell = this->params.volume / double(this->params.nmesh);
+
+    double vol_sq_eff_inv = 0.;
+    for (int gid = 0; gid < this->params.nmesh; gid++) {
+      vol_sq_eff_inv += vol_cell
+        * this->field[gid][0] * this->field[gid][0] * this->field[gid][0];
+    }
+
+    double norm_factor = 1. / vol_sq_eff_inv;
+
+    return norm_factor;
   }
 
  private:

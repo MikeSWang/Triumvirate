@@ -580,10 +580,11 @@ class ParticleCatalogue {
   /**
    * Calculate particle-based power spectrum normalisation.
    *
-   * @param alpha Alpha ratio.
-   * @returns norm Power spectrum normalisation constant.
+   * @returns norm_factor Power spectrum normalisation factor.
+   *
+   * @see PseudoDensityField::_calc_wgt_sq_volume_norm()
    */
-  double _calc_powspec_normalisation(double alpha=1.) {
+  double _calc_powspec_normalisation() {
     if (this->pdata == NULL) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
@@ -595,13 +596,13 @@ class ParticleCatalogue {
       exit(1);
     }
 
-    double vol_norm = 0.;
+    double vol_eff_inv = 0.;  // I_2
     for (int pid = 0; pid < this->ntotal; pid++) {
-      vol_norm += this->pdata[pid].nz
+      vol_eff_inv += this->pdata[pid].nz
         * this->pdata[pid].ws * this->pdata[pid].wc * this->pdata[pid].wc;
     }
 
-    if (vol_norm == 0.) {
+    if (vol_eff_inv == 0.) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
@@ -613,18 +614,19 @@ class ParticleCatalogue {
       exit(1);
     }
 
-    double norm = 1. / (alpha * vol_norm);
+    double norm_factor = 1. / vol_eff_inv;  // I_2^(-1)
 
-    return norm;
+    return norm_factor;
   }
 
   /**
    * Calculate particle-based power spectrum shot noise.
    *
-   * @param alpha Alpha ratio.
    * @returns shotnoise Power spectrum shot noise.
+   *
+   * @see Pseudo2ptStats::calc_ylm_wgtd_shotnoise_for_powspec()
    */
-  double _calc_powspec_shotnoise(double alpha=1.) {
+  double _calc_powspec_shotnoise() {
     if (this->pdata == NULL) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
@@ -641,8 +643,6 @@ class ParticleCatalogue {
       shotnoise += this->pdata[pid].ws * this->pdata[pid].ws
         * this->pdata[pid].wc * this->pdata[pid].wc;
     }
-
-    shotnoise *= alpha * alpha;
 
     return shotnoise;
   }
