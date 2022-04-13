@@ -21,6 +21,27 @@
 )
 
 /**
+ * Check if a path is set (after trimming).
+ *
+ * This is used for checking whether a path is set.
+ *
+ * @param pathstr
+ * @returns true, false
+ */
+
+bool is_set(std::string pathstr){
+  /// Check if the string is empty.
+  if (pathstr.empty()) {return false;}
+
+  /// Check if the string contains non-whitespace characters.  If so,
+  /// the path is set, otherwise not.
+  for (int ichar = 0; ichar < pathstr.length(); ichar++){
+    if (!std::isspace(pathstr[ichar])) {return true;}
+  }
+  return false;
+}
+
+/**
  * Binning scheme.
  *
  * This sets up isotropic wavenumber or separation bins
