@@ -72,19 +72,19 @@ struct CorrfuncWindowMeasurements {
  * @param catalogue Particle catalogue.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
- * @return norm Power spectrum normalisation constant.
+ * @return norm_factor Power spectrum normalisation factor.
  */
 double calc_powspec_normalisation_from_mesh(
   ParticleCatalogue& catalogue, ParameterSet& params, double alpha=1.
 ) {
   PseudoDensityField<ParticleCatalogue> catalogue_mesh(params);
 
-  double norm = catalogue_mesh._calc_inv_volume_normalisation(catalogue)
+  double norm_factor = catalogue_mesh._calc_wgt_sq_volume_norm(catalogue)
     / alpha / alpha;
 
   catalogue_mesh.finalise_density_field();
 
-  return norm;
+  return norm_factor;
 }
 
 /**
@@ -92,14 +92,14 @@ double calc_powspec_normalisation_from_mesh(
  *
  * @param catalogue Particle catalogue.
  * @param alpha Alpha ratio.
- * @return norm Power spectrum normalisation constant.
+ * @return norm_factor Power spectrum normalisation factor.
  */
 double calc_powspec_normalisation_from_particles(
-  ParticleCatalogue& catalogue, double alpha
+  ParticleCatalogue& catalogue, double alpha=1.
 ) {
-  double norm = catalogue._calc_powspec_normalisation(alpha);
+  double norm_factor = catalogue._calc_powspec_normalisation() / alpha;
 
-  return norm;
+  return norm_factor;
 }
 
 /// NOBUG: Standard naming convention is not always followed for
@@ -116,7 +116,7 @@ double calc_powspec_normalisation_from_particles(
  * @param params Parameter set.
  * @param kbin Wavenumber bins.
  * @param alpha Alpha ratio.
- * @param norm Inverse-effective-volume normalisation factor.
+ * @param norm Normalisation factor.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns powspec_out Output power spectrum measurements.
@@ -216,7 +216,7 @@ PowspecMeasurements compute_powspec(
   /// Compute shot noise if the approach is particle-based.
   std::complex<double> sn_particle =
     particles_data._calc_powspec_shotnoise()
-    + particles_rand._calc_powspec_shotnoise(alpha);
+    + alpha * alpha * particles_rand._calc_powspec_shotnoise();
 
   /* * Output ************************************************************** */
 
@@ -278,7 +278,7 @@ PowspecMeasurements compute_powspec(
  * @param params Parameter set.
  * @param rbin Separation bins.
  * @param alpha Alpha ratio.
- * @param norm Inverse-effective-volume normalisation factor.
+ * @param norm Normalisation factor.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns corrfunc_out Output two-point correlation function
@@ -422,7 +422,7 @@ CorrfuncMeasurements compute_corrfunc(
  * @param params Parameter set.
  * @param kbin Wavenumber bins.
  * @param alpha Alpha ratio.
- * @param norm Inverse-effective-volume normalisation factor.
+ * @param norm Normalisation factor.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns powwin_out Output power spectrum window measurements.
@@ -479,8 +479,10 @@ PowspecWindowMeasurements compute_powspec_window(
     pk_save[ibin] += stats2pt.pk[ibin];
   }
 
-  /// Normalise the normalisation.
-  norm /= params.volume;  // QUEST: volume normalisation essential?
+  /// Renormalise the normalisation factor to be dimensionless.
+  /// CAVEAT: Discretionary choice to eliminate the physical volume
+  /// dimension by physical volume.
+  norm /= params.volume;
 
   /* * Output ************************************************************** */
 
@@ -530,7 +532,7 @@ PowspecWindowMeasurements compute_powspec_window(
  * @param params Parameter set.
  * @param kbin Wavenumber bins.
  * @param alpha Alpha ratio.
- * @param norm Inverse-effective-volume normalisation factor.
+ * @param norm Normalisation factor.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns corrfwin_out Output two-point correlation function
@@ -624,9 +626,6 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     }
   }
 
-  /// Normalise and then save the output.
-  norm /= particles_rand.wtotal / particles_rand.wtotal;  // QUEST
-
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
@@ -672,6 +671,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
  * @param particles_data (Data-source) particle container.
  * @param params Parameter set.
  * @param kbin Wavenumber bins.
+ * @param norm Normalisation factor.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns powspec_out Output power spectrum measurements.
@@ -679,7 +679,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
 PowspecMeasurements compute_powspec_in_box(
   ParticleCatalogue& particles_data,
   ParameterSet& params,
-  double* kbin,
+  double* kbin, double norm,
   bool save=false
 ) {
   if (currTask == 0) {
@@ -735,10 +735,9 @@ PowspecMeasurements compute_powspec_in_box(
   /// Compute shot noise if the approach is particle-based.
   std::complex<double> sn_particle = particles_data._calc_powspec_shotnoise();
 
-  /// Normalise the normalisation.
-  /// QUEST: Invert?
-  double norm = params.volume
-    / double(particles_data.ntotal) / double(particles_data.ntotal);
+  /// Normalisation factor should redue to
+  /// ``params.volume / particles_data.ntotal / particles_data.ntotal``
+  /// in the case of uniform particle weights.
 
   /* * Output ************************************************************** */
 
@@ -796,6 +795,7 @@ PowspecMeasurements compute_powspec_in_box(
  * @param particles_data (Data-source) particle container.
  * @param params Parameter set.
  * @param rbin Separation bins.
+ * @param norm Normalisation factor.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns corrfunc_out Output two-point correlation function
@@ -804,7 +804,7 @@ PowspecMeasurements compute_powspec_in_box(
 CorrfuncMeasurements compute_corrfunc_in_box(
   ParticleCatalogue& particles_data,
   ParameterSet& params,
-  double* rbin,
+  double* rbin, double norm,
   bool save=false
 ) {
   if (currTask == 0) {
@@ -855,10 +855,9 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     );
   }
 
-  /// Normalise normalisation.
-  /// QUEST: Invert?
-  double norm = params.volume
-    / double(particles_data.ntotal) / double(particles_data.ntotal);
+  /// Normalisation factor should redue to
+  /// ``params.volume / particles_data.ntotal / particles_data.ntotal``
+  /// in the case of uniform particle weights.
 
   /* * Output ************************************************************** */
 

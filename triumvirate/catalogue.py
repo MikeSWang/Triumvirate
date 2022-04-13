@@ -376,7 +376,7 @@ class ParticleCatalogue:
         Returns
         -------
         float
-            Power spectrum normalisation constant.
+            Power spectrum normalisation factor.
 
         """
         if None in self._pdata['nz']:

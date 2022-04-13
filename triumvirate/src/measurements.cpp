@@ -217,12 +217,12 @@ int main(int argc, char* argv[]) {
     );
   }
 
-  /// Compute inverse-effective-volume normalisation for clustering statistics.
+  /// Compute normalisation factor for clustering statistics.
+  /// QUEST: Check expression for all cases.
   double norm;
   if (
     params.norm_convention == "mesh"
   ) {
-    /// QUEST: Check expression for all cases.
     norm = calc_powspec_normalisation_from_mesh(particles_rand, params, alpha);
   } else if (
     params.norm_convention == "particle"
@@ -243,9 +243,7 @@ int main(int argc, char* argv[]) {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       compute_powspec(
         particles_data, particles_rand, los_data, los_rand,
-        params, kbin,
-        alpha, norm,
-        save
+        params, kbin, alpha, norm, save
       );
     }
     if (params.catalogue_type == "sim") {
@@ -264,6 +262,8 @@ int main(int argc, char* argv[]) {
     }
   }
   if (params.measurement_type == "2pcf-win") {
+    norm *= alpha * alpha;  // undo alpha factors in the case of
+                            // window functions
     compute_corrfunc_window(
       particles_rand, los_rand, params, rbin, alpha, norm, save
     );
@@ -273,7 +273,7 @@ int main(int argc, char* argv[]) {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       calc_bispec(
         particles_data, particles_rand, los_data, los_rand,
-        params, alpha, kbin, norm
+        params, kbin, alpha, norm
       );
     }
     if (params.catalogue_type == "sim") {
