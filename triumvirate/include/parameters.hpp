@@ -558,7 +558,7 @@ class ParameterSet {
     }
 
     if (this->binning == "linpad" || this->assignment == "logpad") {
-      /// HACK: Compare with `BinScheme::set_rbin`.
+      /// SEE: See `BinScheme::set_rbin`.
       int nbin_custom = 5;
 
       if (this->num_rbin < nbin_custom + 2) {
