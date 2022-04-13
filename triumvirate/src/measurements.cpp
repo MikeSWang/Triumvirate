@@ -107,17 +107,22 @@ int main(int argc, char* argv[]) {
     }
     exit(1);
   }
-  if (particles_rand.read_particle_data_from_file(
-    params.rand_catalogue_file, params.catalogue_header
-  )) {
-    if (currTask == 0) {
-      clockElapsed = double(clock() - clockStart);
-      printf(
-        "[ERRO] (+%s) Failed to load random-source catalogue file.\n",
-        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
-      );
+
+  std::string flag_rand = "false";  // whether the random catalogue is set
+  if (is_set(params.rand_catalogue_file)) {
+    if (particles_rand.read_particle_data_from_file(
+      params.rand_catalogue_file, params.catalogue_header
+    )) {
+      if (currTask == 0) {
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[ERRO] (+%s) Failed to load random-source catalogue file.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        );
+      }
+      exit(1);
     }
-    exit(1);
+    flag_rand = "true";
   }
 
   if (currTask == 0) {
@@ -204,9 +209,11 @@ int main(int argc, char* argv[]) {
   }
 
   /// Compute number density alpha ratio.
-  double alpha = 0.;
-  if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
+  double alpha;
+  if (flag_rand == "true") {
     alpha = particles_data.wtotal / particles_rand.wtotal;
+  } else {
+    alpha = 1.;
   }
 
   if (currTask == 0) {
@@ -218,16 +225,28 @@ int main(int argc, char* argv[]) {
   }
 
   /// Compute normalisation factor for clustering statistics.
-  /// QUEST: Check expression for all cases.
+  /// TODO: Add bispectrum cases.
   double norm;
   if (
     params.norm_convention == "mesh"
   ) {
-    norm = calc_powspec_normalisation_from_mesh(particles_rand, params, alpha);
+    if (flag_rand == "true") {
+      norm = calc_powspec_normalisation_from_mesh(
+        particles_rand, params, alpha
+      );
+    } else {
+      norm = calc_powspec_normalisation_from_mesh(
+        particles_data, params, alpha
+      );
+    }
   } else if (
     params.norm_convention == "particle"
   ) {
-    norm = calc_powspec_normalisation_from_particles(particles_rand, alpha);
+    if (flag_rand == "true") {
+      norm = calc_powspec_normalisation_from_particles(particles_rand, alpha);
+    } else {
+      norm = calc_powspec_normalisation_from_particles(particles_data, alpha);
+    }
   }
 
   if (currTask == 0) {
@@ -262,8 +281,6 @@ int main(int argc, char* argv[]) {
     }
   }
   if (params.measurement_type == "2pcf-win") {
-    norm *= alpha * alpha;  // undo alpha factors in the case of
-                            // window functions
     compute_corrfunc_window(
       particles_rand, los_rand, params, rbin, alpha, norm, save
     );

@@ -243,9 +243,7 @@ def _compute_corrfunc(
 #     # Run algorithm.
 #     cdef PowspecWindowMeasurements meas
 #     meas = compute_powspec_window_cpp(
-#         deref(particles_rand.thisptr),
-#         los_rand_cpp,
-#         deref(params.thisptr),
+#         deref(particles_rand.thisptr), los_rand_cpp, deref(params.thisptr),
 #         &kbin[0], alpha, norm,
 #         save
 #     )
@@ -279,9 +277,7 @@ def _compute_corrfunc_window(
     # Run algorithm.
     cdef CorrfuncWindowMeasurements meas
     meas = compute_corrfunc_window_cpp(
-        deref(particles_rand.thisptr),
-        los_rand_cpp,
-        deref(params.thisptr),
+        deref(particles_rand.thisptr), los_rand_cpp, deref(params.thisptr),
         &rbin[0], alpha, norm,
         save
     )
@@ -297,14 +293,14 @@ def _compute_powspec_in_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
         np.ndarray[double, ndim=1, mode='c'] kbin not None,
+        double norm,
         bool_t save
     ):
 
     cdef PowspecMeasurements meas
     meas = compute_powspec_in_box_cpp(
-        deref(particles_data.thisptr),
-        deref(params.thisptr),
-        &kbin[0],
+        deref(particles_data.thisptr), deref(params.thisptr),
+        &kbin[0], norm,
         save
     )
 
@@ -320,14 +316,14 @@ def _compute_corrfunc_in_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
         np.ndarray[double, ndim=1, mode='c'] rbin not None,
+        double norm,
         bool_t save
     ):
 
     cdef CorrfuncMeasurements meas
     meas = compute_corrfunc_in_box_cpp(
-        deref(particles_data.thisptr),
-        deref(params.thisptr),
-        &rbin[0],
+        deref(particles_data.thisptr), deref(params.thisptr),
+        &rbin[0], norm,
         save
     )
 

@@ -26,7 +26,7 @@ double clockElapsed;  ///< program elapsed clock
  * Return string showing elapsed time.
  *
  * @param clocktime Clock time.
- * @return elapsed_time Elapsed-time string.
+ * @returns elapsed_time Elapsed-time string.
  */
 std::string calc_elapsed_time_in_hhmmss(double clocktime) {
   int time = int(clocktime / CLOCKS_PER_SEC);

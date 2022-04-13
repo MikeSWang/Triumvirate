@@ -72,7 +72,7 @@ struct CorrfuncWindowMeasurements {
  * @param catalogue Particle catalogue.
  * @param params Parameter set.
  * @param alpha Alpha ratio.
- * @return norm_factor Power spectrum normalisation factor.
+ * @returns norm_factor Power spectrum normalisation factor.
  */
 double calc_powspec_normalisation_from_mesh(
   ParticleCatalogue& catalogue, ParameterSet& params, double alpha=1.
@@ -92,7 +92,7 @@ double calc_powspec_normalisation_from_mesh(
  *
  * @param catalogue Particle catalogue.
  * @param alpha Alpha ratio.
- * @return norm_factor Power spectrum normalisation factor.
+ * @returns norm_factor Power spectrum normalisation factor.
  */
 double calc_powspec_normalisation_from_particles(
   ParticleCatalogue& catalogue, double alpha=1.
