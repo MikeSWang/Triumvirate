@@ -1,5 +1,4 @@
 [NOTE] The following code tags are in use: {
-    'TODO', 'QUEST', 'RFE', 'IDEA',
-    'NOBUG', 'CAVEAT', 'NOTE', 'HACK',
-    'FIXME', 'WARNING'
-  }
+    'FIXME', 'QUEST', 'TODO', 'WARNING', 'RFE',
+    'HACK', 'SEE', 'CAVEAT', 'NOBUG',
+}
