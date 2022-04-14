@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
     exit(1);
   }
 
-  ParameterSet params;
+  ParameterSet params;  // program parameters
   if (params.read_from_file(argv)) {
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
   }
 
   /// Read catalogue files.
-  ParticleCatalogue particles_data, particles_rand;
+  ParticleCatalogue particles_data, particles_rand;  // catalogues
   if (particles_data.read_particle_data_from_file(
     params.data_catalogue_file, params.catalogue_header
   )) {
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
     exit(1);
   }
 
-  std::string flag_rand = "false";  // whether the random catalogue is set
+  std::string flag_rand = "false";  // random catalogue status
   if (is_set(params.rand_catalogue_file)) {
     if (particles_rand.read_particle_data_from_file(
       params.rand_catalogue_file, params.catalogue_header
@@ -144,13 +144,30 @@ int main(int argc, char* argv[]) {
   }
 
   /// Set up measurements.
-  double kbin[params.num_kbin];
+  std::string flag_npoint;  // n-point order of the measured statistics
+  if (
+    params.measurement_type == "powspec"
+    || params.measurement_type == "2pcf"
+    || params.measurement_type == "2pcf-win"
+  ) {
+    flag_npoint = "2pt";
+  }
+  if (
+    params.measurement_type == "bispec"
+    || params.measurement_type == "3pcf"
+    || params.measurement_type == "3pcf-win"
+    || params.measurement_type == "3pcf-win-wa"
+  ) {
+    flag_npoint = "3pt";
+  }
+
+  double kbin[params.num_kbin];  // wavenumber bins
   BinScheme::set_kbin(params, kbin);
 
-  double rbin[params.num_rbin];
+  double rbin[params.num_rbin];  // separation bins
   BinScheme::set_rbin(params, rbin);
 
-  bool save = true;
+  bool save = true;  // whether to save the results or not
 
   /// Compute line of sight.
   if (currTask == 0) {
@@ -161,7 +178,7 @@ int main(int argc, char* argv[]) {
     );
   }
 
-  LineOfSight* los_data = new LineOfSight[particles_data.ntotal];
+  LineOfSight* los_data = new LineOfSight[particles_data.ntotal];  // data LoS
   for (int pid = 0; pid < particles_data.ntotal; pid++) {
     double los_mag = sqrt(
       particles_data[pid].pos[0] * particles_data[pid].pos[0]
@@ -174,7 +191,7 @@ int main(int argc, char* argv[]) {
     los_data[pid].pos[2] = particles_data[pid].pos[2] / los_mag;
   }
 
-  LineOfSight* los_rand = new LineOfSight[particles_rand.ntotal];
+  LineOfSight* los_rand = new LineOfSight[particles_rand.ntotal];  // random LoS
   for (int pid = 0; pid < particles_rand.ntotal; pid++) {
     double los_mag = sqrt(
       particles_rand[pid].pos[0] * particles_rand[pid].pos[0]
@@ -209,7 +226,7 @@ int main(int argc, char* argv[]) {
   }
 
   /// Compute number density alpha ratio.
-  double alpha;
+  double alpha;  // alpha ratio
   if (flag_rand == "true") {
     alpha = particles_data.wtotal / particles_rand.wtotal;
   } else {
@@ -225,27 +242,50 @@ int main(int argc, char* argv[]) {
   }
 
   /// Compute normalisation factor for clustering statistics.
-  /// TODO: Add bispectrum cases.
-  double norm;
+  double norm;  // normalisation factor
   if (
     params.norm_convention == "mesh"
   ) {
     if (flag_rand == "true") {
-      norm = calc_powspec_normalisation_from_mesh(
-        particles_rand, params, alpha
-      );
+      if (flag_npoint == "2pt") {
+        norm = calc_powspec_normalisation_from_mesh(
+          particles_rand, params, alpha
+        );
+      }
+      if (flag_npoint == "3pt") {
+        norm = calc_bispec_normalisation_from_mesh(
+          particles_rand, params, alpha
+        );
+      }
     } else {
-      norm = calc_powspec_normalisation_from_mesh(
-        particles_data, params, alpha
-      );
+      if (flag_npoint == "2pt") {
+        norm = calc_powspec_normalisation_from_mesh(
+          particles_data, params, alpha
+        );
+      }
+      if (flag_npoint == "3pt") {
+        norm = calc_bispec_normalisation_from_mesh(
+          particles_data, params, alpha
+        );
+      }
     }
   } else if (
     params.norm_convention == "particle"
   ) {
     if (flag_rand == "true") {
-      norm = calc_powspec_normalisation_from_particles(particles_rand, alpha);
+      if (flag_npoint == "2pt") {
+        norm = calc_powspec_normalisation_from_particles(particles_rand, alpha);
+      }
+      if (flag_npoint == "3pt") {
+        norm = calc_bispec_normalisation_from_particles(particles_rand, alpha);
+      }
     } else {
-      norm = calc_powspec_normalisation_from_particles(particles_data, alpha);
+      if (flag_npoint == "2pt") {
+        norm = calc_powspec_normalisation_from_particles(particles_data, alpha);
+      }
+      if (flag_npoint == "3pt") {
+        norm = calc_bispec_normalisation_from_particles(particles_data, alpha);
+      }
     }
   }
 
