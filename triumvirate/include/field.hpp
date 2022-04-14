@@ -799,10 +799,10 @@ class PseudoDensityField {
 
   /**
    * Calculate (effective) volume normalisation factor f@$ 1/I_2 f@$
-   * (for the power spectrum), where
+   * (for two-point correlators), where
    *
    * f@[
-   *   I_2 = \int \mathrm{d}^3\,\vec{x} \bar{n}(\vec{x})^2 \,.
+   *   I_2 = \int\mathrm{d}^3\,\vec{x} w(\vec{x})^2 \bar{n}(\vec{x})^2 \,.
    * f@]
    *
    * @param particles (Typically random-source) particle container.
@@ -829,7 +829,7 @@ class PseudoDensityField {
 
     double vol_eff_inv = 0.;
     for (int gid = 0; gid < this->params.nmesh; gid++) {
-      vol_eff_inv += vol_cell * this->field[gid][0] * this->field[gid][0];
+      vol_eff_inv += vol_cell * pow(this->field[gid][0], 2);
     }
 
     double norm_factor = 1. / vol_eff_inv;
@@ -838,11 +838,11 @@ class PseudoDensityField {
   }
 
   /**
-   * Calculate (effective) volume-square normalisation factor
-   * f@$ 1/I_3 f@$ (for the bispectrum), where
+   * Calculate (effective) quadratic-volume normalisation factor
+   * f@$ 1/I_3 f@$ (for three-point correlators), where
    *
    * f@[
-   *   I_3 = \int \mathrm{d}^3\,\vec{x} \bar{n}(\vec{x})^3 \,.
+   *   I_3 = \int\mathrm{d}^3\,\vec{x} w(\vec{x})^3 \bar{n}(\vec{x})^3 \,.
    * f@]
    *
    * @param particles (Typically random-source) particle container.
@@ -869,8 +869,7 @@ class PseudoDensityField {
 
     double vol_sq_eff_inv = 0.;
     for (int gid = 0; gid < this->params.nmesh; gid++) {
-      vol_sq_eff_inv += vol_cell
-        * this->field[gid][0] * this->field[gid][0] * this->field[gid][0];
+      vol_sq_eff_inv += vol_cell * pow(this->field[gid][0], 3);
     }
 
     double norm_factor = 1. / vol_sq_eff_inv;
