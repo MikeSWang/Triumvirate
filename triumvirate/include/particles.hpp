@@ -578,6 +578,33 @@ class ParticleCatalogue {
   }
 
   /**
+   * Calculate particle-based power spectrum shot noise.
+   *
+   * @returns shotnoise Power spectrum shot noise.
+   *
+   * @see Pseudo2ptStats::calc_ylm_wgtd_shotnoise_for_powspec()
+   */
+  double _calc_powspec_shotnoise() {
+    if (this->pdata == NULL) {
+      if (currTask == 0) {
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[ERRO] (+%s) Particle data are uninitialised.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        );
+      }
+      exit(1);
+    }
+
+    double shotnoise = 0.;
+    for (int pid = 0; pid < this->ntotal; pid++) {
+      shotnoise += pow(this->pdata[pid].ws, 2) * pow(this->pdata[pid].wc, 2);
+    }
+
+    return shotnoise;
+  }
+
+  /**
    * Calculate particle-based power spectrum normalisation.
    *
    * @returns norm_factor Power spectrum normalisation factor.
@@ -599,7 +626,7 @@ class ParticleCatalogue {
     double vol_eff_inv = 0.;  // I_2
     for (int pid = 0; pid < this->ntotal; pid++) {
       vol_eff_inv += this->pdata[pid].nz
-        * this->pdata[pid].ws * this->pdata[pid].wc * this->pdata[pid].wc;
+        * this->pdata[pid].ws * pow(this->pdata[pid].wc, 2);
     }
 
     if (vol_eff_inv == 0.) {
@@ -620,13 +647,13 @@ class ParticleCatalogue {
   }
 
   /**
-   * Calculate particle-based power spectrum shot noise.
+   * Calculate particle-based bispectrum normalisation.
    *
-   * @returns shotnoise Power spectrum shot noise.
+   * @returns norm_factor Bispectrum normalisation factor.
    *
-   * @see Pseudo2ptStats::calc_ylm_wgtd_shotnoise_for_powspec()
+   * @see PseudoDensityField::_calc_wgt_cu_volume_norm()
    */
-  double _calc_powspec_shotnoise() {
+  double _calc_bispec_normalisation() {
     if (this->pdata == NULL) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
@@ -638,13 +665,27 @@ class ParticleCatalogue {
       exit(1);
     }
 
-    double shotnoise = 0.;
+    double vol_sq_eff_inv = 0.;  // I_3
     for (int pid = 0; pid < this->ntotal; pid++) {
-      shotnoise += this->pdata[pid].ws * this->pdata[pid].ws
-        * this->pdata[pid].wc * this->pdata[pid].wc;
+      vol_sq_eff_inv += pow(this->pdata[pid].nz, 2)
+        * this->pdata[pid].ws * pow(this->pdata[pid].wc, 3);
     }
 
-    return shotnoise;
+    if (vol_sq_eff_inv == 0.) {
+      if (currTask == 0) {
+        clockElapsed = double(clock() - clockStart);
+        printf(
+          "[ERRO] (+%s) Particle 'nz' values appear to be all zeros. "
+          "Check the input catalogue contains valid 'nz' field.\n",
+          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        );
+      }
+      exit(1);
+    }
+
+    double norm_factor = 1. / vol_sq_eff_inv;  // I_3^(-1)
+
+    return norm_factor;
   }
 
  private:
