@@ -495,14 +495,14 @@ PowspecWindowMeasurements compute_powspec_window(
   /// Save (optionally) to output file.
   if (save) {
     /// Set output path.
-    char buf[1024];
+    char save_filepath[1024];
     sprintf(
-      buf, "%s/pk%d_win%s",
+      save_filepath, "%s/pk%d_win%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
 
     /// Write output.
-    FILE* save_fileptr = fopen(buf, "w");
+    FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
@@ -637,14 +637,14 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
   /// Save (optionally) to output file.
   if (save) {
     /// Set output path.
-    char buf[1024];
+    char save_filepath[1024];
     sprintf(
-      buf, "%s/xi%d_win%s",
+      save_filepath, "%s/xi%d_win%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
 
     /// Write output.
-    FILE* save_fileptr = fopen(buf, "w");
+    FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
@@ -756,14 +756,14 @@ PowspecMeasurements compute_powspec_in_box(
   /// Save (optionally) to output file.
   if (save) {
     /// Set output path.
-    char buf[1024];
+    char save_filepath[1024];
     sprintf(
-      buf, "%s/pk%d%s",
+      save_filepath, "%s/pk%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
 
     /// Write output.
-    FILE* save_fileptr = fopen(buf, "w");
+    FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       fprintf(
         save_fileptr,
@@ -867,14 +867,14 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   /// Save (optionally) to output file.
   if (save) {
     /// Set output path.
-    char buf[1024];
+    char save_filepath[1024];
     sprintf(
-      buf, "%s/xi%d%s",
+      save_filepath, "%s/xi%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
 
     /// Write output.
-    FILE* save_fileptr = fopen(buf, "w");
+    FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
