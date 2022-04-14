@@ -80,7 +80,7 @@ double calc_powspec_normalisation_from_mesh(
   PseudoDensityField<ParticleCatalogue> catalogue_mesh(params);
 
   double norm_factor = catalogue_mesh._calc_wgt_sq_volume_norm(catalogue)
-    / alpha / alpha;
+    / pow(alpha, 2);
 
   catalogue_mesh.finalise_density_field();
 
