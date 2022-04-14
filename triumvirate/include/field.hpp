@@ -1822,10 +1822,9 @@ class Pseudo2ptStats {
 
     for (int ibin = 0; ibin < this->params.num_rbin; ibin++) {
       if (this->npair[ibin] != 0) {
-        this->xi[ibin] *=
-          pow(-1., this->params.ell1 + this->params.ell2)
-          / vol_cell
-          / double(this->npair[ibin]) / double(this->npair[ibin]);
+        this->xi[ibin] *= 1 / vol_cell
+          * pow(-1., this->params.ell1 + this->params.ell2)
+          / pow(double(this->npair[ibin]), 2);
       } else {
         this->xi[ibin] = 0.;
       }
