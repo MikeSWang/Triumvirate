@@ -92,17 +92,13 @@ class PseudoDensityField {
     ParticleContainer& particles,
     fftw_complex* weights
   ) {
-    if (
-      this->params.assignment == "ngp"
-    ) {
+    if (this->params.assignment == "ngp") {
       this->assign_weighted_field_to_mesh_ngp(particles, weights);
-    } else if (
-      this->params.assignment == "cic"
-    ) {
+    } else
+    if (this->params.assignment == "cic") {
       this->assign_weighted_field_to_mesh_cic(particles, weights);
-    } else if (
-      this->params.assignment == "tsc"
-    ) {
+    } else
+    if (this->params.assignment == "tsc") {
       this->assign_weighted_field_to_mesh_tsc(particles, weights);
     } else {
       if (currTask == 0) {
@@ -1078,17 +1074,13 @@ class PseudoDensityField {
    */
   double calc_assignment_window_in_fourier(double* kvec) {
     int order;
-    if (
-      this->params.assignment == "ngp"
-    ) {
+    if (this->params.assignment == "ngp") {
       order = 1;
-    } else if (
-      this->params.assignment == "cic"
-    ) {
+    } else
+    if (this->params.assignment == "cic") {
       order = 2;
-    } else if (
-      this->params.assignment == "tsc"
-    ) {
+    } else
+    if (this->params.assignment == "tsc") {
       order = 3;
     }
 
@@ -1995,17 +1987,13 @@ class Pseudo2ptStats {
    */
   double calc_assignment_window_in_fourier(double* kvec) {
     int order;
-    if (
-      this->params.assignment == "ngp"
-    ) {
+    if (this->params.assignment == "ngp") {
       order = 1;
-    } else if (
-      this->params.assignment == "cic"
-    ) {
+    } else
+    if (this->params.assignment == "cic") {
       order = 2;
-    } else if (
-      this->params.assignment == "tsc"
-    ) {
+    } else
+    if (this->params.assignment == "tsc") {
       order = 3;
     }
 
@@ -2044,20 +2032,15 @@ class Pseudo2ptStats {
    * @returns Value of the scale-dependence function.
    */
   double calc_shotnoise_scale_dependence(double* kvec) {
-    if (
-      this->params.assignment == "ngp"
-    ) {
+    if (this->params.assignment == "ngp") {
       return this->calc_shotnoise_scale_dependence_ngp(kvec);
-    } else if (
-      this->params.assignment == "cic"
-    ) {
+    }
+    if (this->params.assignment == "cic") {
       return this->calc_shotnoise_scale_dependence_cic(kvec);
-    } else if (
-      this->params.assignment == "tsc"
-    ) {
+    }
+    if (this->params.assignment == "tsc") {
       return this->calc_shotnoise_scale_dependence_tsc(kvec);
     }
-
     return 1.;
   }
 

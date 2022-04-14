@@ -498,13 +498,10 @@ class ParticleCatalogue {
     /// Adjust the box.
     for (int pid = 0; pid < this->ntotal; pid++) {
       for (int iaxis = 0; iaxis < 3; iaxis++) {
-        if (
-          this->pdata[pid].pos[iaxis] >= boxsize[iaxis]
-        ) {
+        if (this->pdata[pid].pos[iaxis] >= boxsize[iaxis]) {
           this->pdata[pid].pos[iaxis] -= boxsize[iaxis];
-        } else if (
-          this->pdata[pid].pos[iaxis] < 0.
-        ) {
+        } else
+        if (this->pdata[pid].pos[iaxis] < 0.) {
           this->pdata[pid].pos[iaxis] += boxsize[iaxis];
         }
       }

@@ -220,7 +220,7 @@ int main(int argc, char* argv[]) {
       params.boxsize, params.ngrid,
       ngrid_pad
     );
-  }
+  } else
   if (params.catalogue_type == "sim") {
     particles_data.offset_coords_for_periodicity(params.boxsize);
   }
@@ -243,15 +243,13 @@ int main(int argc, char* argv[]) {
 
   /// Compute normalisation factor for clustering statistics.
   double norm;  // normalisation factor
-  if (
-    params.norm_convention == "mesh"
-  ) {
+  if (params.norm_convention == "mesh") {
     if (flag_rand == "true") {
       if (flag_npoint == "2pt") {
         norm = calc_powspec_normalisation_from_mesh(
           particles_rand, params, alpha
         );
-      }
+      } else
       if (flag_npoint == "3pt") {
         norm = calc_bispec_normalisation_from_mesh(
           particles_rand, params, alpha
@@ -262,27 +260,26 @@ int main(int argc, char* argv[]) {
         norm = calc_powspec_normalisation_from_mesh(
           particles_data, params, alpha
         );
-      }
+      } else
       if (flag_npoint == "3pt") {
         norm = calc_bispec_normalisation_from_mesh(
           particles_data, params, alpha
         );
       }
     }
-  } else if (
-    params.norm_convention == "particle"
-  ) {
+  } else
+  if (params.norm_convention == "particle") {
     if (flag_rand == "true") {
       if (flag_npoint == "2pt") {
         norm = calc_powspec_normalisation_from_particles(particles_rand, alpha);
-      }
+      } else
       if (flag_npoint == "3pt") {
         norm = calc_bispec_normalisation_from_particles(particles_rand, alpha);
       }
     } else {
       if (flag_npoint == "2pt") {
         norm = calc_powspec_normalisation_from_particles(particles_data, alpha);
-      }
+      } else
       if (flag_npoint == "3pt") {
         norm = calc_bispec_normalisation_from_particles(particles_data, alpha);
       }
@@ -304,27 +301,27 @@ int main(int argc, char* argv[]) {
         particles_data, particles_rand, los_data, los_rand,
         params, kbin, alpha, norm, save
       );
-    }
+    } else
     if (params.catalogue_type == "sim") {
       compute_powspec_in_box(particles_data, params, kbin, save);
     }
-  }
+  } else
   if (params.measurement_type == "2pcf") {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       compute_corrfunc(
         particles_data, particles_rand, los_data, los_rand,
         params, rbin, alpha, norm, save
       );
-    }
+    } else
     if (params.catalogue_type == "sim") {
       compute_corrfunc_in_box(particles_data, params, rbin, save);
     }
-  }
+  } else
   if (params.measurement_type == "2pcf-win") {
     compute_corrfunc_window(
       particles_rand, los_rand, params, rbin, alpha, norm, save
     );
-  }
+  } else
 
   if (params.measurement_type == "bispec") {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
@@ -332,27 +329,27 @@ int main(int argc, char* argv[]) {
         particles_data, particles_rand, los_data, los_rand,
         params, kbin, alpha, norm
       );
-    }
+    } else
     if (params.catalogue_type == "sim") {
       calc_bispec_in_box(particles_data, params, kbin);
     }
-  }
+  } else
   if (params.measurement_type == "3pcf") {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       calc_3pcf(
         particles_data, particles_rand, los_data, los_rand,
         params, alpha, rbin, norm
       );
-    }
+    } else
     if (params.catalogue_type == "sim") {
       calc_3pcf_in_box(particles_data, params, rbin);
     }
-  }
+  } else
   if (params.measurement_type == "3pcf-win") {
     calc_3pcf_window(
       particles_rand, los_rand, params, alpha, rbin, norm
     );
-  }
+  } else
   if (params.measurement_type == "3pcf-win-wa") {
     calc_3pcf_window_for_wide_angle(
       particles_rand, los_rand, params, alpha, rbin, norm
