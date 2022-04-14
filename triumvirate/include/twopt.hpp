@@ -409,258 +409,6 @@ CorrfuncMeasurements compute_corrfunc(
   return corrfunc_out;
 }
 
-#ifdef TRIUMVIRATE_USE_DISABLED_CODE_
-/**
- * Compute power spectrum window from a random catalogue and
- * optionally save the results.
- *
- * @param particles_rand (Random-source) particle container.
- * @param los_rand (Random-source) particle lines of sight.
- * @param params Parameter set.
- * @param kbin Wavenumber bins.
- * @param alpha Alpha ratio.
- * @param norm Normalisation factor.
- * @param save If `true` (default is `false`), write computed results
- *             to the measurement output file set by `params`.
- * @returns powwin_out Output power spectrum window measurements.
- */
-PowspecWindowMeasurements compute_powspec_window(
-  ParticleCatalogue& particles_rand,
-  LineOfSight* los_rand,
-  ParameterSet& params,
-  double* kbin,
-  double alpha,
-  double norm,
-  bool save=false
-) {
-  if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
-    printf(
-      "[STAT] (+%s) Measurement: power spectrum window "
-      "from random catalogue.\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
-    );
-  }
-
-  /* * Set-up ************************************************************** */
-
-  /// Set up output.
-  int* nmode_save = new int[params.num_kbin];
-  double* k_save = new double[params.num_kbin];
-  std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
-  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-    nmode_save[ibin] = 0;
-    k_save[ibin] = 0.;
-    pk_save[ibin] = 0.;
-  }
-
-  /* * Measurement ********************************************************* */
-
-  /// Compute power spectrum window.
-  PseudoDensityField<ParticleCatalogue> dn_00(params);
-  dn_00.compute_ylm_wgtd_density(particles_rand, los_rand, alpha, 0, 0);
-  dn_00.fourier_transform();
-
-  Pseudo2ptStats<ParticleCatalogue> stats2pt(params);
-  std::complex<double> sn_amp = stats2pt.calc_ylm_wgtd_shotnoise_for_powspec(
-    particles_rand, los_rand, alpha, params.ELL, 0
-  );
-
-  stats2pt.compute_ylm_wgtd_2pt_stats_in_fourier(
-    dn_00, dn_00, sn_amp, kbin, params.ELL, 0
-  );
-
-  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-    nmode_save[ibin] = stats2pt.nmode[ibin];
-    k_save[ibin] = stats2pt.k[ibin];
-    pk_save[ibin] += stats2pt.pk[ibin];
-  }
-
-  /// Renormalise the normalisation factor to be dimensionless.
-  /// CAVEAT: Discretionary choice to eliminate the physical volume
-  /// dimension by physical volume.
-  norm /= params.volume;
-
-  /* * Output ************************************************************** */
-
-  /// Fill in output struct.
-  PowspecWindowMeasurements powwin_out;
-  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-    powwin_out.kbin.push_back(kbin[ibin]);
-    powwin_out.keff.push_back(k_save[ibin]);
-    powwin_out.nmode.push_back(nmode_save[ibin]);
-    powwin_out.pk.push_back(norm * pk_save[ibin]);
-  }
-
-  /// Save (optionally) to output file.
-  if (save) {
-    /// Set output path.
-    char save_filepath[1024];
-    sprintf(
-      save_filepath, "%s/pk%d_win%s",
-      params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
-    );
-
-    /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
-    for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-      fprintf(
-        save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
-        powwin_out.kbin[ibin], powwin_out.keff[ibin],
-        powwin_out.nmode[ibin],
-        powwin_out.pk[ibin].real(), powwin_out.pk[ibin].imag()
-      );
-    }
-    fclose(save_fileptr);
-  }
-
-  delete[] nmode_save; delete[] k_save; delete[] pk_save;
-
-  return powwin_out;
-}
-#endif  // USE_DISABLED_TRIUMVIRATE_CODE_
-
-/**
- * Compute two-point correlation function window from a random catalogue
- * and optionally save the results.
- *
- * @param particles_rand (Random-source) particle container.
- * @param los_rand (Random-source) particle lines of sight.
- * @param params Parameter set.
- * @param kbin Wavenumber bins.
- * @param alpha Alpha ratio.
- * @param norm Normalisation factor.
- * @param save If `true` (default is `false`), write computed results
- *             to the measurement output file set by `params`.
- * @returns corrfwin_out Output two-point correlation function
- *                       window measurements.
- */
-CorrfuncWindowMeasurements compute_corrfunc_window(
-  ParticleCatalogue& particles_rand,
-  LineOfSight* los_rand,
-  ParameterSet& params,
-  double* rbin,
-  double alpha,
-  double norm,
-  bool save=false
-) {
-  if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
-    printf(
-      "[STAT] (+%s) Measurement: two-point correlation function window "
-      "from random catalogue.\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
-    );
-  }
-
-  /* * Set-up ************************************************************** */
-
-  /// Set up input.
-  int ell1 = params.ELL;
-
-  /// Set up output.
-  int* npair_save = new int[params.num_rbin];
-  double* r_save = new double[params.num_rbin];
-  std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
-  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-    npair_save[ibin] = 0;
-    r_save[ibin] = 0.;
-    xi_save[ibin] = 0.;
-  }
-
-  /* * Measurement ********************************************************* */
-
-  /// Compute 2PCF window.
-  PseudoDensityField<ParticleCatalogue> dn_00(params);
-  dn_00.compute_ylm_wgtd_density(particles_rand, los_rand, alpha, 0, 0);
-  dn_00.fourier_transform();
-
-  for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-    PseudoDensityField<ParticleCatalogue> dn_LM(params);
-    dn_LM.compute_ylm_wgtd_density(
-      particles_rand, los_rand, alpha, params.ELL, M_
-    );
-    dn_LM.fourier_transform();
-
-    Pseudo2ptStats<ParticleCatalogue> stats2pt(params);
-    std::complex<double> sn_amp = stats2pt.calc_ylm_wgtd_shotnoise_for_powspec(
-      particles_rand, los_rand, alpha, params.ELL, M_
-    );
-
-    /// Calculate equivalent to (-1)^m_1 δ_{m_1, -M} which, after being
-    /// summed over m_1, agrees with Hand et al. (2017) [1704.02357].
-    for (int m1 = - ell1; m1 <= ell1; m1++) {
-      double coupling = (2*params.ELL + 1) * (2*ell1 + 1)
-          * wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
-          * wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
-
-      if (fabs(coupling) < EPS_COUPLING_2PT) {continue;}
-
-      stats2pt.compute_ylm_wgtd_2pt_stats_in_config(
-        dn_LM, dn_00, sn_amp, rbin, ell1, m1
-      );
-
-      for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-        xi_save[ibin] += coupling * stats2pt.xi[ibin];
-      }
-
-      if (M_ == 0 && m1 == 0) {
-        for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-          npair_save[ibin] = stats2pt.npair[ibin];
-          r_save[ibin] = stats2pt.r[ibin];
-        }
-      }
-    }
-
-    if (currTask == 0) {
-      clockElapsed = double(clock() - clockStart);
-      printf(
-        "[STAT] (+%s) Two-point correlation function window term "
-        "at order M = %d computed.\n",
-        calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
-        M_
-      );
-    }
-  }
-
-  /* * Output ************************************************************** */
-
-  /// Fill in output struct.
-  CorrfuncWindowMeasurements corrfwin_out;
-  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-    corrfwin_out.rbin.push_back(rbin[ibin]);
-    corrfwin_out.reff.push_back(r_save[ibin]);
-    corrfwin_out.npair.push_back(npair_save[ibin]);
-    corrfwin_out.xi.push_back(norm * xi_save[ibin]);
-  }
-
-  /// Save (optionally) to output file.
-  if (save) {
-    /// Set output path.
-    char save_filepath[1024];
-    sprintf(
-      save_filepath, "%s/xi%d_win%s",
-      params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
-    );
-
-    /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
-    for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-      fprintf(
-        save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
-        corrfwin_out.rbin[ibin], corrfwin_out.reff[ibin],
-        corrfwin_out.npair[ibin],
-        corrfwin_out.xi[ibin].real(), corrfwin_out.xi[ibin].imag()
-      );
-    }
-    fclose(save_fileptr);
-  }
-
-  delete[] npair_save; delete[] r_save; delete[] xi_save;
-
-  return corrfwin_out;
-}
-
 /**
  * Compute power spectrum in a periodic box and optionally
  * save the results.
@@ -889,6 +637,258 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   delete[] npair_save; delete[] r_save; delete[] xi_save;
 
   return corrfunc_out;
+}
+
+#ifdef TRIUMVIRATE_USE_DISABLED_CODE_
+/**
+ * Compute power spectrum window from a random catalogue and
+ * optionally save the results.
+ *
+ * @param particles_rand (Random-source) particle container.
+ * @param los_rand (Random-source) particle lines of sight.
+ * @param params Parameter set.
+ * @param kbin Wavenumber bins.
+ * @param alpha Alpha ratio.
+ * @param norm Normalisation factor.
+ * @param save If `true` (default is `false`), write computed results
+ *             to the measurement output file set by `params`.
+ * @returns powwin_out Output power spectrum window measurements.
+ */
+PowspecWindowMeasurements compute_powspec_window(
+  ParticleCatalogue& particles_rand,
+  LineOfSight* los_rand,
+  ParameterSet& params,
+  double* kbin,
+  double alpha,
+  double norm,
+  bool save=false
+) {
+  if (currTask == 0) {
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "[STAT] (+%s) Measurement: power spectrum window "
+      "from random catalogue.\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+    );
+  }
+
+  /* * Set-up ************************************************************** */
+
+  /// Set up output.
+  int* nmode_save = new int[params.num_kbin];
+  double* k_save = new double[params.num_kbin];
+  std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
+  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    nmode_save[ibin] = 0;
+    k_save[ibin] = 0.;
+    pk_save[ibin] = 0.;
+  }
+
+  /* * Measurement ********************************************************* */
+
+  /// Compute power spectrum window.
+  PseudoDensityField<ParticleCatalogue> dn_00(params);
+  dn_00.compute_ylm_wgtd_density(particles_rand, los_rand, alpha, 0, 0);
+  dn_00.fourier_transform();
+
+  Pseudo2ptStats<ParticleCatalogue> stats2pt(params);
+  std::complex<double> sn_amp = stats2pt.calc_ylm_wgtd_shotnoise_for_powspec(
+    particles_rand, los_rand, alpha, params.ELL, 0
+  );
+
+  stats2pt.compute_ylm_wgtd_2pt_stats_in_fourier(
+    dn_00, dn_00, sn_amp, kbin, params.ELL, 0
+  );
+
+  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    nmode_save[ibin] = stats2pt.nmode[ibin];
+    k_save[ibin] = stats2pt.k[ibin];
+    pk_save[ibin] += stats2pt.pk[ibin];
+  }
+
+  /// Renormalise the normalisation factor to be dimensionless.
+  /// CAVEAT: Discretionary choice to eliminate the physical volume
+  /// dimension by physical volume.
+  norm /= params.volume;
+
+  /* * Output ************************************************************** */
+
+  /// Fill in output struct.
+  PowspecWindowMeasurements powwin_out;
+  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    powwin_out.kbin.push_back(kbin[ibin]);
+    powwin_out.keff.push_back(k_save[ibin]);
+    powwin_out.nmode.push_back(nmode_save[ibin]);
+    powwin_out.pk.push_back(norm * pk_save[ibin]);
+  }
+
+  /// Save (optionally) to output file.
+  if (save) {
+    /// Set output path.
+    char save_filepath[1024];
+    sprintf(
+      save_filepath, "%s/pk%d_win%s",
+      params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
+    );
+
+    /// Write output.
+    FILE* save_fileptr = fopen(save_filepath, "w");
+    for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+      fprintf(
+        save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
+        powwin_out.kbin[ibin], powwin_out.keff[ibin],
+        powwin_out.nmode[ibin],
+        powwin_out.pk[ibin].real(), powwin_out.pk[ibin].imag()
+      );
+    }
+    fclose(save_fileptr);
+  }
+
+  delete[] nmode_save; delete[] k_save; delete[] pk_save;
+
+  return powwin_out;
+}
+#endif  // TRIUMVIRATE_USE_DISABLED_CODE_
+
+/**
+ * Compute two-point correlation function window from a random catalogue
+ * and optionally save the results.
+ *
+ * @param particles_rand (Random-source) particle container.
+ * @param los_rand (Random-source) particle lines of sight.
+ * @param params Parameter set.
+ * @param kbin Wavenumber bins.
+ * @param alpha Alpha ratio.
+ * @param norm Normalisation factor.
+ * @param save If `true` (default is `false`), write computed results
+ *             to the measurement output file set by `params`.
+ * @returns corrfwin_out Output two-point correlation function
+ *                       window measurements.
+ */
+CorrfuncWindowMeasurements compute_corrfunc_window(
+  ParticleCatalogue& particles_rand,
+  LineOfSight* los_rand,
+  ParameterSet& params,
+  double* rbin,
+  double alpha,
+  double norm,
+  bool save=false
+) {
+  if (currTask == 0) {
+    clockElapsed = double(clock() - clockStart);
+    printf(
+      "[STAT] (+%s) Measurement: two-point correlation function window "
+      "from random catalogue.\n",
+      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+    );
+  }
+
+  /* * Set-up ************************************************************** */
+
+  /// Set up input.
+  int ell1 = params.ELL;
+
+  /// Set up output.
+  int* npair_save = new int[params.num_rbin];
+  double* r_save = new double[params.num_rbin];
+  std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
+  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+    npair_save[ibin] = 0;
+    r_save[ibin] = 0.;
+    xi_save[ibin] = 0.;
+  }
+
+  /* * Measurement ********************************************************* */
+
+  /// Compute 2PCF window.
+  PseudoDensityField<ParticleCatalogue> dn_00(params);
+  dn_00.compute_ylm_wgtd_density(particles_rand, los_rand, alpha, 0, 0);
+  dn_00.fourier_transform();
+
+  for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+    PseudoDensityField<ParticleCatalogue> dn_LM(params);
+    dn_LM.compute_ylm_wgtd_density(
+      particles_rand, los_rand, alpha, params.ELL, M_
+    );
+    dn_LM.fourier_transform();
+
+    Pseudo2ptStats<ParticleCatalogue> stats2pt(params);
+    std::complex<double> sn_amp = stats2pt.calc_ylm_wgtd_shotnoise_for_powspec(
+      particles_rand, los_rand, alpha, params.ELL, M_
+    );
+
+    /// Calculate equivalent to (-1)^m_1 δ_{m_1, -M} which, after being
+    /// summed over m_1, agrees with Hand et al. (2017) [1704.02357].
+    for (int m1 = - ell1; m1 <= ell1; m1++) {
+      double coupling = (2*params.ELL + 1) * (2*ell1 + 1)
+          * wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
+          * wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
+
+      if (fabs(coupling) < EPS_COUPLING_2PT) {continue;}
+
+      stats2pt.compute_ylm_wgtd_2pt_stats_in_config(
+        dn_LM, dn_00, sn_amp, rbin, ell1, m1
+      );
+
+      for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+        xi_save[ibin] += coupling * stats2pt.xi[ibin];
+      }
+
+      if (M_ == 0 && m1 == 0) {
+        for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+          npair_save[ibin] = stats2pt.npair[ibin];
+          r_save[ibin] = stats2pt.r[ibin];
+        }
+      }
+    }
+
+    if (currTask == 0) {
+      clockElapsed = double(clock() - clockStart);
+      printf(
+        "[STAT] (+%s) Two-point correlation function window term "
+        "at order M = %d computed.\n",
+        calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+        M_
+      );
+    }
+  }
+
+  /* * Output ************************************************************** */
+
+  /// Fill in output struct.
+  CorrfuncWindowMeasurements corrfwin_out;
+  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+    corrfwin_out.rbin.push_back(rbin[ibin]);
+    corrfwin_out.reff.push_back(r_save[ibin]);
+    corrfwin_out.npair.push_back(npair_save[ibin]);
+    corrfwin_out.xi.push_back(norm * xi_save[ibin]);
+  }
+
+  /// Save (optionally) to output file.
+  if (save) {
+    /// Set output path.
+    char save_filepath[1024];
+    sprintf(
+      save_filepath, "%s/xi%d_win%s",
+      params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
+    );
+
+    /// Write output.
+    FILE* save_fileptr = fopen(save_filepath, "w");
+    for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+      fprintf(
+        save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
+        corrfwin_out.rbin[ibin], corrfwin_out.reff[ibin],
+        corrfwin_out.npair[ibin],
+        corrfwin_out.xi[ibin].real(), corrfwin_out.xi[ibin].imag()
+      );
+    }
+    fclose(save_fileptr);
+  }
+
+  delete[] npair_save; delete[] r_save; delete[] xi_save;
+
+  return corrfwin_out;
 }
 
 #endif  // TRIUMVIRATE_INCLUDE_TWOPT_HPP_INCLUDED_
