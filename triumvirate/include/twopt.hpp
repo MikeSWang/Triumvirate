@@ -409,7 +409,7 @@ CorrfuncMeasurements compute_corrfunc(
   return corrfunc_out;
 }
 
-#ifdef USE_DISABLED_TRIUMVIRATE_CODE_
+#ifdef TRIUMVIRATE_USE_DISABLED_CODE_
 /**
  * Compute power spectrum window from a random catalogue and
  * optionally save the results.
