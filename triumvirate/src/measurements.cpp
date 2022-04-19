@@ -22,31 +22,23 @@
  */
 int main(int argc, char* argv[]) {
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
     printf(
       "%s\n[%s STAT] Program has started.\n",
-      std::string(80, '>').c_str(),
-      show_timestamp()
+      std::string(80, '>').c_str(), show_timestamp().c_str()
     );
   }
 
   /* * Initialisation ****************************************************** */
 
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
-    printf(
-      "[%s STAT] Initialising program...\n",
-      show_timestamp()
-    );
+    printf("[%s STAT] Initialising program...\n", show_timestamp().c_str());
   }
 
   /// Configure parameters.
   if (argc != 2) {
     if (currTask == 0) {
-      clockElapsed = double(clock() - clockStart);
       printf(
-        "[%s ERRO] Missing parameter file in call.\n",
-        show_timestamp()
+        "[%s ERRO] Missing parameter file in call.\n", show_timestamp().c_str()
       );
     }
     exit(1);
@@ -55,10 +47,8 @@ int main(int argc, char* argv[]) {
   ParameterSet params;  // program parameters
   if (params.read_from_file(argv)) {
     if (currTask == 0) {
-      clockElapsed = double(clock() - clockStart);
       printf(
-        "[%s ERRO] Failed to initialise parameters.\n",
-        show_timestamp()
+        "[%s ERRO] Failed to initialise parameters.\n", show_timestamp().c_str()
       );
     }
     exit(1);
@@ -66,31 +56,22 @@ int main(int argc, char* argv[]) {
 
   if (!(params.printout())) {
     if (currTask == 0) {
-      clockElapsed = double(clock() - clockStart);
       printf(
         "[%s INFO] Check 'parameters_used' file in your "
         "measurement output directory for reference.\n",
-        show_timestamp()
+        show_timestamp().c_str()
       );
     }
   }
 
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
-    printf(
-      "[%s STAT] ... initialised program.\n",
-      show_timestamp()
-    );
+    printf("[%s STAT] ... initialised program.\n", show_timestamp().c_str());
   }
 
   /** Data processing ****************************************************** */
 
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
-    printf(
-      "[%s STAT] Reading catalogues...\n",
-      show_timestamp()
-    );
+    printf("[%s STAT] Reading catalogues...\n", show_timestamp().c_str());
   }
 
   /// Read catalogue files.
@@ -99,10 +80,9 @@ int main(int argc, char* argv[]) {
     params.data_catalogue_file, params.catalogue_header
   )) {
     if (currTask == 0) {
-      clockElapsed = double(clock() - clockStart);
       printf(
         "[%s ERRO] Failed to load data-source catalogue file.\n",
-        show_timestamp()
+        show_timestamp().c_str()
       );
     }
     exit(1);
@@ -114,10 +94,9 @@ int main(int argc, char* argv[]) {
       params.rand_catalogue_file, params.catalogue_header
     )) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s ERRO] Failed to load random-source catalogue file.\n",
-          show_timestamp()
+          show_timestamp().c_str()
         );
       }
       exit(1);
@@ -126,21 +105,13 @@ int main(int argc, char* argv[]) {
   }
 
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
-    printf(
-      "[%s STAT] ... read catalogues.\n",
-      show_timestamp()
-    );
+    printf("[%s STAT] ... read catalogues.\n", show_timestamp().c_str());
   }
 
   /* * Measurements ******************************************************** */
 
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
-    printf(
-      "[%s STAT] Making measurements...\n",
-      show_timestamp()
-    );
+    printf("[%s STAT] Making measurements...\n", show_timestamp().c_str());
   }
 
   /// Set up measurements.
@@ -151,7 +122,7 @@ int main(int argc, char* argv[]) {
     || params.measurement_type == "2pcf-win"
   ) {
     flag_npoint = "2pt";
-  }
+  } else
   if (
     params.measurement_type == "bispec"
     || params.measurement_type == "3pcf"
@@ -171,11 +142,7 @@ int main(int argc, char* argv[]) {
 
   /// Compute line of sight.
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
-    printf(
-      "[%s STAT] Computing lines of sight...\n",
-      show_timestamp()
-    );
+    printf("[%s STAT] Computing lines of sight...\n", show_timestamp().c_str());
   }
 
   LineOfSight* los_data = new LineOfSight[particles_data.ntotal];  // data LoS
@@ -205,11 +172,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
-    printf(
-      "[%s STAT] ... computed lines of sight.\n",
-      show_timestamp()
-    );
+    printf("[%s STAT] ... computed lines of sight.\n", show_timestamp().c_str());
   }
 
   /// Offset particle positions for measurements.
@@ -234,11 +197,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
-    printf(
-      "[%s INFO] Alpha contrast: %.6e.\n",
-      show_timestamp(), alpha
-    );
+    printf("[%s INFO] Alpha contrast: %.6e.\n", show_timestamp().c_str(), alpha);
   }
 
   /// Compute normalisation factor for clustering statistics.
@@ -287,10 +246,9 @@ int main(int argc, char* argv[]) {
   }
 
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
     printf(
-      "[%s INFO] Normalisation constant: %.6e.\n",
-      show_timestamp(), norm
+      "[%s INFO] Normalisation constant: %.6e.\n", show_timestamp().c_str(),
+      norm
     );
   }
 
@@ -357,11 +315,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
-    printf(
-      "[%s STAT] ... made measurements.\n",
-      show_timestamp()
-    );
+    printf("[%s STAT] ... made measurements.\n", show_timestamp().c_str());
   }
 
   /* * Finalisation ******************************************************** */
@@ -373,20 +327,16 @@ int main(int argc, char* argv[]) {
   delete[] los_rand; los_rand = NULL;
 
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
     printf(
       "[%s STAT] Persistent memory usage: %.0f bytes.\n",
-      show_timestamp(),
-      gbytesMem
+      show_timestamp().c_str(), gbytesMem
     );
   }
 
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
     printf(
       "[%s STAT] Program has completed.\n%s\n",
-      show_timestamp(),
-      std::string(80, '<').c_str()
+      show_timestamp().c_str(), std::string(80, '<').c_str()
     );
   }
 

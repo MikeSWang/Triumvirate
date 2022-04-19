@@ -93,10 +93,8 @@ class ParticleCatalogue {
   void _initialise_particles(const int num) {
     /// Check the total number of particles.
     if (num <= 0) {
-      clockElapsed = double(clock() - clockStart);
       printf(
-        "[%s WARN] Number of particles is negative.\n",
-        show_timestamp()
+        "[%s WARN] Number of particles is negative.\n", show_timestamp().c_str()
       );
       return;
     }
@@ -162,11 +160,10 @@ class ParticleCatalogue {
 
     if (name_indices[3] == -1) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s WARN] Catalogue 'nz' field is unavailable, "
           "which may raise errors in some computations (source=%s).\n",
-          show_timestamp(),
+          show_timestamp().c_str(),
           this->source.c_str()
         );
       }
@@ -179,10 +176,8 @@ class ParticleCatalogue {
 
     if (fin.fail()) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
-          "[%s ERRO] Failed to open file '%s'.\n",
-          show_timestamp(),
+          "[%s ERRO] Failed to open file '%s'.\n", show_timestamp().c_str(),
           this->source.c_str()
         );
       }
@@ -270,11 +265,10 @@ class ParticleCatalogue {
     this->_calc_pos_min_and_max(true);
 
     if (currTask == 0) {
-      clockElapsed = double(clock() - clockStart);
       printf(
         "[%s INFO] Catalogue loaded: %d particles with "
         "total systematic weights %.3f (source=%s).\n",
-        show_timestamp(),
+        show_timestamp().c_str(),
         this->ntotal, this->wtotal, this->source.c_str()
       );
     }
@@ -329,11 +323,10 @@ class ParticleCatalogue {
     this->_calc_pos_min_and_max(true);
 
     if (currTask == 0) {
-      clockElapsed = double(clock() - clockStart);
       printf(
         "[%s INFO] Catalogue constructed: %d particles with "
         "total systematic weights %.3f (source=%s).\n",
-        show_timestamp(),
+        show_timestamp().c_str(),
         this->ntotal, this->wtotal, this->source.c_str()
       );
     }
@@ -347,10 +340,9 @@ class ParticleCatalogue {
   void _calc_weighted_total() {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp()
+          show_timestamp().c_str()
         );
       }
       exit(1);
@@ -372,10 +364,9 @@ class ParticleCatalogue {
   void _calc_pos_min_and_max(bool verbose=false) {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp()
+          show_timestamp().c_str()
         );
       }
       exit(1);
@@ -407,12 +398,11 @@ class ParticleCatalogue {
     }
 
     if (currTask == 0 && verbose) {
-      clockElapsed = double(clock() - clockStart);
       printf(
         "[%s INFO] Extents of particle coordinates: "
         "{'x': (%.3f, %.3f), 'y': (%.3f, %.3f), 'z': (%.3f, %.3f)} "
         "(source=%s).\n",
-        show_timestamp(),
+        show_timestamp().c_str(),
         this->pos_min[0], this->pos_max[0],
         this->pos_min[1], this->pos_max[1],
         this->pos_min[2], this->pos_max[2],
@@ -429,10 +419,9 @@ class ParticleCatalogue {
   void offset_coords(const double dpos[3]) {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp()
+          show_timestamp().c_str()
         );
       }
       exit(1);
@@ -458,10 +447,9 @@ class ParticleCatalogue {
   void offset_coords_for_centring(const double boxsize[3]) {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp()
+          show_timestamp().c_str()
         );
       }
       exit(1);
@@ -584,10 +572,9 @@ class ParticleCatalogue {
   double _calc_powspec_shotnoise() {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp()
+          show_timestamp().c_str()
         );
       }
       exit(1);
@@ -611,10 +598,9 @@ class ParticleCatalogue {
   double _calc_powspec_normalisation() {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp()
+          show_timestamp().c_str()
         );
       }
       exit(1);
@@ -628,11 +614,10 @@ class ParticleCatalogue {
 
     if (vol_eff_inv == 0.) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s ERRO] Particle 'nz' values appear to be all zeros. "
           "Check the input catalogue contains valid 'nz' field.\n",
-          show_timestamp()
+          show_timestamp().c_str()
         );
       }
       exit(1);
@@ -653,10 +638,9 @@ class ParticleCatalogue {
   double _calc_bispec_normalisation() {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp()
+          show_timestamp().c_str()
         );
       }
       exit(1);
@@ -670,11 +654,10 @@ class ParticleCatalogue {
 
     if (vol_sq_eff_inv == 0.) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s ERRO] Particle 'nz' values appear to be all zeros. "
           "Check the input catalogue contains valid 'nz' field.\n",
-          show_timestamp()
+          show_timestamp().c_str()
         );
       }
       exit(1);
