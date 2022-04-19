@@ -102,13 +102,13 @@ cdef extern from "include/twopt.hpp":
     PowspecMeasurements compute_powspec_in_box_cpp "compute_powspec_in_box" (
         CppParticleCatalogue& particles_data,
         CppParameterSet& params,
-        double* kbin,
+        double* kbin, double norm,
         bool_t save
     )
     CorrfuncMeasurements compute_corrfunc_in_box_cpp "compute_corrfunc_in_box" (
         CppParticleCatalogue& particles_data,
         CppParameterSet& params,
-        double* rbin,
+        double* rbin, double norm,
         bool_t save
     )
 
