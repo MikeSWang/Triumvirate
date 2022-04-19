@@ -104,8 +104,8 @@ class PseudoDensityField {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Unsupported mesh assignment scheme: '%s'.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          "[%s ERRO] Unsupported mesh assignment scheme: '%s'.\n",
+          show_timestamp(),
           this->params.assignment.c_str()
         );
       }

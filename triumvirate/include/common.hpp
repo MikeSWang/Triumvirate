@@ -7,6 +7,7 @@
 #ifndef TRIUMVIRATE_INCLUDE_COMMON_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_COMMON_HPP_INCLUDED_
 
+#include <chrono>
 #include <cstring>
 #include <ctime>
 #include <string>
@@ -23,13 +24,33 @@ double clockStart;  ///< program start clock
 double clockElapsed;  ///< program elapsed clock
 
 /**
- * Return string showing elapsed time.
+ * Return string showing the current date-time in "YYYY-MM-DD HH:MM:SS"
+ * format.
  *
- * @param clocktime Clock time.
+ * @returns timestamp Timestamp string.
+ */
+std::string show_current_datetime() {
+  auto now = std::chrono::system_clock::now();
+  auto timenow = std::chrono::system_clock::to_time_t(now);
+
+  char buffer[64];
+  std::strftime(
+    buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", std::localtime(&timenow)
+  );
+
+  std::string timestamp = std::string(buffer);
+
+  return timestamp;
+}
+
+/**
+ * Return string showing elapsed time in "HH:MM:SS" format.
+ *
+ * @param clock_duration Clock time duration.
  * @returns elapsed_time Elapsed-time string.
  */
-std::string calc_elapsed_time_in_hhmmss(double clocktime) {
-  int time = int(clocktime / CLOCKS_PER_SEC);
+std::string show_elapsed_time(double clock_duration) {
+  int time = int(clock_duration / CLOCKS_PER_SEC);
 
   std::string h = std::to_string(time / 3600);
   std::string m = std::to_string((time % 3600) / 60);
@@ -48,6 +69,24 @@ std::string calc_elapsed_time_in_hhmmss(double clocktime) {
   std::string elapsed_time = hh + ":" + mm + ":" + ss;
 
   return elapsed_time;
+}
+
+/**
+ * Return logging string showing the timestamp including the elapsed time.
+ *
+ * @param elapsed_time Elapsed time.
+ * @returns timestamp Timestamp string.
+ */
+char* show_timestamp() {
+  double elapsed_time = double(clock() - clockStart);
+
+  char timestamp[128];
+  sprintf(
+    timestamp, "%s (+%s)",
+    show_current_datetime().c_str(), show_elapsed_time(elapsed_time).c_str()
+  );
+
+  return timestamp;
 }
 
 #endif  // TRIUMVIRATE_INCLUDE_COMMON_HPP_INCLUDED_
