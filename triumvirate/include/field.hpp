@@ -1847,8 +1847,8 @@ class Pseudo2ptStats {
     PseudoDensityField<ParticleContainer>& field_a,
     PseudoDensityField<ParticleContainer>& field_b,
     std::complex<double> shotnoise_amp,
-    int ell, int m,
     fftw_complex* threept_3d
+    // int ell, int m  // QUEST: redundant?
   ) {
     /// Set inverse FFT volume normalisation, where ∫d^3k / (2\pi)^3
     /// corresponds to (1/V) Σ_i, V =: `vol`.
