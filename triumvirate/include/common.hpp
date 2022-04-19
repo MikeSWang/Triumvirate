@@ -77,14 +77,16 @@ std::string show_elapsed_time(double clock_duration) {
  * @param elapsed_time Elapsed time.
  * @returns timestamp Timestamp string.
  */
-char* show_timestamp() {
+std::string show_timestamp() {
   double elapsed_time = double(clock() - clockStart);
 
-  char timestamp[128];
+  char timestamp_[128];
   sprintf(
-    timestamp, "%s (+%s)",
+    timestamp_, "%s (+%s)",
     show_current_datetime().c_str(), show_elapsed_time(elapsed_time).c_str()
   );
+
+  std::string timestamp(timestamp_);
 
   return timestamp;
 }

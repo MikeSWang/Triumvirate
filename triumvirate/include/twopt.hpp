@@ -131,11 +131,10 @@ PowspecMeasurements compute_powspec(
   bool save=false
 ) {
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
     printf(
       "[%s STAT] Measurement: power spectrum from "
       "data and random catalogues.\n",
-      show_timestamp()
+      show_timestamp().c_str()
     );
   }
 
@@ -204,10 +203,9 @@ PowspecMeasurements compute_powspec(
     }
 
     if (currTask == 0) {
-      clockElapsed = double(clock() - clockStart);
       printf(
         "[%s STAT] Power spectrum term at order M = %d computed.\n",
-        show_timestamp(),
+        show_timestamp().c_str(),
         M_
       );
     }
@@ -291,11 +289,10 @@ CorrfuncMeasurements compute_corrfunc(
   bool save=false
 ) {
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
     printf(
       "[%s STAT] Measurement: two-point correlation function "
       "from data and random catalogues.\n",
-      show_timestamp()
+      show_timestamp().c_str()
     );
   }
 
@@ -361,11 +358,10 @@ CorrfuncMeasurements compute_corrfunc(
     }
 
     if (currTask == 0) {
-      clockElapsed = double(clock() - clockStart);
       printf(
         "[%s STAT] Two-point correlation function term at "
         "order M = %d computed.\n",
-        show_timestamp(),
+        show_timestamp().c_str(),
         M_
       );
     }
@@ -428,10 +424,9 @@ PowspecMeasurements compute_powspec_in_box(
   bool save=false
 ) {
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
     printf(
       "[%s STAT] Measurement: power spectrum in a periodic box.\n",
-      show_timestamp()
+      show_timestamp().c_str()
     );
   }
 
@@ -470,10 +465,9 @@ PowspecMeasurements compute_powspec_in_box(
   }
 
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
     printf(
       "[%s STAT] Power spectrum terms computed.\n",
-      show_timestamp()
+      show_timestamp().c_str()
     );
   }
 
@@ -550,11 +544,10 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   bool save=false
 ) {
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
     printf(
       "[%s STAT] Measurement: two-point correlation function "
       "in a periodic box.\n",
-      show_timestamp()
+      show_timestamp().c_str()
     );
   }
 
@@ -590,10 +583,9 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   }
 
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
     printf(
       "[%s STAT] Two-point correlation function terms computed.\n",
-      show_timestamp()
+      show_timestamp().c_str()
     );
   }
 
@@ -664,11 +656,10 @@ PowspecWindowMeasurements compute_powspec_window(
   bool save=false
 ) {
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
     printf(
       "[%s STAT] Measurement: power spectrum window "
       "from random catalogue.\n",
-      show_timestamp()
+      show_timestamp().c_str()
     );
   }
 
@@ -775,11 +766,10 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
   bool save=false
 ) {
   if (currTask == 0) {
-    clockElapsed = double(clock() - clockStart);
     printf(
       "[%s STAT] Measurement: two-point correlation function window "
       "from random catalogue.\n",
-      show_timestamp()
+      show_timestamp().c_str()
     );
   }
 
@@ -843,11 +833,10 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     }
 
     if (currTask == 0) {
-      clockElapsed = double(clock() - clockStart);
       printf(
         "[%s STAT] Two-point correlation function window term "
         "at order M = %d computed.\n",
-        show_timestamp(),
+        show_timestamp().c_str(),
         M_
       );
     }

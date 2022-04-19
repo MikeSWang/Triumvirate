@@ -113,10 +113,9 @@ class SphericalHarmonicCalculator {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s ERRO] Cannot store computed spherical harmonics.\n",
-          show_timestamp()
+          show_timestamp().c_str()
         );
       }
       exit(1);
@@ -168,10 +167,9 @@ class SphericalHarmonicCalculator {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s ERRO] Cannot store computed spherical harmonics.\n",
-          show_timestamp()
+          show_timestamp().c_str()
         );
       }
       exit(1);

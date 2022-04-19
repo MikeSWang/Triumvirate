@@ -102,10 +102,9 @@ class PseudoDensityField {
       this->assign_weighted_field_to_mesh_tsc(particles, weights);
     } else {
       if (currTask == 0) {
-        clockElapsed = double(clock() - clockStart);
         printf(
           "[%s ERRO] Unsupported mesh assignment scheme: '%s'.\n",
-          show_timestamp(),
+          show_timestamp().c_str(),
           this->params.assignment.c_str()
         );
       }
@@ -825,8 +824,9 @@ class PseudoDensityField {
 
     double vol_eff_inv = 0.;
     for (int gid = 0; gid < this->params.nmesh; gid++) {
-      vol_eff_inv += vol_cell * pow(this->field[gid][0], 2);
+      vol_eff_inv += pow(this->field[gid][0], 2);
     }
+    vol_eff_inv *= vol_cell;
 
     double norm_factor = 1. / vol_eff_inv;
 
@@ -865,8 +865,9 @@ class PseudoDensityField {
 
     double vol_sq_eff_inv = 0.;
     for (int gid = 0; gid < this->params.nmesh; gid++) {
-      vol_sq_eff_inv += vol_cell * pow(this->field[gid][0], 3);
+      vol_sq_eff_inv += pow(this->field[gid][0], 3);
     }
+    vol_sq_eff_inv *= vol_cell;
 
     double norm_factor = 1. / vol_sq_eff_inv;
 
