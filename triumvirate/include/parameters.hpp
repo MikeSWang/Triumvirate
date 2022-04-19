@@ -348,8 +348,8 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Non-existent or unwritable output directory: '%s'.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          "[%s ERRO] Non-existent or unwritable output directory: '%s'.\n",
+          show_timestamp(),
           this->measurement_dir.c_str()
         );
       }
@@ -450,9 +450,9 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Catalogue type must be 'survey', 'mock' or 'sim': "
+          "[%s ERRO] Catalogue type must be 'survey', 'mock' or 'sim': "
           "`catalogue_type` = %s.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          show_timestamp(),
           this->catalogue_type.c_str()
         );
       }
@@ -467,9 +467,9 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Mesh assignment scheme must be 'ngp', 'cic' or 'tsc': "
+          "[%s ERRO] Mesh assignment scheme must be 'ngp', 'cic' or 'tsc': "
           "`assignment` = %s.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          show_timestamp(),
           this->assignment.c_str()
         );
       }
@@ -482,9 +482,9 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[WARN] (+%s) Normalisation convention must be "
+          "[%s WARN] Normalisation convention must be "
           "'mesh' or 'particle': `norm_convention` = %s.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          show_timestamp(),
           this->norm_convention.c_str()
         );
       }
@@ -495,9 +495,9 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[WARN] (+%s) Normalisation convention is set to "
+          "[%s WARN] Normalisation convention is set to "
           "default value '%s'.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          show_timestamp(),
           this->norm_convention.c_str()
         );
       }
@@ -510,9 +510,9 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[WARN] (+%s) Shot noise convention convention must be "
+          "[%s WARN] Shot noise convention convention must be "
           "'mesh' or 'particle': `shotnoise_convention` = %s.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          show_timestamp(),
           this->shotnoise_convention.c_str()
         );
       }
@@ -523,9 +523,9 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[WARN] (+%s) Shot noise convention is set to "
+          "[%s WARN] Shot noise convention is set to "
           "default value '%s'.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          show_timestamp(),
           this->shotnoise_convention.c_str()
         );
       }
@@ -535,9 +535,9 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) `form` must be either 'full' or 'diag': "
+          "[%s ERRO] `form` must be either 'full' or 'diag': "
           "`form` = %s.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          show_timestamp(),
           this->form.c_str()
         );
       }
@@ -549,9 +549,9 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Number of bins (`num_kbin` or `num_rbin`) "
+          "[%s ERRO] Number of bins (`num_kbin` or `num_rbin`) "
           "must be >= 2.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+          show_timestamp()
         );
       }
       return -1;
@@ -565,8 +565,8 @@ class ParameterSet {
         if (currTask == 0) {
           clockElapsed = double(clock() - clockStart);
           printf(
-            "[ERRO] (+%s) Binning scheme '%s' requires `num_rbin` >= %d.\n",
-            calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+            "[%s ERRO] Binning scheme '%s' requires `num_rbin` >= %d.\n",
+            show_timestamp(),
             this->binning.c_str(),
             nbin_custom + 2
           );
@@ -579,9 +579,9 @@ class ParameterSet {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Bin index (`ith_kbin` or `ith_rbin`) must be less than "
+          "[%s ERRO] Bin index (`ith_kbin` or `ith_rbin`) must be less than "
           "the number of bins (`num_kbin` or `num_rbin`).\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+          show_timestamp()
         );
       }
       return -1;
@@ -590,8 +590,8 @@ class ParameterSet {
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
       printf(
-        "[STAT] (+%s) Parameters validated.\n",
-        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        "[%s STAT] Parameters validated.\n",
+        show_timestamp()
       );
     }
 
@@ -658,8 +658,8 @@ class ParameterSet {
           if (currTask == 0) {
             clockElapsed = double(clock() - clockStart);
             printf(
-              "[INFO] (+%s) Output subdirectory '%s' is successfully made.\n",
-              calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+              "[%s INFO] Output subdirectory '%s' is successfully made.\n",
+              show_timestamp(),
               buf_dir
             );
           }
@@ -667,8 +667,8 @@ class ParameterSet {
           if (currTask == 0) {
             clockElapsed = double(clock() - clockStart);
             printf(
-              "[ERRO] (+%s) Failed to make output subdirectory '%s'.\n",
-              calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+              "[%s ERRO] Failed to make output subdirectory '%s'.\n",
+              show_timestamp(),
               buf_dir
             );
           }

@@ -24,9 +24,9 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "%s\n[STAT] (+%s) Program has started.\n",
+      "%s\n[%s STAT] Program has started.\n",
       std::string(80, '>').c_str(),
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      show_timestamp()
     );
   }
 
@@ -35,8 +35,8 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Initialising program...\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      "[%s STAT] Initialising program...\n",
+      show_timestamp()
     );
   }
 
@@ -45,8 +45,8 @@ int main(int argc, char* argv[]) {
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
       printf(
-        "[ERRO] (+%s) Missing parameter file in call.\n",
-        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        "[%s ERRO] Missing parameter file in call.\n",
+        show_timestamp()
       );
     }
     exit(1);
@@ -57,8 +57,8 @@ int main(int argc, char* argv[]) {
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
       printf(
-        "[ERRO] (+%s) Failed to initialise parameters.\n",
-        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        "[%s ERRO] Failed to initialise parameters.\n",
+        show_timestamp()
       );
     }
     exit(1);
@@ -68,9 +68,9 @@ int main(int argc, char* argv[]) {
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
       printf(
-        "[INFO] (+%s) Check 'parameters_used' file in your "
+        "[%s INFO] Check 'parameters_used' file in your "
         "measurement output directory for reference.\n",
-        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        show_timestamp()
       );
     }
   }
@@ -78,8 +78,8 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) ... initialised program.\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      "[%s STAT] ... initialised program.\n",
+      show_timestamp()
     );
   }
 
@@ -88,8 +88,8 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Reading catalogues...\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      "[%s STAT] Reading catalogues...\n",
+      show_timestamp()
     );
   }
 
@@ -101,8 +101,8 @@ int main(int argc, char* argv[]) {
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
       printf(
-        "[ERRO] (+%s) Failed to load data-source catalogue file.\n",
-        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        "[%s ERRO] Failed to load data-source catalogue file.\n",
+        show_timestamp()
       );
     }
     exit(1);
@@ -116,8 +116,8 @@ int main(int argc, char* argv[]) {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Failed to load random-source catalogue file.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+          "[%s ERRO] Failed to load random-source catalogue file.\n",
+          show_timestamp()
         );
       }
       exit(1);
@@ -128,8 +128,8 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) ... read catalogues.\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      "[%s STAT] ... read catalogues.\n",
+      show_timestamp()
     );
   }
 
@@ -138,8 +138,8 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Making measurements...\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      "[%s STAT] Making measurements...\n",
+      show_timestamp()
     );
   }
 
@@ -173,8 +173,8 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Computing lines of sight...\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      "[%s STAT] Computing lines of sight...\n",
+      show_timestamp()
     );
   }
 
@@ -207,8 +207,8 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) ... computed lines of sight.\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      "[%s STAT] ... computed lines of sight.\n",
+      show_timestamp()
     );
   }
 
@@ -236,8 +236,8 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[INFO] (+%s) Alpha contrast: %.6e.\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str(), alpha
+      "[%s INFO] Alpha contrast: %.6e.\n",
+      show_timestamp(), alpha
     );
   }
 
@@ -289,8 +289,8 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[INFO] (+%s) Normalisation constant: %.6e.\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str(), norm
+      "[%s INFO] Normalisation constant: %.6e.\n",
+      show_timestamp(), norm
     );
   }
 
@@ -331,36 +331,36 @@ int main(int argc, char* argv[]) {
       );
     } else
     if (params.catalogue_type == "sim") {
-      calc_bispec_in_box(particles_data, params, kbin);
+      calc_bispec_in_box(particles_data, params, kbin, norm);
     }
   } else
   if (params.measurement_type == "3pcf") {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       calc_3pcf(
         particles_data, particles_rand, los_data, los_rand,
-        params, alpha, rbin, norm
+        params, rbin, alpha, norm
       );
     } else
     if (params.catalogue_type == "sim") {
-      calc_3pcf_in_box(particles_data, params, rbin);
+      calc_3pcf_in_box(particles_data, params, rbin, norm);
     }
   } else
   if (params.measurement_type == "3pcf-win") {
     calc_3pcf_window(
-      particles_rand, los_rand, params, alpha, rbin, norm
+      particles_rand, los_rand, params, rbin, alpha, norm
     );
   } else
   if (params.measurement_type == "3pcf-win-wa") {
     calc_3pcf_window_for_wide_angle(
-      particles_rand, los_rand, params, alpha, rbin, norm
+      particles_rand, los_rand, params, rbin, alpha, norm
     );
   }
 
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) ... made measurements.\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+      "[%s STAT] ... made measurements.\n",
+      show_timestamp()
     );
   }
 
@@ -375,8 +375,8 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Persistent memory usage: %.0f bytes.\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+      "[%s STAT] Persistent memory usage: %.0f bytes.\n",
+      show_timestamp(),
       gbytesMem
     );
   }
@@ -384,8 +384,8 @@ int main(int argc, char* argv[]) {
   if (currTask == 0) {
     clockElapsed = double(clock() - clockStart);
     printf(
-      "[STAT] (+%s) Program has completed.\n%s\n",
-      calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+      "[%s STAT] Program has completed.\n%s\n",
+      show_timestamp(),
       std::string(80, '<').c_str()
     );
   }

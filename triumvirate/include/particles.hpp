@@ -95,8 +95,8 @@ class ParticleCatalogue {
     if (num <= 0) {
       clockElapsed = double(clock() - clockStart);
       printf(
-        "[WARN] (+%s) Number of particles is negative.\n",
-        calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+        "[%s WARN] Number of particles is negative.\n",
+        show_timestamp()
       );
       return;
     }
@@ -164,9 +164,9 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[WARN] (+%s) Catalogue 'nz' field is unavailable, "
+          "[%s WARN] Catalogue 'nz' field is unavailable, "
           "which may raise errors in some computations (source=%s).\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          show_timestamp(),
           this->source.c_str()
         );
       }
@@ -181,8 +181,8 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Failed to open file '%s'.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+          "[%s ERRO] Failed to open file '%s'.\n",
+          show_timestamp(),
           this->source.c_str()
         );
       }
@@ -272,9 +272,9 @@ class ParticleCatalogue {
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
       printf(
-        "[INFO] (+%s) Catalogue loaded: %d particles with "
+        "[%s INFO] Catalogue loaded: %d particles with "
         "total systematic weights %.3f (source=%s).\n",
-        calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+        show_timestamp(),
         this->ntotal, this->wtotal, this->source.c_str()
       );
     }
@@ -331,9 +331,9 @@ class ParticleCatalogue {
     if (currTask == 0) {
       clockElapsed = double(clock() - clockStart);
       printf(
-        "[INFO] (+%s) Catalogue constructed: %d particles with "
+        "[%s INFO] Catalogue constructed: %d particles with "
         "total systematic weights %.3f (source=%s).\n",
-        calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+        show_timestamp(),
         this->ntotal, this->wtotal, this->source.c_str()
       );
     }
@@ -349,8 +349,8 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Particle data are uninitialised.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+          "[%s ERRO] Particle data are uninitialised.\n",
+          show_timestamp()
         );
       }
       exit(1);
@@ -374,8 +374,8 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Particle data are uninitialised.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+          "[%s ERRO] Particle data are uninitialised.\n",
+          show_timestamp()
         );
       }
       exit(1);
@@ -409,10 +409,10 @@ class ParticleCatalogue {
     if (currTask == 0 && verbose) {
       clockElapsed = double(clock() - clockStart);
       printf(
-        "[INFO] (+%s) Extents of particle coordinates: "
+        "[%s INFO] Extents of particle coordinates: "
         "{'x': (%.3f, %.3f), 'y': (%.3f, %.3f), 'z': (%.3f, %.3f)} "
         "(source=%s).\n",
-        calc_elapsed_time_in_hhmmss(clockElapsed).c_str(),
+        show_timestamp(),
         this->pos_min[0], this->pos_max[0],
         this->pos_min[1], this->pos_max[1],
         this->pos_min[2], this->pos_max[2],
@@ -431,8 +431,8 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Particle data are uninitialised.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+          "[%s ERRO] Particle data are uninitialised.\n",
+          show_timestamp()
         );
       }
       exit(1);
@@ -460,8 +460,8 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Particle data are uninitialised.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+          "[%s ERRO] Particle data are uninitialised.\n",
+          show_timestamp()
         );
       }
       exit(1);
@@ -586,8 +586,8 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Particle data are uninitialised.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+          "[%s ERRO] Particle data are uninitialised.\n",
+          show_timestamp()
         );
       }
       exit(1);
@@ -613,8 +613,8 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Particle data are uninitialised.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+          "[%s ERRO] Particle data are uninitialised.\n",
+          show_timestamp()
         );
       }
       exit(1);
@@ -630,9 +630,9 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Particle 'nz' values appear to be all zeros. "
+          "[%s ERRO] Particle 'nz' values appear to be all zeros. "
           "Check the input catalogue contains valid 'nz' field.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+          show_timestamp()
         );
       }
       exit(1);
@@ -655,8 +655,8 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Particle data are uninitialised.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+          "[%s ERRO] Particle data are uninitialised.\n",
+          show_timestamp()
         );
       }
       exit(1);
@@ -672,9 +672,9 @@ class ParticleCatalogue {
       if (currTask == 0) {
         clockElapsed = double(clock() - clockStart);
         printf(
-          "[ERRO] (+%s) Particle 'nz' values appear to be all zeros. "
+          "[%s ERRO] Particle 'nz' values appear to be all zeros. "
           "Check the input catalogue contains valid 'nz' field.\n",
-          calc_elapsed_time_in_hhmmss(clockElapsed).c_str()
+          show_timestamp()
         );
       }
       exit(1);
