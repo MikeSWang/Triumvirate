@@ -283,34 +283,36 @@ int main(int argc, char* argv[]) {
 
   if (params.measurement_type == "bispec") {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-      calc_bispec(
+      compute_bispec(
         particles_data, particles_rand, los_data, los_rand,
-        params, kbin, alpha, norm
+        params, kbin, alpha, norm, save
       );
     } else
     if (params.catalogue_type == "sim") {
-      calc_bispec_in_box(particles_data, params, kbin, norm);
+      compute_bispec_in_box(particles_data, params, kbin, norm, save);
     }
   } else
   if (params.measurement_type == "3pcf") {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-      calc_3pcf(
+      compute_3pcf(
         particles_data, particles_rand, los_data, los_rand,
-        params, rbin, alpha, norm
+        params, rbin, alpha, norm, save
       );
     } else
     if (params.catalogue_type == "sim") {
-      calc_3pcf_in_box(particles_data, params, rbin, norm);
+      compute_3pcf_in_box(particles_data, params, rbin, norm, save);
     }
   } else
   if (params.measurement_type == "3pcf-win") {
-    calc_3pcf_window(
-      particles_rand, los_rand, params, rbin, alpha, norm
+    bool wa = false;
+    compute_3pcf_window(
+      particles_rand, los_rand, params, rbin, alpha, norm, wa, save
     );
   } else
   if (params.measurement_type == "3pcf-win-wa") {
-    calc_3pcf_window_for_wide_angle(
-      particles_rand, los_rand, params, rbin, alpha, norm
+    bool wa = true;
+    compute_3pcf_window(
+      particles_rand, los_rand, params, rbin, alpha, norm, wa, save
     );
   }
 
