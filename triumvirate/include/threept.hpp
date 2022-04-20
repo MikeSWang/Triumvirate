@@ -275,7 +275,7 @@ BispecMeasurements compute_bispec(
         if (currTask == 0) {
           printf(
             "[%s STAT] Shot noise terms (3 out of 4) at order "
-            "(m1, m2, M) = (%d, %d, %d)` computed.\n",
+            "(m1, m2, M) = (%d, %d, %d) computed.\n",
             show_timestamp().c_str(),
             m1_, m2_, M_
           );
@@ -570,9 +570,6 @@ BispecMeasurements compute_bispec(
 
   dn_00.finalise_density_field();  // ~dn_00
 
-  // /// Recalculate normalisation.
-  /// double norm = pow(norm, 2) / pow(particles_data.wtotal, 3);
-
   if (currTask == 0) {
     printf(
       "[%s STAT] ... computed bispectrum terms.\n",
@@ -588,14 +585,15 @@ BispecMeasurements compute_bispec(
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
     if (params.form == "diag") {
       bispec_out.kbin1.push_back(kbin[ibin]);
+      bispec_out.keff1.push_back(kbin[ibin]);
     } else
     if (params.form == "full") {
       bispec_out.kbin1.push_back(kbin[params.ith_kbin]);
+      bispec_out.keff1.push_back(kbin[params.ith_kbin]);
     }
-    // bispec_out.keff1.push_back(k1_save[ibin]);
     bispec_out.kbin2.push_back(kbin[ibin]);
-    // bispec_out.keff2.push_back(k2_save[ibin]);
-    // bispec_out.ntriag.push_back(ntriag_save[ibin]);
+    bispec_out.keff2.push_back(kbin[ibin]);
+    bispec_out.ntriag.push_back(0);
     bispec_out.bk_raw.push_back(norm * bk_save[ibin]);
     bispec_out.bk_shot.push_back(norm * sn_save[ibin]);
   }
@@ -789,7 +787,7 @@ BispecMeasurements compute_bispec_in_box(
       if (currTask == 0) {
         printf(
           "[%s STAT] Shot noise terms (3 out of 4) at order "
-          "(m1, m2, M) = (%d, %d, %d)` computed.\n",
+          "(m1, m2, M) = (%d, %d, %d) computed.\n",
           show_timestamp().c_str(),
           m1_, m2_, M_
         );
@@ -1046,9 +1044,6 @@ BispecMeasurements compute_bispec_in_box(
 
   dn_00.finalise_density_field();  // ~dn_00
 
-  // /// Recalculate normalisation.
-  // double norm = pow(params.volume, 2) / pow(double(particles_data.ntotal), 3);
-
   if (currTask == 0) {
     printf(
       "[%s STAT] ... computed bispectrum terms.\n",
@@ -1064,14 +1059,15 @@ BispecMeasurements compute_bispec_in_box(
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
     if (params.form == "diag") {
       bispec_out.kbin1.push_back(kbin[ibin]);
+      bispec_out.keff1.push_back(kbin[ibin]);
     } else
     if (params.form == "full") {
       bispec_out.kbin1.push_back(kbin[params.ith_kbin]);
+      bispec_out.keff1.push_back(kbin[params.ith_kbin]);
     }
-    // bispec_out.keff1.push_back(k1_save[ibin]);
     bispec_out.kbin2.push_back(kbin[ibin]);
-    // bispec_out.keff2.push_back(k2_save[ibin]);
-    // bispec_out.ntriag.push_back(ntriag_save[ibin]);
+    bispec_out.keff2.push_back(kbin[ibin]);
+    bispec_out.ntriag.push_back(0);
     bispec_out.bk_raw.push_back(norm * bk_save[ibin]);
     bispec_out.bk_shot.push_back(norm * sn_save[ibin]);
   }
@@ -1285,7 +1281,7 @@ ThreePCFMeasurements compute_3pcf(
         if (currTask == 0) {
           printf(
             "[%s STAT] Shot noise term at order "
-            "(m1, m2, M) = (%d, %d, %d)` computed.\n",
+            "(m1, m2, M) = (%d, %d, %d) computed.\n",
             show_timestamp().c_str(),
             m1_, m2_, M_
           );
@@ -1436,9 +1432,6 @@ ThreePCFMeasurements compute_3pcf(
 
   dn_00.finalise_density_field();  // ~dn_00
 
-  // /// Recalculate normalisation.
-  /// double norm = pow(norm, 2) / pow(particles_data.ntotal, 3);
-
   if (currTask == 0) {
     printf(
       "[%s STAT] ... computed three-point correlation function terms.\n",
@@ -1454,14 +1447,15 @@ ThreePCFMeasurements compute_3pcf(
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
     if (params.form == "diag") {
       threepcf_out.rbin1.push_back(rbin[ibin]);
+      threepcf_out.reff1.push_back(rbin[ibin]);
     } else
     if (params.form == "full") {
       threepcf_out.rbin1.push_back(rbin[params.ith_rbin]);
+      threepcf_out.reff1.push_back(rbin[params.ith_rbin]);
     }
-    // bispec_out.reff1.push_back(r1_save[ibin]);
     threepcf_out.rbin2.push_back(rbin[ibin]);
-    // bispec_out.reff2.push_back(r2_save[ibin]);
-    // bispec_out.ntriag.push_back(ntriag_save[ibin]);
+    threepcf_out.reff2.push_back(rbin[ibin]);
+    threepcf_out.ntriag.push_back(0);
     threepcf_out.zeta_raw.push_back(norm * zeta_save[ibin]);
     threepcf_out.zeta_shot.push_back(norm * sn_save[ibin]);
   }
@@ -1648,7 +1642,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
       if (currTask == 0) {
         printf(
           "[%s STAT] Shot noise term at order "
-          "(m1, m2, M) = (%d, %d, %d)` computed.\n",
+          "(m1, m2, M) = (%d, %d, %d) computed.\n",
           show_timestamp().c_str(),
           m1_, m2_, M_
         );
@@ -1781,9 +1775,6 @@ ThreePCFMeasurements compute_3pcf_in_box(
 
   dn_00.finalise_density_field();  // ~dn_00
 
-  // /// Recalculate normalisation.
-  /// double norm = pow(norm, 2) / pow(particles_data.ntotal, 3);
-
   if (currTask == 0) {
     printf(
       "[%s STAT] ... computed three-point correlation function terms.\n",
@@ -1799,14 +1790,15 @@ ThreePCFMeasurements compute_3pcf_in_box(
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
     if (params.form == "diag") {
       threepcf_out.rbin1.push_back(rbin[ibin]);
+      threepcf_out.reff1.push_back(rbin[ibin]);
     } else
     if (params.form == "full") {
       threepcf_out.rbin1.push_back(rbin[params.ith_rbin]);
+      threepcf_out.reff1.push_back(rbin[params.ith_rbin]);
     }
-    // bispec_out.reff1.push_back(r1_save[ibin]);
     threepcf_out.rbin2.push_back(rbin[ibin]);
-    // bispec_out.reff2.push_back(r2_save[ibin]);
-    // bispec_out.ntriag.push_back(ntriag_save[ibin]);
+    threepcf_out.reff2.push_back(rbin[ibin]);
+    threepcf_out.ntriag.push_back(0);
     threepcf_out.zeta_raw.push_back(norm * zeta_save[ibin]);
     threepcf_out.zeta_shot.push_back(norm * sn_save[ibin]);
   }
@@ -2018,7 +2010,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
         if (currTask == 0) {
           printf(
             "[%s STAT] Shot noise term at order "
-            "(m1, m2, M) = (%d, %d, %d)` computed.\n",
+            "(m1, m2, M) = (%d, %d, %d) computed.\n",
             show_timestamp().c_str(),
             m1_, m2_, M_
           );
@@ -2170,9 +2162,6 @@ ThreePCFWindowMeasurements compute_3pcf_window(
 
   n_00.finalise_density_field();  // ~n_00
 
-  // /// Recalculate normalisation.
-  /// double norm = pow(norm, 2) / pow(particles_data.wtotal, 3);
-
   if (currTask == 0) {
     printf(
       "[%s STAT] ... computed three-point correlation function window terms.\n",
@@ -2188,14 +2177,15 @@ ThreePCFWindowMeasurements compute_3pcf_window(
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
     if (params.form == "diag") {
       threepcfwin_out.rbin1.push_back(rbin[ibin]);
+      threepcfwin_out.reff1.push_back(rbin[ibin]);
     } else
     if (params.form == "full") {
       threepcfwin_out.rbin1.push_back(rbin[params.ith_rbin]);
+      threepcfwin_out.reff1.push_back(rbin[params.ith_rbin]);
     }
-    // bispec_out.reff1.push_back(r1_save[ibin]);
     threepcfwin_out.rbin2.push_back(rbin[ibin]);
-    // bispec_out.reff2.push_back(r2_save[ibin]);
-    // bispec_out.ntriag.push_back(ntriag_save[ibin]);
+    threepcfwin_out.reff2.push_back(rbin[ibin]);
+    threepcfwin_out.ntriag.push_back(0);
     threepcfwin_out.zeta_raw.push_back(norm * zeta_save[ibin]);
     threepcfwin_out.zeta_shot.push_back(norm * sn_save[ibin]);
   }
@@ -2487,7 +2477,7 @@ BispecMeasurements compute_bispec_for_los_choice(
         if (currTask == 0) {
           printf(
             "[%s STAT] Shot noise terms (3 out of 4) at order "
-            "(m1, m2, M) = (%d, %d, %d)` computed.\n",
+            "(m1, m2, M) = (%d, %d, %d) computed.\n",
             show_timestamp().c_str(),
             m1_, m2_, M_
           );
@@ -2827,9 +2817,6 @@ BispecMeasurements compute_bispec_for_los_choice(
     }
   }
 
-  // /// Recalculate normalisation.
-  /// double norm = pow(norm, 2) / pow(particles_data.wtotal, 3);
-
   if (currTask == 0) {
     printf(
       "[%s STAT] ... computed bispectrum terms.\n",
@@ -2845,14 +2832,15 @@ BispecMeasurements compute_bispec_for_los_choice(
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
     if (params.form == "diag") {
       bispec_out.kbin1.push_back(kbin[ibin]);
+      bispec_out.keff1.push_back(kbin[ibin]);
     } else
     if (params.form == "full") {
       bispec_out.kbin1.push_back(kbin[params.ith_kbin]);
+      bispec_out.keff1.push_back(kbin[params.ith_kbin]);
     }
-    // bispec_out.keff1.push_back(k1_save[ibin]);
     bispec_out.kbin2.push_back(kbin[ibin]);
-    // bispec_out.keff2.push_back(k2_save[ibin]);
-    // bispec_out.ntriag.push_back(ntriag_save[ibin]);
+    bispec_out.keff2.push_back(kbin[ibin]);
+    bispec_out.ntriag.push_back(0);
     bispec_out.bk_raw.push_back(norm * bk_save[ibin]);
     bispec_out.bk_shot.push_back(norm * sn_save[ibin]);
   }
