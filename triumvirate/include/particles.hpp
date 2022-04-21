@@ -23,9 +23,9 @@
 /// Set placeholder 'nz' default value.
 #ifdef DBGNZ
   double NZ_DEFAULT = 5.e-4;
-#else
+#else  // DBGNZ
   double NZ_DEFAULT = 0.;
-#endif
+#endif  // DBGNZ
 
 /**
  * Line-of-sight vector.
