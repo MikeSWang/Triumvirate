@@ -1291,8 +1291,8 @@ class Pseudo2ptStats {
     }
 
     /// Perform binning.
-    double dkbin[this->params.num_rbin - 1];
-    for (int ibin = 0; ibin < this->params.num_rbin - 1; ibin++) {
+    double dkbin[this->params.num_kbin - 1];
+    for (int ibin = 0; ibin < this->params.num_kbin - 1; ibin++) {
       dkbin[ibin] = kbin[ibin + 1] - kbin[ibin];
     }
 
