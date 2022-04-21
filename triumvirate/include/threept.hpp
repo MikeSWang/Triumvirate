@@ -84,7 +84,9 @@ struct ThreePCFWindowMeasurements {
  * @returns norm_factor Bispectrum normalisation factor.
  */
 double calc_bispec_normalisation_from_mesh(
-  ParticleCatalogue& catalogue, ParameterSet& params, double alpha=1.
+  ParticleCatalogue& catalogue,
+  ParameterSet& params,
+  double alpha=1.
 ) {
   PseudoDensityField<ParticleCatalogue> catalogue_mesh(params);
 
@@ -660,7 +662,8 @@ BispecMeasurements compute_bispec(
 BispecMeasurements compute_bispec_in_box(
   ParticleCatalogue& particles_data,
   ParameterSet& params,
-  double* kbin, double norm,
+  double* kbin,
+  double norm,
   bool save=false
 ) {
   if (currTask == 0) {
@@ -1526,7 +1529,8 @@ ThreePCFMeasurements compute_3pcf(
 ThreePCFMeasurements compute_3pcf_in_box(
   ParticleCatalogue& particles_data,
   ParameterSet& params,
-  double* rbin, double norm,
+  double* rbin,
+  double norm,
   bool save=false
 ) {
   if (currTask == 0) {
@@ -2265,7 +2269,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
  * @param kbin Wavenumber bins.
  * @param alpha Alpha ratio.
  * @param norm Survey volume normalisation constant.
- * @param los Choice of line of sight.
+ * @param los Choice of line of sight (0, 1 or 2).
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns bispec_out Output bispectrum measurements.
