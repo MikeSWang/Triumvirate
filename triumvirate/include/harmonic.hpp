@@ -107,7 +107,8 @@ class SphericalHarmonicCalculator {
    * @param[out] ylm_out Stored computed values.
    */
   static void store_reduced_spherical_harmonic_in_fourier_space(
-    const int ell, const int m, const double boxsize[3], const int ngrid[3],
+    const int ell, const int m,
+    const double boxsize[3], const int ngrid[3],
     std::complex<double>* ylm_out
   ) {
     /// Exit in error when no output variable is provided.
@@ -161,7 +162,8 @@ class SphericalHarmonicCalculator {
    * @param[out] ylm_out Stored computed values.
    */
   static void store_reduced_spherical_harmonic_in_config_space(
-    const int ell, const int m, const double boxsize[3], const int ngrid[3],
+    const int ell, const int m,
+    const double boxsize[3], const int ngrid[3],
     std::complex<double>* ylm_out
   ) {
     /// Exit in error when no output variable is provided.

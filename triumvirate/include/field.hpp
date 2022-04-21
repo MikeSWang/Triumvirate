@@ -560,8 +560,10 @@ class PseudoDensityField {
    * @param dk_in Wavenumber bin width.
    */
   void inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
-    PseudoDensityField& density, std::complex<double>* ylm,
-    double k_in, double dk_in
+    PseudoDensityField& density,
+    std::complex<double>* ylm,
+    double k_in,
+    double dk_in
   ) {
     /// Reset field with zero values.
     for (int i = 0; i < this->params.nmesh; i++) {

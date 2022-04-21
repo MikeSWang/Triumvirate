@@ -79,6 +79,20 @@ cdef extern from "include/twopt.hpp":
         double norm,
         bool_t save
     )
+    PowspecMeasurements compute_powspec_in_box_cpp "compute_powspec_in_box" (
+        CppParticleCatalogue& particles_data,
+        CppParameterSet& params,
+        double* kbin,
+        double norm,
+        bool_t save
+    )
+    CorrfuncMeasurements compute_corrfunc_in_box_cpp "compute_corrfunc_in_box" (
+        CppParticleCatalogue& particles_data,
+        CppParameterSet& params,
+        double* rbin,
+        double norm,
+        bool_t save
+    )
     # PowspecWindowMeasurements compute_powspec_window_cpp \
     #     "compute_powspec_window" (
     #         CppParticleCatalogue& particles_rand,
@@ -99,30 +113,20 @@ cdef extern from "include/twopt.hpp":
             double norm,
             bool_t save
         )
-    PowspecMeasurements compute_powspec_in_box_cpp "compute_powspec_in_box" (
-        CppParticleCatalogue& particles_data,
-        CppParameterSet& params,
-        double* kbin, double norm,
-        bool_t save
-    )
-    CorrfuncMeasurements compute_corrfunc_in_box_cpp "compute_corrfunc_in_box" (
-        CppParticleCatalogue& particles_data,
-        CppParameterSet& params,
-        double* rbin, double norm,
-        bool_t save
-    )
 
 
 def _calc_powspec_normalisation_from_mesh(
         _ParticleCatalogue particles not None,
-        ParameterSet params not None, double alpha
+        ParameterSet params not None,
+        double alpha
     ):
     return calc_powspec_normalisation_from_mesh_cpp(
         deref(particles.thisptr), deref(params.thisptr), alpha
     )
 
 def _calc_powspec_normalisation_from_particles(
-        _ParticleCatalogue particles not None, double alpha
+        _ParticleCatalogue particles not None,
+        double alpha
     ):
     return calc_powspec_normalisation_from_particles_cpp(
         deref(particles.thisptr), alpha
@@ -221,6 +225,51 @@ def _compute_corrfunc(
         'xi': np.asarray(meas.xi),
     }
 
+def _compute_powspec_in_box(
+        _ParticleCatalogue particles_data not None,
+        ParameterSet params not None,
+        np.ndarray[double, ndim=1, mode='c'] kbin not None,
+        double norm,
+        bool_t save
+    ):
+
+    cdef PowspecMeasurements meas
+    meas = compute_powspec_in_box_cpp(
+        deref(particles_data.thisptr), deref(params.thisptr),
+        &kbin[0], norm,
+        save
+    )
+
+    return {
+        'kbin': np.asarray(meas.kbin),
+        'keff': np.asarray(meas.keff),
+        'nmode': np.asarray(meas.nmode),
+        'pk_raw': np.asarray(meas.pk_raw),
+        'pk_shot': np.asarray(meas.pk_shot),
+    }
+
+def _compute_corrfunc_in_box(
+        _ParticleCatalogue particles_data not None,
+        ParameterSet params not None,
+        np.ndarray[double, ndim=1, mode='c'] rbin not None,
+        double norm,
+        bool_t save
+    ):
+
+    cdef CorrfuncMeasurements meas
+    meas = compute_corrfunc_in_box_cpp(
+        deref(particles_data.thisptr), deref(params.thisptr),
+        &rbin[0], norm,
+        save
+    )
+
+    return {
+        'rbin': np.asarray(meas.rbin),
+        'reff': np.asarray(meas.reff),
+        'npair': np.asarray(meas.npair),
+        'xi': np.asarray(meas.xi),
+    }
+
 # def _compute_powspec_window(
 #         _ParticleCatalogue particles_rand not None,
 #         np.ndarray[double, ndim=2, mode='c'] los_rand not None,
@@ -279,51 +328,6 @@ def _compute_corrfunc_window(
     meas = compute_corrfunc_window_cpp(
         deref(particles_rand.thisptr), los_rand_cpp, deref(params.thisptr),
         &rbin[0], alpha, norm,
-        save
-    )
-
-    return {
-        'rbin': np.asarray(meas.rbin),
-        'reff': np.asarray(meas.reff),
-        'npair': np.asarray(meas.npair),
-        'xi': np.asarray(meas.xi),
-    }
-
-def _compute_powspec_in_box(
-        _ParticleCatalogue particles_data not None,
-        ParameterSet params not None,
-        np.ndarray[double, ndim=1, mode='c'] kbin not None,
-        double norm,
-        bool_t save
-    ):
-
-    cdef PowspecMeasurements meas
-    meas = compute_powspec_in_box_cpp(
-        deref(particles_data.thisptr), deref(params.thisptr),
-        &kbin[0], norm,
-        save
-    )
-
-    return {
-        'kbin': np.asarray(meas.kbin),
-        'keff': np.asarray(meas.keff),
-        'nmode': np.asarray(meas.nmode),
-        'pk_raw': np.asarray(meas.pk_raw),
-        'pk_shot': np.asarray(meas.pk_shot),
-    }
-
-def _compute_corrfunc_in_box(
-        _ParticleCatalogue particles_data not None,
-        ParameterSet params not None,
-        np.ndarray[double, ndim=1, mode='c'] rbin not None,
-        double norm,
-        bool_t save
-    ):
-
-    cdef CorrfuncMeasurements meas
-    meas = compute_corrfunc_in_box_cpp(
-        deref(particles_data.thisptr), deref(params.thisptr),
-        &rbin[0], norm,
         save
     )
 

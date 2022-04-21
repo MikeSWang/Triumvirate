@@ -50,7 +50,11 @@ ext_modules = [
         language='c++',
         extra_compile_args=['-std=c++11',],
         include_dirs=[numpy.get_include(),],
-        define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
+        define_macros=[(
+            'NPY_NO_DEPRECATED_API',
+            'NPY_1_7_API_VERSION',
+            # 'DBGNZ',
+        )],
     ),
     Extension(
         'triumvirate._twopt',
@@ -59,7 +63,24 @@ ext_modules = [
         extra_compile_args=['-std=c++11',],
         include_dirs=["triumvirate/include", numpy.get_include(),],
         libraries=['m', 'gsl', 'fftw3', 'gslcblas'],
-        define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
+        define_macros=[(
+            'NPY_NO_DEPRECATED_API',
+            'NPY_1_7_API_VERSION',
+            # 'DBGDK',
+        )],
+    ),
+    Extension(
+        'triumvirate._threept',
+        sources=["triumvirate/_threept.pyx"],
+        language='c++',
+        extra_compile_args=['-std=c++11',],
+        include_dirs=["triumvirate/include", numpy.get_include(),],
+        libraries=['m', 'gsl', 'fftw3', 'gslcblas'],
+        define_macros=[(
+            'NPY_NO_DEPRECATED_API',
+            'NPY_1_7_API_VERSION',
+            # 'DBGDK',
+        )],
     ),
 ]
 
@@ -67,7 +88,7 @@ setup(
     name="Triumvirate",
     version=version_number,
     license="GPLv3",
-    author="Mike S Wang",
+    author="Mike S Wang, Naonori Sugiyama",
     author_email="mikeshengbo.wang@ed.ac.uk",
     description=(
         "Measuring three-point correlators in "
