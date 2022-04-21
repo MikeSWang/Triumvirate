@@ -250,12 +250,16 @@ BispecMeasurements compute_bispec(
           );
           if (params.form == "diag") {
             for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-              sn_save[ibin] += coupling * stats_sn.pk[ibin];
+              sn_save[ibin] += coupling * (
+                stats_sn.pk[ibin] - stats_sn.sn[ibin]
+              );
             }
           } else
           if (params.form == "full") {
             for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-              sn_save[ibin] += coupling * stats_sn.pk[params.ith_kbin];
+              sn_save[ibin] += coupling * (
+                stats_sn.pk[params.ith_kbin] - stats_sn.sn[params.ith_kbin]
+              );
             }
           }
         }
@@ -268,7 +272,7 @@ BispecMeasurements compute_bispec(
             dn_00_for_sn, N_LM, barS_LM, kbin, params.ell2, m2_
           );
           for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-            sn_save[ibin] += coupling * stats_sn.pk[ibin];
+            sn_save[ibin] += coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
           }
         }
 
@@ -762,12 +766,14 @@ BispecMeasurements compute_bispec_in_box(
         );
         if (params.form == "diag") {
           for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-            sn_save[ibin] += coupling * stats_sn.pk[ibin];
+            sn_save[ibin] += coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
           }
         } else
         if (params.form == "full") {
           for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-            sn_save[ibin] += coupling * stats_sn.pk[params.ith_kbin];
+            sn_save[ibin] += coupling * (
+              stats_sn.pk[params.ith_kbin] - stats_sn.sn[params.ith_kbin]
+            );
           }
         }
       }
@@ -780,7 +786,7 @@ BispecMeasurements compute_bispec_in_box(
           dn_00_for_sn, N_L0_for_sn, barS_LM, kbin, params.ell2, m2_
         );
         for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-          sn_save[ibin] += coupling * stats_sn.pk[ibin];
+          sn_save[ibin] += coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
         }
       }
 
@@ -978,13 +984,13 @@ BispecMeasurements compute_bispec_in_box(
       /// Compute G_00 in eq. (42) in the Paper (L, M = 0 in the global
       /// plane-parallel picture).
       /// QUEST: Why does this not include any weights?
-      PseudoDensityField<ParticleCatalogue> dn_00(params);
-      dn_00.compute_unweighted_fluctuation_insitu(
+      PseudoDensityField<ParticleCatalogue> dn_00_(params);
+      dn_00_.compute_unweighted_fluctuation_insitu(
         particles_data, params.volume
       );
-      dn_00.fourier_transform();
-      dn_00.apply_assignment_compensation();
-      dn_00.inv_fourier_transform();
+      dn_00_.fourier_transform();
+      dn_00_.apply_assignment_compensation();
+      dn_00_.inv_fourier_transform();
 
       /// Compute F_lm's in eq. (42) in the Paper.
       PseudoDensityField<ParticleCatalogue> F_lm_a(params);  // F_lm_a
@@ -1019,7 +1025,7 @@ BispecMeasurements compute_bispec_in_box(
         for (int gid = 0; gid < params.nmesh; gid++) {
           std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
           std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
-          std::complex<double> G_00_gridpt(dn_00[gid][0], dn_00[gid][1]);
+          std::complex<double> G_00_gridpt(dn_00_[gid][0], dn_00_[gid][1]);
           bk_sum += F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
         }
 
@@ -2394,11 +2400,15 @@ BispecMeasurements compute_bispec_for_los_choice(
           );
           if (params.form == "diag") {
             for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-              sn_save[ibin] += coupling * stats_sn.pk[ibin];
+              sn_save[ibin] += coupling * (
+                stats_sn.pk[ibin] - stats_sn.sn[ibin]
+              );
             }
           } else if (params.form == "full") {
             for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-              sn_save[ibin] += coupling * stats_sn.pk[params.ith_kbin];
+              sn_save[ibin] += coupling * (
+                stats_sn.pk[params.ith_kbin] - stats_sn.sn[params.ith_kbin]
+              );
             }
           }
         }
@@ -2466,7 +2476,7 @@ BispecMeasurements compute_bispec_for_los_choice(
             params.ell2, m2_
           );
           for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-            sn_save[ibin] += coupling * stats_sn.pk[ibin];
+            sn_save[ibin] += coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
           }
         }
 
