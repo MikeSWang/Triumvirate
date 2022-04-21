@@ -101,7 +101,9 @@ int main(int argc, char* argv[]) {
       }
       exit(1);
     }
-    flag_rand = "true";
+    if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
+      flag_rand = "true";
+    }
   }
 
   if (currTask == 0) {
