@@ -269,6 +269,146 @@ def compute_corrfunc(catalogue_data, catalogue_rand, params,
 
     return results
 
+def compute_powspec_in_box(catalogue_data, params, save=False, logger=None):
+    """Compute power spectrum in a box.
+
+    Parameters
+    ----------
+    catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
+        Data-source catalogue.
+    params : :class:`~triumvirate.parameters.ParameterSet`
+        Measurement parameters.
+    save : bool, optional
+        If `True` (default is `False`), measurement results are
+        automatically saved to an output file specified from `params`.
+    logger : :class:`logging.Logger`, optional
+        Logger (default is `None`).
+
+    Returns
+    -------
+    results : dict of {str: :class:`numpy.ndarray`}
+        Measurement results.
+
+    """
+    # Prepare catalogues.
+    catalogue_data.centre(
+        [params['boxsize'][axis] for axis in ['x', 'y', 'z']]
+    )
+
+    particles_data = _prepare_catalogue(catalogue_data)
+
+    # Compute auxiliary quantities.
+    kbin = np.ascontiguousarray(
+        np.linspace(*params['range'], num=params['dim'])
+    )
+
+    try:
+        logger.info("Calculating normalisation...", cpp_state='start')
+    except (AttributeError, TypeError):
+        pass
+
+    if params['norm_convention'] == 'mesh':
+        norm = _calc_powspec_normalisation_from_mesh(
+            catalogue_data, params, alpha=1.)
+    elif params['norm_convention'] == 'particle':
+        norm = _calc_powspec_normalisation_from_particles(
+            catalogue_data, alpha=1.
+        )
+    else:
+        raise InvalidParameter("Invalid `norm_convention` parameter.")
+
+    try:
+        logger.info("... calculated normalisation.", cpp_state='end')
+    except (AttributeError, TypeError):
+        pass
+
+    # Perform measurement.
+    try:
+        logger.info("Making measurements...", cpp_state='start')
+    except (AttributeError, TypeError):
+        pass
+
+    results = _compute_powspec_in_box(
+        particles_data, params, kbin, norm, save=save
+    )
+
+    try:
+        logger.info("... made measurements.", cpp_state='end')
+    except (AttributeError, TypeError):
+        pass
+
+    return results
+
+def compute_corrfunc_in_box(catalogue_data, params, save=False, logger=None):
+    """Compute correlation function in a box.
+
+    Parameters
+    ----------
+    catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
+        Data-source catalogue.
+    params : :class:`~triumvirate.parameters.ParameterSet`
+        Measurement parameters.
+    save : bool, optional
+        If `True` (default is `False`), measurement results are
+        automatically saved to an output file specified from `params`.
+    logger : :class:`logging.Logger`, optional
+        Logger (default is `None`).
+
+    Returns
+    -------
+    results : dict of {str: :class:`numpy.ndarray`}
+        Measurement results.
+
+    """
+    # Prepare catalogues.
+    catalogue_data.centre(
+        [params['boxsize'][axis] for axis in ['x', 'y', 'z']]
+    )
+
+    particles_data = _prepare_catalogue(catalogue_data)
+
+    # Compute auxiliary quantities.
+    rbin = np.ascontiguousarray(
+        np.linspace(*params['range'], num=params['dim'])
+    )
+
+    try:
+        logger.info("Calculating normalisation...", cpp_state='start')
+    except (AttributeError, TypeError):
+        pass
+
+    if params['norm_convention'] == 'mesh':
+        norm = _calc_powspec_normalisation_from_mesh(
+            catalogue_data, params, alpha=1.)
+    elif params['norm_convention'] == 'particle':
+        norm = _calc_powspec_normalisation_from_particles(
+            catalogue_data, alpha=1.
+        )
+    else:
+        raise InvalidParameter("Invalid `norm_convention` parameter.")
+
+    try:
+        logger.info("... calculated normalisation.", cpp_state='end')
+    except (AttributeError, TypeError):
+        pass
+
+    # Perform measurement.
+    try:
+        logger.info("Making measurements...", cpp_state='start')
+    except (AttributeError, TypeError):
+        pass
+
+    results = _compute_corrfunc_in_box(
+        particles_data, params, rbin, norm, save=save
+    )
+
+    try:
+        logger.info("... made measurements.", cpp_state='end')
+    except (AttributeError, TypeError):
+        pass
+
+    return results
+
 # def compute_powspec_window(catalogue_rand, params, los_rand=None,
 #                            save=False, logger=None):
 #     """Compute power spectrum window from a random catalogue.
@@ -426,146 +566,6 @@ def compute_corrfunc_window(catalogue_rand, params, los_rand=None,
     results = _compute_corrfunc_window(
         particles_rand, los_rand,
         params, rbin, alpha=1., norm=norm, save=save
-    )
-
-    try:
-        logger.info("... made measurements.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    return results
-
-def compute_powspec_in_box(catalogue_data, params, save=False, logger=None):
-    """Compute power spectrum in a box.
-
-    Parameters
-    ----------
-    catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
-        Data-source catalogue.
-    params : :class:`~triumvirate.parameters.ParameterSet`
-        Measurement parameters.
-    save : bool, optional
-        If `True` (default is `False`), measurement results are
-        automatically saved to an output file specified from `params`.
-    logger : :class:`logging.Logger`, optional
-        Logger (default is `None`).
-
-    Returns
-    -------
-    results : dict of {str: :class:`numpy.ndarray`}
-        Measurement results.
-
-    """
-    # Prepare catalogues.
-    catalogue_data.centre(
-        [params['boxsize'][axis] for axis in ['x', 'y', 'z']]
-    )
-
-    particles_data = _prepare_catalogue(catalogue_data)
-
-    # Compute auxiliary quantities.
-    kbin = np.ascontiguousarray(
-        np.linspace(*params['range'], num=params['dim'])
-    )
-
-    try:
-        logger.info("Calculating normalisation...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
-
-    if params['norm_convention'] == 'mesh':
-        norm = _calc_powspec_normalisation_from_mesh(
-            catalogue_data, params, alpha=1.)
-    elif params['norm_convention'] == 'particle':
-        norm = _calc_powspec_normalisation_from_particles(
-            catalogue_data, alpha=1.
-        )
-    else:
-        raise InvalidParameter("Invalid `norm_convention` parameter.")
-
-    try:
-        logger.info("... calculated normalisation.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    # Perform measurement.
-    try:
-        logger.info("Making measurements...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
-
-    results = _compute_powspec_in_box(
-        particles_data, params, kbin, norm, save=save
-    )
-
-    try:
-        logger.info("... made measurements.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    return results
-
-def compute_corrfunc_in_box(catalogue_data, params, save=False, logger=None):
-    """Compute correlation function in a box.
-
-    Parameters
-    ----------
-    catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
-        Data-source catalogue.
-    params : :class:`~triumvirate.parameters.ParameterSet`
-        Measurement parameters.
-    save : bool, optional
-        If `True` (default is `False`), measurement results are
-        automatically saved to an output file specified from `params`.
-    logger : :class:`logging.Logger`, optional
-        Logger (default is `None`).
-
-    Returns
-    -------
-    results : dict of {str: :class:`numpy.ndarray`}
-        Measurement results.
-
-    """
-    # Prepare catalogues.
-    catalogue_data.centre(
-        [params['boxsize'][axis] for axis in ['x', 'y', 'z']]
-    )
-
-    particles_data = _prepare_catalogue(catalogue_data)
-
-    # Compute auxiliary quantities.
-    rbin = np.ascontiguousarray(
-        np.linspace(*params['range'], num=params['dim'])
-    )
-
-    try:
-        logger.info("Calculating normalisation...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
-
-    if params['norm_convention'] == 'mesh':
-        norm = _calc_powspec_normalisation_from_mesh(
-            catalogue_data, params, alpha=1.)
-    elif params['norm_convention'] == 'particle':
-        norm = _calc_powspec_normalisation_from_particles(
-            catalogue_data, alpha=1.
-        )
-    else:
-        raise InvalidParameter("Invalid `norm_convention` parameter.")
-
-    try:
-        logger.info("... calculated normalisation.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    # Perform measurement.
-    try:
-        logger.info("Making measurements...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
-
-    results = _compute_corrfunc_in_box(
-        particles_data, params, rbin, norm, save=save
     )
 
     try:
