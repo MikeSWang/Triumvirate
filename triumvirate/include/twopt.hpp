@@ -75,7 +75,9 @@ struct CorrfuncWindowMeasurements {
  * @returns norm_factor Power spectrum normalisation factor.
  */
 double calc_powspec_normalisation_from_mesh(
-  ParticleCatalogue& catalogue, ParameterSet& params, double alpha=1.
+  ParticleCatalogue& catalogue,
+  ParameterSet& params,
+  double alpha=1.
 ) {
   PseudoDensityField<ParticleCatalogue> catalogue_mesh(params);
 
@@ -95,7 +97,8 @@ double calc_powspec_normalisation_from_mesh(
  * @returns norm_factor Power spectrum normalisation factor.
  */
 double calc_powspec_normalisation_from_particles(
-  ParticleCatalogue& catalogue, double alpha=1.
+  ParticleCatalogue& catalogue,
+  double alpha=1.
 ) {
   double norm_factor = catalogue._calc_powspec_normalisation() / alpha;
 
@@ -420,7 +423,8 @@ CorrfuncMeasurements compute_corrfunc(
 PowspecMeasurements compute_powspec_in_box(
   ParticleCatalogue& particles_data,
   ParameterSet& params,
-  double* kbin, double norm,
+  double* kbin,
+  double norm,
   bool save=false
 ) {
   if (currTask == 0) {
@@ -540,7 +544,8 @@ PowspecMeasurements compute_powspec_in_box(
 CorrfuncMeasurements compute_corrfunc_in_box(
   ParticleCatalogue& particles_data,
   ParameterSet& params,
-  double* rbin, double norm,
+  double* rbin,
+  double norm,
   bool save=false
 ) {
   if (currTask == 0) {
