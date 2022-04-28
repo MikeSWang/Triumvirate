@@ -10,6 +10,8 @@ import warnings
 import numpy as np
 from astropy.table import Table
 
+from _catalogue import _ParticleCatalogue
+
 
 class MissingField(ValueError):
     """Value error raised when a mandatory field is missing/empty in
@@ -247,8 +249,8 @@ class ParticleCatalogue:
             self.centre(boxsize)
         else:
             origin = np.array([
-                np.mean(catalogue_ref.bounds[axis]) - boxsize[idx_axis]/2.
-                for idx_axis, axis in enumerate(['x', 'y', 'z'])
+                np.mean(catalogue_ref.bounds[axis]) - boxsize[iaxis]/2.
+                for iaxis, axis in enumerate(['x', 'y', 'z'])
             ])
 
             self.offset_coords(origin)
@@ -413,3 +415,14 @@ class ParticleCatalogue:
             )
 
         return alpha**2 * np.sum(self._pdata['ws']**2 * self._pdata['wc']**2)
+
+
+def _prepare_catalogue(catalogue):
+    return _ParticleCatalogue(
+        catalogue._pdata['x'],
+        catalogue._pdata['y'],
+        catalogue._pdata['z'],
+        np.nan_to_num(np.array(catalogue._pdata['nz'], dtype=float)),
+        catalogue._pdata['ws'],
+        catalogue._pdata['wc']
+    )

@@ -7,8 +7,8 @@ Measuring two-point correlator statistics from catalogues.
 """
 import numpy as np
 
+from catalogue import _prepare_catalogue
 from parameters import InvalidParameter
-from _catalogue import _ParticleCatalogue
 from _twopt import (
     _calc_powspec_normalisation_from_mesh,
     _calc_powspec_normalisation_from_particles,
@@ -20,16 +20,6 @@ from _twopt import (
     # _compute_powspec_window,
 )
 
-
-def _prepare_catalogue(catalogue):
-    return _ParticleCatalogue(
-        catalogue._pdata['x'],
-        catalogue._pdata['y'],
-        catalogue._pdata['z'],
-        np.nan_to_num(np.array(catalogue._pdata['nz'], dtype=float)),
-        catalogue._pdata['ws'],
-        catalogue._pdata['wc']
-    )
 
 def compute_powspec(catalogue_data, catalogue_rand, params,
                     los_data=None, los_rand=None,
