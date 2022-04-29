@@ -102,13 +102,12 @@ class PseudoDensityField {
       this->assign_weighted_field_to_mesh_tsc(particles, weights);
     } else {
       if (currTask == 0) {
-        printf(
+        throw InvalidParameter(
           "[%s ERRO] Unsupported mesh assignment scheme: '%s'.\n",
           show_timestamp().c_str(),
           this->params.assignment.c_str()
         );
-      }
-      exit(1);
+      };
     }
   }
 
