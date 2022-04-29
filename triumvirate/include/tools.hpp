@@ -1,6 +1,6 @@
 /**
  * @file tools.hpp
- * @brief Miscellaneous tools.
+ * @brief Miscellaneous scientific tools.
  *
  */
 
@@ -19,27 +19,6 @@
 #define wigner_3j(j1, j2, j3, m1, m2, m3) ( \
   gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3) \
 )
-
-/**
- * Check if a path is set (after trimming).
- *
- * This is used for checking whether a path is set.
- *
- * @param pathstr
- * @returns true, false
- */
-
-bool is_set(std::string pathstr){
-  /// Check if the string is empty.
-  if (pathstr.empty()) {return false;}
-
-  /// Check if the string contains non-whitespace characters.  If so,
-  /// the path is set, otherwise not.
-  for (int ichar = 0; ichar < pathstr.length(); ichar++){
-    if (!std::isspace(pathstr[ichar])) {return true;}
-  }
-  return false;
-}
 
 /**
  * Binning scheme.

@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
   }
 
   std::string flag_rand = "false";  // random catalogue status
-  if (is_set(params.rand_catalogue_file)) {
+  if (if_path_is_set(params.rand_catalogue_file)) {
     if (particles_rand.read_particle_data_from_file(
       params.rand_catalogue_file, params.catalogue_header
     )) {
