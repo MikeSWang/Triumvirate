@@ -158,13 +158,12 @@ BispecMeasurements compute_bispec(
     < EPS_COUPLING_3PT
   ) {
     if (currTask == 0) {
-      printf(
+      throw InvalidParameter(
         "[%s ERRO] Specified bispectrum multipole vanishes identically. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n",
         show_timestamp().c_str()
       );
     }
-    exit(1);
   }
 
   /// Set up output.
@@ -681,13 +680,12 @@ BispecMeasurements compute_bispec_in_box(
     < EPS_COUPLING_3PT
   ) {
     if (currTask == 0) {
-      printf(
+      throw InvalidParameter(
         "[%s ERRO] Specified bispectrum multipole vanishes identically. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n",
         show_timestamp().c_str()
       );
     }
-    exit(1);
   }
 
   /// Set up output.
@@ -1168,14 +1166,13 @@ ThreePCFMeasurements compute_3pcf(
     < EPS_COUPLING_3PT
   ) {
     if (currTask == 0) {
-      printf(
+      throw InvalidParameter(
         "[%s ERRO] Specified three-point correlation function multipole"
         "vanishes identically. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n",
         show_timestamp().c_str()
       );
     }
-    exit(1);
   }
 
   /// Set up output.
@@ -1549,14 +1546,13 @@ ThreePCFMeasurements compute_3pcf_in_box(
     < EPS_COUPLING_3PT
   ) {
     if (currTask == 0) {
-      printf(
+      throw InvalidParameter(
         "[%s ERRO] Specified three-point correlation function multipole "
         "vanishes identically. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n",
         show_timestamp().c_str()
       );
     }
-    exit(1);
   }
 
   /// Set up output.
@@ -1900,14 +1896,13 @@ ThreePCFWindowMeasurements compute_3pcf_window(
     < EPS_COUPLING_3PT
   ) {
     if (currTask == 0) {
-      printf(
+      throw InvalidParameter(
         "[%s ERRO] Specified three-point correlation function window "
         "multipole vanishes identically. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n",
         show_timestamp().c_str()
       );
     }
-    exit(1);
   }
 
   /// Set up output.
@@ -2300,13 +2295,12 @@ BispecMeasurements compute_bispec_for_los_choice(
     < EPS_COUPLING_3PT
   ) {
     if (currTask == 0) {
-      printf(
+      throw InvalidParameter(
         "[%s ERRO] Specified bispectrum multipole vanishes identically. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n",
         show_timestamp().c_str()
       );
     }
-    exit(1);
   }
 
   /// Set up output.

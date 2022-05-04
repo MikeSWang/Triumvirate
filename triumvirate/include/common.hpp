@@ -28,12 +28,68 @@ double clockElapsed;  ///< program elapsed clock
 
 /// Provide program utilities.
 
+/**
+ * Exception raised when parameters are invalid.
+ *
+ */
 class InvalidParameter: public std::invalid_argument {
  public:
   std::string err_mesg;
 
   InvalidParameter(const char* fmt_string, ...): std::invalid_argument(
     "Invalid parameter error."  // default error message; essential
+  ) {
+    va_list args;
+    char err_mesg_buf[4096];
+
+    va_start(args, fmt_string);
+    vsprintf(err_mesg_buf, fmt_string, args);
+    va_end(args);
+
+    this->err_mesg = std::string(err_mesg_buf);
+  }
+
+  virtual const char* what() const noexcept {
+    return err_mesg.c_str();
+  }
+};
+
+/**
+ * Exception raised when an input/output operation fails.
+ *
+ */
+class IOError: public std::runtime_error {
+ public:
+  std::string err_mesg;
+
+  IOError(const char* fmt_string, ...): std::runtime_error(
+    "Input/output error."  // default error message; essential
+  ) {
+    va_list args;
+    char err_mesg_buf[4096];
+
+    va_start(args, fmt_string);
+    vsprintf(err_mesg_buf, fmt_string, args);
+    va_end(args);
+
+    this->err_mesg = std::string(err_mesg_buf);
+  }
+
+  virtual const char* what() const noexcept {
+    return err_mesg.c_str();
+  }
+};
+
+/**
+ * Exception raised when a data operation fails.
+ *
+ */
+class InvalidDataOps: public std::runtime_error {
+ public:
+  std::string err_mesg;
+
+  InvalidDataOps(const char* fmt_string, ...): std::runtime_error(
+    "Invalid data error."  // default error message; essential
   ) {
     va_list args;
     char err_mesg_buf[4096];

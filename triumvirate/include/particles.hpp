@@ -175,14 +175,13 @@ class ParticleCatalogue {
     fin.open(particles_file.c_str(), std::ios::in);
 
     if (fin.fail()) {
+      fin.close();
       if (currTask == 0) {
-        printf(
+        throw IOError(
           "[%s ERRO] Failed to open file '%s'.\n", show_timestamp().c_str(),
           this->source.c_str()
         );
       }
-      fin.close();
-      return -1;
     }
 
     std::string str_line;
@@ -340,12 +339,11 @@ class ParticleCatalogue {
   void _calc_weighted_total() {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        printf(
+        throw InvalidDataOps(
           "[%s ERRO] Particle data are uninitialised.\n",
           show_timestamp().c_str()
         );
       }
-      exit(1);
     }
 
     double wtotal = 0.;
@@ -364,12 +362,11 @@ class ParticleCatalogue {
   void _calc_pos_min_and_max(bool verbose=false) {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        printf(
+        throw InvalidDataOps(
           "[%s ERRO] Particle data are uninitialised.\n",
           show_timestamp().c_str()
         );
       }
-      exit(1);
     }
 
     /// Initialise minimum and maximum values with the first
@@ -419,12 +416,11 @@ class ParticleCatalogue {
   void offset_coords(const double dpos[3]) {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        printf(
+        throw InvalidDataOps(
           "[%s ERRO] Particle data are uninitialised.\n",
           show_timestamp().c_str()
         );
       }
-      exit(1);
     }
 
     /// Make adjustments required.
@@ -447,12 +443,11 @@ class ParticleCatalogue {
   void offset_coords_for_centring(const double boxsize[3]) {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        printf(
+        throw InvalidDataOps(
           "[%s ERRO] Particle data are uninitialised.\n",
           show_timestamp().c_str()
         );
       }
-      exit(1);
     }
 
     /// Calculate adjustments needed.
@@ -572,12 +567,11 @@ class ParticleCatalogue {
   double _calc_powspec_shotnoise() {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        printf(
+        throw InvalidDataOps(
           "[%s ERRO] Particle data are uninitialised.\n",
           show_timestamp().c_str()
         );
       }
-      exit(1);
     }
 
     double shotnoise = 0.;
@@ -598,12 +592,11 @@ class ParticleCatalogue {
   double _calc_powspec_normalisation() {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        printf(
+        throw InvalidDataOps(
           "[%s ERRO] Particle data are uninitialised.\n",
           show_timestamp().c_str()
         );
       }
-      exit(1);
     }
 
     double vol_eff_inv = 0.;  // I_2
@@ -614,13 +607,12 @@ class ParticleCatalogue {
 
     if (vol_eff_inv == 0.) {
       if (currTask == 0) {
-        printf(
+        throw InvalidDataOps(
           "[%s ERRO] Particle 'nz' values appear to be all zeros. "
           "Check the input catalogue contains valid 'nz' field.\n",
           show_timestamp().c_str()
         );
       }
-      exit(1);
     }
 
     double norm_factor = 1. / vol_eff_inv;  // I_2^(-1)
@@ -638,12 +630,11 @@ class ParticleCatalogue {
   double _calc_bispec_normalisation() {
     if (this->pdata == NULL) {
       if (currTask == 0) {
-        printf(
+        throw InvalidDataOps(
           "[%s ERRO] Particle data are uninitialised.\n",
           show_timestamp().c_str()
         );
       }
-      exit(1);
     }
 
     double vol_sq_eff_inv = 0.;  // I_3
@@ -654,13 +645,12 @@ class ParticleCatalogue {
 
     if (vol_sq_eff_inv == 0.) {
       if (currTask == 0) {
-        printf(
+        throw InvalidDataOps(
           "[%s ERRO] Particle 'nz' values appear to be all zeros. "
           "Check the input catalogue contains valid 'nz' field.\n",
           show_timestamp().c_str()
         );
       }
-      exit(1);
     }
 
     double norm_factor = 1. / vol_sq_eff_inv;  // I_3^(-1)
