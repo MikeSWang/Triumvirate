@@ -37,21 +37,20 @@ int main(int argc, char* argv[]) {
   /// Configure parameters.
   if (argc != 2) {
     if (currTask == 0) {
-      printf(
+      throw IOError(
         "[%s ERRO] Missing parameter file in call.\n", show_timestamp().c_str()
       );
     }
-    exit(1);
+
   }
 
   ParameterSet params;  // program parameters
   if (params.read_from_file(argv)) {
     if (currTask == 0) {
-      printf(
+      throw IOError(
         "[%s ERRO] Failed to initialise parameters.\n", show_timestamp().c_str()
       );
     }
-    exit(1);
   }
 
   if (!(params.printout())) {
@@ -80,12 +79,11 @@ int main(int argc, char* argv[]) {
     params.data_catalogue_file, params.catalogue_header
   )) {
     if (currTask == 0) {
-      printf(
+      throw IOError(
         "[%s ERRO] Failed to load data-source catalogue file.\n",
         show_timestamp().c_str()
       );
     }
-    exit(1);
   }
 
   std::string flag_rand = "false";  // random catalogue status
@@ -94,12 +92,11 @@ int main(int argc, char* argv[]) {
       params.rand_catalogue_file, params.catalogue_header
     )) {
       if (currTask == 0) {
-        printf(
+        throw IOError(
           "[%s ERRO] Failed to load random-source catalogue file.\n",
           show_timestamp().c_str()
         );
       }
-      exit(1);
     }
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       flag_rand = "true";

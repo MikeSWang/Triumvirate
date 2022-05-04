@@ -346,13 +346,12 @@ class ParameterSet {
     FILE* used_param_fileptr;
     if (!(used_param_fileptr = fopen(filepath, "w"))) {
       if (currTask == 0) {
-        printf(
+        throw IOError(
           "[%s ERRO] Non-existent or unwritable output directory: '%s'.\n",
           show_timestamp().c_str(),
           this->measurement_dir.c_str()
         );
       }
-      return -1;
     }
 
     /// Print parameters to file.
@@ -447,14 +446,13 @@ class ParameterSet {
       || this->catalogue_type == "sim"
     )) {
       if (currTask == 0) {
-        printf(
+        throw InvalidParameter(
           "[%s ERRO] Catalogue type must be 'survey', 'mock' or 'sim': "
-          "`catalogue_type` = %s.\n",
+          "`catalogue_type` = '%s'.\n",
           show_timestamp().c_str(),
           this->catalogue_type.c_str()
         );
       }
-      return -1;
     }
 
     if (!(
@@ -463,14 +461,13 @@ class ParameterSet {
       || this->assignment == "tsc"
     )) {
       if (currTask == 0) {
-        printf(
+        throw InvalidParameter(
           "[%s ERRO] Mesh assignment scheme must be 'ngp', 'cic' or 'tsc': "
-          "`assignment` = %s.\n",
+          "`assignment` = '%s'.\n",
           show_timestamp().c_str(),
           this->assignment.c_str()
         );
       }
-      return -1;
     }
 
     if (!(
@@ -479,7 +476,7 @@ class ParameterSet {
       if (currTask == 0) {
         printf(
           "[%s WARN] Normalisation convention must be "
-          "'mesh' or 'particle': `norm_convention` = %s.\n",
+          "'mesh' or 'particle': `norm_convention` = '%s'.\n",
           show_timestamp().c_str(),
           this->norm_convention.c_str()
         );
@@ -505,7 +502,7 @@ class ParameterSet {
       if (currTask == 0) {
         printf(
           "[%s WARN] Shot noise convention convention must be "
-          "'mesh' or 'particle': `shotnoise_convention` = %s.\n",
+          "'mesh' or 'particle': `shotnoise_convention` = '%s'.\n",
           show_timestamp().c_str(),
           this->shotnoise_convention.c_str()
         );
@@ -526,26 +523,24 @@ class ParameterSet {
 
     if (!(this->form == "diag" || this->form == "full")) {
       if (currTask == 0) {
-        printf(
+        throw InvalidParameter(
           "[%s ERRO] `form` must be either 'full' or 'diag': "
-          "`form` = %s.\n",
+          "`form` = '%s'.\n",
           show_timestamp().c_str(),
           this->form.c_str()
         );
       }
-      return -1;
     }
 
     /// Validate numerical parameters.
     if (this->num_kbin < 2 || this->num_rbin < 2) {
       if (currTask == 0) {
-        printf(
+        throw InvalidParameter(
           "[%s ERRO] Number of bins (`num_kbin` or `num_rbin`) "
           "must be >= 2.\n",
           show_timestamp().c_str()
         );
       }
-      return -1;
     }
 
     if (this->binning == "linpad" || this->assignment == "logpad") {
@@ -554,25 +549,23 @@ class ParameterSet {
 
       if (this->num_rbin < nbin_custom + 2) {
         if (currTask == 0) {
-          printf(
+          throw InvalidParameter(
             "[%s ERRO] Binning scheme '%s' requires `num_rbin` >= %d.\n",
             show_timestamp().c_str(),
             this->binning.c_str(), nbin_custom + 2
           );
         }
-        return -1;
       }
     }
 
     if (this->ith_kbin >= this->num_kbin || this->ith_rbin >= this->num_rbin) {
       if (currTask == 0) {
-        printf(
+        throw InvalidParameter(
           "[%s ERRO] Bin index (`ith_kbin` or `ith_rbin`) must be less than "
           "the number of bins (`num_kbin` or `num_rbin`).\n",
           show_timestamp().c_str()
         );
       }
-      return -1;
     }
 
     if (currTask == 0) {
@@ -648,13 +641,12 @@ class ParameterSet {
           }
         } else {
           if (currTask == 0) {
-            printf(
+            throw IOError(
               "[%s ERRO] Failed to make output subdirectory '%s'.\n",
               show_timestamp().c_str(),
               buf_dir
             );
           }
-          exit(1);
         }
       }
 

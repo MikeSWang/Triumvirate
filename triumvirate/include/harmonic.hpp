@@ -114,12 +114,12 @@ class SphericalHarmonicCalculator {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {
       if (currTask == 0) {
-        printf(
-          "[%s ERRO] Cannot store computed spherical harmonics.\n",
+        throw InvalidDataOps(
+          "[%s ERRO] Cannot store computed spherical harmonics. "
+          "Output array is null.\n",
           show_timestamp().c_str()
         );
       }
-      exit(1);
     }
 
     /// Determine the fundamental wavenumber in each dimension.
@@ -169,12 +169,12 @@ class SphericalHarmonicCalculator {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {
       if (currTask == 0) {
-        printf(
-          "[%s ERRO] Cannot store computed spherical harmonics.\n",
+        throw InvalidDataOps(
+          "[%s ERRO] Cannot store computed spherical harmonics. "
+          "Output array is null.\n",
           show_timestamp().c_str()
         );
       }
-      exit(1);
     }
 
     /// Determine the grid size in each dimension.
