@@ -116,7 +116,7 @@ cdef extern from "include/threept.hpp":
     #         double* kbin,
     #         double alpha,
     #         double norm,
-    #         int los,
+    #         int los_choice,
     #         bool_t save
     #     )
 
@@ -344,7 +344,7 @@ def _compute_3pcf_window(
 #         np.ndarray[double, ndim=1, mode='c'] kbin not None,
 #         double alpha,
 #         double norm,
-#         int los,
+#         int los_choice,
 #         bool_t save
 #     ):
 #
@@ -373,7 +373,7 @@ def _compute_3pcf_window(
 #         deref(params.thisptr),
 #         &kbin[0],
 #         alpha, norm,
-#         los,
+#         los_choice,
 #         save
 #     )
 #

@@ -2264,7 +2264,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
  * @param kbin Wavenumber bins.
  * @param alpha Alpha ratio.
  * @param norm Survey volume normalisation constant.
- * @param los Choice of line of sight (0, 1 or 2).
+ * @param los_choice Choice of line of sight {0, 1 or 2}.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns bispec_out Output bispectrum measurements.
@@ -2276,7 +2276,7 @@ BispecMeasurements compute_bispec_for_los_choice(
   double* kbin,
   double alpha,
   double norm,
-  int los,
+  int los_choice,
   bool save=false
 ) {
   if (currTask == 0) {
@@ -2348,7 +2348,7 @@ BispecMeasurements compute_bispec_for_los_choice(
 
         PseudoDensityField<ParticleCatalogue> dn_LM00_for_sn(params);
           // dn_LM or dn_00
-        if (los == 0) {
+        if (los_choice == 0) {
           dn_LM00_for_sn.compute_ylm_wgtd_fluctuation(
             particles_data, particles_rand, los_data, los_rand, alpha,
             params.ELL, M_
@@ -2370,7 +2370,7 @@ BispecMeasurements compute_bispec_for_los_choice(
 
         /// Compute N_LM in eq. (46) in the Paper.
         PseudoDensityField<ParticleCatalogue> N_LM00(params);  // N_LM or N_00
-        if (los == 0) {
+        if (los_choice == 0) {
           N_LM00.compute_ylm_wgtd_2pt_self_component_for_shotnoise(
             particles_data, particles_rand, los_data, los_rand,
             alpha, 0, 0
@@ -2432,7 +2432,7 @@ BispecMeasurements compute_bispec_for_los_choice(
 
         PseudoDensityField<ParticleCatalogue> dn_LM00_for_sn(params);
           // dn_LM or dn_00
-        if (los == 1) {
+        if (los_choice == 1) {
           dn_LM00_for_sn.compute_ylm_wgtd_fluctuation(
             particles_data, particles_rand, los_data, los_rand, alpha,
             params.ELL, M_
@@ -2454,7 +2454,7 @@ BispecMeasurements compute_bispec_for_los_choice(
 
         /// Compute N_LM in eq. (46) in the Paper.
         PseudoDensityField<ParticleCatalogue> N_LM00(params);  // N_LM or N_00
-        if (los == 1) {
+        if (los_choice == 1) {
           N_LM00.compute_ylm_wgtd_2pt_self_component_for_shotnoise(
             particles_data, particles_rand, los_data, los_rand, alpha,
             0, 0
@@ -2539,7 +2539,7 @@ BispecMeasurements compute_bispec_for_los_choice(
         if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
         PseudoDensityField<ParticleCatalogue> N_LM00(params);  // N_LM or N_00
-        if (los == 2) {
+        if (los_choice == 2) {
           N_LM00.compute_ylm_wgtd_2pt_self_component_for_shotnoise(
             particles_data, particles_rand, los_data, los_rand, alpha,
             0, 0
@@ -2554,7 +2554,7 @@ BispecMeasurements compute_bispec_for_los_choice(
 
         PseudoDensityField<ParticleCatalogue> dn_LM00_for_sn(params);
           // dn_LM or dn_00
-        if (los == 2) {
+        if (los_choice == 2) {
           dn_LM00_for_sn.compute_ylm_wgtd_fluctuation(
             particles_data, particles_rand, los_data, los_rand, alpha,
             params.ELL, M_
@@ -2721,7 +2721,7 @@ BispecMeasurements compute_bispec_for_los_choice(
         /// Compute G_LM in eq. (42) in the Paper.
         PseudoDensityField<ParticleCatalogue> dn_LM00_for_los1(params);
           // dn_LM or dn_00
-        if (los == 0) {
+        if (los_choice == 0) {
           dn_LM00_for_los1.compute_ylm_wgtd_fluctuation(
             particles_data, particles_rand, los_data, los_rand, alpha,
             params.ELL, M_
@@ -2736,7 +2736,7 @@ BispecMeasurements compute_bispec_for_los_choice(
 
         PseudoDensityField<ParticleCatalogue> dn_LM00_for_los2(params);
           // dn_LM or dn_00
-        if (los == 1) {
+        if (los_choice == 1) {
           dn_LM00_for_los2.compute_ylm_wgtd_fluctuation(
             particles_data, particles_rand, los_data, los_rand, alpha,
             params.ELL, M_
@@ -2751,7 +2751,7 @@ BispecMeasurements compute_bispec_for_los_choice(
 
         PseudoDensityField<ParticleCatalogue> dn_LM00_for_los3(params);
           // dn_LM or dn_00
-        if (los == 2) {
+        if (los_choice == 2) {
           dn_LM00_for_los3.compute_ylm_wgtd_fluctuation(
             particles_data, particles_rand, los_data, los_rand, alpha,
             params.ELL, M_
