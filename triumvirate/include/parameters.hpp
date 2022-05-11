@@ -466,7 +466,7 @@ class ParameterSet {
       }
     }
 
-    if (!(this->alignment == "ngp" || this->alignment == "cic")) {
+    if (!(this->alignment == "centre" || this->alignment == "pad")) {
       if (currTask == 0) {
         throw InvalidParameter(
           "[%s ERRO] Box alignment must be 'centre' or 'pad': "
