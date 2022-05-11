@@ -226,7 +226,7 @@ class ParticleCatalogue:
 
         return los
 
-    def centre_catalogues(self, boxsize, catalogue_ref=None):
+    def centre(self, boxsize, catalogue_ref=None):
         """Centre a (pair of) catalogue(s) in a box.
 
         Parameters
@@ -246,7 +246,12 @@ class ParticleCatalogue:
 
         """
         if catalogue_ref is None:
-            self.centre(boxsize)
+            origin = [
+                np.mean(self.bounds[axis]) - boxsize[iaxis] / 2.
+                for iaxis, axis in enumerate(['x', 'y', 'z'])
+            ]
+
+            self.offset_coords(origin)
         else:
             origin = np.array([
                 np.mean(catalogue_ref.bounds[axis]) - boxsize[iaxis]/2.
@@ -256,7 +261,7 @@ class ParticleCatalogue:
             self.offset_coords(origin)
             catalogue_ref.offset_coords(origin)
 
-    def pad_catalogues(self, boxsize, ngrid, ngrid_pad=3., catalogue_ref=None):
+    def pad(self, boxsize, ngrid, ngrid_pad=3., catalogue_ref=None):
         """Pad a (pair of) catalogue(s) in a box.
 
         Parameters
@@ -293,22 +298,6 @@ class ParticleCatalogue:
         self.offset_coords(origin)
         if catalogue_ref is not None:
             catalogue_ref.offset_coords(origin)
-
-    def centre(self, boxsize):
-        """Centre particles in a box of given box size.
-
-        Parameters
-        ----------
-        boxsize : (3,) array of float
-            Box size in each dimension.
-
-        """
-        origin = [
-            np.mean(self.bounds[axis]) - boxsize[iaxis] / 2.
-            for iaxis, axis in enumerate(['x', 'y', 'z'])
-        ]
-
-        self.offset_coords(origin)
 
     def periodise(self, boxsize):
         """Place particles in a periodic box of given box size.
