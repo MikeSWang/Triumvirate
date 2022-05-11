@@ -75,14 +75,21 @@ int main(int argc, char* argv[]) {
 
   /// Read catalogue files.
   ParticleCatalogue particles_data, particles_rand;  // catalogues
-  if (particles_data.read_particle_data_from_file(
-    params.data_catalogue_file, params.catalogue_header
-  )) {
-    if (currTask == 0) {
-      throw IOError(
-        "[%s ERRO] Failed to load data-source catalogue file.\n",
-        show_timestamp().c_str()
-      );
+
+  std::string flag_data = "false";  // data catalogue status
+  if (if_path_is_set(params.data_catalogue_file)) {
+    if (particles_data.read_particle_data_from_file(
+      params.data_catalogue_file, params.catalogue_header
+    )) {
+      if (currTask == 0) {
+        throw IOError(
+          "[%s ERRO] Failed to load data-source catalogue file.\n",
+          show_timestamp().c_str()
+        );
+      }
+    }
+    if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
+      flag_data = "true";
     }
   }
 
@@ -189,7 +196,7 @@ int main(int argc, char* argv[]) {
 
   /// Compute number density alpha ratio.
   double alpha;  // alpha ratio
-  if (flag_rand == "true") {
+  if (flag_data == "true" && flag_rand == "true") {
     alpha = particles_data.wtotal / particles_rand.wtotal;
   } else {
     alpha = 1.;
