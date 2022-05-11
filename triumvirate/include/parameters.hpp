@@ -35,6 +35,7 @@ class ParameterSet {
   /// Sampling.
   double boxsize[3];  ///< boxsize in each dimension
   int ngrid[3];  ///< grid number in each dimension
+  std::string alignment;  ///< box alignment choice: {'centre', 'pad'}
   std::string assignment;  ///< mesh assignment scheme: {'ngp', 'cic', 'tsc'}
   std::string norm_convention;  /**< normalisation convention:
                                      {'mesh', 'particle'} */
@@ -94,6 +95,7 @@ class ParameterSet {
     char output_tag_[1024];
     char catalogue_type_[16];
     char measurement_type_[16];
+    char alignment_[16];
     char assignment_[16];
     char norm_convention_[16];
     char shotnoise_convention_[16];
@@ -189,6 +191,11 @@ class ParameterSet {
         sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &ngrid_z);
       }
 
+      if (str_line.find("alignment") != std::string::npos) {
+        sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, alignment_
+        );
+      }
       if (str_line.find("assignment") != std::string::npos) {
         sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, assignment_
@@ -306,6 +313,7 @@ class ParameterSet {
 
     this->norm_convention = norm_convention_;
     this->shotnoise_convention = shotnoise_convention_;
+    this->alignment = alignment_;
     this->assignment = assignment_;
 
     this->binning = binning_;
@@ -389,6 +397,9 @@ class ParameterSet {
     );
 
     fprintf(
+      used_param_fileptr, "alignment = %s\n", this->alignment.c_str()
+    );
+    fprintf(
       used_param_fileptr, "assignment = %s\n", this->assignment.c_str()
     );
     fprintf(
@@ -451,6 +462,17 @@ class ParameterSet {
           "`catalogue_type` = '%s'.\n",
           show_timestamp().c_str(),
           this->catalogue_type.c_str()
+        );
+      }
+    }
+
+    if (!(this->alignment == "ngp" || this->alignment == "cic")) {
+      if (currTask == 0) {
+        throw InvalidParameter(
+          "[%s ERRO] Box alignment must be 'centre' or 'pad': "
+          "`alignment` = '%s'.\n",
+          show_timestamp().c_str(),
+          this->alignment.c_str()
         );
       }
     }
@@ -543,7 +565,7 @@ class ParameterSet {
       }
     }
 
-    if (this->binning == "linpad" || this->assignment == "logpad") {
+    if (this->binning == "linpad" || this->binning == "logpad") {
       /// SEE: See `BinScheme::set_rbin`.
       int nbin_custom = 5;
 
