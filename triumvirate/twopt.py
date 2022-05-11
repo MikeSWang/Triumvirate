@@ -5,6 +5,8 @@ Two-Point Correlator Measurements (:mod:`~triumvirate.twopt`)
 Measuring two-point correlator statistics from catalogues.
 
 """
+import sys
+
 import numpy as np
 
 from catalogue import _prepare_catalogue
@@ -51,7 +53,7 @@ def compute_powspec(catalogue_data, catalogue_rand, params,
         Number of grids as padding for the catalogues away from the
         origin corner of the box.  If `None` (default), the default
         padding factor is assumed (see
-        :meth:`triumvirate.catalogue.ParticleCatalogue.pad_catalogues`).
+        :meth:`triumvirate.catalogue.ParticleCatalogue.pad`).
     save : bool, optional
         If `True` (default is `False`), measurement results are
         automatically saved to an output file specified from `params`.
@@ -74,13 +76,13 @@ def compute_powspec(catalogue_data, catalogue_rand, params,
     los_rand = np.ascontiguousarray(los_rand)
 
     if box_align.lower() == 'centre':
-        catalogue_data.centre_catalogues(
+        catalogue_data.centre(
             [params['boxsize'][axis] for axis in ['x', 'y', 'z']],
             catalogue_ref=catalogue_rand
         )
     elif box_align.lower() == 'pad':
         kwargs = {} if ngrid_pad is None else {'ngrid_pad': ngrid_pad}
-        catalogue_data.pad_catalogues(
+        catalogue_data.pad(
             [params['boxsize'][axis] for axis in ['x', 'y', 'z']],
             [params['ngrid'][axis] for axis in ['x', 'y', 'z']],
             catalogue_ref=catalogue_rand,
@@ -118,6 +120,8 @@ def compute_powspec(catalogue_data, catalogue_rand, params,
     except (AttributeError, TypeError):
         pass
 
+    sys.stdout.flush()
+
     if logger:
         logger.info("Alpha contrast: %.6e.", alpha)
         logger.info("Normalisation constant: %.6e.", norm)
@@ -137,6 +141,8 @@ def compute_powspec(catalogue_data, catalogue_rand, params,
         logger.info("... made measurements.", cpp_state='end')
     except (AttributeError, TypeError):
         pass
+
+    sys.stdout.flush()
 
     return results
 
@@ -170,7 +176,7 @@ def compute_corrfunc(catalogue_data, catalogue_rand, params,
         Number of grids as padding for the catalogues away from the
         origin corner of the box.  If `None` (default), the default
         padding factor is assumed (see
-        :meth:`triumvirate.catalogue.ParticleCatalogue.pad_catalogues`).
+        :meth:`triumvirate.catalogue.ParticleCatalogue.pad`).
     save : bool, optional
         If `True` (default is `False`), measurement results are
         automatically saved to an output file specified from `params`.
@@ -193,13 +199,13 @@ def compute_corrfunc(catalogue_data, catalogue_rand, params,
     los_rand = np.ascontiguousarray(los_rand)
 
     if box_align.lower() == 'centre':
-        catalogue_data.centre_catalogues(
+        catalogue_data.centre(
             [params['boxsize'][axis] for axis in ['x', 'y', 'z']],
             catalogue_ref=catalogue_rand
         )
     elif box_align.lower() == 'pad':
         kwargs = {} if ngrid_pad is None else {'ngrid_pad': ngrid_pad}
-        catalogue_data.pad_catalogues(
+        catalogue_data.pad(
             [params['boxsize'][axis] for axis in ['x', 'y', 'z']],
             [params['ngrid'][axis] for axis in ['x', 'y', 'z']],
             catalogue_ref=catalogue_rand,
@@ -237,6 +243,8 @@ def compute_corrfunc(catalogue_data, catalogue_rand, params,
     except (AttributeError, TypeError):
         pass
 
+    sys.stdout.flush()
+
     if logger:
         logger.info("Alpha contrast: %.6e.", alpha)
         logger.info("Normalisation constant: %.6e.", norm)
@@ -256,6 +264,8 @@ def compute_corrfunc(catalogue_data, catalogue_rand, params,
         logger.info("... made measurements.", cpp_state='end')
     except (AttributeError, TypeError):
         pass
+
+    sys.stdout.flush()
 
     return results
 
@@ -281,7 +291,7 @@ def compute_powspec_in_box(catalogue_data, params, save=False, logger=None):
 
     """
     # Prepare catalogues.
-    catalogue_data.centre(
+    catalogue_data.periodise(
         [params['boxsize'][axis] for axis in ['x', 'y', 'z']]
     )
 
@@ -312,6 +322,11 @@ def compute_powspec_in_box(catalogue_data, params, save=False, logger=None):
     except (AttributeError, TypeError):
         pass
 
+    sys.stdout.flush()
+
+    if logger:
+        logger.info("Normalisation constant: %.6e.", norm)
+
     # Perform measurement.
     try:
         logger.info("Making measurements...", cpp_state='start')
@@ -326,6 +341,8 @@ def compute_powspec_in_box(catalogue_data, params, save=False, logger=None):
         logger.info("... made measurements.", cpp_state='end')
     except (AttributeError, TypeError):
         pass
+
+    sys.stdout.flush()
 
     return results
 
@@ -351,7 +368,7 @@ def compute_corrfunc_in_box(catalogue_data, params, save=False, logger=None):
 
     """
     # Prepare catalogues.
-    catalogue_data.centre(
+    catalogue_data.periodise(
         [params['boxsize'][axis] for axis in ['x', 'y', 'z']]
     )
 
@@ -382,6 +399,11 @@ def compute_corrfunc_in_box(catalogue_data, params, save=False, logger=None):
     except (AttributeError, TypeError):
         pass
 
+    sys.stdout.flush()
+
+    if logger:
+        logger.info("Normalisation constant: %.6e.", norm)
+
     # Perform measurement.
     try:
         logger.info("Making measurements...", cpp_state='start')
@@ -396,6 +418,8 @@ def compute_corrfunc_in_box(catalogue_data, params, save=False, logger=None):
         logger.info("... made measurements.", cpp_state='end')
     except (AttributeError, TypeError):
         pass
+
+    sys.stdout.flush()
 
     return results
 
@@ -461,6 +485,8 @@ def compute_corrfunc_in_box(catalogue_data, params, save=False, logger=None):
 #     except (AttributeError, TypeError):
 #         pass
 #
+#     sys.stdout.flush()
+#
 #     if logger:
 #         logger.info("Normalisation constant: %.6e.", norm)
 #
@@ -479,6 +505,8 @@ def compute_corrfunc_in_box(catalogue_data, params, save=False, logger=None):
 #         logger.info("... made measurements.", cpp_state='end')
 #     except (AttributeError, TypeError):
 #         pass
+#
+#     sys.stdout.flush()
 #
 #     return results
 
@@ -544,6 +572,8 @@ def compute_corrfunc_window(catalogue_rand, params, los_rand=None,
     except (AttributeError, TypeError):
         pass
 
+    sys.stdout.flush()
+
     if logger:
         logger.info("Normalisation constant: %.6e.", norm)
 
@@ -562,5 +592,7 @@ def compute_corrfunc_window(catalogue_rand, params, los_rand=None,
         logger.info("... made measurements.", cpp_state='end')
     except (AttributeError, TypeError):
         pass
+
+    sys.stdout.flush()
 
     return results
