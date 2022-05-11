@@ -406,7 +406,7 @@ def compute_3pcf_in_box(catalogue_data, params, save=False, logger=None):
 
     return results
 
-def compute_3pcf_window(catalogue_rand, params, los_rand=None,
+def compute_3pcf_window(catalogue_rand, params, los_rand=None, wide_angle=False,
                         save=False, logger=None):
     """Compute correlation function window from a random catalogue.
 
@@ -420,6 +420,9 @@ def compute_3pcf_window(catalogue_rand, params, los_rand=None,
         Specified lines of sight for the random-source catalogue.
         If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
+    wide_angle : bool, optional
+        If `True` (default is `False`), wide-angle correction terms
+        are computed.
     save : bool, optional
         If `True` (default is `False`), measurement results are
         automatically saved to an output file specified from `params`.
@@ -479,7 +482,7 @@ def compute_3pcf_window(catalogue_rand, params, los_rand=None,
 
     results = _compute_3pcf_window(
         particles_rand, los_rand,
-        params, rbin, alpha=1., norm=norm, save=save
+        params, rbin, alpha=1., norm=norm, wide_angle=wide_angle, save=save
     )
 
     try:
