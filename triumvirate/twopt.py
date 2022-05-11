@@ -309,10 +309,10 @@ def compute_powspec_in_box(catalogue_data, params, save=False, logger=None):
 
     if params['norm_convention'] == 'mesh':
         norm = _calc_powspec_normalisation_from_mesh(
-            catalogue_data, params, alpha=1.)
+            particles_data, params, alpha=1.)
     elif params['norm_convention'] == 'particle':
         norm = _calc_powspec_normalisation_from_particles(
-            catalogue_data, alpha=1.
+            particles_data, alpha=1.
         )
     else:
         raise InvalidParameter("Invalid `norm_convention` parameter.")
@@ -386,10 +386,10 @@ def compute_corrfunc_in_box(catalogue_data, params, save=False, logger=None):
 
     if params['norm_convention'] == 'mesh':
         norm = _calc_powspec_normalisation_from_mesh(
-            catalogue_data, params, alpha=1.)
+            particles_data, params, alpha=1.)
     elif params['norm_convention'] == 'particle':
         norm = _calc_powspec_normalisation_from_particles(
-            catalogue_data, alpha=1.
+            particles_data, alpha=1.
         )
     else:
         raise InvalidParameter("Invalid `norm_convention` parameter.")

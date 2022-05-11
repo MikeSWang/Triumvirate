@@ -35,7 +35,7 @@ class ParameterSet {
   /// Sampling.
   double boxsize[3];  ///< boxsize in each dimension
   int ngrid[3];  ///< grid number in each dimension
-  std::string alignment;  ///< box alignment choice: {'centre', 'pad'}
+  std::string alignment = "pad";  ///< box alignment choice: {'centre', 'pad'}
   std::string assignment;  ///< mesh assignment scheme: {'ngp', 'cic', 'tsc'}
   std::string norm_convention;  /**< normalisation convention:
                                      {'mesh', 'particle'} */
