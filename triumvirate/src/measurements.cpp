@@ -183,12 +183,19 @@ int main(int argc, char* argv[]) {
 
   /// Offset particle positions for measurements.
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-    double ngrid_pad[3] = {3., 3., 3.};
-    ParticleCatalogue::pad_pair_in_box(
-      particles_data, particles_rand,
-      params.boxsize, params.ngrid,
-      ngrid_pad
-    );
+    if (params.alignment == "pad") {
+      double ngrid_pad[3] = {3., 3., 3.};
+      ParticleCatalogue::pad_pair_in_box(
+        particles_data, particles_rand,
+        params.boxsize, params.ngrid,
+        ngrid_pad
+      );
+    } else
+    if (params.alignment == "centre") {
+      ParticleCatalogue::centre_pair_in_box(
+        particles_data, particles_rand, params.boxsize
+      );
+    }
   } else
   if (params.catalogue_type == "sim") {
     particles_data.offset_coords_for_periodicity(params.boxsize);
