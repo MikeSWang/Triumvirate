@@ -25,10 +25,10 @@ three-point clustering correlators in large-scale structure analysis.
 
 ## Pre-release guide
 
-<mark style="text-color: orange">If you can see this text, please
+<span style="text-color: orange">If you can see this text, please
 note that the repository is currently in pre-release mode, with specific
 instructions detailed below overriding any other instructions in the rest
-of this guide.</mark>
+of this guide.</span>
 
 After `git clone`-ing this repository, at the root of the directory
 run the following commands to compile the code:
@@ -36,18 +36,19 @@ run the following commands to compile the code:
 make clean
 make all
 ```
-If you only wish to use the Python (or C++) package, replace `make all`
+If you wish to use the Python (or C++) package only, replace `make all`
 with `make pyinstall` (or `make cppinstall`).  Depending on your
 machine environment, certain parts of the [``Makefile``](
 https://github.com/MikeSWang/Triumvirate/tree/dev/Makefile)
-] may need replacing (e.g. the C++ compiler).
+may need replacing (e.g. the C++ compiler).
 
 See Python scripts/notebooks in
 [``examples/``](https://github.com/MikeSWang/Triumvirate/tree/dev/examples)
 for simple examples of how to perform basic tasks.  For API documentation,
 you may need to build it yourself using ``sphinx-autodoc``.
 
-TODO: Add instructions for generating API docs here.
+<span style="text-color: red">TODO:</span> Add instructions for generating
+API docs here.
 
 Please note that both testing and documentation are incomplete and there
 may be unknown bugs.  Any feedback is welcome, and more importantly,
