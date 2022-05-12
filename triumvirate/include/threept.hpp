@@ -2251,7 +2251,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
   return threepcfwin_out;
 }
 
-#ifdef TRIUMVIRATE_USE_DISABLED_CODE_
+#ifdef TRIUMVIRATE_USE_DISABLED_CODE
 /**
  * Compute bispectrum from paired catalogues with respect to a choice of
  * line of sight and optionally save the results.
@@ -2896,6 +2896,6 @@ BispecMeasurements compute_bispec_for_los_choice(
 
   return bispec_out;
 }
-#endif  // TRIUMVIRATE_USE_DISABLED_CODE_
+#endif  // TRIUMVIRATE_USE_DISABLED_CODE
 
 #endif  // TRIUMVIRATE_INCLUDE_THREEPT_HPP_INCLUDED_
