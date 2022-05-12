@@ -1715,13 +1715,13 @@ ThreePCFMeasurements compute_3pcf_in_box(
       /// Compute G_00 in eq. (42) in the Paper (L, M = 0 in the global
       /// plane-parallel picture).
       /// QUEST: Why does this not include any weights?
-      PseudoDensityField<ParticleCatalogue> dn_00(params);
-      dn_00.compute_unweighted_fluctuation_insitu(
+      PseudoDensityField<ParticleCatalogue> dn_00_(params);
+      dn_00_.compute_unweighted_fluctuation_insitu(
         particles_data, params.volume
       );
-      dn_00.fourier_transform();
-      dn_00.apply_assignment_compensation();
-      dn_00.inv_fourier_transform();
+      dn_00_.fourier_transform();
+      dn_00_.apply_assignment_compensation();
+      dn_00_.inv_fourier_transform();
 
       /// Compute F_lm's in eq. (42) in the Paper.
       PseudoDensityField<ParticleCatalogue> F_lm_a(params);
@@ -1754,7 +1754,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
         for (int gid = 0; gid < params.nmesh; gid++) {
           std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
           std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
-          std::complex<double> G_00_gridpt(dn_00[gid][0], dn_00[gid][1]);
+          std::complex<double> G_00_gridpt(dn_00_[gid][0], dn_00_[gid][1]);
           zeta_sum += F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
         }
 
