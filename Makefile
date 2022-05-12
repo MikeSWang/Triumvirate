@@ -5,7 +5,7 @@ SYSTYPE = "cluster"
 ifeq ($(SYSTYPE), "local")
 
 CC = mpic++
-CFLAGS = # -DDBGNZ -DDBGDK -Wall
+CFLAGS = # -DDBGNZ -DDBGDK -DTRIUMVIRATE_USE_DISABLED_CODE -Wall
 
 GSL_DIR = /usr/local/gsl
 FFTW_DIR = /usr/local/fftw3
@@ -23,7 +23,7 @@ endif
 ifeq ($(SYSTYPE), "cluster")
 
 CC = g++
-CFLAGS = # -DDBGNZ -DDBGDK -Wall
+CFLAGS = # -DDBGNZ -DDBGDK -DTRIUMVIRATE_USE_DISABLED_CODE -Wall
 
 INCLUDE = -I./triumvirate/include
 
@@ -34,12 +34,25 @@ endif
 
 # -- Build --------------------------------------------------------------------
 
+## Installation build
+
 all: pyinstall cppinstall
 
 pyinstall:
 	pip install -e .
 
 cppinstall: measurements
+
+
+## Testing build
+
+pytest:
+
+cpptest: test_common test_parameters test_bessel test_harmonic test_tools \
+  			 test_particles test_field test_twopt test_threept
+
+
+## Invididual build
 
 measurements: triumvirate/src/measurements.cpp
 	$(CC) $(CFLAGS) -o $(addprefix build/, $(notdir $@)) $< $(INCLUDE) $(CLIBS) $(LIB)
@@ -70,6 +83,9 @@ test_tools: triumvirate/tests/test_tools.cpp
 
 test_twopt: triumvirate/tests/test_twopt.cpp
 	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDE) $(CLIBS) $(LIB)
+
+
+## Build clean-up
 
 clean:
 	rm -rf triumvirate/*.cpp triumvirate/*.o triumvirate/*.so

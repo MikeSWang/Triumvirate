@@ -9,6 +9,7 @@
 #define TRIUMVIRATE_INCLUDE_PARTICLES_HPP_INCLUDED_
 
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <fstream>
