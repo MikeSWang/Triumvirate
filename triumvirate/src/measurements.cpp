@@ -274,7 +274,7 @@ int main(int argc, char* argv[]) {
       );
     } else
     if (params.catalogue_type == "sim") {
-      compute_powspec_in_box(particles_data, params, kbin, save);
+      compute_powspec_in_box(particles_data, params, kbin, norm, save);
     }
   } else
   if (params.measurement_type == "2pcf") {
@@ -285,7 +285,7 @@ int main(int argc, char* argv[]) {
       );
     } else
     if (params.catalogue_type == "sim") {
-      compute_corrfunc_in_box(particles_data, params, rbin, save);
+      compute_corrfunc_in_box(particles_data, params, rbin, norm, save);
     }
   } else
   if (params.measurement_type == "2pcf-win") {
