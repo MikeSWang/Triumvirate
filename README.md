@@ -25,7 +25,7 @@ three-point clustering correlators in large-scale structure analysis.
 
 ## Pre-release guide
 
-<span style="text-color: orange">If you can see this text, please
+<span style="color: orange">If you can see this text, please
 note that the repository is currently in pre-release mode, with specific
 instructions detailed below overriding any other instructions in the rest
 of this guide.</span>
@@ -47,7 +47,7 @@ See Python scripts/notebooks in
 for simple examples of how to perform basic tasks.  For API documentation,
 you may need to build it yourself using ``sphinx-autodoc``.
 
-<span style="text-color: red">TODO:</span> Add instructions for generating
+<span style="color: red">TODO:</span> Add instructions for generating
 API docs here.
 
 Please note that both testing and documentation are incomplete and there
