@@ -206,7 +206,11 @@ class PseudoDensityField {
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    *
-   * @see PseudoDensityField::compute_ylm_wgtd_fluctuation
+   * @see PseudoDensityField::compute_ylm_wgtd_fluctuation(
+   *        ParticleContainer&, ParticleContainer&,
+   *        LineOfSight*, LineOfSight*,
+   *        double, int, int
+   *      )
    *      Analogous but here for the (mean-)density field represented by
    *      a (random) particle container.
    */
@@ -1937,7 +1941,11 @@ class Pseudo2ptStats {
    * @param m Order of the spherical harmonic.
    * @returns Weighted shot-noise contribution for bispectrum.
    *
-   * @see PseudoDensityField::compute_ylm_wgtd_2pt_self_component_for_shotnoise
+   * @see PseudoDensityField::compute_ylm_wgtd_2pt_self_component_for_shotnoise(
+   *        ParticleContainer&, ParticleContainer&,
+   *        LineOfSight*, LineOfSight*,
+   *        double, int, int
+   *      )
    *      Analogous but here the quantity is not a field as it is
    *      spatially invariant.
    */

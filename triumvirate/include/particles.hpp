@@ -563,7 +563,11 @@ class ParticleCatalogue {
    *
    * @returns shotnoise Power spectrum shot noise.
    *
-   * @see Pseudo2ptStats::calc_ylm_wgtd_shotnoise_for_powspec()
+   * @see Pseudo2ptStats::calc_ylm_wgtd_shotnoise_for_powspec(
+   *        ParticleContainer&, ParticleContainer&,
+   *        LineOfSight*, LineOfSight*,
+   *        double, int, int
+   *      )
    */
   double _calc_powspec_shotnoise() {
     if (this->pdata == NULL) {
@@ -588,7 +592,7 @@ class ParticleCatalogue {
    *
    * @returns norm_factor Power spectrum normalisation factor.
    *
-   * @see PseudoDensityField::_calc_wgt_sq_volume_norm()
+   * @see PseudoDensityField::_calc_wgt_sq_volume_norm(ParticleContainer&)
    */
   double _calc_powspec_normalisation() {
     if (this->pdata == NULL) {
@@ -626,7 +630,7 @@ class ParticleCatalogue {
    *
    * @returns norm_factor Bispectrum normalisation factor.
    *
-   * @see PseudoDensityField::_calc_wgt_cu_volume_norm()
+   * @see PseudoDensityField::_calc_wgt_cu_volume_norm(ParticleContainer&)
    */
   double _calc_bispec_normalisation() {
     if (this->pdata == NULL) {
