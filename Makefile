@@ -49,7 +49,7 @@ cppinstall: measurements
 pytest:
 
 cpptest: test_common test_parameters test_bessel test_harmonic test_tools \
-  			 test_particles test_field test_twopt test_threept
+         test_particles test_field test_twopt test_threept
 
 
 ## Invididual build
