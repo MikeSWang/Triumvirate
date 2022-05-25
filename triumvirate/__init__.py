@@ -24,15 +24,4 @@ correlators in large-scale structure clustering analysis.
     with this program.  If not, see `<https://www.gnu.org/licenses/>`_.
 
 """
-__author__ = "Mike S Wang"
-__contact__ = "Mike S Wang"
-__copyright__ = "Copyright 2022, N Sugiyama & M S Wang"
-__date__ = "2022-03-01"
-__description__ = (
-    "Measuring three-point correlators in "
-    "large-scale structure clustering analysis."
-)
-__email__ = "mikeshengbo.wang@ed.ac.uk"
-__license__ = "GPLv3"
-__url__ = "https://mikeswang.github.io/Triumvirate/"
-__version__ = "0.0.0"
+from ._pkginfo import *

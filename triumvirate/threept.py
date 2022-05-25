@@ -140,6 +140,7 @@ def compute_bispec(catalogue_data, catalogue_rand, params,
 
     return results
 
+
 def compute_3pcf(catalogue_data, catalogue_rand, params,
                  los_data=None, los_rand=None,
                  box_align='centre', ngrid_pad=None,
@@ -260,6 +261,7 @@ def compute_3pcf(catalogue_data, catalogue_rand, params,
 
     return results
 
+
 def compute_bispec_in_box(catalogue_data, params, save=False, logger=None):
     """Compute power spectrum in a box.
 
@@ -333,6 +335,7 @@ def compute_bispec_in_box(catalogue_data, params, save=False, logger=None):
 
     return results
 
+
 def compute_3pcf_in_box(catalogue_data, params, save=False, logger=None):
     """Compute correlation function in a box.
 
@@ -405,6 +408,7 @@ def compute_3pcf_in_box(catalogue_data, params, save=False, logger=None):
         pass
 
     return results
+
 
 def compute_3pcf_window(catalogue_rand, params, los_rand=None, wide_angle=False,
                         save=False, logger=None):

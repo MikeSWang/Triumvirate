@@ -146,6 +146,7 @@ def compute_powspec(catalogue_data, catalogue_rand, params,
 
     return results
 
+
 def compute_corrfunc(catalogue_data, catalogue_rand, params,
                      los_data=None, los_rand=None,
                      box_align='centre', ngrid_pad=None,
@@ -269,6 +270,7 @@ def compute_corrfunc(catalogue_data, catalogue_rand, params,
 
     return results
 
+
 def compute_powspec_in_box(catalogue_data, params, save=False, logger=None):
     """Compute power spectrum in a box.
 
@@ -345,6 +347,7 @@ def compute_powspec_in_box(catalogue_data, params, save=False, logger=None):
     sys.stdout.flush()
 
     return results
+
 
 def compute_corrfunc_in_box(catalogue_data, params, save=False, logger=None):
     """Compute correlation function in a box.
@@ -509,6 +512,7 @@ def compute_corrfunc_in_box(catalogue_data, params, save=False, logger=None):
 #     sys.stdout.flush()
 #
 #     return results
+
 
 def compute_corrfunc_window(catalogue_rand, params, los_rand=None,
                             save=False, logger=None):

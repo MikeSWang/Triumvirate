@@ -1,5 +1,7 @@
+import codecs
 import os
 from distutils.sysconfig import get_config_vars
+from distutils.util import convert_path
 from setuptools import find_packages, setup
 
 from Cython.Build import cythonize
@@ -7,27 +9,35 @@ from Cython.Distutils import build_ext, Extension
 
 import numpy
 
+
+PKG_NAME = 'Triumvirate'
+
 # -- Repository ---------------------------------------------------------------
 
-with open("version.txt", 'r') as version_info:
-    version_number, version_tag = [v.strip() for v in version_info]
-    if version_tag == 'latest':
-        branch = 'main'
-    elif version_tag == 'development':
-        branch = 'dev'
-    else:
-        branch = version_tag
+pkgdir = PKG_NAME.lower()
+pkginfo = {}
 
-with open("README.md", 'r') as readme:
-    long_description = readme.read()
+with open(convert_path(f"{pkgdir}/_pkginfo.py")) as fpinfo:
+    exec(fpinfo.read(), pkginfo)
 
-with open("requirements.txt", 'r') as requirements:
-    dependencies = [pkg.strip() for pkg in requirements]
+with open("README.md", 'r') as freadme:
+    readme = freadme.read()
+
+with open("requirements.txt", 'r') as frequirements:
+    requirements = [pkg.strip() for pkg in frequirements]
+
+version_tag = pkginfo.get('_release_')
+if version_tag == 'latest':
+    branch = 'main'
+elif version_tag == 'development':
+    branch = 'dev'
+else:
+    branch = version_tag
 
 
 # -- Compilation --------------------------------------------------------------
 
-os.environ['CC'] = 'g++'
+os.environ['CC'] = 'g++'  # change as necessary
 
 config_vars = get_config_vars()
 for key, val in config_vars.items():
@@ -39,14 +49,14 @@ for key, val in config_vars.items():
 
 ext_modules = [
     Extension(
-        'triumvirate.parameters',
-        sources=["triumvirate/parameters.pyx"],
+        f'{pkgdir}.parameters',
+        sources=[f"{pkgdir}/parameters.pyx"],
         language='c++',
         extra_compile_args=['-std=c++11',]
     ),
     Extension(
-        'triumvirate._catalogue',
-        sources=["triumvirate/_catalogue.pyx"],
+        f'{pkgdir}._catalogue',
+        sources=[f"{pkgdir}/_catalogue.pyx"],
         language='c++',
         extra_compile_args=['-std=c++11',],
         include_dirs=[numpy.get_include(),],
@@ -57,11 +67,11 @@ ext_modules = [
         )],
     ),
     Extension(
-        'triumvirate._twopt',
-        sources=["triumvirate/_twopt.pyx"],
+        f'{pkgdir}._twopt',
+        sources=[f"{pkgdir}/_twopt.pyx"],
         language='c++',
         extra_compile_args=['-std=c++11',],
-        include_dirs=["triumvirate/include", numpy.get_include(),],
+        include_dirs=[f"{pkgdir}/include", numpy.get_include(),],
         libraries=['m', 'gsl', 'fftw3', 'gslcblas'],
         define_macros=[(
             'NPY_NO_DEPRECATED_API',
@@ -70,11 +80,11 @@ ext_modules = [
         )],
     ),
     Extension(
-        'triumvirate._threept',
-        sources=["triumvirate/_threept.pyx"],
+        f'{pkgdir}._threept',
+        sources=[f"{pkgdir}/_threept.pyx"],
         language='c++',
         extra_compile_args=['-std=c++11',],
-        include_dirs=["triumvirate/include", numpy.get_include(),],
+        include_dirs=[f"{pkgdir}/include", numpy.get_include(),],
         libraries=['m', 'gsl', 'fftw3', 'gslcblas'],
         define_macros=[(
             'NPY_NO_DEPRECATED_API',
@@ -85,35 +95,30 @@ ext_modules = [
 ]
 
 setup(
-    name="Triumvirate",
-    version=version_number,
-    license="GPLv3",
-    author="Mike S Wang, Naonori Sugiyama",
-    author_email="mikeshengbo.wang@ed.ac.uk",
-    description=(
-        "Measuring three-point correlators in "
-        "large-scale structure clustering analysis."
-    ),
-    long_description=long_description,
+    name=PKG_NAME,
+    version=pkginfo.get('__version__'),
+    license=pkginfo.get('__license__'),
+    author=pkginfo.get('__author__'),
+    author_email=pkginfo.get('__email__'),
+    description=pkginfo.get('__description__'),
+    long_description=readme,
     long_description_content_type="text/markdown",
     classifiers=[
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
-        "Programming Language :: Python",
-        "Programming Language :: Cython",
         "Programming Language :: C++",
+        "Programming Language :: Cython",
+        "Programming Language :: Python",
         "Topic :: Scientific/Engineering :: Astronomy",
-        "Topic :: Scientific/Engineering :: Physics",
         "Topic :: Scientific/Engineering :: Information Analysis",
+        "Topic :: Scientific/Engineering :: Physics",
     ],
-    url="https://github.com/MikeSWang/Triumvirate/",
     project_urls={
         "Documentation": "https://mikeswang.github.io/Triumvirate",
         "Source": "https://github.com/MikeSWang/Triumvirate/",
     },
     packages=find_packages(),
+    install_requires=requirements,
     python_requires='>=3.6',
-    install_requires=dependencies,
     cmdclass={'build_ext': build_ext},
     ext_modules=cythonize(ext_modules, language_level='3')
 )

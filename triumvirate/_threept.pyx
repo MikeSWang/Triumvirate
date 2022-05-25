@@ -132,6 +132,7 @@ def _calc_bispec_normalisation_from_mesh(
         alpha
     )
 
+
 def _calc_bispec_normalisation_from_particles(
         _ParticleCatalogue catalogue not None,
         double alpha
@@ -140,6 +141,7 @@ def _calc_bispec_normalisation_from_particles(
         deref(catalogue.thisptr),
         alpha
     )
+
 
 def _compute_bispec(
         _ParticleCatalogue particles_data not None,
@@ -191,6 +193,7 @@ def _compute_bispec(
         'bk_shot': np.asarray(meas.bk_shot),
     }
 
+
 def _compute_3pcf(
         _ParticleCatalogue particles_data not None,
         _ParticleCatalogue particles_rand not None,
@@ -241,6 +244,7 @@ def _compute_3pcf(
         'zeta_shot': np.asarray(meas.zeta_shot),
     }
 
+
 def _compute_bispec_in_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
@@ -267,6 +271,7 @@ def _compute_bispec_in_box(
         'bk_shot': np.asarray(meas.bk_shot),
     }
 
+
 def _compute_3pcf_in_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
@@ -292,6 +297,7 @@ def _compute_3pcf_in_box(
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
     }
+
 
 def _compute_3pcf_window(
         _ParticleCatalogue particles_rand not None,
@@ -334,6 +340,7 @@ def _compute_3pcf_window(
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
     }
+
 
 # def _compute_bispec_for_los_choice(
 #         _ParticleCatalogue particles_data not None,

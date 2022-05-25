@@ -126,6 +126,7 @@ def _calc_powspec_normalisation_from_mesh(
         alpha
     )
 
+
 def _calc_powspec_normalisation_from_particles(
         _ParticleCatalogue catalogue not None,
         double alpha
@@ -134,6 +135,7 @@ def _calc_powspec_normalisation_from_particles(
         deref(catalogue.thisptr),
         alpha
     )
+
 
 def _compute_powspec(
         _ParticleCatalogue particles_data not None,
@@ -183,6 +185,7 @@ def _compute_powspec(
         'pk_shot': np.asarray(meas.pk_shot),
     }
 
+
 def _compute_corrfunc(
         _ParticleCatalogue particles_data not None,
         _ParticleCatalogue particles_rand not None,
@@ -230,6 +233,7 @@ def _compute_corrfunc(
         'xi': np.asarray(meas.xi),
     }
 
+
 def _compute_powspec_in_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
@@ -254,6 +258,7 @@ def _compute_powspec_in_box(
         'pk_shot': np.asarray(meas.pk_shot),
     }
 
+
 def _compute_corrfunc_in_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
@@ -276,6 +281,7 @@ def _compute_corrfunc_in_box(
         'npair': np.asarray(meas.npair),
         'xi': np.asarray(meas.xi),
     }
+
 
 # def _compute_powspec_window(
 #         _ParticleCatalogue particles_rand not None,
@@ -313,6 +319,7 @@ def _compute_corrfunc_in_box(
 #         'nmode': np.asarray(meas.nmode),
 #         'pk': np.asarray(meas.pk_raw),
 #     }
+
 
 def _compute_corrfunc_window(
         _ParticleCatalogue particles_rand not None,
