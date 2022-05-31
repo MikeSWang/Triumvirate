@@ -31,6 +31,7 @@ cdef extern from "include/threept.hpp":
         vector[int] ntriag
         vector[np.complex128_t] bk_raw
         vector[np.complex128_t] bk_shot
+
     struct ThreePCFMeasurements:
         vector[double] rbin1
         vector[double] rbin2
@@ -39,6 +40,7 @@ cdef extern from "include/threept.hpp":
         vector[int] ntriag
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
+
     struct ThreePCFWindowMeasurements:
         vector[double] rbin1
         vector[double] rbin2
@@ -54,6 +56,7 @@ cdef extern from "include/threept.hpp":
             CppParameterSet& params,
             double alpha
         )
+
     double calc_bispec_normalisation_from_particles_cpp \
         "calc_bispec_normalisation_from_particles" (
             CppParticleCatalogue& catalogue,
@@ -71,6 +74,7 @@ cdef extern from "include/threept.hpp":
         double norm,
         bool_t save
     )
+
     ThreePCFMeasurements compute_3pcf_cpp "compute_3pcf" (
         CppParticleCatalogue& particles_data,
         CppParticleCatalogue& particles_rand,
@@ -82,6 +86,7 @@ cdef extern from "include/threept.hpp":
         double norm,
         bool_t save
     )
+
     BispecMeasurements compute_bispec_in_box_cpp "compute_bispec_in_box" (
         CppParticleCatalogue& particles_data,
         CppParameterSet& params,
@@ -89,6 +94,7 @@ cdef extern from "include/threept.hpp":
         double norm,
         bool_t save
     )
+
     ThreePCFMeasurements compute_3pcf_in_box_cpp "compute_3pcf_in_box" (
         CppParticleCatalogue& particles_data,
         CppParameterSet& params,
@@ -96,6 +102,7 @@ cdef extern from "include/threept.hpp":
         double norm,
         bool_t save
     )
+
     ThreePCFWindowMeasurements compute_3pcf_window_cpp "compute_3pcf_window" (
         CppParticleCatalogue& particles_rand,
         LineOfSight* los_rand,
@@ -106,6 +113,7 @@ cdef extern from "include/threept.hpp":
         bool_t wide_angle,
         bool_t save
     )
+
     # BispecMeasurements compute_bispec_for_los_choice_cpp \
     #     "compute_bispec_for_los_choice" (
     #         CppParticleCatalogue& particles_data,

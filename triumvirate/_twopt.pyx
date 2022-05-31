@@ -29,16 +29,19 @@ cdef extern from "include/twopt.hpp":
         vector[int] nmode
         vector[np.complex128_t] pk_raw
         vector[np.complex128_t] pk_shot
+
     struct CorrfuncMeasurements:
         vector[double] rbin
         vector[double] reff
         vector[int] npair;
         vector[np.complex128_t] xi
+
     struct PowspecWindowMeasurements:
         vector[double] kbin
         vector[double] keff
         vector[int] nmode;
         vector[np.complex128_t] pk
+
     struct CorrfuncWindowMeasurements:
         vector[double] rbin
         vector[double] reff
@@ -51,6 +54,7 @@ cdef extern from "include/twopt.hpp":
             CppParameterSet& params,
             double alpha
         )
+
     double calc_powspec_normalisation_from_particles_cpp \
         "calc_powspec_normalisation_from_particles" (
             CppParticleCatalogue& catalogue,
@@ -68,6 +72,7 @@ cdef extern from "include/twopt.hpp":
         double norm,
         bool_t save
     )
+
     CorrfuncMeasurements compute_corrfunc_cpp "compute_corrfunc" (
         CppParticleCatalogue& particles_data,
         CppParticleCatalogue& particles_rand,
@@ -79,6 +84,7 @@ cdef extern from "include/twopt.hpp":
         double norm,
         bool_t save
     )
+
     PowspecMeasurements compute_powspec_in_box_cpp "compute_powspec_in_box" (
         CppParticleCatalogue& particles_data,
         CppParameterSet& params,
@@ -86,6 +92,7 @@ cdef extern from "include/twopt.hpp":
         double norm,
         bool_t save
     )
+
     CorrfuncMeasurements compute_corrfunc_in_box_cpp "compute_corrfunc_in_box" (
         CppParticleCatalogue& particles_data,
         CppParameterSet& params,
@@ -93,6 +100,7 @@ cdef extern from "include/twopt.hpp":
         double norm,
         bool_t save
     )
+
     # PowspecWindowMeasurements compute_powspec_window_cpp \
     #     "compute_powspec_window" (
     #         CppParticleCatalogue& particles_rand,
@@ -103,6 +111,7 @@ cdef extern from "include/twopt.hpp":
     #         double norm,
     #         bool_t save
     #     )
+
     CorrfuncWindowMeasurements compute_corrfunc_window_cpp \
         "compute_corrfunc_window" (
             CppParticleCatalogue& particles_rand,
