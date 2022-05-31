@@ -17,7 +17,6 @@
 #include "field.hpp"
 #include "twopt.hpp"
 
-const std::complex<double> M_I(0., 1.);  ///< imaginary unit
 const double EPS_COUPLING_3PT = 1.e-10;  /**< zero-tolerance for three-point
                                               coupling coefficients */
                                          // CAVEAT: discretionary choice
