@@ -51,18 +51,22 @@ test: pytest cpptest
 pytest:
 
 cpptest: test_common test_parameters test_bessel test_harmonic test_tools \
-         test_particles test_field test_twopt test_threept
+         test_particles test_field test_twopt test_threept \
+				 test_fftlog
 
 
 ## Invididual build
 
 measurements: triumvirate/src/measurements.cpp
-	$(CC) $(CFLAGS) -o $(addprefix build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+	$(CC) $(CFLAGS) -o $(addprefix build/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
 test_bessel: triumvirate/tests/test_bessel.cpp
 	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
 
 test_common: triumvirate/tests/test_common.cpp
+	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+
+test_fftlog: triumvirate/tests/test_fftlog.cpp
 	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
 
 test_field: triumvirate/tests/test_field.cpp
@@ -95,6 +99,6 @@ clean:
 	rm -rf *.egg-info
 	rm -rf **/__pycache__/ core
 
-clean_test:
+cleantest:
 	rm -rf triumvirate/tests/test_build/* triumvirate/tests/test_output/*
 	rm -rf **/.pytest_cache/ core
