@@ -92,6 +92,18 @@ ext_modules = [
             # 'DBGDK',
         )],
     ),
+    Extension(
+        f'{pkgdir}._fftlog',
+        sources=[f"{pkgdir}/_fftlog.pyx"],
+        language='c++',
+        extra_compile_args=['-std=c++11',],
+        include_dirs=[f"{pkgdir}/include", numpy.get_include(),],
+        libraries=['m', 'gsl', 'fftw3', 'gslcblas'],
+        define_macros=[(
+            'NPY_NO_DEPRECATED_API',
+            'NPY_1_7_API_VERSION',
+        )],
+    ),
 ]
 
 setup(
