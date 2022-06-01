@@ -23,26 +23,26 @@ cdef extern from "include/particles.hpp":
 
 
 cdef extern from "include/twopt.hpp":
-    struct PowspecMeasurements "trv::obj::PowspecMeasurements":
+    struct PowspecMeasurements "trv::algo::PowspecMeasurements":
         vector[double] kbin
         vector[double] keff
         vector[int] nmode
         vector[np.complex128_t] pk_raw
         vector[np.complex128_t] pk_shot
 
-    struct CorrfuncMeasurements "trv::obj::CorrfuncMeasurements":
+    struct CorrfuncMeasurements "trv::algo::CorrfuncMeasurements":
         vector[double] rbin
         vector[double] reff
         vector[int] npair;
         vector[np.complex128_t] xi
 
-    struct PowspecWindowMeasurements "trv::obj::PowspecWindowMeasurements":
+    struct PowspecWindowMeasurements "trv::algo::PowspecWindowMeasurements":
         vector[double] kbin
         vector[double] keff
         vector[int] nmode;
         vector[np.complex128_t] pk
 
-    struct CorrfuncWindowMeasurements "trv::obj::CorrfuncWindowMeasurements":
+    struct CorrfuncWindowMeasurements "trv::algo::CorrfuncWindowMeasurements":
         vector[double] rbin
         vector[double] reff
         vector[int] npair;

@@ -21,7 +21,7 @@ const double EPS_COUPLING_2PT = 1.e-10;  /**< zero-tolerance for two-point
 
 namespace trv {
 
-namespace obj {
+namespace algo {
 
 /**
  * Power spectrum measurements.
@@ -71,10 +71,6 @@ struct CorrfuncWindowMeasurements {
   std::vector< std::complex<double> > xi;  /**< two-point correlation function
                                                 window measurements */
 };
-
-}  // trv::obj::
-
-namespace algo {
 
 /**
  * Calculate mesh-based power spectrum normalisation.
