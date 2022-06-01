@@ -8,10 +8,16 @@
 #ifndef TRIUMVIRATE_INCLUDE_FFTLOG_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_FFTLOG_HPP_INCLUDED_
 
+#include <cmath>
+#include <complex>
+
 #include <fftw3.h>
 
 #include "tools.hpp"
 #include "gamma.hpp"
+
+namespace trv {
+namespace ops {
 
 /**
  * Calculate a low-ringing pivot value f@$ k r = k_c r_c f@$ for the
@@ -33,13 +39,13 @@ double calc_kr_pivot_lowring(
   /// Note that no minus is involved by complex conjugation of
   /// the gamma function.
   double _lnr, phi_p, phi_m;  // placeholder `_lnr`
-  get_lngamma_components(x_p, y, &_lnr, &phi_p);
-  get_lngamma_components(x_m, y, &_lnr, &phi_m);
+  trv::maths::get_lngamma_components(x_p, y, &_lnr, &phi_p);
+  trv::maths::get_lngamma_components(x_m, y, &_lnr, &phi_m);
 
-  double arg_ = log(2/kr_c) * N / L + (phi_p + phi_m) / M_PI;
-  double arg_int = round(arg_);
+  double arg_ = std::log(2/kr_c) * N / L + (phi_p + phi_m) / M_PI;
+  double arg_int = std::round(arg_);
   if (arg_ != arg_int) {
-    kr_c *= exp(L / N * (arg_ - arg_int));
+    kr_c *= std::exp(L / N * (arg_ - arg_int));
   }
 
   return kr_c;
@@ -59,17 +65,17 @@ void compute_u_kernel_coeff(
   double mu, double q, double L, int N, double kr_c, std::complex<double> u[]
 ) {
   double y = M_PI / L;
-  double kr_0 = kr_c * exp(-L);
+  double kr_0 = kr_c * std::exp(-L);
 
-  double t = -2 * y * log(kr_0/2);
+  double t = -2 * y * std::log(kr_0/2);
 
   if (q == 0) {
     double x = (mu + 1)/2;
 
     double lnr, phi;
     for (int m = 0; m <= N/2; m++) {
-      get_lngamma_components(x, m*y, &lnr, &phi);
-      u[m] = eval_polar(1., m*t + 2*phi);
+      trv::maths::get_lngamma_components(x, m*y, &lnr, &phi);
+      u[m] = trv::maths::eval_polar(1., m*t + 2*phi);
     }
   } else {
     double x_p = (mu + 1 + q)/2;
@@ -78,10 +84,12 @@ void compute_u_kernel_coeff(
     double lnr_p, phi_p;
     double lnr_m, phi_m;
     for (int m = 0; m <= N/2; m++) {
-      get_lngamma_components(x_p, m*y, &lnr_p, &phi_p);
-      get_lngamma_components(x_m, m*y, &lnr_m, &phi_m);
+      trv::maths::get_lngamma_components(x_p, m*y, &lnr_p, &phi_p);
+      trv::maths::get_lngamma_components(x_m, m*y, &lnr_m, &phi_m);
 
-      u[m] = eval_polar(exp(log(2) * q + lnr_p - lnr_m), m*t + phi_p - phi_m);
+      u[m] = trv::maths::eval_polar(
+        std::exp(std::log(2) * q + lnr_p - lnr_m), m*t + phi_p - phi_m
+      );
     }
   }
 
@@ -118,7 +126,7 @@ void hankel_transform(
   std::complex<double>* u
 ) {
   /// Calculate the logarithmic interval.
-  double L = N * log(r[N - 1] / r[0]) / (N - 1.);
+  double L = N * std::log(r[N - 1] / r[0]) / (N - 1.);
 
   /// Compute the forward transform kernel.
   std::complex<double>* u_ = NULL;
@@ -134,11 +142,11 @@ void hankel_transform(
   }
 
   /// Compute output sample points corresponding to the input sample points.
-  double kr_0 = kr_c * exp(-L);
+  double kr_0 = kr_c * std::exp(-L);
 
   k[0] = kr_0 / r[0];
   for (int j = 1; j < N; j++) {
-    k[j] = k[0] * exp(j * L / N);
+    k[j] = k[0] * std::exp(j * L / N);
   }
 
   /// Compute the convolution b = a * u using FFT.
@@ -208,13 +216,13 @@ void sj_transform(
   std::complex<double>* B = new std::complex<double>[N];
 
   for (int j = 0; j < N; j++) {
-    A[j] = pow(r[j], m - 1./2) * a[j];
+    A[j] = std::pow(r[j], m - 1./2) * a[j];
   }
 
   hankel_transform(mu, q, kr_c, N, lowring, r, A, k, B, NULL);
 
   for (int j = 0; j < N; j++) {
-    std::complex<double> bj = pow(2*M_PI * k[j], -3./2) * B[j];
+    std::complex<double> bj = std::pow(2*M_PI * k[j], -3./2) * B[j];
     b[j] = bj.real();
   }
 
@@ -261,13 +269,13 @@ void sj_transform_symm_biased(
   std::complex<double>* B = new std::complex<double>[N];
 
   for (int j = 0; j < N; j++) {
-    A[j] = pow(r[j], m + i - 1./2) * a[j];
+    A[j] = std::pow(r[j], m + i - 1./2) * a[j];
   }
 
   hankel_transform(mu, q, kr_c, N, lowring, r, A, k, B, NULL);
 
   for (int j = 0; j < N; j++) {
-    std::complex<double> bj = pow(2*M_PI * k[j], -3./2) * B[j];
+    std::complex<double> bj = std::pow(2*M_PI * k[j], -3./2) * B[j];
     b[j] = bj.real();
   }
 
@@ -315,5 +323,8 @@ void transform_corrfunc_to_powspec_multipole(
     pk[j] *= 8 * M_PI * M_PI * M_PI;
   }
 }
+
+}  // trv::ops::
+}  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_FFTLOG_HPP_INCLUDED_

@@ -9,19 +9,24 @@
 
 #include <cmath>
 #include <complex>
-#include <cstdio>
 
 #include <gsl/gsl_sf_coupling.h>
 #include <gsl/gsl_sf_legendre.h>
 
-#include "common.hpp"
+#include "monitor.hpp"
+
+namespace trv {
+namespace maths {
 
 /**
  * Calculate Wigner 3-j symbol.
+ *
+ * @param j1, j2, j3, m1, m2, m2 Wigner 3-j symbol components.
+ *
  */
-#define wigner_3j(j1, j2, j3, m1, m2, m3) ( \
-  gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3) \
-)
+double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3) {
+  return gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3);
+}
 
 /**
  * Calculation and storage of spherical harmonics.
@@ -65,13 +70,13 @@ class SphericalHarmonicCalculator {
       xyz_mod_sq += pos[iaxis] * pos[iaxis];
     }  // r^2 = x^2 + y^2 + z^2
 
-    double xyz_mod = sqrt(xyz_mod_sq);  // r = √(x^2 + y^2 + z^2)
-    double xy_mod = sqrt(pos[0] * pos[0] + pos[1] * pos[1]);
+    double xyz_mod = std::sqrt(xyz_mod_sq);  // r = √(x^2 + y^2 + z^2)
+    double xy_mod = std::sqrt(pos[0] * pos[0] + pos[1] * pos[1]);
       // r_xy = √(x^2 + y^2)
 
     /// Calculate the angular variable μ = cos(θ).
     double mu = 0.;
-    if (fabs(xyz_mod) < eps) {
+    if (std::fabs(xyz_mod) < eps) {
       /// Return value in the trivial case.
       return 0.;
     } else {
@@ -80,11 +85,11 @@ class SphericalHarmonicCalculator {
 
     /// Calculate the angular variable ϕ.
     double phi = 0.;
-    if (fabs(xy_mod) < eps) {
+    if (std::fabs(xy_mod) < eps) {
       /// Return default value in the special case.
       phi = 0.;
     } else {
-      phi = acos(pos[0] / xy_mod);  // ϕ = arccos(x / r_xy)
+      phi = std::acos(pos[0] / xy_mod);  // ϕ = arccos(x / r_xy)
       if (pos[1] < 0.) {
         phi = - phi + 2.*M_PI;  // ϕ ∈ [π, 2π] if y < 0
       }
@@ -94,13 +99,14 @@ class SphericalHarmonicCalculator {
     /// normalised associated Legendre polynomial, i.e.
     /// Y_lm = √((2l + 1)/(4π)) √((l - |m|)!/(l + |m|)!) * P_l^|m| * exp(imϕ).
     std::complex<double> ylm = 0.;
-    ylm = gsl_sf_legendre_sphPlm(ell, abs(m), mu) * exp(_M_I * double(m) * phi);
+    ylm = gsl_sf_legendre_sphPlm(ell, std::abs(m), mu)
+      * std::exp(_M_I * double(m) * phi);
 
     /// Impose parity and conjugation.
-    ylm = pow(-1., (m - abs(m))/2.) * std::conj(ylm);
+    ylm = std::pow(-1., (m - std::abs(m))/2.) * std::conj(ylm);
 
     /// Normalise to the reduced form.
-    ylm *= sqrt(4.*M_PI / (2.*ell + 1.));
+    ylm *= std::sqrt(4.*M_PI / (2.*ell + 1.));
 
     return ylm;
   }
@@ -121,11 +127,11 @@ class SphericalHarmonicCalculator {
   ) {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {
-      if (currTask == 0) {
-        throw InvalidDataOps(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidData(
           "[%s ERRO] Cannot store computed spherical harmonics. "
           "Output array is null.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
@@ -176,11 +182,11 @@ class SphericalHarmonicCalculator {
   ) {
     /// Exit in error when no output variable is provided.
     if (ylm_out == NULL) {
-      if (currTask == 0) {
-        throw InvalidDataOps(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidData(
           "[%s ERRO] Cannot store computed spherical harmonics. "
           "Output array is null.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
@@ -217,5 +223,8 @@ class SphericalHarmonicCalculator {
     }
   }
 };
+
+}  // trv::maths::
+}  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_HARMONIC_HPP_INCLUDED_

@@ -7,15 +7,21 @@
 #ifndef TRIUMVIRATE_INCLUDE_TWOPT_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_TWOPT_HPP_INCLUDED_
 
-#include "common.hpp"
+#include "monitor.hpp"
 #include "parameters.hpp"
 #include "tools.hpp"
 #include "particles.hpp"
 #include "field.hpp"
 
+using namespace trv::obj;
+
 const double EPS_COUPLING_2PT = 1.e-10;  /**< zero-tolerance for two-point
                                               coupling coefficients */
                                          // CAVEAT: discretionary choice
+
+namespace trv {
+
+namespace obj {
 
 /**
  * Power spectrum measurements.
@@ -66,6 +72,10 @@ struct CorrfuncWindowMeasurements {
                                                 window measurements */
 };
 
+}  // trv::obj::
+
+namespace algo {
+
 /**
  * Calculate mesh-based power spectrum normalisation.
  *
@@ -76,13 +86,13 @@ struct CorrfuncWindowMeasurements {
  */
 double calc_powspec_normalisation_from_mesh(
   ParticleCatalogue& catalogue,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double alpha=1.
 ) {
   PseudoDensityField<ParticleCatalogue> catalogue_mesh(params);
 
   double norm_factor = catalogue_mesh._calc_wgt_sq_volume_norm(catalogue)
-    / pow(alpha, 2);
+    / std::pow(alpha, 2);
 
   catalogue_mesh.finalise_density_field();
 
@@ -127,17 +137,17 @@ double calc_powspec_normalisation_from_particles(
 PowspecMeasurements compute_powspec(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double* kbin,
   double alpha,
   double norm,
   bool save=false
 ) {
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Measurement: power spectrum from "
       "data and random catalogues.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -183,10 +193,10 @@ PowspecMeasurements compute_powspec(
     /// being summed over m_1, agrees with Hand et al. (2017) [1704.02357].
     for (int m1 = - ell1; m1 <= ell1; m1++) {
       double coupling = (2*params.ELL + 1) * (2*ell1 + 1)
-        * wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
-        * wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
+        * trv::maths::wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
+        * trv::maths::wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
 
-      if (fabs(coupling) < EPS_COUPLING_2PT) {continue;}
+      if (std::fabs(coupling) < EPS_COUPLING_2PT) {continue;}
 
       stats2pt.compute_ylm_wgtd_2pt_stats_in_fourier(
         dn_LM, dn_00, sn_amp, kbin, ell1, m1
@@ -205,10 +215,10 @@ PowspecMeasurements compute_powspec(
       }
     }
 
-    if (currTask == 0) {
-      printf(
+    if (trv::runtime::currTask == 0) {
+      std::printf(
         "[%s STAT] Power spectrum term at order M = %d computed.\n",
-        show_timestamp().c_str(),
+        trv::runtime::show_timestamp().c_str(),
         M_
       );
     }
@@ -240,7 +250,7 @@ PowspecMeasurements compute_powspec(
   if (save) {
     /// Set output path.
     char save_filepath[1024];
-    sprintf(
+    std::sprintf(
       save_filepath, "%s/pk%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
@@ -248,7 +258,7 @@ PowspecMeasurements compute_powspec(
     /// Write output.
     FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-      fprintf(
+      std::fprintf(
         save_fileptr,
         "%.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         powspec_out.kbin[ibin], powspec_out.keff[ibin],
@@ -285,17 +295,17 @@ PowspecMeasurements compute_powspec(
 CorrfuncMeasurements compute_corrfunc(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double* rbin,
   double alpha,
   double norm,
   bool save=false
 ) {
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Measurement: two-point correlation function "
       "from data and random catalogues.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -339,10 +349,10 @@ CorrfuncMeasurements compute_corrfunc(
     /// being summed over m_1, agrees with Hand et al. (2017) [1704.02357].
     for (int m1 = - ell1; m1 <= ell1; m1++) {
       double coupling = (2*params.ELL + 1) * (2*ell1 + 1)
-        * wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
-        * wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
+        * trv::maths::wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
+        * trv::maths::wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
 
-      if (fabs(coupling) < EPS_COUPLING_2PT) {continue;}
+      if (std::fabs(coupling) < EPS_COUPLING_2PT) {continue;}
 
       stats2pt.compute_ylm_wgtd_2pt_stats_in_config(
         dn_LM, dn_00, sn_amp, rbin, ell1, m1
@@ -360,11 +370,11 @@ CorrfuncMeasurements compute_corrfunc(
       }
     }
 
-    if (currTask == 0) {
-      printf(
+    if (trv::runtime::currTask == 0) {
+      std::printf(
         "[%s STAT] Two-point correlation function term at "
         "order M = %d computed.\n",
-        show_timestamp().c_str(),
+        trv::runtime::show_timestamp().c_str(),
         M_
       );
     }
@@ -385,7 +395,7 @@ CorrfuncMeasurements compute_corrfunc(
   if (save) {
     /// Set output path.
     char save_filepath[1024];
-    sprintf(
+    std::sprintf(
       save_filepath, "%s/xi%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
@@ -393,7 +403,7 @@ CorrfuncMeasurements compute_corrfunc(
     /// Write output.
     FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-      fprintf(
+      std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
         corrfunc_out.rbin[ibin], corrfunc_out.reff[ibin],
         corrfunc_out.npair[ibin],
@@ -422,15 +432,15 @@ CorrfuncMeasurements compute_corrfunc(
  */
 PowspecMeasurements compute_powspec_in_box(
   ParticleCatalogue& particles_data,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double* kbin,
   double norm,
   bool save=false
 ) {
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Measurement: power spectrum in a periodic box.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -468,10 +478,10 @@ PowspecMeasurements compute_powspec_in_box(
     sn_save[ibin] += double(2*params.ELL + 1) * stats2pt.sn[ibin];
   }
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Power spectrum terms computed.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -503,7 +513,7 @@ PowspecMeasurements compute_powspec_in_box(
   if (save) {
     /// Set output path.
     char save_filepath[1024];
-    sprintf(
+    std::sprintf(
       save_filepath, "%s/pk%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
@@ -511,7 +521,7 @@ PowspecMeasurements compute_powspec_in_box(
     /// Write output.
     FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-      fprintf(
+      std::fprintf(
         save_fileptr,
         "%.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         powspec_out.kbin[ibin], powspec_out.keff[ibin],
@@ -543,16 +553,16 @@ PowspecMeasurements compute_powspec_in_box(
  */
 CorrfuncMeasurements compute_corrfunc_in_box(
   ParticleCatalogue& particles_data,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double* rbin,
   double norm,
   bool save=false
 ) {
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Measurement: two-point correlation function "
       "in a periodic box.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -587,10 +597,10 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     xi_save[ibin] += double(2*params.ELL + 1) * stats2pt.xi[ibin];
   }
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Two-point correlation function terms computed.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -613,7 +623,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   if (save) {
     /// Set output path.
     char save_filepath[1024];
-    sprintf(
+    std::sprintf(
       save_filepath, "%s/xi%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
@@ -621,7 +631,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     /// Write output.
     FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-      fprintf(
+      std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
         corrfunc_out.rbin[ibin], corrfunc_out.reff[ibin],
         corrfunc_out.npair[ibin],
@@ -654,17 +664,17 @@ CorrfuncMeasurements compute_corrfunc_in_box(
 PowspecWindowMeasurements compute_powspec_window(
   ParticleCatalogue& particles_rand,
   LineOfSight* los_rand,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double* kbin,
   double alpha,
   double norm,
   bool save=false
 ) {
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Measurement: power spectrum window "
       "from random catalogue.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -722,7 +732,7 @@ PowspecWindowMeasurements compute_powspec_window(
   if (save) {
     /// Set output path.
     char save_filepath[1024];
-    sprintf(
+    std::sprintf(
       save_filepath, "%s/pk%d_win%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
@@ -730,7 +740,7 @@ PowspecWindowMeasurements compute_powspec_window(
     /// Write output.
     FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-      fprintf(
+      std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
         powwin_out.kbin[ibin], powwin_out.keff[ibin],
         powwin_out.nmode[ibin],
@@ -764,17 +774,17 @@ PowspecWindowMeasurements compute_powspec_window(
 CorrfuncWindowMeasurements compute_corrfunc_window(
   ParticleCatalogue& particles_rand,
   LineOfSight* los_rand,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double* rbin,
   double alpha,
   double norm,
   bool save=false
 ) {
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Measurement: two-point correlation function window "
       "from random catalogue.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -816,10 +826,10 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     /// summed over m_1, agrees with Hand et al. (2017) [1704.02357].
     for (int m1 = - ell1; m1 <= ell1; m1++) {
       double coupling = (2*params.ELL + 1) * (2*ell1 + 1)
-          * wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
-          * wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
+          * trv::maths::wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
+          * trv::maths::wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
 
-      if (fabs(coupling) < EPS_COUPLING_2PT) {continue;}
+      if (std::fabs(coupling) < EPS_COUPLING_2PT) {continue;}
 
       stats2pt.compute_ylm_wgtd_2pt_stats_in_config(
         dn_LM, dn_00, sn_amp, rbin, ell1, m1
@@ -837,11 +847,11 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
       }
     }
 
-    if (currTask == 0) {
-      printf(
+    if (trv::runtime::currTask == 0) {
+      std::printf(
         "[%s STAT] Two-point correlation function window term "
         "at order M = %d computed.\n",
-        show_timestamp().c_str(),
+        trv::runtime::show_timestamp().c_str(),
         M_
       );
     }
@@ -862,7 +872,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
   if (save) {
     /// Set output path.
     char save_filepath[1024];
-    sprintf(
+    std::sprintf(
       save_filepath, "%s/xi%d_win%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
@@ -870,7 +880,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     /// Write output.
     FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-      fprintf(
+      std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
         corrfwin_out.rbin[ibin], corrfwin_out.reff[ibin],
         corrfwin_out.npair[ibin],
@@ -884,5 +894,9 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
 
   return corrfwin_out;
 }
+
+}  // trv::algo::
+
+}  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_TWOPT_HPP_INCLUDED_

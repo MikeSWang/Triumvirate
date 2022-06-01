@@ -33,15 +33,15 @@ int main(int argc, char const *argv[]) {
   /// Perform transform.
   double r[Nk], xi[Nk];
 
-  sj_transform(ell, m, Nk, k, pk, r, xi);
-  // transform_powspec_to_corrfunc_multipole(ell, Nk, k, pk, r, xi);
+  trv::ops::sj_transform(ell, m, Nk, k, pk, r, xi);
+  // trv::ops::transform_powspec_to_corrfunc_multipole(ell, Nk, k, pk, r, xi);
 
   /// Save test results.
   char test_fname_out[]= "triumvirate/tests/test_output/xi0.dat";
   FILE *test_file_out = fopen(test_fname_out, "w");
 
   for (int i = 0; i < Nk; i++) {
-    fprintf(test_file_out, "%.9e %.9e\n", r[i], xi[i]);
+    std::fprintf(test_file_out, "%.9e %.9e\n", r[i], xi[i]);
   }
 
   fclose(test_file_out);

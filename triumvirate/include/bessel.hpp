@@ -11,6 +11,9 @@
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_spline.h>
 
+namespace trv {
+namespace maths {
+
 /**
  * Interpolated spherical Bessel function @f$ j_\ell(x) @f$
  * of the first kind.
@@ -79,5 +82,8 @@ class SphericalBesselCalculator {
   gsl_spline* spline;
   gsl_interp_accel* accel;
 };
+
+}  // trv::maths::
+}  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_BESSEL_HPP_INCLUDED_

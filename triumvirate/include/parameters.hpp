@@ -7,13 +7,16 @@
 #ifndef TRIUMVIRATE_INCLUDE_PARAMETERS_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_PARAMETERS_HPP_INCLUDED_
 
-#include <cstring>
+#include <cstdio>
 #include <fstream>
 #include <string>
 
 #include <sys/stat.h>
 
-#include "common.hpp"
+#include "monitor.hpp"
+
+namespace trv {
+namespace scheme {
 
 /**
  * Set of parameters.
@@ -113,7 +116,7 @@ class ParameterSet {
       /// Check if the line is in the correct format for parameter
       /// parsing; process if yes, otherwise move on to the next line.
       if (
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, str_dummy
         ) != 3
       ) {
@@ -121,180 +124,180 @@ class ParameterSet {
       }
 
       if (str_line.find("catalogue_dir") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, catalogue_dir_
         );
       }
       if (str_line.find("measurement_dir") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, measurement_dir_
         );
       }
       if (str_line.find("data_catalogue_file") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s",
           str_dummy, str_dummy, data_catalogue_file_
         );
       }
       if (str_line.find("rand_catalogue_file") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s",
           str_dummy, str_dummy, rand_catalogue_file_
         );
       }
       if (str_line.find("catalogue_header") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, catalogue_header_
         );
       }
       if (str_line.find("output_tag") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, output_tag_
         );
       }
 
       if (str_line.find("catalogue_type") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, catalogue_type_
         );
       }
       if (str_line.find("measurement_type") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, measurement_type_
         );
       }
 
       if (str_line.find("boxsize_x") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_x
         );
       }
       if (str_line.find("boxsize_y") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_y
         );
       }
       if (str_line.find("boxsize_z") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %lg", str_dummy, str_dummy, &boxsize_z
         );
       }
 
       if (str_line.find("ngrid_x") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %d", str_dummy, str_dummy, &ngrid_x
         );
       }
       if (str_line.find("ngrid_y") != std::string::npos) {
-        sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &ngrid_y);
+        std::sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &ngrid_y);
       }
       if (str_line.find("ngrid_z") != std::string::npos) {
-        sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &ngrid_z);
+        std::sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &ngrid_z);
       }
 
       if (str_line.find("alignment") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, alignment_
         );
       }
       if (str_line.find("assignment") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, assignment_
         );
       }
       if (str_line.find("norm_convention") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, norm_convention_
         );
       }
       if (str_line.find("shotnoise_convention") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s",
           str_dummy, str_dummy, shotnoise_convention_
         );
       }
 
       if (str_line.find("ell1") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ell1
         );
       }
       if (str_line.find("ell2") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ell2
         );
       }
       if (str_line.find("ELL") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ELL
         );
       }
 
       if (str_line.find("i_wa") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->i_wa
         );
       }
       if (str_line.find("j_wa") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->j_wa
         );
       }
 
       if (str_line.find("binning") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, binning_
         );
       }
       if (str_line.find("form") != std::string::npos) {
-        sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, form_);
+        std::sscanf(str_line.data(), "%s %s %s", str_dummy, str_dummy, form_);
       }
 
       if (str_line.find("kmin") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->kmin
         );
       }
       if (str_line.find("kmax") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->kmax
         );
       }
       if (str_line.find("num_kbin") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->num_kbin
         );
       }
 
       if (str_line.find("rmin") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->rmin
         );
       }
       if (str_line.find("rmax") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %lg", str_dummy, str_dummy, &this->rmax
         );
       }
       if (str_line.find("num_rbin") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->num_rbin
         );
       }
 
       if (str_line.find("ith_kbin") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ith_kbin
         );
       }
       if (str_line.find("ith_rbin") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %d", str_dummy, str_dummy, &this->ith_rbin
         );
       }
 
       if (str_line.find("batch_number") != std::string::npos) {
-        sscanf(
+        std::sscanf(
           str_line.data(), "%s %s %d",
           str_dummy, str_dummy, &this->batch_number
         );
@@ -346,7 +349,7 @@ class ParameterSet {
   int printout() {
     /// Set file path.
     char filepath[1024];
-    sprintf(
+    std::sprintf(
       filepath, "%s/parameters_used%s",
       this->measurement_dir.c_str(), this->output_tag.c_str()
     );
@@ -354,91 +357,91 @@ class ParameterSet {
     /// Create output file.
     FILE* used_param_fileptr;
     if (!(used_param_fileptr = fopen(filepath, "w"))) {
-      if (currTask == 0) {
-        throw IOError(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::IOError(
           "[%s ERRO] Non-existent or unwritable output directory: '%s'.\n",
-          show_timestamp().c_str(),
+          trv::runtime::show_timestamp().c_str(),
           this->measurement_dir.c_str()
         );
       }
     }
 
     /// Print parameters to file.
-    fprintf(
+    std::fprintf(
       used_param_fileptr, "catalogue_dir = %s\n",
       this->catalogue_dir.c_str()
     );
-    fprintf(
+    std::fprintf(
       used_param_fileptr, "measurement_dir = %s\n",
       this->measurement_dir.c_str()
     );
-    fprintf(
+    std::fprintf(
       used_param_fileptr, "data_catalogue_file = %s\n",
       this->data_catalogue_file.c_str()
     );
-    fprintf(
+    std::fprintf(
       used_param_fileptr, "rand_catalogue_file = %s\n",
       this->rand_catalogue_file.c_str()
     );
-    fprintf(
+    std::fprintf(
       used_param_fileptr, "catalogue_header = %s\n",
       this->catalogue_header.c_str()
     );
-    fprintf(
+    std::fprintf(
       used_param_fileptr, "output_tag = %s\n", this->output_tag.c_str()
     );
 
-    fprintf(
+    std::fprintf(
       used_param_fileptr, "catalogue_type = %s\n",
       this->catalogue_type.c_str()
     );
-    fprintf(
+    std::fprintf(
       used_param_fileptr, "measurement_type = %s\n",
       this->measurement_type.c_str()
     );
 
-    fprintf(
+    std::fprintf(
       used_param_fileptr, "alignment = %s\n", this->alignment.c_str()
     );
-    fprintf(
+    std::fprintf(
       used_param_fileptr, "assignment = %s\n", this->assignment.c_str()
     );
-    fprintf(
+    std::fprintf(
       used_param_fileptr, "norm_convention = %s\n",
       this->norm_convention.c_str()
     );
-    fprintf(
+    std::fprintf(
       used_param_fileptr, "shotnoise_convention = %s\n",
       this->shotnoise_convention.c_str()
     );
 
-    fprintf(used_param_fileptr, "boxsize_x = %.3f\n", this->boxsize[0]);
-    fprintf(used_param_fileptr, "boxsize_y = %.3f\n", this->boxsize[1]);
-    fprintf(used_param_fileptr, "boxsize_z = %.3f\n", this->boxsize[2]);
+    std::fprintf(used_param_fileptr, "boxsize_x = %.3f\n", this->boxsize[0]);
+    std::fprintf(used_param_fileptr, "boxsize_y = %.3f\n", this->boxsize[1]);
+    std::fprintf(used_param_fileptr, "boxsize_z = %.3f\n", this->boxsize[2]);
 
-    fprintf(used_param_fileptr, "ngrid_x = %d\n", this->ngrid[0]);
-    fprintf(used_param_fileptr, "ngrid_y = %d\n", this->ngrid[1]);
-    fprintf(used_param_fileptr, "ngrid_z = %d\n", this->ngrid[2]);
+    std::fprintf(used_param_fileptr, "ngrid_x = %d\n", this->ngrid[0]);
+    std::fprintf(used_param_fileptr, "ngrid_y = %d\n", this->ngrid[1]);
+    std::fprintf(used_param_fileptr, "ngrid_z = %d\n", this->ngrid[2]);
 
-    fprintf(used_param_fileptr, "ell1 = %d\n", this->ell1);
-    fprintf(used_param_fileptr, "ell2 = %d\n", this->ell2);
-    fprintf(used_param_fileptr, "ELL = %d\n", this->ELL);
+    std::fprintf(used_param_fileptr, "ell1 = %d\n", this->ell1);
+    std::fprintf(used_param_fileptr, "ell2 = %d\n", this->ell2);
+    std::fprintf(used_param_fileptr, "ELL = %d\n", this->ELL);
 
-    fprintf(used_param_fileptr, "i_wa = %d\n", this->i_wa);
-    fprintf(used_param_fileptr, "j_wa = %d\n", this->j_wa);
+    std::fprintf(used_param_fileptr, "i_wa = %d\n", this->i_wa);
+    std::fprintf(used_param_fileptr, "j_wa = %d\n", this->j_wa);
 
-    fprintf(used_param_fileptr, "binning = %s\n", this->binning.c_str());
-    fprintf(used_param_fileptr, "form = %s\n", this->form.c_str());
+    std::fprintf(used_param_fileptr, "binning = %s\n", this->binning.c_str());
+    std::fprintf(used_param_fileptr, "form = %s\n", this->form.c_str());
 
-    fprintf(used_param_fileptr, "kmin = %.6f\n", this->kmin);
-    fprintf(used_param_fileptr, "kmax = %.6f\n", this->kmax);
-    fprintf(used_param_fileptr, "num_kbin = %d\n", this->num_kbin);
-    fprintf(used_param_fileptr, "ith_kbin = %d\n", this->ith_kbin);
+    std::fprintf(used_param_fileptr, "kmin = %.6f\n", this->kmin);
+    std::fprintf(used_param_fileptr, "kmax = %.6f\n", this->kmax);
+    std::fprintf(used_param_fileptr, "num_kbin = %d\n", this->num_kbin);
+    std::fprintf(used_param_fileptr, "ith_kbin = %d\n", this->ith_kbin);
 
-    fprintf(used_param_fileptr, "rmin = %.3f\n", this->rmin);
-    fprintf(used_param_fileptr, "rmax = %.3f\n", this->rmax);
-    fprintf(used_param_fileptr, "num_rbin = %d\n", this->num_rbin);
-    fprintf(used_param_fileptr, "ith_rbin = %d\n", this->ith_rbin);
+    std::fprintf(used_param_fileptr, "rmin = %.3f\n", this->rmin);
+    std::fprintf(used_param_fileptr, "rmax = %.3f\n", this->rmax);
+    std::fprintf(used_param_fileptr, "num_rbin = %d\n", this->num_rbin);
+    std::fprintf(used_param_fileptr, "ith_rbin = %d\n", this->ith_rbin);
 
     fclose(used_param_fileptr);
 
@@ -457,22 +460,22 @@ class ParameterSet {
       || this->catalogue_type == "mock"
       || this->catalogue_type == "sim"
     )) {
-      if (currTask == 0) {
-        throw InvalidParameter(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidParameter(
           "[%s ERRO] Catalogue type must be 'survey', 'mock' or 'sim': "
           "`catalogue_type` = '%s'.\n",
-          show_timestamp().c_str(),
+          trv::runtime::show_timestamp().c_str(),
           this->catalogue_type.c_str()
         );
       }
     }
 
     if (!(this->alignment == "centre" || this->alignment == "pad")) {
-      if (currTask == 0) {
-        throw InvalidParameter(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidParameter(
           "[%s ERRO] Box alignment must be 'centre' or 'pad': "
           "`alignment` = '%s'.\n",
-          show_timestamp().c_str(),
+          trv::runtime::show_timestamp().c_str(),
           this->alignment.c_str()
         );
       }
@@ -483,11 +486,11 @@ class ParameterSet {
       || this->assignment == "cic"
       || this->assignment == "tsc"
     )) {
-      if (currTask == 0) {
-        throw InvalidParameter(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidParameter(
           "[%s ERRO] Mesh assignment scheme must be 'ngp', 'cic' or 'tsc': "
           "`assignment` = '%s'.\n",
-          show_timestamp().c_str(),
+          trv::runtime::show_timestamp().c_str(),
           this->assignment.c_str()
         );
       }
@@ -496,11 +499,11 @@ class ParameterSet {
     if (!(
       this->norm_convention == "mesh" || this->norm_convention == "particle"
     )) {
-      if (currTask == 0) {
-        printf(
+      if (trv::runtime::currTask == 0) {
+        std::printf(
           "[%s WARN] Normalisation convention must be "
           "'mesh' or 'particle': `norm_convention` = '%s'.\n",
-          show_timestamp().c_str(),
+          trv::runtime::show_timestamp().c_str(),
           this->norm_convention.c_str()
         );
       }
@@ -508,11 +511,11 @@ class ParameterSet {
       /// Set to default convention.
       this->norm_convention == "mesh";
 
-      if (currTask == 0) {
-        printf(
+      if (trv::runtime::currTask == 0) {
+        std::printf(
           "[%s WARN] Normalisation convention is set to "
           "default value '%s'.\n",
-          show_timestamp().c_str(),
+          trv::runtime::show_timestamp().c_str(),
           this->norm_convention.c_str()
         );
       }
@@ -522,11 +525,11 @@ class ParameterSet {
       this->shotnoise_convention == "mesh"
       || this->shotnoise_convention == "particle"
     )) {
-      if (currTask == 0) {
-        printf(
+      if (trv::runtime::currTask == 0) {
+        std::printf(
           "[%s WARN] Shot noise convention convention must be "
           "'mesh' or 'particle': `shotnoise_convention` = '%s'.\n",
-          show_timestamp().c_str(),
+          trv::runtime::show_timestamp().c_str(),
           this->shotnoise_convention.c_str()
         );
       }
@@ -534,22 +537,22 @@ class ParameterSet {
       /// Set to default convention.
       this->shotnoise_convention == "mesh";
 
-      if (currTask == 0) {
-        printf(
+      if (trv::runtime::currTask == 0) {
+        std::printf(
           "[%s WARN] Shot noise convention is set to "
           "default value '%s'.\n",
-          show_timestamp().c_str(),
+          trv::runtime::show_timestamp().c_str(),
           this->shotnoise_convention.c_str()
         );
       }
     }
 
     if (!(this->form == "diag" || this->form == "full")) {
-      if (currTask == 0) {
-        throw InvalidParameter(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidParameter(
           "[%s ERRO] `form` must be either 'full' or 'diag': "
           "`form` = '%s'.\n",
-          show_timestamp().c_str(),
+          trv::runtime::show_timestamp().c_str(),
           this->form.c_str()
         );
       }
@@ -557,24 +560,24 @@ class ParameterSet {
 
     /// Validate numerical parameters.
     if (this->num_kbin < 2 || this->num_rbin < 2) {
-      if (currTask == 0) {
-        throw InvalidParameter(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidParameter(
           "[%s ERRO] Number of bins (`num_kbin` or `num_rbin`) "
           "must be >= 2.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
 
     if (this->binning == "linpad" || this->binning == "logpad") {
-      /// SEE: See `BinScheme::set_rbin`.
+      /// SEE: See `trv::scheme::BinScheme::set_rbin`.
       int nbin_custom = 5;
 
       if (this->num_rbin < nbin_custom + 2) {
-        if (currTask == 0) {
-          throw InvalidParameter(
+        if (trv::runtime::currTask == 0) {
+          throw trv::runtime::InvalidParameter(
             "[%s ERRO] Binning scheme '%s' requires `num_rbin` >= %d.\n",
-            show_timestamp().c_str(),
+            trv::runtime::show_timestamp().c_str(),
             this->binning.c_str(), nbin_custom + 2
           );
         }
@@ -582,17 +585,20 @@ class ParameterSet {
     }
 
     if (this->ith_kbin >= this->num_kbin || this->ith_rbin >= this->num_rbin) {
-      if (currTask == 0) {
-        throw InvalidParameter(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidParameter(
           "[%s ERRO] Bin index (`ith_kbin` or `ith_rbin`) must be less than "
           "the number of bins (`num_kbin` or `num_rbin`).\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
 
-    if (currTask == 0) {
-      printf("[%s STAT] Parameters validated.\n", show_timestamp().c_str());
+    if (trv::runtime::currTask == 0) {
+      std::printf(
+        "[%s STAT] Parameters validated.\n",
+        trv::runtime::show_timestamp().c_str()
+      );
     }
 
     return 0;
@@ -618,7 +624,8 @@ class ParameterSet {
     /// a suite of simulations.
     if (this->catalogue_type == "mock") {
       /// Enumerate the input data catalogue.
-      int realisation = numTasks * this->batch_number + currTask + 1;
+      int realisation = trv::runtime::numTasks * this->batch_number
+        + trv::runtime::currTask + 1;
 
       if (realisation > 2048) {
         realisation = 1;
@@ -627,7 +634,7 @@ class ParameterSet {
       /// Set input paths.
       char buf_file[2048];
 
-      sprintf(
+      std::sprintf(
         buf_file, "%s/%s_%04d.dat",
         this->catalogue_dir.c_str(),
         this->data_catalogue_file.c_str(),
@@ -636,7 +643,7 @@ class ParameterSet {
 
       this->data_catalogue_file = buf_file;
 
-      sprintf(
+      std::sprintf(
         buf_file, "%s/%s",
         this->catalogue_dir.c_str(),
         this->rand_catalogue_file.c_str()
@@ -646,7 +653,10 @@ class ParameterSet {
 
       /// Set the output subdirectory.
       char buf_dir[2048];
-      sprintf(buf_dir, "%s/%04d", this->measurement_dir.c_str(), realisation);
+      std::sprintf(
+        buf_dir, "%s/%04d",
+        this->measurement_dir.c_str(), realisation
+      );
 
       struct stat status;  // file permission mode
       if (stat(buf_dir, &status) != 0) {
@@ -655,18 +665,18 @@ class ParameterSet {
 
         /// Check output subdirectory status and exit upon failure.
         if (ret_status == 0) {
-          if (currTask == 0) {
-            printf(
+          if (trv::runtime::currTask == 0) {
+            std::printf(
               "[%s INFO] Output subdirectory '%s' is successfully made.\n",
-              show_timestamp().c_str(),
+              trv::runtime::show_timestamp().c_str(),
               buf_dir
             );
           }
         } else {
-          if (currTask == 0) {
-            throw IOError(
+          if (trv::runtime::currTask == 0) {
+            throw trv::runtime::IOError(
               "[%s ERRO] Failed to make output subdirectory '%s'.\n",
-              show_timestamp().c_str(),
+              trv::runtime::show_timestamp().c_str(),
               buf_dir
             );
           }
@@ -677,5 +687,8 @@ class ParameterSet {
     }
   }
 };
+
+}  // trv::scheme::
+}  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_PARAMETERS_HPP_INCLUDED_

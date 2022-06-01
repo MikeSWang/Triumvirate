@@ -9,9 +9,15 @@
 
 #include <chrono>
 #include <cstdarg>
+#include <cstdio>
 #include <ctime>
 #include <stdexcept>
 #include <string>
+
+const double BYTES_PER_GBYTES = 1073741824.;  ///< 1024^3 bytes per gibibyte
+
+namespace trv {
+namespace runtime {
 
 /// //////////////////////////////////////////////////////////////////////
 /// Program tracking
@@ -22,7 +28,6 @@
 int currTask = 0;  ///< current task
 int numTasks = 1;  ///< number of tasks (in a batch)
 
-const double BYTES_PER_GBYTES = 1073741824.;  ///< 1024^3 bytes per gibibyte
 double gbytesMem = 0.;  ///< memory usage in gibibytes
 
 double clockStart;  ///< program start clock
@@ -88,7 +93,7 @@ std::string show_timestamp() {
   double elapsed_time = double(clock() - clockStart);
 
   char timestamp_[128];
-  sprintf(
+  std::sprintf(
     timestamp_, "%s (+%s)",
     show_current_datetime().c_str(), show_elapsed_time(elapsed_time).c_str()
   );
@@ -127,6 +132,32 @@ bool if_path_is_set(std::string pathstr){
 /// //////////////////////////////////////////////////////////////////////
 
 /**
+ * Exception raised when an input/output operation fails.
+ *
+ */
+class IOError: public std::runtime_error {
+ public:
+  std::string err_mesg;
+
+  IOError(const char* fmt_string, ...): std::runtime_error(
+    "I/O error."  // default error message; essential
+  ) {
+    std::va_list args;
+    char err_mesg_buf[4096];
+
+    va_start(args, fmt_string);
+    std::vsprintf(err_mesg_buf, fmt_string, args);
+    va_end(args);
+
+    this->err_mesg = std::string(err_mesg_buf);
+  }
+
+  virtual const char* what() const noexcept {
+    return err_mesg.c_str();
+  }
+};
+
+/**
  * Exception raised when parameters are invalid.
  *
  */
@@ -137,11 +168,11 @@ class InvalidParameter: public std::invalid_argument {
   InvalidParameter(const char* fmt_string, ...): std::invalid_argument(
     "Invalid parameter error."  // default error message; essential
   ) {
-    va_list args;
+    std::va_list args;
     char err_mesg_buf[4096];
 
     va_start(args, fmt_string);
-    vsprintf(err_mesg_buf, fmt_string, args);
+    std::vsprintf(err_mesg_buf, fmt_string, args);
     va_end(args);
 
     this->err_mesg = std::string(err_mesg_buf);
@@ -153,47 +184,21 @@ class InvalidParameter: public std::invalid_argument {
 };
 
 /**
- * Exception raised when an input/output operation fails.
+ * Exception raised when the data to be operated on are invalid.
  *
  */
-class IOError: public std::runtime_error {
+class InvalidData: public std::runtime_error {
  public:
   std::string err_mesg;
 
-  IOError(const char* fmt_string, ...): std::runtime_error(
-    "Input/output error."  // default error message; essential
-  ) {
-    va_list args;
-    char err_mesg_buf[4096];
-
-    va_start(args, fmt_string);
-    vsprintf(err_mesg_buf, fmt_string, args);
-    va_end(args);
-
-    this->err_mesg = std::string(err_mesg_buf);
-  }
-
-  virtual const char* what() const noexcept {
-    return err_mesg.c_str();
-  }
-};
-
-/**
- * Exception raised when a data operation fails.
- *
- */
-class InvalidDataOps: public std::runtime_error {
- public:
-  std::string err_mesg;
-
-  InvalidDataOps(const char* fmt_string, ...): std::runtime_error(
+  InvalidData(const char* fmt_string, ...): std::runtime_error(
     "Invalid data error."  // default error message; essential
   ) {
-    va_list args;
+    std::va_list args;
     char err_mesg_buf[4096];
 
     va_start(args, fmt_string);
-    vsprintf(err_mesg_buf, fmt_string, args);
+    std::vsprintf(err_mesg_buf, fmt_string, args);
     va_end(args);
 
     this->err_mesg = std::string(err_mesg_buf);
@@ -203,5 +208,8 @@ class InvalidDataOps: public std::runtime_error {
     return err_mesg.c_str();
   }
 };
+
+}  // trv::runtime::
+}  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_MONITOR_HPP_INCLUDED_

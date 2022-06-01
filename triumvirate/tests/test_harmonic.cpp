@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
   double pos[3] = {x, y, z};
 
   /// Initialise the tool class.
-  SphericalHarmonicCalculator harmonic;
+  trv::maths::SphericalHarmonicCalculator harmonic;
 
   /// Display the numerical result.
   std::cout <<

@@ -23,7 +23,7 @@ cdef extern from "include/particles.hpp":
 
 
 cdef extern from "include/threept.hpp":
-    struct BispecMeasurements:
+    struct BispecMeasurements "trv::obj::BispecMeasurements":
         vector[double] kbin1
         vector[double] kbin2
         vector[double] keff1
@@ -32,7 +32,7 @@ cdef extern from "include/threept.hpp":
         vector[np.complex128_t] bk_raw
         vector[np.complex128_t] bk_shot
 
-    struct ThreePCFMeasurements:
+    struct ThreePCFMeasurements "trv::obj::ThreePCFMeasurements":
         vector[double] rbin1
         vector[double] rbin2
         vector[double] reff1
@@ -41,7 +41,7 @@ cdef extern from "include/threept.hpp":
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
 
-    struct ThreePCFWindowMeasurements:
+    struct ThreePCFWindowMeasurements "trv::obj::ThreePCFWindowMeasurements":
         vector[double] rbin1
         vector[double] rbin2
         vector[double] reff1
@@ -51,19 +51,19 @@ cdef extern from "include/threept.hpp":
         vector[np.complex128_t] zeta_shot
 
     double calc_bispec_normalisation_from_mesh_cpp \
-        "calc_bispec_normalisation_from_mesh" (
+        "trv::algo::calc_bispec_normalisation_from_mesh" (
             CppParticleCatalogue& catalogue,
             CppParameterSet& params,
             double alpha
         )
 
     double calc_bispec_normalisation_from_particles_cpp \
-        "calc_bispec_normalisation_from_particles" (
+        "trv::algo::calc_bispec_normalisation_from_particles" (
             CppParticleCatalogue& catalogue,
             double alpha
         )
 
-    BispecMeasurements compute_bispec_cpp "compute_bispec" (
+    BispecMeasurements compute_bispec_cpp "trv::algo::compute_bispec" (
         CppParticleCatalogue& particles_data,
         CppParticleCatalogue& particles_rand,
         LineOfSight* los_data,
@@ -75,7 +75,7 @@ cdef extern from "include/threept.hpp":
         bool_t save
     )
 
-    ThreePCFMeasurements compute_3pcf_cpp "compute_3pcf" (
+    ThreePCFMeasurements compute_3pcf_cpp "trv::algo::compute_3pcf" (
         CppParticleCatalogue& particles_data,
         CppParticleCatalogue& particles_rand,
         LineOfSight* los_data,
@@ -87,35 +87,38 @@ cdef extern from "include/threept.hpp":
         bool_t save
     )
 
-    BispecMeasurements compute_bispec_in_box_cpp "compute_bispec_in_box" (
-        CppParticleCatalogue& particles_data,
-        CppParameterSet& params,
-        double* kbin,
-        double norm,
-        bool_t save
-    )
+    BispecMeasurements compute_bispec_in_box_cpp \
+        "trv::algo::compute_bispec_in_box" (
+            CppParticleCatalogue& particles_data,
+            CppParameterSet& params,
+            double* kbin,
+            double norm,
+            bool_t save
+        )
 
-    ThreePCFMeasurements compute_3pcf_in_box_cpp "compute_3pcf_in_box" (
-        CppParticleCatalogue& particles_data,
-        CppParameterSet& params,
-        double* rbin,
-        double norm,
-        bool_t save
-    )
+    ThreePCFMeasurements compute_3pcf_in_box_cpp \
+        "trv::algo::compute_3pcf_in_box" (
+            CppParticleCatalogue& particles_data,
+            CppParameterSet& params,
+            double* rbin,
+            double norm,
+            bool_t save
+        )
 
-    ThreePCFWindowMeasurements compute_3pcf_window_cpp "compute_3pcf_window" (
-        CppParticleCatalogue& particles_rand,
-        LineOfSight* los_rand,
-        CppParameterSet& params,
-        double* rbin,
-        double alpha,
-        double norm,
-        bool_t wide_angle,
-        bool_t save
-    )
+    ThreePCFWindowMeasurements compute_3pcf_window_cpp \
+        "trv::algo::compute_3pcf_window" (
+            CppParticleCatalogue& particles_rand,
+            LineOfSight* los_rand,
+            CppParameterSet& params,
+            double* rbin,
+            double alpha,
+            double norm,
+            bool_t wide_angle,
+            bool_t save
+        )
 
     # BispecMeasurements compute_bispec_for_los_choice_cpp \
-    #     "compute_bispec_for_los_choice" (
+    #     "trv::algo::compute_bispec_for_los_choice" (
     #         CppParticleCatalogue& particles_data,
     #         CppParticleCatalogue& particles_rand,
     #         LineOfSight* los_data,

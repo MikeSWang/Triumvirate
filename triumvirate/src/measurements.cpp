@@ -4,13 +4,7 @@
  *
  */
 
-#include <cstdio>
-#include <cstdlib>
-#include <iostream>
-#include <cmath>
-#include <string>
-
-#include "common.hpp"
+#include "monitor.hpp"
 #include "parameters.hpp"
 #include "tools.hpp"
 #include "particles.hpp"
@@ -21,70 +15,81 @@
  * Main program performing measurements.
  */
 int main(int argc, char* argv[]) {
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "%s\n[%s STAT] Program has started.\n",
-      std::string(80, '>').c_str(), show_timestamp().c_str()
+      std::string(80, '>').c_str(), trv::runtime::show_timestamp().c_str()
     );
   }
 
   /* * Initialisation ****************************************************** */
 
-  if (currTask == 0) {
-    printf("[%s STAT] Initialising program...\n", show_timestamp().c_str());
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] Initialising program...\n",
+      trv::runtime::show_timestamp().c_str()
+    );
   }
 
   /// Configure parameters.
   if (argc != 2) {
-    if (currTask == 0) {
-      throw IOError(
-        "[%s ERRO] Missing parameter file in call.\n", show_timestamp().c_str()
+    if (trv::runtime::currTask == 0) {
+      throw trv::runtime::IOError(
+        "[%s ERRO] Missing parameter file in call.\n",
+        trv::runtime::show_timestamp().c_str()
       );
     }
 
   }
 
-  ParameterSet params;  // program parameters
+  trv::scheme::ParameterSet params;  // program parameters
   if (params.read_from_file(argv)) {
-    if (currTask == 0) {
-      throw IOError(
-        "[%s ERRO] Failed to initialise parameters.\n", show_timestamp().c_str()
+    if (trv::runtime::currTask == 0) {
+      throw trv::runtime::IOError(
+        "[%s ERRO] Failed to initialise parameters.\n",
+        trv::runtime::show_timestamp().c_str()
       );
     }
   }
 
   if (!(params.printout())) {
-    if (currTask == 0) {
-      printf(
+    if (trv::runtime::currTask == 0) {
+      std::printf(
         "[%s INFO] Check 'parameters_used' file in your "
         "measurement output directory for reference.\n",
-        show_timestamp().c_str()
+        trv::runtime::show_timestamp().c_str()
       );
     }
   }
 
-  if (currTask == 0) {
-    printf("[%s STAT] ... initialised program.\n", show_timestamp().c_str());
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] ... initialised program.\n",
+      trv::runtime::show_timestamp().c_str()
+    );
   }
 
   /** Data processing ****************************************************** */
 
-  if (currTask == 0) {
-    printf("[%s STAT] Reading catalogues...\n", show_timestamp().c_str());
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] Reading catalogues...\n",
+      trv::runtime::show_timestamp().c_str()
+    );
   }
 
   /// Read catalogue files.
-  ParticleCatalogue particles_data, particles_rand;  // catalogues
+  trv::obj::ParticleCatalogue particles_data, particles_rand;  // catalogues
 
   std::string flag_data = "false";  // data catalogue status
-  if (if_path_is_set(params.data_catalogue_file)) {
+  if (trv::runtime::if_path_is_set(params.data_catalogue_file)) {
     if (particles_data.read_particle_data_from_file(
       params.data_catalogue_file, params.catalogue_header
     )) {
-      if (currTask == 0) {
-        throw IOError(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::IOError(
           "[%s ERRO] Failed to load data-source catalogue file.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
@@ -94,14 +99,14 @@ int main(int argc, char* argv[]) {
   }
 
   std::string flag_rand = "false";  // random catalogue status
-  if (if_path_is_set(params.rand_catalogue_file)) {
+  if (trv::runtime::if_path_is_set(params.rand_catalogue_file)) {
     if (particles_rand.read_particle_data_from_file(
       params.rand_catalogue_file, params.catalogue_header
     )) {
-      if (currTask == 0) {
-        throw IOError(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::IOError(
           "[%s ERRO] Failed to load random-source catalogue file.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
@@ -110,14 +115,20 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (currTask == 0) {
-    printf("[%s STAT] ... read catalogues.\n", show_timestamp().c_str());
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] ... read catalogues.\n",
+      trv::runtime::show_timestamp().c_str()
+    );
   }
 
   /* * Measurements ******************************************************** */
 
-  if (currTask == 0) {
-    printf("[%s STAT] Making measurements...\n", show_timestamp().c_str());
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] Making measurements...\n",
+      trv::runtime::show_timestamp().c_str()
+    );
   }
 
   /// Set up measurements.
@@ -139,19 +150,23 @@ int main(int argc, char* argv[]) {
   }
 
   double kbin[params.num_kbin];  // wavenumber bins
-  BinScheme::set_kbin(params, kbin);
+  trv::scheme::BinScheme::set_kbin(params, kbin);
 
   double rbin[params.num_rbin];  // separation bins
-  BinScheme::set_rbin(params, rbin);
+  trv::scheme::BinScheme::set_rbin(params, rbin);
 
   bool save = true;  // whether to save the results or not
 
   /// Compute line of sight.
-  if (currTask == 0) {
-    printf("[%s STAT] Computing lines of sight...\n", show_timestamp().c_str());
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] Computing lines of sight...\n",
+      trv::runtime::show_timestamp().c_str()
+    );
   }
 
-  LineOfSight* los_data = new LineOfSight[particles_data.ntotal];  // data LoS
+  trv::obj::LineOfSight* los_data =
+    new trv::obj::LineOfSight[particles_data.ntotal];  // data LoS
   for (int pid = 0; pid < particles_data.ntotal; pid++) {
     double los_mag = sqrt(
       particles_data[pid].pos[0] * particles_data[pid].pos[0]
@@ -164,7 +179,8 @@ int main(int argc, char* argv[]) {
     los_data[pid].pos[2] = particles_data[pid].pos[2] / los_mag;
   }
 
-  LineOfSight* los_rand = new LineOfSight[particles_rand.ntotal];  // random LoS
+  trv::obj::LineOfSight* los_rand =
+    new trv::obj::LineOfSight[particles_rand.ntotal];  // random LoS
   for (int pid = 0; pid < particles_rand.ntotal; pid++) {
     double los_mag = sqrt(
       particles_rand[pid].pos[0] * particles_rand[pid].pos[0]
@@ -177,22 +193,25 @@ int main(int argc, char* argv[]) {
     los_rand[pid].pos[2] = particles_rand[pid].pos[2] / los_mag;
   }
 
-  if (currTask == 0) {
-    printf("[%s STAT] ... computed lines of sight.\n", show_timestamp().c_str());
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] ... computed lines of sight.\n",
+      trv::runtime::show_timestamp().c_str()
+    );
   }
 
   /// Offset particle positions for measurements.
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
     if (params.alignment == "pad") {
       double ngrid_pad[3] = {3., 3., 3.};
-      ParticleCatalogue::pad_pair_in_box(
+      trv::obj::ParticleCatalogue::pad_pair_in_box(
         particles_data, particles_rand,
         params.boxsize, params.ngrid,
         ngrid_pad
       );
     } else
     if (params.alignment == "centre") {
-      ParticleCatalogue::centre_pair_in_box(
+      trv::obj::ParticleCatalogue::centre_pair_in_box(
         particles_data, particles_rand, params.boxsize
       );
     }
@@ -209,8 +228,11 @@ int main(int argc, char* argv[]) {
     alpha = 1.;
   }
 
-  if (currTask == 0) {
-    printf("[%s INFO] Alpha contrast: %.6e.\n", show_timestamp().c_str(), alpha);
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s INFO] Alpha contrast: %.6e.\n",
+      trv::runtime::show_timestamp().c_str(), alpha
+    );
   }
 
   /// Compute normalisation factor for clustering statistics.
@@ -218,23 +240,23 @@ int main(int argc, char* argv[]) {
   if (params.norm_convention == "mesh") {
     if (flag_rand == "true") {
       if (flag_npoint == "2pt") {
-        norm = calc_powspec_normalisation_from_mesh(
+        norm = trv::algo::calc_powspec_normalisation_from_mesh(
           particles_rand, params, alpha
         );
       } else
       if (flag_npoint == "3pt") {
-        norm = calc_bispec_normalisation_from_mesh(
+        norm = trv::algo::calc_bispec_normalisation_from_mesh(
           particles_rand, params, alpha
         );
       }
     } else {
       if (flag_npoint == "2pt") {
-        norm = calc_powspec_normalisation_from_mesh(
+        norm = trv::algo::calc_powspec_normalisation_from_mesh(
           particles_data, params, alpha
         );
       } else
       if (flag_npoint == "3pt") {
-        norm = calc_bispec_normalisation_from_mesh(
+        norm = trv::algo::calc_bispec_normalisation_from_mesh(
           particles_data, params, alpha
         );
       }
@@ -243,24 +265,29 @@ int main(int argc, char* argv[]) {
   if (params.norm_convention == "particle") {
     if (flag_rand == "true") {
       if (flag_npoint == "2pt") {
-        norm = calc_powspec_normalisation_from_particles(particles_rand, alpha);
+        norm = trv::algo::
+          calc_powspec_normalisation_from_particles(particles_rand, alpha);
       } else
       if (flag_npoint == "3pt") {
-        norm = calc_bispec_normalisation_from_particles(particles_rand, alpha);
+        norm = trv::algo::
+          calc_bispec_normalisation_from_particles(particles_rand, alpha);
       }
     } else {
       if (flag_npoint == "2pt") {
-        norm = calc_powspec_normalisation_from_particles(particles_data, alpha);
+        norm = trv::algo::
+          calc_powspec_normalisation_from_particles(particles_data, alpha);
       } else
       if (flag_npoint == "3pt") {
-        norm = calc_bispec_normalisation_from_particles(particles_data, alpha);
+        norm = trv::algo::
+          calc_bispec_normalisation_from_particles(particles_data, alpha);
       }
     }
   }
 
-  if (currTask == 0) {
-    printf(
-      "[%s INFO] Normalisation constant: %.6e.\n", show_timestamp().c_str(),
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s INFO] Normalisation constant: %.6e.\n",
+      trv::runtime::show_timestamp().c_str(),
       norm
     );
   }
@@ -268,69 +295,78 @@ int main(int argc, char* argv[]) {
   /// Perform clustering-statistics algorithms.
   if (params.measurement_type == "powspec") {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-      compute_powspec(
+      trv::algo::compute_powspec(
         particles_data, particles_rand, los_data, los_rand,
         params, kbin, alpha, norm, save
       );
     } else
     if (params.catalogue_type == "sim") {
-      compute_powspec_in_box(particles_data, params, kbin, norm, save);
+      trv::algo::compute_powspec_in_box(
+        particles_data, params, kbin, norm, save
+      );
     }
   } else
   if (params.measurement_type == "2pcf") {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-      compute_corrfunc(
+      trv::algo::compute_corrfunc(
         particles_data, particles_rand, los_data, los_rand,
         params, rbin, alpha, norm, save
       );
     } else
     if (params.catalogue_type == "sim") {
-      compute_corrfunc_in_box(particles_data, params, rbin, norm, save);
+      trv::algo::compute_corrfunc_in_box(
+        particles_data, params, rbin, norm, save
+      );
     }
   } else
   if (params.measurement_type == "2pcf-win") {
-    compute_corrfunc_window(
+    trv::algo::compute_corrfunc_window(
       particles_rand, los_rand, params, rbin, alpha, norm, save
     );
   } else
 
   if (params.measurement_type == "bispec") {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-      compute_bispec(
+      trv::algo::compute_bispec(
         particles_data, particles_rand, los_data, los_rand,
         params, kbin, alpha, norm, save
       );
     } else
     if (params.catalogue_type == "sim") {
-      compute_bispec_in_box(particles_data, params, kbin, norm, save);
+      trv::algo::compute_bispec_in_box(
+        particles_data, params, kbin, norm, save
+      );
     }
   } else
   if (params.measurement_type == "3pcf") {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
-      compute_3pcf(
+      trv::algo::compute_3pcf(
         particles_data, particles_rand, los_data, los_rand,
         params, rbin, alpha, norm, save
       );
     } else
     if (params.catalogue_type == "sim") {
-      compute_3pcf_in_box(particles_data, params, rbin, norm, save);
+      trv::algo::compute_3pcf_in_box(particles_data, params, rbin, norm, save);
     }
   } else
   if (params.measurement_type == "3pcf-win") {
     bool wa = false;
-    compute_3pcf_window(
+    trv::algo::compute_3pcf_window(
       particles_rand, los_rand, params, rbin, alpha, norm, wa, save
     );
   } else
   if (params.measurement_type == "3pcf-win-wa") {
     bool wa = true;
-    compute_3pcf_window(
+    trv::algo::compute_3pcf_window(
       particles_rand, los_rand, params, rbin, alpha, norm, wa, save
     );
   }
 
-  if (currTask == 0) {
-    printf("[%s STAT] ... made measurements.\n", show_timestamp().c_str());
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] ... made measurements.\n",
+      trv::runtime::show_timestamp().c_str()
+    );
   }
 
   /* * Finalisation ******************************************************** */
@@ -341,17 +377,17 @@ int main(int argc, char* argv[]) {
   delete[] los_data; los_data = NULL;
   delete[] los_rand; los_rand = NULL;
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Persistent memory usage: %.0f bytes.\n",
-      show_timestamp().c_str(), gbytesMem
+      trv::runtime::show_timestamp().c_str(), trv::runtime::gbytesMem
     );
   }
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Program has completed.\n%s\n",
-      show_timestamp().c_str(), std::string(80, '<').c_str()
+      trv::runtime::show_timestamp().c_str(), std::string(80, '<').c_str()
     );
   }
 

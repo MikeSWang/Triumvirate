@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
   double x = atof(argv[2]);
 
   /// Initialise the interpolated-function class.
-  SphericalBesselCalculator spherical_j_ell(ell);
+  trv::maths::SphericalBesselCalculator spherical_j_ell(ell);
 
   /// Display the numerical result.
   std::cout <<

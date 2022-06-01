@@ -7,18 +7,24 @@
 #ifndef TRIUMVIRATE_INCLUDE_FIELD_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_FIELD_HPP_INCLUDED_
 
+#include <cmath>
 #include <complex>
-#include <cstring>
 
 #include <fftw3.h>
 
-#include "common.hpp"
+#include "monitor.hpp"
 #include "parameters.hpp"
 #include "bessel.hpp"
 #include "harmonic.hpp"
 #include "particles.hpp"
 
+using namespace trv::maths;
+using namespace trv::obj;
+
 const double EPS_GRIDSHIFT = 1.e-5;
+
+namespace trv {
+namespace obj {
 
 /**
  * Meshed density-like field instantiated from particle sources.
@@ -36,7 +42,7 @@ class PseudoDensityField {
    *
    * @param params Parameter set.
    */
-  PseudoDensityField(ParameterSet& params) {
+  PseudoDensityField(trv::scheme::ParameterSet& params) {
     /// Attach external parameters.
     this->params = params;
 
@@ -47,7 +53,7 @@ class PseudoDensityField {
       this->field[gid][1] = 0.;
     }
 
-    gbytesMem += double(this->params.nmesh)
+    trv::runtime::gbytesMem += double(this->params.nmesh)
       * sizeof(fftw_complex) / BYTES_PER_GBYTES;
   }
 
@@ -75,7 +81,7 @@ class PseudoDensityField {
     /// Free memory usage.
     if (this->field != NULL) {
       fftw_free(this->field); this->field = NULL;
-      gbytesMem -= double(this->params.nmesh)
+      trv::runtime::gbytesMem -= double(this->params.nmesh)
         * sizeof(fftw_complex) / BYTES_PER_GBYTES;
     }
   }
@@ -101,10 +107,10 @@ class PseudoDensityField {
     if (this->params.assignment == "tsc") {
       this->assign_weighted_field_to_mesh_tsc(particles, weights);
     } else {
-      if (currTask == 0) {
-        throw InvalidParameter(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidParameter(
           "[%s ERRO] Unsupported mesh assignment scheme: '%s'.\n",
-          show_timestamp().c_str(),
+          trv::runtime::show_timestamp().c_str(),
           this->params.assignment.c_str()
         );
       };
@@ -150,10 +156,8 @@ class PseudoDensityField {
         los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
       };
 
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
+      std::complex<double> ylm = SphericalHarmonicCalculator::
+        calc_reduced_spherical_harmonic(ell, m, los_);
 
       weight_kern[pid][0] = ylm.real() * particles_data[pid].w;
       weight_kern[pid][1] = ylm.imag() * particles_data[pid].w;
@@ -170,10 +174,8 @@ class PseudoDensityField {
         los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
       };
 
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
+      std::complex<double> ylm = SphericalHarmonicCalculator::
+        calc_reduced_spherical_harmonic(ell, m, los_);
 
       weight_kern[pid][0] = ylm.real() * particles_rand[pid].w;
       weight_kern[pid][1] = ylm.imag() * particles_rand[pid].w;
@@ -230,10 +232,8 @@ class PseudoDensityField {
         los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
       };
 
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
+      std::complex<double> ylm = SphericalHarmonicCalculator::
+        calc_reduced_spherical_harmonic(ell, m, los_);
 
       weight_kern[pid][0] = ylm.real() * particles_rand[pid].w;
       weight_kern[pid][1] = ylm.imag() * particles_rand[pid].w;
@@ -394,15 +394,13 @@ class PseudoDensityField {
         los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
       };
 
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
+      std::complex<double> ylm = SphericalHarmonicCalculator::
+        calc_reduced_spherical_harmonic(ell, m, los_);
 
       ylm = std::conj(ylm);  // cojugation is essential
 
-      weight_kern[pid][0] = ylm.real() * pow(particles_data[pid].w, 2);
-      weight_kern[pid][1] = ylm.imag() * pow(particles_data[pid].w, 2);
+      weight_kern[pid][0] = ylm.real() * std::pow(particles_data[pid].w, 2);
+      weight_kern[pid][1] = ylm.imag() * std::pow(particles_data[pid].w, 2);
     }
 
     this->assign_weighted_field_to_mesh(particles_data, weight_kern);
@@ -416,15 +414,13 @@ class PseudoDensityField {
         los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
       };
 
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
+      std::complex<double> ylm = SphericalHarmonicCalculator::
+        calc_reduced_spherical_harmonic(ell, m, los_);
 
       ylm = std::conj(ylm);  // cojugation is essential
 
-      weight_kern[pid][0] = ylm.real() * pow(particles_rand[pid].w, 2);
-      weight_kern[pid][1] = ylm.imag() * pow(particles_rand[pid].w, 2);
+      weight_kern[pid][0] = ylm.real() * std::pow(particles_rand[pid].w, 2);
+      weight_kern[pid][1] = ylm.imag() * std::pow(particles_rand[pid].w, 2);
     }
 
     field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
@@ -471,15 +467,13 @@ class PseudoDensityField {
         los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
       };
 
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
+      std::complex<double> ylm = SphericalHarmonicCalculator::
+        calc_reduced_spherical_harmonic(ell, m, los_);
 
       ylm = std::conj(ylm);  // cojugation is essential
 
-      weight_kern[pid][0] = ylm.real() * pow(particles_rand[pid].w, 2);
-      weight_kern[pid][1] = ylm.imag() * pow(particles_rand[pid].w, 2);
+      weight_kern[pid][0] = ylm.real() * std::pow(particles_rand[pid].w, 2);
+      weight_kern[pid][1] = ylm.imag() * std::pow(particles_rand[pid].w, 2);
     }
 
     this->assign_weighted_field_to_mesh(particles_rand, weight_kern);
@@ -599,7 +593,7 @@ class PseudoDensityField {
           kv[2] = (k < this->params.ngrid[2]/2) ?
             k * dk[2] : (k - this->params.ngrid[2]) * dk[2];
 
-          double k_ = sqrt(kv[0] * kv[0] + kv[1] * kv[1] + kv[2] * kv[2]);
+          double k_ = std::sqrt(kv[0] * kv[0] + kv[1] * kv[1] + kv[2] * kv[2]);
 
           /// Determine grid contribution to the bin.
           if (k_ > k_lower && k_ <= k_upper) {
@@ -694,7 +688,7 @@ class PseudoDensityField {
           kv[2] = (k < this->params.ngrid[2]/2) ?
             k * dk[2] : (k - this->params.ngrid[2]) * dk[2];
 
-          double k_ = sqrt(kv[0] * kv[0] + kv[1] * kv[1] + kv[2] * kv[2]);
+          double k_ = std::sqrt(kv[0] * kv[0] + kv[1] * kv[1] + kv[2] * kv[2]);
 
           /// Apply assignment compensation.
           std::complex<double> den(
@@ -748,16 +742,16 @@ class PseudoDensityField {
           rv[2] = (k < this->params.ngrid[2]/2) ?
             k * dr[2] : (k - this->params.ngrid[2]) * dr[2];
 
-          double r_ = sqrt(rv[0] * rv[0] + rv[1] * rv[1] + rv[2] * rv[2]);
+          double r_ = std::sqrt(rv[0] * rv[0] + rv[1] * rv[1] + rv[2] * rv[2]);
 
           if (r_ < eps) {
             this->field[idx_grid][0] *= 0.;
             this->field[idx_grid][1] *= 0.;
           } else {
             this->field[idx_grid][0] *=
-              pow(r_, - this->params.i_wa - this->params.j_wa);
+              std::pow(r_, - this->params.i_wa - this->params.j_wa);
             this->field[idx_grid][1] *=
-              pow(r_, - this->params.i_wa - this->params.j_wa);
+              std::pow(r_, - this->params.i_wa - this->params.j_wa);
           }
         }
       }
@@ -829,7 +823,7 @@ class PseudoDensityField {
 
     double vol_eff_inv = 0.;
     for (int gid = 0; gid < this->params.nmesh; gid++) {
-      vol_eff_inv += pow(this->field[gid][0], 2);
+      vol_eff_inv += std::pow(this->field[gid][0], 2);
     }
     vol_eff_inv *= vol_cell;
 
@@ -870,7 +864,7 @@ class PseudoDensityField {
 
     double vol_sq_eff_inv = 0.;
     for (int gid = 0; gid < this->params.nmesh; gid++) {
-      vol_sq_eff_inv += pow(this->field[gid][0], 3);
+      vol_sq_eff_inv += std::pow(this->field[gid][0], 3);
     }
     vol_sq_eff_inv *= vol_cell;
 
@@ -880,7 +874,7 @@ class PseudoDensityField {
   }
 
  private:
-  ParameterSet params;
+  trv::scheme::ParameterSet params;
 
   /**
    * Assign weighted field to a mesh by the nearest-grid-point
@@ -1104,13 +1098,13 @@ class PseudoDensityField {
     double k_z = M_PI * k / double(this->params.ngrid[2]);
 
     /// Note sin(u) / u -> 1 as u -> 0.
-    double wk_x = (i != 0) ? sin(k_x) / k_x : 1.;
-    double wk_y = (j != 0) ? sin(k_y) / k_y : 1.;
-    double wk_z = (k != 0) ? sin(k_z) / k_z : 1.;
+    double wk_x = (i != 0) ? std::sin(k_x) / k_x : 1.;
+    double wk_y = (j != 0) ? std::sin(k_y) / k_y : 1.;
+    double wk_z = (k != 0) ? std::sin(k_z) / k_z : 1.;
 
     double wk = wk_x * wk_y * wk_z;
 
-    return pow(wk, order);
+    return std::pow(wk, order);
   }
 };
 
@@ -1137,7 +1131,7 @@ class Pseudo2ptStats {
    *
    * @param params Parameter set.
    */
-  Pseudo2ptStats(ParameterSet& params){
+  Pseudo2ptStats(trv::scheme::ParameterSet& params){
     this->params = params;
 
     /// Set up binned power spectrum and mode counter.
@@ -1255,7 +1249,7 @@ class Pseudo2ptStats {
           kv[2] = (k < this->params.ngrid[2]/2) ?
             k * dk[2] :  (k - this->params.ngrid[2]) * dk[2];
 
-          double k_ = sqrt(kv[0] * kv[0] + kv[1] * kv[1] + kv[2] * kv[2]);
+          double k_ = std::sqrt(kv[0] * kv[0] + kv[1] * kv[1] + kv[2] * kv[2]);
 
           int idx_k = int(k_ / dk_sample + 0.5);
           if (idx_k < n_sample) {
@@ -1273,14 +1267,12 @@ class Pseudo2ptStats {
             /// Apply assignment compensation.
             double win = this->calc_assignment_window_in_fourier(kv);
 
-            mode_power /= pow(win, 2);
-            mode_sn /= pow(win, 2);
+            mode_power /= std::pow(win, 2);
+            mode_sn /= std::pow(win, 2);
 
             /// Weight by reduced spherical harmonics.
-            std::complex<double> ylm =
-              SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-                ell, m, kv
-              );
+            std::complex<double> ylm = SphericalHarmonicCalculator::
+              calc_reduced_spherical_harmonic(ell, m, kv);
 
             mode_power *= ylm;
             mode_sn *= ylm;
@@ -1411,7 +1403,7 @@ class Pseudo2ptStats {
           /// Apply assignment compensation.
           double win = this->calc_assignment_window_in_fourier(kv);
 
-          mode_power /= pow(win, 2);
+          mode_power /= std::pow(win, 2);
 
           twopt_3d[idx_grid][0] = mode_power.real() / vol;
           twopt_3d[idx_grid][1] = mode_power.imag() / vol;
@@ -1466,7 +1458,7 @@ class Pseudo2ptStats {
           rv[2] = (k < this->params.ngrid[2]/2) ?
             k * dr[2] : (k - this->params.ngrid[2]) * dr[2];
 
-          double r_ = sqrt(rv[0] * rv[0] + rv[1] * rv[1] + rv[2] * rv[2]);
+          double r_ = std::sqrt(rv[0] * rv[0] + rv[1] * rv[1] + rv[2] * rv[2]);
 
           int idx_r = int(r_ / dr_sample + 0.5);
           if (idx_r < n_sample) {
@@ -1475,10 +1467,8 @@ class Pseudo2ptStats {
             );
 
             /// Weight by reduced spherical harmonics.
-            std::complex<double> ylm =
-              SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-                ell, m, rv
-              );
+            std::complex<double> ylm = SphericalHarmonicCalculator::
+              calc_reduced_spherical_harmonic(ell, m, rv);
 
             pair_corr *= ylm;
 
@@ -1567,12 +1557,10 @@ class Pseudo2ptStats {
         los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
       };
 
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
+      std::complex<double> ylm = SphericalHarmonicCalculator::
+        calc_reduced_spherical_harmonic(ell, m, los_);
 
-      sum_data += ylm * pow(particles_data[pid].w, 2);
+      sum_data += ylm * std::pow(particles_data[pid].w, 2);
     }
 
     for (int pid = 0; pid < particles_rand.ntotal; pid++) {
@@ -1580,15 +1568,13 @@ class Pseudo2ptStats {
         los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
       };
 
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
+      std::complex<double> ylm = SphericalHarmonicCalculator::
+        calc_reduced_spherical_harmonic(ell, m, los_);
 
-      sum_rand += ylm * pow(particles_rand[pid].w, 2);
+      sum_rand += ylm * std::pow(particles_rand[pid].w, 2);
     }
 
-    return sum_data + pow(alpha, 2) * sum_rand;
+    return sum_data + std::pow(alpha, 2) * sum_rand;
   }
 
   /**
@@ -1616,15 +1602,13 @@ class Pseudo2ptStats {
         los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
       };
 
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
+      std::complex<double> ylm = SphericalHarmonicCalculator::
+        calc_reduced_spherical_harmonic(ell, m, los_);
 
-      sum_rand += ylm * pow(particles_rand[pid].w, 2);
+      sum_rand += ylm * std::pow(particles_rand[pid].w, 2);
     }
 
-    return pow(alpha, 2) * sum_rand;
+    return std::pow(alpha, 2) * sum_rand;
   }
 
   /**
@@ -1643,7 +1627,7 @@ class Pseudo2ptStats {
     std::complex<double> sum_data = double(particles_data.ntotal);
     std::complex<double> sum_rand = double(particles_rand.ntotal);
 
-    return sum_data + pow(alpha, 2) * sum_rand;
+    return sum_data + std::pow(alpha, 2) * sum_rand;
   }
 
   /**
@@ -1716,7 +1700,7 @@ class Pseudo2ptStats {
           /// Apply assignment compensation.
           double win = this->calc_assignment_window_in_fourier(kv);
 
-          mode_power /= pow(win, 2);
+          mode_power /= std::pow(win, 2);
 
           twopt_3d[idx_grid][0] = mode_power.real() / vol;
           twopt_3d[idx_grid][1] = mode_power.imag() / vol;
@@ -1769,7 +1753,7 @@ class Pseudo2ptStats {
           rv[2] = (k < this->params.ngrid[2]/2) ?
             k * dr[2] : (k - this->params.ngrid[2]) * dr[2];
 
-          double r_ = sqrt(rv[0] * rv[0] + rv[1] * rv[1] + rv[2] * rv[2]);
+          double r_ = std::sqrt(rv[0] * rv[0] + rv[1] * rv[1] + rv[2] * rv[2]);
 
           int idx_r = int(r_ / dr_sample + 0.5);
           if (idx_r < n_sample) {
@@ -1825,8 +1809,8 @@ class Pseudo2ptStats {
     for (int ibin = 0; ibin < this->params.num_rbin; ibin++) {
       if (this->npair[ibin] != 0) {
         this->xi[ibin] *= 1 / vol_cell
-          * pow(-1., this->params.ell1 + this->params.ell2)
-          / pow(double(this->npair[ibin]), 2);
+          * std::pow(-1., this->params.ell1 + this->params.ell2)
+          / std::pow(double(this->npair[ibin]), 2);
       } else {
         this->xi[ibin] = 0.;
       }
@@ -1899,7 +1883,7 @@ class Pseudo2ptStats {
           /// Apply assignment compensation.
           double win = this->calc_assignment_window_in_fourier(kv);
 
-          mode_power /= pow(win, 2);
+          mode_power /= std::pow(win, 2);
 
           threept_3d[idx_grid][0] = mode_power.real() / vol;
           threept_3d[idx_grid][1] = mode_power.imag() / vol;
@@ -1965,12 +1949,10 @@ class Pseudo2ptStats {
         los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
       };
 
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
+      std::complex<double> ylm = SphericalHarmonicCalculator::
+        calc_reduced_spherical_harmonic(ell, m, los_);
 
-      sum_data += ylm * pow(particles_data[pid].w, 3);
+      sum_data += ylm * std::pow(particles_data[pid].w, 3);
     }
 
     for (int pid = 0; pid < particles_rand.ntotal; pid++) {
@@ -1978,19 +1960,17 @@ class Pseudo2ptStats {
         los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
       };
 
-      std::complex<double> ylm =
-        SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-          ell, m, los_
-        );
+      std::complex<double> ylm = SphericalHarmonicCalculator::
+        calc_reduced_spherical_harmonic(ell, m, los_);
 
-      sum_rand += ylm * pow(particles_rand[pid].w, 3);
+      sum_rand += ylm * std::pow(particles_rand[pid].w, 3);
     }
 
-    return sum_data - pow(alpha, 3) * sum_rand;
+    return sum_data - std::pow(alpha, 3) * sum_rand;
   }
 
  private:
-  ParameterSet params;
+  trv::scheme::ParameterSet params;
 
   /**
    * Calculate the interpolarion window in Fourier space for
@@ -2025,13 +2005,13 @@ class Pseudo2ptStats {
     double k_z = M_PI * k / double(this->params.ngrid[2]);
 
     /// Note sin(u) / u -> 1 as u -> 0.
-    double wk_x = (i != 0) ? sin(k_x) / k_x : 1.;
-    double wk_y = (j != 0) ? sin(k_y) / k_y : 1.;
-    double wk_z = (k != 0) ? sin(k_z) / k_z : 1.;
+    double wk_x = (i != 0) ? std::sin(k_x) / k_x : 1.;
+    double wk_y = (j != 0) ? std::sin(k_y) / k_y : 1.;
+    double wk_z = (k != 0) ? std::sin(k_z) / k_z : 1.;
 
     double wk = wk_x * wk_y * wk_z;
 
-    return pow(wk, order);
+    return std::pow(wk, order);
   }
 
   /**
@@ -2090,9 +2070,9 @@ class Pseudo2ptStats {
     double k_y = M_PI * j / double(this->params.ngrid[1]);
     double k_z = M_PI * k / double(this->params.ngrid[2]);
 
-    double cx = (i != 0) ? sin(k_x): 0.;
-    double cy = (j != 0) ? sin(k_y): 0.;
-    double cz = (k != 0) ? sin(k_z): 0.;
+    double cx = (i != 0) ? std::sin(k_x): 0.;
+    double cy = (j != 0) ? std::sin(k_y): 0.;
+    double cz = (k != 0) ? std::sin(k_z): 0.;
 
     double val =
       (1. - 2./3. * cx * cx)
@@ -2123,17 +2103,20 @@ class Pseudo2ptStats {
     double k_y = M_PI * j / double(this->params.ngrid[1]);
     double k_z = M_PI * k / double(this->params.ngrid[2]);
 
-    double cx = (i != 0) ? sin(k_x): 0.;
-    double cy = (j != 0) ? sin(k_y): 0.;
-    double cz = (k != 0) ? sin(k_z): 0.;
+    double cx = (i != 0) ? std::sin(k_x): 0.;
+    double cy = (j != 0) ? std::sin(k_y): 0.;
+    double cz = (k != 0) ? std::sin(k_z): 0.;
 
     double val =
-      (1. - cx * cx + 2./15. * pow(cx, 4))
-      * (1. - cy * cy + 2./15. * pow(cy, 4))
-      * (1. - cz * cz + 2./15. * pow(cz, 4));
+      (1. - cx * cx + 2./15. * std::pow(cx, 4))
+      * (1. - cy * cy + 2./15. * std::pow(cy, 4))
+      * (1. - cz * cz + 2./15. * std::pow(cz, 4));
 
     return val;
   }
 };
+
+}  // trv::obj::
+}  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_FIELD_HPP_INCLUDED_
