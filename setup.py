@@ -1,4 +1,3 @@
-import codecs
 import os
 from distutils.sysconfig import get_config_vars
 from distutils.util import convert_path
