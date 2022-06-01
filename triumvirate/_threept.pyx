@@ -23,7 +23,7 @@ cdef extern from "include/particles.hpp":
 
 
 cdef extern from "include/threept.hpp":
-    struct BispecMeasurements "trv::obj::BispecMeasurements":
+    struct BispecMeasurements "trv::algo::BispecMeasurements":
         vector[double] kbin1
         vector[double] kbin2
         vector[double] keff1
@@ -32,7 +32,7 @@ cdef extern from "include/threept.hpp":
         vector[np.complex128_t] bk_raw
         vector[np.complex128_t] bk_shot
 
-    struct ThreePCFMeasurements "trv::obj::ThreePCFMeasurements":
+    struct ThreePCFMeasurements "trv::algo::ThreePCFMeasurements":
         vector[double] rbin1
         vector[double] rbin2
         vector[double] reff1
@@ -41,7 +41,7 @@ cdef extern from "include/threept.hpp":
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
 
-    struct ThreePCFWindowMeasurements "trv::obj::ThreePCFWindowMeasurements":
+    struct ThreePCFWindowMeasurements "trv::algo::ThreePCFWindowMeasurements":
         vector[double] rbin1
         vector[double] rbin2
         vector[double] reff1
