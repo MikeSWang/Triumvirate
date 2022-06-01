@@ -10,16 +10,23 @@
 #ifndef TRIUMVIRATE_INCLUDE_THREEPT_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_THREEPT_HPP_INCLUDED_
 
-#include "common.hpp"
+#include "monitor.hpp"
 #include "parameters.hpp"
 #include "tools.hpp"
 #include "particles.hpp"
 #include "field.hpp"
 #include "twopt.hpp"
 
+using namespace trv::maths;
+using namespace trv::obj;
+
 const double EPS_COUPLING_3PT = 1.e-10;  /**< zero-tolerance for three-point
                                               coupling coefficients */
                                          // CAVEAT: discretionary choice
+
+namespace trv {
+
+namespace obj {
 
 /**
  * Bispectrum measurements.
@@ -74,6 +81,10 @@ struct ThreePCFWindowMeasurements {
                                                        shot noise */
 };
 
+}  // trv::obj::
+
+namespace algo {
+
 /**
  * Calculate mesh-based bispectrum normalisation.
  *
@@ -84,13 +95,13 @@ struct ThreePCFWindowMeasurements {
  */
 double calc_bispec_normalisation_from_mesh(
   ParticleCatalogue& catalogue,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double alpha=1.
 ) {
   PseudoDensityField<ParticleCatalogue> catalogue_mesh(params);
 
   double norm_factor = catalogue_mesh._calc_wgt_cu_volume_norm(catalogue)
-    / pow(alpha, 3);
+    / std::pow(alpha, 3);
 
   catalogue_mesh.finalise_density_field();
 
@@ -136,16 +147,16 @@ double calc_bispec_normalisation_from_particles(
 BispecMeasurements compute_bispec(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double* kbin,
   double alpha,
   double norm,
   bool save=false
 ) {
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Measuring bispectrum from data and random catalogues.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -153,14 +164,14 @@ BispecMeasurements compute_bispec(
 
   /// Set up/check input.
   if (
-    fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0))
+    std::fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0))
     < EPS_COUPLING_3PT
   ) {
-    if (currTask == 0) {
-      throw InvalidParameter(
+    if (trv::runtime::currTask == 0) {
+      throw trv::runtime::InvalidParameter(
         "[%s ERRO] Specified bispectrum multipole vanishes identically. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n",
-        show_timestamp().c_str()
+        trv::runtime::show_timestamp().c_str()
       );
     }
   }
@@ -189,10 +200,10 @@ BispecMeasurements compute_bispec(
 
   /* * Measurement ********************************************************* */
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Computing shot noise terms...\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -213,7 +224,7 @@ BispecMeasurements compute_bispec(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
         /// Calculate \bar{S}_LM in eq. (46) in the Paper.
         /// QUEST: This is possibly redundant as `L` and `M`
@@ -276,11 +287,11 @@ BispecMeasurements compute_bispec(
           }
         }
 
-        if (currTask == 0) {
-          printf(
+        if (trv::runtime::currTask == 0) {
+          std::printf(
             "[%s STAT] Shot noise terms (3 out of 4) at order "
             "(m1, m2, M) = (%d, %d, %d) computed.\n",
-            show_timestamp().c_str(),
+            trv::runtime::show_timestamp().c_str(),
             m1_, m2_, M_
           );
         }
@@ -307,7 +318,7 @@ BispecMeasurements compute_bispec(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) > EPS_COUPLING_3PT) {
+        if (std::fabs(coupling) > EPS_COUPLING_3PT) {
           flag_vanishing = "false";
         }
       }
@@ -315,7 +326,7 @@ BispecMeasurements compute_bispec(
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      gbytesMem += 2 * double(params.nmesh)
+      trv::runtime::gbytesMem += 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
 
       if (flag_vanishing == "false") {
@@ -338,7 +349,7 @@ BispecMeasurements compute_bispec(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
         PseudoDensityField<ParticleCatalogue> dn_LM_for_sn(params);  // dn_LM
         dn_LM_for_sn.compute_ylm_wgtd_fluctuation(
@@ -356,7 +367,7 @@ BispecMeasurements compute_bispec(
 
         /// Compute on mesh grids.
         fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh);
-        gbytesMem += double(params.nmesh)
+        trv::runtime::gbytesMem += double(params.nmesh)
           * sizeof(fftw_complex) / BYTES_PER_GBYTES;
         for (int gid = 0; gid < params.nmesh; gid++) {
           three_pt_holder[gid][0] = 0.;
@@ -395,7 +406,7 @@ BispecMeasurements compute_bispec(
                   j * dr[1] : (j - params.ngrid[1]) * dr[1];
                 rvec[2] = (k < params.ngrid[2]/2) ?
                   k * dr[2] : (k - params.ngrid[2]) * dr[2];
-                double rmag = sqrt(
+                double rmag = std::sqrt(
                   rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
                 );
 
@@ -411,46 +422,46 @@ BispecMeasurements compute_bispec(
             }
           }
 
-          S_ij_k *= vol_cell * pow(M_I, params.ell1 + params.ell2);
+          S_ij_k *= vol_cell * std::pow(M_I, params.ell1 + params.ell2);
 
           sn_save[i_kbin] += coupling * S_ij_k;
 
-          if (currTask == 0) {
-            printf(
+          if (trv::runtime::currTask == 0) {
+            std::printf(
               "[%s STAT] Shot noise term (last out of 4) at "
               "wavenumber k2 = %.4f and order (m1, m2, M) = (%d, %d, %d) "
               "computed.\n",
-              show_timestamp().c_str(),
+              trv::runtime::show_timestamp().c_str(),
               kmag_b, m1_, m2_, M_
             );
           }
         }
 
         fftw_free(three_pt_holder); three_pt_holder = NULL;
-        gbytesMem -= double(params.nmesh)
+        trv::runtime::gbytesMem -= double(params.nmesh)
           * sizeof(fftw_complex) / BYTES_PER_GBYTES;
       }
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
-      gbytesMem -= 2 * double(params.nmesh)
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
     }
   }
 
   N_00.finalise_density_field();  // ~N_00
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] ... computed shot noise terms.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Computing bispectrum terms...\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -470,7 +481,7 @@ BispecMeasurements compute_bispec(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) > EPS_COUPLING_3PT) {
+        if (std::fabs(coupling) > EPS_COUPLING_3PT) {
           flag_vanishing = "false";
         }
       }
@@ -481,7 +492,7 @@ BispecMeasurements compute_bispec(
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      gbytesMem += 2 * double(params.nmesh)
+      trv::runtime::gbytesMem += 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
 
       /// QUEST: This if-statement is redundant if early escape?
@@ -503,7 +514,7 @@ BispecMeasurements compute_bispec(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
         /// Compute G_LM in eq. (42) in the Paper.
         PseudoDensityField<ParticleCatalogue> dn_LM(params);  // dn_LM
@@ -554,11 +565,11 @@ BispecMeasurements compute_bispec(
 
           bk_save[i_kbin] += coupling * vol_cell * bk_sum;
 
-          if (currTask == 0) {
-            printf(
+          if (trv::runtime::currTask == 0) {
+            std::printf(
               "[%s STAT] Bispectrum term at wavenumber k2 = %.4f and order "
               "(m1, m2, M) = (%d, %d, %d) computed.\n",
-              show_timestamp().c_str(),
+              trv::runtime::show_timestamp().c_str(),
               kmag_b, m1_, m2_, M_
             );
           }
@@ -567,17 +578,17 @@ BispecMeasurements compute_bispec(
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
-      gbytesMem -= 2 * double(params.nmesh)
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
     }
   }
 
   dn_00.finalise_density_field();  // ~dn_00
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] ... computed bispectrum terms.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -607,7 +618,7 @@ BispecMeasurements compute_bispec(
     /// Set output path.
     char save_filepath[1024];
     if (params.form == "diag") {
-      sprintf(
+      std::sprintf(
         save_filepath, "%s/bk%d%d%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
@@ -615,7 +626,7 @@ BispecMeasurements compute_bispec(
       );
     } else
     if (params.form == "full") {
-      sprintf(
+      std::sprintf(
         save_filepath, "%s/bk%d%d%d_kbin%02d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
@@ -627,7 +638,7 @@ BispecMeasurements compute_bispec(
     /// Write output.
     FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-      fprintf(
+      std::fprintf(
         save_fileptr,
         "%.9e \t %.9e \t %.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         bispec_out.kbin1[ibin], bispec_out.keff1[ibin],
@@ -659,15 +670,15 @@ BispecMeasurements compute_bispec(
  */
 BispecMeasurements compute_bispec_in_box(
   ParticleCatalogue& particles_data,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double* kbin,
   double norm,
   bool save=false
 ) {
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Measurement: bispectrum in a periodic box.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -675,14 +686,14 @@ BispecMeasurements compute_bispec_in_box(
 
   /// Set up/check input.
   if (
-    fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0))
+    std::fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0))
     < EPS_COUPLING_3PT
   ) {
-    if (currTask == 0) {
-      throw InvalidParameter(
+    if (trv::runtime::currTask == 0) {
+      throw trv::runtime::InvalidParameter(
         "[%s ERRO] Specified bispectrum multipole vanishes identically. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n",
-        show_timestamp().c_str()
+        trv::runtime::show_timestamp().c_str()
       );
     }
   }
@@ -711,10 +722,10 @@ BispecMeasurements compute_bispec_in_box(
 
   /* * Measurement ********************************************************* */
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Computing shot noise terms...\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -741,7 +752,7 @@ BispecMeasurements compute_bispec_in_box(
         * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
         * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
         * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-      if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+      if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
       /// Calculate \bar{S}_LM in eq. (46) in the Paper.
       /// QUEST: This is redundant and thus factorisable.
@@ -790,11 +801,11 @@ BispecMeasurements compute_bispec_in_box(
         }
       }
 
-      if (currTask == 0) {
-        printf(
+      if (trv::runtime::currTask == 0) {
+        std::printf(
           "[%s STAT] Shot noise terms (3 out of 4) at order "
           "(m1, m2, M) = (%d, %d, %d) computed.\n",
-          show_timestamp().c_str(),
+          trv::runtime::show_timestamp().c_str(),
           m1_, m2_, M_
         );
       }
@@ -821,12 +832,12 @@ BispecMeasurements compute_bispec_in_box(
         * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
         * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
         * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-      if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+      if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      gbytesMem += 2 * double(params.nmesh)
+      trv::runtime::gbytesMem += 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
 
       SphericalHarmonicCalculator::
@@ -850,7 +861,7 @@ BispecMeasurements compute_bispec_in_box(
 
       /// Compute on mesh grids.
       fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh);
-        gbytesMem += double(params.nmesh)
+        trv::runtime::gbytesMem += double(params.nmesh)
           * sizeof(fftw_complex) / BYTES_PER_GBYTES;
       for (int gid = 0; gid < params.nmesh; gid++) {
         three_pt_holder[gid][0] = 0.;
@@ -889,7 +900,7 @@ BispecMeasurements compute_bispec_in_box(
                 j * dr[1] : (j - params.ngrid[1]) * dr[1];
               rvec[2] = (k < params.ngrid[2]/2) ?
                 k * dr[2] : (k - params.ngrid[2]) * dr[2];
-              double rmag = sqrt(
+              double rmag = std::sqrt(
                 rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
               );
 
@@ -905,45 +916,45 @@ BispecMeasurements compute_bispec_in_box(
           }
         }
 
-        S_ij_k *= vol_cell * pow(M_I, params.ell1 + params.ell2);
+        S_ij_k *= vol_cell * std::pow(M_I, params.ell1 + params.ell2);
 
         sn_save[i_kbin] += coupling * S_ij_k;
 
-        if (currTask == 0) {
-          printf(
+        if (trv::runtime::currTask == 0) {
+          std::printf(
             "[%s STAT] Shot noise term (last out of 4) at "
             "wavenumber k2 = %.4f and order (m1, m2, M) = (%d, %d, %d) "
             "computed.\n",
-            show_timestamp().c_str(),
+            trv::runtime::show_timestamp().c_str(),
             kmag_b, m1_, m2_, M_
           );
         }
       }
 
       fftw_free(three_pt_holder); three_pt_holder = NULL;
-        gbytesMem -= double(params.nmesh)
+        trv::runtime::gbytesMem -= double(params.nmesh)
           * sizeof(fftw_complex) / BYTES_PER_GBYTES;
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
-      gbytesMem -= 2 * double(params.nmesh)
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
     }
   }
 
   N_00.finalise_density_field();  // ~N_00
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] ... computed shot noise terms.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Computing bispectrum terms...\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -964,12 +975,12 @@ BispecMeasurements compute_bispec_in_box(
         * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
         * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
         * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-      if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+      if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      gbytesMem += 2 * double(params.nmesh)
+      trv::runtime::gbytesMem += 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
 
       SphericalHarmonicCalculator::
@@ -1031,11 +1042,11 @@ BispecMeasurements compute_bispec_in_box(
 
         bk_save[i_kbin] += coupling * vol_cell * bk_sum;
 
-        if (currTask == 0) {
-          printf(
+        if (trv::runtime::currTask == 0) {
+          std::printf(
             "[%s STAT] Bispectrum term at wavenumber k2 = %.4f and order "
             "(m1, m2, M) = (%d, %d, %d) computed.\n",
-            show_timestamp().c_str(),
+            trv::runtime::show_timestamp().c_str(),
             kmag_b, m1_, m2_, M_
           );
         }
@@ -1043,17 +1054,17 @@ BispecMeasurements compute_bispec_in_box(
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
-      gbytesMem -= 2 * double(params.nmesh)
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
     }
   }
 
   dn_00.finalise_density_field();  // ~dn_00
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] ... computed bispectrum terms.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -1083,7 +1094,7 @@ BispecMeasurements compute_bispec_in_box(
     /// Set output path.
     char save_filepath[1024];
     if (params.form == "diag") {
-      sprintf(
+      std::sprintf(
         save_filepath, "%s/bk%d%d%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
@@ -1091,7 +1102,7 @@ BispecMeasurements compute_bispec_in_box(
       );
     } else
     if (params.form == "full") {
-      sprintf(
+      std::sprintf(
         save_filepath, "%s/bk%d%d%d_kbin%02d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
@@ -1103,7 +1114,7 @@ BispecMeasurements compute_bispec_in_box(
     /// Write output.
     FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-      fprintf(
+      std::fprintf(
         save_fileptr,
         "%.9e \t %.9e \t %.9e \t %.9e \t %d \t "
         "%.9e \t %.9e \t %.9e \t %.9e\n",
@@ -1143,17 +1154,17 @@ BispecMeasurements compute_bispec_in_box(
 ThreePCFMeasurements compute_3pcf(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double* rbin,
   double alpha,
   double norm,
   bool save=false
 ) {
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Measuring three-point correlation function "
       "from data and random catalogues.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -1161,15 +1172,15 @@ ThreePCFMeasurements compute_3pcf(
 
   /// Set up/check input.
   if (
-    fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0))
+    std::fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0))
     < EPS_COUPLING_3PT
   ) {
-    if (currTask == 0) {
-      throw InvalidParameter(
+    if (trv::runtime::currTask == 0) {
+      throw trv::runtime::InvalidParameter(
         "[%s ERRO] Specified three-point correlation function multipole"
         "vanishes identically. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n",
-        show_timestamp().c_str()
+        trv::runtime::show_timestamp().c_str()
       );
     }
   }
@@ -1193,10 +1204,10 @@ ThreePCFMeasurements compute_3pcf(
 
   /* * Measurement ********************************************************* */
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Computing shot noise terms...\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -1217,7 +1228,7 @@ ThreePCFMeasurements compute_3pcf(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) > EPS_COUPLING_3PT) {
+        if (std::fabs(coupling) > EPS_COUPLING_3PT) {
           flag_vanishing = "false";
         }
       }
@@ -1225,7 +1236,7 @@ ThreePCFMeasurements compute_3pcf(
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      gbytesMem += 2 * double(params.nmesh)
+      trv::runtime::gbytesMem += 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
 
       if (flag_vanishing == "false") {
@@ -1247,7 +1258,7 @@ ThreePCFMeasurements compute_3pcf(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
         PseudoDensityField<ParticleCatalogue> dn_LM_for_sn(params);  // dn_LM
         dn_LM_for_sn.compute_ylm_wgtd_fluctuation(
@@ -1283,11 +1294,11 @@ ThreePCFMeasurements compute_3pcf(
           }
         }
 
-        if (currTask == 0) {
-          printf(
+        if (trv::runtime::currTask == 0) {
+          std::printf(
             "[%s STAT] Shot noise term at order "
             "(m1, m2, M) = (%d, %d, %d) computed.\n",
-            show_timestamp().c_str(),
+            trv::runtime::show_timestamp().c_str(),
             m1_, m2_, M_
           );
         }
@@ -1295,24 +1306,24 @@ ThreePCFMeasurements compute_3pcf(
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
-      gbytesMem -= 2 * double(params.nmesh)
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
     }
   }
 
   N_00.finalise_density_field();  // ~N_00
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] ... computed shot noise terms.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Computing three-point correlation function terms...\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -1333,7 +1344,7 @@ ThreePCFMeasurements compute_3pcf(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) > EPS_COUPLING_3PT) {
+        if (std::fabs(coupling) > EPS_COUPLING_3PT) {
           flag_vanishing = "false";
         }
       }
@@ -1344,7 +1355,7 @@ ThreePCFMeasurements compute_3pcf(
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      gbytesMem += 2 * double(params.nmesh)
+      trv::runtime::gbytesMem += 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
 
       /// QUEST: This if-statement is redundant if early escape?
@@ -1366,7 +1377,7 @@ ThreePCFMeasurements compute_3pcf(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
         /// Compute G_LM in eq. (42) in the Paper.
         PseudoDensityField<ParticleCatalogue> dn_LM(params);  // dn_LM
@@ -1413,15 +1424,15 @@ ThreePCFMeasurements compute_3pcf(
             zeta_sum += F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
           }
 
-          zeta_save[i_rbin] += pow(M_I, params.ell1 + params.ell2)
+          zeta_save[i_rbin] += std::pow(M_I, params.ell1 + params.ell2)
             * coupling * vol_cell * zeta_sum;
 
-          if (currTask == 0) {
-            printf(
+          if (trv::runtime::currTask == 0) {
+            std::printf(
               "[%s STAT] Three-point correlation function term at "
               "separation r2 = %.3f and order (m1, m2, M) = (%d, %d, %d) "
               "computed.\n",
-              show_timestamp().c_str(),
+              trv::runtime::show_timestamp().c_str(),
               rmag_b, m1_, m2_, M_
             );
           }
@@ -1430,17 +1441,17 @@ ThreePCFMeasurements compute_3pcf(
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
-      gbytesMem -= 2 * double(params.nmesh)
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
     }
   }
 
   dn_00.finalise_density_field();  // ~dn_00
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] ... computed three-point correlation function terms.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -1470,7 +1481,7 @@ ThreePCFMeasurements compute_3pcf(
     /// Set output path.
     char save_filepath[1024];
     if (params.form == "diag") {
-      sprintf(
+      std::sprintf(
         save_filepath, "%s/zeta%d%d%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
@@ -1478,7 +1489,7 @@ ThreePCFMeasurements compute_3pcf(
       );
     } else
     if (params.form == "full") {
-      sprintf(
+      std::sprintf(
         save_filepath, "%s/zeta%d%d%d_rbin%02d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
@@ -1490,7 +1501,7 @@ ThreePCFMeasurements compute_3pcf(
     /// Write output.
     FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-      fprintf(
+      std::fprintf(
         save_fileptr,
         "%.9e \t %.9e \t %.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         threepcf_out.rbin1[ibin], threepcf_out.reff1[ibin],
@@ -1524,16 +1535,16 @@ ThreePCFMeasurements compute_3pcf(
  */
 ThreePCFMeasurements compute_3pcf_in_box(
   ParticleCatalogue& particles_data,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double* rbin,
   double norm,
   bool save=false
 ) {
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Measurement: three-point correlation function "
       "in a periodic box.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -1541,15 +1552,15 @@ ThreePCFMeasurements compute_3pcf_in_box(
 
   /// Set up/check input.
   if (
-    fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0))
+    std::fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0))
     < EPS_COUPLING_3PT
   ) {
-    if (currTask == 0) {
-      throw InvalidParameter(
+    if (trv::runtime::currTask == 0) {
+      throw trv::runtime::InvalidParameter(
         "[%s ERRO] Specified three-point correlation function multipole "
         "vanishes identically. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n",
-        show_timestamp().c_str()
+        trv::runtime::show_timestamp().c_str()
       );
     }
   }
@@ -1573,10 +1584,10 @@ ThreePCFMeasurements compute_3pcf_in_box(
 
   /* * Measurement ********************************************************* */
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Computing shot noise terms...\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -1598,12 +1609,12 @@ ThreePCFMeasurements compute_3pcf_in_box(
         * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
         * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
         * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-      if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+      if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      gbytesMem += 2 * double(params.nmesh)
+      trv::runtime::gbytesMem += 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
 
       SphericalHarmonicCalculator::
@@ -1644,35 +1655,35 @@ ThreePCFMeasurements compute_3pcf_in_box(
         }
       }
 
-      if (currTask == 0) {
-        printf(
+      if (trv::runtime::currTask == 0) {
+        std::printf(
           "[%s STAT] Shot noise term at order "
           "(m1, m2, M) = (%d, %d, %d) computed.\n",
-          show_timestamp().c_str(),
+          trv::runtime::show_timestamp().c_str(),
           m1_, m2_, M_
         );
       }
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
-      gbytesMem -= 2 * double(params.nmesh)
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
     }
   }
 
   N_00.finalise_density_field();  // ~N_00
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] ... computed shot noise terms.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Computing bispectrum terms...\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -1694,12 +1705,12 @@ ThreePCFMeasurements compute_3pcf_in_box(
         * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
         * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
         * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-      if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+      if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      gbytesMem += 2 * double(params.nmesh)
+      trv::runtime::gbytesMem += 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
 
       SphericalHarmonicCalculator::
@@ -1757,15 +1768,15 @@ ThreePCFMeasurements compute_3pcf_in_box(
           zeta_sum += F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
         }
 
-        zeta_save[i_rbin] += pow(M_I, params.ell1 + params.ell2)
+        zeta_save[i_rbin] += std::pow(M_I, params.ell1 + params.ell2)
           * coupling * vol_cell * zeta_sum;
 
-        if (currTask == 0) {
-          printf(
+        if (trv::runtime::currTask == 0) {
+          std::printf(
             "[%s STAT] Three-point correlation function term at "
             "separation r2 = %.3f and order (m1, m2, M) = (%d, %d, %d) "
             "computed.\n",
-            show_timestamp().c_str(),
+            trv::runtime::show_timestamp().c_str(),
             rmag_b, m1_, m2_, M_
           );
         }
@@ -1773,17 +1784,17 @@ ThreePCFMeasurements compute_3pcf_in_box(
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
-      gbytesMem -= 2 * double(params.nmesh)
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
     }
   }
 
   dn_00.finalise_density_field();  // ~dn_00
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] ... computed three-point correlation function terms.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -1813,7 +1824,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
     /// Set output path.
     char save_filepath[1024];
     if (params.form == "diag") {
-      sprintf(
+      std::sprintf(
         save_filepath, "%s/zeta%d%d%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
@@ -1821,7 +1832,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
       );
     } else
     if (params.form == "full") {
-      sprintf(
+      std::sprintf(
         save_filepath, "%s/zeta%d%d%d_rbin%02d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
@@ -1833,7 +1844,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
     /// Write output.
     FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-      fprintf(
+      std::fprintf(
         save_fileptr,
         "%.9e \t %.9e \t %.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         threepcf_out.rbin1[ibin], threepcf_out.reff1[ibin],
@@ -1872,18 +1883,18 @@ ThreePCFMeasurements compute_3pcf_in_box(
 ThreePCFWindowMeasurements compute_3pcf_window(
   ParticleCatalogue& particles_rand,
   LineOfSight* los_rand,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double* rbin,
   double alpha,
   double norm,
   bool wide_angle=false,
   bool save=false
 ) {
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Measurement: three-point correlation function window "
       "from random catalogue.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -1891,15 +1902,15 @@ ThreePCFWindowMeasurements compute_3pcf_window(
 
   /// Set up/check input.
   if (
-    fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0))
+    std::fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0))
     < EPS_COUPLING_3PT
   ) {
-    if (currTask == 0) {
-      throw InvalidParameter(
+    if (trv::runtime::currTask == 0) {
+      throw trv::runtime::InvalidParameter(
         "[%s ERRO] Specified three-point correlation function window "
         "multipole vanishes identically. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n",
-        show_timestamp().c_str()
+        trv::runtime::show_timestamp().c_str()
       );
     }
   }
@@ -1923,10 +1934,10 @@ ThreePCFWindowMeasurements compute_3pcf_window(
 
   /* * Measurement ********************************************************* */
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Computing shot noise terms...\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -1947,7 +1958,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) > EPS_COUPLING_3PT) {
+        if (std::fabs(coupling) > EPS_COUPLING_3PT) {
           flag_vanishing = "false";
         }
       }
@@ -1955,7 +1966,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      gbytesMem += 2 * sizeof(std::complex<double>)
+      trv::runtime::gbytesMem += 2 * sizeof(std::complex<double>)
         * double(params.nmesh) / BYTES_PER_GBYTES;
 
       if (flag_vanishing == "false") {
@@ -1977,7 +1988,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
         PseudoDensityField<ParticleCatalogue> n_LM_for_sn(params);  // n_LM
         n_LM_for_sn.compute_ylm_wgtd_density(
@@ -2011,11 +2022,11 @@ ThreePCFWindowMeasurements compute_3pcf_window(
           }
         }
 
-        if (currTask == 0) {
-          printf(
+        if (trv::runtime::currTask == 0) {
+          std::printf(
             "[%s STAT] Shot noise term at order "
             "(m1, m2, M) = (%d, %d, %d) computed.\n",
-            show_timestamp().c_str(),
+            trv::runtime::show_timestamp().c_str(),
             m1_, m2_, M_
           );
         }
@@ -2023,24 +2034,24 @@ ThreePCFWindowMeasurements compute_3pcf_window(
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
-      gbytesMem -= 2 * double(params.nmesh)
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
     }
   }
 
   N_00.finalise_density_field();  // ~N_00
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] ... computed shot noise terms.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Computing three-point correlation function window terms...\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -2059,7 +2070,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) > EPS_COUPLING_3PT) {
+        if (std::fabs(coupling) > EPS_COUPLING_3PT) {
           flag_vanishing = "false";
         }
       }
@@ -2070,7 +2081,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      gbytesMem += 2 * sizeof(std::complex<double>)
+      trv::runtime::gbytesMem += 2 * sizeof(std::complex<double>)
         * double(params.nmesh) / BYTES_PER_GBYTES;
 
       /// QUEST: This if-statement is redundant if early escape?
@@ -2091,7 +2102,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
         /// Compute G_LM in eq. (42) in the Paper.
         PseudoDensityField<ParticleCatalogue> n_LM(params);  // n_LM
@@ -2142,15 +2153,15 @@ ThreePCFWindowMeasurements compute_3pcf_window(
             zeta_sum += F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
           }
 
-          zeta_save[i_rbin] += pow(M_I, params.ell1 + params.ell2)
+          zeta_save[i_rbin] += std::pow(M_I, params.ell1 + params.ell2)
             * coupling * vol_cell * zeta_sum;
 
-          if (currTask == 0) {
-            printf(
+          if (trv::runtime::currTask == 0) {
+            std::printf(
               "[%s STAT] Three-point correlation function window term at "
               "separation r2 = %.3f and order (m1, m2, M) = (%d, %d, %d) "
               "computed.\n",
-              show_timestamp().c_str(),
+              trv::runtime::show_timestamp().c_str(),
               rmag_b, m1_, m2_, M_
             );
           }
@@ -2159,17 +2170,17 @@ ThreePCFWindowMeasurements compute_3pcf_window(
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
-      gbytesMem -= 2 * double(params.nmesh)
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
     }
   }
 
   n_00.finalise_density_field();  // ~n_00
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] ... computed three-point correlation function window terms.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -2198,7 +2209,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
   std::string window_tag;
   if (wide_angle) {
     char window_tag_[32];
-    sprintf(window_tag_, "window_wa%d%d", params.i_wa, params.j_wa);
+    std::sprintf(window_tag_, "window_wa%d%d", params.i_wa, params.j_wa);
     window_tag = std::string(window_tag_);
   } else {
     window_tag = "window";
@@ -2208,7 +2219,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
     /// Set output path.
     char save_filepath[1024];
     if (params.form == "diag") {
-      sprintf(
+      std::sprintf(
         save_filepath, "%s/zeta%d%d%d_%s%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
@@ -2216,7 +2227,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
       );
     } else
     if (params.form == "full") {
-      sprintf(
+      std::sprintf(
         save_filepath, "%s/zeta%d%d%d_%s_rbin%02d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
@@ -2229,7 +2240,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
     /// Write output.
     FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-      fprintf(
+      std::fprintf(
         save_fileptr,
         "%.9e \t %.9e \t %.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         threepcfwin_out.rbin1[ibin], threepcfwin_out.reff1[ibin],
@@ -2271,18 +2282,18 @@ ThreePCFWindowMeasurements compute_3pcf_window(
 BispecMeasurements compute_bispec_for_los_choice(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
-  ParameterSet& params,
+  trv::scheme::ParameterSet& params,
   double* kbin,
   double alpha,
   double norm,
   int los_choice,
   bool save=false
 ) {
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Measuring bispectrum from data and random catalogues "
       "for the specified choice of line of sight.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -2290,14 +2301,14 @@ BispecMeasurements compute_bispec_for_los_choice(
 
   /// Set up/check input.
   if (
-    fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0))
+    std::fabs(wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0))
     < EPS_COUPLING_3PT
   ) {
-    if (currTask == 0) {
-      throw InvalidParameter(
+    if (trv::runtime::currTask == 0) {
+      throw trv::runtime::InvalidParameter(
         "[%s ERRO] Specified bispectrum multipole vanishes identically. "
         "Please ensure `wigner_3j(ell1, ell2, ELL, 0, 0, 0) != 0`.\n",
-        show_timestamp().c_str()
+        trv::runtime::show_timestamp().c_str()
       );
     }
   }
@@ -2326,9 +2337,10 @@ BispecMeasurements compute_bispec_for_los_choice(
 
   /* * Measurement ********************************************************* */
 
-  if (currTask == 0) {
-    printf(
-      "[%s STAT] Computing shot noise terms...\n", show_timestamp().c_str()
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] Computing shot noise terms...\n",
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -2343,7 +2355,7 @@ BispecMeasurements compute_bispec_for_los_choice(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
         PseudoDensityField<ParticleCatalogue> dn_LM00_for_sn(params);
           // dn_LM or dn_00
@@ -2427,7 +2439,7 @@ BispecMeasurements compute_bispec_for_los_choice(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
         PseudoDensityField<ParticleCatalogue> dn_LM00_for_sn(params);
           // dn_LM or dn_00
@@ -2481,11 +2493,11 @@ BispecMeasurements compute_bispec_for_los_choice(
         /// matching equation.  S_{ell1 ell2 L; i = k ≠ j}
         /// (i.e. ell1 == 0 case) has been shuffled (see above).
 
-        if (currTask == 0) {
-          printf(
+        if (trv::runtime::currTask == 0) {
+          std::printf(
             "[%s STAT] Shot noise terms (3 out of 4) at order "
             "(m1, m2, M) = (%d, %d, %d) computed.\n",
-            show_timestamp().c_str(),
+            trv::runtime::show_timestamp().c_str(),
             m1_, m2_, M_
           );
         }
@@ -2504,7 +2516,7 @@ BispecMeasurements compute_bispec_for_los_choice(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) > EPS_COUPLING_3PT) {
+        if (std::fabs(coupling) > EPS_COUPLING_3PT) {
           flag_vanishing = "false";
         }
       }
@@ -2512,7 +2524,7 @@ BispecMeasurements compute_bispec_for_los_choice(
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      gbytesMem += 2 * double(params.nmesh)
+      trv::runtime::gbytesMem += 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
 
       if (flag_vanishing == "false") {
@@ -2535,7 +2547,7 @@ BispecMeasurements compute_bispec_for_los_choice(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
         PseudoDensityField<ParticleCatalogue> N_LM00(params);  // N_LM or N_00
         if (los_choice == 2) {
@@ -2575,7 +2587,7 @@ BispecMeasurements compute_bispec_for_los_choice(
 
         /// Compute on mesh grids.
         fftw_complex* three_pt_holder = fftw_alloc_complex(params.nmesh);
-        gbytesMem += double(params.nmesh)
+        trv::runtime::gbytesMem += double(params.nmesh)
           * sizeof(fftw_complex) / BYTES_PER_GBYTES;
         for (int gid = 0; gid < params.nmesh; gid++) {
           three_pt_holder[gid][0] = 0.;
@@ -2614,7 +2626,7 @@ BispecMeasurements compute_bispec_for_los_choice(
                   j * dr[1] : (j - params.ngrid[1]) * dr[1];
                 rvec[2] = (k < params.ngrid[2]/2) ?
                   k * dr[2] : (k - params.ngrid[2]) * dr[2];
-                double rmag = sqrt(
+                double rmag = std::sqrt(
                   rvec[0] * rvec[0] + rvec[1] * rvec[1] + rvec[2] * rvec[2]
                 );
 
@@ -2631,44 +2643,44 @@ BispecMeasurements compute_bispec_for_los_choice(
             }
           }
 
-          S_ij_k *= vol_cell * pow(M_I, params.ell1 + params.ell2);
+          S_ij_k *= vol_cell * std::pow(M_I, params.ell1 + params.ell2);
 
           sn_save[i_kbin] += coupling * S_ij_k;
 
-          if (currTask == 0) {
-            printf(
+          if (trv::runtime::currTask == 0) {
+            std::printf(
               "[%s STAT] Shot noise term (last out of 4) at "
               "wavenumber k2 = %.4f and order (m1, m2, M) = (%d, %d, %d) "
               "computed.\n",
-              show_timestamp().c_str(),
+              trv::runtime::show_timestamp().c_str(),
               kmag_b, m1_, m2_, M_
             );
           }
         }
 
         fftw_free(three_pt_holder); three_pt_holder = NULL;
-        gbytesMem -= double(params.nmesh)
+        trv::runtime::gbytesMem -= double(params.nmesh)
           * sizeof(fftw_complex) / BYTES_PER_GBYTES;
       }
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
-      gbytesMem -= 2 * double(params.nmesh)
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
     }
   }
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] ... computed shot noise terms.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] Computing bispectrum terms...\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -2682,7 +2694,7 @@ BispecMeasurements compute_bispec_for_los_choice(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) > EPS_COUPLING_3PT) {
+        if (std::fabs(coupling) > EPS_COUPLING_3PT) {
           flag_vanishing = "false";
         }
       }
@@ -2693,7 +2705,7 @@ BispecMeasurements compute_bispec_for_los_choice(
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      gbytesMem += 2 * double(params.nmesh)
+      trv::runtime::gbytesMem += 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
 
       /// QUEST: This if-statement is redundant if early escape?
@@ -2715,7 +2727,7 @@ BispecMeasurements compute_bispec_for_los_choice(
           * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
           * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
           * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
         /// Compute G_LM in eq. (42) in the Paper.
         PseudoDensityField<ParticleCatalogue> dn_LM00_for_los1(params);
@@ -2806,11 +2818,11 @@ BispecMeasurements compute_bispec_for_los_choice(
 
           bk_save[i_kbin] += coupling * vol_cell * bk_sum;
 
-          if (currTask == 0) {
-            printf(
+          if (trv::runtime::currTask == 0) {
+            std::printf(
               "[%s STAT] Bispectrum term at wavenumber k2 = %.4f and order "
               "(m1, m2, M) = (%d, %d, %d) computed.\n",
-              show_timestamp().c_str(),
+              trv::runtime::show_timestamp().c_str(),
               kmag_b, m1_, m2_, M_
             );
           }
@@ -2819,15 +2831,15 @@ BispecMeasurements compute_bispec_for_los_choice(
 
       delete[] ylm_a; ylm_a = NULL;
       delete[] ylm_b; ylm_b = NULL;
-      gbytesMem -= 2 * double(params.nmesh)
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
     }
   }
 
-  if (currTask == 0) {
-    printf(
+  if (trv::runtime::currTask == 0) {
+    std::printf(
       "[%s STAT] ... computed bispectrum terms.\n",
-      show_timestamp().c_str()
+      trv::runtime::show_timestamp().c_str()
     );
   }
 
@@ -2857,7 +2869,7 @@ BispecMeasurements compute_bispec_for_los_choice(
     /// Set output path.
     char save_filepath[1024];
     if (params.form == "diag") {
-      sprintf(
+      std::sprintf(
         save_filepath, "%s/bk%d%d%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
@@ -2865,7 +2877,7 @@ BispecMeasurements compute_bispec_for_los_choice(
       );
     } else
     if (params.form == "full") {
-      sprintf(
+      std::sprintf(
         save_filepath, "%s/bk%d%d%d_kbin%02d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
@@ -2877,7 +2889,7 @@ BispecMeasurements compute_bispec_for_los_choice(
     /// Write output.
     FILE* save_fileptr = fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-      fprintf(
+      std::fprintf(
         save_fileptr,
         "%.9e \t %.9e \t %.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         bispec_out.kbin1[ibin], bispec_out.keff1[ibin],
@@ -2896,5 +2908,9 @@ BispecMeasurements compute_bispec_for_los_choice(
   return bispec_out;
 }
 #endif  // TRIUMVIRATE_USE_DISABLED_CODE
+
+}  // trv::algo::
+
+}  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_THREEPT_HPP_INCLUDED_

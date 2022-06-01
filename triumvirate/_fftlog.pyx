@@ -10,21 +10,21 @@ cimport numpy as np
 
 
 cdef extern from "include/fftlog.hpp":
-    int sj_transform_cpp "sj_transform" (
+    int sj_transform_cpp "trv::ops::sj_transform" (
         int ell, int m, int N, double* r, double* a, double* k, double* b
     )
 
-    int sj_transform_symm_biased_cpp "sj_transform_symm_biased" (
+    int sj_transform_symm_biased_cpp "trv::ops::sj_transform_symm_biased" (
         int ell, int i, int N, double* r, double* a, double* k, double* b
     )
 
     int transform_powspec_to_corrfunc_multipole_cpp \
-        "transform_powspec_to_corrfunc_multipole" (
+        "trv::ops::transform_powspec_to_corrfunc_multipole" (
             int ell, int N, double* k, double* pk, double* r, double* xi
         )
 
     int transform_corrfunc_to_powspec_multipole_cpp \
-        "transform_corrfunc_to_powspec_multipole" (
+        "trv::ops::transform_corrfunc_to_powspec_multipole" (
             int ell, int N, double* r, double* xi, double* k, double* pk
         )
 

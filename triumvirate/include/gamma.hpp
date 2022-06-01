@@ -7,9 +7,13 @@
 #ifndef TRIUMVIRATE_INCLUDE_GAMMA_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_GAMMA_HPP_INCLUDED_
 
+#include <cmath>
 #include <complex>
 
 #include "tools.hpp"
+
+namespace trv {
+namespace maths {
 
 /**
  * Evaluate the gamma function f@$ \Gamma(z) f@$ on the complex plane
@@ -38,7 +42,7 @@ std::complex<double> eval_gamma(std::complex<double> z) {
   /// Exploit Euler's reflection formula as the Lanczos approximation
   /// is only valid for Re{z} > 1/2.
   if (z.real() < 1./2) {
-    return M_PI / (sin(M_PI * z) * eval_gamma(1. - z));
+    return M_PI / (std::sin(M_PI * z) * eval_gamma(1. - z));
   }
 
   /// Evaluate the Lanczos approximation series.
@@ -50,7 +54,7 @@ std::complex<double> eval_gamma(std::complex<double> z) {
     term += coeff_lanczos[n] / (z + double(n));  // double-conversion essential
   }
 
-  return sqrt(2*M_PI) * pow(t, z + 1./2) * exp(-t) * term;
+  return std::sqrt(2*M_PI) * std::pow(t, z + 1./2) * std::exp(-t) * term;
 }
 
 /**
@@ -79,7 +83,7 @@ std::complex<double> eval_lngamma(std::complex<double> z) {
   };
 
   if (z.real() < 1./2) {
-    return log(M_PI) - log(sin(M_PI * z)) - eval_lngamma(1. - z);
+    return std::log(M_PI) - std::log(std::sin(M_PI * z)) - eval_lngamma(1. - z);
   }
 
   z -= 1;
@@ -89,9 +93,10 @@ std::complex<double> eval_lngamma(std::complex<double> z) {
   for (int n = 1; n < N; n++) {
     term += coeff_lanczos[n] / (z + double(n));
   }
-  std::complex<double> res = log(2*M_PI) / 2. + (z + 1./2) * log(t) - t + log(term);
+  std::complex<double> res = std::log(2*M_PI) / 2.
+    + (z + 1./2) * std::log(t) - t + std::log(term);
 
-  return log(2*M_PI) / 2. + (z + 1./2) * log(t) - t + log(term);
+  return std::log(2*M_PI) / 2. + (z + 1./2) * std::log(t) - t + std::log(term);
 }
 
 /**
@@ -112,10 +117,10 @@ std::complex<double> eval_gamma_ratio_asymp(
   std::complex<double> x_m = (mu + 1 - nu)/2.;
 
   std::complex<double> ln_ratio = - nu
-    + (x_p - 1./2) * log(x_p) - (x_m - 1./2) * log(x_m)
+    + (x_p - 1./2) * std::log(x_p) - (x_m - 1./2) * std::log(x_m)
     + 1./12 * (1./x_p - 1./x_m)
-    - 1./360 * (1./pow(x_p, 3) - 1./pow(x_m, 3))
-    + 1./1260 * (1./pow(x_p, 5) - 1./pow(x_m, 5));
+    - 1./360 * (1./std::pow(x_p, 3) - 1./std::pow(x_m, 3))
+    + 1./1260 * (1./std::pow(x_p, 5) - 1./std::pow(x_m, 5));
 
   return ln_ratio;
 }
@@ -139,5 +144,8 @@ void get_lngamma_components(
     *theta = lngamma.imag();
   }
 }
+
+}  // trv::maths::
+}  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_GAMMA_HPP_INCLUDED_

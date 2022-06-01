@@ -23,45 +23,45 @@ cdef extern from "include/particles.hpp":
 
 
 cdef extern from "include/twopt.hpp":
-    struct PowspecMeasurements:
+    struct PowspecMeasurements "trv::obj::PowspecMeasurements":
         vector[double] kbin
         vector[double] keff
         vector[int] nmode
         vector[np.complex128_t] pk_raw
         vector[np.complex128_t] pk_shot
 
-    struct CorrfuncMeasurements:
+    struct CorrfuncMeasurements "trv::obj::CorrfuncMeasurements":
         vector[double] rbin
         vector[double] reff
         vector[int] npair;
         vector[np.complex128_t] xi
 
-    struct PowspecWindowMeasurements:
+    struct PowspecWindowMeasurements "trv::obj::PowspecWindowMeasurements":
         vector[double] kbin
         vector[double] keff
         vector[int] nmode;
         vector[np.complex128_t] pk
 
-    struct CorrfuncWindowMeasurements:
+    struct CorrfuncWindowMeasurements "trv::obj::CorrfuncWindowMeasurements":
         vector[double] rbin
         vector[double] reff
         vector[int] npair;
         vector[np.complex128_t] xi
 
     double calc_powspec_normalisation_from_mesh_cpp \
-        "calc_powspec_normalisation_from_mesh" (
+        "trv::algo::calc_powspec_normalisation_from_mesh" (
             CppParticleCatalogue& catalogue,
             CppParameterSet& params,
             double alpha
         )
 
     double calc_powspec_normalisation_from_particles_cpp \
-        "calc_powspec_normalisation_from_particles" (
+        "trv::algo::calc_powspec_normalisation_from_particles" (
             CppParticleCatalogue& catalogue,
             double alpha
         )
 
-    PowspecMeasurements compute_powspec_cpp "compute_powspec" (
+    PowspecMeasurements compute_powspec_cpp "trv::algo::compute_powspec" (
         CppParticleCatalogue& particles_data,
         CppParticleCatalogue& particles_rand,
         LineOfSight* los_data,
@@ -73,7 +73,7 @@ cdef extern from "include/twopt.hpp":
         bool_t save
     )
 
-    CorrfuncMeasurements compute_corrfunc_cpp "compute_corrfunc" (
+    CorrfuncMeasurements compute_corrfunc_cpp "trv::algo::compute_corrfunc" (
         CppParticleCatalogue& particles_data,
         CppParticleCatalogue& particles_rand,
         LineOfSight* los_data,
@@ -85,24 +85,26 @@ cdef extern from "include/twopt.hpp":
         bool_t save
     )
 
-    PowspecMeasurements compute_powspec_in_box_cpp "compute_powspec_in_box" (
-        CppParticleCatalogue& particles_data,
-        CppParameterSet& params,
-        double* kbin,
-        double norm,
-        bool_t save
-    )
+    PowspecMeasurements compute_powspec_in_box_cpp \
+        "trv::algo::compute_powspec_in_box" (
+            CppParticleCatalogue& particles_data,
+            CppParameterSet& params,
+            double* kbin,
+            double norm,
+            bool_t save
+        )
 
-    CorrfuncMeasurements compute_corrfunc_in_box_cpp "compute_corrfunc_in_box" (
-        CppParticleCatalogue& particles_data,
-        CppParameterSet& params,
-        double* rbin,
-        double norm,
-        bool_t save
-    )
+    CorrfuncMeasurements compute_corrfunc_in_box_cpp \
+        "trv::algo::compute_corrfunc_in_box" (
+            CppParticleCatalogue& particles_data,
+            CppParameterSet& params,
+            double* rbin,
+            double norm,
+            bool_t save
+        )
 
     # PowspecWindowMeasurements compute_powspec_window_cpp \
-    #     "compute_powspec_window" (
+    #     "trv::algo::compute_powspec_window" (
     #         CppParticleCatalogue& particles_rand,
     #         LineOfSight* los_rand,
     #         CppParameterSet& params,
@@ -113,7 +115,7 @@ cdef extern from "include/twopt.hpp":
     #     )
 
     CorrfuncWindowMeasurements compute_corrfunc_window_cpp \
-        "compute_corrfunc_window" (
+        "trv::algo::compute_corrfunc_window" (
             CppParticleCatalogue& particles_rand,
             LineOfSight* los_rand,
             CppParameterSet& params,

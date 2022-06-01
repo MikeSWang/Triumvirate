@@ -10,23 +10,26 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <cstdio>
-#include <cstring>
 #include <fstream>
 #include <iterator>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include "common.hpp"
+#include "monitor.hpp"
 
 /// TODO: Remove in public releases.
 /// Set placeholder 'nz' default value.
 #ifdef DBGNZ
-  double NZ_DEFAULT = 5.e-4;
+  const double NZ_DEFAULT = 5.e-4;
 #else  // DBGNZ
-  double NZ_DEFAULT = 0.;
+  const double NZ_DEFAULT = 0.;
 #endif  // DBGNZ
+
+namespace trv {
+namespace obj {
 
 /**
  * Line-of-sight vector.
@@ -94,8 +97,9 @@ class ParticleCatalogue {
   void _initialise_particles(const int num) {
     /// Check the total number of particles.
     if (num <= 0) {
-      printf(
-        "[%s WARN] Number of particles is negative.\n", show_timestamp().c_str()
+      std::printf(
+        "[%s WARN] Number of particles is negative.\n",
+        trv::runtime::show_timestamp().c_str()
       );
       return;
     }
@@ -106,7 +110,7 @@ class ParticleCatalogue {
     this->pdata = new ParticleData[this->ntotal];
 
     /// Determine memory usage.
-    gbytesMem += double(this->ntotal)
+    trv::runtime::gbytesMem += double(this->ntotal)
       * sizeof(struct ParticleData) / BYTES_PER_GBYTES;
   }
 
@@ -117,7 +121,7 @@ class ParticleCatalogue {
     /// Free particle usage.
     if (this->pdata != NULL) {
       delete[] this->pdata; this->pdata = NULL;
-      gbytesMem -= double(this->ntotal)
+      trv::runtime::gbytesMem -= double(this->ntotal)
         * sizeof(struct ParticleData) / BYTES_PER_GBYTES;
     }
   }
@@ -150,9 +154,9 @@ class ParticleCatalogue {
     std::vector<std::string> names_ordered = {"x", "y", "z", "nz", "ws", "wc"};
     std::vector<int> name_indices(names_ordered.size(), -1);
     for (int idx_name = 0; idx_name < names_ordered.size(); idx_name++) {
-      ptrdiff_t col_idx = std::distance(
+      std::ptrdiff_t col_idx = std::distance(
         fields.begin(),
-        find(fields.begin(), fields.end(), names_ordered[idx_name])
+        std::find(fields.begin(), fields.end(), names_ordered[idx_name])
       );
       if (0 <= col_idx && col_idx < fields.size()) {
         name_indices[idx_name] = col_idx;
@@ -160,11 +164,11 @@ class ParticleCatalogue {
     }
 
     if (name_indices[3] == -1) {
-      if (currTask == 0) {
-        printf(
+      if (trv::runtime::currTask == 0) {
+        std::printf(
           "[%s WARN] Catalogue 'nz' field is unavailable, "
           "which may raise errors in some computations (source=%s).\n",
-          show_timestamp().c_str(),
+          trv::runtime::show_timestamp().c_str(),
           this->source.c_str()
         );
       }
@@ -177,9 +181,10 @@ class ParticleCatalogue {
 
     if (fin.fail()) {
       fin.close();
-      if (currTask == 0) {
-        throw IOError(
-          "[%s ERRO] Failed to open file '%s'.\n", show_timestamp().c_str(),
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::IOError(
+          "[%s ERRO] Failed to open file '%s'.\n",
+          trv::runtime::show_timestamp().c_str(),
           this->source.c_str()
         );
       }
@@ -264,11 +269,11 @@ class ParticleCatalogue {
     /// Calculate extreme particle positions.
     this->_calc_pos_min_and_max(true);
 
-    if (currTask == 0) {
-      printf(
+    if (trv::runtime::currTask == 0) {
+      std::printf(
         "[%s INFO] Catalogue loaded: %d particles with "
         "total systematic weights %.3f (source=%s).\n",
-        show_timestamp().c_str(),
+        trv::runtime::show_timestamp().c_str(),
         this->ntotal, this->wtotal, this->source.c_str()
       );
     }
@@ -322,11 +327,11 @@ class ParticleCatalogue {
     /// Calculate extreme particle positions.
     this->_calc_pos_min_and_max(true);
 
-    if (currTask == 0) {
-      printf(
+    if (trv::runtime::currTask == 0) {
+      std::printf(
         "[%s INFO] Catalogue constructed: %d particles with "
         "total systematic weights %.3f (source=%s).\n",
-        show_timestamp().c_str(),
+        trv::runtime::show_timestamp().c_str(),
         this->ntotal, this->wtotal, this->source.c_str()
       );
     }
@@ -339,10 +344,10 @@ class ParticleCatalogue {
    */
   void _calc_weighted_total() {
     if (this->pdata == NULL) {
-      if (currTask == 0) {
-        throw InvalidDataOps(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
@@ -362,10 +367,10 @@ class ParticleCatalogue {
    */
   void _calc_pos_min_and_max(bool verbose=false) {
     if (this->pdata == NULL) {
-      if (currTask == 0) {
-        throw InvalidDataOps(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
@@ -395,12 +400,12 @@ class ParticleCatalogue {
       this->pos_max[iaxis] = max[iaxis];
     }
 
-    if (currTask == 0 && verbose) {
-      printf(
+    if (trv::runtime::currTask == 0 && verbose) {
+      std::printf(
         "[%s INFO] Extents of particle coordinates: "
         "{'x': (%.3f, %.3f), 'y': (%.3f, %.3f), 'z': (%.3f, %.3f)} "
         "(source=%s).\n",
-        show_timestamp().c_str(),
+        trv::runtime::show_timestamp().c_str(),
         this->pos_min[0], this->pos_max[0],
         this->pos_min[1], this->pos_max[1],
         this->pos_min[2], this->pos_max[2],
@@ -416,10 +421,10 @@ class ParticleCatalogue {
    */
   void offset_coords(const double dpos[3]) {
     if (this->pdata == NULL) {
-      if (currTask == 0) {
-        throw InvalidDataOps(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
@@ -443,10 +448,10 @@ class ParticleCatalogue {
    */
   void offset_coords_for_centring(const double boxsize[3]) {
     if (this->pdata == NULL) {
-      if (currTask == 0) {
-        throw InvalidDataOps(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
@@ -563,7 +568,7 @@ class ParticleCatalogue {
    *
    * @returns shotnoise Power spectrum shot noise.
    *
-   * @see Pseudo2ptStats::calc_ylm_wgtd_shotnoise_for_powspec(
+   * @see trv::obj::Pseudo2ptStats::calc_ylm_wgtd_shotnoise_for_powspec(
    *        ParticleContainer&, ParticleContainer&,
    *        LineOfSight*, LineOfSight*,
    *        double, int, int
@@ -571,17 +576,18 @@ class ParticleCatalogue {
    */
   double _calc_powspec_shotnoise() {
     if (this->pdata == NULL) {
-      if (currTask == 0) {
-        throw InvalidDataOps(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
 
     double shotnoise = 0.;
     for (int pid = 0; pid < this->ntotal; pid++) {
-      shotnoise += pow(this->pdata[pid].ws, 2) * pow(this->pdata[pid].wc, 2);
+      shotnoise += std::pow(this->pdata[pid].ws, 2)
+        * std::pow(this->pdata[pid].wc, 2);
     }
 
     return shotnoise;
@@ -592,14 +598,15 @@ class ParticleCatalogue {
    *
    * @returns norm_factor Power spectrum normalisation factor.
    *
-   * @see PseudoDensityField::_calc_wgt_sq_volume_norm(ParticleContainer&)
+   * @see trv::obj::PseudoDensityField::
+   *      _calc_wgt_sq_volume_norm(ParticleContainer&)
    */
   double _calc_powspec_normalisation() {
     if (this->pdata == NULL) {
-      if (currTask == 0) {
-        throw InvalidDataOps(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
@@ -607,15 +614,15 @@ class ParticleCatalogue {
     double vol_eff_inv = 0.;  // I_2
     for (int pid = 0; pid < this->ntotal; pid++) {
       vol_eff_inv += this->pdata[pid].nz
-        * this->pdata[pid].ws * pow(this->pdata[pid].wc, 2);
+        * this->pdata[pid].ws * std::pow(this->pdata[pid].wc, 2);
     }
 
     if (vol_eff_inv == 0.) {
-      if (currTask == 0) {
-        throw InvalidDataOps(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidData(
           "[%s ERRO] Particle 'nz' values appear to be all zeros. "
           "Check the input catalogue contains valid 'nz' field.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
@@ -630,30 +637,31 @@ class ParticleCatalogue {
    *
    * @returns norm_factor Bispectrum normalisation factor.
    *
-   * @see PseudoDensityField::_calc_wgt_cu_volume_norm(ParticleContainer&)
+   * @see trv::obj::PseudoDensityField::
+   *      _calc_wgt_cu_volume_norm(ParticleContainer&)
    */
   double _calc_bispec_normalisation() {
     if (this->pdata == NULL) {
-      if (currTask == 0) {
-        throw InvalidDataOps(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
 
     double vol_sq_eff_inv = 0.;  // I_3
     for (int pid = 0; pid < this->ntotal; pid++) {
-      vol_sq_eff_inv += pow(this->pdata[pid].nz, 2)
-        * this->pdata[pid].ws * pow(this->pdata[pid].wc, 3);
+      vol_sq_eff_inv += std::pow(this->pdata[pid].nz, 2)
+        * this->pdata[pid].ws * std::pow(this->pdata[pid].wc, 3);
     }
 
     if (vol_sq_eff_inv == 0.) {
-      if (currTask == 0) {
-        throw InvalidDataOps(
+      if (trv::runtime::currTask == 0) {
+        throw trv::runtime::InvalidData(
           "[%s ERRO] Particle 'nz' values appear to be all zeros. "
           "Check the input catalogue contains valid 'nz' field.\n",
-          show_timestamp().c_str()
+          trv::runtime::show_timestamp().c_str()
         );
       }
     }
@@ -666,5 +674,8 @@ class ParticleCatalogue {
  private:
   std::string source;
 };
+
+}  // trv::obj::
+}  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_PARTICLES_HPP_INCLUDED_

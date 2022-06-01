@@ -2,7 +2,7 @@ from libcpp.string cimport string
 
 
 cdef extern from "include/parameters.hpp":
-    cppclass CppParameterSet "ParameterSet":
+    cppclass CppParameterSet "trv::scheme::ParameterSet":
         string catalogue_dir
         string measurement_dir
         string data_catalogue_file

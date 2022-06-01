@@ -17,6 +17,14 @@
 
 const std::complex<double> M_I(0., 1.);  ///< imaginary unit
 
+namespace trv {
+
+/// //////////////////////////////////////////////////////////////////////
+/// Mathematics
+/// //////////////////////////////////////////////////////////////////////
+
+namespace maths {
+
 /**
  * Evaluate a complex number f@$ r e^{i \theta} f@$ in the polar form.
  *
@@ -25,8 +33,16 @@ const std::complex<double> M_I(0., 1.);  ///< imaginary unit
  * @returns Value of the complex number.
  */
 std::complex<double> eval_polar(double r, double theta) {
-  return r * (cos(theta) + M_I * sin(theta));
+  return r * (std::cos(theta) + M_I * std::sin(theta));
 }
+
+}  // trv::maths::
+
+namespace runtime {
+
+/// //////////////////////////////////////////////////////////////////////
+/// Arrays
+/// //////////////////////////////////////////////////////////////////////
 
 /**
  * Exception raised when an extrapolation error occurs.
@@ -39,11 +55,11 @@ class ExtrapError: public std::runtime_error {
   ExtrapError(const char* fmt_string, ...): std::runtime_error(
     "Extrapolation error."  // default error message; essential
   ) {
-    va_list args;
+    std::va_list args;
     char err_mesg_buf[4096];
 
     va_start(args, fmt_string);
-    vsprintf(err_mesg_buf, fmt_string, args);
+    std::vsprintf(err_mesg_buf, fmt_string, args);
     va_end(args);
 
     this->err_mesg = std::string(err_mesg_buf);
@@ -54,6 +70,10 @@ class ExtrapError: public std::runtime_error {
   }
 };
 
+}  // trv::runtime::
+
+namespace ops {
+
 /**
  * Extrapolate sample series exponentially (i.e. log-linearly).
  *
@@ -63,17 +83,17 @@ class ExtrapError: public std::runtime_error {
  * @param[out] a_ext Extrapolated sample series.
  */
 void extrap_log_linear(double* a, int N, int N_ext, double* a_ext) {
-  double dlna_left = log(a[1] / a[0]);
+  double dlna_left = std::log(a[1] / a[0]);
   if (std::isnan(dlna_left)) {
-    throw ExtrapError(
+    throw trv::runtime::ExtrapError(
       "[ERRO] Sign change or zero detected in log-linear extrapolation "
       "at the lower end."
     );
   }
 
-  double dlna_right = log(a[N - 1] / a[N - 2]);
+  double dlna_right = std::log(a[N - 1] / a[N - 2]);
   if (std::isnan(dlna_left)) {
-    throw ExtrapError(
+    throw trv::runtime::ExtrapError(
       "[ERRO] Sign change or zero detected in log-linear extrapolation "
       "at the upper end."
     );
@@ -82,7 +102,7 @@ void extrap_log_linear(double* a, int N, int N_ext, double* a_ext) {
   /// Extrapolate the lower end.
   if (a[0] > 0) {
     for (int i = 0; i < N_ext; i++) {
-      a_ext[i] = a[0] * exp((i - N_ext) * dlna_left);
+      a_ext[i] = a[0] * std::exp((i - N_ext) * dlna_left);
     }
   } else {
     for (int i = 0; i < N_ext; i++) {
@@ -98,7 +118,7 @@ void extrap_log_linear(double* a, int N, int N_ext, double* a_ext) {
   /// Extrapolate the upper end.
   if (a[N - 1] > 0) {
     for (int i = N_ext + N; i < N + 2*N_ext; i++) {
-      a_ext[i] = a[N - 1] * exp((i - N_ext - (N - 1)) * dlna_right);
+      a_ext[i] = a[N - 1] * std::exp((i - N_ext - (N - 1)) * dlna_right);
     }
   } else {
     for (int i = N_ext + N; i < N + 2*N_ext; i++) {
@@ -123,17 +143,17 @@ void extrap_log_bilinear(
 ) {
   double dlna_left, dlna_right;
   for (int i = N_ext; i < N_ext + N; i++) {
-    dlna_left = log(a[i - N_ext][1] / a[i - N_ext][0]);
+    dlna_left = std::log(a[i - N_ext][1] / a[i - N_ext][0]);
     if (std::isnan(dlna_left)) {
-      throw ExtrapError(
+      throw trv::runtime::ExtrapError(
         "[ERRO] Sign change or zero detected in log-linear extrapolation "
         "at the left end."
       );
     }
 
-    dlna_right = log(a[i - N_ext][N - 1] / a[i - N_ext][N - 2]);
+    dlna_right = std::log(a[i - N_ext][N - 1] / a[i - N_ext][N - 2]);
     if (std::isnan(dlna_right)) {
-      throw ExtrapError(
+      throw trv::runtime::ExtrapError(
         "[ERRO] Sign change or zero detected in log-linear extrapolation "
         "at the right end."
       );
@@ -142,7 +162,7 @@ void extrap_log_bilinear(
     /// Extrapolate the middle left edge.
     for (int j = 0; j < N_ext; j++) {
       if (a[i - N_ext][0] > 0) {
-        a_ext[i][j] = a[i - N_ext][0] * exp((j - N_ext) * dlna_left);
+        a_ext[i][j] = a[i - N_ext][0] * std::exp((j - N_ext) * dlna_left);
       } else {
         a_ext[i][j] = 0.;
       }
@@ -156,7 +176,7 @@ void extrap_log_bilinear(
     /// Extrapolate the middle right edge.
     for (int j = N_ext + N; j < N + 2*N_ext; j++) {
       if (a[i - N_ext][N - 1] > 0) {
-        a_ext[i][j] = a[i - N_ext][N - 1] * exp(
+        a_ext[i][j] = a[i - N_ext][N - 1] * std::exp(
           (j - N_ext - (N - 1)) * dlna_right
         );
       } else {
@@ -167,17 +187,17 @@ void extrap_log_bilinear(
 
   double dlna_up, dlna_down;
   for (int j = 0; j < N + 2*N_ext; j++) {
-    dlna_up = log(a_ext[N_ext + 1][j] / a_ext[N_ext][j]);
+    dlna_up = std::log(a_ext[N_ext + 1][j] / a_ext[N_ext][j]);
     if (std::isnan(dlna_up)) {
-      throw ExtrapError(
+      throw trv::runtime::ExtrapError(
         "[ERRO] Sign change or zero detected in log-linear extrapolation "
         "at the top end."
       );
     }
 
-    dlna_down = log(a_ext[N_ext + N - 1][j] / a_ext[N_ext + N - 2][j]);
+    dlna_down = std::log(a_ext[N_ext + N - 1][j] / a_ext[N_ext + N - 2][j]);
     if (std::isnan(dlna_down)) {
-      throw ExtrapError(
+      throw trv::runtime::ExtrapError(
         "[ERRO] Sign change or zero detected in log-linear extrapolation "
         "at the bottom end."
       );
@@ -186,7 +206,7 @@ void extrap_log_bilinear(
     /// Extrapolate the upper edge.
     for (int i = 0; i < N_ext; i++) {
       if (a_ext[N_ext][j] > 0) {
-        a_ext[i][j] = a_ext[N_ext][j] * exp((i - N_ext) * dlna_up);
+        a_ext[i][j] = a_ext[N_ext][j] * std::exp((i - N_ext) * dlna_up);
       } else {
         a_ext[i][j] = 0.;
       }
@@ -195,7 +215,7 @@ void extrap_log_bilinear(
     /// Extrapolate the lower edge.
     for (int i = N_ext + N; i < N + 2*N_ext; i++) {
       if (a_ext[N_ext + N - 1][j] > 0) {
-        a_ext[i][j] = a_ext[N_ext + N - 1][j] * exp(
+        a_ext[i][j] = a_ext[N_ext + N - 1][j] * std::exp(
           (i - N_ext - (N - 1)) * dlna_down
         );
       } else {
@@ -293,6 +313,14 @@ void extrap_zeros_2d(
   }
 }
 
+}  // trv::ops::
+
+namespace scheme {
+
+/// //////////////////////////////////////////////////////////////////////
+/// Misc
+/// //////////////////////////////////////////////////////////////////////
+
 /**
  * Binning scheme.
  *
@@ -308,7 +336,7 @@ class BinScheme {
    * @param[in] params Parameter set.
    * @param[out] kbin_out Wavenumber bins.
    */
-  static void set_kbin(ParameterSet& params, double* kbin_out) {
+  static void set_kbin(trv::scheme::ParameterSet& params, double* kbin_out) {
     double dk = (params.kmax - params.kmin) / double(params.num_kbin - 1);
 
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
@@ -322,7 +350,7 @@ class BinScheme {
    * @param[in] params Parameter set.
    * @param[out] rbin_out Separation bins.
    */
-  static void set_rbin(ParameterSet& params, double* rbin_out) {
+  static void set_rbin(trv::scheme::ParameterSet& params, double* rbin_out) {
     if (params.binning == "custom") {
       /// RFE: Insert customised binning code here.
     } else
@@ -336,11 +364,11 @@ class BinScheme {
 
       double rmin = 10. * nbin_custom;
 
-      double dlnr = (log(params.rmax) - log(rmin))
+      double dlnr = (std::log(params.rmax) - std::log(rmin))
         / double((params.num_rbin - nbin_custom) - 1);
 
       for (int ibin = nbin_custom; ibin < params.num_rbin; ibin++) {
-        rbin_out[ibin] = rmin * exp(dlnr * (ibin - nbin_custom));
+        rbin_out[ibin] = rmin * std::exp(dlnr * (ibin - nbin_custom));
       }
     } else
     if (params.binning == "linpad") {
@@ -369,11 +397,11 @@ class BinScheme {
         rmin = params.rmin;
       }
 
-      double dlnr = (log(params.rmax) - log(rmin))
+      double dlnr = (std::log(params.rmax) - std::log(rmin))
         / double(params.num_rbin - 1);
 
       for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-        rbin_out[ibin] = rmin * exp(dlnr * ibin);
+        rbin_out[ibin] = rmin * std::exp(dlnr * ibin);
       }
     } else {  // by default ``params.binning == "lin"``
       double dr = (params.rmax - params.rmin) / double(params.num_rbin - 1);
@@ -384,5 +412,9 @@ class BinScheme {
     }
   }
 };
+
+}  // trv::scheme::
+
+}  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_TOOLS_HPP_INCLUDED_
