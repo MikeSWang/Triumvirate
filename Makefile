@@ -50,7 +50,7 @@ test: pytest cpptest
 
 pytest:
 
-cpptest: test_common test_parameters test_bessel test_harmonic test_tools \
+cpptest: test_monitor test_parameters test_bessel test_harmonic test_tools \
          test_particles test_field test_twopt test_threept \
 				 test_fftlog
 
@@ -63,9 +63,6 @@ measurements: triumvirate/src/measurements.cpp
 test_bessel: triumvirate/tests/test_bessel.cpp
 	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_common: triumvirate/tests/test_common.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
-
 test_fftlog: triumvirate/tests/test_fftlog.cpp
 	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
 
@@ -73,6 +70,9 @@ test_field: triumvirate/tests/test_field.cpp
 	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
 
 test_harmonic: triumvirate/tests/test_harmonic.cpp
+	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+
+test_monitor: triumvirate/tests/test_monitor.cpp
 	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
 
 test_parameters: triumvirate/tests/test_parameters.cpp
