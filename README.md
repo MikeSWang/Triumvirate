@@ -1,4 +1,4 @@
-![Triumvirate](https://github.com/MikeSWang/Triumvirate/raw/dev/docs/source/_static/Triumvirate.png)
+![Triumvirate](https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/Triumvirate.png)
 
 [![arXiv eprint](
 https://img.shields.io/badge/arXiv-yymm.nnnnn-important
@@ -10,11 +10,11 @@ https://img.shields.io/github/v/release/MikeSWang/Triumvirate?label=release
 https://readthedocs.org/projects/triumvirate/badge/?version=latest
 )](https://triumvirate.readthedocs.io/en/latest)
 [![Build status](
-https://travis-ci.com/MikeSWang/Triumvirate.svg?branch=dev
+https://travis-ci.com/MikeSWang/Triumvirate.svg?branch=main
 )](https://travis-ci.com/MikeSWang/Triumvirate)
 [![Licence](
 https://img.shields.io/badge/licence-GPLv3-informational
-)](https://github.com/mikeswang/Triumvirate/tree/dev/LICENCE)
+)](https://github.com/mikeswang/Triumvirate/tree/main/LICENCE)
 
 
 # Three-Point Clustering Correlators in Large-Scale Structure Analysis
@@ -39,11 +39,11 @@ make all
 If you wish to use the Python (or C++) package only, replace `make all`
 with `make pyinstall` (or `make cppinstall`).  Depending on your
 machine environment, certain parts of the [``Makefile``](
-https://github.com/MikeSWang/Triumvirate/tree/dev/Makefile)
+https://github.com/MikeSWang/Triumvirate/tree/main/Makefile)
 may need replacing (e.g. the C++ compiler).
 
 See Python scripts/notebooks in
-[``examples/``](https://github.com/MikeSWang/Triumvirate/tree/dev/examples)
+[``examples/``](https://github.com/MikeSWang/Triumvirate/tree/main/examples)
 for simple examples of how to perform basic tasks.  For API documentation,
 you may need to build it yourself using ``sphinx-autodoc``.
 
@@ -64,7 +64,7 @@ in touch.
 Comprehensive documentation can be found at
 [mikeswang.github.io/Triumvirate](https://mikeswang.github.io/Triumvirate).
 Tutorials and scripts can also be found in
-[``examples/``](https://github.com/MikeSWang/Triumvirate/tree/dev/examples).
+[``examples/``](https://github.com/MikeSWang/Triumvirate/tree/main/examples).
 
 
 ## Attribution
