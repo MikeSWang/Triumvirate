@@ -1260,7 +1260,7 @@ class Pseudo2ptStats {
               field_b[idx_grid][0], field_b[idx_grid][1]
             );
 
-            std::complex<double> mode_power = delta_a * conj(delta_b);
+            std::complex<double> mode_power = delta_a * std::conj(delta_b);
             std::complex<double> mode_sn =
               shotnoise_amp * calc_shotnoise_scale_dependence(kv);
 
@@ -1395,7 +1395,7 @@ class Pseudo2ptStats {
             field_b[idx_grid][0], field_b[idx_grid][1]
           );
 
-          std::complex<double> mode_power = delta_a * conj(delta_b);
+          std::complex<double> mode_power = delta_a * std::conj(delta_b);
 
           /// Subtract shot-noise component.
           mode_power -= shotnoise_amp * calc_shotnoise_scale_dependence(kv);
@@ -1692,7 +1692,7 @@ class Pseudo2ptStats {
             field_b[idx_grid][0], field_b[idx_grid][1]
           );
 
-          std::complex<double> mode_power = delta_a * conj(delta_b);
+          std::complex<double> mode_power = delta_a * std::conj(delta_b);
 
           /// Subtract shot noise component.
           mode_power -= shotnoise_amp * calc_shotnoise_scale_dependence(kv);
@@ -1875,7 +1875,7 @@ class Pseudo2ptStats {
             field_b[idx_grid][0], field_b[idx_grid][1]
           );
 
-          std::complex<double> mode_power = delta_a * conj(delta_b);
+          std::complex<double> mode_power = delta_a * std::conj(delta_b);
 
           /// Subtract shot noise component.
           mode_power -= shotnoise_amp * calc_shotnoise_scale_dependence(kv);
