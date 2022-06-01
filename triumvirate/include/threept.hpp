@@ -26,7 +26,7 @@ const double EPS_COUPLING_3PT = 1.e-10;  /**< zero-tolerance for three-point
 
 namespace trv {
 
-namespace obj {
+namespace algo {
 
 /**
  * Bispectrum measurements.
@@ -80,10 +80,6 @@ struct ThreePCFWindowMeasurements {
                                                        function window
                                                        shot noise */
 };
-
-}  // trv::obj::
-
-namespace algo {
 
 /**
  * Calculate mesh-based bispectrum normalisation.
