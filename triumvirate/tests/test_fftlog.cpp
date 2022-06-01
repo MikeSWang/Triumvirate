@@ -14,7 +14,7 @@ int main(int argc, char const *argv[]) {
 
   fin.open(test_fname, std::ios::in);
   int lineno = 0;
-  while (getline(fin, fline)) {lineno++;}
+  while (std::getline(fin, fline)) {lineno++;}
   fin.close();
 
   int Nk = lineno;
@@ -22,7 +22,7 @@ int main(int argc, char const *argv[]) {
 
   fin.open(test_fname, std::ios::in);
   lineno = 0;
-  while (getline(fin, fline)) {
+  while (std::getline(fin, fline)) {
     sscanf(
       fline.data(), "%lf %lf", &k[lineno], &pk[lineno]
     );
@@ -38,13 +38,13 @@ int main(int argc, char const *argv[]) {
 
   /// Save test results.
   char test_fname_out[]= "triumvirate/tests/test_output/xi0.dat";
-  FILE *test_file_out = fopen(test_fname_out, "w");
+  FILE *test_file_out = std::fopen(test_fname_out, "w");
 
   for (int i = 0; i < Nk; i++) {
     std::fprintf(test_file_out, "%.9e %.9e\n", r[i], xi[i]);
   }
 
-  fclose(test_file_out);
+  std::fclose(test_file_out);
 
   return 0;
 }

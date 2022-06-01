@@ -632,7 +632,7 @@ BispecMeasurements compute_bispec(
     }
 
     /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
         save_fileptr,
@@ -644,7 +644,7 @@ BispecMeasurements compute_bispec(
         bispec_out.bk_shot[ibin].real(), bispec_out.bk_shot[ibin].imag()
       );
     }
-    fclose(save_fileptr);
+    std::fclose(save_fileptr);
   }
 
   delete[] ntriag_save; delete[] k1_save; delete[] k2_save;
@@ -1108,7 +1108,7 @@ BispecMeasurements compute_bispec_in_box(
     }
 
     /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
         save_fileptr,
@@ -1121,7 +1121,7 @@ BispecMeasurements compute_bispec_in_box(
         bispec_out.bk_shot[ibin].real(), bispec_out.bk_shot[ibin].imag()
       );
     }
-    fclose(save_fileptr);
+    std::fclose(save_fileptr);
   }
 
   delete[] ntriag_save; delete[] k1_save; delete[] k2_save;
@@ -1495,7 +1495,7 @@ ThreePCFMeasurements compute_3pcf(
     }
 
     /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
         save_fileptr,
@@ -1507,7 +1507,7 @@ ThreePCFMeasurements compute_3pcf(
         threepcf_out.zeta_shot[ibin].real(), threepcf_out.zeta_shot[ibin].imag()
       );
     }
-    fclose(save_fileptr);
+    std::fclose(save_fileptr);
   }
 
   delete[] ntriag_save; delete[] r1_save; delete[] r2_save;
@@ -1838,7 +1838,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
     }
 
     /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
         save_fileptr,
@@ -1850,7 +1850,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
         threepcf_out.zeta_shot[ibin].real(), threepcf_out.zeta_shot[ibin].imag()
       );
     }
-    fclose(save_fileptr);
+    std::fclose(save_fileptr);
   }
 
   delete[] ntriag_save; delete[] r1_save; delete[] r2_save;
@@ -2234,7 +2234,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
     }
 
     /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
         save_fileptr,
@@ -2248,7 +2248,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
         threepcfwin_out.zeta_shot[ibin].imag()
       );
     }
-    fclose(save_fileptr);
+    std::fclose(save_fileptr);
   }
 
   delete[] ntriag_save; delete[] r1_save; delete[] r2_save;
@@ -2883,7 +2883,7 @@ BispecMeasurements compute_bispec_for_los_choice(
     }
 
     /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
         save_fileptr,
@@ -2895,7 +2895,7 @@ BispecMeasurements compute_bispec_for_los_choice(
         bispec_out.bk_shot[ibin].real(), bispec_out.bk_shot[ibin].imag()
       );
     }
-    fclose(save_fileptr);
+    std::fclose(save_fileptr);
   }
 
   delete[] ntriag_save; delete[] k1_save; delete[] k2_save;

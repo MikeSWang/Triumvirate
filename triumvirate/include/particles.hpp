@@ -191,7 +191,7 @@ class ParticleCatalogue {
     }
 
     std::string str_line;
-    while (getline(fin, str_line)) {
+    while (std::getline(fin, str_line)) {
       /// Terminate at the end of file.
       if (!fin) {break;}
 
@@ -213,7 +213,7 @@ class ParticleCatalogue {
 
     double nz, ws, wc;
     double entry;
-    while (getline(fin, str_line)) {
+    while (std::getline(fin, str_line)) {
       /// Terminate at the end of file.
       if (!fin) {break;}
 
