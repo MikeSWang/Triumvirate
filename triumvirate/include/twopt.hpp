@@ -252,7 +252,7 @@ PowspecMeasurements compute_powspec(
     );
 
     /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
         save_fileptr,
@@ -263,7 +263,7 @@ PowspecMeasurements compute_powspec(
         powspec_out.pk_shot[ibin].real(), powspec_out.pk_shot[ibin].imag()
       );
     }
-    fclose(save_fileptr);
+    std::fclose(save_fileptr);
   }
 
   delete[] nmode_save; delete[] k_save; delete[] pk_save; delete[] sn_save;
@@ -397,7 +397,7 @@ CorrfuncMeasurements compute_corrfunc(
     );
 
     /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
@@ -406,7 +406,7 @@ CorrfuncMeasurements compute_corrfunc(
         corrfunc_out.xi[ibin].real(), corrfunc_out.xi[ibin].imag()
       );
     }
-    fclose(save_fileptr);
+    std::fclose(save_fileptr);
   }
 
   delete[] npair_save; delete[] r_save; delete[] xi_save;
@@ -515,7 +515,7 @@ PowspecMeasurements compute_powspec_in_box(
     );
 
     /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
         save_fileptr,
@@ -526,7 +526,7 @@ PowspecMeasurements compute_powspec_in_box(
         powspec_out.pk_shot[ibin].real(), powspec_out.pk_shot[ibin].imag()
       );
     }
-    fclose(save_fileptr);
+    std::fclose(save_fileptr);
   }
 
   delete[] nmode_save; delete[] k_save; delete[] pk_save; delete[] sn_save;
@@ -625,7 +625,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     );
 
     /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
@@ -634,7 +634,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
         corrfunc_out.xi[ibin].real(), corrfunc_out.xi[ibin].imag()
       );
     }
-    fclose(save_fileptr);
+    std::fclose(save_fileptr);
   }
 
   delete[] npair_save; delete[] r_save; delete[] xi_save;
@@ -734,7 +734,7 @@ PowspecWindowMeasurements compute_powspec_window(
     );
 
     /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
@@ -743,7 +743,7 @@ PowspecWindowMeasurements compute_powspec_window(
         powwin_out.pk[ibin].real(), powwin_out.pk[ibin].imag()
       );
     }
-    fclose(save_fileptr);
+    std::fclose(save_fileptr);
   }
 
   delete[] nmode_save; delete[] k_save; delete[] pk_save;
@@ -874,7 +874,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     );
 
     /// Write output.
-    FILE* save_fileptr = fopen(save_filepath, "w");
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
@@ -883,7 +883,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
         corrfwin_out.xi[ibin].real(), corrfwin_out.xi[ibin].imag()
       );
     }
-    fclose(save_fileptr);
+    std::fclose(save_fileptr);
   }
 
   delete[] npair_save; delete[] r_save; delete[] xi_save;

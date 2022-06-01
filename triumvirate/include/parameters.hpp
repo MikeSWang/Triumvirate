@@ -112,7 +112,7 @@ class ParameterSet {
     /// Extract parameters from file contents by line parsing.
     std::string str_line;  // string representing the line being parsed
     char str_dummy[1024];  // string placeholder for irrelevant contents
-    while (getline(fin, str_line)) {
+    while (std::getline(fin, str_line)) {
       /// Check if the line is in the correct format for parameter
       /// parsing; process if yes, otherwise move on to the next line.
       if (
@@ -355,8 +355,8 @@ class ParameterSet {
     );
 
     /// Create output file.
-    FILE* used_param_fileptr;
-    if (!(used_param_fileptr = fopen(filepath, "w"))) {
+    std::FILE* used_param_fileptr;
+    if (!(used_param_fileptr = std::fopen(filepath, "w"))) {
       if (trv::runtime::currTask == 0) {
         throw trv::runtime::IOError(
           "[%s ERRO] Non-existent or unwritable output directory: '%s'.\n",
@@ -443,7 +443,7 @@ class ParameterSet {
     std::fprintf(used_param_fileptr, "num_rbin = %d\n", this->num_rbin);
     std::fprintf(used_param_fileptr, "ith_rbin = %d\n", this->ith_rbin);
 
-    fclose(used_param_fileptr);
+    std::fclose(used_param_fileptr);
 
     return 0;
   }
