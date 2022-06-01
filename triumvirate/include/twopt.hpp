@@ -20,7 +20,6 @@ const double EPS_COUPLING_2PT = 1.e-10;  /**< zero-tolerance for two-point
                                          // CAVEAT: discretionary choice
 
 namespace trv {
-
 namespace algo {
 
 /**
@@ -892,7 +891,6 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
 }
 
 }  // trv::algo::
-
 }  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_TWOPT_HPP_INCLUDED_

@@ -25,7 +25,6 @@ const double EPS_COUPLING_3PT = 1.e-10;  /**< zero-tolerance for three-point
                                          // CAVEAT: discretionary choice
 
 namespace trv {
-
 namespace algo {
 
 /**
@@ -2906,7 +2905,6 @@ BispecMeasurements compute_bispec_for_los_choice(
 #endif  // TRIUMVIRATE_USE_DISABLED_CODE
 
 }  // trv::algo::
-
 }  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_THREEPT_HPP_INCLUDED_
