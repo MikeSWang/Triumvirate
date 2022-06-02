@@ -46,62 +46,63 @@ for key, val in config_vars.items():
 
 # -- Extensions ---------------------------------------------------------------
 
+language = 'c++'
+extra_compile_args = ['-std=c++11',]
+libraries = ['m', 'gsl', 'fftw3', 'gslcblas']
+self_include = f"{pkgdir}/include"
+npy_include = numpy.get_include()
+npy_macros = ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
+
 ext_modules = [
     Extension(
         f'{pkgdir}.parameters',
         sources=[f"{pkgdir}/parameters.pyx"],
-        language='c++',
-        extra_compile_args=['-std=c++11',]
+        language=language,
+        extra_compile_args=extra_compile_args
     ),
     Extension(
         f'{pkgdir}._catalogue',
         sources=[f"{pkgdir}/_catalogue.pyx"],
-        language='c++',
-        extra_compile_args=['-std=c++11',],
-        include_dirs=[numpy.get_include(),],
-        define_macros=[(
-            'NPY_NO_DEPRECATED_API',
-            'NPY_1_7_API_VERSION',
-            # 'DBGNZ',
-        )],
+        language=language,
+        extra_compile_args=extra_compile_args,
+        include_dirs=[npy_include,],
+        define_macros=[
+            npy_macros,
+            # ('DBGNZ', None),
+        ],
     ),
     Extension(
         f'{pkgdir}._twopt',
         sources=[f"{pkgdir}/_twopt.pyx"],
-        language='c++',
-        extra_compile_args=['-std=c++11',],
-        include_dirs=[f"{pkgdir}/include", numpy.get_include(),],
-        libraries=['m', 'gsl', 'fftw3', 'gslcblas'],
-        define_macros=[(
-            'NPY_NO_DEPRECATED_API',
-            'NPY_1_7_API_VERSION',
-            # 'DBGDK',
-        )],
+        language=language,
+        extra_compile_args=extra_compile_args,
+        include_dirs=[self_include, npy_include,],
+        libraries=libraries,
+        define_macros=[
+            npy_macros,
+            # ('DBGDK', None),
+        ],
     ),
     Extension(
         f'{pkgdir}._threept',
         sources=[f"{pkgdir}/_threept.pyx"],
-        language='c++',
-        extra_compile_args=['-std=c++11',],
-        include_dirs=[f"{pkgdir}/include", numpy.get_include(),],
-        libraries=['m', 'gsl', 'fftw3', 'gslcblas'],
-        define_macros=[(
-            'NPY_NO_DEPRECATED_API',
-            'NPY_1_7_API_VERSION',
-            # 'DBGDK',
-        )],
+        language=language,
+        extra_compile_args=extra_compile_args,
+        include_dirs=[self_include, npy_include,],
+        libraries=libraries,
+        define_macros=[
+            npy_macros,
+            # ('DBGDK', None),
+        ],
     ),
     Extension(
         f'{pkgdir}._fftlog',
         sources=[f"{pkgdir}/_fftlog.pyx"],
-        language='c++',
-        extra_compile_args=['-std=c++11',],
-        include_dirs=[f"{pkgdir}/include", numpy.get_include(),],
-        libraries=['m', 'gsl', 'fftw3', 'gslcblas'],
-        define_macros=[(
-            'NPY_NO_DEPRECATED_API',
-            'NPY_1_7_API_VERSION',
-        )],
+        language=language,
+        extra_compile_args=extra_compile_args,
+        include_dirs=[self_include, npy_include,],
+        libraries=libraries,
+        define_macros=[npy_macros,],
     ),
 ]
 
