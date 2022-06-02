@@ -82,7 +82,7 @@ namespace ops {
  * @param[in] N_ext Extrapolation number on either end.
  * @param[out] a_ext Extrapolated sample series.
  */
-void extrap_log_linear(double* a, int N, int N_ext, double* a_ext) {
+void extrap_loglin(double* a, int N, int N_ext, double* a_ext) {
   double dlna_left = std::log(a[1] / a[0]);
   if (std::isnan(dlna_left)) {
     throw trv::runtime::ExtrapError(
@@ -136,7 +136,7 @@ void extrap_log_linear(double* a, int N, int N_ext, double* a_ext) {
  *                  (in both dimensions).
  * @param[out] a_ext Extrapolated sample bi-series.
  */
-void extrap_log_bilinear(
+void extrap2d_logbilin(
   std::vector< std::vector<double> > a,
   int N, int N_ext,
   std::vector< std::vector<double> >& a_ext
@@ -234,7 +234,7 @@ void extrap_log_bilinear(
  *                  (in both dimensions).
  * @param[out] a_ext Extrapolated sample bi-series.
  */
-void extrap_bilinear(
+void extrap2d_bilin(
   std::vector< std::vector<double> > a,
   int N, int N_ext,
   std::vector< std::vector<double> >& a_ext
@@ -286,7 +286,7 @@ void extrap_bilinear(
  *                  (in both dimensions).
  * @param[out] a_ext Extrapolated sample bi-series.
  */
-void extrap_zeros_2d(
+void extrap2d_bizeros(
   std::vector< std::vector<double> > a,
   int N, int N_ext,
   std::vector< std::vector<double> >& a_ext
