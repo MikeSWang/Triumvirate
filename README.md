@@ -31,10 +31,10 @@ instructions detailed below overriding any other instructions in the rest
 of this guide.</span>
 
 After `git clone`-ing this repository, at the root of the directory
-run the following commands to compile the code:
+run the following commands to install the code:
 ```
 make clean
-make all
+make install
 ```
 If you wish to use the Python (or C++) package only, replace `make all`
 with `make pyinstall` (or `make cppinstall`).  Depending on your
