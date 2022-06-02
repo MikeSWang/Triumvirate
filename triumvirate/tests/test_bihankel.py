@@ -16,44 +16,49 @@ except (ImportError, ModuleNotFoundError):
 
     import triumvirate.bihankel as hankel
 
+
 @pytest.mark.parametrize(
-    "ell1,ell2,ELL,N_fftlog,case",
+    "ell1,ell2,ELL,n_fftlog,case",
     [
-        (0, 0, 0, 1024, ''),
+        (0, 0, 0, '', 1024),
     ]
 )
-def test_transforms(ell1, ell2, ELL, N_fftlog, case):
+def test_transforms(ell1, ell2, ELL, case, n_fftlog):
 
     # Load test data.
-    bk_dict = np.load(
+    bk_data = np.load(
         f"triumvirate/tests/test_input/test_bk{ell1}{ell2}{ELL}{case}.npy",
         allow_pickle=True
     ).item()
 
-    kbin = bk_dict['kbin2'][0]
-
     # Set up binning.
-    rbin = np.logspace(
+    k_out = bk_data['k']
+
+    r_out = np.logspace(
         np.log(1. * 1e-1), np.log(1./3 * 1e4),
-        num=N_fftlog, base=np.e
+        num=n_fftlog, base=np.e
     )
-    # rbin = np.linspace(0.5, 200, 400)
+    # r_out = np.linspace(0.5, 200, 400)
 
     # Perform transformation.
-    zeta_dict = hankel.transform_bispec_to_3pcf(
-        bk_dict, rbin, N_fftlog=N_fftlog
+    zeta_data = hankel.transform_bispec_to_3pcf(
+        ell1, ell2,
+        bk_data['bk'], bk_data['k'], r_out,
+        n_fftlog
     )
 
-    bk_dict_reverse = hankel.transform_3pcf_to_bispec(
-        zeta_dict, kbin, N_fftlog=N_fftlog
+    bk_data_reverse = hankel.transform_3pcf_to_bispec(
+        ell1, ell2,
+        zeta_data['zeta_fftlog'], zeta_data['r_fftlog'], k_out,
+        n_fftlog
     )
 
     # Verify results.
-    num_kbins = len(bk_dict['kbin1'])
+    num_kbins = len(bk_data['k'])
     bk_in = np.array([
-        bk_dict['kbin1'].reshape(num_kbins ** 2),
-        bk_dict['kbin2'].reshape(num_kbins ** 2),
-        bk_dict['bk'].reshape(num_kbins ** 2)
+        bk_data['k1_mesh'].reshape(num_kbins ** 2),
+        bk_data['k2_mesh'].reshape(num_kbins ** 2),
+        bk_data['bk'].reshape(num_kbins ** 2)
     ]).T
     np.savetxt(
         f"triumvirate/tests/test_output/bk{ell1}{ell2}{ELL}{case}_ref.csv",
@@ -61,11 +66,11 @@ def test_transforms(ell1, ell2, ELL, N_fftlog, case):
         fmt='%.9e'
     )
 
-    num_rbins = len(zeta_dict['rbin1'])
+    num_rbins = len(zeta_data['r'])
     zeta = np.array([
-        zeta_dict['rbin1'].reshape(num_rbins ** 2),
-        zeta_dict['rbin2'].reshape(num_rbins ** 2),
-        zeta_dict['zeta'].reshape(num_rbins ** 2)
+        zeta_data['r1_mesh'].reshape(num_rbins ** 2),
+        zeta_data['r2_mesh'].reshape(num_rbins ** 2),
+        zeta_data['zeta'].reshape(num_rbins ** 2)
     ]).T
     np.savetxt(
         f"triumvirate/tests/test_output/zeta{ell1}{ell2}{ELL}{case}.csv",
@@ -73,11 +78,11 @@ def test_transforms(ell1, ell2, ELL, N_fftlog, case):
         fmt='%.9e'
     )
 
-    num_kbins = len(bk_dict_reverse['kbin1'])
+    num_kbins = len(bk_data_reverse['k'])
     bk_out = np.array([
-        bk_dict_reverse['kbin1'].reshape(num_kbins ** 2),
-        bk_dict_reverse['kbin2'].reshape(num_kbins ** 2),
-        bk_dict_reverse['bk'].reshape(num_kbins ** 2)
+        bk_data_reverse['k1_mesh'].reshape(num_kbins ** 2),
+        bk_data_reverse['k2_mesh'].reshape(num_kbins ** 2),
+        bk_data_reverse['bk'].reshape(num_kbins ** 2)
     ]).T
     np.savetxt(
         f"triumvirate/tests/test_output/bk{ell1}{ell2}{ELL}{case}_reverse.csv",

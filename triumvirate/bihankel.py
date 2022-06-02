@@ -11,84 +11,372 @@ from scipy import interpolate
 import _fftlog
 
 
-def transform_bispec_to_3pcf(bk_dict, rbin, N_fftlog=1024):
-    """Transform bispectrum samples to 3-point correlation function (3PCF)
-     samples using 1-d FFTLog.
+# ########################################################################
+# Extrapolation
+# ########################################################################
+
+def extrap_lin(a, n_ext):
+    """Extrapolate a 1-d array linearly.
 
     Parameters
     ----------
-    bk_dict : dict
-        Input bispectrum including its attributes.  Mandatory keys are:
-        * multipole degrees 'ell1', 'ell2', 'ELL';
-        * log-spaced sample points 'kbin1_fftlog', 'kbin2_fftlog'
-          (as 2-d arrays);
-        * bispectrum samples 'bk_fftlog' (as a 2-d array).
-    rbin : array of float
-        Output separation bins.
-    N_fftlog : int, optional
-        FFTLog sample number (default is 1024).
+    a : array_like
+        Inout 1-d array.
+    n_ext : int
+        Extra element number on either side.
+
+    Returns
+    -------
+    a_out : :class:`numpy.ndarray`
+        Extrapolated 1-d array.
+
+    """
+    a_l = a[0] + np.arange(-n_ext, 0) * (a[1] - a[0])
+    a_r = a[-1] + np.arange(1, n_ext + 1) * (a[-1] - a[-2])
+    a_out = np.concatenate([a_l, a, a_r])
+
+    return a_out
+
+
+def extrap_loglin(a, n_ext):
+    """Extrapolate a 1-d array log-linearly.
+
+    Parameters
+    ----------
+    a : array_like
+        Inout 1-d array.
+    n_ext : int
+        Extra element number on either side.
+
+    Returns
+    -------
+    a_out : :class:`numpy.ndarray`
+        Extrapolated 1-d array.
+
+    """
+    a_l = a[0] * np.power(a[1] / a[0], np.exp(np.arange(-n_ext, 0)))
+    a_r = a[-1] * np.power(a[-1] / a[-2], np.exp(np.arange(1, n_ext + 1)))
+    a_out = np.concatenate([a_l, a, a_r])
+
+    return a_out
+
+
+def extrap_padding(a, n_ext, a_const=0.):
+    """Extrapolate a 1-d array by constant padding.
+
+    Parameters
+    ----------
+    a : array_like
+        Inout 1-d array.
+    n_ext : int
+        Extra element number on either side.
+    a_const : float, optional
+        Constant value (default is 0.) used for padding.
+
+    Returns
+    -------
+    a_out : :class:`numpy.ndarray`
+        Extrapolated 1-d array.
+
+    """
+    a_l = a_r = a_const * np.ones(n_ext)
+    a_out = np.concatenate([a_l, a, a_r])
+
+    return a_out
+
+
+def _extrap2d_lin(a, n, n_ext):
+    """Extrapolate a 2-d array linearly along each row
+    (i.e. horizontally).
+
+    Parameters
+    ----------
+    a : :class:`numpy.ndarray`
+        Input 2-d array.
+    n : int
+        Original column number.
+    n_ext : int
+        Extra column number on either side.
+
+    Returns
+    -------
+    a_out : :class:`numpy.ndarray`
+        Extrapolated 2-d array.
+
+    """
+    da_l = np.diff(a[:, [0, 1]], axis=1)
+    da_r = np.diff(a[:, [-2, -1]], axis=1)
+
+    a_l = a[:, [0]] + np.arange(-n_ext, 0) * da_l
+    a_r = a[:, [-1]] + np.arange(1, n_ext + 1) * da_r
+
+    a_out = np.hstack([a_l, a, a_r])
+
+    return a_out
+
+
+def _extrap2d_loglin(a, n, n_ext):
+    """Extrapolate a 2-d array log-linearly along each row
+    (i.e. horizontally).
+
+    Parameters
+    ----------
+    a : :class:`numpy.ndarray`
+        Input 2-d array.
+    n : int
+        Original column number.
+    n_ext : int
+        Extra column number on either side.
+
+    Returns
+    -------
+    a_out : :class:`numpy.ndarray`
+        Extrapolated 2-d array.
+
+    """
+    dlna_l = np.diff(np.log(a[:, [0, 1]]), axis=1)
+    dlna_r = np.diff(np.log(a[:, [-2, -1]]), axis=1)
+
+    a_l = a[:, [0]] * np.exp(np.arange(-n_ext, 0) * dlna_l)
+    a_r = a[:, [-1]] * np.exp(np.arange(1, n_ext + 1) * dlna_r)
+
+    a_out = np.hstack([a_l, a, a_r])
+
+    return a_out
+
+
+def extrap2d_bilin(a, n_ext, n_ext_col=None):
+    """Extrapolate a 2-d array bilinearly.
+
+    Parameters
+    ----------
+    a : :class:`numpy.ndarray`
+        Input 2-d array.
+    n_ext : int
+        Extra-column number on either side of each row.
+    n_ext_col : int, optional
+        Extra-row number on either side of each column.  If `None`
+        (default), this is set to `n_ext`.
+
+    Returns
+    -------
+    a_out : :class:`numpy.ndarray`
+        Extrapolated 2-d array.
+
+    Raises
+    ------
+    ValueError
+        If the input array is not equivalently 2-d.
+
+    """
+    a = np.squeeze(a)
+    if a.ndim != 2:
+        raise ValueError("Input array is not 2-d.")
+
+    if n_ext_col is None:
+        n_ext_col = n_ext
+
+    # Extrapolate horizontally.
+    a_ = _extrap2d_lin(a, a.shape[-1], n_ext)
+
+    # Extrapolate vertically.  Use the same algorithm for the horizontal
+    # extrapolation by transposing.
+    a_ = np.transpose(a_)
+    a_out = _extrap2d_lin(a_, a_.shape[-1], n_ext_col)
+    a_out = np.transpose(a_out)
+
+    return a_out
+
+
+def extrap2d_logbilin(a, n_ext, n_ext_col=None):
+    """Extrapolate a 2-d array log-bilinearly.
+
+    Parameters
+    ----------
+    a : :class:`numpy.ndarray`
+        Input 2-d array.
+    n_ext : int
+        Extra-column number on either side of each row.
+    n_ext_col : int, optional
+        Extra-row number on either side of each column.  If `None`
+        (default), this is set to `n_ext`.
+
+    Returns
+    -------
+    a_out : :class:`numpy.ndarray`
+        Extrapolated 2-d array.
+
+    Raises
+    ------
+    ValueError
+        If the input array is not equivalently 2-d, or contain
+        non-positive entries.
+
+    """
+    a = np.squeeze(a)
+    if a.ndim != 2:
+        raise ValueError("Input array is not 2-d.")
+    if np.any(a <= 0.):
+        raise ValueError("Input array contains non-positive entries.")
+
+    if n_ext_col is None:
+        n_ext_col = n_ext
+
+    # Extrapolate horizontally.
+    a_ = _extrap2d_loglin(a, a.shape[-1], n_ext)
+
+    # Extrapolate vertically.  Use the same algorithm for the horizontal
+    # extrapolation by transposing.
+    a_ = np.transpose(a_)
+    a_out = _extrap2d_loglin(a_, a_.shape[-1], n_ext_col)
+    a_out = np.transpose(a_out)
+
+    return a_out
+
+
+def extrap2d_bipad(a, n_ext, n_ext_col=None, a_const=0., a_const_col=None):
+    """Extrapolate a 2-d array by constant padding.
+
+    Parameters
+    ----------
+    a : :class:`numpy.ndarray`
+        Input 2-d array.
+    n_ext : int
+        Extra-column number on either side of each row.
+    n_ext_col : int, optional
+        Extra-row number on either side of each column.  If `None`
+        (default), this is set to `n_ext`.
+    a_const : float, optional
+        Constant value (default is 0.) used for padding in each row.
+    a_const_col : float, optional
+        Constant value used for padding in each column.  If `None`
+        (default), this is set to `a_const`.
+
+    Returns
+    -------
+    a_out : :class:`numpy.ndarray`
+        Extrapolated 2-d array.
+
+    Raises
+    ------
+    ValueError
+        If the input array is not equivalently 2-d.
+
+    """
+    a = np.squeeze(a)
+    if a.ndim != 2:
+        raise ValueError("Input array is not 2-d.")
+
+    if n_ext_col is None:
+        n_ext_col = n_ext
+    if a_const_col is None:
+        a_const_col = a_const
+
+    a_lr = a_const * np.ones((a.shape[0], n_ext))
+    a_ = np.hstack([a_lr, a, a_lr])
+    a__ud = a_const_col * np.ones((n_ext_col, a_.shape[-1]))
+    a_out = np.vstack([a__ud, a_, a__ud])
+
+    return a_out
+
+
+# ########################################################################
+# Transforms
+# ########################################################################
+
+def transform_bispec_to_3pcf(ell1, ell2, bk_in, k_in, r_out,
+                             n_fftlog, n_extrap=None, extrap=None):
+    """Transform bispectrum samples to 3-point correlation function (3PCF)
+    samples using 1-d FFTLog.
+
+    Parameters
+    ----------
+    ell1, ell2 : int
+        Multipole degree of the bispectrum.
+    bk_in, k_in : :class:`numpy.ndarray`
+        Input bispectrum and wavenumbers.
+    r_out : array_like
+        Output separations.
+    n_fftlog : int
+        FFTLog sample number.
+    n_extrap : int, optional
+        Extrapolation sample number (one-sided) (default is `None`).
+    extrap : {'lin', 'loglin', '0-pad'}, optional
+        If not `None` (default), set one of the following options:
+        * 'lin' -- input bispectrum is extrapolated linearly;
+        * 'loglin' -- input bispectrum is extrapolated log-linearly;
+        * '0-pad' -- input bispectrum is zero padded.
+        In each case, `n_extrap` must be set, and the input wavenumbers
+        `k_in` are extrapolated log-linearly.
 
     Returns
     -------
     zeta_dict : dict
-        Output 3PCF including its attributes.  Included keys are:
-        * multipole degrees 'ell1', 'ell2', 'ELL';
-        * input sample points 'rbin1', 'rbin2' (as 2-d arrays);
-        * output 3PCF samples 'zeta' (as a 2-d array)
-          corresponding to 'rbin1' and 'rbin2';
-        * log-spaced sample points 'rbin1_fftlog', 'rbin2_fftlog'
-          (as 2-d arrays) generated by FFTLog;
-        * 3PCF samples 'zeta_fftlog' (as a 2-d array)
-          corresponding to 'rbin1_fftlog' and 'rbin2_fftlog';
-        * FFTLog sample number 'N_fftlog'.
+        Output 3PCF including its attributes:
+        * 'zeta', 'r' -- transformed 3PCF and separations;
+        * 'r1_mesh', 'r2_mesh' -- transformed separation coordinate array;
+        * 'zeta_fftlog', 'r_fftlog' -- FFTLog-sampled 3PCF
+          and separations;
+        * 'ell1', 'ell2' -- multipole degrees;
+        * 'n_fftlog' -- FFTLog sample number used.
+
+    Raises
+    ------
+    ValueError
+        If `n_extrap` is not set when `extrap` is.
 
     """
-    # Set multipole degrees.
-    ell1, ell2, ELL = bk_dict['ell1'], bk_dict['ell2'], bk_dict['ELL']
+    # Prepare samples.
+    if extrap is not None:
+        if n_extrap is None:
+            raise ValueError("`n_extrap` must be provided if `extrap` is set.")
+        k_sample = extrap_loglin(k_in, n_extrap)
 
-    # Set input arrays.
-    k_in, bk_in = bk_dict['kbin1_fftlog'][:, 0], bk_dict['bk_fftlog']
+        if extrap == 'lin':
+            bk_sample = extrap2d_bilin(bk_in, n_extrap)
+        elif extrap == 'loglin':
+            bk_sample = extrap2d_logbilin(bk_in, n_extrap)
+        elif extrap == '0-pad':
+            bk_sample = extrap2d_bipad(bk_in, n_extrap)
+        else:
+            raise ValueError(f"Unknown option for `extrap`: {extrap}.")
+    else:
+        k_sample, bk_sample = k_in, bk_in
+
+    n_sample = len(k_sample)
 
     # Perform FFTLog transform.
-    k_sample = np.logspace(
-        np.log(k_in[0]), np.log(k_in[-1]), N_fftlog, base=np.e
+    k_fftlog = np.logspace(
+        np.log(k_sample[0]), np.log(k_sample[-1]), n_fftlog, base=np.e
     )
 
-    zeta_mesh_partial = np.zeros((len(k_in), N_fftlog))
-    for i in range(len(k_in)):
+    zeta_mesh_partial = np.zeros((n_sample, n_fftlog))
+    for i in range(n_sample):
         interpolator_bk = interpolate.interp1d(
-            k_in, bk_in[i, :],
+            k_sample, bk_sample[i, :],
             fill_value='extrapolate', kind='cubic'
         )
-        bk_sample = interpolator_bk(k_sample)
+        bk_fftlog = interpolator_bk(k_fftlog)
 
         r_fftlog, zeta_fftlog = _fftlog.sj_transform(
-            ell2, 2, N_fftlog, k_sample, bk_sample
+            ell2, 2, n_fftlog, k_fftlog, bk_fftlog
         )
 
-        interpolator_zeta = interpolate.interp1d(
-            r_fftlog, zeta_fftlog,
-            fill_value='extrapolate', kind='cubic'
-        )
-        zeta_mesh_partial[i, :] = interpolator_zeta(r_fftlog[:])
+        zeta_mesh_partial[i, :] = zeta_fftlog
 
-    zeta_mesh_full = np.zeros((N_fftlog, N_fftlog))
-    for j in range(N_fftlog):
+    zeta_mesh_full = np.zeros((n_fftlog, n_fftlog))
+    for j in range(n_fftlog):
         interpolator_bk = interpolate.interp1d(
-            k_in, zeta_mesh_partial[:, j],
+            k_sample, zeta_mesh_partial[:, j],
             fill_value='extrapolate', kind='cubic'
         )
-        bk_sample = interpolator_bk(k_sample)
+        bk_fftlog = interpolator_bk(k_fftlog)
 
         r_fftlog, zeta_fftlog = _fftlog.sj_transform(
-            ell1, 2, N_fftlog, k_sample, bk_sample
+            ell1, 2, n_fftlog, k_fftlog, bk_fftlog
         )
 
-        interpolator_zeta = interpolate.interp1d(
-            r_fftlog, zeta_fftlog,
-            fill_value='extrapolate', kind='cubic'
-        )
-        zeta_mesh_full[:, j] = interpolator_zeta(r_fftlog[:])
+        zeta_mesh_full[:, j] = zeta_fftlog
 
     # An overall complex 'sign' is needed here as it is not included
     # in the backend transforms to avoid redundant computation.
@@ -100,105 +388,118 @@ def transform_bispec_to_3pcf(bk_dict, rbin, N_fftlog=1024):
         r_fftlog, r_fftlog, zeta_fftlog, kind='cubic'
     )
 
-    zeta_out = interpolator2d_zeta(rbin[:], rbin[:])
+    zeta_out = interpolator2d_zeta(r_out, r_out)
 
-    (rbin2_out, rbin1_out) = np.meshgrid(rbin, rbin)
-    (rbin2_fftlog, rbin1_fftlog) = np.meshgrid(r_fftlog, r_fftlog)
+    (r2_mesh, r1_mesh) = np.meshgrid(r_out, r_out)
 
     zeta_dict = {
         'zeta': zeta_out,
-        'rbin1': rbin1_out,
-        'rbin2': rbin2_out,
+        'r': r_out,
+        'r1_mesh': r1_mesh,
+        'r2_mesh': r2_mesh,
         'zeta_fftlog': zeta_fftlog,
-        'rbin1_fftlog': rbin1_fftlog,
-        'rbin2_fftlog': rbin2_fftlog,
+        'r_fftlog': r_fftlog,
         'ell1': ell1,
         'ell2': ell2,
-        'ELL': ELL,
-        'N_fftlog': N_fftlog,
+        'n_fftlog': n_fftlog,
     }
 
     return zeta_dict
 
 
-def transform_3pcf_to_bispec(zeta_dict, kbin, N_fftlog=1024):
+def transform_3pcf_to_bispec(ell1, ell2, zeta_in, r_in, k_out,
+                             n_fftlog, n_extrap=None, extrap=None):
     """Transform 3-point correlation function (3PCF) samples to bispectrum
     samples using 1-d FFTLog.
 
     Parameters
     ----------
-    zeta_dict : dict
-        Input 3PCF including its attributes.  Mandatory keys are:
-        * multipole degrees 'ell1', 'ell2', 'ELL';
-        * log-spaced sample points 'rbin1_fftlog', 'rbin2_fftlog'
-          (as 2-d arrays);
-        * 3PCF samples 'zeta_fftlog' (as a 2-d array).
-    kbin : array of float
-        Output wavenumber bins.
-    N_fftlog : int, optional
-        FFTLog sample number (default is 1024).
+    ell1, ell2 : int
+        Multipole degree of the bispectrum.
+    zeta_in, r_in : :class:`numpy.ndarray`
+        Input 3PCF and separations.
+    k_out : array_like
+        Output wavenumbers.
+    n_fftlog : int
+        FFTLog sample number.
+    n_extrap : int, optional
+        Extrapolation sample number (one-sided) (default is `None`).
+    extrap : {'lin', 'loglin', '0-pad'}, optional
+        If not `None` (default), set one of the following options:
+        * 'lin' -- input 3PCF is extrapolated linearly;
+        * 'loglin' -- input 3PCF is extrapolated log-linearly;
+        * '0-pad' -- input 3PCF is zero padded.
+        In each case, `n_extrap` must be set, and the input separations
+        `r_in` are extrapolated log-linearly.
 
     Returns
     -------
     bk_dict : dict
-        Output bispectrum including its attributes.  Included keys are:
-        * multipole degrees 'ell1', 'ell2', 'ELL';
-        * input sample points 'kbin1', 'kbin2' (as 2-d arrays);
-        * output bispectrum samples 'bk' (as a 2-d array)
-          corresponding to 'kbin1' and 'kbin2';
-        * log-spaced sample points 'kbin1_fftlog', 'kbin2_fftlog'
-          (as 2-d arrays) generated by FFTLog;
-        * bispectrum samples 'bk_fftlog' (as a 2-d array)
-          corresponding to 'kbin1_fftlog' and 'kbin2_fftlog';
-        * FFTLog sample number 'N_fftlog'.
+        Output bispectrum including its attributes:
+        * 'bk', 'k' -- transformed bispectrum and wavenumbers;
+        * 'k1_mesh', 'k2_mesh' -- transformed wavenumber coordinate array;
+        * 'bk_fftlog', 'k_fftlog' -- FFTLog-sampled bispectrum
+          and wavenumbers;
+        * 'ell1', 'ell2' -- multipole degrees;
+        * 'n_fftlog' -- FFTLog sample number used.
+
+    Raises
+    ------
+    ValueError
+        If `n_extrap` is not set when `extrap` is.
 
     """
-    # Set multipole degrees.
-    ell1, ell2, ELL = zeta_dict['ell1'], zeta_dict['ell2'], zeta_dict['ELL']
+    # Prepare samples.
+    if extrap is not None:
+        if n_extrap is None:
+            raise ValueError("`n_extrap` must be provided if `extrap` is set.")
+        r_sample = extrap_loglin(r_in, n_extrap)
 
-    # Set input arrays.
-    r_in, zeta_in = zeta_dict['rbin1_fftlog'][:, 0], zeta_dict['zeta_fftlog']
+        if extrap == 'lin':
+            zeta_sample = extrap2d_bilin(zeta_in, n_extrap)
+        elif extrap == 'loglin':
+            zeta_sample = extrap2d_logbilin(zeta_in, n_extrap)
+        elif extrap == '0-pad':
+            zeta_sample = extrap2d_bipad(zeta_in, n_extrap)
+        else:
+            raise ValueError(f"Unknown option for `extrap`: {extrap}.")
+    else:
+        r_sample, zeta_sample = r_in, zeta_in
+
+    n_sample = len(r_sample)
 
     # Perform FFTLog transform.
-    r_sample = np.logspace(
-        np.log(r_in[0]), np.log(r_in[-1]), N_fftlog, base=np.e
+    r_fftlog = np.logspace(
+        np.log(r_sample[0]), np.log(r_sample[-1]), n_fftlog, base=np.e
     )
 
-    bk_mesh_partial = np.zeros((len(r_in), N_fftlog))
-    for i in range(len(r_in)):
+    bk_mesh_partial = np.zeros((n_sample, n_fftlog))
+    for i in range(n_sample):
         interpolator_zeta = interpolate.interp1d(
-            r_in, zeta_in[i, :],
+            r_sample, zeta_sample[i, :],
             fill_value='extrapolate', kind='cubic'
         )
-        zeta_sample = interpolator_zeta(r_sample)
+        zeta_fftlog = interpolator_zeta(r_fftlog)
 
         k_fftlog, bk_fftlog = _fftlog.sj_transform(
-            ell2, 2, N_fftlog, r_sample, zeta_sample
+            ell2, 2, n_fftlog, r_fftlog, zeta_fftlog
         )
 
-        interpolato_bk = interpolate.interp1d(
-            k_fftlog, bk_fftlog,
-            fill_value='extrapolate', kind='cubic'
-        )
-        bk_mesh_partial[i, :] = interpolato_bk(k_fftlog[:])
+        bk_mesh_partial[i, :] = bk_fftlog
 
-    bk_mesh_full = np.zeros((N_fftlog, N_fftlog))
-    for j in range(N_fftlog):
+    bk_mesh_full = np.zeros((n_fftlog, n_fftlog))
+    for j in range(n_fftlog):
         interpolator_zeta = interpolate.interp1d(
-            r_in, bk_mesh_partial[:, j],
+            r_sample, bk_mesh_partial[:, j],
             fill_value='extrapolate', kind='cubic'
         )
-        zeta_sample = interpolator_zeta(r_sample)
+        zeta_fftlog = interpolator_zeta(r_fftlog)
 
         k_fftlog, bk_fftlog = _fftlog.sj_transform(
-            ell1, 2, N_fftlog, r_sample, zeta_sample
+            ell1, 2, n_fftlog, r_fftlog, zeta_fftlog
         )
 
-        interpolato_bk = interpolate.interp1d(
-            k_fftlog, bk_fftlog,
-            fill_value='extrapolate', kind='cubic'
-        )
-        bk_mesh_full[:, j] = interpolato_bk(k_fftlog[:])
+        bk_mesh_full[:, j] = bk_fftlog
 
     # An overall complex 'sign' is needed here as it is not included
     # in the backend transforms to avoid redundant computation.
@@ -212,22 +513,20 @@ def transform_3pcf_to_bispec(zeta_dict, kbin, N_fftlog=1024):
         k_fftlog, k_fftlog, bk_fftlog, kind='cubic'
     )
 
-    bk_out = interpolator2d_bk(kbin[:], kbin[:])
+    bk_out = interpolator2d_bk(k_out, k_out)
 
-    (kbin2_out, kbin1_out) = np.meshgrid(kbin, kbin)
-    (kbin2_fftlog, kbin1_fftlog) = np.meshgrid(k_fftlog, k_fftlog)
+    (k2_mesh, k1_mesh) = np.meshgrid(k_out, k_out)
 
     bk_dict = {
         'bk': bk_out,
-        'kbin1': kbin1_out,
-        'kbin2': kbin2_out,
+        'k': k_out,
+        'k1_mesh': k1_mesh,
+        'k2_mesh': k2_mesh,
         'bk_fftlog': bk_fftlog,
-        'kbin1_fftlog': kbin1_fftlog,
-        'kbin2_fftlog': kbin2_fftlog,
+        'k_fftlog': k_fftlog,
         'ell1': ell1,
         'ell2': ell2,
-        'ELL': ELL,
-        'N_fftlog': N_fftlog,
+        'n_fftlog': n_fftlog,
     }
 
     return bk_dict
