@@ -85,7 +85,7 @@ def extrap_padding(a, n_ext, a_const=0.):
     return a_out
 
 
-def _extrap2d_lin(a, n, n_ext):
+def _extrap2d_lin(a, n_ext):
     """Extrapolate a 2-d array linearly along each row
     (i.e. horizontally).
 
@@ -93,8 +93,6 @@ def _extrap2d_lin(a, n, n_ext):
     ----------
     a : :class:`numpy.ndarray`
         Input 2-d array.
-    n : int
-        Original column number.
     n_ext : int
         Extra column number on either side.
 
@@ -115,7 +113,7 @@ def _extrap2d_lin(a, n, n_ext):
     return a_out
 
 
-def _extrap2d_loglin(a, n, n_ext):
+def _extrap2d_loglin(a, n_ext):
     """Extrapolate a 2-d array log-linearly along each row
     (i.e. horizontally).
 
@@ -123,8 +121,6 @@ def _extrap2d_loglin(a, n, n_ext):
     ----------
     a : :class:`numpy.ndarray`
         Input 2-d array.
-    n : int
-        Original column number.
     n_ext : int
         Extra column number on either side.
 
@@ -177,12 +173,12 @@ def extrap2d_bilin(a, n_ext, n_ext_col=None):
         n_ext_col = n_ext
 
     # Extrapolate horizontally.
-    a_ = _extrap2d_lin(a, a.shape[-1], n_ext)
+    a_ = _extrap2d_lin(a, n_ext)
 
     # Extrapolate vertically.  Use the same algorithm for the horizontal
     # extrapolation by transposing.
     a_ = np.transpose(a_)
-    a_out = _extrap2d_lin(a_, a_.shape[-1], n_ext_col)
+    a_out = _extrap2d_lin(a_, n_ext_col)
     a_out = np.transpose(a_out)
 
     return a_out
@@ -223,12 +219,12 @@ def extrap2d_logbilin(a, n_ext, n_ext_col=None):
         n_ext_col = n_ext
 
     # Extrapolate horizontally.
-    a_ = _extrap2d_loglin(a, a.shape[-1], n_ext)
+    a_ = _extrap2d_loglin(a, n_ext)
 
     # Extrapolate vertically.  Use the same algorithm for the horizontal
     # extrapolation by transposing.
     a_ = np.transpose(a_)
-    a_out = _extrap2d_loglin(a_, a_.shape[-1], n_ext_col)
+    a_out = _extrap2d_loglin(a_, n_ext_col)
     a_out = np.transpose(a_out)
 
     return a_out
