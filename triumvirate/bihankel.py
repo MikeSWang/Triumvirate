@@ -79,7 +79,7 @@ def extrap_padding(a, n_ext, a_const=0.):
         Extrapolated 1-d array.
 
     """
-    a_l = a_r = a_const * np.ones(n_ext)
+    a_l = a_r = np.full(n_ext, a_const)
     a_out = np.concatenate([a_l, a, a_r])
 
     return a_out
@@ -272,10 +272,10 @@ def extrap2d_bipad(a, n_ext, n_ext_col=None, a_const=0., a_const_col=None):
     if a_const_col is None:
         a_const_col = a_const
 
-    a_lr = a_const * np.ones((a.shape[0], n_ext))
-    a_ = np.hstack([a_lr, a, a_lr])
-    a__ud = a_const_col * np.ones((n_ext_col, a_.shape[-1]))
-    a_out = np.vstack([a__ud, a_, a__ud])
+    a_l = a_r = np.full((a.shape[0], n_ext), a_const)
+    a_ = np.hstack([a_l, a, a_r])
+    a__u = a__d = np.full((n_ext_col, a_.shape[-1]), a_const_col)
+    a_out = np.vstack([a__u, a_, a__d])
 
     return a_out
 
