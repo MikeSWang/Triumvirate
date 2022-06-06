@@ -128,7 +128,7 @@ class PseudoDensityField {
    *   y_{LM}^*(\hat{\vec{x}}) w(\vec{x}) \,.
    * f@]
    *
-   * See eq. (34) in Sugiyama et al. (2018)
+   * See eq. (34) in Sugiyama et al. (2019)
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
    * @param particles_data (Data-source) particle container.
@@ -366,7 +366,7 @@ class PseudoDensityField {
    *   y_{LM}(\vec{x}) w(\vec{x})^2 \,.
    * f@]
    *
-   * See eq. (46) in Sugiyama et al. (2018)
+   * See eq. (46) in Sugiyama et al. (2019)
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
    * @param particles_data (Data-source) particle container.
@@ -548,7 +548,7 @@ class PseudoDensityField {
    *       \delta n_{LM}(\vec{k}) \,.
    * f@]
    *
-   * See eq. (42) in Sugiyama et al. (2018)
+   * See eq. (42) in Sugiyama et al. (2019)
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
    * @param density (FFT-transformed) density-like field.
@@ -1192,7 +1192,7 @@ class Pseudo2ptStats {
    * As well as for calculating the power spectrum, this is also used
    * for calculating f@$ S_{\ell_1 \ell_2 L}|_{i \neq j = k} f@$
    * and f@$ S_{\ell_1 \ell_2 L}|_{j \neq i = k} f@$ in eq. (45)
-   * in Sugiyama et al. (2018)
+   * in Sugiyama et al. (2019)
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].  Note
    * that this quantity is diagonal so effectively one-dimensional.
    *
@@ -1635,7 +1635,7 @@ class Pseudo2ptStats {
    * in the three-point correlation function.
    *
    * See f@$ S_{\ell_1 \ell_2 L}|_{i = j \neq k} f@$ in eq. (51)
-   * in Sugiyama et al. (2018)
+   * in Sugiyama et al. (2019)
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].  Note
    * that this quantity is diagonal so effectively one-dimensional.
    *
@@ -1825,7 +1825,7 @@ class Pseudo2ptStats {
    * Compute shot noise for bispectrum over a mesh.
    *
    * See f@$ S_{\ell_1 \ell_2 L}|_{i = j \neq k} f@$ in eq. (45)
-   * in Sugiyama et al. (2018)
+   * in Sugiyama et al. (2019)
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].  Note
    * that this quantity is two-dimensional and here the pre-binning
    * three-dimensional quantity is computed.
@@ -1913,7 +1913,7 @@ class Pseudo2ptStats {
    *   \right) y_{LM}^*(\vec{x}_i) w(\vec{x}_i)^3 \,.
    * f@]
    *
-   * See eq. (46) in Sugiyama et al. (2018)
+   * See eq. (46) in Sugiyama et al. (2019)
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
    * @param particles_data (Data-source) particle container.
@@ -2017,7 +2017,7 @@ class Pseudo2ptStats {
   /**
    * Calculate the shot-noise scale-dependence function f@$ C(\vec{k}) f@$.
    *
-   * See eqs. (45) and (46) in Sugiyama et al. (2018)
+   * See eqs. (45) and (46) in Sugiyama et al. (2019)
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>]
    * and Jing (2004)
    * [<a href="https://arxiv.org/abs/astro-ph/0409240">astro-ph/0409240</a>].
