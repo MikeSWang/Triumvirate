@@ -31,8 +31,8 @@ def extrap_lin(a, n_ext):
         Extrapolated 1-d array.
 
     """
-    a_l = a[0] + np.arange(-n_ext, 0) * (a[1] - a[0])
-    a_r = a[-1] + np.arange(1, n_ext + 1) * (a[-1] - a[-2])
+    a_l = a[0] + (a[1] - a[0]) * np.arange(-n_ext, 0)
+    a_r = a[-1] + (a[-1] - a[-2]) * np.arange(1, n_ext + 1)
     a_out = np.concatenate([a_l, a, a_r])
 
     return a_out
@@ -54,8 +54,8 @@ def extrap_loglin(a, n_ext):
         Extrapolated 1-d array.
 
     """
-    a_l = a[0] * np.power(a[1] / a[0], np.exp(np.arange(-n_ext, 0)))
-    a_r = a[-1] * np.power(a[-1] / a[-2], np.exp(np.arange(1, n_ext + 1)))
+    a_l = a[0] * (a[1] / a[0]) ** np.arange(-n_ext, 0)
+    a_r = a[-1] * (a[-1] / a[-2]) ** np.arange(1, n_ext + 1)
     a_out = np.concatenate([a_l, a, a_r])
 
     return a_out
@@ -108,7 +108,7 @@ def _extrap2d_lin(a, n_ext):
     a_l = a[:, [0]] + np.arange(-n_ext, 0) * da_l
     a_r = a[:, [-1]] + np.arange(1, n_ext + 1) * da_r
 
-    a_out = np.hstack([a_l, a, a_r])
+    a_out = np.c_[a_l, a, a_r]
 
     return a_out
 
@@ -130,13 +130,10 @@ def _extrap2d_loglin(a, n_ext):
         Extrapolated 2-d array.
 
     """
-    dlna_l = np.diff(np.log(a[:, [0, 1]]), axis=1)
-    dlna_r = np.diff(np.log(a[:, [-2, -1]]), axis=1)
+    a_l = a[:, [0]] * (a[:, [1]] / a[:, [0]]) ** np.arange(-n_ext, 0)
+    a_r = a[:, [-1]] * (a[:, [-1]] / a[:, [-2]]) ** np.arange(1, n_ext + 1)
 
-    a_l = a[:, [0]] * np.exp(np.arange(-n_ext, 0) * dlna_l)
-    a_r = a[:, [-1]] * np.exp(np.arange(1, n_ext + 1) * dlna_r)
-
-    a_out = np.hstack([a_l, a, a_r])
+    a_out = np.c_[a_l, a, a_r]
 
     return a_out
 
@@ -269,9 +266,9 @@ def extrap2d_bipad(a, n_ext, n_ext_col=None, a_const=0., a_const_col=None):
         a_const_col = a_const
 
     a_l = a_r = np.full((a.shape[0], n_ext), a_const)
-    a_ = np.hstack([a_l, a, a_r])
+    a_ = np.c_[a_l, a, a_r]
     a__u = a__d = np.full((n_ext_col, a_.shape[-1]), a_const_col)
-    a_out = np.vstack([a__u, a_, a__d])
+    a_out = np.r_[a__u, a_, a__d]
 
     return a_out
 
