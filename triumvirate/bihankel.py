@@ -20,7 +20,7 @@ def extrap_lin(a, n_ext):
 
     Parameters
     ----------
-    a : array_like
+    a : 1-d array_like
         Inout 1-d array.
     n_ext : int
         Extra element number on either side.
@@ -43,7 +43,7 @@ def extrap_loglin(a, n_ext):
 
     Parameters
     ----------
-    a : array_like
+    a : 1-d array_like
         Inout 1-d array.
     n_ext : int
         Extra element number on either side.
@@ -66,8 +66,8 @@ def extrap_padding(a, n_ext, a_const=0.):
 
     Parameters
     ----------
-    a : array_like
-        Inout 1-d array.
+    a : 1-d array_like
+        Input 1-d array.
     n_ext : int
         Extra element number on either side.
     a_const : float, optional
@@ -91,7 +91,7 @@ def _extrap2d_lin(a, n_ext):
 
     Parameters
     ----------
-    a : :class:`numpy.ndarray`
+    a : 2-d :class:`numpy.ndarray`
         Input 2-d array.
     n_ext : int
         Extra column number on either side.
@@ -119,7 +119,7 @@ def _extrap2d_loglin(a, n_ext):
 
     Parameters
     ----------
-    a : :class:`numpy.ndarray`
+    a : 2-d :class:`numpy.ndarray`
         Input 2-d array.
     n_ext : int
         Extra column number on either side.
@@ -143,7 +143,7 @@ def extrap2d_bilin(a, n_ext, n_ext_col=None):
 
     Parameters
     ----------
-    a : :class:`numpy.ndarray`
+    a : 2-d array_like
         Input 2-d array.
     n_ext : int
         Extra-column number on either side of each row.
@@ -186,7 +186,7 @@ def extrap2d_logbilin(a, n_ext, n_ext_col=None):
 
     Parameters
     ----------
-    a : :class:`numpy.ndarray`
+    a : 2-d array_like
         Input 2-d array.
     n_ext : int
         Extra-column number on either side of each row.
@@ -232,7 +232,7 @@ def extrap2d_bipad(a, n_ext, n_ext_col=None, a_const=0., a_const_col=None):
 
     Parameters
     ----------
-    a : :class:`numpy.ndarray`
+    a : 2-d array_like
         Input 2-d array.
     n_ext : int
         Extra-column number on either side of each row.
@@ -286,9 +286,11 @@ def transform_bispec_to_3pcf(ell1, ell2, bk_in, k_in, r_out,
     ----------
     ell1, ell2 : int
         Multipole degree of the bispectrum.
-    bk_in, k_in : :class:`numpy.ndarray`
-        Input bispectrum and wavenumbers.
-    r_out : array_like
+    bk_in : 2-d array_like
+        Input bispectrum.
+    k_in : 1-d array_like
+        Input wavenumbers.
+    r_out : 1-d array_like
         Output separations.
     n_fftlog : int
         FFTLog sample number.
@@ -409,9 +411,11 @@ def transform_3pcf_to_bispec(ell1, ell2, zeta_in, r_in, k_out,
     ----------
     ell1, ell2 : int
         Multipole degree of the bispectrum.
-    zeta_in, r_in : :class:`numpy.ndarray`
-        Input 3PCF and separations.
-    k_out : array_like
+    zeta_in : 2-d array_like
+        Input 3PCF.
+    r_in : 1-d array_like
+        Input separations.
+    k_out : 1-d array_like
         Output wavenumbers.
     n_fftlog : int
         FFTLog sample number.
