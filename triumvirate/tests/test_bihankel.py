@@ -18,12 +18,12 @@ except (ImportError, ModuleNotFoundError):
 
 
 @pytest.mark.parametrize(
-    "ell1,ell2,ELL,n_fftlog,case",
+    "ell1,ell2,ELL,n_fftlog,n_extrap,extrap,case",
     [
-        (0, 0, 0, '', 1024),
+        (0, 0, 0, 1024, 32, 'loglin', ''),
     ]
 )
-def test_transforms(ell1, ell2, ELL, case, n_fftlog):
+def test_transforms(ell1, ell2, ELL, n_fftlog, n_extrap, extrap, case):
 
     # Load test data.
     bk_data = np.load(
@@ -44,7 +44,7 @@ def test_transforms(ell1, ell2, ELL, case, n_fftlog):
     zeta_data = hankel.transform_bispec_to_3pcf(
         ell1, ell2,
         bk_data['bk'], bk_data['k'], r_out,
-        n_fftlog
+        n_fftlog, n_extrap=n_extrap, extrap=extrap
     )
 
     bk_data_reverse = hankel.transform_3pcf_to_bispec(
