@@ -377,8 +377,8 @@ def transform_bispec_to_3pcf(ell1, ell2, bk_in, k_in, r_out,
     zeta_fftlog = sign * zeta_mesh_full
 
     # Prepare output.
-    interpolator2d_zeta = interpolate.interp2d(
-        r_fftlog, r_fftlog, zeta_fftlog, kind='cubic'
+    interpolator2d_zeta = interpolate.RectBivariateSpline(
+        r_fftlog, r_fftlog, zeta_fftlog
     )
 
     zeta_out = interpolator2d_zeta(r_out, r_out)
@@ -502,8 +502,8 @@ def transform_3pcf_to_bispec(ell1, ell2, zeta_in, r_in, k_out,
     bk_fftlog = sign * bk_mesh_full
 
     # Prepare output.
-    interpolator2d_bk = interpolate.interp2d(
-        k_fftlog, k_fftlog, bk_fftlog, kind='cubic'
+    interpolator2d_bk = interpolate.RectBivariateSpline(
+        k_fftlog, k_fftlog, bk_fftlog
     )
 
     bk_out = interpolator2d_bk(k_out, k_out)
