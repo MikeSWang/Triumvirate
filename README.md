@@ -70,7 +70,7 @@ Tutorials and scripts can also be found in
 ## Attribution
 
 The underlying C++ code was originally developed by Naonori Sugiyama.
-Please refer to/cite Sugiyama et al. (2018) [[doi:10.1093/mnras/sty3249](
+Please refer to/cite Sugiyama et al. (2019) [[doi:10.1093/mnras/sty3249](
 https://doi.org/10.1093/mnras/sty3249)] accordingly.
 
 

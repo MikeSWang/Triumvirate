@@ -3,7 +3,7 @@
  * @brief Three-point correlator computations.
  *
  * @note Unless otherwise specified, the Paper hereafter in this method's
- *       comments refers to Sugiyama et al. (2018)
+ *       comments refers to Sugiyama et al. (2019)
  *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
  *
  */
