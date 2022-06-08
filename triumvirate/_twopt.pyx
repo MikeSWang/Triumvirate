@@ -13,8 +13,8 @@ from libcpp.vector cimport vector
 import numpy as np
 cimport numpy as np
 
-from parameters cimport CppParameterSet, ParameterSet
-from _catalogue cimport CppParticleCatalogue, _ParticleCatalogue
+from triumvirate.parameters cimport CppParameterSet, ParameterSet
+from triumvirate._catalogue cimport CppParticleCatalogue, _ParticleCatalogue
 
 
 cdef extern from "include/particles.hpp":

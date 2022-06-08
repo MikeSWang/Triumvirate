@@ -7,9 +7,9 @@ Measuring three-point correlator statistics from catalogues.
 """
 import numpy as np
 
-from catalogue import _prepare_catalogue
-from parameters import InvalidParameter
-from _threept import (
+from .catalogue import _prepare_catalogue
+from triumvirate.parameters import InvalidParameter
+from triumvirate._threept import (
     _calc_bispec_normalisation_from_mesh,
     _calc_bispec_normalisation_from_particles,
     _compute_bispec,

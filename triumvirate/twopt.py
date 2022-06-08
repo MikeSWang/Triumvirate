@@ -9,9 +9,9 @@ import sys
 
 import numpy as np
 
-from catalogue import _prepare_catalogue
-from parameters import InvalidParameter
-from _twopt import (
+from .catalogue import _prepare_catalogue
+from triumvirate.parameters import InvalidParameter
+from triumvirate._twopt import (
     _calc_powspec_normalisation_from_mesh,
     _calc_powspec_normalisation_from_particles,
     _compute_corrfunc,
