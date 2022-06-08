@@ -10,7 +10,7 @@ import warnings
 import numpy as np
 from astropy.table import Table
 
-from _catalogue import _ParticleCatalogue
+from triumvirate._catalogue import _ParticleCatalogue
 
 
 class MissingField(ValueError):

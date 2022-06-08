@@ -8,7 +8,7 @@ Perform Hankel-related double transforms using the FFTLog algorithm.
 import numpy as np
 from scipy import interpolate
 
-import _fftlog
+import triumvirate._fftlog as _fftlog
 
 
 # ########################################################################
