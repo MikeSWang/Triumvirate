@@ -611,11 +611,17 @@ class ParameterSet {
    */
   void set_io_files() {
     /// Set survey data and random catalogue inputs.
-    if (this->catalogue_type == "survey" || this->catalogue_type == "sim") {
+    if (this->catalogue_type == "survey") {
       this->data_catalogue_file =
         this->catalogue_dir + "/" + this->data_catalogue_file;
       this->rand_catalogue_file =
         this->catalogue_dir + "/" + this->rand_catalogue_file;
+    }
+
+    if (this->catalogue_type == "sim") {
+      this->data_catalogue_file =
+        this->catalogue_dir + "/" + this->data_catalogue_file;
+      this->rand_catalogue_file = "";
     }
 
     /// Set mock data and random catalogue inputs.  Make subdirectories
