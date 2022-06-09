@@ -97,9 +97,9 @@ clean:
 	rm -rf triumvirate/*.cpp triumvirate/*.so triumvirate/*.o
 	rm -rf build/* core
 	rm -rf *.egg-info
-	find . -type -d -name "__pycache__" -exec rm -rf {} +
+	find . -type d -name "__pycache__" -exec rm -rf {} +
 
 cleantest:
 	rm -rf triumvirate/tests/test_build/* triumvirate/tests/test_output/*
 	rm -rf core
-	find . -type -d -name ".pytest_cache" -exec rm -rf {} +
+	find . -type d -name ".pytest_cache" -exec rm -rf {} +
