@@ -107,8 +107,11 @@ cdef class ParameterSet:
             self.thisptr.catalogue_dir \
             + self._params['filenames']['data_catalogue']
         self.thisptr.rand_catalogue_file = \
-            self.thisptr.catalogue_dir \
-            + self._params['filenames']['rand_catalogue']
+            self.thisptr.catalogue_dir + (
+                self._params['filenames']['rand_catalogue']
+                if self._params['filenames']['rand_catalogue'] is not None
+                else ''
+            )
         self.thisptr.output_tag = \
             self._params['tags']['output']
 
