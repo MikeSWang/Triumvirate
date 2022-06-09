@@ -94,11 +94,12 @@ test_twopt: triumvirate/tests/test_twopt.cpp
 ## Build clean-up
 
 clean:
-	rm -rf triumvirate/*.cpp triumvirate/*.o triumvirate/*.so
-	rm -rf build/*
+	rm -rf triumvirate/*.cpp triumvirate/*.so triumvirate/*.o
+	rm -rf build/* core
 	rm -rf *.egg-info
-	rm -rf **/__pycache__/ core
+	find . -type -d -name "__pycache__" -exec rm -rf {} +
 
 cleantest:
 	rm -rf triumvirate/tests/test_build/* triumvirate/tests/test_output/*
-	rm -rf **/.pytest_cache/ core
+	rm -rf core
+	find . -type -d -name ".pytest_cache" -exec rm -rf {} +
