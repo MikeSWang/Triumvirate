@@ -18,3 +18,7 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+clean:
+	find build/ -type f -not -name ".gitignore" -exec rm -rf {} +
+	find source/ -type f -iname "*.rst" -exec rm -rf {} +
