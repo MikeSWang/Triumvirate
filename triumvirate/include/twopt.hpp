@@ -23,6 +23,151 @@ namespace trv {
 namespace algo {
 
 /**
+ * Print out the header to the measurement output file.
+ *
+ * @param save_fileptr Saved file pointer.
+ * @param params Parameter set.
+ * @param catalogue_data (Data-source) catalogue.
+ * @param catalogue_rand (Random-source) catalogue.
+ * @param norm Normalisation factor.
+ * @param space Either 'config'(-uration) space or 'fourier' space.
+ *
+ * @overload
+ */
+void print_3pt_meas_file_header(
+  std::FILE* save_fileptr, trv::scheme::ParameterSet& params,
+  ParticleCatalogue& catalogue_data, ParticleCatalogue& catalogue_rand,
+  float norm, std::string space
+) {
+  std::fprintf(
+    save_fileptr,
+    "# Data catalogue: %d particles of total weight %.3f\n",
+    catalogue_data.ntotal, catalogue_data.wtotal
+  );
+  std::fprintf(
+    save_fileptr,
+    "# Random catalogue: %d particles of total weight %.3f\n",
+    catalogue_rand.ntotal, catalogue_rand.wtotal
+  );
+  std::fprintf(
+    save_fileptr,
+    "# Box size: (%.3f, %.3f, %.3f)\n",
+    params.boxsize[0], params.boxsize[1], params.boxsize[2]
+  );
+  std::fprintf(
+    save_fileptr,
+    "# Mesh number: (%d, %d, %d)\n",
+    params.ngrid[0], params.ngrid[1], params.ngrid[2]
+  );
+  std::fprintf(
+    save_fileptr,
+    "# Particle extents: ([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
+    catalogue_data.pos_min[0], catalogue_data.pos_max[0],
+    catalogue_data.pos_min[1], catalogue_data.pos_max[1],
+    catalogue_data.pos_min[2], catalogue_data.pos_max[2]
+  );
+  std::fprintf(
+    save_fileptr,
+    "# Alignment and assignment: %s, %s\n",
+    params.alignment.c_str(), params.assignment.c_str()
+  );
+  std::fprintf(
+    save_fileptr,
+    "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
+  );
+  if (space == "config") {
+    std::fprintf(
+      save_fileptr,
+      "# [0] r_central, [1] r_eff, [2] npair, "
+      "[3] xi%d.real, [4] xi%d.imag",
+      params.ELL, params.ELL
+    );
+  } else
+  if (space == "fourier") {
+    std::fprintf(
+      save_fileptr,
+      "# [0] k_central, [1] k_eff, [2] nmode, "
+      "[3] pk%d_raw.real, [4] pk%d_raw.imag, "
+      "[5] pk_shot.real, [6] pk_shot.imag\n",
+      params.ELL, params.ELL
+    );
+  } else {
+    throw trv::runtime::InvalidParameter(
+      "[%s ERRO] `space` must be either 'config' or 'fourier': %s",
+      trv::runtime::show_timestamp().c_str(), space.c_str()
+    );
+  }
+}
+
+/**
+ * Print out the header to the measurement output file.
+ *
+ * @param save_fileptr Saved file pointer.
+ * @param params Parameter set.
+ * @param catalogue Catalogue.
+ * @param norm Normalisation factor.
+ * @param space Either 'config'(-uration) space or 'fourier' space.
+ */
+void print_3pt_meas_file_header(
+  std::FILE* save_fileptr,trv::scheme::ParameterSet& params,
+  ParticleCatalogue& catalogue, float norm, std::string space
+) {
+  std::fprintf(
+    save_fileptr,
+    "# Catalogue: %d particles of total weight %.3f\n",
+    catalogue.ntotal, catalogue.wtotal
+  );
+  std::fprintf(
+    save_fileptr,
+    "# Box size: (%.3f, %.3f, %.3f)\n",
+    params.boxsize[0], params.boxsize[1], params.boxsize[2]
+  );
+  std::fprintf(
+    save_fileptr,
+    "# Mesh number: (%d, %d, %d)\n",
+    params.ngrid[0], params.ngrid[1], params.ngrid[2]
+  );
+  std::fprintf(
+    save_fileptr,
+    "# Particle extents: ([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
+    catalogue.pos_min[0], catalogue.pos_max[0],
+    catalogue.pos_min[1], catalogue.pos_max[1],
+    catalogue.pos_min[2], catalogue.pos_max[2]
+  );
+  std::fprintf(
+    save_fileptr,
+    "# Alignment and assignment: %s, %s\n",
+    params.alignment.c_str(), params.assignment.c_str()
+  );
+  std::fprintf(
+    save_fileptr,
+    "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
+  );
+  if (space == "config") {
+    std::fprintf(
+      save_fileptr,
+      "# [0] r_central, [1] r_eff, [2] npair, "
+      "[3] xi%d.real, [4] xi%d.imag",
+      params.ELL, params.ELL
+    );
+  } else
+  if (space == "fourier") {
+    std::fprintf(
+      save_fileptr,
+      "# [0] k_central, [1] k_eff, [2] nmode, "
+      "[3] pk%d_raw.real, [4] pk%d_raw.imag, "
+      "[5] pk_shot.real, [6] pk_shot.imag\n",
+      params.ELL, params.ELL
+    );
+  } else {
+    throw trv::runtime::InvalidParameter(
+      "[%s ERRO] `space` must be either 'config' or 'fourier': %s",
+      trv::runtime::show_timestamp().c_str(), space.c_str()
+    );
+  }
+}
+
+/**
  * Power spectrum measurements.
  *
  */
@@ -252,6 +397,9 @@ PowspecMeasurements compute_powspec(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
+    print_3pt_meas_file_header(
+      save_fileptr, params, particles_data, particles_rand, norm, "fourier"
+    );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
         save_fileptr,
@@ -397,6 +545,9 @@ CorrfuncMeasurements compute_corrfunc(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
+    print_3pt_meas_file_header(
+      save_fileptr, params, particles_data, particles_rand, norm, "config"
+    );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
@@ -515,6 +666,9 @@ PowspecMeasurements compute_powspec_in_box(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
+    print_3pt_meas_file_header(
+      save_fileptr, params, particles_data, norm, "fourier"
+    );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
         save_fileptr,
@@ -625,6 +779,9 @@ CorrfuncMeasurements compute_corrfunc_in_box(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
+    print_3pt_meas_file_header(
+      save_fileptr, params, particles_data, norm, "config"
+    );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
@@ -734,6 +891,9 @@ PowspecWindowMeasurements compute_powspec_window(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
+    print_3pt_meas_file_header(
+      save_fileptr, params, particles_rand, norm, "fourier"
+    );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
@@ -874,6 +1034,9 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
+    print_3pt_meas_file_header(
+      save_fileptr, params, particles_rand, norm, "config"
+    );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
