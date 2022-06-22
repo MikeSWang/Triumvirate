@@ -102,7 +102,7 @@ void print_2pt_meas_file_header(
     );
   } else {
     throw trv::runtime::InvalidParameter(
-      "[%s ERRO] `space` must be either 'config' or 'fourier': %s",
+      "[%s ERRO] `space` must be either 'config' or 'fourier': %s\n",
       trv::runtime::show_timestamp().c_str(), space.c_str()
     );
   }
@@ -175,7 +175,7 @@ void print_2pt_meas_file_header(
     );
   } else {
     throw trv::runtime::InvalidParameter(
-      "[%s ERRO] `space` must be either 'config' or 'fourier': %s",
+      "[%s ERRO] `space` must be either 'config' or 'fourier': %s\n",
       trv::runtime::show_timestamp().c_str(), space.c_str()
     );
   }
