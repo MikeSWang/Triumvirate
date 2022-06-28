@@ -131,11 +131,14 @@ class ParticleCatalogue {
    *
    * @param particles_file Particle data file path.
    * @param names Field names, comma-separated without space, in the file.
+   * @param volume Catalogue box volume (default is 0.) used for computing
+   *               the default 'nz' value when the field is missing.
    * @returns Exit status.
    */
   int read_particle_data_from_file(
     std::string& particles_file,
-    const std::string& names
+    const std::string& names,
+    double volume=0.
   ) {
     this->source = particles_file;
 
@@ -207,6 +210,11 @@ class ParticleCatalogue {
     /// Fill in particle data.
     this->_initialise_particles(num_lines);
 
+    double nz_box_default;
+    if (volume > 0.) {
+      nz_box_default = this->ntotal / volume;
+    }
+
     fin.open(particles_file.c_str(), std::ios::in);
 
     num_lines = 0;  // reset
@@ -238,7 +246,7 @@ class ParticleCatalogue {
       if (name_indices[3] != -1) {
         nz = row[name_indices[3]];
       } else {
-        nz = NZ_DEFAULT;  // default value
+        nz = nz_box_default;  // default value
       }
 
       if (name_indices[4] != -1) {

@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
   std::string flag_data = "false";  // data catalogue status
   if (trv::runtime::if_path_is_set(params.data_catalogue_file)) {
     if (particles_data.read_particle_data_from_file(
-      params.data_catalogue_file, params.catalogue_header
+      params.data_catalogue_file, params.catalogue_header, params.volume
     )) {
       if (trv::runtime::currTask == 0) {
         throw trv::runtime::IOError(
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
   std::string flag_rand = "false";  // random catalogue status
   if (trv::runtime::if_path_is_set(params.rand_catalogue_file)) {
     if (particles_rand.read_particle_data_from_file(
-      params.rand_catalogue_file, params.catalogue_header
+      params.rand_catalogue_file, params.catalogue_header, params.volume
     )) {
       if (trv::runtime::currTask == 0) {
         throw trv::runtime::IOError(
