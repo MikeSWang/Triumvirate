@@ -68,7 +68,6 @@ ext_modules = [
         include_dirs=[npy_include,],
         define_macros=[
             npy_macros,
-            # ('DBGNZ', None),
         ],
     ),
     Extension(
@@ -80,7 +79,7 @@ ext_modules = [
         libraries=libraries,
         define_macros=[
             npy_macros,
-            # ('DBGDK', None),
+            # ('DBG_DK', None),
         ],
     ),
     Extension(
@@ -92,7 +91,7 @@ ext_modules = [
         libraries=libraries,
         define_macros=[
             npy_macros,
-            # ('DBGDK', None),
+            # ('DBG_DK', None),
         ],
     ),
     Extension(
