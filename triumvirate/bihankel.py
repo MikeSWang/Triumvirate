@@ -298,9 +298,10 @@ def transform_bispec_to_3pcf(ell1, ell2, bk_in, k_in, r_out,
         Extrapolation sample number (one-sided) (default is `None`).
     extrap : {'lin', 'loglin', '0-pad'}, optional
         If not `None` (default), set one of the following options:
-        * 'lin' -- input bispectrum is extrapolated linearly;
-        * 'loglin' -- input bispectrum is extrapolated log-linearly;
-        * '0-pad' -- input bispectrum is zero padded.
+            * 'lin' -- input bispectrum is extrapolated linearly;
+            * 'loglin' -- input bispectrum is extrapolated log-linearly;
+            * '0-pad' -- input bispectrum is zero padded.
+
         In each case, `n_extrap` must be set, and the input wavenumbers
         `k_in` are extrapolated log-linearly.
 
@@ -308,12 +309,12 @@ def transform_bispec_to_3pcf(ell1, ell2, bk_in, k_in, r_out,
     -------
     zeta_dict : dict
         Output 3PCF including its attributes:
-        * 'zeta', 'r' -- transformed 3PCF and separations;
-        * 'r1_mesh', 'r2_mesh' -- transformed separation coordinate array;
-        * 'zeta_fftlog', 'r_fftlog' -- FFTLog-sampled 3PCF
-          and separations;
-        * 'ell1', 'ell2' -- multipole degrees;
-        * 'n_fftlog' -- FFTLog sample number used.
+            * 'zeta', 'r' -- transformed 3PCF and separations;
+            * 'r1_mesh', 'r2_mesh' -- transformed separation coordinate array;
+            * 'zeta_fftlog', 'r_fftlog' -- FFTLog-sampled 3PCF
+              and separations;
+            * 'ell1', 'ell2' -- multipole degrees;
+            * 'n_fftlog' -- FFTLog sample number used.
 
     Raises
     ------
@@ -423,9 +424,10 @@ def transform_3pcf_to_bispec(ell1, ell2, zeta_in, r_in, k_out,
         Extrapolation sample number (one-sided) (default is `None`).
     extrap : {'lin', 'loglin', '0-pad'}, optional
         If not `None` (default), set one of the following options:
-        * 'lin' -- input 3PCF is extrapolated linearly;
-        * 'loglin' -- input 3PCF is extrapolated log-linearly;
-        * '0-pad' -- input 3PCF is zero padded.
+            * 'lin' -- input 3PCF is extrapolated linearly;
+            * 'loglin' -- input 3PCF is extrapolated log-linearly;
+            * '0-pad' -- input 3PCF is zero padded.
+
         In each case, `n_extrap` must be set, and the input separations
         `r_in` are extrapolated log-linearly.
 
@@ -433,12 +435,12 @@ def transform_3pcf_to_bispec(ell1, ell2, zeta_in, r_in, k_out,
     -------
     bk_dict : dict
         Output bispectrum including its attributes:
-        * 'bk', 'k' -- transformed bispectrum and wavenumbers;
-        * 'k1_mesh', 'k2_mesh' -- transformed wavenumber coordinate array;
-        * 'bk_fftlog', 'k_fftlog' -- FFTLog-sampled bispectrum
-          and wavenumbers;
-        * 'ell1', 'ell2' -- multipole degrees;
-        * 'n_fftlog' -- FFTLog sample number used.
+            * 'bk', 'k' -- transformed bispectrum and wavenumbers;
+            * 'k1_mesh', 'k2_mesh' -- transformed wavenumber coordinate array;
+            * 'bk_fftlog', 'k_fftlog' -- FFTLog-sampled bispectrum
+              and wavenumbers;
+            * 'ell1', 'ell2' -- multipole degrees;
+            * 'n_fftlog' -- FFTLog sample number used.
 
     Raises
     ------
