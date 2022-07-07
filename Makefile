@@ -1,28 +1,33 @@
 # -- Configuration ------------------------------------------------------------
 
-SYSTYPE = "local"
+# -- System
 
-## Common configuration
+SYSTYPE = local  # {local (default), cluster}
 
-CFLAGS =# # e.g. -Wall -DTRV_USE_DISABLED_CODE -DDBG_DK
+# Add customised `SYSTYPE` detection.
+ifeq ($(shell test -f sysflag && echo cluster), cluster)
+SYSTYPE = cluster
+endif
+
+# -- Common configuration
 
 INCLUDES = -I./triumvirate/include
-LIBS = -lm -lgsl -lgslcblas -lfftw3
+LIBS = -lgsl -lgslcblas -lfftw3
 
-## System-dependent configuration
+# -- System-dependent configuration
 
-ifeq (${SYSTYPE}, "local")
+ifeq ($(strip ${SYSTYPE}), local)
 
 CC = g++
-
-GSL_DIR = /usr/local/gsl
-FFTW_DIR = /usr/local/fftw3
+CFLAGS =  # {-DTRV_USE_DISABLED_CODE, -DDBG_DK, ...}
 
 endif
 
-ifeq (${SYSTYPE}, "cluster") # adapt for different systems (NERSC here)
+# Adapt for the system (NERSC here).
+ifeq ($(strip ${SYSTYPE}), cluster)
 
 CC = g++
+CFLAGS =  # {-DTRV_USE_DISABLED_CODE, -DDBG_DK, ...}
 
 FFTW_DIR = ${FFTW_ROOT}
 
@@ -45,17 +50,18 @@ endif
 
 # -- Build --------------------------------------------------------------------
 
-## Installation build
+# Installation build
 
 install: cppinstall pyinstall
 
 cppinstall: measurements
 
 pyinstall:
-	pip install -e .
+	echo "${INCLUDES}" > includes.txt
+	pip install --user -e .
+	rm includes.txt
 
-
-## Testing build
+# Testing build
 
 test: cpptest pytest
 
@@ -66,7 +72,7 @@ cpptest: test_monitor test_parameters test_bessel test_harmonic test_tools \
 pytest:
 
 
-## Invididual build
+# Invididual build
 
 measurements: triumvirate/src/measurements.cpp
 	$(CC) $(CFLAGS) -o $(addprefix build/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
@@ -102,7 +108,7 @@ test_twopt: triumvirate/tests/test_twopt.cpp
 	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
 
 
-## Build clean-up
+# Build clean-up
 
 clean:
 	rm -rf triumvirate/*.cpp triumvirate/*.so triumvirate/*.o
