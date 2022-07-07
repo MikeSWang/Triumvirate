@@ -1,33 +1,44 @@
 # -- Configuration ------------------------------------------------------------
 
-SYSTYPE = "cluster"
+SYSTYPE = "local"
 
-ifeq ($(SYSTYPE), "local")
+## Common configuration
 
-CC = mpic++
-CFLAGS =# -DDBG_DK -DTRV_USE_DISABLED_CODE -Wall
+CFLAGS =# # e.g. -Wall -DTRV_USE_DISABLED_CODE -DDBG_DK
+
+INCLUDES = -I./triumvirate/include
+LIBS = -lm -lgsl -lgslcblas -lfftw3
+
+## System-dependent configuration
+
+ifeq (${SYSTYPE}, "local")
+
+CC = g++
 
 GSL_DIR = /usr/local/gsl
 FFTW_DIR = /usr/local/fftw3
 
-INCLUDES = -I./triumvirate/include
-INCLUDES += -I${GSL_DIR}/include
-INCLUDES += -I${FFTW_DIR}/include
+endif
 
-LIBS = -lm
-LIBS += -L${GSL_DIR}/lib -lgsl -lgslcblas
-LIBS += -L$(FFTW_DIR)/lib -lfftw3
+ifeq (${SYSTYPE}, "cluster") # adapt for different systems (NERSC here)
+
+CC = g++
+
+FFTW_DIR = ${FFTW_ROOT}
 
 endif
 
-ifeq ($(SYSTYPE), "cluster")
+ifdef GSL_DIR
 
-CC = g++
-CFLAGS =# -DDBG_DK -DTRV_USE_DISABLED_CODE -Wall
+INCLUDES += -I${GSL_DIR}/include
+LIBS += -L${GSL_DIR}/lib
 
-INCLUDES = -I./triumvirate/include
+endif
 
-LIBS = -lm -lgsl -lgslcblas -lfftw3
+ifdef FFTW_DIR
+
+INCLUDES += -I${FFTW_DIR}/include
+LIBS += -L$(FFTW_DIR)/lib
 
 endif
 
