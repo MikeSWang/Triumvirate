@@ -48,10 +48,22 @@ for key, val in config_vars.items():
 
 language = 'c++'
 extra_compile_args = ['-std=c++11',]
-libraries = ['m', 'gsl', 'fftw3', 'gslcblas']
-self_include = f"{pkgdir}/include"
-npy_include = numpy.get_include()
-npy_macros = ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')
+
+self_includes = [f"{pkgdir}/include"]
+self_macros = [('DBG_DK', None)]
+
+npy_includes = [numpy.get_include()]
+npy_macros = [
+    ('NPY_NO_DEPRECATED_API', None),
+    ('NPY_1_7_API_VERSION', None),
+]
+
+try:
+    ext_includes = os.environ['INCLUDES'].split()
+except KeyError:
+    ext_includes = []
+finally:
+    ext_libraries = ['m', 'gsl', 'fftw3', 'gslcblas']
 
 ext_modules = [
     Extension(
@@ -65,43 +77,35 @@ ext_modules = [
         sources=[f"{pkgdir}/_catalogue.pyx"],
         language=language,
         extra_compile_args=extra_compile_args,
-        include_dirs=[npy_include,],
-        define_macros=[
-            npy_macros,
-        ],
+        include_dirs=npy_includes,
+        define_macros=npy_macros,
     ),
     Extension(
         f'{pkgdir}._twopt',
         sources=[f"{pkgdir}/_twopt.pyx"],
         language=language,
         extra_compile_args=extra_compile_args,
-        include_dirs=[self_include, npy_include,],
-        libraries=libraries,
-        define_macros=[
-            npy_macros,
-            # ('DBG_DK', None),
-        ],
+        include_dirs=self_includes+npy_includes,
+        libraries=ext_libraries,
+        define_macros=npy_macros,
     ),
     Extension(
         f'{pkgdir}._threept',
         sources=[f"{pkgdir}/_threept.pyx"],
         language=language,
         extra_compile_args=extra_compile_args,
-        include_dirs=[self_include, npy_include,],
-        libraries=libraries,
-        define_macros=[
-            npy_macros,
-            # ('DBG_DK', None),
-        ],
+        include_dirs=self_includes+npy_includes,
+        libraries=ext_libraries,
+        define_macros=npy_macros,
     ),
     Extension(
         f'{pkgdir}._fftlog',
         sources=[f"{pkgdir}/_fftlog.pyx"],
         language=language,
         extra_compile_args=extra_compile_args,
-        include_dirs=[self_include, npy_include,],
-        libraries=libraries,
-        define_macros=[npy_macros,],
+        include_dirs=self_includes+npy_includes,
+        libraries=ext_libraries,
+        define_macros=npy_macros,
     ),
 ]
 

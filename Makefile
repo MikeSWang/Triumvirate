@@ -47,23 +47,23 @@ endif
 
 ## Installation build
 
-install: pyinstall cppinstall
+install: cppinstall pyinstall
+
+cppinstall: measurements
 
 pyinstall:
 	pip install -e .
 
-cppinstall: measurements
-
 
 ## Testing build
 
-test: pytest cpptest
-
-pytest:
+test: cpptest pytest
 
 cpptest: test_monitor test_parameters test_bessel test_harmonic test_tools \
          test_particles test_field test_twopt test_threept \
 				 test_fftlog
+
+pytest:
 
 
 ## Invididual build
