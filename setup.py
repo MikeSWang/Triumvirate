@@ -47,23 +47,24 @@ for key, val in config_vars.items():
 # -- Extensions ---------------------------------------------------------------
 
 language = 'c++'
-extra_compile_args = ['-std=c++11',]
+extra_compile_args = ['-std=c++11']
 
 self_includes = [f"{pkgdir}/include"]
-self_macros = [('DBG_DK', None)]
+# self_macros = [('DBG_DK', None)]
 
 npy_includes = [numpy.get_include()]
 npy_macros = [
-    ('NPY_NO_DEPRECATED_API', None),
-    ('NPY_1_7_API_VERSION', None),
+    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
 ]
 
 try:
-    ext_includes = os.environ['INCLUDES'].split()
-except KeyError:
+    with open("includes.txt", 'r') as f:
+        ext_includes = f.readline().replace("-I", "").split()
+except FileNotFoundError:
     ext_includes = []
 finally:
-    ext_libraries = ['m', 'gsl', 'fftw3', 'gslcblas']
+    ext_includes = [incl_ for incl_ in ext_includes if pkgdir not in incl_]
+    ext_libraries = []
 
 ext_modules = [
     Extension(
@@ -85,7 +86,7 @@ ext_modules = [
         sources=[f"{pkgdir}/_twopt.pyx"],
         language=language,
         extra_compile_args=extra_compile_args,
-        include_dirs=self_includes+npy_includes,
+        include_dirs=self_includes+npy_includes+ext_includes,
         libraries=ext_libraries,
         define_macros=npy_macros,
     ),
@@ -94,7 +95,7 @@ ext_modules = [
         sources=[f"{pkgdir}/_threept.pyx"],
         language=language,
         extra_compile_args=extra_compile_args,
-        include_dirs=self_includes+npy_includes,
+        include_dirs=self_includes+npy_includes+ext_includes,
         libraries=ext_libraries,
         define_macros=npy_macros,
     ),
@@ -103,7 +104,7 @@ ext_modules = [
         sources=[f"{pkgdir}/_fftlog.pyx"],
         language=language,
         extra_compile_args=extra_compile_args,
-        include_dirs=self_includes+npy_includes,
+        include_dirs=self_includes+npy_includes+ext_includes,
         libraries=ext_libraries,
         define_macros=npy_macros,
     ),
