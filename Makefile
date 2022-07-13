@@ -1,13 +1,9 @@
 # -- Configuration ------------------------------------------------------------
 
-# -- System
+# -- System detection
 
-SYSTYPE = local  # {local (default), cluster}
-
-# Add customised `SYSTYPE` detection.
-ifeq ($(shell test -f sysflag && echo cluster), cluster)
-SYSTYPE = cluster
-endif
+# Check for the NERSC computing cluster here.
+SYSTYPE := $(if ${NERSC_HOST}, cluster, local)
 
 # -- Common configuration
 
@@ -19,15 +15,15 @@ LIBS = -lgsl -lgslcblas -lfftw3
 ifeq ($(strip ${SYSTYPE}), local)
 
 CC = g++
-CFLAGS =  # {-DTRV_USE_DISABLED_CODE, -DDBG_DK, ...}
+CFLAGS =# {-DTRV_USE_DISABLED_CODE, -DDBG_DK, ...}
 
 endif
 
-# Adapt for the system (NERSC here).
+# Adapt for the NERSC computing cluster here.
 ifeq ($(strip ${SYSTYPE}), cluster)
 
 CC = g++
-CFLAGS =  # {-DTRV_USE_DISABLED_CODE, -DDBG_DK, ...}
+CFLAGS =# {-DTRV_USE_DISABLED_CODE, -DDBG_DK, ...}
 
 FFTW_DIR = ${FFTW_ROOT}
 
@@ -71,7 +67,6 @@ cpptest: test_monitor test_parameters test_bessel test_harmonic test_tools \
 
 pytest:
 
-
 # Invididual build
 
 measurements: triumvirate/src/measurements.cpp
@@ -106,7 +101,6 @@ test_tools: triumvirate/tests/test_tools.cpp
 
 test_twopt: triumvirate/tests/test_twopt.cpp
 	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
-
 
 # Build clean-up
 
