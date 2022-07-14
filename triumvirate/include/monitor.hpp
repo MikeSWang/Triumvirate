@@ -14,6 +14,9 @@
 #include <stdexcept>
 #include <string>
 
+/// Include potentially unused libraries.
+#include <iostream>
+
 const double BYTES_PER_GBYTES = 1073741824.;  ///< 1024^3 bytes per gibibyte
 
 namespace trv {

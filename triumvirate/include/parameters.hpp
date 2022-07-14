@@ -315,10 +315,10 @@ class ParameterSet {
     this->catalogue_type = catalogue_type_;
     this->measurement_type = measurement_type_;
 
-    this->norm_convention = norm_convention_;
-    this->shotnoise_convention = shotnoise_convention_;
     this->alignment = alignment_;
     this->assignment = assignment_;
+    this->norm_convention = norm_convention_;
+    this->shotnoise_convention = shotnoise_convention_;
 
     this->binning = binning_;
     this->form = form_;
@@ -336,6 +336,57 @@ class ParameterSet {
     this->nmesh = ngrid_x * ngrid_y * ngrid_z;
 
     this->set_io_files();
+
+    #ifdef DBG_PARS
+    std::cout <<
+      "catalogue_dir: " << this->catalogue_dir
+    << std::endl;
+    std::cout <<
+      "measurement_dir: " << this->measurement_dir
+    << std::endl;
+    std::cout <<
+      "data_catalogue_file: " << this->data_catalogue_file
+    << std::endl;
+    std::cout <<
+      "rand_catalogue_file: " << this->rand_catalogue_file
+    << std::endl;
+    std::cout <<
+      "catalogue_header: " << this->catalogue_header
+    << std::endl;
+    std::cout <<
+      "output_tag: " << this->output_tag
+    << std::endl;
+    std::cout <<
+      "boxsize: " << this->boxsize
+    << std::endl;
+    std::cout <<
+      "ngrid: " << this->ngrid
+    << std::endl;
+    std::cout <<
+      "alignment: " << this->alignment
+    << std::endl;
+    std::cout <<
+      "assignment: " << this->assignment
+    << std::endl;
+    std::cout <<
+      "norm_convention: " << this->norm_convention
+    << std::endl;
+    std::cout <<
+      "shotnoise_convention: " << this->shotnoise_convention
+    << std::endl;
+    std::cout <<
+      "catalogue_type: " << this->catalogue_type
+    << std::endl;
+    std::cout <<
+      "measurement_type: " << this->measurement_type
+    << std::endl;
+    std::cout <<
+      "binning: " << this->binning
+    << std::endl;
+    std::cout <<
+      "form: " << this->form
+    << std::endl;
+    #endif  // DBG_PARS
 
     return this->validate();
   }

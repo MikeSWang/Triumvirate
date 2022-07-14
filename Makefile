@@ -15,7 +15,7 @@ LIBS = -lgsl -lgslcblas -lfftw3
 ifeq ($(strip ${SYSTYPE}), local)
 
 CC = g++
-CFLAGS =# {-DTRV_USE_DISABLED_CODE, -DDBG_DK, ...}
+CFLAGS =# {-DTRV_USE_DISABLED_CODE, -DDBG_PARS, -DDBG_DK, ...}
 
 endif
 
@@ -23,7 +23,7 @@ endif
 ifeq ($(strip ${SYSTYPE}), cluster)
 
 CC = g++
-CFLAGS =# {-DTRV_USE_DISABLED_CODE, -DDBG_DK, ...}
+CFLAGS =# {-DTRV_USE_DISABLED_CODE, -DDBG_PARS, -DDBG_DK, ...}
 
 FFTW_DIR = ${FFTW_ROOT}
 
