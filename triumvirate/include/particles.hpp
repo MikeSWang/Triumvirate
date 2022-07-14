@@ -20,14 +20,6 @@
 
 #include "monitor.hpp"
 
-/// TODO: Remove in public releases.
-/// Set placeholder 'nz' default value.
-#ifdef DBGNZ
-  const double NZ_DEFAULT = 5.e-4;
-#else  // DBGNZ
-  const double NZ_DEFAULT = 0.;
-#endif  // DBGNZ
-
 namespace trv {
 namespace obj {
 
