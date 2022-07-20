@@ -36,6 +36,8 @@ namespace algo {
  * @param catalogue_data (Data-source) catalogue.
  * @param catalogue_rand (Random-source) catalogue.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (only printed out
+ *                 if non-zero).
  * @param space Either 'config'(-uration) space or 'fourier' space.
  *
  * @overload
@@ -43,7 +45,7 @@ namespace algo {
 void print_3pt_meas_file_header(
   std::FILE* save_fileptr, trv::scheme::ParameterSet& params,
   ParticleCatalogue& catalogue_data, ParticleCatalogue& catalogue_rand,
-  float norm, std::string space
+  float norm, float norm_alt, std::string space
 ) {
   std::fprintf(
     save_fileptr,
@@ -81,9 +83,9 @@ void print_3pt_meas_file_header(
     save_fileptr,
     "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
   );
-  #ifdef NORMALT
-  std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", NORMALT);
-  #endif
+  if (norm_alt != 0.) {
+    std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", norm_alt);
+  }
   if (space == "config") {
     std::fprintf(
       save_fileptr,
@@ -118,13 +120,15 @@ void print_3pt_meas_file_header(
  * @param params Parameter set.
  * @param catalogue Catalogue.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (only printed out
+ *                 if non-zero).
  * @param space Either 'config'(-uration) space or 'fourier' space.
  *
  * @overload
  */
 void print_3pt_meas_file_header(
   std::FILE* save_fileptr, trv::scheme::ParameterSet& params,
-  ParticleCatalogue& catalogue, float norm, std::string space
+  ParticleCatalogue& catalogue, float norm, float norm_alt, std::string space
 ) {
   std::fprintf(
     save_fileptr,
@@ -157,9 +161,9 @@ void print_3pt_meas_file_header(
     save_fileptr,
     "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
   );
-  #ifdef NORMALT
-  std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", NORMALT);
-  #endif
+  if (norm_alt != 0.) {
+    std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", norm_alt);
+  }
   if (space == "config") {
     std::fprintf(
       save_fileptr,
@@ -295,6 +299,9 @@ double calc_bispec_normalisation_from_particles(
  * @param kbin Wavenumber bins.
  * @param alpha Alpha ratio.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (default is 0.) which
+ *                 may be printed out in the header of the
+ *                 measurement output file.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns bispec_out Output bispectrum measurements.
@@ -306,6 +313,7 @@ BispecMeasurements compute_bispec(
   double* kbin,
   double alpha,
   double norm,
+  double norm_alt=0.,
   bool save=false
 ) {
   if (trv::runtime::currTask == 0) {
@@ -793,7 +801,8 @@ BispecMeasurements compute_bispec(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_3pt_meas_file_header(
-      save_fileptr, params, particles_data, particles_rand, norm, "fourier"
+      save_fileptr, params, particles_data, particles_rand, norm, norm_alt,
+      "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
@@ -822,6 +831,9 @@ BispecMeasurements compute_bispec(
  * @param params Parameter set.
  * @param kbin Wavenumber bins.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (default is 0.) which
+ *                 may be printed out in the header of the
+ *                 measurement output file.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns bispec_out Output bispectrum measurements.
@@ -831,6 +843,7 @@ BispecMeasurements compute_bispec_in_box(
   trv::scheme::ParameterSet& params,
   double* kbin,
   double norm,
+  double norm_alt=0.,
   bool save=false
 ) {
   if (trv::runtime::currTask == 0) {
@@ -1272,7 +1285,7 @@ BispecMeasurements compute_bispec_in_box(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_3pt_meas_file_header(
-      save_fileptr, params, particles_data, norm, "fourier"
+      save_fileptr, params, particles_data, norm, norm_alt, "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
@@ -1307,6 +1320,9 @@ BispecMeasurements compute_bispec_in_box(
  * @param rbin Separation bins.
  * @param alpha Alpha ratio.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (default is 0.) which
+ *                 may be printed out in the header of the
+ *                 measurement output file.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns threepcf_out Output three-point correlation function
@@ -1319,6 +1335,7 @@ ThreePCFMeasurements compute_3pcf(
   double* rbin,
   double alpha,
   double norm,
+  double norm_alt=0.,
   bool save=false
 ) {
   if (trv::runtime::currTask == 0) {
@@ -1662,7 +1679,8 @@ ThreePCFMeasurements compute_3pcf(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_3pt_meas_file_header(
-      save_fileptr, params, particles_data, particles_rand, norm, "config"
+      save_fileptr, params, particles_data, particles_rand, norm, norm_alt,
+      "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
@@ -1692,6 +1710,9 @@ ThreePCFMeasurements compute_3pcf(
  * @param params Parameter set.
  * @param rbin Separation bins.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (default is 0.) which
+ *                 may be printed out in the header of the
+ *                 measurement output file.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns threepcf_out Output three-point correlation
@@ -1702,6 +1723,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
   trv::scheme::ParameterSet& params,
   double* rbin,
   double norm,
+  double norm_alt=0.,
   bool save=false
 ) {
   if (trv::runtime::currTask == 0) {
@@ -2008,7 +2030,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_3pt_meas_file_header(
-      save_fileptr, params, particles_data, norm, "config"
+      save_fileptr, params, particles_data, norm, norm_alt, "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
@@ -2040,6 +2062,9 @@ ThreePCFMeasurements compute_3pcf_in_box(
  * @param rbin Separation bins.
  * @param alpha Alpha ratio.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (default is 0.) which
+ *                 may be printed out in the header of the
+ *                 measurement output file.
  * @param wide_angle If `true` (default is `false`), compute wide-angle
  *                   correction terms as set by `params`.
  * @param save If `true` (default is `false`), write computed results
@@ -2054,6 +2079,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
   double* rbin,
   double alpha,
   double norm,
+  double norm_alt=0.,
   bool wide_angle=false,
   bool save=false
 ) {
@@ -2407,7 +2433,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_3pt_meas_file_header(
-      save_fileptr, params, particles_rand, norm, "config"
+      save_fileptr, params, particles_rand, norm, norm_alt, "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
@@ -2440,11 +2466,14 @@ ThreePCFWindowMeasurements compute_3pcf_window(
  * @param particles_rand (Random-source) particle container.
  * @param los_data (Data-source) particle lines of sight.
  * @param los_rand (Random-source) particle lines of sight.
+ * @param los_choice Choice of line of sight {0, 1 or 2}.
  * @param params Parameter set.
  * @param kbin Wavenumber bins.
  * @param alpha Alpha ratio.
- * @param norm Survey volume normalisation constant.
- * @param los_choice Choice of line of sight {0, 1 or 2}.
+ * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (default is 0.) which
+ *                 may be printed out in the header of the
+ *                 measurement output file.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns bispec_out Output bispectrum measurements.
@@ -2452,11 +2481,12 @@ ThreePCFWindowMeasurements compute_3pcf_window(
 BispecMeasurements compute_bispec_for_los_choice(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
+  int los_choice,
   trv::scheme::ParameterSet& params,
   double* kbin,
   double alpha,
   double norm,
-  int los_choice,
+  double norm_alt=0.,
   bool save=false
 ) {
   if (trv::runtime::currTask == 0) {
@@ -3059,7 +3089,8 @@ BispecMeasurements compute_bispec_for_los_choice(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_3pt_meas_file_header(
-      save_fileptr, params, particles_data, particles_rand, norm, "fourier"
+      save_fileptr, params, particles_data, particles_rand, norm, norm_alt,
+      "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
