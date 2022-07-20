@@ -109,6 +109,7 @@ clean:
 	rm -rf build/* core
 	rm -rf *.egg-info
 	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +
 
 cleantest:
 	rm -rf triumvirate/tests/test_build/* triumvirate/tests/test_output/*

@@ -112,8 +112,9 @@ cdef class ParameterSet:
                 if self._params['filenames']['rand_catalogue'] is not None
                 else ''
             )
-        self.thisptr.output_tag = \
-            self._params['tags']['output']
+        self.thisptr.output_tag = self._params['tags']['output'] \
+            if self._params['tags']['output'] is not None \
+            else ''.encode('utf-8')
 
         self.thisptr.boxsize = [
             self._params['boxsize']['x'],
