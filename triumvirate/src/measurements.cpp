@@ -292,9 +292,10 @@ int main(int argc, char* argv[]) {
     );
   }
 
-  #ifdef DBG_NORMALT
-  /// Compute alternative normalisation factor for clustering statistics.
+  /// Compute, optionally, the alternative normalisation factor
+  /// for clustering statistics.
   double norm_alt;  // alternative normalisation factor
+  #ifdef DBG_NORMALT
   if (params.norm_convention == "mesh") {
     if (flag_rand == "true") {
       if (flag_npoint == "2pt") {
@@ -349,7 +350,6 @@ int main(int argc, char* argv[]) {
       norm_alt
     );
   }
-  #define NORMALT norm_alt
   #endif  // DBG_NORMALT
 
   /// Perform clustering-statistics algorithms.
@@ -357,12 +357,12 @@ int main(int argc, char* argv[]) {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       trv::algo::compute_powspec(
         particles_data, particles_rand, los_data, los_rand,
-        params, kbin, alpha, norm, save
+        params, kbin, alpha, norm, norm_alt, save
       );
     } else
     if (params.catalogue_type == "sim") {
       trv::algo::compute_powspec_in_box(
-        particles_data, params, kbin, norm, save
+        particles_data, params, kbin, norm, norm_alt, save
       );
     }
   } else
@@ -370,18 +370,18 @@ int main(int argc, char* argv[]) {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       trv::algo::compute_corrfunc(
         particles_data, particles_rand, los_data, los_rand,
-        params, rbin, alpha, norm, save
+        params, rbin, alpha, norm, norm_alt, save
       );
     } else
     if (params.catalogue_type == "sim") {
       trv::algo::compute_corrfunc_in_box(
-        particles_data, params, rbin, norm, save
+        particles_data, params, rbin, norm, norm_alt, save
       );
     }
   } else
   if (params.measurement_type == "2pcf-win") {
     trv::algo::compute_corrfunc_window(
-      particles_rand, los_rand, params, rbin, alpha, norm, save
+      particles_rand, los_rand, params, rbin, alpha, norm, norm_alt, save
     );
   } else
 
@@ -389,12 +389,12 @@ int main(int argc, char* argv[]) {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       trv::algo::compute_bispec(
         particles_data, particles_rand, los_data, los_rand,
-        params, kbin, alpha, norm, save
+        params, kbin, alpha, norm, norm_alt, save
       );
     } else
     if (params.catalogue_type == "sim") {
       trv::algo::compute_bispec_in_box(
-        particles_data, params, kbin, norm, save
+        particles_data, params, kbin, norm, norm_alt, save
       );
     }
   } else
@@ -402,23 +402,25 @@ int main(int argc, char* argv[]) {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       trv::algo::compute_3pcf(
         particles_data, particles_rand, los_data, los_rand,
-        params, rbin, alpha, norm, save
+        params, rbin, alpha, norm, norm_alt, save
       );
     } else
     if (params.catalogue_type == "sim") {
-      trv::algo::compute_3pcf_in_box(particles_data, params, rbin, norm, save);
+      trv::algo::compute_3pcf_in_box(
+        particles_data, params, rbin, norm, norm_alt, save
+      );
     }
   } else
   if (params.measurement_type == "3pcf-win") {
     bool wa = false;
     trv::algo::compute_3pcf_window(
-      particles_rand, los_rand, params, rbin, alpha, norm, wa, save
+      particles_rand, los_rand, params, rbin, alpha, norm, norm_alt, wa, save
     );
   } else
   if (params.measurement_type == "3pcf-win-wa") {
     bool wa = true;
     trv::algo::compute_3pcf_window(
-      particles_rand, los_rand, params, rbin, alpha, norm, wa, save
+      particles_rand, los_rand, params, rbin, alpha, norm, norm_alt, wa, save
     );
   }
 
