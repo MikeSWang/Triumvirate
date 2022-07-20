@@ -8,14 +8,12 @@ For Python, YAML files are used.
 
 """
 import argparse
-from ast import Try
-from unicodedata import category
 import warnings
 from copy import deepcopy
-from email.mime import base
 from functools import reduce
 from operator import getitem
 from os.path import splitext
+from pathlib import Path
 
 import yaml
 
@@ -203,6 +201,8 @@ if __name__ == '__main__':
         # Use the template path with '_new' tag.
         template_file_base, template_file_ext = splitext(config.template)
         output_path = "".join([template_file_base, '_new', template_file_ext])
+    # Ensure the output directory exists.
+    Path(output_path).parent.mkdir(exist_ok=True, parents=True)
 
     # Load and generate.
     if config.cpp:
