@@ -68,7 +68,7 @@ except FileNotFoundError:
     ext_includes = []
 finally:
     ext_includes = [incl_ for incl_ in ext_includes if pkgdir not in incl_]
-    ext_libraries = []
+    ext_libraries = ['gsl']
 
 ext_modules = [
     Extension(

@@ -608,8 +608,8 @@ def compute_3pcf_window(catalogue_rand, params, los_rand=None, wide_angle=False,
 #         pass
 #
 #     results = _compute_bispec_for_los_choice(
-#         particles_data, particles_rand, los_data, los_rand,
-#         params, kbin, alpha, norm, los_choice, save=save
+#         particles_data, particles_rand, los_data, los_rand, los_choice,
+#         params, kbin, alpha, norm, save=save
 #     )
 #
 #     try:

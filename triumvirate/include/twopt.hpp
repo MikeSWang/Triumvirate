@@ -30,6 +30,8 @@ namespace algo {
  * @param catalogue_data (Data-source) catalogue.
  * @param catalogue_rand (Random-source) catalogue.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (only printed out
+ *                 if non-zero).
  * @param space Either 'config'(-uration) space or 'fourier' space.
  *
  * @overload
@@ -37,7 +39,7 @@ namespace algo {
 void print_2pt_meas_file_header(
   std::FILE* save_fileptr, trv::scheme::ParameterSet& params,
   ParticleCatalogue& catalogue_data, ParticleCatalogue& catalogue_rand,
-  float norm, std::string space
+  float norm, float norm_alt, std::string space
 ) {
   std::fprintf(
     save_fileptr,
@@ -75,9 +77,9 @@ void print_2pt_meas_file_header(
     save_fileptr,
     "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
   );
-  #ifdef NORMALT
-  std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", NORMALT);
-  #endif
+  if (norm_alt != 0.) {
+    std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", norm_alt);
+  }
   if (space == "config") {
     std::fprintf(
       save_fileptr,
@@ -109,11 +111,13 @@ void print_2pt_meas_file_header(
  * @param params Parameter set.
  * @param catalogue Catalogue.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (only printed out
+ *                 if non-zero).
  * @param space Either 'config'(-uration) space or 'fourier' space.
  */
 void print_2pt_meas_file_header(
   std::FILE* save_fileptr,trv::scheme::ParameterSet& params,
-  ParticleCatalogue& catalogue, float norm, std::string space
+  ParticleCatalogue& catalogue, float norm, float norm_alt, std::string space
 ) {
   std::fprintf(
     save_fileptr,
@@ -146,9 +150,9 @@ void print_2pt_meas_file_header(
     save_fileptr,
     "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
   );
-  #ifdef NORMALT
-  std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", NORMALT);
-  #endif
+  if (norm_alt != 0.) {
+    std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", norm_alt);
+  }
   if (space == "config") {
     std::fprintf(
       save_fileptr,
@@ -276,6 +280,9 @@ double calc_powspec_normalisation_from_particles(
  * @param kbin Wavenumber bins.
  * @param alpha Alpha ratio.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (default is 0.) which
+ *                 may be printed out in the header of the
+ *                 measurement output file.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns powspec_out Output power spectrum measurements.
@@ -287,6 +294,7 @@ PowspecMeasurements compute_powspec(
   double* kbin,
   double alpha,
   double norm,
+  double norm_alt=0.,
   bool save=false
 ) {
   if (trv::runtime::currTask == 0) {
@@ -404,7 +412,8 @@ PowspecMeasurements compute_powspec(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_2pt_meas_file_header(
-      save_fileptr, params, particles_data, particles_rand, norm, "fourier"
+      save_fileptr, params, particles_data, particles_rand, norm, norm_alt,
+      "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
@@ -436,6 +445,9 @@ PowspecMeasurements compute_powspec(
  * @param rbin Separation bins.
  * @param alpha Alpha ratio.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (default is 0.) which
+ *                 may be printed out in the header of the
+ *                 measurement output file.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns corrfunc_out Output two-point correlation function
@@ -448,6 +460,7 @@ CorrfuncMeasurements compute_corrfunc(
   double* rbin,
   double alpha,
   double norm,
+  double norm_alt=0.,
   bool save=false
 ) {
   if (trv::runtime::currTask == 0) {
@@ -552,7 +565,8 @@ CorrfuncMeasurements compute_corrfunc(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_2pt_meas_file_header(
-      save_fileptr, params, particles_data, particles_rand, norm, "config"
+      save_fileptr, params, particles_data, particles_rand, norm, norm_alt,
+      "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
@@ -578,6 +592,9 @@ CorrfuncMeasurements compute_corrfunc(
  * @param params Parameter set.
  * @param kbin Wavenumber bins.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (default is 0.) which
+ *                 may be printed out in the header of the
+ *                 measurement output file.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns powspec_out Output power spectrum measurements.
@@ -587,6 +604,7 @@ PowspecMeasurements compute_powspec_in_box(
   trv::scheme::ParameterSet& params,
   double* kbin,
   double norm,
+  double norm_alt=0.,
   bool save=false
 ) {
   if (trv::runtime::currTask == 0) {
@@ -673,7 +691,7 @@ PowspecMeasurements compute_powspec_in_box(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_2pt_meas_file_header(
-      save_fileptr, params, particles_data, norm, "fourier"
+      save_fileptr, params, particles_data, norm, norm_alt, "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
@@ -701,6 +719,9 @@ PowspecMeasurements compute_powspec_in_box(
  * @param params Parameter set.
  * @param rbin Separation bins.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (default is 0.) which
+ *                 may be printed out in the header of the
+ *                 measurement output file.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns corrfunc_out Output two-point correlation function
@@ -711,6 +732,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   trv::scheme::ParameterSet& params,
   double* rbin,
   double norm,
+  double norm_alt=0.,
   bool save=false
 ) {
   if (trv::runtime::currTask == 0) {
@@ -786,7 +808,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_2pt_meas_file_header(
-      save_fileptr, params, particles_data, norm, "config"
+      save_fileptr, params, particles_data, norm, norm_alt, "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
@@ -815,6 +837,9 @@ CorrfuncMeasurements compute_corrfunc_in_box(
  * @param kbin Wavenumber bins.
  * @param alpha Alpha ratio.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (default is 0.) which
+ *                 may be printed out in the header of the
+ *                 measurement output file.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns powwin_out Output power spectrum window measurements.
@@ -826,6 +851,7 @@ PowspecWindowMeasurements compute_powspec_window(
   double* kbin,
   double alpha,
   double norm,
+  double norm_alt=0.,
   bool save=false
 ) {
   if (trv::runtime::currTask == 0) {
@@ -898,7 +924,7 @@ PowspecWindowMeasurements compute_powspec_window(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_2pt_meas_file_header(
-      save_fileptr, params, particles_rand, norm, "fourier"
+      save_fileptr, params, particles_rand, norm, norm_alt, "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
@@ -927,6 +953,9 @@ PowspecWindowMeasurements compute_powspec_window(
  * @param kbin Wavenumber bins.
  * @param alpha Alpha ratio.
  * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor (default is 0.) which
+ *                 may be printed out in the header of the
+ *                 measurement output file.
  * @param save If `true` (default is `false`), write computed results
  *             to the measurement output file set by `params`.
  * @returns corrfwin_out Output two-point correlation function
@@ -939,6 +968,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
   double* rbin,
   double alpha,
   double norm,
+  double norm_alt=0.,
   bool save=false
 ) {
   if (trv::runtime::currTask == 0) {
@@ -1041,7 +1071,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_2pt_meas_file_header(
-      save_fileptr, params, particles_rand, norm, "config"
+      save_fileptr, params, particles_rand, norm, norm_alt, "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(

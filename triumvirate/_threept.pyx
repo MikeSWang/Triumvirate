@@ -123,11 +123,11 @@ cdef extern from "include/threept.hpp":
     #         CppParticleCatalogue& particles_rand,
     #         LineOfSight* los_data,
     #         LineOfSight* los_rand,
+    #         int los_choice,
     #         CppParameterSet& params,
     #         double* kbin,
     #         double alpha,
     #         double norm,
-    #         int los_choice,
     #         bool_t save
     #     )
 
@@ -358,11 +358,11 @@ def _compute_3pcf_window(
 #         _ParticleCatalogue particles_rand not None,
 #         np.ndarray[double, ndim=2, mode='c'] los_data not None,
 #         np.ndarray[double, ndim=2, mode='c'] los_rand not None,
+#         int los_choice,
 #         ParameterSet params not None,
 #         np.ndarray[double, ndim=1, mode='c'] kbin not None,
 #         double alpha,
 #         double norm,
-#         int los_choice,
 #         bool_t save
 #     ):
 #
@@ -388,10 +388,10 @@ def _compute_3pcf_window(
 #     meas = compute_bispec_for_los_choice_cpp(
 #         deref(particles_data.thisptr), deref(particles_rand.thisptr),
 #         los_data_cpp, los_rand_cpp,
+#         los_choice,
 #         deref(params.thisptr),
 #         &kbin[0],
 #         alpha, norm,
-#         los_choice,
 #         save
 #     )
 #
