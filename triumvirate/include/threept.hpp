@@ -40,7 +40,7 @@ namespace algo {
  *
  * @overload
  */
-void print_2pt_meas_file_header(
+void print_3pt_meas_file_header(
   std::FILE* save_fileptr, trv::scheme::ParameterSet& params,
   ParticleCatalogue& catalogue_data, ParticleCatalogue& catalogue_rand,
   float norm, std::string space
@@ -81,6 +81,9 @@ void print_2pt_meas_file_header(
     save_fileptr,
     "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
   );
+  #ifdef NORMALT
+  std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", NORMALT);
+  #endif
   if (space == "config") {
     std::fprintf(
       save_fileptr,
@@ -119,7 +122,7 @@ void print_2pt_meas_file_header(
  *
  * @overload
  */
-void print_2pt_meas_file_header(
+void print_3pt_meas_file_header(
   std::FILE* save_fileptr, trv::scheme::ParameterSet& params,
   ParticleCatalogue& catalogue, float norm, std::string space
 ) {
@@ -154,6 +157,9 @@ void print_2pt_meas_file_header(
     save_fileptr,
     "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
   );
+  #ifdef NORMALT
+  std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", NORMALT);
+  #endif
   if (space == "config") {
     std::fprintf(
       save_fileptr,
@@ -786,7 +792,7 @@ BispecMeasurements compute_bispec(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    print_2pt_meas_file_header(
+    print_3pt_meas_file_header(
       save_fileptr, params, particles_data, particles_rand, norm, "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
@@ -1265,7 +1271,7 @@ BispecMeasurements compute_bispec_in_box(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    print_2pt_meas_file_header(
+    print_3pt_meas_file_header(
       save_fileptr, params, particles_data, norm, "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
@@ -1655,7 +1661,7 @@ ThreePCFMeasurements compute_3pcf(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    print_2pt_meas_file_header(
+    print_3pt_meas_file_header(
       save_fileptr, params, particles_data, particles_rand, norm, "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
@@ -2001,7 +2007,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    print_2pt_meas_file_header(
+    print_3pt_meas_file_header(
       save_fileptr, params, particles_data, norm, "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
@@ -2400,7 +2406,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    print_2pt_meas_file_header(
+    print_3pt_meas_file_header(
       save_fileptr, params, particles_rand, norm, "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
@@ -3052,7 +3058,7 @@ BispecMeasurements compute_bispec_for_los_choice(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    print_2pt_meas_file_header(
+    print_3pt_meas_file_header(
       save_fileptr, params, particles_data, particles_rand, norm, "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
