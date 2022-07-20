@@ -292,6 +292,66 @@ int main(int argc, char* argv[]) {
     );
   }
 
+  #ifdef DBG_NORMALT
+  /// Compute alternative normalisation factor for clustering statistics.
+  double norm_alt;  // alternative normalisation factor
+  if (params.norm_convention == "mesh") {
+    if (flag_rand == "true") {
+      if (flag_npoint == "2pt") {
+        norm_alt = trv::algo::
+          calc_powspec_normalisation_from_particles(particles_rand, alpha);
+      } else
+      if (flag_npoint == "3pt") {
+        norm_alt = trv::algo::
+          calc_bispec_normalisation_from_particles(particles_rand, alpha);
+      }
+    } else {
+      if (flag_npoint == "2pt") {
+        norm_alt = trv::algo::
+          calc_powspec_normalisation_from_particles(particles_data, alpha);
+      } else
+      if (flag_npoint == "3pt") {
+        norm_alt = trv::algo::
+          calc_bispec_normalisation_from_particles(particles_data, alpha);
+      }
+    }
+  } else
+  if (params.norm_convention == "particle") {
+    if (flag_rand == "true") {
+      if (flag_npoint == "2pt") {
+        norm_alt = trv::algo::calc_powspec_normalisation_from_mesh(
+          particles_rand, params, alpha
+        );
+      } else
+      if (flag_npoint == "3pt") {
+        norm_alt = trv::algo::calc_bispec_normalisation_from_mesh(
+          particles_rand, params, alpha
+        );
+      }
+    } else {
+      if (flag_npoint == "2pt") {
+        norm_alt = trv::algo::calc_powspec_normalisation_from_mesh(
+          particles_data, params, alpha
+        );
+      } else
+      if (flag_npoint == "3pt") {
+        norm_alt = trv::algo::calc_bispec_normalisation_from_mesh(
+          particles_data, params, alpha
+        );
+      }
+    }
+  }
+
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s INFO] Alternative normalisation constant: %.6e.\n",
+      trv::runtime::show_timestamp().c_str(),
+      norm_alt
+    );
+  }
+  #define NORMALT norm_alt
+  #endif  // DBG_NORMALT
+
   /// Perform clustering-statistics algorithms.
   if (params.measurement_type == "powspec") {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {

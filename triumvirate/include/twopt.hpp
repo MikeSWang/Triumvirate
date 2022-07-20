@@ -34,7 +34,7 @@ namespace algo {
  *
  * @overload
  */
-void print_3pt_meas_file_header(
+void print_2pt_meas_file_header(
   std::FILE* save_fileptr, trv::scheme::ParameterSet& params,
   ParticleCatalogue& catalogue_data, ParticleCatalogue& catalogue_rand,
   float norm, std::string space
@@ -75,6 +75,9 @@ void print_3pt_meas_file_header(
     save_fileptr,
     "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
   );
+  #ifdef NORMALT
+  std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", NORMALT);
+  #endif
   if (space == "config") {
     std::fprintf(
       save_fileptr,
@@ -108,7 +111,7 @@ void print_3pt_meas_file_header(
  * @param norm Normalisation factor.
  * @param space Either 'config'(-uration) space or 'fourier' space.
  */
-void print_3pt_meas_file_header(
+void print_2pt_meas_file_header(
   std::FILE* save_fileptr,trv::scheme::ParameterSet& params,
   ParticleCatalogue& catalogue, float norm, std::string space
 ) {
@@ -143,6 +146,9 @@ void print_3pt_meas_file_header(
     save_fileptr,
     "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
   );
+  #ifdef NORMALT
+  std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", NORMALT);
+  #endif
   if (space == "config") {
     std::fprintf(
       save_fileptr,
@@ -397,7 +403,7 @@ PowspecMeasurements compute_powspec(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    print_3pt_meas_file_header(
+    print_2pt_meas_file_header(
       save_fileptr, params, particles_data, particles_rand, norm, "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
@@ -545,7 +551,7 @@ CorrfuncMeasurements compute_corrfunc(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    print_3pt_meas_file_header(
+    print_2pt_meas_file_header(
       save_fileptr, params, particles_data, particles_rand, norm, "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
@@ -666,7 +672,7 @@ PowspecMeasurements compute_powspec_in_box(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    print_3pt_meas_file_header(
+    print_2pt_meas_file_header(
       save_fileptr, params, particles_data, norm, "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
@@ -779,7 +785,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    print_3pt_meas_file_header(
+    print_2pt_meas_file_header(
       save_fileptr, params, particles_data, norm, "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
@@ -891,7 +897,7 @@ PowspecWindowMeasurements compute_powspec_window(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    print_3pt_meas_file_header(
+    print_2pt_meas_file_header(
       save_fileptr, params, particles_rand, norm, "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
@@ -1034,7 +1040,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
 
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    print_3pt_meas_file_header(
+    print_2pt_meas_file_header(
       save_fileptr, params, particles_rand, norm, "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
