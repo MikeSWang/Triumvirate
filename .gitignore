@@ -52,6 +52,13 @@ triumvirate/*.cpp
 # File: build/.ignore
 !build/.ignore
 
+# File: docs/source/index.rst
+# File: docs/source/apidoc.rst
+# File: docs/source/tutorials.rst
+!docs/source/index.rst
+!docs/source/apidoc.rst
+!docs/source/tutorials.rst
+
 # File: docs/build/.ignore
 !docs/build/.gitignore
 
