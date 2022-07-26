@@ -45,7 +45,8 @@ See Python scripts/notebooks in
 [``examples/``](https://github.com/MikeSWang/Triumvirate/tree/main/examples)
 for simple examples of how to perform basic tasks.  For the latest API
 documentation, you may need to build it yourself using ``sphinx-autodoc``.
-(**TODO:** Add instructions for generating API docs here.)
+
+> **TODO:** Add instructions for generating API docs here.
 
 Please note that both testing and documentation are incomplete and there
 may be unknown bugs.  Any feedback is welcome, and more importantly,
