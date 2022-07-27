@@ -661,17 +661,23 @@ class ParameterSet {
    * and processed results.
    */
   void set_io_files() {
+    std::string catalogue_dir_ = this->catalogue_dir;
+    if (catalogue_dir_ != "") {
+      catalogue_dir_ += "/";  // possible duplicate "/" has no effect on path
+    }
+
     /// Set survey data and random catalogue inputs.
     if (this->catalogue_type == "survey") {
-      this->data_catalogue_file =
-        this->catalogue_dir + "/" + this->data_catalogue_file;
-      this->rand_catalogue_file =
-        this->catalogue_dir + "/" + this->rand_catalogue_file;
+      if (this->data_catalogue_file != "") {
+        this->data_catalogue_file = catalogue_dir_ + this->data_catalogue_file;
+      }
+      if (this->rand_catalogue_file != "") {
+        this->rand_catalogue_file = catalogue_dir_ + this->rand_catalogue_file;
+      }
     }
 
     if (this->catalogue_type == "sim") {
-      this->data_catalogue_file =
-        this->catalogue_dir + "/" + this->data_catalogue_file;
+      this->data_catalogue_file = catalogue_dir_ + this->data_catalogue_file;
       this->rand_catalogue_file = "";
     }
 
