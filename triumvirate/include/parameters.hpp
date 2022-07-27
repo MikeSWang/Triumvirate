@@ -357,10 +357,14 @@ class ParameterSet {
       "output_tag: " << this->output_tag
     << std::endl;
     std::cout <<
-      "boxsize: " << this->boxsize
+      "boxsize: " << this->boxsize[0]
+      << ", " << this->boxsize[1]
+      << ", " this->boxsize[2]
     << std::endl;
     std::cout <<
-      "ngrid: " << this->ngrid
+      "ngrid: " << this->ngrid[0]
+      << ", " << this->ngrid[1]
+      << ", " this->ngrid[2]
     << std::endl;
     std::cout <<
       "alignment: " << this->alignment
