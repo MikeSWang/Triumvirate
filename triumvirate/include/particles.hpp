@@ -501,6 +501,31 @@ class ParticleCatalogue {
   }
 
   /**
+   * Centre a catalogue in a box.
+   *
+   * @param particles Particle catalogue.
+   * @param boxsize Box size in each dimension.
+   */
+  static void centre_in_box(
+    ParticleCatalogue& particles,
+    const double boxsize[3]
+  ) {
+    /// Calculate adjustments needed using the random-source catalogue.
+    particles._calc_pos_min_and_max();
+
+    double xmid = (particles.pos_min[0] + particles.pos_max[0]) / 2.;
+    double ymid = (particles.pos_min[1] + particles.pos_max[1]) / 2.;
+    double zmid = (particles.pos_min[2] + particles.pos_max[2]) / 2.;
+
+    double dvec[3] = {
+      xmid - boxsize[0]/2., ymid - boxsize[1]/2., zmid - boxsize[2]/2.
+    };
+
+    /// Centre the catalogue in box.
+    particles.offset_coords(dvec);
+  }
+
+  /**
    * Centre a pair of catalogues in a box, with the secondary catalogue
    * as the reference.
    *
@@ -527,6 +552,37 @@ class ParticleCatalogue {
     /// Centre the catalogue in box.
     particles_data.offset_coords(dvec);
     particles_rand.offset_coords(dvec);
+  }
+
+  /**
+   * Align a catalogue in a box for FFT by grid shift.
+   *
+   * @param particles Particle catalogue.
+   * @param boxsize Box size in each dimension.
+   * @param ngrid Grid number in each dimension.
+   * @param ngrid_pad Grid number factor for padding.
+   */
+  static void pad_in_box(
+    ParticleCatalogue& particles,
+    const double boxsize[3],
+    const int ngrid[3],
+    const double ngrid_pad[3]
+  ) {
+    /// Calculate adjustments needed using the random-source catalogue.
+    particles._calc_pos_min_and_max();
+
+    double dvec[3] = {
+      particles.pos_min[0],
+      particles.pos_min[1],
+      particles.pos_min[2],
+    };
+
+    dvec[0] -= ngrid_pad[0] * boxsize[0] / double(ngrid[0]);
+    dvec[1] -= ngrid_pad[1] * boxsize[1] / double(ngrid[1]);
+    dvec[2] -= ngrid_pad[2] * boxsize[2] / double(ngrid[2]);
+
+    /// Shift mesh grid and recalculate extreme particle positions.
+    particles.offset_coords(dvec);
   }
 
   /**

@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
   trv::obj::ParticleCatalogue particles_data, particles_rand;  // catalogues
 
   std::string flag_data = "false";  // data catalogue status
-  if (trv::runtime::if_path_is_set(params.data_catalogue_file)) {
+  if (trv::runtime::if_filepath_is_set(params.data_catalogue_file)) {
     if (particles_data.read_particle_data_from_file(
       params.data_catalogue_file, params.catalogue_header, params.volume
     )) {
@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
   }
 
   std::string flag_rand = "false";  // random catalogue status
-  if (trv::runtime::if_path_is_set(params.rand_catalogue_file)) {
+  if (trv::runtime::if_filepath_is_set(params.rand_catalogue_file)) {
     if (particles_rand.read_particle_data_from_file(
       params.rand_catalogue_file, params.catalogue_header, params.volume
     )) {
@@ -204,16 +204,28 @@ int main(int argc, char* argv[]) {
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
     if (params.alignment == "pad") {
       double ngrid_pad[3] = {3., 3., 3.};
-      trv::obj::ParticleCatalogue::pad_pair_in_box(
-        particles_data, particles_rand,
-        params.boxsize, params.ngrid,
-        ngrid_pad
-      );
+      if (flag_data == "true") {
+        trv::obj::ParticleCatalogue::pad_pair_in_box(
+          particles_data, particles_rand,
+          params.boxsize, params.ngrid,
+          ngrid_pad
+        );
+      } else {
+        trv::obj::ParticleCatalogue::pad_in_box(
+          particles_rand, params.boxsize, params.ngrid, ngrid_pad
+        );
+      }
     } else
     if (params.alignment == "centre") {
-      trv::obj::ParticleCatalogue::centre_pair_in_box(
-        particles_data, particles_rand, params.boxsize
-      );
+      if (flag_data == "true") {
+        trv::obj::ParticleCatalogue::centre_pair_in_box(
+          particles_data, particles_rand, params.boxsize
+        );
+      } else {
+        trv::obj::ParticleCatalogue::centre_in_box(
+          particles_rand, params.boxsize
+        );
+      }
     }
   } else
   if (params.catalogue_type == "sim") {

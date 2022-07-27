@@ -11,11 +11,9 @@
 #include <cstdarg>
 #include <cstdio>
 #include <ctime>
+#include <iostream>
 #include <stdexcept>
 #include <string>
-
-/// Include potentially unused libraries.
-#include <iostream>
 
 const double BYTES_PER_GBYTES = 1073741824.;  ///< 1024^3 bytes per gibibyte
 
@@ -111,16 +109,23 @@ std::string show_timestamp() {
 /// //////////////////////////////////////////////////////////////////////
 
 /**
- * Check if a path is set (after trimming).
+ * Check if a file path is set (after trimming).
  *
- * This is used for checking whether a path is set.
+ * This is used for checking whether a file path is set.
  *
  * @param pathstr
  * @returns true, false
  */
-bool if_path_is_set(std::string pathstr){
+bool if_filepath_is_set(std::string pathstr){
   /// Check if the string is empty.
   if (pathstr.empty()) {return false;}
+
+  /// Check if the path is a directory not file.
+  std::string endchar = "/";
+  int comp = pathstr.compare(
+    pathstr.length() - endchar.length(), endchar.length(), endchar
+  );
+  if (comp == 0) {return false;}
 
   /// Check if the string contains non-whitespace characters.  If so,
   /// the path is set, otherwise not.
