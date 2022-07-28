@@ -816,6 +816,14 @@ BispecMeasurements compute_bispec(
       );
     }
     std::fclose(save_fileptr);
+
+    if (trv::runtime::currTask == 0) {
+      std::printf(
+        "[%s STAT] Measurements saved to %s.\n",
+        trv::runtime::show_timestamp().c_str(),
+        save_filepath
+      );
+    }
   }
 
   delete[] ntriag_save; delete[] k1_save; delete[] k2_save;
@@ -848,7 +856,7 @@ BispecMeasurements compute_bispec_in_box(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measurement: bispectrum in a periodic box.\n",
+      "[%s STAT] Measuring bispectrum in a periodic box.\n",
       trv::runtime::show_timestamp().c_str()
     );
   }
@@ -1300,6 +1308,14 @@ BispecMeasurements compute_bispec_in_box(
       );
     }
     std::fclose(save_fileptr);
+
+    if (trv::runtime::currTask == 0) {
+      std::printf(
+        "[%s STAT] Measurements saved to %s.\n",
+        trv::runtime::show_timestamp().c_str(),
+        save_filepath
+      );
+    }
   }
 
   delete[] ntriag_save; delete[] k1_save; delete[] k2_save;
@@ -1694,6 +1710,14 @@ ThreePCFMeasurements compute_3pcf(
       );
     }
     std::fclose(save_fileptr);
+
+    if (trv::runtime::currTask == 0) {
+      std::printf(
+        "[%s STAT] Measurements saved to %s.\n",
+        trv::runtime::show_timestamp().c_str(),
+        save_filepath
+      );
+    }
   }
 
   delete[] ntriag_save; delete[] r1_save; delete[] r2_save;
@@ -1728,7 +1752,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measurement: three-point correlation function "
+      "[%s STAT] Measuring three-point correlation function "
       "in a periodic box.\n",
       trv::runtime::show_timestamp().c_str()
     );
@@ -2044,6 +2068,14 @@ ThreePCFMeasurements compute_3pcf_in_box(
       );
     }
     std::fclose(save_fileptr);
+
+    if (trv::runtime::currTask == 0) {
+      std::printf(
+        "[%s STAT] Measurements saved to %s.\n",
+        trv::runtime::show_timestamp().c_str(),
+        save_filepath
+      );
+    }
   }
 
   delete[] ntriag_save; delete[] r1_save; delete[] r2_save;
@@ -2085,7 +2117,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measurement: three-point correlation function window "
+      "[%s STAT] Measuring three-point correlation function window "
       "from random catalogue.\n",
       trv::runtime::show_timestamp().c_str()
     );
@@ -2449,6 +2481,14 @@ ThreePCFWindowMeasurements compute_3pcf_window(
       );
     }
     std::fclose(save_fileptr);
+
+    if (trv::runtime::currTask == 0) {
+      std::printf(
+        "[%s STAT] Measurements saved to %s.\n",
+        trv::runtime::show_timestamp().c_str(),
+        save_filepath
+      );
+    }
   }
 
   delete[] ntriag_save; delete[] r1_save; delete[] r2_save;
@@ -3104,6 +3144,14 @@ BispecMeasurements compute_bispec_for_los_choice(
       );
     }
     std::fclose(save_fileptr);
+
+    if (trv::runtime::currTask == 0) {
+      std::printf(
+        "[%s STAT] Measurements saved to %s.\n",
+        trv::runtime::show_timestamp().c_str(),
+        save_filepath
+      );
+    }
   }
 
   delete[] ntriag_save; delete[] k1_save; delete[] k2_save;

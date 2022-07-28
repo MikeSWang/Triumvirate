@@ -44,6 +44,8 @@ templates_path = ['_templates']
 
 # -- Options for HTML output -------------------------------------------------
 
+html_favicon = '_static/Triumvirate.ico'
+
 html_logo = '_static/Triumvirate.png'
 
 html_sidebars = {
