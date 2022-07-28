@@ -187,11 +187,11 @@ class ParticleCatalogue:
         return [self._pdata[key_] for key_ in key]
 
     def __setitem__(self, key, value):
-        if isinstance(key, (int, slice)):
+        if isinstance(key, (int, str, slice)):
             self._pdata[key] = value
         else:
             for key_ in key:
-                if isinstance(key_, int):
+                if isinstance(key_, (int, str)):
                     self._pdata[key_] = value
                 else:
                     raise ValueError('Cannot interpret item key.')
