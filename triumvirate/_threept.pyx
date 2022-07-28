@@ -17,6 +17,9 @@ from triumvirate.parameters cimport CppParameterSet, ParameterSet
 from triumvirate._catalogue cimport CppParticleCatalogue, _ParticleCatalogue
 
 
+NORM_ALT = 0.
+
+
 cdef extern from "include/particles.hpp":
     struct LineOfSight:
         double pos[3]
@@ -72,6 +75,7 @@ cdef extern from "include/threept.hpp":
         double* kbin,
         double alpha,
         double norm,
+        double norm_alt,
         bool_t save
     )
 
@@ -84,6 +88,7 @@ cdef extern from "include/threept.hpp":
         double* rbin,
         double alpha,
         double norm,
+        double norm_alt,
         bool_t save
     )
 
@@ -93,6 +98,7 @@ cdef extern from "include/threept.hpp":
             CppParameterSet& params,
             double* kbin,
             double norm,
+            double norm_alt,
             bool_t save
         )
 
@@ -102,6 +108,7 @@ cdef extern from "include/threept.hpp":
             CppParameterSet& params,
             double* rbin,
             double norm,
+            double norm_alt,
             bool_t save
         )
 
@@ -113,6 +120,7 @@ cdef extern from "include/threept.hpp":
             double* rbin,
             double alpha,
             double norm,
+            double norm_alt,
             bool_t wide_angle,
             bool_t save
         )
@@ -128,6 +136,7 @@ cdef extern from "include/threept.hpp":
     #         double* kbin,
     #         double alpha,
     #         double norm,
+    #         double norm_alt,
     #         bool_t save
     #     )
 
@@ -190,7 +199,7 @@ def _compute_bispec(
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr),
         &kbin[0],
-        alpha, norm,
+        alpha, norm, NORM_ALT,
         save
     )
 
@@ -241,7 +250,7 @@ def _compute_3pcf(
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr),
         &rbin[0],
-        alpha, norm,
+        alpha, norm, NORM_ALT,
         save
     )
 
@@ -268,7 +277,7 @@ def _compute_bispec_in_box(
     meas = compute_bispec_in_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
         &kbin[0],
-        norm,
+        norm, NORM_ALT,
         save
     )
 
@@ -295,7 +304,7 @@ def _compute_3pcf_in_box(
     meas = compute_3pcf_in_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
         &rbin[0],
-        norm,
+        norm, NORM_ALT,
         save
     )
 
@@ -337,7 +346,7 @@ def _compute_3pcf_window(
         los_rand_cpp,
         deref(params.thisptr),
         &rbin[0],
-        alpha, norm,
+        alpha, norm, NORM_ALT,
         wide_angle,
         save
     )
@@ -391,7 +400,7 @@ def _compute_3pcf_window(
 #         los_choice,
 #         deref(params.thisptr),
 #         &kbin[0],
-#         alpha, norm,
+#         alpha, norm, NORM_ALT,
 #         save
 #     )
 #

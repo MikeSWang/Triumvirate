@@ -17,6 +17,9 @@ from triumvirate.parameters cimport CppParameterSet, ParameterSet
 from triumvirate._catalogue cimport CppParticleCatalogue, _ParticleCatalogue
 
 
+NORM_ALT = 0.
+
+
 cdef extern from "include/particles.hpp":
     struct LineOfSight:
         double pos[3]
@@ -70,6 +73,7 @@ cdef extern from "include/twopt.hpp":
         double* kbin,
         double alpha,
         double norm,
+        double norm_alt,
         bool_t save
     )
 
@@ -82,6 +86,7 @@ cdef extern from "include/twopt.hpp":
         double* rbin,
         double alpha,
         double norm,
+        double norm_alt,
         bool_t save
     )
 
@@ -91,6 +96,7 @@ cdef extern from "include/twopt.hpp":
             CppParameterSet& params,
             double* kbin,
             double norm,
+            double norm_alt,
             bool_t save
         )
 
@@ -100,6 +106,7 @@ cdef extern from "include/twopt.hpp":
             CppParameterSet& params,
             double* rbin,
             double norm,
+            double norm_alt,
             bool_t save
         )
 
@@ -111,6 +118,7 @@ cdef extern from "include/twopt.hpp":
     #         double* kbin,
     #         double alpha,
     #         double norm,
+    #         double norm_alt,
     #         bool_t save
     #     )
 
@@ -122,6 +130,7 @@ cdef extern from "include/twopt.hpp":
             double* rbin,
             double alpha,
             double norm,
+            double norm_alt,
             bool_t save
         )
 
@@ -184,7 +193,7 @@ def _compute_powspec(
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr),
         &kbin[0],
-        alpha, norm,
+        alpha, norm, NORM_ALT,
         save
     )
 
@@ -233,7 +242,7 @@ def _compute_corrfunc(
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr),
         &rbin[0],
-        alpha, norm,
+        alpha, norm, NORM_ALT,
         save
     )
 
@@ -257,7 +266,7 @@ def _compute_powspec_in_box(
     meas = compute_powspec_in_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
         &kbin[0],
-        norm,
+        norm, NORM_ALT,
         save
     )
 
@@ -282,7 +291,7 @@ def _compute_corrfunc_in_box(
     meas = compute_corrfunc_in_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
         &rbin[0],
-        norm,
+        norm, NORM_ALT,
         save
     )
 
@@ -320,7 +329,7 @@ def _compute_corrfunc_in_box(
 #         los_rand_cpp,
 #         deref(params.thisptr),
 #         &kbin[0],
-#         alpha, norm,
+#         alpha, norm, NORM_ALT,
 #         save
 #     )
 #
@@ -358,7 +367,7 @@ def _compute_corrfunc_window(
         los_rand_cpp,
         deref(params.thisptr),
         &rbin[0],
-        alpha, norm,
+        alpha, norm, NORM_ALT,
         save
     )
 
