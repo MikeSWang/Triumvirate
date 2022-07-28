@@ -299,7 +299,7 @@ PowspecMeasurements compute_powspec(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measuring power spectrum from "
+      "[%s STAT] Measurement: power spectrum from "
       "data and random catalogues.\n",
       trv::runtime::show_timestamp().c_str()
     );
@@ -473,7 +473,7 @@ CorrfuncMeasurements compute_corrfunc(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measuring two-point correlation function "
+      "[%s STAT] Measurement: two-point correlation function "
       "from data and random catalogues.\n",
       trv::runtime::show_timestamp().c_str()
     );
@@ -625,7 +625,7 @@ PowspecMeasurements compute_powspec_in_box(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measuring power spectrum in a periodic box.\n",
+      "[%s STAT] Measurement: power spectrum in a periodic box.\n",
       trv::runtime::show_timestamp().c_str()
     );
   }
@@ -761,7 +761,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measuring two-point correlation function "
+      "[%s STAT] Measurement: two-point correlation function "
       "in a periodic box.\n",
       trv::runtime::show_timestamp().c_str()
     );
@@ -888,7 +888,7 @@ PowspecWindowMeasurements compute_powspec_window(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measuring power spectrum window "
+      "[%s STAT] Measurement: power spectrum window "
       "from random catalogue.\n",
       trv::runtime::show_timestamp().c_str()
     );
@@ -1013,7 +1013,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measuring two-point correlation function window "
+      "[%s STAT] Measurement: two-point correlation function window "
       "from random catalogue.\n",
       trv::runtime::show_timestamp().c_str()
     );

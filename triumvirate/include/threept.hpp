@@ -318,7 +318,7 @@ BispecMeasurements compute_bispec(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measuring bispectrum from data and random catalogues.\n",
+      "[%s STAT] Measurement: bispectrum from data and random catalogues.\n",
       trv::runtime::show_timestamp().c_str()
     );
   }
@@ -856,7 +856,7 @@ BispecMeasurements compute_bispec_in_box(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measuring bispectrum in a periodic box.\n",
+      "[%s STAT] Measurement: bispectrum in a periodic box.\n",
       trv::runtime::show_timestamp().c_str()
     );
   }
@@ -1356,7 +1356,7 @@ ThreePCFMeasurements compute_3pcf(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measuring three-point correlation function "
+      "[%s STAT] Measurement: three-point correlation function "
       "from data and random catalogues.\n",
       trv::runtime::show_timestamp().c_str()
     );
@@ -1752,7 +1752,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measuring three-point correlation function "
+      "[%s STAT] Measurement: three-point correlation function "
       "in a periodic box.\n",
       trv::runtime::show_timestamp().c_str()
     );
@@ -2117,7 +2117,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measuring three-point correlation function window "
+      "[%s STAT] Measurement: three-point correlation function window "
       "from random catalogue.\n",
       trv::runtime::show_timestamp().c_str()
     );
@@ -2531,7 +2531,7 @@ BispecMeasurements compute_bispec_for_los_choice(
 ) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Measuring bispectrum from data and random catalogues "
+      "[%s STAT] Measurement: bispectrum from data and random catalogues "
       "for the specified choice of line of sight.\n",
       trv::runtime::show_timestamp().c_str()
     );
