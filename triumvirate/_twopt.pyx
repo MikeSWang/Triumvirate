@@ -17,9 +17,6 @@ from triumvirate.parameters cimport CppParameterSet, ParameterSet
 from triumvirate._catalogue cimport CppParticleCatalogue, _ParticleCatalogue
 
 
-NORM_ALT = 0.
-
-
 cdef extern from "include/particles.hpp":
     struct LineOfSight:
         double pos[3]
@@ -166,6 +163,7 @@ def _compute_powspec(
         np.ndarray[double, ndim=1, mode='c'] kbin not None,
         double alpha,
         double norm,
+        double norm_alt,
         bool_t save
     ):
 
@@ -193,7 +191,7 @@ def _compute_powspec(
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr),
         &kbin[0],
-        alpha, norm, NORM_ALT,
+        alpha, norm, norm_alt,
         save
     )
 
@@ -215,6 +213,7 @@ def _compute_corrfunc(
         np.ndarray[double, ndim=1, mode='c'] rbin not None,
         double alpha,
         double norm,
+        double norm_alt,
         bool_t save
     ):
 
@@ -242,7 +241,7 @@ def _compute_corrfunc(
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr),
         &rbin[0],
-        alpha, norm, NORM_ALT,
+        alpha, norm, norm_alt,
         save
     )
 
@@ -259,6 +258,7 @@ def _compute_powspec_in_box(
         ParameterSet params not None,
         np.ndarray[double, ndim=1, mode='c'] kbin not None,
         double norm,
+        double norm_alt,
         bool_t save
     ):
 
@@ -266,7 +266,7 @@ def _compute_powspec_in_box(
     meas = compute_powspec_in_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
         &kbin[0],
-        norm, NORM_ALT,
+        norm, norm_alt,
         save
     )
 
@@ -284,6 +284,7 @@ def _compute_corrfunc_in_box(
         ParameterSet params not None,
         np.ndarray[double, ndim=1, mode='c'] rbin not None,
         double norm,
+        double norm_alt,
         bool_t save
     ):
 
@@ -291,7 +292,7 @@ def _compute_corrfunc_in_box(
     meas = compute_corrfunc_in_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
         &rbin[0],
-        norm, NORM_ALT,
+        norm, norm_alt,
         save
     )
 
@@ -310,6 +311,7 @@ def _compute_corrfunc_in_box(
 #         np.ndarray[double, ndim=1, mode='c'] kbin not None,
 #         double alpha,
 #         double norm,
+#         double norm_alt,
 #         bool_t save
 #     ):
 #
@@ -329,7 +331,7 @@ def _compute_corrfunc_in_box(
 #         los_rand_cpp,
 #         deref(params.thisptr),
 #         &kbin[0],
-#         alpha, norm, NORM_ALT,
+#         alpha, norm, norm_alt,
 #         save
 #     )
 #
@@ -348,6 +350,7 @@ def _compute_corrfunc_window(
         np.ndarray[double, ndim=1, mode='c'] rbin not None,
         double alpha,
         double norm,
+        double norm_alt,
         bool_t save
     ):
 
@@ -367,7 +370,7 @@ def _compute_corrfunc_window(
         los_rand_cpp,
         deref(params.thisptr),
         &rbin[0],
-        alpha, norm, NORM_ALT,
+        alpha, norm, norm_alt,
         save
     )
 

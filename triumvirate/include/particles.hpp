@@ -555,12 +555,43 @@ class ParticleCatalogue {
   }
 
   /**
+   * Align a catalogue in a box for FFT by box padding.
+   *
+   * @param particles Particle catalogue.
+   * @param boxsize Box size in each dimension.
+   * @param boxsize_pad Box size padding factor in each dimension.
+   */
+  static void pad_in_box(
+    ParticleCatalogue& particles,
+    const double boxsize[3],
+    const double boxsize_pad[3]
+  ) {
+    /// Calculate adjustments needed using the random-source catalogue.
+    particles._calc_pos_min_and_max();
+
+    double dvec[3] = {
+      particles.pos_min[0],
+      particles.pos_min[1],
+      particles.pos_min[2],
+    };
+
+    dvec[0] -= boxsize_pad[0] * boxsize[0];
+    dvec[1] -= boxsize_pad[1] * boxsize[1];
+    dvec[2] -= boxsize_pad[2] * boxsize[2];
+
+    /// Shift mesh grid and recalculate extreme particle positions.
+    particles.offset_coords(dvec);
+  }
+
+  /**
    * Align a catalogue in a box for FFT by grid shift.
    *
    * @param particles Particle catalogue.
    * @param boxsize Box size in each dimension.
    * @param ngrid Grid number in each dimension.
    * @param ngrid_pad Grid number factor for padding.
+   *
+   * @overload
    */
   static void pad_in_box(
     ParticleCatalogue& particles,
@@ -591,8 +622,42 @@ class ParticleCatalogue {
    * @param particles_data (Data-source) particle catalogue.
    * @param particles_rand (Random-source) particle catalogue.
    * @param boxsize Box size in each dimension.
+   * @param boxsize_pad Box size padding factor in each dimension.
+   */
+  static void pad_pair_in_box(
+    ParticleCatalogue& particles_data,
+    ParticleCatalogue& particles_rand,
+    const double boxsize[3],
+    const double boxsize_pad[3]
+  ) {
+    /// Calculate adjustments needed using the random-source catalogue.
+    particles_rand._calc_pos_min_and_max();
+
+    double dvec[3] = {
+      particles_rand.pos_min[0],
+      particles_rand.pos_min[1],
+      particles_rand.pos_min[2],
+    };
+
+    dvec[0] -= boxsize_pad[0] * boxsize[0];
+    dvec[1] -= boxsize_pad[1] * boxsize[1];
+    dvec[2] -= boxsize_pad[2] * boxsize[2];
+
+    /// Shift mesh grid and recalculate extreme particle positions.
+    particles_data.offset_coords(dvec);
+    particles_rand.offset_coords(dvec);
+  }
+
+  /**
+   * Align a pair of catalogues in a box for FFT by grid shift.
+   *
+   * @param particles_data (Data-source) particle catalogue.
+   * @param particles_rand (Random-source) particle catalogue.
+   * @param boxsize Box size in each dimension.
    * @param ngrid Grid number in each dimension.
    * @param ngrid_pad Grid number factor for padding.
+   *
+   * @overload
    */
   static void pad_pair_in_box(
     ParticleCatalogue& particles_data,

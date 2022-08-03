@@ -275,7 +275,8 @@ double calc_bispec_normalisation_from_mesh(
  * @returns norm_factor Bispectrum normalisation factor.
  */
 double calc_bispec_normalisation_from_particles(
-  ParticleCatalogue& catalogue, double alpha=1.
+  ParticleCatalogue& catalogue,
+  double alpha=1.
 ) {
   double norm_factor = catalogue._calc_bispec_normalisation() / alpha;
 

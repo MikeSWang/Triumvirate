@@ -5,6 +5,8 @@ Three-Point Correlator Measurements (:mod:`~triumvirate.threept`)
 Measuring three-point correlator statistics from catalogues.
 
 """
+import sys
+
 import numpy as np
 
 from .catalogue import _prepare_catalogue
@@ -20,10 +22,13 @@ from triumvirate._threept import (
     _compute_3pcf_window,
 )
 
+#: Print out alternative normalisation factor if `True` (default is `False`).
+PRINT_NORMALT = False
+
 
 def compute_bispec(catalogue_data, catalogue_rand, params,
                    los_data=None, los_rand=None,
-                   box_align='centre', ngrid_pad=None,
+                   box_align=False, boxsize_pad=None, ngrid_pad=None,
                    save=False, logger=None):
     """Compute bispectrum from data and random catalogues.
 
@@ -43,14 +48,20 @@ def compute_bispec(catalogue_data, catalogue_rand, params,
         Specified lines of sight for the random-source catalogue.
         If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
-    box_align : {'centre', 'pad'}, optional
+    box_align : {'centre', 'pad', False}, optional
         Alignment of the catalogue(s) inside the box.  The random-source
         catalogue is used as the reference to 'centre' (default) or
-        'pad' (away from the box origin corner) both catalogues.
+        'pad' both catalogues.  If `False` (default), no alignment is
+        performed.
+    boxsize_pad : (array of) float, optional
+        Proportion of the box size as padding away from the origin corner
+        of the box.  If not `None` (default), `ngrid_pad` must not be set
+        and should remain `None` (see
+        :meth:`triumvirate.catalogue.ParticleCatalogue.pad`).
     ngrid_pad : (array of) float, optional
-        Number of grids as padding for the catalogues away from the
-        origin corner of the box.  If `None` (default), the default
-        padding factor is assumed (see
+        Number of grids as padding away from the origin corner of the box.
+        If not `None` (default), `boxsize_pad` must not be set and should
+        remain `None` (see
         :meth:`triumvirate.catalogue.ParticleCatalogue.pad`).
     save : bool, optional
         If `True` (default is `False`), measurement results are
@@ -79,10 +90,10 @@ def compute_bispec(catalogue_data, catalogue_rand, params,
             catalogue_ref=catalogue_rand
         )
     elif box_align.lower() == 'pad':
-        kwargs = {} if ngrid_pad is None else {'ngrid_pad': ngrid_pad}
+        kwargs = {'boxsize_pad': boxsize_pad, 'ngrid_pad': ngrid_pad}
         catalogue_data.pad(
             [params['boxsize'][axis] for axis in ['x', 'y', 'z']],
-            [params['ngrid'][axis] for axis in ['x', 'y', 'z']],
+            ngrid=[params['ngrid'][axis] for axis in ['x', 'y', 'z']],
             catalogue_ref=catalogue_rand,
             **kwargs
         )
@@ -104,12 +115,21 @@ def compute_bispec(catalogue_data, catalogue_rand, params,
     except (AttributeError, TypeError):
         pass
 
+    _norm_alt = 0.
     if params['norm_convention'] == 'mesh':
         norm = _calc_bispec_normalisation_from_mesh(
             particles_rand, params, alpha
         )
+        if PRINT_NORMALT:
+            _norm_alt = _calc_bispec_normalisation_from_particles(
+                particles_rand, alpha
+            )
     elif params['norm_convention'] == 'particle':
         norm = _calc_bispec_normalisation_from_particles(particles_rand, alpha)
+        if PRINT_NORMALT:
+            _norm_alt = _calc_bispec_normalisation_from_mesh(
+                particles_rand, params, alpha
+            )
     else:
         raise InvalidParameter("Invalid `norm_convention` parameter.")
 
@@ -117,6 +137,8 @@ def compute_bispec(catalogue_data, catalogue_rand, params,
         logger.info("... calculated normalisation.", cpp_state='end')
     except (AttributeError, TypeError):
         pass
+
+    sys.stdout.flush()
 
     if logger:
         logger.info("Alpha contrast: %.6e.", alpha)
@@ -130,7 +152,7 @@ def compute_bispec(catalogue_data, catalogue_rand, params,
 
     results = _compute_bispec(
         particles_data, particles_rand, los_data, los_rand,
-        params, kbin, alpha, norm, save=save
+        params, kbin, alpha, norm, _norm_alt, save
     )
 
     try:
@@ -138,12 +160,14 @@ def compute_bispec(catalogue_data, catalogue_rand, params,
     except (AttributeError, TypeError):
         pass
 
+    sys.stdout.flush()
+
     return results
 
 
 def compute_3pcf(catalogue_data, catalogue_rand, params,
                  los_data=None, los_rand=None,
-                 box_align='centre', ngrid_pad=None,
+                 box_align='centre', boxsize_pad=None, ngrid_pad=None,
                  save=False, logger=None):
     """Compute three-point correlation function from data and
     random catalogues.
@@ -164,14 +188,20 @@ def compute_3pcf(catalogue_data, catalogue_rand, params,
         Specified lines of sight for the random-source catalogue.
         If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
-    box_align : {'centre', 'pad'}, optional
+    box_align : {'centre', 'pad', False}, optional
         Alignment of the catalogue(s) inside the box.  The random-source
         catalogue is used as the reference to 'centre' (default) or
-        'pad' (away from the box origin corner) both catalogues.
+        'pad' both catalogues.  If `False` (default), no alignment is
+        performed.
+    boxsize_pad : (array of) float, optional
+        Proportion of the box size as padding away from the origin corner
+        of the box.  If not `None` (default), `ngrid_pad` must not be set
+        and should remain `None` (see
+        :meth:`triumvirate.catalogue.ParticleCatalogue.pad`).
     ngrid_pad : (array of) float, optional
-        Number of grids as padding for the catalogues away from the
-        origin corner of the box.  If `None` (default), the default
-        padding factor is assumed (see
+        Number of grids as padding away from the origin corner of the box.
+        If not `None` (default), `boxsize_pad` must not be set and should
+        remain `None` (see
         :meth:`triumvirate.catalogue.ParticleCatalogue.pad`).
     save : bool, optional
         If `True` (default is `False`), measurement results are
@@ -200,10 +230,10 @@ def compute_3pcf(catalogue_data, catalogue_rand, params,
             catalogue_ref=catalogue_rand
         )
     elif box_align.lower() == 'pad':
-        kwargs = {} if ngrid_pad is None else {'ngrid_pad': ngrid_pad}
+        kwargs = {'boxsize_pad': boxsize_pad, 'ngrid_pad': ngrid_pad}
         catalogue_data.pad(
             [params['boxsize'][axis] for axis in ['x', 'y', 'z']],
-            [params['ngrid'][axis] for axis in ['x', 'y', 'z']],
+            ngrid=[params['ngrid'][axis] for axis in ['x', 'y', 'z']],
             catalogue_ref=catalogue_rand,
             **kwargs
         )
@@ -225,12 +255,21 @@ def compute_3pcf(catalogue_data, catalogue_rand, params,
     except (AttributeError, TypeError):
         pass
 
+    _norm_alt = 0.
     if params['norm_convention'] == 'mesh':
         norm = _calc_bispec_normalisation_from_mesh(
             particles_rand, params, alpha
         )
+        if PRINT_NORMALT:
+            _norm_alt = _calc_bispec_normalisation_from_particles(
+                particles_rand, alpha
+            )
     elif params['norm_convention'] == 'particle':
         norm = _calc_bispec_normalisation_from_particles(particles_rand, alpha)
+        if PRINT_NORMALT:
+            _norm_alt = _calc_bispec_normalisation_from_mesh(
+                particles_rand, params, alpha
+            )
     else:
         raise InvalidParameter("Invalid `norm_convention` parameter.")
 
@@ -238,6 +277,8 @@ def compute_3pcf(catalogue_data, catalogue_rand, params,
         logger.info("... calculated normalisation.", cpp_state='end')
     except (AttributeError, TypeError):
         pass
+
+    sys.stdout.flush()
 
     if logger:
         logger.info("Alpha contrast: %.6e.", alpha)
@@ -251,13 +292,15 @@ def compute_3pcf(catalogue_data, catalogue_rand, params,
 
     results = _compute_3pcf(
         particles_data, particles_rand, los_data, los_rand,
-        params, rbin, alpha, norm, save=save
+        params, rbin, alpha, norm, _norm_alt, save
     )
 
     try:
         logger.info("... made measurements.", cpp_state='end')
     except (AttributeError, TypeError):
         pass
+
+    sys.stdout.flush()
 
     return results
 
@@ -300,13 +343,23 @@ def compute_bispec_in_box(catalogue_data, params, save=False, logger=None):
     except (AttributeError, TypeError):
         pass
 
+    _norm_alt = 0.
     if params['norm_convention'] == 'mesh':
         norm = _calc_bispec_normalisation_from_mesh(
-            particles_data, params, alpha=1.)
+            particles_data, params, alpha=1.
+        )
+        if PRINT_NORMALT:
+            _norm_alt = _calc_bispec_normalisation_from_particles(
+                particles_data, alpha=1.
+            )
     elif params['norm_convention'] == 'particle':
         norm = _calc_bispec_normalisation_from_particles(
             particles_data, alpha=1.
         )
+        if PRINT_NORMALT:
+            _norm_alt = _calc_bispec_normalisation_from_mesh(
+                particles_data, params, alpha=1.
+            )
     else:
         raise InvalidParameter("Invalid `norm_convention` parameter.")
 
@@ -314,6 +367,8 @@ def compute_bispec_in_box(catalogue_data, params, save=False, logger=None):
         logger.info("... calculated normalisation.", cpp_state='end')
     except (AttributeError, TypeError):
         pass
+
+    sys.stdout.flush()
 
     if logger:
         logger.info("Normalisation constant: %.6e.", norm)
@@ -325,13 +380,15 @@ def compute_bispec_in_box(catalogue_data, params, save=False, logger=None):
         pass
 
     results = _compute_bispec_in_box(
-        particles_data, params, kbin, norm, save=save
+        particles_data, params, kbin, norm, _norm_alt, save
     )
 
     try:
         logger.info("... made measurements.", cpp_state='end')
     except (AttributeError, TypeError):
         pass
+
+    sys.stdout.flush()
 
     return results
 
@@ -374,13 +431,23 @@ def compute_3pcf_in_box(catalogue_data, params, save=False, logger=None):
     except (AttributeError, TypeError):
         pass
 
+    _norm_alt = 0.
     if params['norm_convention'] == 'mesh':
         norm = _calc_bispec_normalisation_from_mesh(
-            particles_data, params, alpha=1.)
+            particles_data, params, alpha=1.
+        )
+        if PRINT_NORMALT:
+            _norm_alt = _calc_bispec_normalisation_from_particles(
+                particles_data, alpha=1.
+            )
     elif params['norm_convention'] == 'particle':
         norm = _calc_bispec_normalisation_from_particles(
             particles_data, alpha=1.
         )
+        if PRINT_NORMALT:
+            _norm_alt = _calc_bispec_normalisation_from_mesh(
+                particles_data, params, alpha=1.
+            )
     else:
         raise InvalidParameter("Invalid `norm_convention` parameter.")
 
@@ -388,6 +455,8 @@ def compute_3pcf_in_box(catalogue_data, params, save=False, logger=None):
         logger.info("... calculated normalisation.", cpp_state='end')
     except (AttributeError, TypeError):
         pass
+
+    sys.stdout.flush()
 
     if logger:
         logger.info("Normalisation constant: %.6e.", norm)
@@ -399,13 +468,15 @@ def compute_3pcf_in_box(catalogue_data, params, save=False, logger=None):
         pass
 
     results = _compute_3pcf_in_box(
-        particles_data, params, rbin, norm, save=save
+        particles_data, params, rbin, norm, _norm_alt, save
     )
 
     try:
         logger.info("... made measurements.", cpp_state='end')
     except (AttributeError, TypeError):
         pass
+
+    sys.stdout.flush()
 
     return results
 
@@ -460,13 +531,23 @@ def compute_3pcf_window(catalogue_rand, params, los_rand=None, wide_angle=False,
     except (AttributeError, TypeError):
         pass
 
+    _norm_alt = 0.
     if params['norm_convention'] == 'mesh':
         norm = _calc_bispec_normalisation_from_mesh(
-            particles_rand, params, alpha=1.)
+            particles_rand, params, alpha=1.
+        )
+        if PRINT_NORMALT:
+            _norm_alt = _calc_bispec_normalisation_from_particles(
+                particles_rand, alpha=1.
+            )
     elif params['norm_convention'] == 'particle':
         norm = _calc_bispec_normalisation_from_particles(
             particles_rand, alpha=1.
         )
+        if PRINT_NORMALT:
+            _norm_alt = _calc_bispec_normalisation_from_mesh(
+                particles_rand, params, alpha=1.
+            )
     else:
         raise InvalidParameter("Invalid `norm_convention` parameter.")
 
@@ -474,6 +555,8 @@ def compute_3pcf_window(catalogue_rand, params, los_rand=None, wide_angle=False,
         logger.info("... calculated normalisation.", cpp_state='end')
     except (AttributeError, TypeError):
         pass
+
+    sys.stdout.flush()
 
     if logger:
         logger.info("Normalisation constant: %.6e.", norm)
@@ -486,7 +569,8 @@ def compute_3pcf_window(catalogue_rand, params, los_rand=None, wide_angle=False,
 
     results = _compute_3pcf_window(
         particles_rand, los_rand,
-        params, rbin, alpha=1., norm=norm, wide_angle=wide_angle, save=save
+        params, rbin, alpha=1., norm=norm, norm_alt=_norm_alt,
+        wide_angle=wide_angle, save=save
     )
 
     try:
@@ -494,12 +578,15 @@ def compute_3pcf_window(catalogue_rand, params, los_rand=None, wide_angle=False,
     except (AttributeError, TypeError):
         pass
 
+    sys.stdout.flush()
+
     return results
 
 # def compute_bispec_for_los_choice(catalogue_data, catalogue_rand, params,
-#                    los_choice, los_data=None, los_rand=None,
-#                    box_align='centre', ngrid_pad=None,
-#                    save=False, logger=None):
+#                                   los_choice, los_data=None, los_rand=None,
+#                                   box_align=False,
+#                                   boxsize_pad=None, ngrid_pad=None,
+#                                   save=False, logger=None):
 #     """Compute bispectrum from data and random catalogues.
 #
 #     Parameters
@@ -520,14 +607,20 @@ def compute_3pcf_window(catalogue_rand, params, los_rand=None, wide_angle=False,
 #         Specified lines of sight for the random-source catalogue.
 #         If `None` (default), this is automatically computed using
 #         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
-#     box_align : {'centre', 'pad'}, optional
+#     box_align : {'centre', 'pad', False}, optional
 #         Alignment of the catalogue(s) inside the box.  The random-source
 #         catalogue is used as the reference to 'centre' (default) or
-#         'pad' (away from the box origin corner) both catalogues.
+#         'pad' both catalogues.  If `False` (default), no alignment is
+#         performed.
+#     boxsize_pad : (array of) float, optional
+#         Proportion of the box size as padding away from the origin corner
+#         of the box.  If not `None` (default), `ngrid_pad` must not be set
+#         and should remain `None` (see
+#         :meth:`triumvirate.catalogue.ParticleCatalogue.pad`).
 #     ngrid_pad : (array of) float, optional
-#         Number of grids as padding for the catalogues away from the
-#         origin corner of the box.  If `None` (default), the default
-#         padding factor is assumed (see
+#         Number of grids as padding away from the origin corner of the box.
+#         If not `None` (default), `boxsize_pad` must not be set and should
+#         remain `None` (see
 #         :meth:`triumvirate.catalogue.ParticleCatalogue.pad`).
 #     save : bool, optional
 #         If `True` (default is `False`), measurement results are
@@ -556,10 +649,10 @@ def compute_3pcf_window(catalogue_rand, params, los_rand=None, wide_angle=False,
 #             catalogue_ref=catalogue_rand
 #         )
 #     elif box_align.lower() == 'pad':
-#         kwargs = {} if ngrid_pad is None else {'ngrid_pad': ngrid_pad}
+#         kwargs = {'boxsize_pad': boxsize_pad, 'ngrid_pad': ngrid_pad}
 #         catalogue_data.pad(
 #             [params['boxsize'][axis] for axis in ['x', 'y', 'z']],
-#             [params['ngrid'][axis] for axis in ['x', 'y', 'z']],
+#             ngrid=[params['ngrid'][axis] for axis in ['x', 'y', 'z']],
 #             catalogue_ref=catalogue_rand,
 #             **kwargs
 #         )
@@ -581,14 +674,21 @@ def compute_3pcf_window(catalogue_rand, params, los_rand=None, wide_angle=False,
 #     except (AttributeError, TypeError):
 #         pass
 #
+#     _norm_alt = 0.
 #     if params['norm_convention'] == 'mesh':
 #         norm = _calc_bispec_normalisation_from_mesh(
 #             particles_rand, params, alpha
 #         )
+#         if PRINT_NORMALT:
+#             _norm_alt = _calc_bispec_normalisation_from_particles(
+#                 particles_rand, alpha
+#             )
 #     elif params['norm_convention'] == 'particle':
-#         norm = _calc_bispec_normalisation_from_particles(
-#             particles_rand, alpha
-#         )
+#         norm = _calc_bispec_normalisation_from_particles(particles_rand, alpha)
+#         if PRINT_NORMALT:
+#             _norm_alt = _calc_bispec_normalisation_from_mesh(
+#                 particles_rand, params, alpha
+#             )
 #     else:
 #         raise InvalidParameter("Invalid `norm_convention` parameter.")
 #
@@ -596,6 +696,8 @@ def compute_3pcf_window(catalogue_rand, params, los_rand=None, wide_angle=False,
 #         logger.info("... calculated normalisation.", cpp_state='end')
 #     except (AttributeError, TypeError):
 #         pass
+#
+#     sys.stdout.flush()
 #
 #     if logger:
 #         logger.info("Alpha contrast: %.6e.", alpha)
@@ -609,12 +711,14 @@ def compute_3pcf_window(catalogue_rand, params, los_rand=None, wide_angle=False,
 #
 #     results = _compute_bispec_for_los_choice(
 #         particles_data, particles_rand, los_data, los_rand, los_choice,
-#         params, kbin, alpha, norm, save=save
+#         params, kbin, alpha, norm, _norm_alt, save
 #     )
 #
 #     try:
 #         logger.info("... made measurements.", cpp_state='end')
 #     except (AttributeError, TypeError):
 #         pass
+#
+#     sys.stdout.flush()
 #
 #     return results

@@ -56,10 +56,6 @@ class ParticleCatalogue:
         Total systematic weight.
 
     """
-    _pdata = None
-    bounds = None
-    ntotal = 0.
-    wtotal = 0.
 
     def __init__(self, x, y, z, nz=None, ws=1., wc=1., logger=None):
 
@@ -94,7 +90,7 @@ class ParticleCatalogue:
             )
 
     @classmethod
-    def read_from_file(cls, filepath, format='ascii', names=None,
+    def read_from_file(cls, filepath, format='ascii.no_header', names=None,
                        name_mapping=None, table_kwargs=None, logger=None):
         """Read particle data from file.
 
@@ -104,13 +100,16 @@ class ParticleCatalogue:
         these columns are initialised with the default values in
         :meth:`~triumvirate.catalogue.__init__`.
 
+        For supported file data formats, see
+        `<https://docs.astropy.org/en/stable/io/ascii/index.html#supported-formats>`_.
+
         Parameters
         ----------
         filepath : str or :class:`pathlib.Path`
             Catalogue file path.
         format : str, optional
-            File format specifier (default is 'ascii').  See also
-            :class:`astropy.table.Table`.
+            File format specifier (default is 'ascii.no_header', with any
+            header included as comment lines).
         names : sequence of str, optional
             Catalogue file field names.  If `None` (default), the header
             row in the file is used to provide the names.
@@ -261,21 +260,38 @@ class ParticleCatalogue:
             self.offset_coords(origin)
             catalogue_ref.offset_coords(origin)
 
-    def pad(self, boxsize, ngrid, ngrid_pad=3., catalogue_ref=None):
+    def pad(self, boxsize, ngrid=None, boxsize_pad=None, ngrid_pad=None,
+            catalogue_ref=None):
         """Pad a (pair of) catalogue(s) in a box.
+
+        The minima of the particle coordinates in each dimension are
+        shifted away from the origin of the box depending on the amount
+        of padding, which can be set either as a multiple of the grid
+        sizes (i.e. number of grids) or a multipole of the box sizes
+        (i.e. a percentage).
 
         Parameters
         ----------
         boxsize : (3,) array of float
             Box size in each dimension.
         ngrid : (3,) array of int
-            Grid number in each dimension.
+            Grid number in each dimension (default is `None`).
+        boxsize_pad : (sequence of) float, optional
+            Box size padding factor.  If `None` (default), then
+            `ngrid_pad` should be set; otherwise, `ngrid_pad` must
+            be `None`.
         ngrid_pad : (sequence of) float, optional
-            Grid padding factor (default is 3.).
+            Grid padding factor.  If `None` (default), then `boxsize_pad`
+            should be set; otherwise, `boxsize_pad` must be `None`.
         catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, optional
             Reference catalogue used for box alignment, to be put in the
             same box.  If `None` (default), the current catalogue itself
             is used as the reference catalogue.
+
+        Raises
+        ------
+        ValueError
+            If `boxsize_pad` and `ngrid_pad` are both set to not `None`.
 
         Notes
         -----
@@ -284,6 +300,18 @@ class ParticleCatalogue:
         new coordinate origin.
 
         """
+        if boxsize_pad is None and ngrid_pad is None:
+            warnings.warn(
+                "`boxsize_pad` and `ngrid_pad` are both `None`. "
+                "No padding is applied to the catalogue."
+            )
+            return
+        if boxsize_pad is not None and ngrid_pad is not None:
+            raise ValueError(
+                "Conflicting padding as `boxsize_pad` and `ngrid_pad` "
+                "are both set (not `None`)."
+            )
+
         if catalogue_ref is None:
             origin = np.array([
                 self.bounds[axis][0] for axis in ['x', 'y', 'z']
@@ -293,7 +321,10 @@ class ParticleCatalogue:
                 catalogue_ref.bounds[axis][0] for axis in ['x', 'y', 'z']
             ])
 
-        origin -= np.multiply(ngrid_pad, np.divide(boxsize, ngrid))
+        if boxsize_pad:
+            origin -= np.multiply(ngrid_pad, np.divide(boxsize, ngrid))
+        if ngrid_pad:
+            origin -= np.multiply(boxsize_pad, boxsize)
 
         self.offset_coords(origin)
         if catalogue_ref is not None:
@@ -350,7 +381,6 @@ class ParticleCatalogue:
                     self.bounds, self
                 )
             else:
-                # Catalogue string representation is printed for identification.
                 self._logger.info(
                     "Offset extents of particle coordinates: %s (%s).",
                     self.bounds, self
