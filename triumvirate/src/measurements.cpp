@@ -203,17 +203,36 @@ int main(int argc, char* argv[]) {
   /// Offset particle positions for measurements.
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
     if (params.alignment == "pad") {
-      double ngrid_pad[3] = {3., 3., 3.};
-      if (flag_data == "true") {
-        trv::obj::ParticleCatalogue::pad_pair_in_box(
-          particles_data, particles_rand,
-          params.boxsize, params.ngrid,
-          ngrid_pad
-        );
-      } else {
-        trv::obj::ParticleCatalogue::pad_in_box(
-          particles_rand, params.boxsize, params.ngrid, ngrid_pad
-        );
+      if (params.padscale == "grid") {
+        double ngrid_pad[3] = {
+          params.padfactor, params.padfactor, params.padfactor
+        };
+        if (flag_data == "true") {
+          trv::obj::ParticleCatalogue::pad_pair_in_box(
+            particles_data, particles_rand,
+            params.boxsize, params.ngrid,
+            ngrid_pad
+          );
+        } else {
+          trv::obj::ParticleCatalogue::pad_in_box(
+            particles_rand, params.boxsize, params.ngrid, ngrid_pad
+          );
+        }
+      } else
+      if (params.padscale == "box") {
+        double boxsize_pad[3] = {
+          params.padfactor, params.padfactor, params.padfactor
+        };
+        if (flag_data == "true") {
+          trv::obj::ParticleCatalogue::pad_pair_in_box(
+            particles_data, particles_rand,
+            params.boxsize, boxsize_pad
+          );
+        } else {
+          trv::obj::ParticleCatalogue::pad_in_box(
+            particles_rand, params.boxsize, boxsize_pad
+          );
+        }
       }
     } else
     if (params.alignment == "centre") {

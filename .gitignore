@@ -48,6 +48,9 @@ sandbox/
 # File: triumvirate/*.cpp
 triumvirate/*.cpp
 
+# Directory (temporary):
+winconv/
+
 # Exceptions
 # File: build/.ignore
 !build/.ignore

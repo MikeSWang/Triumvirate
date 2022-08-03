@@ -38,8 +38,11 @@ class ParameterSet {
   /// Sampling.
   double boxsize[3];  ///< boxsize in each dimension
   int ngrid[3];  ///< grid number in each dimension
+  double padfactor;  ///< padding multiple factor
   std::string alignment = "pad";  /**< box alignment choice:
                                        {'centre', 'pad' (default)} */
+  std::string padscale = "box";  /**< padding scale choice:
+                                      {'grid', 'box' (default)} */
   std::string assignment;  ///< mesh assignment scheme: {'ngp', 'cic', 'tsc'}
   std::string norm_convention;  /**< normalisation convention:
                                      {'mesh', 'particle'} */
@@ -100,6 +103,7 @@ class ParameterSet {
     char catalogue_type_[16];
     char measurement_type_[16];
     char alignment_[16];
+    char padscale_[16];
     char assignment_[16];
     char norm_convention_[16];
     char shotnoise_convention_[16];
@@ -195,9 +199,20 @@ class ParameterSet {
         std::sscanf(str_line.data(), "%s %s %d", str_dummy, str_dummy, &ngrid_z);
       }
 
+      if (str_line.find("padfactor") != std::string::npos) {
+        std::sscanf(
+          str_line.data(), "%s %s %lg", str_dummy, str_dummy, &padfactor
+        );
+      }
+
       if (str_line.find("alignment") != std::string::npos) {
         std::sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, alignment_
+        );
+      }
+      if (str_line.find("padscale") != std::string::npos) {
+        std::sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, padscale_
         );
       }
       if (str_line.find("assignment") != std::string::npos) {
@@ -316,12 +331,15 @@ class ParameterSet {
     this->measurement_type = measurement_type_;
 
     this->alignment = alignment_;
+    this->padscale = padscale_;
     this->assignment = assignment_;
     this->norm_convention = norm_convention_;
     this->shotnoise_convention = shotnoise_convention_;
 
     this->binning = binning_;
     this->form = form_;
+
+    this->padfactor = padfactor;
 
     this->boxsize[0] = boxsize_x;
     this->boxsize[1] = boxsize_y;
@@ -368,6 +386,12 @@ class ParameterSet {
     << std::endl;
     std::cout <<
       "alignment: " << this->alignment
+    << std::endl;
+    std::cout <<
+      "padscale: " << this->padscale
+    << std::endl;
+    std::cout <<
+      "padfactor: " << this->padfactor
     << std::endl;
     std::cout <<
       "assignment: " << this->assignment
