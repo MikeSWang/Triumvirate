@@ -97,6 +97,11 @@ class PseudoDensityField {
       trv::runtime::gbytesMem -= double(this->params.nmesh)
         * sizeof(fftw_complex) / BYTES_PER_GBYTES;
     }
+    if (this->field_s != NULL) {
+      fftw_free(this->field_s); this->field_s = NULL;
+      trv::runtime::gbytesMem -= double(this->params.nmesh)
+        * sizeof(fftw_complex) / BYTES_PER_GBYTES;
+    }
   }
 
   /**
@@ -891,6 +896,7 @@ class PseudoDensityField {
 
  private:
   trv::scheme::ParameterSet params;
+  fftw_complex* field_s;  ///> half-grid shifted meshed complex field
 
   /**
    * Assign weighted field to a mesh by the nearest-grid-point
@@ -972,7 +978,7 @@ class PseudoDensityField {
             * particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
             + 0.5;  // apply half-grid shift
           if (loc_grid > this->params.ngrid[iaxis]) {
-            loc_grid -= this->params.ngrid[iaxis]
+            loc_grid -= this->params.ngrid[iaxis];
           }  // apply periodic boundary condition
 
           /// Set only 0th element as `order == 1`.
@@ -1094,7 +1100,7 @@ class PseudoDensityField {
             * particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
             + 0.5;  // apply half-grid shift
           if (loc_grid > this->params.ngrid[iaxis]) {
-            loc_grid -= this->params.ngrid[iaxis]
+            loc_grid -= this->params.ngrid[iaxis];
           }  // apply periodic boundary condition
           s = loc_grid - double(int(loc_grid));
 
@@ -1223,7 +1229,7 @@ class PseudoDensityField {
             * particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
             + 0.5;  // apply half-grid shift
           if (loc_grid > this->params.ngrid[iaxis]) {
-            loc_grid -= this->params.ngrid[iaxis]
+            loc_grid -= this->params.ngrid[iaxis];
           }  // apply periodic boundary condition
           s = loc_grid - double(int(loc_grid + 0.5));
 
@@ -1358,7 +1364,7 @@ class PseudoDensityField {
             * particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
             + 0.5;  // apply half-grid shift
           if (loc_grid > this->params.ngrid[iaxis]) {
-            loc_grid -= this->params.ngrid[iaxis]
+            loc_grid -= this->params.ngrid[iaxis];
           }  // apply periodic boundary condition
           s = loc_grid - double(int(loc_grid));
 
@@ -2314,7 +2320,6 @@ class Pseudo2ptStats {
 
  private:
   trv::scheme::ParameterSet params;
-  fftw_complex* field_s;  ///> half-grid shifted meshed complex field
 
   /**
    * Calculate the interpolarion window in Fourier space for

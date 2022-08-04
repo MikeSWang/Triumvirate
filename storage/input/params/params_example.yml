@@ -48,7 +48,7 @@ shotnoise_convention: mesh
 
 # -- Measurements -------------------------------------------------------------
 
-# Type of catalogue: {'survey', 'mock', 'sim'}.
+# Type of catalogue: {'survey', 'mock' (not in use), 'sim'}.
 catalogue_type: survey
 
 # Type of measurement:

@@ -472,7 +472,7 @@ int main(int argc, char* argv[]) {
 
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "[%s STAT] Persistent memory usage: %.0f bytes.\n",
+      "[%s STAT] Persistent memory usage: %.0f gigabytes.\n",
       trv::runtime::show_timestamp().c_str(), trv::runtime::gbytesMem
     );
   }
