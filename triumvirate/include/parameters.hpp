@@ -589,11 +589,12 @@ class ParameterSet {
       this->assignment == "ngp"
       || this->assignment == "cic"
       || this->assignment == "tsc"
+      || this->assignment == "pcs"
     )) {
       if (trv::runtime::currTask == 0) {
         throw trv::runtime::InvalidParameter(
-          "[%s ERRO] Mesh assignment scheme must be 'ngp', 'cic' or 'tsc': "
-          "`assignment` = '%s'.\n",
+          "[%s ERRO] Mesh assignment scheme must be 'ngp', 'cic', 'tsc' "
+          "or 'pcs': `assignment` = '%s'.\n",
           trv::runtime::show_timestamp().c_str(),
           this->assignment.c_str()
         );
