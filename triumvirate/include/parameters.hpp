@@ -8,6 +8,7 @@
 #define TRIUMVIRATE_INCLUDE_PARAMETERS_HPP_INCLUDED_
 
 #include <cstdio>
+#include <cstring>
 #include <fstream>
 #include <string>
 
@@ -39,11 +40,13 @@ class ParameterSet {
   double boxsize[3];  ///< boxsize in each dimension
   int ngrid[3];  ///< grid number in each dimension
   double padfactor;  ///< padding multiple factor
-  std::string alignment = "pad";  /**< box alignment choice:
-                                       {'centre', 'pad' (default)} */
+  std::string alignment = "centre";  /**< box alignment choice:
+                                       {'centre' (default), 'pad'} */
   std::string padscale = "box";  /**< padding scale choice:
-                                      {'grid', 'box' (default)} */
+                                      {'box' (default), 'grid'} */
   std::string assignment;  ///< mesh assignment scheme: {'ngp', 'cic', 'tsc'}
+  std::string interlace = "false";  /**< interlacing: {'true' (or 'on'),
+                                           'false' (or 'off'; default)} */
   std::string norm_convention;  /**< normalisation convention:
                                      {'mesh', 'particle'} */
   std::string shotnoise_convention;  /**< shot noise convention:
@@ -105,6 +108,7 @@ class ParameterSet {
     char alignment_[16];
     char padscale_[16];
     char assignment_[16];
+    char interlace_[16];
     char norm_convention_[16];
     char shotnoise_convention_[16];
     char binning_[16];
@@ -220,6 +224,11 @@ class ParameterSet {
           str_line.data(), "%s %s %s", str_dummy, str_dummy, assignment_
         );
       }
+      if (str_line.find("interlace") != std::string::npos) {
+        std::sscanf(
+          str_line.data(), "%s %s %s", str_dummy, str_dummy, interlace_
+        );
+      }
       if (str_line.find("norm_convention") != std::string::npos) {
         std::sscanf(
           str_line.data(), "%s %s %s", str_dummy, str_dummy, norm_convention_
@@ -333,6 +342,10 @@ class ParameterSet {
     this->alignment = alignment_;
     this->padscale = padscale_;
     this->assignment = assignment_;
+    this->interlace = (
+      std::strcmp(interlace_, "true") == 0 ||
+      std::strcmp(interlace_, "on") == 0
+    ) ? "true" : "false" ;
     this->norm_convention = norm_convention_;
     this->shotnoise_convention = shotnoise_convention_;
 
@@ -395,6 +408,9 @@ class ParameterSet {
     << std::endl;
     std::cout <<
       "assignment: " << this->assignment
+    << std::endl;
+    std::cout <<
+      "interlace: " << this->interlace
     << std::endl;
     std::cout <<
       "norm_convention: " << this->norm_convention
@@ -483,7 +499,16 @@ class ParameterSet {
       used_param_fileptr, "alignment = %s\n", this->alignment.c_str()
     );
     std::fprintf(
+      used_param_fileptr, "padscale = %s\n", this->padscale.c_str()
+    );
+    std::fprintf(
+      used_param_fileptr, "padfactor = %.3f\n", this->padfactor
+    );
+    std::fprintf(
       used_param_fileptr, "assignment = %s\n", this->assignment.c_str()
+    );
+    std::fprintf(
+      used_param_fileptr, "interlace = %s\n", this->interlace.c_str()
     );
     std::fprintf(
       used_param_fileptr, "norm_convention = %s\n",
