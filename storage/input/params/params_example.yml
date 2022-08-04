@@ -33,8 +33,13 @@ ngrid:
   y: 512
   z: 512
 
-# Mesh assignment scheme: {'ngp', 'cic', 'tsc'}.
+# Mesh assignment scheme: {'ngp', 'cic', 'tsc', 'pcs'}.
 assignment: tsc
+
+# Interlacing switch: {'true' (or 'on'), 'false' (or 'off')}.
+# Note these strings are keywords in YAML, so quotation marks should be used
+# to avoid data-type confusion.
+interlace: 'off'
 
 # Normalisation and shot noise convention: {'particle', 'mesh'}.
 norm_convention: mesh

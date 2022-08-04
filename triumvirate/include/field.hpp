@@ -55,6 +55,19 @@ class PseudoDensityField {
 
     trv::runtime::gbytesMem += double(this->params.nmesh)
       * sizeof(fftw_complex) / BYTES_PER_GBYTES;
+
+    /// Initialise complex field for interlacing and increase
+    /// allocated memory.
+    if (this->params.interlace == "true") {
+      this->field_s = fftw_alloc_complex(this->params.nmesh);
+      for (int gid = 0; gid < this->params.nmesh; gid++) {
+        this->field_s[gid][0] = 0.;
+        this->field_s[gid][1] = 0.;
+      }
+
+      trv::runtime::gbytesMem += double(this->params.nmesh)
+        * sizeof(fftw_complex) / BYTES_PER_GBYTES;
+    }
   }
 
   /**
@@ -106,6 +119,9 @@ class PseudoDensityField {
     } else
     if (this->params.assignment == "tsc") {
       this->assign_weighted_field_to_mesh_tsc(particles, weights);
+    } else
+    if (this->params.assignment == "pcs") {
+      this->assign_weighted_field_to_mesh_pcs(particles, weights);
     } else {
       if (trv::runtime::currTask == 0) {
         throw trv::runtime::InvalidParameter(
@@ -891,23 +907,25 @@ class PseudoDensityField {
     /// to which a single particle is assigned
     int order = 1;
 
+    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
+    /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
+    double vol_cell = this->params.volume / double(this->params.nmesh);
+    double inv_vol_cell = 1. / vol_cell;
+
     /// Reset field with zero values.
     for (int gid = 0; gid < this->params.nmesh; gid++) {
       this->field[gid][0] = 0.;
       this->field[gid][1] = 0.;
     }
 
-    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
-    /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
-    double vol_cell = this->params.volume / double(this->params.nmesh);
-    double inv_vol_cell = 1. / vol_cell;
-
     /// Perform assignment.
+    int ijk[order][3];  // coordinates of covered mesh grids
+    double win[order][3];  // interpolation window
+    double loc_grid;  // coordinates in grid numbers in each dimension
+    long long idx_grid;  // flattened grid index
     for (int pid = 0; pid < particles.ntotal; pid++) {
-      int ijk[order][3];  // coordinates of covered mesh grids
-      double win[order][3];  // interpolation window
       for (int iaxis = 0; iaxis < 3; iaxis++) {
-        double loc_grid = this->params.ngrid[iaxis]
+        loc_grid = this->params.ngrid[iaxis]
           * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
 
         /// Set only 0th element as `order == 1`.
@@ -918,7 +936,7 @@ class PseudoDensityField {
       for (int iloc = 0; iloc < order; iloc++) {
         for (int jloc = 0; jloc < order; jloc++) {
           for (int kloc = 0; kloc < order; kloc++) {
-            long long idx_grid = (
+            idx_grid = (
               ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
             ) * this->params.ngrid[2] + ijk[kloc][2];
 
@@ -932,6 +950,61 @@ class PseudoDensityField {
             }
           }
         }
+      }
+    }
+
+    /// Perform interlacing if needed.
+    if (this->params.interlace == "true") {
+      /// Reset field with zero values.
+      for (int gid = 0; gid < this->params.nmesh; gid++) {
+        this->field_s[gid][0] = 0.;
+        this->field_s[gid][1] = 0.;
+      }
+
+      /// Perform assignment.
+      int ijk[order][3];  // coordinates of covered mesh grids
+      double win[order][3];  // interpolation window
+      long long idx_grid;  // flattened grid index
+      double loc_grid;  // coordinates in grid numbers in each dimension
+      for (int pid = 0; pid < particles.ntotal; pid++) {
+        for (int iaxis = 0; iaxis < 3; iaxis++) {
+          loc_grid = this->params.ngrid[iaxis]
+            * particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
+            + 0.5;  // apply half-grid shift
+          if (loc_grid > this->params.ngrid[iaxis]) {
+            loc_grid -= this->params.ngrid[iaxis]
+          }  // apply periodic boundary condition
+
+          /// Set only 0th element as `order == 1`.
+          ijk[0][iaxis] = int(loc_grid + 0.5);
+          win[0][iaxis] = 1.;
+        }
+
+        for (int iloc = 0; iloc < order; iloc++) {
+          for (int jloc = 0; jloc < order; jloc++) {
+            for (int kloc = 0; kloc < order; kloc++) {
+              idx_grid = (
+                ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
+              ) * this->params.ngrid[2] + ijk[kloc][2];
+
+              if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
+                this->field_s[idx_grid][0] += inv_vol_cell
+                  * weight[pid][0]
+                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
+                this->field_s[idx_grid][1] += inv_vol_cell
+                  * weight[pid][1]
+                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
+              }
+            }
+          }
+        }
+      }
+
+      for (int gid = 0; gid < this->params.nmesh; gid++) {
+        this->field[gid][0] /= 2.;
+        this->field[gid][1] /= 2.;
+        this->field[gid][0] += this->field_s[gid][0] / 2.;
+        this->field[gid][1] += this->field_s[gid][1] / 2.;
       }
     }
   }
@@ -950,25 +1023,28 @@ class PseudoDensityField {
     /// to which a single particle is assigned
     int order = 2;
 
+    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
+    /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
+    double vol_cell = this->params.volume / double(this->params.nmesh);
+    double inv_vol_cell = 1. / vol_cell;
+
     /// Reset field with zero values.
     for (int gid = 0; gid < this->params.nmesh; gid++) {
       this->field[gid][0] = 0.;
       this->field[gid][1] = 0.;
     }
 
-    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
-    /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
-    double vol_cell = this->params.volume / double(this->params.nmesh);
-    double inv_vol_cell = 1. / vol_cell;
-
     /// Perform assignment.
+    int ijk[order][3];  // coordinates of covered mesh grids
+    double win[order][3];  // interpolation window
+    double loc_grid;  // coordinates in grid numbers in each dimension
+    double s;  // particle grid distance;
+    long long idx_grid;  // flattened grid index
     for (int pid = 0; pid < particles.ntotal; pid++) {
-      int ijk[order][3];  // coordinates of covered mesh grids
-      double win[order][3];  // interpolation window
       for (int iaxis = 0; iaxis < 3; iaxis++) {
-        double loc_grid = this->params.ngrid[iaxis]
+        loc_grid = this->params.ngrid[iaxis]
           * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
-        double s = loc_grid - double(int(loc_grid));
+        s = loc_grid - double(int(loc_grid));
 
         /// Set up to 1st element as `order == 2`.
         ijk[0][iaxis] = int(loc_grid);
@@ -981,7 +1057,7 @@ class PseudoDensityField {
       for (int iloc = 0; iloc < order; iloc++) {
         for (int jloc = 0; jloc < order; jloc++) {
           for (int kloc = 0; kloc < order; kloc++) {
-            long long idx_grid = (
+            idx_grid = (
               ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
             ) * this->params.ngrid[2] + ijk[kloc][2];
 
@@ -995,6 +1071,66 @@ class PseudoDensityField {
             }
           }
         }
+      }
+    }
+
+    /// Perform interlacing if needed.
+    if (this->params.interlace == "true") {
+      /// Reset field with zero values.
+      for (int gid = 0; gid < this->params.nmesh; gid++) {
+        this->field_s[gid][0] = 0.;
+        this->field_s[gid][1] = 0.;
+      }
+
+      /// Perform assignment.
+      int ijk[order][3];  // coordinates of covered mesh grids
+      double win[order][3];  // interpolation window
+      double loc_grid;  // coordinates in grid numbers in each dimension
+      double s;  // particle grid distance;
+      long long idx_grid;  // flattened grid index
+      for (int pid = 0; pid < particles.ntotal; pid++) {
+        for (int iaxis = 0; iaxis < 3; iaxis++) {
+          loc_grid = this->params.ngrid[iaxis]
+            * particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
+            + 0.5;  // apply half-grid shift
+          if (loc_grid > this->params.ngrid[iaxis]) {
+            loc_grid -= this->params.ngrid[iaxis]
+          }  // apply periodic boundary condition
+          s = loc_grid - double(int(loc_grid));
+
+          /// Set up to 1st element as `order == 2`.
+          ijk[0][iaxis] = int(loc_grid);
+          ijk[1][iaxis] = int(loc_grid) + 1;
+
+          win[0][iaxis] = 1. - s;
+          win[1][iaxis] = s;
+        }
+
+        for (int iloc = 0; iloc < order; iloc++) {
+          for (int jloc = 0; jloc < order; jloc++) {
+            for (int kloc = 0; kloc < order; kloc++) {
+              idx_grid = (
+                ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
+              ) * this->params.ngrid[2] + ijk[kloc][2];
+
+              if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
+                this->field_s[idx_grid][0] += inv_vol_cell
+                  * weight[pid][0]
+                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
+                this->field_s[idx_grid][1] += inv_vol_cell
+                  * weight[pid][1]
+                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
+              }
+            }
+          }
+        }
+      }
+
+      for (int gid = 0; gid < this->params.nmesh; gid++) {
+        this->field[gid][0] /= 2.;
+        this->field[gid][1] /= 2.;
+        this->field[gid][0] += this->field_s[gid][0] / 2.;
+        this->field[gid][1] += this->field_s[gid][1] / 2.;
       }
     }
   }
@@ -1014,25 +1150,28 @@ class PseudoDensityField {
     /// to which a single particle is assigned
     int order = 3;
 
+    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
+    /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
+    double vol_cell = this->params.volume / double(this->params.nmesh);
+    double inv_vol_cell = 1. / vol_cell;
+
     /// Reset field with zero values.
     for (int gid = 0; gid < this->params.nmesh; gid++) {
       this->field[gid][0] = 0.;
       this->field[gid][1] = 0.;
     }
 
-    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
-    /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
-    double vol_cell = this->params.volume / double(this->params.nmesh);
-    double inv_vol_cell = 1. / vol_cell;
-
     /// Perform assignment.
+    int ijk[order][3];  // coordinates of covered mesh grids
+    double win[order][3];  // interpolation window
+    double loc_grid;  // coordinates in grid numbers in each dimension
+    double s;  // particle grid distance;
+    long long idx_grid;  // flattened grid index
     for (int pid = 0; pid < particles.ntotal; pid++) {
-      int ijk[order][3];  // coordinates of covered mesh grids
-      double win[order][3];  // interpolation window
       for (int iaxis = 0; iaxis < 3; iaxis++) {
-        double loc_grid = this->params.ngrid[iaxis]
+        loc_grid = this->params.ngrid[iaxis]
           * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
-        double s = loc_grid - double(int(loc_grid + 0.5));
+        s = loc_grid - double(int(loc_grid + 0.5));
 
         /// Set up to 2nd element as `order == 3`.
         ijk[0][iaxis] = int(loc_grid + 0.5) - 1;
@@ -1047,7 +1186,7 @@ class PseudoDensityField {
       for (int iloc = 0; iloc < order; iloc++) {
         for (int jloc = 0; jloc < order; jloc++) {
           for (int kloc = 0; kloc < order; kloc++) {
-            long long idx_grid = (
+            idx_grid = (
               ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
             ) * this->params.ngrid[2] + ijk[kloc][2];
 
@@ -1061,6 +1200,207 @@ class PseudoDensityField {
             }
           }
         }
+      }
+    }
+
+    /// Perform interlacing if needed.
+    if (this->params.interlace == "true") {
+      /// Reset field with zero values.
+      for (int gid = 0; gid < this->params.nmesh; gid++) {
+        this->field_s[gid][0] = 0.;
+        this->field_s[gid][1] = 0.;
+      }
+
+      /// Perform assignment.
+      int ijk[order][3];  // coordinates of covered mesh grids
+      double win[order][3];  // interpolation window
+      double loc_grid;  // coordinates in grid numbers in each dimension
+      double s;  // particle grid distance;
+      long long idx_grid;  // flattened grid index
+      for (int pid = 0; pid < particles.ntotal; pid++) {
+        for (int iaxis = 0; iaxis < 3; iaxis++) {
+          loc_grid = this->params.ngrid[iaxis]
+            * particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
+            + 0.5;  // apply half-grid shift
+          if (loc_grid > this->params.ngrid[iaxis]) {
+            loc_grid -= this->params.ngrid[iaxis]
+          }  // apply periodic boundary condition
+          s = loc_grid - double(int(loc_grid + 0.5));
+
+          /// Set up to 2nd element as `order == 3`.
+          ijk[0][iaxis] = int(loc_grid + 0.5) - 1;
+          ijk[1][iaxis] = int(loc_grid + 0.5);
+          ijk[2][iaxis] = int(loc_grid + 0.5) + 1;
+
+          win[0][iaxis] = 0.5 * (0.5 - s) * (0.5 - s);
+          win[1][iaxis] = 0.75 - s * s;
+          win[2][iaxis] = 0.5 * (0.5 + s) * (0.5 + s);
+        }
+
+        for (int iloc = 0; iloc < order; iloc++) {
+          for (int jloc = 0; jloc < order; jloc++) {
+            for (int kloc = 0; kloc < order; kloc++) {
+              idx_grid = (
+                ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
+              ) * this->params.ngrid[2] + ijk[kloc][2];
+
+              if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
+                this->field_s[idx_grid][0] += inv_vol_cell
+                  * weight[pid][0]
+                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
+                this->field_s[idx_grid][1] += inv_vol_cell
+                  * weight[pid][1]
+                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
+              }
+            }
+          }
+        }
+      }
+
+      for (int gid = 0; gid < this->params.nmesh; gid++) {
+        this->field[gid][0] /= 2.;
+        this->field[gid][1] /= 2.;
+        this->field[gid][0] += this->field_s[gid][0] / 2.;
+        this->field[gid][1] += this->field_s[gid][1] / 2.;
+      }
+    }
+  }
+
+  /**
+   * Assign weighted field to a mesh by the piecewise cubib spline (PCS)
+   * scheme.
+   *
+   * @param particles Particle container.
+   * @param weight Particle weight.
+   */
+  void assign_weighted_field_to_mesh_pcs(
+    ParticleContainer& particles,
+    fftw_complex* weight
+  ) {
+    /// Set interpolation order, i.e. number of grids, per dimension,
+    /// to which a single particle is assigned
+    int order = 4;
+
+    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
+    /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
+    double vol_cell = this->params.volume / double(this->params.nmesh);
+    double inv_vol_cell = 1. / vol_cell;
+
+    /// Reset field with zero values.
+    for (int gid = 0; gid < this->params.nmesh; gid++) {
+      this->field[gid][0] = 0.;
+      this->field[gid][1] = 0.;
+    }
+
+    /// Perform assignment.
+    int ijk[order][3];  // coordinates of covered mesh grids
+    double win[order][3];  // interpolation window
+    double loc_grid;  // coordinates in grid numbers in each dimension
+    double s;  // particle grid distance;
+    long long idx_grid;  // flattened grid index
+    for (int pid = 0; pid < particles.ntotal; pid++) {
+      for (int iaxis = 0; iaxis < 3; iaxis++) {
+        loc_grid = this->params.ngrid[iaxis]
+          * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
+        s = loc_grid - double(int(loc_grid));
+
+        /// Set up to 3rd element as `order == 4`.
+        ijk[0][iaxis] = int(loc_grid) - 1;
+        ijk[1][iaxis] = int(loc_grid);
+        ijk[2][iaxis] = int(loc_grid) + 1;
+        ijk[3][iaxis] = int(loc_grid) + 2;
+
+        win[0][iaxis] = 1./6. * (1. - s) * (1. - s) * (1. - s);
+        win[1][iaxis] = 1./6. * (4. - 6. * s * s + 3. * s * s * s);
+        win[2][iaxis] = 1./6. * (
+          4. - 6. * (1. - s) * (1. - s) + 3. * (1. - s) * (1. - s) * (1. - s)
+        );
+        win[3][iaxis] = 1./6. * s * s * s;
+      }
+
+      for (int iloc = 0; iloc < order; iloc++) {
+        for (int jloc = 0; jloc < order; jloc++) {
+          for (int kloc = 0; kloc < order; kloc++) {
+            idx_grid = (
+              ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
+            ) * this->params.ngrid[2] + ijk[kloc][2];
+
+            if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
+              this->field[idx_grid][0] += inv_vol_cell
+                * weight[pid][0]
+                * win[iloc][0] * win[jloc][1] * win[kloc][2];
+              this->field[idx_grid][1] += inv_vol_cell
+                * weight[pid][1]
+                * win[iloc][0] * win[jloc][1] * win[kloc][2];
+            }
+          }
+        }
+      }
+    }
+
+    /// Perform interlacing if needed.
+    if (this->params.interlace == "true") {
+      /// Reset field with zero values.
+      for (int gid = 0; gid < this->params.nmesh; gid++) {
+        this->field_s[gid][0] = 0.;
+        this->field_s[gid][1] = 0.;
+      }
+
+      /// Perform assignment.
+      int ijk[order][3];  // coordinates of covered mesh grids
+      double win[order][3];  // interpolation window
+      double loc_grid;  // coordinates in grid numbers in each dimension
+      double s;  // particle grid distance;
+      long long idx_grid;  // flattened grid index
+      for (int pid = 0; pid < particles.ntotal; pid++) {
+        for (int iaxis = 0; iaxis < 3; iaxis++) {
+          loc_grid = this->params.ngrid[iaxis]
+            * particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
+            + 0.5;  // apply half-grid shift
+          if (loc_grid > this->params.ngrid[iaxis]) {
+            loc_grid -= this->params.ngrid[iaxis]
+          }  // apply periodic boundary condition
+          s = loc_grid - double(int(loc_grid));
+
+          /// Set up to 3rd element as `order == 4`.
+          ijk[0][iaxis] = int(loc_grid) - 1;
+          ijk[1][iaxis] = int(loc_grid);
+          ijk[2][iaxis] = int(loc_grid) + 1;
+          ijk[3][iaxis] = int(loc_grid) + 2;
+
+          win[0][iaxis] = 1./6. * (1. - s) * (1. - s) * (1. - s);
+          win[1][iaxis] = 1./6. * (4. - 6. * s * s + 3. * s * s * s);
+          win[2][iaxis] = 1./6. * (
+            4. - 6. * (1. - s) * (1. - s) + 3. * (1. - s) * (1. - s) * (1. - s)
+          );
+          win[3][iaxis] = 1./6. * s * s * s;
+        }
+
+        for (int iloc = 0; iloc < order; iloc++) {
+          for (int jloc = 0; jloc < order; jloc++) {
+            for (int kloc = 0; kloc < order; kloc++) {
+              idx_grid = (
+                ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
+              ) * this->params.ngrid[2] + ijk[kloc][2];
+
+              if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
+                this->field_s[idx_grid][0] += inv_vol_cell
+                  * weight[pid][0]
+                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
+                this->field_s[idx_grid][1] += inv_vol_cell
+                  * weight[pid][1]
+                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
+              }
+            }
+          }
+        }
+      }
+
+      for (int gid = 0; gid < this->params.nmesh; gid++) {
+        this->field[gid][0] /= 2.;
+        this->field[gid][1] /= 2.;
+        this->field[gid][0] += this->field_s[gid][0] / 2.;
+        this->field[gid][1] += this->field_s[gid][1] / 2.;
       }
     }
   }
@@ -1082,6 +1422,9 @@ class PseudoDensityField {
     } else
     if (this->params.assignment == "tsc") {
       order = 3;
+    } else
+    if (this->params.assignment == "pcs") {
+      order = 4;
     }
 
     double dk[3];
@@ -1971,6 +2314,7 @@ class Pseudo2ptStats {
 
  private:
   trv::scheme::ParameterSet params;
+  fftw_complex* field_s;  ///> half-grid shifted meshed complex field
 
   /**
    * Calculate the interpolarion window in Fourier space for
@@ -1989,6 +2333,9 @@ class Pseudo2ptStats {
     } else
     if (this->params.assignment == "tsc") {
       order = 3;
+    } else
+    if (this->params.assignment == "pcs") {
+      order = 4;
     }
 
     double dk[3];
@@ -2035,6 +2382,9 @@ class Pseudo2ptStats {
     if (this->params.assignment == "tsc") {
       return this->calc_shotnoise_scale_dependence_tsc(kvec);
     }
+    if (this->params.assignment == "pcs") {
+      return this->calc_shotnoise_scale_dependence_pcs(kvec);
+    }
     return 1.;
   }
 
@@ -2070,14 +2420,11 @@ class Pseudo2ptStats {
     double k_y = M_PI * j / double(this->params.ngrid[1]);
     double k_z = M_PI * k / double(this->params.ngrid[2]);
 
-    double cx = (i != 0) ? std::sin(k_x): 0.;
-    double cy = (j != 0) ? std::sin(k_y): 0.;
-    double cz = (k != 0) ? std::sin(k_z): 0.;
+    double cx2 = (i != 0) ? std::sin(k_x) * std::sin(k_x) : 0.;
+    double cy2 = (j != 0) ? std::sin(k_y) * std::sin(k_y) : 0.;
+    double cz2 = (k != 0) ? std::sin(k_z) * std::sin(k_z) : 0.;
 
-    double val =
-      (1. - 2./3. * cx * cx)
-      * (1. - 2./3. * cy * cy)
-      * (1. - 2./3. * cz * cz);
+    double val = (1. - 2./3. * cx2) * (1. - 2./3. * cy2) * (1. - 2./3. * cz2);
 
     return val;
   }
@@ -2103,14 +2450,47 @@ class Pseudo2ptStats {
     double k_y = M_PI * j / double(this->params.ngrid[1]);
     double k_z = M_PI * k / double(this->params.ngrid[2]);
 
-    double cx = (i != 0) ? std::sin(k_x): 0.;
-    double cy = (j != 0) ? std::sin(k_y): 0.;
-    double cz = (k != 0) ? std::sin(k_z): 0.;
+    double cx2 = (i != 0) ? std::sin(k_x) * std::sin(k_x) : 0.;
+    double cy2 = (j != 0) ? std::sin(k_y) * std::sin(k_y) : 0.;
+    double cz2 = (k != 0) ? std::sin(k_z) * std::sin(k_z) : 0.;
 
     double val =
-      (1. - cx * cx + 2./15. * std::pow(cx, 4))
-      * (1. - cy * cy + 2./15. * std::pow(cy, 4))
-      * (1. - cz * cz + 2./15. * std::pow(cz, 4));
+      (1. - cx2 + 2./15. * cx2 * cx2)
+      * (1. - cy2 + 2./15. * cy2 * cy2)
+      * (1. - cz2 + 2./15. * cz2 * cz2);
+
+    return val;
+  }
+
+  /**
+   * Calculate the shot-noise scale-dependence function for the
+   * piecewise-cubic-spline assignment scheme.
+   *
+   * @param kvec Wavevector.
+   * @returns Function value.
+   */
+  double calc_shotnoise_scale_dependence_pcs(double* kvec) {
+    double dk[3];
+    dk[0] = 2.*M_PI / this->params.boxsize[0];
+    dk[1] = 2.*M_PI / this->params.boxsize[1];
+    dk[2] = 2.*M_PI / this->params.boxsize[2];
+
+    int i = int(kvec[0] / dk[0] + EPS_GRIDSHIFT);
+    int j = int(kvec[1] / dk[1] + EPS_GRIDSHIFT);
+    int k = int(kvec[2] / dk[2] + EPS_GRIDSHIFT);
+
+    double k_x = M_PI * i / double(this->params.ngrid[0]);
+    double k_y = M_PI * j / double(this->params.ngrid[1]);
+    double k_z = M_PI * k / double(this->params.ngrid[2]);
+
+    double cx2 = (i != 0) ? std::sin(k_x) * std::sin(k_x) : 0.;
+    double cy2 = (j != 0) ? std::sin(k_y) * std::sin(k_y) : 0.;
+    double cz2 = (k != 0) ? std::sin(k_z) * std::sin(k_z) : 0.;
+
+    double val =
+      (1. - 4./3. * cx2 + 2./5. * cx2 * cx2 - 4./315. * cx2 * cx2 * cx2)
+      * (1. - 4./3. * cy2 + 2./5. * cy2 * cy2 - 4./315. * cy2 * cy2 * cy2)
+      * (1. - 4./3. * cz2 + 2./5. * cz2 * cz2 - 4./315. * cz2 * cz2 * cz2);
 
     return val;
   }
