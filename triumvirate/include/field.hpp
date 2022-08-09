@@ -97,7 +97,7 @@ class PseudoDensityField {
       trv::runtime::gbytesMem -= double(this->params.nmesh)
         * sizeof(fftw_complex) / BYTES_PER_GBYTES;
     }
-    if (this->field_s != NULL) {
+    if (this->params.interlace == "true" && this->field_s != NULL) {
       fftw_free(this->field_s); this->field_s = NULL;
       trv::runtime::gbytesMem -= double(this->params.nmesh)
         * sizeof(fftw_complex) / BYTES_PER_GBYTES;
