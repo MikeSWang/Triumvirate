@@ -81,6 +81,10 @@ void print_3pt_meas_file_header(
   );
   std::fprintf(
     save_fileptr,
+    "# Interlacing: %s\n", params.interlace.c_str()
+  );
+  std::fprintf(
+    save_fileptr,
     "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
   );
   if (norm_alt != 0.) {
@@ -156,6 +160,10 @@ void print_3pt_meas_file_header(
     save_fileptr,
     "# Alignment and assignment: %s, %s\n",
     params.alignment.c_str(), params.assignment.c_str()
+  );
+  std::fprintf(
+    save_fileptr,
+    "# Interlacing: %s\n", params.interlace.c_str()
   );
   std::fprintf(
     save_fileptr,
