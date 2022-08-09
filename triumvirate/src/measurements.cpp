@@ -17,7 +17,7 @@
 int main(int argc, char* argv[]) {
   if (trv::runtime::currTask == 0) {
     std::printf(
-      "%s\n[%s STAT] Program has started.\n",
+      "%s\n[%s STAT] Program started.\n",
       std::string(80, '>').c_str(), trv::runtime::show_timestamp().c_str()
     );
   }
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
   if (!(params.printout())) {
     if (trv::runtime::currTask == 0) {
       std::printf(
-        "[%s INFO] Check 'parameters_used' file in your "
+        "[%s INFO] Check 'parameters_used*' file in your "
         "measurement output directory for reference.\n",
         trv::runtime::show_timestamp().c_str()
       );
@@ -201,6 +201,12 @@ int main(int argc, char* argv[]) {
   }
 
   /// Offset particle positions for measurements.
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] Offset particle coordinates for box alignment.\n",
+      trv::runtime::show_timestamp().c_str()
+    );
+  }
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
     if (params.alignment == "pad") {
       if (params.padscale == "grid") {
