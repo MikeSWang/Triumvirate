@@ -2378,6 +2378,9 @@ class Pseudo2ptStats {
    * @returns Value of the scale-dependence function.
    */
   double calc_shotnoise_scale_dependence(double* kvec) {
+    if (this->params.interlace == "true") {
+      return 1.;
+    }
     if (this->params.assignment == "ngp") {
       return this->calc_shotnoise_scale_dependence_ngp(kvec);
     }
