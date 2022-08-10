@@ -53,7 +53,7 @@ self_includes = [f"{pkgdir}/include"]
 self_macros = [
     # ('DBG_NORMALT', None),
     # ('DBG_PARS', None),
-    # ('DBG_DK', None),
+    # ('DBG_BINWIDTH', None),
 ]
 
 npy_includes = [numpy.get_include()]
