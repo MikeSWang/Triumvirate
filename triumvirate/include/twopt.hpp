@@ -90,7 +90,7 @@ void print_2pt_meas_file_header(
   if (sn_particle != 0.) {
     std::fprintf(
       save_fileptr,
-      "# Shot noise: %.9e + %.9e, particle-based\n",
+      "# Shot noise: %.9e + %.9e i, particle-based\n",
       sn_particle.real(), sn_particle.imag()
     );
   }
@@ -178,7 +178,7 @@ void print_2pt_meas_file_header(
   if (sn_particle != 0.) {
     std::fprintf(
       save_fileptr,
-      "# Shot noise: %.9e + %.9e, particle-based\n",
+      "# Shot noise: %.9e + %.9e i, particle-based\n",
       sn_particle.real(), sn_particle.imag()
     );
   }
