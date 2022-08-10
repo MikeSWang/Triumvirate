@@ -32,6 +32,8 @@ namespace algo {
  * @param norm Normalisation factor.
  * @param norm_alt Alternative normalisation factor (only printed out
  *                 if non-zero).
+ * @param sn_particle Shot noise calculated based on particles (only
+ *                    printed out if non-zero).
  * @param space Either 'config'(-uration) space or 'fourier' space.
  *
  * @overload
@@ -39,7 +41,8 @@ namespace algo {
 void print_2pt_meas_file_header(
   std::FILE* save_fileptr, trv::scheme::ParameterSet& params,
   ParticleCatalogue& catalogue_data, ParticleCatalogue& catalogue_rand,
-  float norm, float norm_alt, std::string space
+  float norm, float norm_alt, std::complex<double> sn_particle,
+  std::string space
 ) {
   std::fprintf(
     save_fileptr,
@@ -84,6 +87,13 @@ void print_2pt_meas_file_header(
   if (norm_alt != 0.) {
     std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", norm_alt);
   }
+  if (sn_particle != 0.) {
+    std::fprintf(
+      save_fileptr,
+      "# Shot noise: %.9e + %.9e, particle-based\n",
+      sn_particle.real(), sn_particle.imag()
+    );
+  }
   if (space == "config") {
     std::fprintf(
       save_fileptr,
@@ -117,11 +127,15 @@ void print_2pt_meas_file_header(
  * @param norm Normalisation factor.
  * @param norm_alt Alternative normalisation factor (only printed out
  *                 if non-zero).
+ * @param sn_particle Shot noise calculated based on particles (only
+ *                    printed out if non-zero).
  * @param space Either 'config'(-uration) space or 'fourier' space.
  */
 void print_2pt_meas_file_header(
   std::FILE* save_fileptr,trv::scheme::ParameterSet& params,
-  ParticleCatalogue& catalogue, float norm, float norm_alt, std::string space
+  ParticleCatalogue& catalogue, float norm, float norm_alt,
+  std::complex<double> sn_particle,
+  std::string space
 ) {
   std::fprintf(
     save_fileptr,
@@ -160,6 +174,13 @@ void print_2pt_meas_file_header(
   );
   if (norm_alt != 0.) {
     std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", norm_alt);
+  }
+  if (sn_particle != 0.) {
+    std::fprintf(
+      save_fileptr,
+      "# Shot noise: %.9e + %.9e, particle-based\n",
+      sn_particle.real(), sn_particle.imag()
+    );
   }
   if (space == "config") {
     std::fprintf(
@@ -420,7 +441,8 @@ PowspecMeasurements compute_powspec(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_2pt_meas_file_header(
-      save_fileptr, params, particles_data, particles_rand, norm, norm_alt,
+      save_fileptr, params, particles_data, particles_rand,
+      norm, norm_alt, sn_particle,
       "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
@@ -581,7 +603,8 @@ CorrfuncMeasurements compute_corrfunc(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_2pt_meas_file_header(
-      save_fileptr, params, particles_data, particles_rand, norm, norm_alt,
+      save_fileptr, params, particles_data, particles_rand,
+      norm, norm_alt, 0.,
       "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
@@ -715,7 +738,9 @@ PowspecMeasurements compute_powspec_in_box(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_2pt_meas_file_header(
-      save_fileptr, params, particles_data, norm, norm_alt, "fourier"
+      save_fileptr, params, particles_data,
+      norm, norm_alt, sn_particle,
+      "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
       std::fprintf(
@@ -840,7 +865,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_2pt_meas_file_header(
-      save_fileptr, params, particles_data, norm, norm_alt, "config"
+      save_fileptr, params, particles_data, norm, norm_alt, 0., "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
@@ -1119,7 +1144,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     /// Write output.
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_2pt_meas_file_header(
-      save_fileptr, params, particles_rand, norm, norm_alt, "config"
+      save_fileptr, params, particles_rand, norm, norm_alt, 0., "config"
     );
     for (int ibin = 0; ibin < params.num_rbin; ibin++) {
       std::fprintf(
