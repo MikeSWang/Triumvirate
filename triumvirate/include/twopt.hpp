@@ -32,8 +32,8 @@ namespace algo {
  * @param norm Normalisation factor.
  * @param norm_alt Alternative normalisation factor (only printed out
  *                 if non-zero).
- * @param sn_particle Shot noise calculated based on particles (only
- *                    printed out if non-zero).
+ * @param pk_sn_particle Shot noise calculated based on particles (only
+ *                       printed out if non-zero).
  * @param space Either 'config'(-uration) space or 'fourier' space.
  *
  * @overload
@@ -41,7 +41,7 @@ namespace algo {
 void print_2pt_meas_file_header(
   std::FILE* save_fileptr, trv::scheme::ParameterSet& params,
   ParticleCatalogue& catalogue_data, ParticleCatalogue& catalogue_rand,
-  float norm, float norm_alt, std::complex<double> sn_particle,
+  float norm, float norm_alt, std::complex<double> pk_sn_particle,
   std::string space
 ) {
   std::fprintf(
@@ -87,11 +87,11 @@ void print_2pt_meas_file_header(
   if (norm_alt != 0.) {
     std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", norm_alt);
   }
-  if (sn_particle != 0.) {
+  if (pk_sn_particle != 0.) {
     std::fprintf(
       save_fileptr,
       "# Shot noise: %.9e + %.9e i, particle-based\n",
-      sn_particle.real(), sn_particle.imag()
+      pk_sn_particle.real(), pk_sn_particle.imag()
     );
   }
   if (space == "config") {
@@ -127,14 +127,14 @@ void print_2pt_meas_file_header(
  * @param norm Normalisation factor.
  * @param norm_alt Alternative normalisation factor (only printed out
  *                 if non-zero).
- * @param sn_particle Shot noise calculated based on particles (only
- *                    printed out if non-zero).
+ * @param pk_sn_particle Shot noise calculated based on particles (only
+ *                       printed out if non-zero).
  * @param space Either 'config'(-uration) space or 'fourier' space.
  */
 void print_2pt_meas_file_header(
   std::FILE* save_fileptr,trv::scheme::ParameterSet& params,
   ParticleCatalogue& catalogue, float norm, float norm_alt,
-  std::complex<double> sn_particle,
+  std::complex<double> pk_sn_particle,
   std::string space
 ) {
   std::fprintf(
@@ -175,11 +175,11 @@ void print_2pt_meas_file_header(
   if (norm_alt != 0.) {
     std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", norm_alt);
   }
-  if (sn_particle != 0.) {
+  if (pk_sn_particle != 0.) {
     std::fprintf(
       save_fileptr,
       "# Shot noise: %.9e + %.9e i, particle-based\n",
-      sn_particle.real(), sn_particle.imag()
+      pk_sn_particle.real(), pk_sn_particle.imag()
     );
   }
   if (space == "config") {
@@ -442,7 +442,7 @@ PowspecMeasurements compute_powspec(
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_2pt_meas_file_header(
       save_fileptr, params, particles_data, particles_rand,
-      norm, norm_alt, sn_particle,
+      norm, norm_alt, norm * sn_particle,
       "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
@@ -739,7 +739,7 @@ PowspecMeasurements compute_powspec_in_box(
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     print_2pt_meas_file_header(
       save_fileptr, params, particles_data,
-      norm, norm_alt, sn_particle,
+      norm, norm_alt, norm * sn_particle,
       "fourier"
     );
     for (int ibin = 0; ibin < params.num_kbin; ibin++) {
