@@ -552,7 +552,7 @@ class PseudoDensityField {
               i / this->params.ngrid[0]
               + j / this->params.ngrid[1]
               + k / this->params.ngrid[2]
-            )
+            );
 
             this->field[idx_grid][0] +=
               std::cos(arg) * this->field_s[idx_grid][0]
