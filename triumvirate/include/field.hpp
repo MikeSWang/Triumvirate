@@ -1412,7 +1412,7 @@ class PseudoDensityField {
   }
 
   /**
-   * Calculate the interpolarion window in Fourier space for
+   * Calculate the interpolation window in Fourier space for
    * assignment schemes.
    *
    * @param kvec Wavevector.
@@ -1614,7 +1614,7 @@ class Pseudo2ptStats {
               shotnoise_amp * this->calc_shotnoise_scale_dependence(kv);
 
             /// Apply assignment compensation.
-            double win = this->calc_aliased_assignment_window_in_fourier(kv);
+            double win = this->calc_fftgrid_correction_in_fourier(kv);
 
             mode_power /= win;
             mode_sn /= win;
@@ -1751,7 +1751,7 @@ class Pseudo2ptStats {
             shotnoise_amp * this->calc_shotnoise_scale_dependence(kv);
 
           /// Apply assignment compensation.
-          double win = this->calc_aliased_assignment_window_in_fourier(kv);
+          double win = this->calc_fftgrid_correction_in_fourier(kv);
 
           mode_power /= win;
 
@@ -2048,7 +2048,7 @@ class Pseudo2ptStats {
           mode_power -= shotnoise_amp * calc_shotnoise_scale_dependence(kv);
 
           /// Apply assignment compensation.
-          double win = this->calc_assignment_window_in_fourier(kv);
+          double win = this->calc_fftgrid_correction_in_fourier(kv);
 
           mode_power /= win;
 
@@ -2231,7 +2231,7 @@ class Pseudo2ptStats {
           mode_power -= shotnoise_amp * calc_shotnoise_scale_dependence(kv);
 
           /// Apply assignment compensation.
-          double win = this->calc_assignment_window_in_fourier(kv);
+          double win = this->calc_fftgrid_correction_in_fourier(kv);
 
           mode_power /= win;
 
@@ -2323,25 +2323,36 @@ class Pseudo2ptStats {
   trv::scheme::ParameterSet params;
 
   /**
-   * Calculate the interpolarion window in Fourier space for
-   * assignment schemes.
+   * Calculate the assignment and/or aliasing correction for FFT
+   * interpolation schemes.
    *
    * @param kvec Wavevector.
-   * @returns Window value in Fourier space.
+   * @returns Window sum in Fourier space.
    */
-  double calc_aliased_assignment_window_in_fourier(double* kvec) {
-    if (this->params.interlace == "false") {
-      /// Approximate C_2 with C_1 in Jing (2004) eqs. (17), (20) and (22).
-      return calc_shotnoise_scale_dependence(kvec);
-    } else {
-      return calc_assignment_window_in_fourier(kvec);
-    }
-
-    return 1.;
+  double calc_fftgrid_correction_in_fourier(double* kvec) {
+    // if {this->params.interlace == "true"} (
+    //   return calc_assignment_window_in_fourier(kvec);
+    // )
+    // if {this->params.interlace == "false"} (
+    //   return calc_aliasing_window_in_fourier(kvec);
+    // )
+    return calc_assignment_window_in_fourier(kvec);
   }
 
   /**
-   * Calculate the 2-point interpolarion window in Fourier space for
+   * Calculate the aliasing sum of 2-point interpolation windows
+   * in Fourier space for assignment schemes.
+   *
+   * @param kvec Wavevector.
+   * @returns Window sum in Fourier space.
+   */
+  double calc_aliasing_window_in_fourier(double* kvec) {
+    /// Approximate C_2 with C_1 in Jing (2004) eqs. (17), (20) and (22).
+    return calc_shotnoise_scale_dependence(kvec);
+  }
+
+  /**
+   * Calculate the 2-point interpolation window in Fourier space for
    * assignment schemes.
    *
    * @param kvec Wavevector.
