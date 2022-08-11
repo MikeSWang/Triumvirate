@@ -1610,14 +1610,13 @@ class Pseudo2ptStats {
             );
 
             std::complex<double> mode_power = delta_a * std::conj(delta_b);
-            std::complex<double> mode_sn =
-              shotnoise_amp * calc_shotnoise_scale_dependence(kv);
+            std::complex<double> mode_sn = shotnoise_amp;
 
             /// Apply assignment compensation.
-            double win = this->calc_assignment_window_in_fourier(kv);
+            double win = this->calc_aliased_assignment_window_in_fourier(kv);
 
-            mode_power /= std::pow(win, 2);
-            mode_sn /= std::pow(win, 2);
+            mode_power /= win;
+            mode_sn /= win;
 
             /// Weight by reduced spherical harmonics.
             std::complex<double> ylm = SphericalHarmonicCalculator::
@@ -1747,12 +1746,12 @@ class Pseudo2ptStats {
           std::complex<double> mode_power = delta_a * std::conj(delta_b);
 
           /// Subtract shot-noise component.
-          mode_power -= shotnoise_amp * calc_shotnoise_scale_dependence(kv);
+          mode_power -= shotnoise_amp;
 
           /// Apply assignment compensation.
-          double win = this->calc_assignment_window_in_fourier(kv);
+          double win = this->calc_aliased_assignment_window_in_fourier(kv);
 
-          mode_power /= std::pow(win, 2);
+          mode_power /= win;
 
           twopt_3d[idx_grid][0] = mode_power.real() / vol;
           twopt_3d[idx_grid][1] = mode_power.imag() / vol;
@@ -2049,7 +2048,7 @@ class Pseudo2ptStats {
           /// Apply assignment compensation.
           double win = this->calc_assignment_window_in_fourier(kv);
 
-          mode_power /= std::pow(win, 2);
+          mode_power /= win;
 
           twopt_3d[idx_grid][0] = mode_power.real() / vol;
           twopt_3d[idx_grid][1] = mode_power.imag() / vol;
@@ -2232,7 +2231,7 @@ class Pseudo2ptStats {
           /// Apply assignment compensation.
           double win = this->calc_assignment_window_in_fourier(kv);
 
-          mode_power /= std::pow(win, 2);
+          mode_power /= win;
 
           threept_3d[idx_grid][0] = mode_power.real() / vol;
           threept_3d[idx_grid][1] = mode_power.imag() / vol;
@@ -2328,6 +2327,24 @@ class Pseudo2ptStats {
    * @param kvec Wavevector.
    * @returns Window value in Fourier space.
    */
+  double calc_aliased_assignment_window_in_fourier(double* kvec) {
+    if (this->params.interlace == "false") {
+      /// Approximate C_2 with C_1 in Jing (2004) eqs. (17), (20) and (22).
+      return calc_shotnoise_scale_dependence(kvec);
+    } else {
+      return calc_assignment_window_in_fourier(kvec);
+    }
+
+    return 1.;
+  }
+
+  /**
+   * Calculate the 2-point interpolarion window in Fourier space for
+   * assignment schemes.
+   *
+   * @param kvec Wavevector.
+   * @returns Window value in Fourier space.
+   */
   double calc_assignment_window_in_fourier(double* kvec) {
     int order;
     if (this->params.assignment == "ngp") {
@@ -2363,7 +2380,8 @@ class Pseudo2ptStats {
 
     double wk = wk_x * wk_y * wk_z;
 
-    return std::pow(wk, order);
+    /// Note the inserted power 2 for 2-point statistics.
+    return std::pow(wk, 2*order);
   }
 
   /**
