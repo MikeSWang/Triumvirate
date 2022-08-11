@@ -531,6 +531,43 @@ class PseudoDensityField {
 
     fftw_execute(transform);
     fftw_destroy_plan(transform);
+
+    if (this->params.interlace == "true") {
+      fftw_plan transform_s = fftw_plan_dft_3d(
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        this->field_s, this->field_s,
+        FFTW_FORWARD, FFTW_ESTIMATE
+      );
+
+      fftw_execute(transform_s);
+      fftw_destroy_plan(transform_s);
+
+      for (int i = 0; i < this->params.ngrid[0]; i++) {
+        for (int j = 0; j < this->params.ngrid[1]; j++) {
+          for (int k = 0; k < this->params.ngrid[2]; k++) {
+            long long idx_grid =
+              (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
+
+            double arg = M_PI * (
+              i / this->params.ngrid[0]
+              + j / this->params.ngrid[1]
+              + k / this->params.ngrid[2]
+            )
+
+            this->field[idx_grid][0] +=
+              std::cos(arg) * this->field_s[idx_grid][0]
+              - std::sin(arg) * this->field_s[idx_grid][1]
+            ;
+            this->field[idx_grid][1] +=
+              std::sin(arg) * this->field_s[idx_grid][0]
+              + std::cos(arg) * this->field_s[idx_grid][1]
+            ;
+            this->field[idx_grid][0] /= 2.;
+            this->field[idx_grid][1] /= 2.;
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -1005,13 +1042,6 @@ class PseudoDensityField {
           }
         }
       }
-
-      for (int gid = 0; gid < this->params.nmesh; gid++) {
-        this->field[gid][0] /= 2.;
-        this->field[gid][1] /= 2.;
-        this->field[gid][0] += this->field_s[gid][0] / 2.;
-        this->field[gid][1] += this->field_s[gid][1] / 2.;
-      }
     }
   }
 
@@ -1130,13 +1160,6 @@ class PseudoDensityField {
             }
           }
         }
-      }
-
-      for (int gid = 0; gid < this->params.nmesh; gid++) {
-        this->field[gid][0] /= 2.;
-        this->field[gid][1] /= 2.;
-        this->field[gid][0] += this->field_s[gid][0] / 2.;
-        this->field[gid][1] += this->field_s[gid][1] / 2.;
       }
     }
   }
@@ -1261,13 +1284,6 @@ class PseudoDensityField {
             }
           }
         }
-      }
-
-      for (int gid = 0; gid < this->params.nmesh; gid++) {
-        this->field[gid][0] /= 2.;
-        this->field[gid][1] /= 2.;
-        this->field[gid][0] += this->field_s[gid][0] / 2.;
-        this->field[gid][1] += this->field_s[gid][1] / 2.;
       }
     }
   }
@@ -1400,13 +1416,6 @@ class PseudoDensityField {
             }
           }
         }
-      }
-
-      for (int gid = 0; gid < this->params.nmesh; gid++) {
-        this->field[gid][0] /= 2.;
-        this->field[gid][1] /= 2.;
-        this->field[gid][0] += this->field_s[gid][0] / 2.;
-        this->field[gid][1] += this->field_s[gid][1] / 2.;
       }
     }
   }
