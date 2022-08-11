@@ -1610,7 +1610,8 @@ class Pseudo2ptStats {
             );
 
             std::complex<double> mode_power = delta_a * std::conj(delta_b);
-            std::complex<double> mode_sn = shotnoise_amp;
+            std::complex<double> mode_sn =
+              shotnoise_amp * this->calc_shotnoise_scale_dependence(kv);
 
             /// Apply assignment compensation.
             double win = this->calc_aliased_assignment_window_in_fourier(kv);
@@ -1746,7 +1747,8 @@ class Pseudo2ptStats {
           std::complex<double> mode_power = delta_a * std::conj(delta_b);
 
           /// Subtract shot-noise component.
-          mode_power -= shotnoise_amp;
+          mode_power -=
+            shotnoise_amp * this->calc_shotnoise_scale_dependence(kv);
 
           /// Apply assignment compensation.
           double win = this->calc_aliased_assignment_window_in_fourier(kv);
