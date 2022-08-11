@@ -548,7 +548,7 @@ class PseudoDensityField {
             long long idx_grid =
               (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
 
-            double arg = M_PI * (
+            double arg = - M_PI * (
               i / this->params.ngrid[0]
               + j / this->params.ngrid[1]
               + k / this->params.ngrid[2]
