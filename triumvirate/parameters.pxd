@@ -7,12 +7,17 @@ cdef extern from "include/parameters.hpp":
         string measurement_dir
         string data_catalogue_file
         string rand_catalogue_file
+        # string catalogue_header
         string output_tag
 
         double boxsize[3]
         int ngrid[3]
+        # double padfactor
 
+        # string alignment
+        # string padscale
         string assignment
+        string interlace
         string norm_convention
         string shotnoise_convention
 

@@ -82,16 +82,25 @@ void print_2pt_meas_file_header(
   );
   std::fprintf(
     save_fileptr,
-    "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
+    "# Normalisation (%s-based): %.9e\n",
+    params.norm_convention.c_str(), norm
   );
   if (norm_alt != 0.) {
-    std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", norm_alt);
+    std::fprintf(
+      save_fileptr,
+      "# Normalisation (alternative): %.9e\n", norm_alt
+    );
   }
+  std::fprintf(
+    save_fileptr,
+    "# Shot noise (%s-based): see data below\n",
+    params.shotnoise_convention.c_str()
+  );
   if (pk_sn_particle != 0.) {
     std::fprintf(
       save_fileptr,
-      "# Shot noise: %.9e + %.9e i, particle-based\n",
-      pk_sn_particle.real(), pk_sn_particle.imag()
+      "# Shot noise (particle-based): %.9e\n",
+      pk_sn_particle.real()
     );
   }
   if (space == "config") {
@@ -170,16 +179,25 @@ void print_2pt_meas_file_header(
   );
   std::fprintf(
     save_fileptr,
-    "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
+    "# Normalisation (%s-based): %.9e\n",
+    params.norm_convention.c_str(), norm
   );
   if (norm_alt != 0.) {
-    std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", norm_alt);
+    std::fprintf(
+      save_fileptr,
+      "# Normalisation (alternative): %.9e\n", norm_alt
+    );
   }
+  std::fprintf(
+    save_fileptr,
+    "# Shot noise (%s-based): see data below\n",
+    params.shotnoise_convention.c_str()
+  );
   if (pk_sn_particle != 0.) {
     std::fprintf(
       save_fileptr,
-      "# Shot noise: %.9e + %.9e i, particle-based\n",
-      pk_sn_particle.real(), pk_sn_particle.imag()
+      "# Shot noise (particle-based): %.9e\n",
+      pk_sn_particle.real()
     );
   }
   if (space == "config") {
