@@ -2340,12 +2340,14 @@ class Pseudo2ptStats {
    * @returns Window sum in Fourier space.
    */
   double calc_2pt_fftgrid_correction(double* kvec) {
-    if {this->params.interlace == "true"} (
+    if (this->params.interlace == "true") {
       return std::pow(calc_assignment_window_in_fourier(kvec), 2);
-    )
-    // if {this->params.interlace == "false"} (
-    //   return calc_shotnoise_aliasing(kvec);
-    // )
+    }
+    #ifndef DBG_NOAC
+    if (this->params.interlace == "false") {
+      return calc_shotnoise_aliasing(kvec);
+    }
+    #endif
     return std::pow(calc_assignment_window_in_fourier(kvec), 2);  // default
   }
 
