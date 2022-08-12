@@ -542,19 +542,24 @@ class PseudoDensityField {
       fftw_execute(transform_s);
       fftw_destroy_plan(transform_s);
 
+      int m[3];
       for (int i = 0; i < this->params.ngrid[0]; i++) {
         for (int j = 0; j < this->params.ngrid[1]; j++) {
           for (int k = 0; k < this->params.ngrid[2]; k++) {
             long long idx_grid =
               (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
 
+            /// Calculate the cell index vector representing the grid.
+            m[0] = (i < this->params.ngrid[0]/2) ?
+              i / this->params.ngrid[0] : (i / this->params.ngrid[0] - 1);
+            m[1] = (j < this->params.ngrid[1]/2) ?
+              j / this->params.ngrid[1] : (j / this->params.ngrid[1] - 1);
+            m[2] = (k < this->params.ngrid[2]/2) ?
+              k / this->params.ngrid[2] : (k / this->params.ngrid[2] - 1);
+
             /// The sign of `arg` (positive/negative half-grid shift)
             /// has no effect.
-            double arg = - M_PI * (
-              i / this->params.ngrid[0]
-              + j / this->params.ngrid[1]
-              + k / this->params.ngrid[2]
-            );
+            double arg = - M_PI * (m[0] + m[1] + m[2]);
 
             this->field[idx_grid][0] +=
               std::cos(arg) * this->field_s[idx_grid][0]
