@@ -128,6 +128,7 @@ cdef class ParameterSet:
         ]
 
         self.thisptr.assignment = self._params['assignment']
+        self.thisptr.interlace = self._params['interlace']
         self.thisptr.norm_convention = self._params['norm_convention']
         self.thisptr.shotnoise_convention = self._params['shotnoise_convention']
 

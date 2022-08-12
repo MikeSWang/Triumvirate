@@ -85,10 +85,14 @@ void print_3pt_meas_file_header(
   );
   std::fprintf(
     save_fileptr,
-    "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
+    "# Normalisation (%s-based): %.9e\n",
+    params.norm_convention.c_str(), norm
   );
   if (norm_alt != 0.) {
-    std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", norm_alt);
+    std::fprintf(
+      save_fileptr,
+      "# Normalisation (alternative): %.9e\n", norm_alt
+    );
   }
   if (space == "config") {
     std::fprintf(
@@ -167,10 +171,14 @@ void print_3pt_meas_file_header(
   );
   std::fprintf(
     save_fileptr,
-    "# Normalisation: %.9e, %s-based\n", norm, params.norm_convention.c_str()
+    "# Normalisation (%s-based): %.9e\n",
+    params.norm_convention.c_str(), norm
   );
   if (norm_alt != 0.) {
-    std::fprintf(save_fileptr, "# Normalisation alternative: %.9e\n", norm_alt);
+    std::fprintf(
+      save_fileptr,
+      "# Normalisation (alternative): %.9e\n", norm_alt
+    );
   }
   if (space == "config") {
     std::fprintf(
