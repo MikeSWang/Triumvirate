@@ -1622,10 +1622,10 @@ class Pseudo2ptStats {
 
             std::complex<double> mode_power = delta_a * std::conj(delta_b);
             std::complex<double> mode_sn =
-              shotnoise_amp * this->calc_shotnoise_scale_dependence(kv);
+              shotnoise_amp * this->calc_shotnoise_aliasing(kv);
 
             /// Apply assignment compensation.
-            double win = this->calc_fftgrid_correction_in_fourier(kv);
+            double win = this->calc_2pt_fftgrid_correction(kv);
 
             mode_power /= win;
             mode_sn /= win;
@@ -1759,10 +1759,10 @@ class Pseudo2ptStats {
 
           /// Subtract shot-noise component.
           mode_power -=
-            shotnoise_amp * this->calc_shotnoise_scale_dependence(kv);
+            shotnoise_amp * this->calc_shotnoise_aliasing(kv);
 
           /// Apply assignment compensation.
-          double win = this->calc_fftgrid_correction_in_fourier(kv);
+          double win = this->calc_2pt_fftgrid_correction(kv);
 
           mode_power /= win;
 
@@ -2056,10 +2056,10 @@ class Pseudo2ptStats {
           std::complex<double> mode_power = delta_a * std::conj(delta_b);
 
           /// Subtract shot noise component.
-          mode_power -= shotnoise_amp * calc_shotnoise_scale_dependence(kv);
+          mode_power -= shotnoise_amp * calc_shotnoise_aliasing(kv);
 
           /// Apply assignment compensation.
-          double win = this->calc_fftgrid_correction_in_fourier(kv);
+          double win = this->calc_2pt_fftgrid_correction(kv);
 
           mode_power /= win;
 
@@ -2239,10 +2239,10 @@ class Pseudo2ptStats {
           std::complex<double> mode_power = delta_a * std::conj(delta_b);
 
           /// Subtract shot noise component.
-          mode_power -= shotnoise_amp * calc_shotnoise_scale_dependence(kv);
+          mode_power -= shotnoise_amp * calc_shotnoise_aliasing(kv);
 
           /// Apply assignment compensation.
-          double win = this->calc_fftgrid_correction_in_fourier(kv);
+          double win = this->calc_2pt_fftgrid_correction(kv);
 
           mode_power /= win;
 
@@ -2334,36 +2334,23 @@ class Pseudo2ptStats {
   trv::scheme::ParameterSet params;
 
   /**
-   * Calculate the assignment and/or aliasing correction for FFT
-   * interpolation schemes.
+   * Calculate the interpolation grid corrections needed after FFT.
    *
    * @param kvec Wavevector.
    * @returns Window sum in Fourier space.
    */
-  double calc_fftgrid_correction_in_fourier(double* kvec) {
-    // if {this->params.interlace == "true"} (
-    //   return calc_assignment_window_in_fourier(kvec);
-    // )
+  double calc_2pt_fftgrid_correction(double* kvec) {
+    if {this->params.interlace == "true"} (
+      return std::pow(calc_assignment_window_in_fourier(kvec), 2);
+    )
     // if {this->params.interlace == "false"} (
-    //   return calc_aliasing_window_in_fourier(kvec);
+    //   return calc_shotnoise_aliasing(kvec);
     // )
-    return calc_assignment_window_in_fourier(kvec);
+    return std::pow(calc_assignment_window_in_fourier(kvec), 2);  // default
   }
 
   /**
-   * Calculate the aliasing sum of 2-point interpolation windows
-   * in Fourier space for assignment schemes.
-   *
-   * @param kvec Wavevector.
-   * @returns Window sum in Fourier space.
-   */
-  double calc_aliasing_window_in_fourier(double* kvec) {
-    /// Approximate C_2 with C_1 in Jing (2004) eqs. (17), (20) and (22).
-    return calc_shotnoise_scale_dependence(kvec);
-  }
-
-  /**
-   * Calculate the 2-point interpolation window in Fourier space for
+   * Calculate the interpolation window in Fourier space for
    * assignment schemes.
    *
    * @param kvec Wavevector.
@@ -2404,12 +2391,12 @@ class Pseudo2ptStats {
 
     double wk = wk_x * wk_y * wk_z;
 
-    /// Note the inserted power 2 for 2-point statistics.
-    return std::pow(wk, 2*order);
+    return std::pow(wk, order);
   }
 
   /**
-   * Calculate the shot-noise scale-dependence function f@$ C(\vec{k}) f@$.
+   * Calculate the shot-noise aliasing scale-dependence function
+   * f@$ C_1(\vec{k}) f@$.
    *
    * See eqs. (45) and (46) in Sugiyama et al. (2019)
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>]
@@ -2419,10 +2406,11 @@ class Pseudo2ptStats {
    * @param kvec Wavevector.
    * @returns Value of the scale-dependence function.
    */
-  double calc_shotnoise_scale_dependence(double* kvec) {
+  double calc_shotnoise_aliasing(double* kvec) {
     if (this->params.interlace == "true") {
-      return 1.;
+      return this->calc_assignment_window_in_fourier(kvec);
     }
+
     if (this->params.assignment == "ngp") {
       return this->calc_shotnoise_scale_dependence_ngp(kvec);
     }
@@ -2435,7 +2423,8 @@ class Pseudo2ptStats {
     if (this->params.assignment == "pcs") {
       return this->calc_shotnoise_scale_dependence_pcs(kvec);
     }
-    return 1.;
+
+    return 1.;  // default
   }
 
   /**
