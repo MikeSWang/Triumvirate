@@ -407,8 +407,8 @@ BispecMeasurements compute_bispec(
         if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
 
         /// Calculate \bar{S}_LM in eq. (46) in the Paper.
-        /// QUEST: This is possibly redundant as `L` and `M`
-        /// both need to be zero.
+        /// QUEST: This is possibly redundant and thus factorisable
+        /// as `L` and `M` both need to be zero.
         std::complex<double> barS_LM =
           stats_sn.calc_ylm_wgtd_3pt_self_component_for_shotnoise(
             particles_data, particles_rand, los_data, los_rand, alpha,
@@ -554,9 +554,8 @@ BispecMeasurements compute_bispec(
           three_pt_holder[gid][1] = 0.;
         }
 
-        stats_sn.compute_2pt_self_shotnoise_for_bispec_meshgrid(
+        stats_sn.compute_uncoupled_shotnoise_for_bispec_meshgrid(
           dn_LM_for_sn, N_00, barS_LM, three_pt_holder
-          // params.ELL, M_
         );
 
         for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
@@ -666,8 +665,7 @@ BispecMeasurements compute_bispec(
         }
       }
 
-      /// QUEST: Escape early?
-      // if (flag_vanishing == "true") {continue;}
+      if (flag_vanishing == "true") {continue;}
 
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
@@ -675,17 +673,14 @@ BispecMeasurements compute_bispec(
       trv::runtime::gbytesMem += 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
 
-      /// QUEST: This if-statement is redundant if early escape?
-      if (flag_vanishing == "false") {
-        SphericalHarmonicCalculator::
-          store_reduced_spherical_harmonic_in_fourier_space(
-            params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
-          );
-        SphericalHarmonicCalculator::
-          store_reduced_spherical_harmonic_in_fourier_space(
-            params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
-          );
-      }
+      SphericalHarmonicCalculator::
+        store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
+        );
+      SphericalHarmonicCalculator::
+        store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
+        );
 
       /// Compute a single term.
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -775,7 +770,7 @@ BispecMeasurements compute_bispec(
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  /// FIXME: Add bispectrum effective binning.
+  /// TODO: Add bispectrum effective binning.
   BispecMeasurements bispec_out;
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
     if (params.form == "diag") {
@@ -1064,9 +1059,8 @@ BispecMeasurements compute_bispec_in_box(
         three_pt_holder[gid][1] = 0.;
       }
 
-      stats_sn.compute_2pt_self_shotnoise_for_bispec_meshgrid(
+      stats_sn.compute_uncoupled_shotnoise_for_bispec_meshgrid(
         dn_L0_for_sn, N_00, barS_L0, three_pt_holder
-        // params.ELL, M_
       );
 
       for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
@@ -1267,7 +1261,7 @@ BispecMeasurements compute_bispec_in_box(
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  /// FIXME: Add bispectrum effective binning.
+  /// TODO: Add bispectrum effective binning.
   BispecMeasurements bispec_out;
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
     if (params.form == "diag") {
@@ -1487,7 +1481,6 @@ ThreePCFMeasurements compute_3pcf(
 
         stats_sn.compute_uncoupled_shotnoise_for_3pcf(
           dn_LM_for_sn, N_00, ylm_a, ylm_b, barS_LM, rbin
-          // params.ell1, m1_
         );
 
         for (int ibin = 0; ibin < params.num_rbin; ibin++) {
@@ -1560,8 +1553,7 @@ ThreePCFMeasurements compute_3pcf(
         }
       }
 
-      /// QUEST: Escape early?
-      // if (flag_vanishing == "true") {continue;}
+      if (flag_vanishing == "true") {continue;}
 
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
@@ -1569,17 +1561,14 @@ ThreePCFMeasurements compute_3pcf(
       trv::runtime::gbytesMem += 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
 
-      /// QUEST: This if-statement is redundant if early escape?
-      if (flag_vanishing == "false") {
-        SphericalHarmonicCalculator::
-          store_reduced_spherical_harmonic_in_fourier_space(
-            params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
-          );
-        SphericalHarmonicCalculator::
-          store_reduced_spherical_harmonic_in_fourier_space(
-            params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
-          );
-      }
+      SphericalHarmonicCalculator::
+        store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
+        );
+      SphericalHarmonicCalculator::
+        store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
+        );
 
       /// Compute a single term.
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -1669,7 +1658,7 @@ ThreePCFMeasurements compute_3pcf(
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  /// FIXME: Add 3PCF effective binning.
+  /// TODO: Add 3PCF effective binning.
   ThreePCFMeasurements threepcf_out;
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
     if (params.form == "diag") {
@@ -1865,7 +1854,6 @@ ThreePCFMeasurements compute_3pcf_in_box(
 
       stats_sn.compute_uncoupled_shotnoise_for_3pcf(
         dn_L0_for_sn, N_00, ylm_a, ylm_b, barS_L0, rbin
-        // params.ell1, m1_
       );
 
       for (int ibin = 0; ibin < params.num_rbin; ibin++) {
@@ -2028,7 +2016,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  /// FIXME: Add 3PCF effective binning.
+  /// TODO: Add 3PCF effective binning.
   ThreePCFMeasurements threepcf_out;
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
     if (params.form == "diag") {
@@ -2247,7 +2235,6 @@ ThreePCFWindowMeasurements compute_3pcf_window(
 
         stats_sn.compute_uncoupled_shotnoise_for_3pcf(
           n_LM_for_sn, N_00, ylm_a, ylm_b, barS_LM, rbin
-          // params.ell1, m1_
         );
 
         for (int ibin = 0; ibin < params.num_rbin; ibin++) {
@@ -2317,8 +2304,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
         }
       }
 
-      /// QUEST: Escape early?
-      // if (flag_vanishing == "true") {continue;}
+      if (flag_vanishing == "true") {continue;}
 
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
@@ -2326,17 +2312,14 @@ ThreePCFWindowMeasurements compute_3pcf_window(
       trv::runtime::gbytesMem += 2 * sizeof(std::complex<double>)
         * double(params.nmesh) / BYTES_PER_GBYTES;
 
-      /// QUEST: This if-statement is redundant if early escape?
-      if (flag_vanishing == "false") {
-        SphericalHarmonicCalculator::
-          store_reduced_spherical_harmonic_in_fourier_space(
-            params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
-          );
-        SphericalHarmonicCalculator::
-          store_reduced_spherical_harmonic_in_fourier_space(
-            params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
-          );
-      }
+      SphericalHarmonicCalculator::
+        store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
+        );
+      SphericalHarmonicCalculator::
+        store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
+        );
 
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
         /// Calculate Wigner-3j coupling coefficient.
@@ -2429,7 +2412,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  /// FIXME: Add 3PCF effective binning.
+  /// TODO: Add 3PCF effective binning.
   ThreePCFWindowMeasurements threepcfwin_out;
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
     if (params.form == "diag") {
@@ -2797,7 +2780,7 @@ BispecMeasurements compute_bispec_for_los_choice(
 
       /// Compute S_{ell_1 ell_2 L; i = j ≠ k} in eq. (45) in the Paper.
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-        Pseudo2ptStats<ParticleCatalogue> stats(params);
+        Pseudo2ptStats<ParticleCatalogue> stats_sn(params);
 
         /// Calculate Wigner-3j coupling coefficient.
         double coupling = double(2*params.ELL + 1)
@@ -2851,9 +2834,8 @@ BispecMeasurements compute_bispec_for_los_choice(
           three_pt_holder[gid][1] = 0.;
         }
 
-        stats.compute_2pt_self_shotnoise_for_bispec_meshgrid(
+        stats_sn.compute_uncoupled_shotnoise_for_bispec_meshgrid(
           dn_LM00_for_sn, N_LM00, barS_LM, three_pt_holder
-          // params.ELL, M_
         );
 
         for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
@@ -2956,8 +2938,7 @@ BispecMeasurements compute_bispec_for_los_choice(
         }
       }
 
-      /// QUEST: Escape early?
-      // if (flag_vanishing == "true") {continue;}
+      if (flag_vanishing == "true") {continue;}
 
       /// Initialise/reset spherical harmonic grids.
       std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
@@ -2965,17 +2946,14 @@ BispecMeasurements compute_bispec_for_los_choice(
       trv::runtime::gbytesMem += 2 * double(params.nmesh)
         * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
 
-      /// QUEST: This if-statement is redundant if early escape?
-      if (flag_vanishing == "false") {
-        SphericalHarmonicCalculator::
-          store_reduced_spherical_harmonic_in_fourier_space(
-            params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
-          );
-        SphericalHarmonicCalculator::
-          store_reduced_spherical_harmonic_in_fourier_space(
-            params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
-          );
-      }
+      SphericalHarmonicCalculator::
+        store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
+        );
+      SphericalHarmonicCalculator::
+        store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
+        );
 
       /// Compute a single term.
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -3103,7 +3081,7 @@ BispecMeasurements compute_bispec_for_los_choice(
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  /// FIXME: Add bispectrum effective binning.
+  /// TODO: Add bispectrum effective binning.
   BispecMeasurements bispec_out;
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
     if (params.form == "diag") {
