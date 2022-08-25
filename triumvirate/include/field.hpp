@@ -2024,7 +2024,6 @@ class Pseudo2ptStats {
     std::complex<double>* ylm_a, std::complex<double>* ylm_b,
     std::complex<double> shotnoise_amp,
     double* rbin
-    /// int ell, int m  // QUEST: redundant?
   ) {
     /// Set up grid sampling (before inverse Fourier transform).
     fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
@@ -2205,16 +2204,13 @@ class Pseudo2ptStats {
    * @param[in] field_a First density-like field.
    * @param[in] field_b Second density-like field.
    * @param[in] shotnoise_amp Shot-noise amplitude.
-   * @param[in] ell Degree of the spherical harmonic.
-   * @param[in] m Order of the spherical harmonic.
    * @param[out] threept_3d Three-point statistics on mesh grids.
    */
-  void compute_2pt_self_shotnoise_for_bispec_meshgrid(
+  void compute_uncoupled_shotnoise_for_bispec_meshgrid(
     PseudoDensityField<ParticleContainer>& field_a,
     PseudoDensityField<ParticleContainer>& field_b,
     std::complex<double> shotnoise_amp,
     fftw_complex* threept_3d
-    // int ell, int m  // QUEST: redundant?
   ) {
     /// Set inverse FFT volume normalisation, where ∫d^3k / (2\pi)^3
     /// corresponds to (1/V) Σ_i, V =: `vol`.
