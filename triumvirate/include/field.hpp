@@ -211,6 +211,13 @@ class PseudoDensityField {
       this->field[gid][0] -= alpha * field_rand[gid][0];
       this->field[gid][1] -= alpha * field_rand[gid][1];
     }
+
+    if (this->params.interlace == "true") {
+      for (int gid = 0; gid < this->params.nmesh; gid++) {
+        this->field_s[gid][0] -= alpha * field_rand.field_s[gid][0];
+        this->field_s[gid][1] -= alpha * field_rand.field_s[gid][1];
+      }
+    }
   }
 
   /**
@@ -315,6 +322,13 @@ class PseudoDensityField {
     for (int gid = 0; gid < this->params.nmesh; gid++) {
       this->field[gid][0] -= alpha * field_rand[gid][0];
       this->field[gid][1] -= alpha * field_rand[gid][1];
+    }
+
+    if (this->params.interlace == "true") {
+      for (int gid = 0; gid < this->params.nmesh; gid++) {
+        this->field_s[gid][0] -= alpha * field_rand.field_s[gid][0];
+        this->field_s[gid][1] -= alpha * field_rand.field_s[gid][1];
+      }
     }
   }
 
@@ -452,6 +466,13 @@ class PseudoDensityField {
     for (int gid = 0; gid < this->params.nmesh; gid++) {
       this->field[gid][0] += alpha * alpha * field_rand[gid][0];
       this->field[gid][1] += alpha * alpha * field_rand[gid][1];
+    }
+
+    if (this->params.interlace == "true") {
+      for (int gid = 0; gid < this->params.nmesh; gid++) {
+        this->field_s[gid][0] += alpha * alpha * field_rand.field_s[gid][0];
+        this->field_s[gid][1] += alpha * alpha * field_rand.field_s[gid][1];
+      }
     }
   }
 
