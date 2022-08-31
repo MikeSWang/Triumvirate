@@ -2438,7 +2438,7 @@ class Pseudo2ptStats {
    */
   double calc_shotnoise_aliasing(double* kvec) {
     if (this->params.interlace == "true") {
-      return this->calc_assignment_window_in_fourier(kvec);
+      return std::pow(this->calc_assignment_window_in_fourier(kvec), 2);
     }
 
     if (this->params.assignment == "ngp") {
