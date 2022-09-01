@@ -643,16 +643,20 @@ class PseudoDensityField {
    * See eq. (42) in Sugiyama et al. (2019)
    * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
-   * @param density (FFT-transformed) density-like field.
-   * @param ylm Reduced spherical harmonic on a mesh.
-   * @param k_in Wavenumber bin wavenumber.
-   * @param dk_in Wavenumber bin width.
+   * @param[in] density (FFT-transformed) density-like field.
+   * @param[in] ylm Reduced spherical harmonic on a mesh.
+   * @param[in] k_in Wavenumber bin wavenumber.
+   * @param[in] dk_in Wavenumber bin width.
+   * @param[out] k_eff Effective wavenunber in bin.
+   * @param[out] nmode Number of contributing wavevector modes in bin.
    */
   void inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
     PseudoDensityField& density,
     std::complex<double>* ylm,
     double k_in,
-    double dk_in
+    double dk_in,
+    double& k_eff,
+    int& nmode
   ) {
     /// Reset field with zero values.
     for (int i = 0; i < this->params.nmesh; i++) {
@@ -669,8 +673,9 @@ class PseudoDensityField {
     dk[1] = 2.*M_PI / this->params.boxsize[1];
     dk[2] = 2.*M_PI / this->params.boxsize[2];
 
+    k_eff = 0.;
+    nmode = 0;
     double kv[3];
-    int nmode = 0;
     for (int i = 0; i < this->params.ngrid[0]; i++) {
       for (int j = 0; j < this->params.ngrid[1]; j++) {
         for (int k = 0; k < this->params.ngrid[2]; k++) {
@@ -701,6 +706,7 @@ class PseudoDensityField {
             this->field[idx_grid][0] = (ylm[idx_grid] * delta_n).real();
             this->field[idx_grid][1] = (ylm[idx_grid] * delta_n).imag();
 
+            k_eff += k_;
             nmode++;
           } else {
             this->field[idx_grid][0] = 0.;
@@ -724,6 +730,8 @@ class PseudoDensityField {
       this->field[i][0] /= double(nmode);
       this->field[i][1] /= double(nmode);
     }
+
+    k_eff /= double(nmode);
   }
 
   /**
