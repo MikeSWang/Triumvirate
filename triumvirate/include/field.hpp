@@ -2123,9 +2123,11 @@ class Pseudo2ptStats {
     const double dr_sample = 0.5;
     const int n_sample = 10000;
 
+    double* rs_sample = new double[n_sample];
     std::complex<double>* xi_sample = new std::complex<double>[n_sample];
     int* npair_sample = new int[n_sample];
     for (int i = 0; i < n_sample; i++) {
+      rs_sample[i] = 0.;
       xi_sample[i] = 0.;
       npair_sample[i] = 0;
     }
@@ -2165,6 +2167,7 @@ class Pseudo2ptStats {
             pair_corr *= ylm_a[idx_grid] * ylm_b[idx_grid];
 
             /// Add contribution.
+            rs_sample[idx_r] += r_;
             xi_sample[idx_r] += pair_corr;
             npair_sample[idx_r]++;
           }
@@ -2197,9 +2200,18 @@ class Pseudo2ptStats {
       for (int i = 0; i < n_sample; i++) {
         double r_sample = i * dr_sample;
         if (r_lower < r_sample && r_sample <= r_upper) {
+          this->r[ibin] += rs_sample[i];
           this->xi[ibin] += xi_sample[i];
           this->npair[ibin] += npair_sample[i];
         }
+      }
+
+      if (this->npair[ibin] != 0) {
+        this->r[ibin] /= double(this->npair[ibin]);
+        this->xi[ibin] /= double(this->npair[ibin]);
+      } else {
+        this->r[ibin] = (r_lower + r_upper) / 2;
+        this->xi[ibin] = 0.;
       }
     }
 
@@ -2209,14 +2221,13 @@ class Pseudo2ptStats {
     for (int ibin = 0; ibin < this->params.num_rbin; ibin++) {
       if (this->npair[ibin] != 0) {
         this->xi[ibin] *= 1 / vol_cell
-          * std::pow(-1., this->params.ell1 + this->params.ell2)
-          / std::pow(double(this->npair[ibin]), 2);
-      } else {
-        this->xi[ibin] = 0.;
+          * std::pow(-1, this->params.ell1 + this->params.ell2)
+          / this->npair[ibin];
       }
     }
 
     delete[] twopt_3d;
+    delete[] rs_sample;
     delete[] xi_sample;
     delete[] npair_sample;
   }

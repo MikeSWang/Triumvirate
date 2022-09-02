@@ -97,7 +97,7 @@ void print_3pt_meas_file_header(
   if (space == "config") {
     std::fprintf(
       save_fileptr,
-      "# [0] r1_central, [1] r1_eff, [2] r2_central, [3] r2_eff, [4] ntriag, "
+      "# [0] r1_central, [1] r1_eff, [2] r2_central, [3] r2_eff, [4] npair, "
       "[5] zeta%d%d%d_raw.real, [6] zeta%d%d%d_raw.imag, "
       "[7] zeta_shot.real, [8] zeta_shot.imag\n",
       params.ell1, params.ell2, params.ELL,
@@ -107,7 +107,7 @@ void print_3pt_meas_file_header(
   if (space == "fourier") {
     std::fprintf(
       save_fileptr,
-      "# [0] k1_central, [1] k1_eff, [2] k2_central, [3] k2_eff, [4] ntriag, "
+      "# [0] k1_central, [1] k1_eff, [2] k2_central, [3] k2_eff, [4] nmode, "
       "[5] bk%d%d%d_raw.real, [6] bk%d%d%d_raw.imag, "
       "[7] bk_shot.real, [8] bk_shot.imag\n",
       params.ell1, params.ell2, params.ELL,
@@ -183,7 +183,7 @@ void print_3pt_meas_file_header(
   if (space == "config") {
     std::fprintf(
       save_fileptr,
-      "# [0] r1_central, [1] r1_eff, [2] r2_central, [3] r2_eff, [4] ntriag, "
+      "# [0] r1_central, [1] r1_eff, [2] r2_central, [3] r2_eff, [4] npair, "
       "[5] zeta%d%d%d_raw.real, [6] zeta%d%d%d_raw.imag, "
       "[7] zeta_shot.real, [8] zeta_shot.imag\n",
       params.ell1, params.ell2, params.ELL,
@@ -193,7 +193,7 @@ void print_3pt_meas_file_header(
   if (space == "fourier") {
     std::fprintf(
       save_fileptr,
-      "# [0] k1_central, [1] k1_eff, [2] k2_central, [3] k2_eff, [4] ntriag, "
+      "# [0] k1_central, [1] k1_eff, [2] k2_central, [3] k2_eff, [4] nmode, "
       "[5] bk%d%d%d_raw.real, [6] bk%d%d%d_raw.imag, "
       "[7] bk_shot.real, [8] bk_shot.imag\n",
       params.ell1, params.ell2, params.ELL,
@@ -216,8 +216,7 @@ struct BispecMeasurements {
   std::vector<double> kbin2;  ///< second central wavenumber in bins
   std::vector<double> keff1;  ///< first effective wavenumber in bins
   std::vector<double> keff2;  ///< second effective wavenumber in bins
-  std::vector<int> ntriag;  /**< number of contributing
-                                 triangular configurations */
+  std::vector<int> nmode;  ///< number of contributing wavevector modes
   std::vector< std::complex<double> > bk_raw;  /**< bispectrum
                                                     raw measurements */
   std::vector< std::complex<double> > bk_shot;  ///< bispectrum shot noise
@@ -232,8 +231,7 @@ struct ThreePCFMeasurements {
   std::vector<double> rbin2;  ///< second central separation in bins
   std::vector<double> reff1;  ///< first effective separation in bins
   std::vector<double> reff2;  ///< second effective separation in bins
-  std::vector<int> ntriag;  /**< number of contributing
-                                 triangular configurations */
+  std::vector<int> npair;  ///< number of contributing pairwise separations
   std::vector< std::complex<double> > zeta_raw;  /**< three-point correlation
                                                       function raw
                                                       measurements */
@@ -250,8 +248,7 @@ struct ThreePCFWindowMeasurements {
   std::vector<double> rbin2;  ///< second central separation in bins
   std::vector<double> reff1;  ///< first effective separation in bins
   std::vector<double> reff2;  ///< second effective separation in bins
-  std::vector<int> ntriag;  /**< number of contributing
-                                 triangular configurations */
+  std::vector<int> npair;  ///< number of contributing pairwise separations
   std::vector< std::complex<double> > zeta_raw;  /**< three-point correlation
                                                       function window raw
                                                       measurements */
@@ -357,13 +354,13 @@ BispecMeasurements compute_bispec(
   }
 
   /// Set up output.
-  int* ntriag_save = new int[params.num_kbin];
+  int* nmode_save = new int[params.num_kbin];
   double* k1_save = new double[params.num_kbin];
   double* k2_save = new double[params.num_kbin];
   std::complex<double>* bk_save = new std::complex<double>[params.num_kbin];
   std::complex<double>* sn_save = new std::complex<double>[params.num_kbin];
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-    ntriag_save[ibin] = 0;
+    nmode_save[ibin] = 0;
     k1_save[ibin] = 0.;
     k2_save[ibin] = 0.;
     bk_save[ibin] = 0.;
@@ -379,6 +376,144 @@ BispecMeasurements compute_bispec(
   dr[2] = params.boxsize[2] / double(params.ngrid[2]);
 
   /* * Measurement ********************************************************* */
+
+  /// Compute bispectrum terms.
+  PseudoDensityField<ParticleCatalogue> dn_00(params);  // dn_00
+  dn_00.compute_ylm_wgtd_fluctuation(
+    particles_data, particles_rand, los_data, los_rand, alpha, 0, 0
+  );
+  dn_00.fourier_transform();
+
+  for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+    for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+      /// Check for vanishing cases where all Wigner-3j symbols are zero.
+      std::string flag_vanishing = "true";
+      for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+        double coupling = double(2*params.ELL + 1)
+          * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+          * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+          * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+        if (std::fabs(coupling) > EPS_COUPLING_3PT) {
+          flag_vanishing = "false";
+        }
+      }
+
+      if (flag_vanishing == "true") {continue;}
+
+      /// Initialise/reset spherical harmonic grids.
+      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
+      trv::runtime::gbytesMem += 2 * double(params.nmesh)
+        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+
+      SphericalHarmonicCalculator::
+        store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
+        );
+      SphericalHarmonicCalculator::
+        store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
+        );
+
+      /// Compute a single term.
+      for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+        /// Calculate Wigner-3j coupling coefficient.
+        double coupling = double(2*params.ELL + 1)
+          * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+          * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+          * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+
+        /// Compute G_LM in eq. (42) in the Paper.
+        PseudoDensityField<ParticleCatalogue> dn_LM(params);  // dn_LM
+        dn_LM.compute_ylm_wgtd_fluctuation(
+          particles_data, particles_rand, los_data, los_rand, alpha,
+          params.ELL, M_
+        );
+        dn_LM.fourier_transform();
+        dn_LM.apply_assignment_compensation();
+        dn_LM.inv_fourier_transform();
+
+        /// Compute F_lm's in eq. (42) in the Paper.
+        PseudoDensityField<ParticleCatalogue> F_lm_a(params);  // F_lm_a
+        double kmag_a, kmag_b;
+        double dk = kbin[1] - kbin[0];  // HACK: only for linear binning
+                                        // TODO: implement custom binning
+
+        if (params.form == "full") {
+          double k_eff_;
+          int nmode_;
+
+          kmag_a = kbin[params.ith_kbin];
+          F_lm_a.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
+            dn_00, ylm_a, kmag_a, dk, k_eff_, nmode_
+          );
+
+          for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
+            k1_save[i_kbin] = k_eff_;
+          }
+        }
+
+        for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
+          double k_eff_;
+          int nmode_;
+
+          kmag_b = kbin[i_kbin];
+
+          PseudoDensityField<ParticleCatalogue> F_lm_b(params);  // F_lm_b
+          F_lm_b.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
+            dn_00, ylm_b, kmag_b, dk, k_eff_, nmode_
+          );
+
+          k2_save[i_kbin] = k_eff_;
+          nmode_save[i_kbin] = nmode_;
+
+          if (params.form == "diag") {
+            kmag_a = kmag_b;
+            F_lm_a.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
+              dn_00, ylm_a, kmag_a, dk, k_eff_, nmode_
+            );
+
+            k1_save[i_kbin] = k_eff_;
+          }
+
+          /// Add grid contribution.
+          std::complex<double> bk_sum = 0.;
+          for (int gid = 0; gid < params.nmesh; gid++) {
+            std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
+            std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
+            std::complex<double> G_LM_gridpt(dn_LM[gid][0], dn_LM[gid][1]);
+            bk_sum += F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+          }
+
+          bk_save[i_kbin] += coupling * vol_cell * bk_sum;
+
+          if (trv::runtime::currTask == 0) {
+            std::printf(
+              "[%s STAT] Bispectrum term at wavenumber k2 = %.4f and order "
+              "(m1, m2, M) = (%d, %d, %d) computed.\n",
+              trv::runtime::show_timestamp().c_str(),
+              kmag_b, m1_, m2_, M_
+            );
+          }
+        }
+      }
+
+      delete[] ylm_a; ylm_a = NULL;
+      delete[] ylm_b; ylm_b = NULL;
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
+        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+    }
+  }
+
+  dn_00.finalise_density_field();  // ~dn_00
+
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] ... computed bispectrum terms.\n",
+      trv::runtime::show_timestamp().c_str()
+    );
+  }
 
   if (trv::runtime::currTask == 0) {
     std::printf(
@@ -559,14 +694,8 @@ BispecMeasurements compute_bispec(
         );
 
         for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
-          double kmag_a;
-          double kmag_b = kbin[i_kbin];
-          if (params.form == "diag") {
-            kmag_a = kmag_b;
-          } else
-          if (params.form == "full") {
-            kmag_a = kbin[params.ith_kbin];
-          }
+          double kmag_a = k1_save[i_kbin];
+          double kmag_b = k2_save[i_kbin];
 
           double rvec[3];
           std::complex<double> S_ij_k = 0.;
@@ -644,129 +773,6 @@ BispecMeasurements compute_bispec(
     );
   }
 
-  /// Compute bispectrum terms.
-  PseudoDensityField<ParticleCatalogue> dn_00(params);  // dn_00
-  dn_00.compute_ylm_wgtd_fluctuation(
-    particles_data, particles_rand, los_data, los_rand, alpha, 0, 0
-  );
-  dn_00.fourier_transform();
-
-  for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-    for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      /// Check for vanishing cases where all Wigner-3j symbols are zero.
-      std::string flag_vanishing = "true";
-      for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-        double coupling = double(2*params.ELL + 1)
-          * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
-          * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
-          * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (std::fabs(coupling) > EPS_COUPLING_3PT) {
-          flag_vanishing = "false";
-        }
-      }
-
-      if (flag_vanishing == "true") {continue;}
-
-      /// Initialise/reset spherical harmonic grids.
-      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      trv::runtime::gbytesMem += 2 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
-
-      SphericalHarmonicCalculator::
-        store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
-        );
-      SphericalHarmonicCalculator::
-        store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
-        );
-
-      /// Compute a single term.
-      for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-        /// Calculate Wigner-3j coupling coefficient.
-        double coupling = double(2*params.ELL + 1)
-          * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
-          * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
-          * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
-
-        /// Compute G_LM in eq. (42) in the Paper.
-        PseudoDensityField<ParticleCatalogue> dn_LM(params);  // dn_LM
-        dn_LM.compute_ylm_wgtd_fluctuation(
-          particles_data, particles_rand, los_data, los_rand, alpha,
-          params.ELL, M_
-        );
-        dn_LM.fourier_transform();
-        dn_LM.apply_assignment_compensation();
-        dn_LM.inv_fourier_transform();
-
-        /// Compute F_lm's in eq. (42) in the Paper.
-        PseudoDensityField<ParticleCatalogue> F_lm_a(params);  // F_lm_a
-        double kmag_a, kmag_b;
-        double dk = kbin[1] - kbin[0];  // HACK: only for linear binning
-                                        // TODO: implement custom binning
-
-        if (params.form == "full") {
-          kmag_a = kbin[params.ith_kbin];
-          F_lm_a.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
-            dn_00, ylm_a, kmag_a, dk
-          );
-        }
-
-        for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
-          kmag_b = kbin[i_kbin];
-
-          PseudoDensityField<ParticleCatalogue> F_lm_b(params);  // F_lm_b
-          F_lm_b.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
-            dn_00, ylm_b, kmag_b, dk
-          );
-
-          if (params.form == "diag") {
-            kmag_a = kmag_b;
-            F_lm_a.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
-              dn_00, ylm_a, kmag_a, dk
-            );
-          }
-
-          /// Add grid contribution.
-          std::complex<double> bk_sum = 0.;
-          for (int gid = 0; gid < params.nmesh; gid++) {
-            std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
-            std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
-            std::complex<double> G_LM_gridpt(dn_LM[gid][0], dn_LM[gid][1]);
-            bk_sum += F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
-          }
-
-          bk_save[i_kbin] += coupling * vol_cell * bk_sum;
-
-          if (trv::runtime::currTask == 0) {
-            std::printf(
-              "[%s STAT] Bispectrum term at wavenumber k2 = %.4f and order "
-              "(m1, m2, M) = (%d, %d, %d) computed.\n",
-              trv::runtime::show_timestamp().c_str(),
-              kmag_b, m1_, m2_, M_
-            );
-          }
-        }
-      }
-
-      delete[] ylm_a; ylm_a = NULL;
-      delete[] ylm_b; ylm_b = NULL;
-      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
-    }
-  }
-
-  dn_00.finalise_density_field();  // ~dn_00
-
-  if (trv::runtime::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... computed bispectrum terms.\n",
-      trv::runtime::show_timestamp().c_str()
-    );
-  }
-
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
@@ -775,15 +781,14 @@ BispecMeasurements compute_bispec(
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
     if (params.form == "diag") {
       bispec_out.kbin1.push_back(kbin[ibin]);
-      bispec_out.keff1.push_back(kbin[ibin]);
     } else
     if (params.form == "full") {
       bispec_out.kbin1.push_back(kbin[params.ith_kbin]);
-      bispec_out.keff1.push_back(kbin[params.ith_kbin]);
     }
+    bispec_out.keff1.push_back(k1_save[ibin]);
     bispec_out.kbin2.push_back(kbin[ibin]);
-    bispec_out.keff2.push_back(kbin[ibin]);
-    bispec_out.ntriag.push_back(0);
+    bispec_out.keff2.push_back(k2_save[ibin]);
+    bispec_out.nmode.push_back(nmode_save[ibin]);
     bispec_out.bk_raw.push_back(norm * bk_save[ibin]);
     bispec_out.bk_shot.push_back(norm * sn_save[ibin]);
   }
@@ -822,7 +827,7 @@ BispecMeasurements compute_bispec(
         "%.9e \t %.9e \t %.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         bispec_out.kbin1[ibin], bispec_out.keff1[ibin],
         bispec_out.kbin2[ibin], bispec_out.keff2[ibin],
-        bispec_out.ntriag[ibin],
+        bispec_out.nmode[ibin],
         bispec_out.bk_raw[ibin].real(), bispec_out.bk_raw[ibin].imag(),
         bispec_out.bk_shot[ibin].real(), bispec_out.bk_shot[ibin].imag()
       );
@@ -838,7 +843,7 @@ BispecMeasurements compute_bispec(
     }
   }
 
-  delete[] ntriag_save; delete[] k1_save; delete[] k2_save;
+  delete[] nmode_save; delete[] k1_save; delete[] k2_save;
   delete[] bk_save; delete[] sn_save;
 
   return bispec_out;
@@ -890,13 +895,13 @@ BispecMeasurements compute_bispec_in_box(
   }
 
   /// Set up output.
-  int* ntriag_save = new int[params.num_kbin];
+  int* nmode_save = new int[params.num_kbin];
   double* k1_save = new double[params.num_kbin];
   double* k2_save = new double[params.num_kbin];
   std::complex<double>* bk_save = new std::complex<double>[params.num_kbin];
   std::complex<double>* sn_save = new std::complex<double>[params.num_kbin];
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-    ntriag_save[ibin] = 0;
+    nmode_save[ibin] = 0;
     k1_save[ibin] = 0.;
     k2_save[ibin] = 0.;
     bk_save[ibin] = 0.;
@@ -912,6 +917,131 @@ BispecMeasurements compute_bispec_in_box(
   dr[2] = params.boxsize[2] / double(params.ngrid[2]);
 
   /* * Measurement ********************************************************* */
+
+  /// Compute bispectrum terms.
+  /// QUEST: Why does this not include any weights?
+  PseudoDensityField<ParticleCatalogue> dn_00(params);  // dn_00
+  dn_00.compute_unweighted_fluctuation_insitu(
+    particles_data, params.volume
+  );
+  dn_00.fourier_transform();
+
+  for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+    for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+      int M_ = 0;
+
+      /// Calculate Wigner-3j coupling coefficient.
+      double coupling = double(2*params.ELL + 1)
+        * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+        * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+        * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+      if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+
+      /// Initialise/reset spherical harmonic grids.
+      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
+      trv::runtime::gbytesMem += 2 * double(params.nmesh)
+        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+
+      SphericalHarmonicCalculator::
+        store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
+        );
+      SphericalHarmonicCalculator
+        ::store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
+        );
+
+      /// Compute G_00 in eq. (42) in the Paper (L, M = 0 in the global
+      /// plane-parallel picture).
+      /// QUEST: Why does this not include any weights?
+      PseudoDensityField<ParticleCatalogue> dn_00_(params);
+      dn_00_.compute_unweighted_fluctuation_insitu(
+        particles_data, params.volume
+      );
+      dn_00_.fourier_transform();
+      dn_00_.apply_assignment_compensation();
+      dn_00_.inv_fourier_transform();
+
+      /// Compute F_lm's in eq. (42) in the Paper.
+      PseudoDensityField<ParticleCatalogue> F_lm_a(params);  // F_lm_a
+      double kmag_a, kmag_b;
+      double dk = kbin[1] - kbin[0];  // HACK: only for linear binning
+                                      // TODO: implement custom binning
+
+      if (params.form == "full") {
+        double k_eff_;
+        int nmode_;
+
+        kmag_a = kbin[params.ith_kbin];
+        F_lm_a.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
+          dn_00, ylm_a, kmag_a, dk, k_eff_, nmode_
+        );
+
+        for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
+          k1_save[i_kbin] = k_eff_;
+        }
+      }
+
+      for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
+        double k_eff_;
+        int nmode_;
+
+        kmag_b = kbin[i_kbin];
+
+        PseudoDensityField<ParticleCatalogue> F_lm_b(params);  // F_lm_b
+        F_lm_b.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
+          dn_00, ylm_b, kmag_b, dk, k_eff_, nmode_
+        );
+
+        k2_save[i_kbin] = k_eff_;
+        nmode_save[i_kbin] = nmode_;
+
+        if (params.form == "diag") {
+          kmag_a = kmag_b;
+          F_lm_a.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
+            dn_00, ylm_a, kmag_a, dk, k_eff_, nmode_
+          );
+
+          k1_save[i_kbin] = k_eff_;
+        }
+
+        /// Add grid contribution.
+        std::complex<double> bk_sum = 0.;
+        for (int gid = 0; gid < params.nmesh; gid++) {
+          std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
+          std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
+          std::complex<double> G_00_gridpt(dn_00_[gid][0], dn_00_[gid][1]);
+          bk_sum += F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
+        }
+
+        bk_save[i_kbin] += coupling * vol_cell * bk_sum;
+
+        if (trv::runtime::currTask == 0) {
+          std::printf(
+            "[%s STAT] Bispectrum term at wavenumber k2 = %.4f and order "
+            "(m1, m2, M) = (%d, %d, %d) computed.\n",
+            trv::runtime::show_timestamp().c_str(),
+            kmag_b, m1_, m2_, M_
+          );
+        }
+      }
+
+      delete[] ylm_a; ylm_a = NULL;
+      delete[] ylm_b; ylm_b = NULL;
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
+        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+    }
+  }
+
+  dn_00.finalise_density_field();  // ~dn_00
+
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] ... computed bispectrum terms.\n",
+      trv::runtime::show_timestamp().c_str()
+    );
+  }
 
   if (trv::runtime::currTask == 0) {
     std::printf(
@@ -1064,14 +1194,8 @@ BispecMeasurements compute_bispec_in_box(
       );
 
       for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
-        double kmag_a;
-        double kmag_b = kbin[i_kbin];
-        if (params.form == "diag") {
-          kmag_a = kmag_b;
-        } else
-        if (params.form == "full") {
-          kmag_a = kbin[params.ith_kbin];
-        }
+        double kmag_a = k1_save[i_kbin];
+        double kmag_b = k2_save[i_kbin];
 
         double rvec[3];
         std::complex<double> S_ij_k = 0.;
@@ -1148,116 +1272,6 @@ BispecMeasurements compute_bispec_in_box(
     );
   }
 
-  /// Compute bispectrum terms.
-  /// QUEST: Why does this not include any weights?
-  PseudoDensityField<ParticleCatalogue> dn_00(params);  // dn_00
-  dn_00.compute_unweighted_fluctuation_insitu(
-    particles_data, params.volume
-  );
-  dn_00.fourier_transform();
-
-  for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-    for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      int M_ = 0;
-
-      /// Calculate Wigner-3j coupling coefficient.
-      double coupling = double(2*params.ELL + 1)
-        * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
-        * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
-        * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-      if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
-
-      /// Initialise/reset spherical harmonic grids.
-      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      trv::runtime::gbytesMem += 2 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
-
-      SphericalHarmonicCalculator::
-        store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
-        );
-      SphericalHarmonicCalculator
-        ::store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
-        );
-
-      /// Compute G_00 in eq. (42) in the Paper (L, M = 0 in the global
-      /// plane-parallel picture).
-      /// QUEST: Why does this not include any weights?
-      PseudoDensityField<ParticleCatalogue> dn_00_(params);
-      dn_00_.compute_unweighted_fluctuation_insitu(
-        particles_data, params.volume
-      );
-      dn_00_.fourier_transform();
-      dn_00_.apply_assignment_compensation();
-      dn_00_.inv_fourier_transform();
-
-      /// Compute F_lm's in eq. (42) in the Paper.
-      PseudoDensityField<ParticleCatalogue> F_lm_a(params);  // F_lm_a
-      double kmag_a, kmag_b;
-      double dk = kbin[1] - kbin[0];  // HACK: only for linear binning
-                                      // TODO: implement custom binning
-
-      if (params.form == "full") {
-        kmag_a = kbin[params.ith_kbin];
-        F_lm_a.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
-          dn_00, ylm_a, kmag_a, dk
-        );
-      }
-
-      for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
-        kmag_b = kbin[i_kbin];
-
-        PseudoDensityField<ParticleCatalogue> F_lm_b(params);  // F_lm_b
-        F_lm_b.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
-          dn_00, ylm_b, kmag_b, dk
-        );
-
-        if (params.form == "diag") {
-          kmag_a = kmag_b;
-          F_lm_a.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
-            dn_00, ylm_a, kmag_a, dk
-          );
-        }
-
-        /// Add grid contribution.
-        std::complex<double> bk_sum = 0.;
-        for (int gid = 0; gid < params.nmesh; gid++) {
-          std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
-          std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
-          std::complex<double> G_00_gridpt(dn_00_[gid][0], dn_00_[gid][1]);
-          bk_sum += F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
-        }
-
-        bk_save[i_kbin] += coupling * vol_cell * bk_sum;
-
-        if (trv::runtime::currTask == 0) {
-          std::printf(
-            "[%s STAT] Bispectrum term at wavenumber k2 = %.4f and order "
-            "(m1, m2, M) = (%d, %d, %d) computed.\n",
-            trv::runtime::show_timestamp().c_str(),
-            kmag_b, m1_, m2_, M_
-          );
-        }
-      }
-
-      delete[] ylm_a; ylm_a = NULL;
-      delete[] ylm_b; ylm_b = NULL;
-      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
-    }
-  }
-
-  dn_00.finalise_density_field();  // ~dn_00
-
-  if (trv::runtime::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... computed bispectrum terms.\n",
-      trv::runtime::show_timestamp().c_str()
-    );
-  }
-
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
@@ -1266,15 +1280,14 @@ BispecMeasurements compute_bispec_in_box(
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
     if (params.form == "diag") {
       bispec_out.kbin1.push_back(kbin[ibin]);
-      bispec_out.keff1.push_back(kbin[ibin]);
     } else
     if (params.form == "full") {
       bispec_out.kbin1.push_back(kbin[params.ith_kbin]);
-      bispec_out.keff1.push_back(kbin[params.ith_kbin]);
     }
+    bispec_out.keff1.push_back(k1_save[ibin]);
     bispec_out.kbin2.push_back(kbin[ibin]);
-    bispec_out.keff2.push_back(kbin[ibin]);
-    bispec_out.ntriag.push_back(0);
+    bispec_out.keff2.push_back(k2_save[ibin]);
+    bispec_out.nmode.push_back(nmode_save[ibin]);
     bispec_out.bk_raw.push_back(norm * bk_save[ibin]);
     bispec_out.bk_shot.push_back(norm * sn_save[ibin]);
   }
@@ -1313,7 +1326,7 @@ BispecMeasurements compute_bispec_in_box(
         "%.9e \t %.9e \t %.9e \t %.9e\n",
         bispec_out.kbin1[ibin], bispec_out.keff1[ibin],
         bispec_out.kbin2[ibin], bispec_out.keff2[ibin],
-        bispec_out.ntriag[ibin],
+        bispec_out.nmode[ibin],
         bispec_out.bk_raw[ibin].real(), bispec_out.bk_raw[ibin].imag(),
         bispec_out.bk_shot[ibin].real(), bispec_out.bk_shot[ibin].imag()
       );
@@ -1329,7 +1342,7 @@ BispecMeasurements compute_bispec_in_box(
     }
   }
 
-  delete[] ntriag_save; delete[] k1_save; delete[] k2_save;
+  delete[] nmode_save; delete[] k1_save; delete[] k2_save;
   delete[] bk_save; delete[] sn_save;
 
   return bispec_out;
@@ -1391,13 +1404,13 @@ ThreePCFMeasurements compute_3pcf(
   }
 
   /// Set up output.
-  int* ntriag_save = new int[params.num_rbin];
+  int* npair_save = new int[params.num_rbin];
   double* r1_save = new double[params.num_rbin];
   double* r2_save = new double[params.num_rbin];
   std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
   std::complex<double>* sn_save = new std::complex<double>[params.num_kbin];
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-    ntriag_save[ibin] = 0;
+    npair_save[ibin] = 0;
     r1_save[ibin] = 0.;
     r2_save[ibin] = 0.;
     zeta_save[ibin] = 0.;
@@ -1498,6 +1511,23 @@ ThreePCFMeasurements compute_3pcf(
           }
         }
 
+        if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+          for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+            npair_save[ibin] = stats_sn.npair[ibin];
+            r2_save[ibin] = stats_sn.r[ibin];
+          }
+          if (params.form == "diag") {
+            for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+              r1_save[ibin] = stats_sn.r[ibin];
+            }
+          } else
+          if (params.form == "full") {
+            for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+              r1_save[ibin] = stats_sn.r[params.ith_rbin];
+            }
+          }
+        }
+
         if (trv::runtime::currTask == 0) {
           std::printf(
             "[%s STAT] Shot noise term at order "
@@ -1594,14 +1624,14 @@ ThreePCFMeasurements compute_3pcf(
         double rmag_a, rmag_b;
 
         if (params.form == "full") {
-          rmag_a = rbin[params.ith_rbin];
+          rmag_a = r1_save[params.ith_rbin];
           F_lm_a.inv_fourier_transform_for_sjl_ylm_wgtd_field(
             dn_00, ylm_a, sj1, rmag_a
           );
         }
 
         for (int i_rbin = 0; i_rbin < params.num_rbin; i_rbin++) {
-          rmag_b = rbin[i_rbin];
+          rmag_b = r2_save[i_rbin];
 
           PseudoDensityField<ParticleCatalogue> F_lm_b(params);
           F_lm_b.inv_fourier_transform_for_sjl_ylm_wgtd_field(
@@ -1663,15 +1693,14 @@ ThreePCFMeasurements compute_3pcf(
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
     if (params.form == "diag") {
       threepcf_out.rbin1.push_back(rbin[ibin]);
-      threepcf_out.reff1.push_back(rbin[ibin]);
     } else
     if (params.form == "full") {
       threepcf_out.rbin1.push_back(rbin[params.ith_rbin]);
-      threepcf_out.reff1.push_back(rbin[params.ith_rbin]);
     }
+    threepcf_out.reff1.push_back(r1_save[ibin]);
     threepcf_out.rbin2.push_back(rbin[ibin]);
-    threepcf_out.reff2.push_back(rbin[ibin]);
-    threepcf_out.ntriag.push_back(0);
+    threepcf_out.reff2.push_back(r2_save[ibin]);
+    threepcf_out.npair.push_back(npair_save[ibin]);
     threepcf_out.zeta_raw.push_back(norm * zeta_save[ibin]);
     threepcf_out.zeta_shot.push_back(norm * sn_save[ibin]);
   }
@@ -1710,7 +1739,7 @@ ThreePCFMeasurements compute_3pcf(
         "%.9e \t %.9e \t %.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         threepcf_out.rbin1[ibin], threepcf_out.reff1[ibin],
         threepcf_out.rbin2[ibin], threepcf_out.reff2[ibin],
-        threepcf_out.ntriag[ibin],
+        threepcf_out.npair[ibin],
         threepcf_out.zeta_raw[ibin].real(), threepcf_out.zeta_raw[ibin].imag(),
         threepcf_out.zeta_shot[ibin].real(), threepcf_out.zeta_shot[ibin].imag()
       );
@@ -1726,7 +1755,7 @@ ThreePCFMeasurements compute_3pcf(
     }
   }
 
-  delete[] ntriag_save; delete[] r1_save; delete[] r2_save;
+  delete[] npair_save; delete[] r1_save; delete[] r2_save;
   delete[] zeta_save; delete[] sn_save;
 
   return threepcf_out;
@@ -1782,13 +1811,13 @@ ThreePCFMeasurements compute_3pcf_in_box(
   }
 
   /// Set up output.
-  int* ntriag_save = new int[params.num_rbin];
+  int* npair_save = new int[params.num_rbin];
   double* r1_save = new double[params.num_rbin];
   double* r2_save = new double[params.num_rbin];
   std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
   std::complex<double>* sn_save = new std::complex<double>[params.num_rbin];
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-    ntriag_save[ibin] = 0;
+    npair_save[ibin] = 0;
     r1_save[ibin] = 0.;
     r2_save[ibin] = 0.;
     zeta_save[ibin] = 0.;
@@ -1866,6 +1895,23 @@ ThreePCFMeasurements compute_3pcf_in_box(
             sn_save[ibin] += coupling * stats_sn.xi[ibin];
           } else {
             sn_save[ibin] += 0.;
+          }
+        }
+      }
+
+      if (m1_ == 0 && m2_ == 0) {
+        for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+          npair_save[ibin] = stats_sn.npair[ibin];
+          r2_save[ibin] = stats_sn.r[ibin];
+        }
+        if (params.form == "diag") {
+          for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+            r1_save[ibin] = stats_sn.r[ibin];
+          }
+        } else
+        if (params.form == "full") {
+          for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+            r1_save[ibin] = stats_sn.r[params.ith_rbin];
           }
         }
       }
@@ -1953,14 +1999,14 @@ ThreePCFMeasurements compute_3pcf_in_box(
       double rmag_a, rmag_b;
 
       if (params.form == "full") {
-        rmag_a = rbin[params.ith_rbin];
+        rmag_a = r1_save[params.ith_rbin];
         F_lm_a.inv_fourier_transform_for_sjl_ylm_wgtd_field(
           dn_00, ylm_a, sj1, rmag_a
         );
       }
 
       for (int i_rbin = 0; i_rbin < params.num_rbin; i_rbin++) {
-        rmag_b = rbin[i_rbin];
+        rmag_b = r2_save[i_rbin];
 
         PseudoDensityField<ParticleCatalogue> F_lm_b(params);  // F_lm_b
         F_lm_b.inv_fourier_transform_for_sjl_ylm_wgtd_field(
@@ -2021,15 +2067,14 @@ ThreePCFMeasurements compute_3pcf_in_box(
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
     if (params.form == "diag") {
       threepcf_out.rbin1.push_back(rbin[ibin]);
-      threepcf_out.reff1.push_back(rbin[ibin]);
     } else
     if (params.form == "full") {
       threepcf_out.rbin1.push_back(rbin[params.ith_rbin]);
-      threepcf_out.reff1.push_back(rbin[params.ith_rbin]);
     }
+    threepcf_out.reff2.push_back(r1_save[ibin]);
     threepcf_out.rbin2.push_back(rbin[ibin]);
-    threepcf_out.reff2.push_back(rbin[ibin]);
-    threepcf_out.ntriag.push_back(0);
+    threepcf_out.reff2.push_back(r2_save[ibin]);
+    threepcf_out.npair.push_back(npair_save[ibin]);
     threepcf_out.zeta_raw.push_back(norm * zeta_save[ibin]);
     threepcf_out.zeta_shot.push_back(norm * sn_save[ibin]);
   }
@@ -2067,7 +2112,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
         "%.9e \t %.9e \t %.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         threepcf_out.rbin1[ibin], threepcf_out.reff1[ibin],
         threepcf_out.rbin2[ibin], threepcf_out.reff2[ibin],
-        threepcf_out.ntriag[ibin],
+        threepcf_out.npair[ibin],
         threepcf_out.zeta_raw[ibin].real(), threepcf_out.zeta_raw[ibin].imag(),
         threepcf_out.zeta_shot[ibin].real(), threepcf_out.zeta_shot[ibin].imag()
       );
@@ -2083,7 +2128,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
     }
   }
 
-  delete[] ntriag_save; delete[] r1_save; delete[] r2_save;
+  delete[] npair_save; delete[] r1_save; delete[] r2_save;
   delete[] zeta_save; delete[] sn_save;
 
   return threepcf_out;
@@ -2146,13 +2191,13 @@ ThreePCFWindowMeasurements compute_3pcf_window(
   }
 
   /// Set up output.
-  int* ntriag_save = new int[params.num_rbin];
+  int* npair_save = new int[params.num_rbin];
   double* r1_save = new double[params.num_rbin];
   double* r2_save = new double[params.num_rbin];
   std::complex<double>* zeta_save = new std::complex<double>[params.num_rbin];
   std::complex<double>* sn_save = new std::complex<double>[params.num_rbin];
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
-    ntriag_save[ibin] = 0;
+    npair_save[ibin] = 0;
     r1_save[ibin] = 0.;
     r2_save[ibin] = 0.;
     zeta_save[ibin] = 0.;
@@ -2247,6 +2292,23 @@ ThreePCFWindowMeasurements compute_3pcf_window(
               sn_save[ibin] += coupling * stats_sn.xi[ibin];
             } else {
               sn_save[ibin] += 0.;
+            }
+          }
+        }
+
+        if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+          for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+            npair_save[ibin] = stats_sn.npair[ibin];
+            r2_save[ibin] = stats_sn.r[ibin];
+          }
+          if (params.form == "diag") {
+            for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+              r1_save[ibin] = stats_sn.r[ibin];
+            }
+          } else
+          if (params.form == "full") {
+            for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+              r1_save[ibin] = stats_sn.r[params.ith_rbin];
             }
           }
         }
@@ -2348,14 +2410,14 @@ ThreePCFWindowMeasurements compute_3pcf_window(
         double rmag_a, rmag_b;
 
         if (params.form == "full") {
-          rmag_a = rbin[params.ith_rbin];
+          rmag_a = r1_save[params.ith_rbin];
           F_lm_a.inv_fourier_transform_for_sjl_ylm_wgtd_field(
             n_00, ylm_a, sj1, rmag_a
           );
         }
 
         for (int i_rbin = 0; i_rbin < params.num_rbin; i_rbin++) {
-          rmag_b = rbin[i_rbin];
+          rmag_b = r2_save[i_rbin];
 
           PseudoDensityField<ParticleCatalogue> F_lm_b(params);
           F_lm_b.inv_fourier_transform_for_sjl_ylm_wgtd_field(
@@ -2417,15 +2479,14 @@ ThreePCFWindowMeasurements compute_3pcf_window(
   for (int ibin = 0; ibin < params.num_rbin; ibin++) {
     if (params.form == "diag") {
       threepcfwin_out.rbin1.push_back(rbin[ibin]);
-      threepcfwin_out.reff1.push_back(rbin[ibin]);
     } else
     if (params.form == "full") {
       threepcfwin_out.rbin1.push_back(rbin[params.ith_rbin]);
-      threepcfwin_out.reff1.push_back(rbin[params.ith_rbin]);
     }
+    threepcfwin_out.reff1.push_back(r1_save[ibin]);
     threepcfwin_out.rbin2.push_back(rbin[ibin]);
-    threepcfwin_out.reff2.push_back(rbin[ibin]);
-    threepcfwin_out.ntriag.push_back(0);
+    threepcfwin_out.reff2.push_back(r2_save[ibin]);
+    threepcfwin_out.npair.push_back(npair_save[ibin]);
     threepcfwin_out.zeta_raw.push_back(norm * zeta_save[ibin]);
     threepcfwin_out.zeta_shot.push_back(norm * sn_save[ibin]);
   }
@@ -2473,7 +2534,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
         "%.9e \t %.9e \t %.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         threepcfwin_out.rbin1[ibin], threepcfwin_out.reff1[ibin],
         threepcfwin_out.rbin2[ibin], threepcfwin_out.reff2[ibin],
-        threepcfwin_out.ntriag[ibin],
+        threepcfwin_out.npair[ibin],
         threepcfwin_out.zeta_raw[ibin].real(),
         threepcfwin_out.zeta_raw[ibin].imag(),
         threepcfwin_out.zeta_shot[ibin].real(),
@@ -2491,7 +2552,7 @@ ThreePCFWindowMeasurements compute_3pcf_window(
     }
   }
 
-  delete[] ntriag_save; delete[] r1_save; delete[] r2_save;
+  delete[] npair_save; delete[] r1_save; delete[] r2_save;
   delete[] zeta_save; delete[] sn_save;
 
   return threepcfwin_out;
@@ -2554,13 +2615,13 @@ BispecMeasurements compute_bispec_for_los_choice(
   }
 
   /// Set up output.
-  int* ntriag_save = new int[params.num_kbin];
+  int* nmode_save = new int[params.num_kbin];
   double* k1_save = new double[params.num_kbin];
   double* k2_save = new double[params.num_kbin];
   std::complex<double>* bk_save = new std::complex<double>[params.num_kbin];
   std::complex<double>* sn_save = new std::complex<double>[params.num_kbin];
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
-    ntriag_save[ibin] = 0;
+    nmode_save[ibin] = 0;
     k1_save[ibin] = 0.;
     k2_save[ibin] = 0.;
     bk_save[ibin] = 0.;
@@ -2576,6 +2637,183 @@ BispecMeasurements compute_bispec_for_los_choice(
   dr[2] = params.boxsize[2] / double(params.ngrid[2]);
 
   /* * Measurement ********************************************************* */
+
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] Computing bispectrum terms...\n",
+      trv::runtime::show_timestamp().c_str()
+    );
+  }
+
+  /// Compute bispectrum terms.
+  for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
+    for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
+      /// Check for vanishing cases where all Wigner-3j symbols are zero.
+      std::string flag_vanishing = "true";
+      for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+        double coupling = double(2*params.ELL + 1)
+          * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+          * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+          * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+        if (std::fabs(coupling) > EPS_COUPLING_3PT) {
+          flag_vanishing = "false";
+        }
+      }
+
+      if (flag_vanishing == "true") {continue;}
+
+      /// Initialise/reset spherical harmonic grids.
+      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
+      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
+      trv::runtime::gbytesMem += 2 * double(params.nmesh)
+        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+
+      SphericalHarmonicCalculator::
+        store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
+        );
+      SphericalHarmonicCalculator::
+        store_reduced_spherical_harmonic_in_fourier_space(
+          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
+        );
+
+      /// Compute a single term.
+      for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+        /// Calculate Wigner-3j coupling coefficient.
+        double coupling = double(2*params.ELL + 1)
+          * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
+          * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
+          * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
+        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
+
+        /// Compute G_LM in eq. (42) in the Paper.
+        PseudoDensityField<ParticleCatalogue> dn_LM00_for_los1(params);
+          // dn_LM or dn_00
+        if (los_choice == 0) {
+          dn_LM00_for_los1.compute_ylm_wgtd_fluctuation(
+            particles_data, particles_rand, los_data, los_rand, alpha,
+            params.ELL, M_
+          );
+        } else {
+          dn_LM00_for_los1.compute_ylm_wgtd_fluctuation(
+            particles_data, particles_rand, los_data, los_rand, alpha,
+            0, 0
+          );
+        }
+        dn_LM00_for_los1.fourier_transform();
+
+        PseudoDensityField<ParticleCatalogue> dn_LM00_for_los2(params);
+          // dn_LM or dn_00
+        if (los_choice == 1) {
+          dn_LM00_for_los2.compute_ylm_wgtd_fluctuation(
+            particles_data, particles_rand, los_data, los_rand, alpha,
+            params.ELL, M_
+          );
+        } else {
+          dn_LM00_for_los2.compute_ylm_wgtd_fluctuation(
+            particles_data, particles_rand, los_data, los_rand, alpha,
+            0, 0
+          );
+        }
+        dn_LM00_for_los2.fourier_transform();
+
+        PseudoDensityField<ParticleCatalogue> dn_LM00_for_los3(params);
+          // dn_LM or dn_00
+        if (los_choice == 2) {
+          dn_LM00_for_los3.compute_ylm_wgtd_fluctuation(
+            particles_data, particles_rand, los_data, los_rand, alpha,
+            params.ELL, M_
+          );
+        } else {
+          dn_LM00_for_los3.compute_ylm_wgtd_fluctuation(
+            particles_data, particles_rand, los_data, los_rand, alpha,
+            0, 0
+          );
+        }
+        dn_LM00_for_los3.fourier_transform();
+        dn_LM00_for_los3.apply_assignment_compensation();
+        dn_LM00_for_los3.inv_fourier_transform();
+
+        /// Compute F_lm's in eq. (42) in the Paper.
+        PseudoDensityField<ParticleCatalogue> F_lm_a(params);  // F_lm_a
+        double kmag_a, kmag_b;
+        double dk = kbin[1] - kbin[0];  // HACK: only for linear binning
+                                        // TODO: implement custom binning
+
+        if (params.form == "full") {
+          double k_eff_;
+          int nmode_;
+
+          kmag_a = kbin[params.ith_kbin];
+          F_lm_a.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
+            dn_LM00_for_los1, ylm_a, kmag_a, dk, k_eff_, nmode_
+          );
+
+          for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
+            k1_save[i_kbin] = k_eff_;
+          }
+        }
+
+        for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
+          double k_eff_;
+          int nmode_;
+
+          kmag_b = kbin[i_kbin];
+
+          PseudoDensityField<ParticleCatalogue> F_lm_b(params);  // F_lm_b
+          F_lm_b.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
+            dn_LM00_for_los2, ylm_b, kmag_b, dk
+          );
+
+          k2_save[i_kbin] = k_eff_;
+          nmode_save[i_kbin] = nmode_;
+
+          if (params.form == "diag") {
+            kmag_a = kmag_b;
+            F_lm_a.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
+              dn_LM00_for_los1, ylm_a, kmag_a, dk, k_eff_, nmode_
+            );
+
+            k1_save[i_kbin] = k_eff_;
+          }
+
+          /// Add grid contribution.
+          std::complex<double> bk_sum = 0.;
+          for (int gid = 0; gid < params.nmesh; gid++) {
+            std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
+            std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
+            std::complex<double> G_LM_gridpt(
+              dn_LM00_for_los3[gid][0], dn_LM00_for_los3[gid][1]
+            );
+            bk_sum += F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+          }
+
+          bk_save[i_kbin] += coupling * vol_cell * bk_sum;
+
+          if (trv::runtime::currTask == 0) {
+            std::printf(
+              "[%s STAT] Bispectrum term at wavenumber k2 = %.4f and order "
+              "(m1, m2, M) = (%d, %d, %d) computed.\n",
+              trv::runtime::show_timestamp().c_str(),
+              kmag_b, m1_, m2_, M_
+            );
+          }
+        }
+      }
+
+      delete[] ylm_a; ylm_a = NULL;
+      delete[] ylm_b; ylm_b = NULL;
+      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
+        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+    }
+  }
+
+  if (trv::runtime::currTask == 0) {
+    std::printf(
+      "[%s STAT] ... computed bispectrum terms.\n",
+      trv::runtime::show_timestamp().c_str()
+    );
+  }
 
   if (trv::runtime::currTask == 0) {
     std::printf(
@@ -2839,14 +3077,8 @@ BispecMeasurements compute_bispec_for_los_choice(
         );
 
         for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
-          double kmag_a;
-          double kmag_b = kbin[i_kbin];
-          if (params.form == "diag") {
-            kmag_a = kmag_b;
-          } else
-          if (params.form == "full") {
-            kmag_a = kbin[params.ith_kbin];
-          }
+          double kmag_a = k1_save[i_kbin];
+          double kmag_b = k2_save[i_kbin];
 
           double rvec[3];
           std::complex<double> S_ij_k = 0.;
@@ -2916,168 +3148,6 @@ BispecMeasurements compute_bispec_for_los_choice(
     );
   }
 
-  if (trv::runtime::currTask == 0) {
-    std::printf(
-      "[%s STAT] Computing bispectrum terms...\n",
-      trv::runtime::show_timestamp().c_str()
-    );
-  }
-
-  /// Compute bispectrum terms.
-  for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
-    for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      /// Check for vanishing cases where all Wigner-3j symbols are zero.
-      std::string flag_vanishing = "true";
-      for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-        double coupling = double(2*params.ELL + 1)
-          * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
-          * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
-          * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (std::fabs(coupling) > EPS_COUPLING_3PT) {
-          flag_vanishing = "false";
-        }
-      }
-
-      if (flag_vanishing == "true") {continue;}
-
-      /// Initialise/reset spherical harmonic grids.
-      std::complex<double>* ylm_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_b = new std::complex<double>[params.nmesh];
-      trv::runtime::gbytesMem += 2 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
-
-      SphericalHarmonicCalculator::
-        store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell1, m1_, params.boxsize, params.ngrid, ylm_a
-        );
-      SphericalHarmonicCalculator::
-        store_reduced_spherical_harmonic_in_fourier_space(
-          params.ell2, m2_, params.boxsize, params.ngrid, ylm_b
-        );
-
-      /// Compute a single term.
-      for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-        /// Calculate Wigner-3j coupling coefficient.
-        double coupling = double(2*params.ELL + 1)
-          * double(2*params.ell1 + 1) * double(2*params.ell2 + 1)
-          * wigner_3j(params.ell1, params.ell2, params.ELL, 0, 0, 0)
-          * wigner_3j(params.ell1, params.ell2, params.ELL, m1_, m2_, M_);
-        if (std::fabs(coupling) < EPS_COUPLING_3PT) {continue;}
-
-        /// Compute G_LM in eq. (42) in the Paper.
-        PseudoDensityField<ParticleCatalogue> dn_LM00_for_los1(params);
-          // dn_LM or dn_00
-        if (los_choice == 0) {
-          dn_LM00_for_los1.compute_ylm_wgtd_fluctuation(
-            particles_data, particles_rand, los_data, los_rand, alpha,
-            params.ELL, M_
-          );
-        } else {
-          dn_LM00_for_los1.compute_ylm_wgtd_fluctuation(
-            particles_data, particles_rand, los_data, los_rand, alpha,
-            0, 0
-          );
-        }
-        dn_LM00_for_los1.fourier_transform();
-
-        PseudoDensityField<ParticleCatalogue> dn_LM00_for_los2(params);
-          // dn_LM or dn_00
-        if (los_choice == 1) {
-          dn_LM00_for_los2.compute_ylm_wgtd_fluctuation(
-            particles_data, particles_rand, los_data, los_rand, alpha,
-            params.ELL, M_
-          );
-        } else {
-          dn_LM00_for_los2.compute_ylm_wgtd_fluctuation(
-            particles_data, particles_rand, los_data, los_rand, alpha,
-            0, 0
-          );
-        }
-        dn_LM00_for_los2.fourier_transform();
-
-        PseudoDensityField<ParticleCatalogue> dn_LM00_for_los3(params);
-          // dn_LM or dn_00
-        if (los_choice == 2) {
-          dn_LM00_for_los3.compute_ylm_wgtd_fluctuation(
-            particles_data, particles_rand, los_data, los_rand, alpha,
-            params.ELL, M_
-          );
-        } else {
-          dn_LM00_for_los3.compute_ylm_wgtd_fluctuation(
-            particles_data, particles_rand, los_data, los_rand, alpha,
-            0, 0
-          );
-        }
-        dn_LM00_for_los3.fourier_transform();
-        dn_LM00_for_los3.apply_assignment_compensation();
-        dn_LM00_for_los3.inv_fourier_transform();
-
-        /// Compute F_lm's in eq. (42) in the Paper.
-        PseudoDensityField<ParticleCatalogue> F_lm_a(params);  // F_lm_a
-        double kmag_a, kmag_b;
-        double dk = kbin[1] - kbin[0];  // HACK: only for linear binning
-                                        // TODO: implement custom binning
-
-        if (params.form == "full") {
-          kmag_a = kbin[params.ith_kbin];
-          F_lm_a.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
-            dn_LM00_for_los1, ylm_a, kmag_a, dk
-          );
-        }
-
-        for (int i_kbin = 0; i_kbin < params.num_kbin; i_kbin++) {
-          kmag_b = kbin[i_kbin];
-
-          PseudoDensityField<ParticleCatalogue> F_lm_b(params);  // F_lm_b
-          F_lm_b.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
-            dn_LM00_for_los2, ylm_b, kmag_b, dk
-          );
-
-          if (params.form == "diag") {
-            kmag_a = kmag_b;
-            F_lm_a.inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
-              dn_LM00_for_los1, ylm_a, kmag_a, dk
-            );
-          }
-
-          /// Add grid contribution.
-          std::complex<double> bk_sum = 0.;
-          for (int gid = 0; gid < params.nmesh; gid++) {
-            std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
-            std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
-            std::complex<double> G_LM_gridpt(
-              dn_LM00_for_los3[gid][0], dn_LM00_for_los3[gid][1]
-            );
-            bk_sum += F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
-          }
-
-          bk_save[i_kbin] += coupling * vol_cell * bk_sum;
-
-          if (trv::runtime::currTask == 0) {
-            std::printf(
-              "[%s STAT] Bispectrum term at wavenumber k2 = %.4f and order "
-              "(m1, m2, M) = (%d, %d, %d) computed.\n",
-              trv::runtime::show_timestamp().c_str(),
-              kmag_b, m1_, m2_, M_
-            );
-          }
-        }
-      }
-
-      delete[] ylm_a; ylm_a = NULL;
-      delete[] ylm_b; ylm_b = NULL;
-      trv::runtime::gbytesMem -= 2 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
-    }
-  }
-
-  if (trv::runtime::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... computed bispectrum terms.\n",
-      trv::runtime::show_timestamp().c_str()
-    );
-  }
-
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
@@ -3086,15 +3156,14 @@ BispecMeasurements compute_bispec_for_los_choice(
   for (int ibin = 0; ibin < params.num_kbin; ibin++) {
     if (params.form == "diag") {
       bispec_out.kbin1.push_back(kbin[ibin]);
-      bispec_out.keff1.push_back(kbin[ibin]);
     } else
     if (params.form == "full") {
       bispec_out.kbin1.push_back(kbin[params.ith_kbin]);
-      bispec_out.keff1.push_back(kbin[params.ith_kbin]);
     }
+    bispec_out.keff1.push_back(k1_save[ibin]);
     bispec_out.kbin2.push_back(kbin[ibin]);
-    bispec_out.keff2.push_back(kbin[ibin]);
-    bispec_out.ntriag.push_back(0);
+    bispec_out.keff2.push_back(k2_save[ibin]);
+    bispec_out.nmode.push_back(nmode_save[ibin]);
     bispec_out.bk_raw.push_back(norm * bk_save[ibin]);
     bispec_out.bk_shot.push_back(norm * sn_save[ibin]);
   }
@@ -3133,7 +3202,7 @@ BispecMeasurements compute_bispec_for_los_choice(
         "%.9e \t %.9e \t %.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         bispec_out.kbin1[ibin], bispec_out.keff1[ibin],
         bispec_out.kbin2[ibin], bispec_out.keff2[ibin],
-        bispec_out.ntriag[ibin],
+        bispec_out.nmode[ibin],
         bispec_out.bk_raw[ibin].real(), bispec_out.bk_raw[ibin].imag(),
         bispec_out.bk_shot[ibin].real(), bispec_out.bk_shot[ibin].imag()
       );
@@ -3149,7 +3218,7 @@ BispecMeasurements compute_bispec_for_los_choice(
     }
   }
 
-  delete[] ntriag_save; delete[] k1_save; delete[] k2_save;
+  delete[] nmode_save; delete[] k1_save; delete[] k2_save;
   delete[] bk_save; delete[] sn_save;
 
   return bispec_out;

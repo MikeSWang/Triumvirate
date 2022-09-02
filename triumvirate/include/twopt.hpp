@@ -581,7 +581,7 @@ CorrfuncMeasurements compute_corrfunc(
       }
 
       if (M_ == 0 && m1 == 0) {
-        for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+        for (int ibin = 0; ibin < params.num_rbin; ibin++) {
           npair_save[ibin] = stats2pt.npair[ibin];
           r_save[ibin] = stats2pt.r[ibin];
         }
