@@ -150,6 +150,7 @@ int main(int argc, char* argv[]) {
   }
 
   trv::Binning binning(params);
+  binning.set_bins();
 
   bool save = true;  // whether to save the results or not
 

@@ -46,7 +46,7 @@ int ParameterSet::read_from_file(char* parameter_file) {
   char output_tag_[1024];
 
   double boxsize_x, boxsize_y, boxsize_z;
-  unsigned int ngrid_x, ngrid_y, ngrid_z;
+  int ngrid_x, ngrid_y, ngrid_z;
 
   char alignment_[16];
   char padscale_[16];
@@ -191,6 +191,14 @@ int ParameterSet::read_from_file(char* parameter_file) {
         line_str.data(), "%s %s %d", dummy_str, dummy_str, &this->idx_bin
       );
     }
+  }
+
+  /// Misc ---------------------------------------------------------------
+
+  if (line_str.find("verbose") != std::string::npos) {
+    std::sscanf(
+      line_str.data(), "%s %s %d", dummy_str, dummy_str, &this->verbose
+    );
   }
 
   /// --------------------------------------------------------------------
@@ -345,8 +353,7 @@ int ParameterSet::validate() {
   if (!(this->padscale == "box" || this->padscale == "grid")) {
     if (trv::mon::currTask == 0) {
       throw trv::mon::InvalidParameter(
-        "[%s ERRO] Pad scale must be 'box' or 'grid': "
-        "`padscale` = '%s'.\n",
+        "[%s ERRO] Pad scale must be 'box' or 'grid': `padscale` = '%s'.\n",
         trv::mon::show_timestamp().c_str(),
         this->padscale.c_str()
       );
@@ -361,8 +368,8 @@ int ParameterSet::validate() {
   )) {
     if (trv::mon::currTask == 0) {
       throw trv::mon::InvalidParameter(
-        "[%s ERRO] Mesh assignment scheme must be 'ngp', 'cic', 'tsc' "
-        "or 'pcs': `assignment` = '%s'.\n",
+        "[%s ERRO] Mesh assignment scheme must be "
+        "'ngp', 'cic', 'tsc' or 'pcs': `assignment` = '%s'.\n",
         trv::mon::show_timestamp().c_str(),
         this->assignment.c_str()
       );
@@ -385,26 +392,22 @@ int ParameterSet::validate() {
   }
 
   if (this->measurement_type == "powspec") {
-    this->npoint = "2pt";
-    this->space = "fourier";
+    this->npoint = "2pt"; this->space = "fourier";
   } else
   if (
     this->measurement_type == "2pcf" || this->measurement_type == "2pcf-win"
   ) {
-    this->npoint = "2pt";
-    this->space = "config";
+    this->npoint = "2pt"; this->space = "config";
   } else
   if (this->measurement_type == "bispec") {
-    this->npoint = "3pt";
-    this->space = "fourier";
+    this->npoint = "3pt"; this->space = "fourier";
   } else
   if (
     this->measurement_type == "3pcf"
     || this->measurement_type == "3pcf-win"
     || this->measurement_type == "3pcf-win-wa"
   ) {
-    this->npoint = "3pt";
-    this->space = "config";
+    this->npoint = "3pt"; this->space = "config";
   } else {
     if (trv::mon::currTask == 0) {
       throw trv::mon::InvalidParameter(
@@ -449,8 +452,7 @@ int ParameterSet::validate() {
   )) {
     if (trv::mon::currTask == 0) {
       throw trv::mon::InvalidParameter(
-        "[%s ERRO] Binning scheme is unrecognised: "
-        "`binning` = '%s'.\n",
+        "[%s ERRO] Binning scheme is unrecognised: `binning` = '%s'.\n",
         trv::mon::show_timestamp().c_str(),
         this->binning.c_str()
       );
@@ -459,8 +461,7 @@ int ParameterSet::validate() {
   if (!(this->form == "diag" || this->form == "full")) {
     if (trv::mon::currTask == 0) {
       throw trv::mon::InvalidParameter(
-        "[%s ERRO] `form` must be either 'full' or 'diag': "
-        "`form` = '%s'.\n",
+        "[%s ERRO] `form` must be either 'full' or 'diag': `form` = '%s'.\n",
         trv::mon::show_timestamp().c_str(),
         this->form.c_str()
       );
@@ -613,6 +614,8 @@ int ParameterSet::printout() {
   print_par_double("bin_max = %.4f\n", this->bin_max);
   print_par_int("num_bins = %d\n", this->num_bins);
   print_par_int("idx_bin = %d\n", this->idx_bin);
+
+  print_par_int("verbose = %s\n", this->verbose);
 
   std::fclose(ofileptr);
 

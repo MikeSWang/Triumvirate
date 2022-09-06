@@ -88,7 +88,7 @@ std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmoni
 
 void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
   const int ell, const int m,
-  const double boxsize[3], const unsigned int ngrid[3],
+  const double boxsize[3], const int ngrid[3],
   std::complex<double>* ylm_out
 ) {
   /// Throw an exception when the output variable is provided.
@@ -134,7 +134,7 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_sp
 
 void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
   const int ell, const int m,
-  const double boxsize[3], const unsigned int ngrid[3],
+  const double boxsize[3], const int ngrid[3],
   std::complex<double>* ylm_out
 ) {
   /// Throw an exception when the output variable is provided.

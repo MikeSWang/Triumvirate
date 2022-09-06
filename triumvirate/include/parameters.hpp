@@ -63,12 +63,12 @@ class ParameterSet {
   /// --------------------------------------------------------------------
 
   /// Mesh properties.
-  double boxsize[3];      ///< box size (in Mpc/h) in each dimension
-  unsigned int ngrid[3];  ///< grid number in each dimension
+  double boxsize[3];  ///< box size (in Mpc/h) in each dimension
+  int ngrid[3];       ///< grid number in each dimension
 
   /// Derived mesh quantities.
-  double volume;       ///< box volume (in Mpc^3/h^3)
-  unsigned int nmesh;  ///< number of mesh grids
+  double volume;  ///< box volume (in Mpc^3/h^3)
+  int nmesh;      ///< number of mesh grids
 
   /// Mesh alignment.
   std::string alignment = "centre";  ///< box alignment:
@@ -127,9 +127,20 @@ class ParameterSet {
   double bin_min;  ///< measurement range minimum (in Mpc/h or h/Mpc)
   double bin_max;  ///< measurement range maximum (in Mpc/h or h/Mpc)
 
-  unsigned int num_bins;  ///< number of measurement bins
-  unsigned int idx_bin;   ///< fixed bin index in 'full' `form`
-                          ///< bispectrum measurements
+  int num_bins;  ///< number of measurement bins
+  int idx_bin;   ///< fixed bin index in 'full' `form`
+                 ///< bispectrum measurements
+
+  /// --------------------------------------------------------------------
+  /// Misc
+  /// --------------------------------------------------------------------
+
+  /// FIXME: Implement verbosity in log messages.
+  int verbose = 3;  ///< logging verbosity level:
+                    ///< {0 (unset),
+                    ///<  1 (ERRO, WARN),
+                    ///<  2 (INFO),
+                    ///<  3 (STAT) (default)}
 
   /**
    * @brief Read parameters from a file.

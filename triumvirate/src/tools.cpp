@@ -323,7 +323,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
   /// Linear binning
   /// --------------------------------------------------------------------
   if (scheme == "lin") {
-    double dbin = (this->bin_max - this->bin_min) / double(this->num_bins - 1);
+    double dbin = (this->bin_max - this->bin_min) / double(this->num_bins);
 
     for (int ibin = 0; ibin < this->num_bins; ibin++) {
       double edge_left = this->bin_min + dbin * ibin;
@@ -345,7 +345,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
     }
 
     double dlnbin = (std::log(this->bin_max) - std::log(this->bin_min))
-      / double(this->num_bins - 1);
+      / double(this->num_bins);
 
     for (int ibin = 0; ibin < this->num_bins; ibin++) {
       double edge_left = this->bin_min * std::exp(dlnbin * ibin);
@@ -372,7 +372,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
     double bin_min = dbin_pad * nbin_pad;
 
     double dbin = (this->bin_max - bin_min)
-      / double((this->num_bins - nbin_pad) - 1);
+      / double(this->num_bins - nbin_pad);
 
     for (int ibin = nbin_pad; ibin < this->num_bins; ibin++) {
       double edge_left = bin_min + dbin * (ibin - nbin_pad);
@@ -398,7 +398,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
     double bin_min = dbin_pad * nbin_pad;
 
     double dlnbin = (std::log(this->bin_max) - std::log(bin_min))
-      / double((this->num_bins - nbin_pad) - 1);
+      / double(this->num_bins - nbin_pad);
 
     for (int ibin = nbin_pad; ibin < this->num_bins; ibin++) {
       double edge_left = bin_min * std::exp(dlnbin * (ibin - nbin_pad));
