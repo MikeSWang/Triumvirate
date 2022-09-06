@@ -596,7 +596,7 @@ class ParticleCatalogue {
   static void pad_in_box(
     ParticleCatalogue& particles,
     const double boxsize[3],
-    const unsigned int ngrid[3],
+    const int ngrid[3],
     const double ngrid_pad[3]
   ) {
     /// Calculate adjustments needed using the random-source catalogue.
@@ -663,7 +663,7 @@ class ParticleCatalogue {
     ParticleCatalogue& particles_data,
     ParticleCatalogue& particles_rand,
     const double boxsize[3],
-    const unsigned int ngrid[3],
+    const int ngrid[3],
     const double ngrid_pad[3]
   ) {
     /// Calculate adjustments needed using the random-source catalogue.
