@@ -15,66 +15,66 @@
  * Main program performing measurements.
  */
 int main(int argc, char* argv[]) {
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "%s\n[%s STAT] Program started.\n",
-      std::string(80, '>').c_str(), trv::runtime::show_timestamp().c_str()
+      std::string(80, '>').c_str(), trv::mon::show_timestamp().c_str()
     );
   }
 
   /* * Initialisation ****************************************************** */
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Initialising program...\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
   /// Configure parameters.
   if (argc != 2) {
-    if (trv::runtime::currTask == 0) {
-      throw trv::runtime::IOError(
+    if (trv::mon::currTask == 0) {
+      throw trv::mon::IOError(
         "[%s ERRO] Missing parameter file in call.\n",
-        trv::runtime::show_timestamp().c_str()
+        trv::mon::show_timestamp().c_str()
       );
     }
 
   }
 
-  trv::scheme::ParameterSet params;  // program parameters
-  if (params.read_from_file(argv)) {
-    if (trv::runtime::currTask == 0) {
-      throw trv::runtime::IOError(
+  trv::ParameterSet params;  // program parameters
+  if (params.read_from_file(argv[1])) {
+    if (trv::mon::currTask == 0) {
+      throw trv::mon::IOError(
         "[%s ERRO] Failed to initialise parameters.\n",
-        trv::runtime::show_timestamp().c_str()
+        trv::mon::show_timestamp().c_str()
       );
     }
   }
 
   if (!(params.printout())) {
-    if (trv::runtime::currTask == 0) {
+    if (trv::mon::currTask == 0) {
       std::printf(
         "[%s INFO] Check 'parameters_used*' file in your "
         "measurement output directory for reference.\n",
-        trv::runtime::show_timestamp().c_str()
+        trv::mon::show_timestamp().c_str()
       );
     }
   }
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] ... initialised program.\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
   /** Data processing ****************************************************** */
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Reading catalogues...\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
@@ -82,14 +82,14 @@ int main(int argc, char* argv[]) {
   trv::obj::ParticleCatalogue particles_data, particles_rand;  // catalogues
 
   std::string flag_data = "false";  // data catalogue status
-  if (trv::runtime::if_filepath_is_set(params.data_catalogue_file)) {
+  if (trv::mon::if_filepath_is_set(params.data_catalogue_file)) {
     if (particles_data.read_particle_data_from_file(
-      params.data_catalogue_file, params.catalogue_header, params.volume
+      params.data_catalogue_file, params.catalogue_columns, params.volume
     )) {
-      if (trv::runtime::currTask == 0) {
-        throw trv::runtime::IOError(
+      if (trv::mon::currTask == 0) {
+        throw trv::mon::IOError(
           "[%s ERRO] Failed to load data-source catalogue file.\n",
-          trv::runtime::show_timestamp().c_str()
+          trv::mon::show_timestamp().c_str()
         );
       }
     }
@@ -99,14 +99,14 @@ int main(int argc, char* argv[]) {
   }
 
   std::string flag_rand = "false";  // random catalogue status
-  if (trv::runtime::if_filepath_is_set(params.rand_catalogue_file)) {
+  if (trv::mon::if_filepath_is_set(params.rand_catalogue_file)) {
     if (particles_rand.read_particle_data_from_file(
-      params.rand_catalogue_file, params.catalogue_header, params.volume
+      params.rand_catalogue_file, params.catalogue_columns, params.volume
     )) {
-      if (trv::runtime::currTask == 0) {
-        throw trv::runtime::IOError(
+      if (trv::mon::currTask == 0) {
+        throw trv::mon::IOError(
           "[%s ERRO] Failed to load random-source catalogue file.\n",
-          trv::runtime::show_timestamp().c_str()
+          trv::mon::show_timestamp().c_str()
         );
       }
     }
@@ -115,19 +115,19 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] ... read catalogues.\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
   /* * Measurements ******************************************************** */
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Making measurements...\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
@@ -149,19 +149,15 @@ int main(int argc, char* argv[]) {
     flag_npoint = "3pt";
   }
 
-  double kbin[params.num_kbin];  // wavenumber bins
-  trv::scheme::BinScheme::set_kbin(params, kbin);
-
-  double rbin[params.num_rbin];  // separation bins
-  trv::scheme::BinScheme::set_rbin(params, rbin);
+  trv::Binning binning(params);
 
   bool save = true;  // whether to save the results or not
 
   /// Compute line of sight.
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Computing lines of sight...\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
@@ -193,18 +189,18 @@ int main(int argc, char* argv[]) {
     los_rand[pid].pos[2] = particles_rand[pid].pos[2] / los_mag;
   }
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] ... computed lines of sight.\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
   /// Offset particle positions for measurements.
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Offset particle coordinates for box alignment.\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
@@ -265,10 +261,10 @@ int main(int argc, char* argv[]) {
     alpha = 1.;
   }
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s INFO] Alpha contrast: %.6e.\n",
-      trv::runtime::show_timestamp().c_str(), alpha
+      trv::mon::show_timestamp().c_str(), alpha
     );
   }
 
@@ -321,10 +317,10 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s INFO] Normalisation constant: %.6e.\n",
-      trv::runtime::show_timestamp().c_str(),
+      trv::mon::show_timestamp().c_str(),
       norm
     );
   }
@@ -380,10 +376,10 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s INFO] Alternative normalisation constant: %.6e.\n",
-      trv::runtime::show_timestamp().c_str(),
+      trv::mon::show_timestamp().c_str(),
       norm_alt
     );
   }
@@ -394,12 +390,12 @@ int main(int argc, char* argv[]) {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       trv::algo::compute_powspec(
         particles_data, particles_rand, los_data, los_rand,
-        params, kbin, alpha, norm, norm_alt, save
+        params, binning.bin_centres, alpha, norm, norm_alt, save
       );
     } else
     if (params.catalogue_type == "sim") {
       trv::algo::compute_powspec_in_box(
-        particles_data, params, kbin, norm, norm_alt, save
+        particles_data, params, binning.bin_centres, norm, norm_alt, save
       );
     }
   } else
@@ -407,18 +403,18 @@ int main(int argc, char* argv[]) {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       trv::algo::compute_corrfunc(
         particles_data, particles_rand, los_data, los_rand,
-        params, rbin, alpha, norm, norm_alt, save
+        params, binning.bin_centres, alpha, norm, norm_alt, save
       );
     } else
     if (params.catalogue_type == "sim") {
       trv::algo::compute_corrfunc_in_box(
-        particles_data, params, rbin, norm, norm_alt, save
+        particles_data, params, binning.bin_centres, norm, norm_alt, save
       );
     }
   } else
   if (params.measurement_type == "2pcf-win") {
     trv::algo::compute_corrfunc_window(
-      particles_rand, los_rand, params, rbin, alpha, norm, norm_alt, save
+      particles_rand, los_rand, params, binning.bin_centres, alpha, norm, norm_alt, save
     );
   } else
 
@@ -426,12 +422,12 @@ int main(int argc, char* argv[]) {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       trv::algo::compute_bispec(
         particles_data, particles_rand, los_data, los_rand,
-        params, kbin, alpha, norm, norm_alt, save
+        params, binning.bin_centres, alpha, norm, norm_alt, save
       );
     } else
     if (params.catalogue_type == "sim") {
       trv::algo::compute_bispec_in_box(
-        particles_data, params, kbin, norm, norm_alt, save
+        particles_data, params, binning.bin_centres, norm, norm_alt, save
       );
     }
   } else
@@ -439,32 +435,32 @@ int main(int argc, char* argv[]) {
     if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
       trv::algo::compute_3pcf(
         particles_data, particles_rand, los_data, los_rand,
-        params, rbin, alpha, norm, norm_alt, save
+        params, binning.bin_centres, alpha, norm, norm_alt, save
       );
     } else
     if (params.catalogue_type == "sim") {
       trv::algo::compute_3pcf_in_box(
-        particles_data, params, rbin, norm, norm_alt, save
+        particles_data, params, binning.bin_centres, norm, norm_alt, save
       );
     }
   } else
   if (params.measurement_type == "3pcf-win") {
     bool wa = false;
     trv::algo::compute_3pcf_window(
-      particles_rand, los_rand, params, rbin, alpha, norm, norm_alt, wa, save
+      particles_rand, los_rand, params, binning.bin_centres, alpha, norm, norm_alt, wa, save
     );
   } else
   if (params.measurement_type == "3pcf-win-wa") {
     bool wa = true;
     trv::algo::compute_3pcf_window(
-      particles_rand, los_rand, params, rbin, alpha, norm, norm_alt, wa, save
+      particles_rand, los_rand, params, binning.bin_centres, alpha, norm, norm_alt, wa, save
     );
   }
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] ... made measurements.\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
@@ -476,17 +472,17 @@ int main(int argc, char* argv[]) {
   delete[] los_data; los_data = NULL;
   delete[] los_rand; los_rand = NULL;
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Persistent memory usage: %.0f gigabytes.\n",
-      trv::runtime::show_timestamp().c_str(), trv::runtime::gbytesMem
+      trv::mon::show_timestamp().c_str(), trv::mon::gbytesMem
     );
   }
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Program has completed.\n%s\n",
-      trv::runtime::show_timestamp().c_str(), std::string(80, '<').c_str()
+      trv::mon::show_timestamp().c_str(), std::string(80, '<').c_str()
     );
   }
 

@@ -17,14 +17,13 @@ int main(int argc, char* argv[]) {
   double pos[3] = {x, y, z};
 
   /// Initialise the tool class.
-  trv::maths::SphericalHarmonicCalculator harmonic;
+  trv::maths::SphericalHarmonicCalculator ylm;
 
   /// Display the numerical result.
-  std::cout <<
-    "Y_" << ell << m << "("
-    << x << ", " << y << ", " << z
-    << ") = " << harmonic.calc_reduced_spherical_harmonic(ell, m, pos)
-  << std::endl;
+  std::cout
+    << "y_" << ell << m << "(" << x << ", " << y << ", " << z << ") = "
+    << ylm.calc_reduced_spherical_harmonic(ell, m, pos)
+    << std::endl;
 
   return 0;
 }

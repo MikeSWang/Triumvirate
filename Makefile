@@ -69,38 +69,48 @@ pytest:
 
 # Invididual build
 
-measurements: triumvirate/src/measurements.cpp
-	$(CC) $(CFLAGS) -o $(addprefix build/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
+DIR_SOURCES=triumvirate/src
+DIR_BUILD=build
+DIR_TEST=triumvirate/tests
+DIR_TESTBUILD=triumvirate/tests/test_build
 
-test_bessel: triumvirate/tests/test_bessel.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+SOURCES=$(wildcard $(DIR_SOURCES)/*.cpp)
 
-test_fftlog: triumvirate/tests/test_fftlog.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+measurements:
+	$(CC) $(CFLAGS) -o $(addprefix $(DIR_BUILD)/, $(notdir $@)) $(SOURCES) $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_field: triumvirate/tests/test_field.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+test_bessel: $(DIR_TEST)/test_bessel.cpp $(DIR_SOURCES)/bessel.cpp
+	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_harmonic: triumvirate/tests/test_harmonic.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+test_fftlog: $(DIR_TEST)/test_fftlog.cpp
+	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_monitor: triumvirate/tests/test_monitor.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+test_field: $(DIR_TEST)/test_field.cpp
+	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_parameters: triumvirate/tests/test_parameters.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+test_harmonic: $(DIR_TEST)/test_harmonic.cpp $(DIR_SOURCES)/harmonic.cpp \
+							 $(DIR_SOURCES)/monitor.cpp
+	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_particles: triumvirate/tests/test_particles.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+test_monitor: $(DIR_TEST)/test_monitor.cpp $(DIR_SOURCES)/monitor.cpp
+	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_threept: triumvirate/tests/test_threept.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+test_parameters: $(DIR_TEST)/test_parameters.cpp $(DIR_SOURCES)/parameters.cpp \
+						     $(DIR_SOURCES)/monitor.cpp
+	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_tools: triumvirate/tests/test_tools.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+test_particles: $(DIR_TEST)/test_particles.cpp
+	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_twopt: triumvirate/tests/test_twopt.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+test_threept: $(DIR_TEST)/test_threept.cpp
+	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
+
+test_tools: $(DIR_TEST)/test_tools.cpp $(DIR_SOURCES)/tools.cpp \
+            $(DIR_SOURCES)/monitor.cpp $(DIR_SOURCES)/parameters.cpp
+	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
+
+test_twopt: $(DIR_TEST)/test_twopt.cpp
+	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
 # Build clean-up
 
@@ -112,6 +122,6 @@ clean:
 	find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +
 
 cleantest:
-	rm -rf triumvirate/tests/test_build/* triumvirate/tests/test_output/*
+	rm -rf $(DIR_TESTBUILD)/* $(DIR_TEST)/test_output/*
 	rm -rf core
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +

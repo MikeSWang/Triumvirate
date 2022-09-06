@@ -16,6 +16,8 @@
 #include "tools.hpp"
 #include "gamma.hpp"
 
+using namespace trv::maths;
+
 namespace trv {
 namespace ops {
 
@@ -39,8 +41,8 @@ double calc_kr_pivot_lowring(
   /// Note that no minus is involved by complex conjugation of
   /// the gamma function.
   double _lnr, phi_p, phi_m;  // placeholder `_lnr`
-  trv::maths::get_lngamma_components(x_p, y, &_lnr, &phi_p);
-  trv::maths::get_lngamma_components(x_m, y, &_lnr, &phi_m);
+  get_lngamma_components(x_p, y, _lnr, phi_p);
+  get_lngamma_components(x_m, y, _lnr, phi_m);
 
   double arg_ = std::log(2/kr_c) * N / L + (phi_p + phi_m) / M_PI;
   double arg_int = std::round(arg_);
@@ -74,8 +76,8 @@ void compute_u_kernel_coeff(
 
     double lnr, phi;
     for (int m = 0; m <= N/2; m++) {
-      trv::maths::get_lngamma_components(x, m*y, &lnr, &phi);
-      u[m] = trv::maths::eval_polar(1., m*t + 2*phi);
+      get_lngamma_components(x, m*y, lnr, phi);
+      u[m] = eval_complex_in_polar(1., m*t + 2*phi);
     }
   } else {
     double x_p = (mu + 1 + q)/2;
@@ -84,10 +86,10 @@ void compute_u_kernel_coeff(
     double lnr_p, phi_p;
     double lnr_m, phi_m;
     for (int m = 0; m <= N/2; m++) {
-      trv::maths::get_lngamma_components(x_p, m*y, &lnr_p, &phi_p);
-      trv::maths::get_lngamma_components(x_m, m*y, &lnr_m, &phi_m);
+      get_lngamma_components(x_p, m*y, lnr_p, phi_p);
+      get_lngamma_components(x_m, m*y, lnr_m, phi_m);
 
-      u[m] = trv::maths::eval_polar(
+      u[m] = eval_complex_in_polar(
         std::exp(std::log(2) * q + lnr_p - lnr_m), m*t + phi_p - phi_m
       );
     }
