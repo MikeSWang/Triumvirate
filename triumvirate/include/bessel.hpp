@@ -1,6 +1,26 @@
+// Copyright (C) [GPLv3 Licence]
+//
+// This file is part of the Triumvirate program. See the COPYRIGHT
+// and LICENCE files at the top-level directory of this distribution
+// for details of copyright and licensing.
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+// See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
 /**
  * @file bessel.hpp
- * @brief Spherical Bessel calculations.
+ * @author Mike S Wang (https://github.com/MikeSWang)
+ * @brief Spherical Bessel function calculations.
  *
  */
 
@@ -15,75 +35,38 @@ namespace trv {
 namespace maths {
 
 /**
- * Interpolated spherical Bessel function @f$ j_\ell(x) @f$
- * of the first kind.
+ * @brief Interpolated spherical Bessel function @f$ j_\ell(x) @f$
+ *        of the first kind.
  *
  */
 class SphericalBesselCalculator {
  public:
   /**
-   * Initialise the interpolated function.
+   * @brief Construct the interpolated function.
    *
-   * @param ell Order @f$ \ell @f$ of the spherical Bessel function.
+   * @param ell Order @f$ \ell @f$.
    */
-  SphericalBesselCalculator(const int ell) {
-    /// Set up sampling range and number.
-    /// CAVEAT: Discretionary choices.
-    double xmin = 0.;
-    double xmax = 10000.;
-    int nsample = 1000000;
-
-    /// Initialise and evaluate sample points.
-    double dx = (xmax - xmin) / (nsample - 1);
-
-    double* x = new double[nsample];
-    double* j_ell = new double[nsample];
-    for (int i = 0; i < nsample; i++) {
-      x[i] = xmin + dx * i;
-      j_ell[i] = gsl_sf_bessel_jl(ell, x[i]);
-    }
-
-    /// Initialise the interpolator using cubic spline, and
-    /// store state variables for faster lookup.
-    this->spline = gsl_spline_alloc(gsl_interp_cspline, nsample);
-    this->accel = gsl_interp_accel_alloc();
-
-    gsl_spline_init(this->spline, x, j_ell, nsample);
-
-    /// Delete sample points.
-    delete[] x; x = NULL;
-    delete[] j_ell; j_ell = NULL;
-  }
+  SphericalBesselCalculator(const int ell);
 
   /**
-   * Destruct the interpolated function.
+   * @brief Destruct the interpolated function.
    */
-  ~SphericalBesselCalculator() {
-    if (this->accel != NULL) {
-      gsl_interp_accel_free(this->accel); this->accel = NULL;
-    }
-
-    if (this->spline != NULL) {
-      gsl_spline_free(this->spline); this->spline = NULL;
-    }
-  }
+  ~SphericalBesselCalculator();
 
   /**
-   * Evaluate the interpolated function.
+   * @brief Evaluate the interpolated function.
    *
-   * @param x Argument of the function.
-   * @returns Value of the function.
+   * @param x Argument f@$ x f@$.
+   * @returns Value of @f$ j_\ell @f$.
    */
-  double eval(double x) {
-    return gsl_spline_eval(this->spline, x, this->accel);
-  }
+  double eval(double x);
 
  private:
-  gsl_spline* spline;
-  gsl_interp_accel* accel;
+  gsl_interp_accel* accel;  ///< interpolation accelerator
+  gsl_spline* spline;       ///< interpolation scheme
 };
 
-}  // trv::maths::
-}  // trv::
+}  // namespace trv::maths
+}  // namespace trv
 
-#endif  // TRIUMVIRATE_INCLUDE_BESSEL_HPP_INCLUDED_
+#endif  // !TRIUMVIRATE_INCLUDE_BESSEL_HPP_INCLUDED_

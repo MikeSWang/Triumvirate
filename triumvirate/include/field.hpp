@@ -42,7 +42,7 @@ class PseudoDensityField {
    *
    * @param params Parameter set.
    */
-  PseudoDensityField(trv::scheme::ParameterSet& params) {
+  PseudoDensityField(trv::ParameterSet& params) {
     /// Attach external parameters.
     this->params = params;
 
@@ -53,7 +53,7 @@ class PseudoDensityField {
       this->field[gid][1] = 0.;
     }
 
-    trv::runtime::gbytesMem += double(this->params.nmesh)
+    trv::mon::gbytesMem += double(this->params.nmesh)
       * sizeof(fftw_complex) / BYTES_PER_GBYTES;
 
     /// Initialise complex field for interlacing and increase
@@ -65,7 +65,7 @@ class PseudoDensityField {
         this->field_s[gid][1] = 0.;
       }
 
-      trv::runtime::gbytesMem += double(this->params.nmesh)
+      trv::mon::gbytesMem += double(this->params.nmesh)
         * sizeof(fftw_complex) / BYTES_PER_GBYTES;
     }
   }
@@ -94,12 +94,12 @@ class PseudoDensityField {
     /// Free memory usage.
     if (this->field != NULL) {
       fftw_free(this->field); this->field = NULL;
-      trv::runtime::gbytesMem -= double(this->params.nmesh)
+      trv::mon::gbytesMem -= double(this->params.nmesh)
         * sizeof(fftw_complex) / BYTES_PER_GBYTES;
     }
     if (this->params.interlace == "true" && this->field_s != NULL) {
       fftw_free(this->field_s); this->field_s = NULL;
-      trv::runtime::gbytesMem -= double(this->params.nmesh)
+      trv::mon::gbytesMem -= double(this->params.nmesh)
         * sizeof(fftw_complex) / BYTES_PER_GBYTES;
     }
   }
@@ -128,10 +128,10 @@ class PseudoDensityField {
     if (this->params.assignment == "pcs") {
       this->assign_weighted_field_to_mesh_pcs(particles, weights);
     } else {
-      if (trv::runtime::currTask == 0) {
-        throw trv::runtime::InvalidParameter(
+      if (trv::mon::currTask == 0) {
+        throw trv::mon::InvalidParameter(
           "[%s ERRO] Unsupported mesh assignment scheme: '%s'.\n",
-          trv::runtime::show_timestamp().c_str(),
+          trv::mon::show_timestamp().c_str(),
           this->params.assignment.c_str()
         );
       };
@@ -974,7 +974,7 @@ class PseudoDensityField {
   }
 
  private:
-  trv::scheme::ParameterSet params;
+  trv::ParameterSet params;
   fftw_complex* field_s;  ///> half-grid shifted meshed complex field
 
   /**
@@ -1531,19 +1531,19 @@ class Pseudo2ptStats {
    *
    * @param params Parameter set.
    */
-  Pseudo2ptStats(trv::scheme::ParameterSet& params){
+  Pseudo2ptStats(trv::ParameterSet& params){
     this->params = params;
 
     /// Set up binned power spectrum and mode counter.
-    this->k = new double[params.num_kbin];
-    this->sn = new std::complex<double>[params.num_kbin];
-    this->pk = new std::complex<double>[params.num_kbin];
-    this->nmode = new int[params.num_kbin];
+    this->k = new double[params.num_bins];
+    this->sn = new std::complex<double>[params.num_bins];
+    this->pk = new std::complex<double>[params.num_bins];
+    this->nmode = new int[params.num_bins];
 
     /// Set up binned 2PCF and pair counter.
-    this->r = new double[params.num_rbin];
-    this->xi = new std::complex<double>[params.num_rbin];
-    this->npair = new int[params.num_rbin];
+    this->r = new double[params.num_bins];
+    this->xi = new std::complex<double>[params.num_bins];
+    this->npair = new int[params.num_bins];
 
     this->reset_2pt_stats();
   }
@@ -1559,14 +1559,14 @@ class Pseudo2ptStats {
    * Reset two-point statistics.
    */
   void reset_2pt_stats() {
-    for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    for (int ibin = 0; ibin < params.num_bins; ibin++) {
       this->k[ibin] = 0.;
       this->pk[ibin] = 0.;
       this->sn[ibin] = 0.;
       this->nmode[ibin] = 0;
     }
 
-    for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+    for (int ibin = 0; ibin < params.num_bins; ibin++) {
       this->r[ibin] = 0.;
       this->xi[ibin] = 0.;
       this->npair[ibin] = 0;
@@ -1607,7 +1607,7 @@ class Pseudo2ptStats {
     PseudoDensityField<ParticleContainer>& field_a,
     PseudoDensityField<ParticleContainer>& field_b,
     std::complex<double> shotnoise_amp,
-    double* kbin,
+    std::vector<double> kbin,
     int ell, int m
   ) {
     /// Set up fine-sampling of wavenumbers.
@@ -1688,8 +1688,8 @@ class Pseudo2ptStats {
     }
 
     /// Perform binning.
-    double dkbin[this->params.num_kbin - 1];
-    for (int ibin = 0; ibin < this->params.num_kbin - 1; ibin++) {
+    double dkbin[this->params.num_bins - 1];
+    for (int ibin = 0; ibin < this->params.num_bins - 1; ibin++) {
       #ifdef DBG_BINWIDTH
         dkbin[ibin] = kbin[1] - kbin[0];
       #else  // DBG_BINWIDTH
@@ -1697,7 +1697,7 @@ class Pseudo2ptStats {
       #endif  // DBG_BINWIDTH
     }
 
-    for (int ibin = 0; ibin < this->params.num_kbin; ibin++) {
+    for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
       double k_lower = 0.;
       if (ibin == 0) {
         k_lower = (kbin[ibin] > dkbin[ibin]/2) ?
@@ -1707,7 +1707,7 @@ class Pseudo2ptStats {
       }
 
       double k_upper = 0.;
-      if (ibin == this->params.num_rbin - 1) {
+      if (ibin == this->params.num_bins - 1) {
         k_upper = kbin[ibin] + dkbin[ibin - 1]/2;
       } else {
         k_upper = kbin[ibin] + dkbin[ibin]/2;
@@ -1754,7 +1754,7 @@ class Pseudo2ptStats {
     PseudoDensityField<ParticleContainer>& field_a,
     PseudoDensityField<ParticleContainer>& field_b,
     std::complex<double> shotnoise_amp,
-    double* rbin,
+    std::vector<double> rbin,
     int ell, int m
   ) {
     /// Set up grid sampling (before inverse Fourier transform).
@@ -1883,12 +1883,12 @@ class Pseudo2ptStats {
     }
 
     /// Perform binning.
-    double drbin[this->params.num_rbin - 1];
-    for (int ibin = 0; ibin < this->params.num_rbin - 1; ibin++) {
+    double drbin[this->params.num_bins - 1];
+    for (int ibin = 0; ibin < this->params.num_bins - 1; ibin++) {
       drbin[ibin] = rbin[ibin + 1] - rbin[ibin];
     }
 
-    for (int ibin = 0; ibin < this->params.num_rbin; ibin++) {
+    for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
       double r_lower = 0.;
       if (ibin == 0) {
         r_lower = (rbin[ibin] > drbin[ibin]/2) ?
@@ -1898,7 +1898,7 @@ class Pseudo2ptStats {
       }
 
       double r_upper = 0.;
-      if (ibin == this->params.num_rbin - 1) {
+      if (ibin == this->params.num_bins - 1) {
         r_upper = rbin[ibin] + drbin[ibin - 1]/2;
       } else {
         r_upper = rbin[ibin] + drbin[ibin]/2;
@@ -2052,7 +2052,7 @@ class Pseudo2ptStats {
     PseudoDensityField<ParticleContainer>& field_b,
     std::complex<double>* ylm_a, std::complex<double>* ylm_b,
     std::complex<double> shotnoise_amp,
-    double* rbin
+    std::vector<double> rbin
   ) {
     /// Set up grid sampling (before inverse Fourier transform).
     fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
@@ -2176,12 +2176,12 @@ class Pseudo2ptStats {
     }
 
     /// Perform binning.
-    double drbin[this->params.num_rbin - 1];
-    for (int ibin = 0; ibin < this->params.num_rbin - 1; ibin++) {
+    double drbin[this->params.num_bins - 1];
+    for (int ibin = 0; ibin < this->params.num_bins - 1; ibin++) {
       drbin[ibin] = rbin[ibin + 1] - rbin[ibin];
     }
 
-    for (int ibin = 0; ibin < this->params.num_rbin; ibin++) {
+    for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
       double r_lower = 0.;
       if (ibin == 0) {
         r_lower = (rbin[ibin] > drbin[ibin]/2) ?
@@ -2191,7 +2191,7 @@ class Pseudo2ptStats {
       }
 
       double r_upper = 0.;
-      if (ibin == this->params.num_rbin - 1) {
+      if (ibin == this->params.num_bins - 1) {
         r_upper = rbin[ibin] + drbin[ibin - 1]/2;
       } else {
         r_upper = rbin[ibin] + drbin[ibin]/2;
@@ -2218,7 +2218,7 @@ class Pseudo2ptStats {
     /// Apply normalisation constants.
     double vol_cell = this->params.volume / double(this->params.nmesh);
 
-    for (int ibin = 0; ibin < this->params.num_rbin; ibin++) {
+    for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
       if (this->npair[ibin] != 0) {
         this->xi[ibin] *= 1 / vol_cell
           * std::pow(-1, this->params.ell1 + this->params.ell2)
@@ -2378,7 +2378,7 @@ class Pseudo2ptStats {
   }
 
  private:
-  trv::scheme::ParameterSet params;
+  trv::ParameterSet params;
 
   /**
    * Calculate the interpolation grid corrections needed after FFT.

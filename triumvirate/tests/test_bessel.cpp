@@ -12,11 +12,12 @@ int main(int argc, char* argv[]) {
   double x = atof(argv[2]);
 
   /// Initialise the interpolated-function class.
-  trv::maths::SphericalBesselCalculator spherical_j_ell(ell);
+  trv::maths::SphericalBesselCalculator sj_ell(ell);
 
   /// Display the numerical result.
-  std::cout <<
-    "j_" << ell << "(" << x << ") = " << spherical_j_ell.eval(x)
+  std::cout
+    << "j_" << ell << "(" << x << ") = "
+    << sj_ell.eval(x)
     << std::endl;
 
   return 0;

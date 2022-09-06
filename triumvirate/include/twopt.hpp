@@ -8,11 +8,13 @@
 #define TRIUMVIRATE_INCLUDE_TWOPT_HPP_INCLUDED_
 
 #include "monitor.hpp"
+#include "harmonic.hpp"
 #include "parameters.hpp"
 #include "tools.hpp"
 #include "particles.hpp"
 #include "field.hpp"
 
+using namespace trv::maths;
 using namespace trv::obj;
 
 const double EPS_COUPLING_2PT = 1.e-10;  /**< zero-tolerance for two-point
@@ -39,7 +41,7 @@ namespace algo {
  * @overload
  */
 void print_2pt_meas_file_header(
-  std::FILE* save_fileptr, trv::scheme::ParameterSet& params,
+  std::FILE* save_fileptr, trv::ParameterSet& params,
   ParticleCatalogue& catalogue_data, ParticleCatalogue& catalogue_rand,
   float norm, float norm_alt, std::complex<double> pk_sn_particle,
   std::string space
@@ -120,9 +122,9 @@ void print_2pt_meas_file_header(
       params.ELL, params.ELL
     );
   } else {
-    throw trv::runtime::InvalidParameter(
+    throw trv::mon::InvalidParameter(
       "[%s ERRO] `space` must be either 'config' or 'fourier': %s\n",
-      trv::runtime::show_timestamp().c_str(), space.c_str()
+      trv::mon::show_timestamp().c_str(), space.c_str()
     );
   }
 }
@@ -141,7 +143,7 @@ void print_2pt_meas_file_header(
  * @param space Either 'config'(-uration) space or 'fourier' space.
  */
 void print_2pt_meas_file_header(
-  std::FILE* save_fileptr,trv::scheme::ParameterSet& params,
+  std::FILE* save_fileptr,trv::ParameterSet& params,
   ParticleCatalogue& catalogue, float norm, float norm_alt,
   std::complex<double> pk_sn_particle,
   std::string space
@@ -217,9 +219,9 @@ void print_2pt_meas_file_header(
       params.ELL, params.ELL
     );
   } else {
-    throw trv::runtime::InvalidParameter(
+    throw trv::mon::InvalidParameter(
       "[%s ERRO] `space` must be either 'config' or 'fourier': %s\n",
-      trv::runtime::show_timestamp().c_str(), space.c_str()
+      trv::mon::show_timestamp().c_str(), space.c_str()
     );
   }
 }
@@ -283,7 +285,7 @@ struct CorrfuncWindowMeasurements {
  */
 double calc_powspec_normalisation_from_mesh(
   ParticleCatalogue& catalogue,
-  trv::scheme::ParameterSet& params,
+  trv::ParameterSet& params,
   double alpha=1.
 ) {
   PseudoDensityField<ParticleCatalogue> catalogue_mesh(params);
@@ -337,18 +339,18 @@ double calc_powspec_normalisation_from_particles(
 PowspecMeasurements compute_powspec(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
-  trv::scheme::ParameterSet& params,
-  double* kbin,
+  trv::ParameterSet& params,
+  std::vector<double> kbin,
   double alpha,
   double norm,
   double norm_alt=0.,
   bool save=false
 ) {
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Measurement: power spectrum from "
       "data and random catalogues.\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
@@ -358,11 +360,11 @@ PowspecMeasurements compute_powspec(
   int ell1 = params.ELL;
 
   /// Set up output.
-  int* nmode_save = new int[params.num_kbin];
-  double* k_save = new double[params.num_kbin];
-  std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
-  std::complex<double>* sn_save = new std::complex<double>[params.num_kbin];
-  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+  int* nmode_save = new int[params.num_bins];
+  double* k_save = new double[params.num_bins];
+  std::complex<double>* pk_save = new std::complex<double>[params.num_bins];
+  std::complex<double>* sn_save = new std::complex<double>[params.num_bins];
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     nmode_save[ibin] = 0;
     k_save[ibin] = 0.;
     pk_save[ibin] = 0.;
@@ -394,8 +396,8 @@ PowspecMeasurements compute_powspec(
     /// being summed over m_1, agrees with Hand et al. (2017) [1704.02357].
     for (int m1 = - ell1; m1 <= ell1; m1++) {
       double coupling = (2*params.ELL + 1) * (2*ell1 + 1)
-        * trv::maths::wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
-        * trv::maths::wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
+        * wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
+        * wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
 
       if (std::fabs(coupling) < EPS_COUPLING_2PT) {continue;}
 
@@ -403,23 +405,23 @@ PowspecMeasurements compute_powspec(
         dn_LM, dn_00, sn_amp, kbin, ell1, m1
       );
 
-      for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+      for (int ibin = 0; ibin < params.num_bins; ibin++) {
         pk_save[ibin] += coupling * stats2pt.pk[ibin];
         sn_save[ibin] += coupling * stats2pt.sn[ibin];
       }
 
       if (M_ == 0 && m1 == 0) {
-        for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+        for (int ibin = 0; ibin < params.num_bins; ibin++) {
           nmode_save[ibin] = stats2pt.nmode[ibin];
           k_save[ibin] = stats2pt.k[ibin];
         }
       }
     }
 
-    if (trv::runtime::currTask == 0) {
+    if (trv::mon::currTask == 0) {
       std::printf(
         "[%s STAT] Power spectrum term at order M = %d computed.\n",
-        trv::runtime::show_timestamp().c_str(),
+        trv::mon::show_timestamp().c_str(),
         M_
       );
     }
@@ -434,7 +436,7 @@ PowspecMeasurements compute_powspec(
 
   /// Fill in output struct.
   PowspecMeasurements powspec_out;
-  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     powspec_out.kbin.push_back(kbin[ibin]);
     powspec_out.keff.push_back(k_save[ibin]);
     powspec_out.nmode.push_back(nmode_save[ibin]);
@@ -463,7 +465,7 @@ PowspecMeasurements compute_powspec(
       norm, norm_alt, norm * sn_particle,
       "fourier"
     );
-    for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    for (int ibin = 0; ibin < params.num_bins; ibin++) {
       std::fprintf(
         save_fileptr,
         "%.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
@@ -475,10 +477,10 @@ PowspecMeasurements compute_powspec(
     }
     std::fclose(save_fileptr);
 
-    if (trv::runtime::currTask == 0) {
+    if (trv::mon::currTask == 0) {
       std::printf(
         "[%s STAT] Measurements saved to %s.\n",
-        trv::runtime::show_timestamp().c_str(),
+        trv::mon::show_timestamp().c_str(),
         save_filepath
       );
     }
@@ -512,18 +514,18 @@ PowspecMeasurements compute_powspec(
 CorrfuncMeasurements compute_corrfunc(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
-  trv::scheme::ParameterSet& params,
-  double* rbin,
+  trv::ParameterSet& params,
+  std::vector<double> rbin,
   double alpha,
   double norm,
   double norm_alt=0.,
   bool save=false
 ) {
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Measurement: two-point correlation function "
       "from data and random catalogues.\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
@@ -533,10 +535,10 @@ CorrfuncMeasurements compute_corrfunc(
   int ell1 = params.ELL;
 
   /// Set up output.
-  int* npair_save = new int[params.num_rbin];
-  double* r_save = new double[params.num_rbin];
-  std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
-  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+  int* npair_save = new int[params.num_bins];
+  double* r_save = new double[params.num_bins];
+  std::complex<double>* xi_save = new std::complex<double>[params.num_bins];
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     npair_save[ibin] = 0;
     r_save[ibin] = 0.;
     xi_save[ibin] = 0.;
@@ -567,8 +569,8 @@ CorrfuncMeasurements compute_corrfunc(
     /// being summed over m_1, agrees with Hand et al. (2017) [1704.02357].
     for (int m1 = - ell1; m1 <= ell1; m1++) {
       double coupling = (2*params.ELL + 1) * (2*ell1 + 1)
-        * trv::maths::wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
-        * trv::maths::wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
+        * wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
+        * wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
 
       if (std::fabs(coupling) < EPS_COUPLING_2PT) {continue;}
 
@@ -576,23 +578,23 @@ CorrfuncMeasurements compute_corrfunc(
         dn_LM, dn_00, sn_amp, rbin, ell1, m1
       );
 
-      for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+      for (int ibin = 0; ibin < params.num_bins; ibin++) {
         xi_save[ibin] += coupling * stats2pt.xi[ibin];
       }
 
       if (M_ == 0 && m1 == 0) {
-        for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+        for (int ibin = 0; ibin < params.num_bins; ibin++) {
           npair_save[ibin] = stats2pt.npair[ibin];
           r_save[ibin] = stats2pt.r[ibin];
         }
       }
     }
 
-    if (trv::runtime::currTask == 0) {
+    if (trv::mon::currTask == 0) {
       std::printf(
         "[%s STAT] Two-point correlation function term at "
         "order M = %d computed.\n",
-        trv::runtime::show_timestamp().c_str(),
+        trv::mon::show_timestamp().c_str(),
         M_
       );
     }
@@ -602,7 +604,7 @@ CorrfuncMeasurements compute_corrfunc(
 
   /// Fill in output struct.
   CorrfuncMeasurements corrfunc_out;
-  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     corrfunc_out.rbin.push_back(rbin[ibin]);
     corrfunc_out.reff.push_back(r_save[ibin]);
     corrfunc_out.npair.push_back(npair_save[ibin]);
@@ -625,7 +627,7 @@ CorrfuncMeasurements compute_corrfunc(
       norm, norm_alt, 0.,
       "config"
     );
-    for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+    for (int ibin = 0; ibin < params.num_bins; ibin++) {
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
         corrfunc_out.rbin[ibin], corrfunc_out.reff[ibin],
@@ -635,10 +637,10 @@ CorrfuncMeasurements compute_corrfunc(
     }
     std::fclose(save_fileptr);
 
-    if (trv::runtime::currTask == 0) {
+    if (trv::mon::currTask == 0) {
       std::printf(
         "[%s STAT] Measurements saved to %s.\n",
-        trv::runtime::show_timestamp().c_str(),
+        trv::mon::show_timestamp().c_str(),
         save_filepath
       );
     }
@@ -666,26 +668,26 @@ CorrfuncMeasurements compute_corrfunc(
  */
 PowspecMeasurements compute_powspec_in_box(
   ParticleCatalogue& particles_data,
-  trv::scheme::ParameterSet& params,
-  double* kbin,
+  trv::ParameterSet& params,
+  std::vector<double> kbin,
   double norm,
   double norm_alt=0.,
   bool save=false
 ) {
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Measurement: power spectrum in a periodic box.\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
   /* * Set-up ************************************************************** */
 
-  int* nmode_save = new int[params.num_kbin];
-  double* k_save = new double[params.num_kbin];
-  std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
-  std::complex<double>* sn_save = new std::complex<double>[params.num_kbin];
-  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+  int* nmode_save = new int[params.num_bins];
+  double* k_save = new double[params.num_bins];
+  std::complex<double>* pk_save = new std::complex<double>[params.num_bins];
+  std::complex<double>* sn_save = new std::complex<double>[params.num_bins];
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     nmode_save[ibin] = 0;
     k_save[ibin] = 0.;
     pk_save[ibin] = 0.;
@@ -706,17 +708,17 @@ PowspecMeasurements compute_powspec_in_box(
     dn, dn, sn_amp, kbin, params.ELL, 0
   );
 
-  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     nmode_save[ibin] = stats2pt.nmode[ibin];
     k_save[ibin] = stats2pt.k[ibin];
     pk_save[ibin] += double(2*params.ELL + 1) * stats2pt.pk[ibin];
     sn_save[ibin] += double(2*params.ELL + 1) * stats2pt.sn[ibin];
   }
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Power spectrum terms computed.\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
@@ -731,7 +733,7 @@ PowspecMeasurements compute_powspec_in_box(
 
   /// Fill in output struct.
   PowspecMeasurements powspec_out;
-  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     powspec_out.kbin.push_back(kbin[ibin]);
     powspec_out.keff.push_back(k_save[ibin]);
     powspec_out.nmode.push_back(nmode_save[ibin]);
@@ -760,7 +762,7 @@ PowspecMeasurements compute_powspec_in_box(
       norm, norm_alt, norm * sn_particle,
       "fourier"
     );
-    for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    for (int ibin = 0; ibin < params.num_bins; ibin++) {
       std::fprintf(
         save_fileptr,
         "%.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
@@ -772,10 +774,10 @@ PowspecMeasurements compute_powspec_in_box(
     }
     std::fclose(save_fileptr);
 
-    if (trv::runtime::currTask == 0) {
+    if (trv::mon::currTask == 0) {
       std::printf(
         "[%s STAT] Measurements saved to %s.\n",
-        trv::runtime::show_timestamp().c_str(),
+        trv::mon::show_timestamp().c_str(),
         save_filepath
       );
     }
@@ -804,26 +806,26 @@ PowspecMeasurements compute_powspec_in_box(
  */
 CorrfuncMeasurements compute_corrfunc_in_box(
   ParticleCatalogue& particles_data,
-  trv::scheme::ParameterSet& params,
-  double* rbin,
+  trv::ParameterSet& params,
+  std::vector<double> rbin,
   double norm,
   double norm_alt=0.,
   bool save=false
 ) {
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Measurement: two-point correlation function "
       "in a periodic box.\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
   /* * Set-up ************************************************************** */
 
-  int* npair_save = new int[params.num_rbin];
-  double* r_save = new double[params.num_kbin];
-  std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
-  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+  int* npair_save = new int[params.num_bins];
+  double* r_save = new double[params.num_bins];
+  std::complex<double>* xi_save = new std::complex<double>[params.num_bins];
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     npair_save[ibin] = 0;
     r_save[ibin] = 0.;
     xi_save[ibin] = 0.;
@@ -843,16 +845,16 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     dn, dn, sn_amp, rbin, params.ELL, 0
   );
 
-  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     npair_save[ibin] = stats2pt.npair[ibin];
     r_save[ibin] = stats2pt.r[ibin];
     xi_save[ibin] += double(2*params.ELL + 1) * stats2pt.xi[ibin];
   }
 
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Two-point correlation function terms computed.\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
@@ -864,7 +866,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
 
   /// Fill in output struct.
   CorrfuncMeasurements corrfunc_out;
-  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     corrfunc_out.rbin.push_back(rbin[ibin]);
     corrfunc_out.reff.push_back(r_save[ibin]);
     corrfunc_out.npair.push_back(npair_save[ibin]);
@@ -885,7 +887,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     print_2pt_meas_file_header(
       save_fileptr, params, particles_data, norm, norm_alt, 0., "config"
     );
-    for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+    for (int ibin = 0; ibin < params.num_bins; ibin++) {
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
         corrfunc_out.rbin[ibin], corrfunc_out.reff[ibin],
@@ -895,10 +897,10 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     }
     std::fclose(save_fileptr);
 
-    if (trv::runtime::currTask == 0) {
+    if (trv::mon::currTask == 0) {
       std::printf(
         "[%s STAT] Measurements saved to %s.\n",
-        trv::runtime::show_timestamp().c_str(),
+        trv::mon::show_timestamp().c_str(),
         save_filepath
       );
     }
@@ -930,28 +932,28 @@ CorrfuncMeasurements compute_corrfunc_in_box(
 PowspecWindowMeasurements compute_powspec_window(
   ParticleCatalogue& particles_rand,
   LineOfSight* los_rand,
-  trv::scheme::ParameterSet& params,
-  double* kbin,
+  trv::ParameterSet& params,
+  std::vector<double> kbin,
   double alpha,
   double norm,
   double norm_alt=0.,
   bool save=false
 ) {
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Measurement: power spectrum window "
       "from random catalogue.\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
   /* * Set-up ************************************************************** */
 
   /// Set up output.
-  int* nmode_save = new int[params.num_kbin];
-  double* k_save = new double[params.num_kbin];
-  std::complex<double>* pk_save = new std::complex<double>[params.num_kbin];
-  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+  int* nmode_save = new int[params.num_bins];
+  double* k_save = new double[params.num_bins];
+  std::complex<double>* pk_save = new std::complex<double>[params.num_bins];
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     nmode_save[ibin] = 0;
     k_save[ibin] = 0.;
     pk_save[ibin] = 0.;
@@ -973,7 +975,7 @@ PowspecWindowMeasurements compute_powspec_window(
     dn_00, dn_00, sn_amp, kbin, params.ELL, 0
   );
 
-  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     nmode_save[ibin] = stats2pt.nmode[ibin];
     k_save[ibin] = stats2pt.k[ibin];
     pk_save[ibin] += stats2pt.pk[ibin];
@@ -988,7 +990,7 @@ PowspecWindowMeasurements compute_powspec_window(
 
   /// Fill in output struct.
   PowspecWindowMeasurements powwin_out;
-  for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     powwin_out.kbin.push_back(kbin[ibin]);
     powwin_out.keff.push_back(k_save[ibin]);
     powwin_out.nmode.push_back(nmode_save[ibin]);
@@ -1009,7 +1011,7 @@ PowspecWindowMeasurements compute_powspec_window(
     print_2pt_meas_file_header(
       save_fileptr, params, particles_rand, norm, norm_alt, "fourier"
     );
-    for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+    for (int ibin = 0; ibin < params.num_bins; ibin++) {
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
         powwin_out.kbin[ibin], powwin_out.keff[ibin],
@@ -1019,10 +1021,10 @@ PowspecWindowMeasurements compute_powspec_window(
     }
     std::fclose(save_fileptr);
 
-    if (trv::runtime::currTask == 0) {
+    if (trv::mon::currTask == 0) {
       std::printf(
         "[%s STAT] Measurements saved to %s.\n",
-        trv::runtime::show_timestamp().c_str(),
+        trv::mon::show_timestamp().c_str(),
         save_filepath
       );
     }
@@ -1055,18 +1057,18 @@ PowspecWindowMeasurements compute_powspec_window(
 CorrfuncWindowMeasurements compute_corrfunc_window(
   ParticleCatalogue& particles_rand,
   LineOfSight* los_rand,
-  trv::scheme::ParameterSet& params,
-  double* rbin,
+  trv::ParameterSet& params,
+  std::vector<double> rbin,
   double alpha,
   double norm,
   double norm_alt=0.,
   bool save=false
 ) {
-  if (trv::runtime::currTask == 0) {
+  if (trv::mon::currTask == 0) {
     std::printf(
       "[%s STAT] Measurement: two-point correlation function window "
       "from random catalogue.\n",
-      trv::runtime::show_timestamp().c_str()
+      trv::mon::show_timestamp().c_str()
     );
   }
 
@@ -1076,10 +1078,10 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
   int ell1 = params.ELL;
 
   /// Set up output.
-  int* npair_save = new int[params.num_rbin];
-  double* r_save = new double[params.num_rbin];
-  std::complex<double>* xi_save = new std::complex<double>[params.num_rbin];
-  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+  int* npair_save = new int[params.num_bins];
+  double* r_save = new double[params.num_bins];
+  std::complex<double>* xi_save = new std::complex<double>[params.num_bins];
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     npair_save[ibin] = 0;
     r_save[ibin] = 0.;
     xi_save[ibin] = 0.;
@@ -1108,8 +1110,8 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     /// summed over m_1, agrees with Hand et al. (2017) [1704.02357].
     for (int m1 = - ell1; m1 <= ell1; m1++) {
       double coupling = (2*params.ELL + 1) * (2*ell1 + 1)
-          * trv::maths::wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
-          * trv::maths::wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
+          * wigner_3j(ell1, 0, params.ELL, 0, 0, 0)
+          * wigner_3j(ell1, 0, params.ELL, m1, 0, M_);
 
       if (std::fabs(coupling) < EPS_COUPLING_2PT) {continue;}
 
@@ -1117,23 +1119,23 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
         dn_LM, dn_00, sn_amp, rbin, ell1, m1
       );
 
-      for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+      for (int ibin = 0; ibin < params.num_bins; ibin++) {
         xi_save[ibin] += coupling * stats2pt.xi[ibin];
       }
 
       if (M_ == 0 && m1 == 0) {
-        for (int ibin = 0; ibin < params.num_kbin; ibin++) {
+        for (int ibin = 0; ibin < params.num_bins; ibin++) {
           npair_save[ibin] = stats2pt.npair[ibin];
           r_save[ibin] = stats2pt.r[ibin];
         }
       }
     }
 
-    if (trv::runtime::currTask == 0) {
+    if (trv::mon::currTask == 0) {
       std::printf(
         "[%s STAT] Two-point correlation function window term "
         "at order M = %d computed.\n",
-        trv::runtime::show_timestamp().c_str(),
+        trv::mon::show_timestamp().c_str(),
         M_
       );
     }
@@ -1143,7 +1145,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
 
   /// Fill in output struct.
   CorrfuncWindowMeasurements corrfwin_out;
-  for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+  for (int ibin = 0; ibin < params.num_bins; ibin++) {
     corrfwin_out.rbin.push_back(rbin[ibin]);
     corrfwin_out.reff.push_back(r_save[ibin]);
     corrfwin_out.npair.push_back(npair_save[ibin]);
@@ -1164,7 +1166,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     print_2pt_meas_file_header(
       save_fileptr, params, particles_rand, norm, norm_alt, 0., "config"
     );
-    for (int ibin = 0; ibin < params.num_rbin; ibin++) {
+    for (int ibin = 0; ibin < params.num_bins; ibin++) {
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
         corrfwin_out.rbin[ibin], corrfwin_out.reff[ibin],
@@ -1174,10 +1176,10 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     }
     std::fclose(save_fileptr);
 
-    if (trv::runtime::currTask == 0) {
+    if (trv::mon::currTask == 0) {
       std::printf(
         "[%s STAT] Measurements saved to %s.\n",
-        trv::runtime::show_timestamp().c_str(),
+        trv::mon::show_timestamp().c_str(),
         save_filepath
       );
     }
