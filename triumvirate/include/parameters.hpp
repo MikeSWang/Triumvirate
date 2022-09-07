@@ -35,6 +35,7 @@
 #include <string>
 
 #include "monitor.hpp"
+#include "io.hpp"
 
 namespace trv {
 
@@ -146,10 +147,10 @@ class ParameterSet {
   /**
    * @brief Read parameters from a file.
    *
-   * @param parameter_file Command-line argument list.
+   * @param parameter_filepath Parameter file path.
    * @returns Validation exit status.
    */
-  int read_from_file(char* parameter_file);
+  int read_from_file(char* parameter_filepath);
 
   /**
    * @brief Validate parameters.
@@ -164,7 +165,18 @@ class ParameterSet {
    * @brief Print out extracted parameters to a file in the
    *        output measurement directory.
    *
+   * @param out_parameter_filepath Printout parameter file path.
    * @returns Exit status.
+   */
+  int printout(char* out_parameter_filepath);
+
+  /**
+   * @brief Print out extracted parameters to the default file path in the
+   *        output measurement directory.
+   *
+   * @returns Exit status.
+   *
+   * @overload
    */
   int printout();
 };

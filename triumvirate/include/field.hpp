@@ -52,7 +52,7 @@ class PseudoDensityField {
       this->field[gid][1] = 0.;
     }
 
-    trv::mon::gbytesMem += double(this->params.nmesh)
+    trv::sys::gbytesMem += double(this->params.nmesh)
       * sizeof(fftw_complex) / BYTES_PER_GBYTES;
 
     /// Initialise complex field for interlacing and increase
@@ -64,7 +64,7 @@ class PseudoDensityField {
         this->field_s[gid][1] = 0.;
       }
 
-      trv::mon::gbytesMem += double(this->params.nmesh)
+      trv::sys::gbytesMem += double(this->params.nmesh)
         * sizeof(fftw_complex) / BYTES_PER_GBYTES;
     }
   }
@@ -93,12 +93,12 @@ class PseudoDensityField {
     /// Free memory usage.
     if (this->field != NULL) {
       fftw_free(this->field); this->field = NULL;
-      trv::mon::gbytesMem -= double(this->params.nmesh)
+      trv::sys::gbytesMem -= double(this->params.nmesh)
         * sizeof(fftw_complex) / BYTES_PER_GBYTES;
     }
     if (this->params.interlace == "true" && this->field_s != NULL) {
       fftw_free(this->field_s); this->field_s = NULL;
-      trv::mon::gbytesMem -= double(this->params.nmesh)
+      trv::sys::gbytesMem -= double(this->params.nmesh)
         * sizeof(fftw_complex) / BYTES_PER_GBYTES;
     }
   }
@@ -127,10 +127,10 @@ class PseudoDensityField {
     if (this->params.assignment == "pcs") {
       this->assign_weighted_field_to_mesh_pcs(particles, weights);
     } else {
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::InvalidParameter(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::InvalidParameter(
           "[%s ERRO] Unsupported mesh assignment scheme: '%s'.\n",
-          trv::mon::show_timestamp().c_str(),
+          trv::sys::show_timestamp().c_str(),
           this->params.assignment.c_str()
         );
       };

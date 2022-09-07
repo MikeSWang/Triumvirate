@@ -121,9 +121,9 @@ void print_2pt_meas_file_header(
       params.ELL, params.ELL
     );
   } else {
-    throw trv::mon::InvalidParameter(
+    throw trv::sys::InvalidParameter(
       "[%s ERRO] `space` must be either 'config' or 'fourier': %s\n",
-      trv::mon::show_timestamp().c_str(), space.c_str()
+      trv::sys::show_timestamp().c_str(), space.c_str()
     );
   }
 }
@@ -218,9 +218,9 @@ void print_2pt_meas_file_header(
       params.ELL, params.ELL
     );
   } else {
-    throw trv::mon::InvalidParameter(
+    throw trv::sys::InvalidParameter(
       "[%s ERRO] `space` must be either 'config' or 'fourier': %s\n",
-      trv::mon::show_timestamp().c_str(), space.c_str()
+      trv::sys::show_timestamp().c_str(), space.c_str()
     );
   }
 }
@@ -345,11 +345,11 @@ PowspecMeasurements compute_powspec(
   double norm_alt=0.,
   bool save=false
 ) {
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Measurement: power spectrum from "
       "data and random catalogues.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
@@ -417,10 +417,10 @@ PowspecMeasurements compute_powspec(
       }
     }
 
-    if (trv::mon::currTask == 0) {
+    if (trv::sys::currTask == 0) {
       std::printf(
         "[%s STAT] Power spectrum term at order M = %d computed.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         M_
       );
     }
@@ -476,10 +476,10 @@ PowspecMeasurements compute_powspec(
     }
     std::fclose(save_fileptr);
 
-    if (trv::mon::currTask == 0) {
+    if (trv::sys::currTask == 0) {
       std::printf(
         "[%s STAT] Measurements saved to %s.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         save_filepath
       );
     }
@@ -520,11 +520,11 @@ CorrfuncMeasurements compute_corrfunc(
   double norm_alt=0.,
   bool save=false
 ) {
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Measurement: two-point correlation function "
       "from data and random catalogues.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
@@ -589,11 +589,11 @@ CorrfuncMeasurements compute_corrfunc(
       }
     }
 
-    if (trv::mon::currTask == 0) {
+    if (trv::sys::currTask == 0) {
       std::printf(
         "[%s STAT] Two-point correlation function term at "
         "order M = %d computed.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         M_
       );
     }
@@ -636,10 +636,10 @@ CorrfuncMeasurements compute_corrfunc(
     }
     std::fclose(save_fileptr);
 
-    if (trv::mon::currTask == 0) {
+    if (trv::sys::currTask == 0) {
       std::printf(
         "[%s STAT] Measurements saved to %s.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         save_filepath
       );
     }
@@ -673,10 +673,10 @@ PowspecMeasurements compute_powspec_in_box(
   double norm_alt=0.,
   bool save=false
 ) {
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Measurement: power spectrum in a periodic box.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
@@ -714,10 +714,10 @@ PowspecMeasurements compute_powspec_in_box(
     sn_save[ibin] += double(2*params.ELL + 1) * stats2pt.sn[ibin];
   }
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Power spectrum terms computed.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
@@ -773,10 +773,10 @@ PowspecMeasurements compute_powspec_in_box(
     }
     std::fclose(save_fileptr);
 
-    if (trv::mon::currTask == 0) {
+    if (trv::sys::currTask == 0) {
       std::printf(
         "[%s STAT] Measurements saved to %s.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         save_filepath
       );
     }
@@ -811,11 +811,11 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   double norm_alt=0.,
   bool save=false
 ) {
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Measurement: two-point correlation function "
       "in a periodic box.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
@@ -850,10 +850,10 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     xi_save[ibin] += double(2*params.ELL + 1) * stats2pt.xi[ibin];
   }
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Two-point correlation function terms computed.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
@@ -896,10 +896,10 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     }
     std::fclose(save_fileptr);
 
-    if (trv::mon::currTask == 0) {
+    if (trv::sys::currTask == 0) {
       std::printf(
         "[%s STAT] Measurements saved to %s.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         save_filepath
       );
     }
@@ -938,11 +938,11 @@ PowspecWindowMeasurements compute_powspec_window(
   double norm_alt=0.,
   bool save=false
 ) {
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Measurement: power spectrum window "
       "from random catalogue.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
@@ -1020,10 +1020,10 @@ PowspecWindowMeasurements compute_powspec_window(
     }
     std::fclose(save_fileptr);
 
-    if (trv::mon::currTask == 0) {
+    if (trv::sys::currTask == 0) {
       std::printf(
         "[%s STAT] Measurements saved to %s.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         save_filepath
       );
     }
@@ -1063,11 +1063,11 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
   double norm_alt=0.,
   bool save=false
 ) {
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Measurement: two-point correlation function window "
       "from random catalogue.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
@@ -1130,11 +1130,11 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
       }
     }
 
-    if (trv::mon::currTask == 0) {
+    if (trv::sys::currTask == 0) {
       std::printf(
         "[%s STAT] Two-point correlation function window term "
         "at order M = %d computed.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         M_
       );
     }
@@ -1175,10 +1175,10 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     }
     std::fclose(save_fileptr);
 
-    if (trv::mon::currTask == 0) {
+    if (trv::sys::currTask == 0) {
       std::printf(
         "[%s STAT] Measurements saved to %s.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         save_filepath
       );
     }

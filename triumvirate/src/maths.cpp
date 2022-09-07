@@ -197,11 +197,11 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_sp
 ) {
   /// Throw an exception when the output variable is provided.
   if (ylm_out == nullptr) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidData(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidData(
         "[%s ERRO] Cannot store computed spherical harmonics. "
         "Output array is not provided.\n",
-        trv::mon::show_timestamp().c_str()
+        trv::sys::show_timestamp().c_str()
       );
     }
   }
@@ -243,11 +243,11 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_spa
 ) {
   /// Throw an exception when the output variable is provided.
   if (ylm_out == nullptr) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidData(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidData(
         "[%s ERRO] Cannot store computed spherical harmonics. "
         "Output array is not provided.\n",
-        trv::mon::show_timestamp().c_str()
+        trv::sys::show_timestamp().c_str()
       );
     }
   }

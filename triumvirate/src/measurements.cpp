@@ -5,6 +5,7 @@
  */
 
 #include "monitor.hpp"
+#include "io.hpp"
 #include "parameters.hpp"
 #include "tools.hpp"
 #include "particles.hpp"
@@ -15,28 +16,28 @@
  * Main program performing measurements.
  */
 int main(int argc, char* argv[]) {
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "%s\n[%s STAT] Program started.\n",
-      std::string(80, '>').c_str(), trv::mon::show_timestamp().c_str()
+      std::string(80, '>').c_str(), trv::sys::show_timestamp().c_str()
     );
   }
 
   /* * Initialisation ****************************************************** */
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Initialising program...\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
   /// Configure parameters.
   if (argc != 2) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::IOError(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::IOError(
         "[%s ERRO] Missing parameter file in call.\n",
-        trv::mon::show_timestamp().c_str()
+        trv::sys::show_timestamp().c_str()
       );
     }
 
@@ -44,37 +45,37 @@ int main(int argc, char* argv[]) {
 
   trv::ParameterSet params;  // program parameters
   if (params.read_from_file(argv[1])) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::IOError(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::IOError(
         "[%s ERRO] Failed to initialise parameters.\n",
-        trv::mon::show_timestamp().c_str()
+        trv::sys::show_timestamp().c_str()
       );
     }
   }
 
   if (!(params.printout())) {
-    if (trv::mon::currTask == 0) {
+    if (trv::sys::currTask == 0) {
       std::printf(
         "[%s INFO] Check 'parameters_used*' file in your "
         "measurement output directory for reference.\n",
-        trv::mon::show_timestamp().c_str()
+        trv::sys::show_timestamp().c_str()
       );
     }
   }
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] ... initialised program.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
   /** Data processing ****************************************************** */
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Reading catalogues...\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
@@ -82,14 +83,14 @@ int main(int argc, char* argv[]) {
   trv::obj::ParticleCatalogue particles_data, particles_rand;  // catalogues
 
   std::string flag_data = "false";  // data catalogue status
-  if (trv::mon::if_filepath_is_set(params.data_catalogue_file)) {
+  if (trv::sys::if_filepath_is_set(params.data_catalogue_file)) {
     if (particles_data.read_particle_data_from_file(
       params.data_catalogue_file, params.catalogue_columns, params.volume
     )) {
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::IOError(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::IOError(
           "[%s ERRO] Failed to load data-source catalogue file.\n",
-          trv::mon::show_timestamp().c_str()
+          trv::sys::show_timestamp().c_str()
         );
       }
     }
@@ -99,14 +100,14 @@ int main(int argc, char* argv[]) {
   }
 
   std::string flag_rand = "false";  // random catalogue status
-  if (trv::mon::if_filepath_is_set(params.rand_catalogue_file)) {
+  if (trv::sys::if_filepath_is_set(params.rand_catalogue_file)) {
     if (particles_rand.read_particle_data_from_file(
       params.rand_catalogue_file, params.catalogue_columns, params.volume
     )) {
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::IOError(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::IOError(
           "[%s ERRO] Failed to load random-source catalogue file.\n",
-          trv::mon::show_timestamp().c_str()
+          trv::sys::show_timestamp().c_str()
         );
       }
     }
@@ -115,19 +116,19 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] ... read catalogues.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
   /* * Measurements ******************************************************** */
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Making measurements...\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
@@ -155,10 +156,10 @@ int main(int argc, char* argv[]) {
   bool save = true;  // whether to save the results or not
 
   /// Compute line of sight.
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Computing lines of sight...\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
@@ -190,18 +191,18 @@ int main(int argc, char* argv[]) {
     los_rand[pid].pos[2] = particles_rand[pid].pos[2] / los_mag;
   }
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] ... computed lines of sight.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
   /// Offset particle positions for measurements.
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Offset particle coordinates for box alignment.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
   if (params.catalogue_type == "survey" || params.catalogue_type == "mock") {
@@ -262,10 +263,10 @@ int main(int argc, char* argv[]) {
     alpha = 1.;
   }
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s INFO] Alpha contrast: %.6e.\n",
-      trv::mon::show_timestamp().c_str(), alpha
+      trv::sys::show_timestamp().c_str(), alpha
     );
   }
 
@@ -318,10 +319,10 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s INFO] Normalisation constant: %.6e.\n",
-      trv::mon::show_timestamp().c_str(),
+      trv::sys::show_timestamp().c_str(),
       norm
     );
   }
@@ -377,10 +378,10 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s INFO] Alternative normalisation constant: %.6e.\n",
-      trv::mon::show_timestamp().c_str(),
+      trv::sys::show_timestamp().c_str(),
       norm_alt
     );
   }
@@ -458,10 +459,10 @@ int main(int argc, char* argv[]) {
     );
   }
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] ... made measurements.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
@@ -473,17 +474,17 @@ int main(int argc, char* argv[]) {
   delete[] los_data; los_data = NULL;
   delete[] los_rand; los_rand = NULL;
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Persistent memory usage: %.0f gigabytes.\n",
-      trv::mon::show_timestamp().c_str(), trv::mon::gbytesMem
+      trv::sys::show_timestamp().c_str(), trv::sys::gbytesMem
     );
   }
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Program has completed.\n%s\n",
-      trv::mon::show_timestamp().c_str(), std::string(80, '<').c_str()
+      trv::sys::show_timestamp().c_str(), std::string(80, '<').c_str()
     );
   }
 

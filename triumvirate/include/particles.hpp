@@ -91,7 +91,7 @@ class ParticleCatalogue {
     if (num <= 0) {
       std::printf(
         "[%s WARN] Number of particles is negative.\n",
-        trv::mon::show_timestamp().c_str()
+        trv::sys::show_timestamp().c_str()
       );
       return;
     }
@@ -102,7 +102,7 @@ class ParticleCatalogue {
     this->pdata = new ParticleData[this->ntotal];
 
     /// Determine memory usage.
-    trv::mon::gbytesMem += double(this->ntotal)
+    trv::sys::gbytesMem += double(this->ntotal)
       * sizeof(struct ParticleData) / BYTES_PER_GBYTES;
   }
 
@@ -113,7 +113,7 @@ class ParticleCatalogue {
     /// Free particle usage.
     if (this->pdata != NULL) {
       delete[] this->pdata; this->pdata = NULL;
-      trv::mon::gbytesMem -= double(this->ntotal)
+      trv::sys::gbytesMem -= double(this->ntotal)
         * sizeof(struct ParticleData) / BYTES_PER_GBYTES;
     }
   }
@@ -159,11 +159,11 @@ class ParticleCatalogue {
     }
 
     if (name_indices[3] == -1) {
-      if (trv::mon::currTask == 0) {
+      if (trv::sys::currTask == 0) {
         std::printf(
           "[%s WARN] Catalogue 'nz' field is unavailable, "
           "which may raise errors in some computations (source=%s).\n",
-          trv::mon::show_timestamp().c_str(),
+          trv::sys::show_timestamp().c_str(),
           this->source.c_str()
         );
       }
@@ -176,10 +176,10 @@ class ParticleCatalogue {
 
     if (fin.fail()) {
       fin.close();
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::IOError(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::IOError(
           "[%s ERRO] Failed to open file '%s'.\n",
-          trv::mon::show_timestamp().c_str(),
+          trv::sys::show_timestamp().c_str(),
           this->source.c_str()
         );
       }
@@ -269,11 +269,11 @@ class ParticleCatalogue {
     /// Calculate extreme particle positions.
     this->_calc_pos_min_and_max(true);
 
-    if (trv::mon::currTask == 0) {
+    if (trv::sys::currTask == 0) {
       std::printf(
         "[%s INFO] Catalogue loaded: %d particles with "
         "total systematic weights %.3f (source=%s).\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->ntotal, this->wtotal, this->source.c_str()
       );
     }
@@ -327,11 +327,11 @@ class ParticleCatalogue {
     /// Calculate extreme particle positions.
     this->_calc_pos_min_and_max(true);
 
-    if (trv::mon::currTask == 0) {
+    if (trv::sys::currTask == 0) {
       std::printf(
         "[%s INFO] Catalogue constructed: %d particles with "
         "total systematic weights %.3f (source=%s).\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->ntotal, this->wtotal, this->source.c_str()
       );
     }
@@ -344,10 +344,10 @@ class ParticleCatalogue {
    */
   void _calc_weighted_total() {
     if (this->pdata == NULL) {
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::InvalidData(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          trv::mon::show_timestamp().c_str()
+          trv::sys::show_timestamp().c_str()
         );
       }
     }
@@ -367,10 +367,10 @@ class ParticleCatalogue {
    */
   void _calc_pos_min_and_max(bool verbose=false) {
     if (this->pdata == NULL) {
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::InvalidData(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          trv::mon::show_timestamp().c_str()
+          trv::sys::show_timestamp().c_str()
         );
       }
     }
@@ -400,12 +400,12 @@ class ParticleCatalogue {
       this->pos_max[iaxis] = max[iaxis];
     }
 
-    if (trv::mon::currTask == 0 && verbose) {
+    if (trv::sys::currTask == 0 && verbose) {
       std::printf(
         "[%s INFO] Extents of particle coordinates: "
         "{'x': (%.3f, %.3f), 'y': (%.3f, %.3f), 'z': (%.3f, %.3f)} "
         "(source=%s).\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->pos_min[0], this->pos_max[0],
         this->pos_min[1], this->pos_max[1],
         this->pos_min[2], this->pos_max[2],
@@ -421,10 +421,10 @@ class ParticleCatalogue {
    */
   void offset_coords(const double dpos[3]) {
     if (this->pdata == NULL) {
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::InvalidData(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          trv::mon::show_timestamp().c_str()
+          trv::sys::show_timestamp().c_str()
         );
       }
     }
@@ -448,10 +448,10 @@ class ParticleCatalogue {
    */
   void offset_coords_for_centring(const double boxsize[3]) {
     if (this->pdata == NULL) {
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::InvalidData(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          trv::mon::show_timestamp().c_str()
+          trv::sys::show_timestamp().c_str()
         );
       }
     }
@@ -697,10 +697,10 @@ class ParticleCatalogue {
    */
   double _calc_powspec_shotnoise() {
     if (this->pdata == NULL) {
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::InvalidData(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          trv::mon::show_timestamp().c_str()
+          trv::sys::show_timestamp().c_str()
         );
       }
     }
@@ -724,10 +724,10 @@ class ParticleCatalogue {
    */
   double _calc_powspec_normalisation() {
     if (this->pdata == NULL) {
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::InvalidData(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          trv::mon::show_timestamp().c_str()
+          trv::sys::show_timestamp().c_str()
         );
       }
     }
@@ -739,11 +739,11 @@ class ParticleCatalogue {
     }
 
     if (vol_eff_inv == 0.) {
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::InvalidData(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::InvalidData(
           "[%s ERRO] Particle 'nz' values appear to be all zeros. "
           "Check the input catalogue contains valid 'nz' field.\n",
-          trv::mon::show_timestamp().c_str()
+          trv::sys::show_timestamp().c_str()
         );
       }
     }
@@ -763,10 +763,10 @@ class ParticleCatalogue {
    */
   double _calc_bispec_normalisation() {
     if (this->pdata == NULL) {
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::InvalidData(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::InvalidData(
           "[%s ERRO] Particle data are uninitialised.\n",
-          trv::mon::show_timestamp().c_str()
+          trv::sys::show_timestamp().c_str()
         );
       }
     }
@@ -778,11 +778,11 @@ class ParticleCatalogue {
     }
 
     if (vol_sq_eff_inv == 0.) {
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::InvalidData(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::InvalidData(
           "[%s ERRO] Particle 'nz' values appear to be all zeros. "
           "Check the input catalogue contains valid 'nz' field.\n",
-          trv::mon::show_timestamp().c_str()
+          trv::sys::show_timestamp().c_str()
         );
       }
     }

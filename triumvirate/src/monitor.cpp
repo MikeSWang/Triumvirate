@@ -29,7 +29,7 @@
 const double BYTES_PER_GBYTES = 1073741824.;  // 1024^3 bytes per gibibyte
 
 namespace trv {
-namespace mon {
+namespace sys {
 
 /// **********************************************************************
 /// Program tracking
@@ -107,48 +107,8 @@ std::string show_timestamp() {
 
 
 /// **********************************************************************
-/// Program I/O
-/// **********************************************************************
-
-bool if_filepath_is_set(std::string pathstr) {
-  /// Check if the string is empty.
-  if (pathstr.empty()) {return false;}
-
-  /// Check if the path is a directory not file.
-  std::string endchar = "/";
-  int strcomp = pathstr.compare(
-    pathstr.length() - endchar.length(), endchar.length(), endchar
-  );
-  if (strcomp == 0) {return false;}  // `pathstr` ends in "/"
-
-  /// Check if the string contains non-whitespace characters.  If so,
-  /// the path is set, otherwise not.
-  for (int ichar = 0; ichar < pathstr.length(); ichar++){
-    if (!std::isspace(pathstr[ichar])) {return true;}
-  }
-
-  return false;
-}
-
-
-/// **********************************************************************
 /// Program exceptions
 /// **********************************************************************
-
-IOError::IOError(const char* fmt_string, ...): std::runtime_error(
-    "I/O error."  // mandatory default error message
-) {
-  std::va_list args;
-
-  char err_mesg_buf[4096];
-  va_start(args, fmt_string);
-  std::vsprintf(err_mesg_buf, fmt_string, args);
-  va_end(args);
-
-  this->err_mesg = std::string(err_mesg_buf);
-}
-
-const char* IOError::what() const noexcept {return this->err_mesg.c_str();}
 
 UnimplementedError::UnimplementedError(const char* fmt_string, ...): std::logic_error(
     "Unimplemented error."  // mandatory default error message
@@ -199,5 +159,5 @@ InvalidData::InvalidData(const char* fmt_string, ...): std::runtime_error(
 
 const char* InvalidData::what() const noexcept {return this->err_mesg.c_str();}
 
-}  // namespace trv::mon
+}  // namespace trv::sys
 }  // namespace trv

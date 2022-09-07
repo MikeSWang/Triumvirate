@@ -22,6 +22,9 @@
  * @author Mike S Wang (https://github.com/MikeSWang)
  * @brief Miscellaneous numerical tools.
  *
+ * This module provides:
+ * - linear and logarithmic extrapolation of 1-d and 2-d arrays; and
+ * - binning schemes.
  */
 
 #ifndef TRIUMVIRATE_INCLUDE_TOOLS_HPP_INCLUDED_
@@ -42,7 +45,7 @@ namespace trv {
 /// Extrapolation
 /// **********************************************************************
 
-namespace mon {
+namespace sys {
 
 /**
  * @brief Exception raised when an extrapolation error occurs.
@@ -68,7 +71,7 @@ class ExtrapError: public std::runtime_error {
   virtual const char* what() const noexcept;
 };
 
-}  // namespace trv::mon
+}  // namespace trv::sys
 
 namespace utils {
 
@@ -79,7 +82,7 @@ namespace utils {
  * @param[in] N Sample number.
  * @param[in] N_ext Extrapolation number on either end.
  * @param[out] a_ext Extrapolated sample series.
- * @throws trv::mon::ExtrapError Extrapolation error when sign change
+ * @throws trv::sys::ExtrapError Extrapolation error when sign change
  *                               or zero occurs.
  */
 void extrap_loglin(double* a, int N, int N_ext, double* a_ext);
@@ -93,7 +96,7 @@ void extrap_loglin(double* a, int N, int N_ext, double* a_ext);
  * @param[in] N_ext Extrapolation number on either end
  *                  (in both dimensions).
  * @param[out] a_ext Extrapolated sample bi-series.
- * @throws trv::mon::ExtrapError Extrapolation error when sign change
+ * @throws trv::sys::ExtrapError Extrapolation error when sign change
  *                               or zero occurs.
  */
 void extrap2d_logbilin(
@@ -182,9 +185,9 @@ class Binning {
    * @param scheme Binning scheme, one of
    *               {"lin", "log", "linpad", "logpad", "custom"}.
    * @param space Coordinate space, one of {"fourier", "config"}.
-   * @throws trv::mon::UnimplementedError When @c "custom" binning is not
+   * @throws trv::sys::UnimplementedError When @c "custom" binning is not
    *                                      implemented by the user.
-   * @throws trv::mon::InvalidParameter When @c scheme is not one of the
+   * @throws trv::sys::InvalidParameter When @c scheme is not one of the
    *                                    options above.
    */
   void set_bins(std::string scheme, std::string space);

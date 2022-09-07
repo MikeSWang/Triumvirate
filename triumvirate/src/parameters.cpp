@@ -27,15 +27,15 @@
 
 namespace trv {
 
-int ParameterSet::read_from_file(char* parameter_file) {
+int ParameterSet::read_from_file(char* parameter_filepath) {
   /// --------------------------------------------------------------------
   /// Initialisation
   /// --------------------------------------------------------------------
 
   /// Load parameter file.
-  std::string param_file = parameter_file;
+  std::string param_filepath = parameter_filepath;
 
-  std::ifstream fin(param_file.c_str());
+  std::ifstream fin(param_filepath.c_str());
 
   /// Initialise temporary variables to hold the extracted parameters.
   char catalogue_dir_[1024];
@@ -331,31 +331,31 @@ int ParameterSet::validate() {
     }
     this->rand_catalogue_file = "";
   } else {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Catalogue type must be 'survey', 'random' or 'sim': "
         "`catalogue_type` = '%s'.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->catalogue_type.c_str()
       );
     }
   }
 
   if (!(this->alignment == "centre" || this->alignment == "pad")) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Box alignment must be 'centre' or 'pad': "
         "`alignment` = '%s'.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->alignment.c_str()
       );
     }
   }
   if (!(this->padscale == "box" || this->padscale == "grid")) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Pad scale must be 'box' or 'grid': `padscale` = '%s'.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->padscale.c_str()
       );
     }
@@ -367,11 +367,11 @@ int ParameterSet::validate() {
     || this->assignment == "tsc"
     || this->assignment == "pcs"
   )) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Mesh assignment scheme must be "
         "'ngp', 'cic', 'tsc' or 'pcs': `assignment` = '%s'.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->assignment.c_str()
       );
     }
@@ -382,11 +382,11 @@ int ParameterSet::validate() {
   if (this->interlace == "false" || this->interlace == "off") {
     this->interlace = "false";
   } else {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Interlacing must be 'true'/'on' or 'false'/'off': "
         "`interlace` = '%s'.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->interlace.c_str()
       );
     }
@@ -410,11 +410,11 @@ int ParameterSet::validate() {
   ) {
     this->npoint = "3pt"; this->space = "config";
   } else {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Measurement type is not recognised: "
         "`measurement_type` = '%s'.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->measurement_type.c_str()
       );
     }
@@ -422,11 +422,11 @@ int ParameterSet::validate() {
   if (!(
     this->norm_convention == "mesh" || this->norm_convention == "particle"
   )) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Normalisation convention must be "
         "'mesh' or 'particle': `norm_convention` = '%s'.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->norm_convention.c_str()
       );
     }
@@ -435,11 +435,11 @@ int ParameterSet::validate() {
     this->shotnoise_convention == "mesh"
     || this->shotnoise_convention == "particle"
   )) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Shot noise convention convention must be "
         "'mesh' or 'particle': `shotnoise_convention` = '%s'.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->shotnoise_convention.c_str()
       );
     }
@@ -451,19 +451,19 @@ int ParameterSet::validate() {
     || this->binning == "logpad"
     || this->binning == "custom"
   )) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Binning scheme is unrecognised: `binning` = '%s'.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->binning.c_str()
       );
     }
   }
   if (!(this->form == "diag" || this->form == "full")) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] `form` must be either 'full' or 'diag': `form` = '%s'.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->form.c_str()
       );
     }
@@ -471,23 +471,23 @@ int ParameterSet::validate() {
 
   /// Validate numerical parameters.
   if (this->volume < 0.) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Derived total box volume is non-positive: "
         "`volume` = '%d'. Possible numerical overflow due to large `boxsize`, "
         "or `boxsize` is unset.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->nmesh
       );
     }
   }
   if (this->nmesh <= 0) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Derived total mesh grid number is non-positive: "
         "`nmesh` = '%d'. Possible numerical overflow due to large `ngrid`, "
         "or `ngrid` is unset.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->nmesh
       );
     }
@@ -495,18 +495,18 @@ int ParameterSet::validate() {
 
   if (this->alignment == "pad") {
     if (this->padfactor < 0.) {
-      throw trv::mon::InvalidParameter(
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Padding is enabled but the padding factor is negative: "
         "`padfactor` = '%lg'.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->padfactor
       );
     }
     if (this->padscale == "box" && this->padfactor >= 1.) {
-      throw trv::mon::InvalidParameter(
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Padding is enabled but the %s padding factor is too large "
         "for the box size: `padfactor` = '%lg'.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->padscale, this->padfactor
       );
     }
@@ -515,29 +515,29 @@ int ParameterSet::validate() {
         || this->padfactor >= this->ngrid[1]
         || this->padfactor >= this->ngrid[2]
     )) {
-      throw trv::mon::InvalidParameter(
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Padding is enabled but the %s padding factor is too large "
         "for the mesh grid numbers: `padfactor` = '%lg'.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->padscale, this->padfactor
       );
     }
   }
 
   if (this->num_bins < 2) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Number of bins `num_bins` must be >= 2.\n",
-        trv::mon::show_timestamp().c_str()
+        trv::sys::show_timestamp().c_str()
       );
     }
   }
 
   if (this->idx_bin < 0 && this->npoint == "3pt" && this->form == "full") {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Fixed bin index `idx_bin` must be >= 0.\n",
-        trv::mon::show_timestamp().c_str()
+        trv::sys::show_timestamp().c_str()
       );
     }
   }
@@ -548,10 +548,10 @@ int ParameterSet::validate() {
     int nbin_pad = 5;
 
     if (this->num_bins < nbin_pad + 2) {
-      if (trv::mon::currTask == 0) {
-        throw trv::mon::InvalidParameter(
+      if (trv::sys::currTask == 0) {
+        throw trv::sys::InvalidParameter(
           "[%s ERRO] Binning scheme '%s' requires `num_bins` >= %d.\n",
-          trv::mon::show_timestamp().c_str(),
+          trv::sys::show_timestamp().c_str(),
           this->binning.c_str(), nbin_pad + 2
         );
       }
@@ -559,10 +559,10 @@ int ParameterSet::validate() {
   }
 
   if (this->idx_bin >= this->num_bins) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::InvalidParameter(
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidParameter(
         "[%s ERRO] Bin index `idx_bin` must be < `num_bins`.\n",
-        trv::mon::show_timestamp().c_str()
+        trv::sys::show_timestamp().c_str()
       );
     }
   }
@@ -570,40 +570,33 @@ int ParameterSet::validate() {
   if (this->npoint == "3pt" && this->interlace == "true") {
     this->interlace = "false";
 
-    if (trv::mon::currTask == 0) {
+    if (trv::sys::currTask == 0) {
       std::printf(
         "[%s WARN] Interlacing is unsupported for 3-point measurements. "
         "`interlace` is set to 'false'.",
-        trv::mon::show_timestamp().c_str()
+        trv::sys::show_timestamp().c_str()
       );
     }
   }
 
-  if (trv::mon::currTask == 0) {
+  if (trv::sys::currTask == 0) {
     std::printf(
       "[%s STAT] Parameters validated.\n",
-      trv::mon::show_timestamp().c_str()
+      trv::sys::show_timestamp().c_str()
     );
   }
 
   return 0;
 }
 
-int ParameterSet::printout() {
-  /// Set output file path.
-  char ofilepath[1024];
-  std::sprintf(
-    ofilepath, "%s/parameters_used%s",
-    this->measurement_dir.c_str(), this->output_tag.c_str()
-  );
-
+int ParameterSet::printout(char* out_parameter_filepath) {
   /// Create output file.
   std::FILE* ofileptr;
-  if (!(ofileptr = std::fopen(ofilepath, "w"))) {
-    if (trv::mon::currTask == 0) {
-      throw trv::mon::IOError(
+  if (!(ofileptr = std::fopen(out_parameter_filepath, "w"))) {
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::IOError(
         "[%s ERRO] Non-existent or unwritable output directory: %s.\n",
-        trv::mon::show_timestamp().c_str(),
+        trv::sys::show_timestamp().c_str(),
         this->measurement_dir.c_str()
       );
     }
@@ -674,6 +667,17 @@ int ParameterSet::printout() {
   std::fclose(ofileptr);
 
   return 0;
+}
+
+int ParameterSet::printout() {
+  /// Set output file path to default.
+  char ofilepath[1024];
+  std::sprintf(
+    ofilepath, "%s/parameters_used%s",
+    this->measurement_dir.c_str(), this->output_tag.c_str()
+  );
+
+  return ParameterSet::printout(ofilepath);
 }
 
 }  // namespace trv
