@@ -101,7 +101,7 @@ test_monitor: $(DIR_TEST)/test_monitor.cpp $(DIR_SOURCES)/monitor.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
 test_parameters: $(DIR_TEST)/test_parameters.cpp $(DIR_SOURCES)/parameters.cpp \
-						     $(DIR_SOURCES)/monitor.cpp
+						     $(DIR_SOURCES)/monitor.cpp $(DIR_SOURCES)/io.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
 test_particles: $(DIR_TEST)/test_particles.cpp

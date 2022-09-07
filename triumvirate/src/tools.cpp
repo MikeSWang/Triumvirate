@@ -31,7 +31,7 @@ namespace trv {
 /// Extrapolation
 /// **********************************************************************
 
-namespace mon {
+namespace sys {
 
 ExtrapError::ExtrapError(const char* fmt_string, ...): std::runtime_error(
     "Extrapolation error."  // mandatory default error message
@@ -48,7 +48,7 @@ ExtrapError::ExtrapError(const char* fmt_string, ...): std::runtime_error(
 
 const char* ExtrapError::what() const noexcept {return this->err_mesg.c_str();}
 
-}  // namespace trv::mon
+}  // namespace trv::sys
 
 namespace utils {
 
@@ -56,7 +56,7 @@ void extrap_loglin(double* a, int N, int N_ext, double* a_ext) {
   /// Check for sign change or zero.
   double dlna_left = std::log(a[1] / a[0]);
   if (std::isnan(dlna_left)) {
-    throw trv::mon::ExtrapError(
+    throw trv::sys::ExtrapError(
       "[ERRO] Sign change or zero detected in log-linear extrapolation "
       "at the lower end."
     );
@@ -64,7 +64,7 @@ void extrap_loglin(double* a, int N, int N_ext, double* a_ext) {
 
   double dlna_right = std::log(a[N - 1] / a[N - 2]);
   if (std::isnan(dlna_left)) {
-    throw trv::mon::ExtrapError(
+    throw trv::sys::ExtrapError(
       "[ERRO] Sign change or zero detected in log-linear extrapolation "
       "at the upper end."
     );
@@ -108,7 +108,7 @@ void extrap2d_logbilin(
     /// Check for sign change or zero.
     dlna_left = std::log(a[i - N_ext][1] / a[i - N_ext][0]);
     if (std::isnan(dlna_left)) {
-      throw trv::mon::ExtrapError(
+      throw trv::sys::ExtrapError(
         "[ERRO] Sign change or zero detected in log-linear extrapolation "
         "at the left end."
       );
@@ -116,7 +116,7 @@ void extrap2d_logbilin(
 
     dlna_right = std::log(a[i - N_ext][N - 1] / a[i - N_ext][N - 2]);
     if (std::isnan(dlna_right)) {
-      throw trv::mon::ExtrapError(
+      throw trv::sys::ExtrapError(
         "[ERRO] Sign change or zero detected in log-linear extrapolation "
         "at the right end."
       );
@@ -153,7 +153,7 @@ void extrap2d_logbilin(
     /// Check for sign change or zero.
     dlna_up = std::log(a_ext[N_ext + 1][j] / a_ext[N_ext][j]);
     if (std::isnan(dlna_up)) {
-      throw trv::mon::ExtrapError(
+      throw trv::sys::ExtrapError(
         "[ERRO] Sign change or zero detected in log-linear extrapolation "
         "at the top end."
       );
@@ -161,7 +161,7 @@ void extrap2d_logbilin(
 
     dlna_down = std::log(a_ext[N_ext + N - 1][j] / a_ext[N_ext + N - 2][j]);
     if (std::isnan(dlna_down)) {
-      throw trv::mon::ExtrapError(
+      throw trv::sys::ExtrapError(
         "[ERRO] Sign change or zero detected in log-linear extrapolation "
         "at the bottom end."
       );
@@ -303,7 +303,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
   /// --------------------------------------------------------------------
   if (scheme == "custom") {
     /// Insert customised binning code here.
-    throw trv::mon::UnimplementedError(
+    throw trv::sys::UnimplementedError(
       "Customed binning not implemented. "
       "Implement your own binning scheme here (\"tools.cpp\")."
     );
@@ -328,7 +328,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
   /// --------------------------------------------------------------------
   if (scheme == "log")  {
     if (this->bin_min == 0.) {
-      throw trv::mon::InvalidParameter(
+      throw trv::sys::InvalidParameter(
         "Cannot use logarithmic binning when the lowest edge is zero."
       );
     }
@@ -399,7 +399,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
     }
     this->bin_edges.push_back(this->bin_max);
   } else {
-    throw trv::mon::InvalidParameter("Invalid binning `scheme`: %s.", scheme);
+    throw trv::sys::InvalidParameter("Invalid binning `scheme`: %s.", scheme);
   }
 }
 

@@ -38,7 +38,7 @@
 extern const double BYTES_PER_GBYTES;  ///< bytes per gibibyte
 
 namespace trv {
-namespace mon {
+namespace sys {
 
 /// **********************************************************************
 /// Program tracking
@@ -87,45 +87,8 @@ std::string show_timestamp();
 
 
 /// **********************************************************************
-/// Program I/O
-/// **********************************************************************
-
-/**
- * @brief Check if a file path is set.
- *
- * @param pathstr File path string.
- * @returns {true, false}
- */
-bool if_filepath_is_set(std::string pathstr);
-
-
-/// **********************************************************************
 /// Program exceptions
 /// **********************************************************************
-
-/**
- * @brief Exception raised when an input/output operation fails.
- *
- */
-class IOError: public std::runtime_error {
- public:
-  std::string err_mesg;  ///< error message
-
-  /**
-   * @brief Construct an @c IOError exception.
-   *
-   * @param fmt_string Error message format string.
-   * @param ... An arbitrary number of substitution arguments.
-   */
-  IOError(const char* fmt_string, ...);
-
-  /**
-   * @brief Exception string representation.
-   *
-   * @returns String representation of the exception.
-   */
-  virtual const char* what() const noexcept;
-};
 
 /**
  * @brief Exception raised when a function or method is unimplemented.
@@ -199,7 +162,7 @@ class InvalidData: public std::runtime_error {
   virtual const char* what() const noexcept;
 };
 
-}  // namespace trv::mon
+}  // namespace trv::sys
 }  // namespace trv
 
 #endif  // !TRIUMVIRATE_INCLUDE_MONITOR_HPP_INCLUDED_
