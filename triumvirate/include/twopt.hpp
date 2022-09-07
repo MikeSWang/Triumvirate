@@ -8,9 +8,8 @@
 #define TRIUMVIRATE_INCLUDE_TWOPT_HPP_INCLUDED_
 
 #include "monitor.hpp"
-#include "harmonic.hpp"
 #include "parameters.hpp"
-#include "tools.hpp"
+#include "maths.hpp"
 #include "particles.hpp"
 #include "field.hpp"
 

@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "bessel.hpp"
+#include "maths.hpp"
 
 /**
  * Test the evaluation of spherical Bessel functions.

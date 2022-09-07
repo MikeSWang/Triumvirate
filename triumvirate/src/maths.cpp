@@ -18,18 +18,153 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * @file harmonic.cpp
+ * @file maths.cpp
  * @author Mike S Wang (https://github.com/MikeSWang)
  *
  */
 
-#include "harmonic.hpp"
+#include "maths.hpp"
 
 namespace trv {
 namespace maths {
 
+const std::complex<double> M_I(0., 1.);
+
+std::complex<double> eval_complex_in_polar(double r, double theta) {
+  return r * (std::cos(theta) + M_I * std::sin(theta));
+}
+
+/// Lanzcos approximation parameters.
+/// CAVEAT: Discretionary choices.
+const int nterm_lanczos = 9;  ///< number of terms in approximation series
+const double gconst_lanczos = 7.;  ///< Lanczos approximation constant
+const double pcoeff_lanczos[] = {
+      0.99999999999980993227684700473478,
+    676.520368121885098567009190444019,
+  -1259.13921672240287047156078755283,
+    771.3234287776530788486528258894,
+   -176.61502916214059906584551354,
+     12.507343278686904814458936853,
+     -0.13857109526572011689554707,
+      9.984369578019570859563e-6,
+      1.50563273514931155834e-7
+};  ///< Lanczos approximation coefficients for `gconst` & `nterm_lanczos`
+    // varying number of significant figures
+
+std::complex<double> eval_lanczos_approx_series(std::complex<double> z) {
+  std::complex<double> series = pcoeff_lanczos[0];
+  for (int i = 1; i < nterm_lanczos; i++) {
+    series += pcoeff_lanczos[i] / (z + double(i));
+  }
+
+  return series;
+}
+
+std::complex<double> eval_gamma(std::complex<double> z) {
+  /// Exploit Euler's reflection formula as the Lanczos approximation
+  /// is only valid for Re{z} > 1/2.
+  if (z.real() < 1./2) {
+    return M_PI / (std::sin(M_PI * z) * eval_gamma(1. - z));
+  }
+
+  /// Substitute variables into the approximation formula.
+  z -= 1.;
+
+  std::complex<double> t = z + gconst_lanczos + 1./2;
+  std::complex<double> series = eval_lanczos_approx_series(z);
+
+  std::complex<double> gamma = std::sqrt(2*M_PI)
+    * std::pow(t, z + 1./2) * std::exp(-t) * series;
+
+  return gamma;
+}
+
+std::complex<double> eval_lngamma(std::complex<double> z) {
+  /// Exploit Euler's reflection formula as the Lanczos approximation
+  /// is only valid for Re{z} > 1/2.
+  if (z.real() < 1./2) {
+    return std::log(M_PI) - std::log(std::sin(M_PI * z)) - eval_lngamma(1. - z);
+  }
+
+  /// Substitute variables into the approximation formula.
+  z -= 1;
+
+  std::complex<double> t = z + gconst_lanczos + 1./2;
+  std::complex<double> series = eval_lanczos_approx_series(z);
+
+  std::complex<double> lngamma = std::log(2*M_PI) / 2.
+    + (z + 1./2) * std::log(t) - t + std::log(series);
+
+  return lngamma;
+}
+
+std::complex<double> eval_gamma_ratio_asymp(
+  double mu, std::complex<double> nu
+) {
+  std::complex<double> x_p = (mu + 1 + nu)/2.;
+  std::complex<double> x_m = (mu + 1 - nu)/2.;
+
+  std::complex<double> lnratio =
+    - nu
+    + (x_p - 1./2) * std::log(x_p) - (x_m - 1./2) * std::log(x_m)
+    + 1./12 * (1./x_p - 1./x_m)
+    - 1./360 * (1./std::pow(x_p, 3) - 1./std::pow(x_m, 3))
+    + 1./1260 * (1./std::pow(x_p, 5) - 1./std::pow(x_m, 5));
+
+  return lnratio;
+}
+
+void get_lngamma_components(double x, double y, double& lnr, double& theta) {
+  std::complex<double> lngamma = eval_lngamma(x + M_I * y);
+
+  if (lnr) {lnr = lngamma.real();}
+  if (theta) {theta = lngamma.imag();}
+}
+
 double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3) {
   return gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3);
+}
+
+SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
+  /// Set up sampling range and number.
+  /// CAVEAT: Discretionary choices.
+  const double xmin = 0.;       ///< minimum of interpolation range
+  const double xmax = 10000.;   ///< maximum of interpolation range
+  const int nsample = 1000000;  ///< interpolation sample number
+
+  /// Initialise and evaluate at sample points.
+  double dx = (xmax - xmin) / (nsample - 1);
+
+  double* x = new double[nsample];
+  double* j_ell = new double[nsample];
+  for (int i = 0; i < nsample; i++) {
+    x[i] = xmin + dx * i;
+    j_ell[i] = gsl_sf_bessel_jl(ell, x[i]);
+  }
+
+  /// Initialise the interpolator using cubic spline and the accelerator.
+  this->accel = gsl_interp_accel_alloc();
+  this->spline = gsl_spline_alloc(gsl_interp_cspline, nsample);
+
+  gsl_spline_init(this->spline, x, j_ell, nsample);
+
+  /// Delete sample points.
+  delete[] x; x = nullptr;
+  delete[] j_ell; j_ell = nullptr;
+}
+
+SphericalBesselCalculator::~SphericalBesselCalculator() {
+  if (this->accel != nullptr) {
+    gsl_interp_accel_free(this->accel); this->accel = nullptr;
+  }
+
+  if (this->spline != nullptr) {
+    gsl_spline_free(this->spline); this->spline = nullptr;
+  }
+}
+
+double SphericalBesselCalculator::eval(double x) {
+  return gsl_spline_eval(this->spline, x, this->accel);
 }
 
 std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
@@ -38,9 +173,6 @@ std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmoni
   /// Define zero precision.
   /// CAVEAT: Discretionary choice.
   const double eps = 1.e-15;
-
-  /// Define complex unit.
-  const std::complex<double> M_I_(0., 1.);
 
   /// Return unity in the trivial case.
   if (ell == 0 && m == 0) {return 1.;}
@@ -74,7 +206,7 @@ std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmoni
   /// Calculate spherical harmonics with m >= 0 via the normalised
   /// associated Legendre polynomial, i.e. Y_lm = √((2l + 1)/(4π))
   /// √((l - |m|)!/(l + |m|)!) P_l^|m|(μ) * exp(imϕ).
-  std::complex<double> ylm = std::exp(M_I_ * double(m) * phi)
+  std::complex<double> ylm = std::exp(M_I * double(m) * phi)
     * gsl_sf_legendre_sphPlm(ell, std::abs(m), mu);
 
   /// Impose parity and conjugation.

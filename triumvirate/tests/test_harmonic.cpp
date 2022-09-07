@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "harmonic.hpp"
+#include "maths.hpp"
 
 /**
  * Test the evaluation of normalised spherical harmonics.
