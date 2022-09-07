@@ -39,26 +39,6 @@
 namespace trv {
 
 /// **********************************************************************
-/// Mathematics
-/// **********************************************************************
-
-namespace maths {
-
-extern const std::complex<double> M_I;  ///< imaginary unit
-
-/**
- * @brief Evaluate a complex number f@$ r e^{i \theta} f@$
- *        in the polar form.
- *
- * @param r Modulus f@$ r f@$.
- * @param theta Argument f@$ \theta f@$.
- * @returns Value of the complex number.
- */
-std::complex<double> eval_complex_in_polar(double r, double theta);
-
-}  // namespace trv::maths
-
-/// **********************************************************************
 /// Arrays
 /// **********************************************************************
 

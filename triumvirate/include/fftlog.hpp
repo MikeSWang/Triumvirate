@@ -13,8 +13,8 @@
 
 #include <fftw3.h>
 
+#include "maths.hpp"
 #include "tools.hpp"
-#include "gamma.hpp"
 
 using namespace trv::maths;
 

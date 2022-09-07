@@ -1,4 +1,4 @@
-#include "gamma.hpp"
+#include "maths.hpp"
 
 /// TODO: Write test.
 /**

@@ -14,8 +14,7 @@
 
 #include "monitor.hpp"
 #include "parameters.hpp"
-#include "bessel.hpp"
-#include "harmonic.hpp"
+#include "maths.hpp"
 #include "particles.hpp"
 
 using namespace trv::maths;

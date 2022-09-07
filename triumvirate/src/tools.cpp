@@ -28,20 +28,6 @@
 namespace trv {
 
 /// **********************************************************************
-/// Mathematics
-/// **********************************************************************
-
-namespace maths {
-
-const std::complex<double> M_I(0., 1.);
-
-std::complex<double> eval_complex_in_polar(double r, double theta) {
-  return r * (std::cos(theta) + M_I * std::sin(theta));
-}
-
-}  // namespace trv::maths
-
-/// **********************************************************************
 /// Arrays
 /// **********************************************************************
 

@@ -79,7 +79,8 @@ SOURCES=$(wildcard $(DIR_SOURCES)/*.cpp)
 measurements:
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_BUILD)/, $(notdir $@)) $(SOURCES) $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_bessel: $(DIR_TEST)/test_bessel.cpp $(DIR_SOURCES)/bessel.cpp
+test_bessel: $(DIR_TEST)/test_bessel.cpp \
+						 $(DIR_SOURCES)/maths.cpp $(DIR_SOURCES)/monitor.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
 test_fftlog: $(DIR_TEST)/test_fftlog.cpp
@@ -88,12 +89,12 @@ test_fftlog: $(DIR_TEST)/test_fftlog.cpp
 test_field: $(DIR_TEST)/test_field.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_harmonic: $(DIR_TEST)/test_harmonic.cpp $(DIR_SOURCES)/harmonic.cpp \
-							 $(DIR_SOURCES)/monitor.cpp
+test_harmonic: $(DIR_TEST)/test_harmonic.cpp \
+							 $(DIR_SOURCES)/maths.cpp $(DIR_SOURCES)/monitor.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_gamma: $(DIR_TEST)/test_gamma.cpp $(DIR_SOURCES)/gamma.cpp \
-						$(DIR_SOURCES)/monitor.cpp $(DIR_SOURCES)/parameters.cpp $(DIR_SOURCES)/tools.cpp
+test_gamma: $(DIR_TEST)/test_gamma.cpp \
+						$(DIR_SOURCES)/maths.cpp $(DIR_SOURCES)/monitor.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
 test_monitor: $(DIR_TEST)/test_monitor.cpp $(DIR_SOURCES)/monitor.cpp
