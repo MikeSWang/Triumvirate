@@ -156,6 +156,7 @@ class ParameterSet {
    * @brief Validate parameters.
    *
    * @returns Exit status.
+   * @throws trv::sys::InvalidParameter When a parameter is invalid.
    *
    * @note This method is called by @ref ParameterSet::read_from_file().
    */

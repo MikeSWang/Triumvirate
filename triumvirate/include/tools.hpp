@@ -82,8 +82,7 @@ namespace utils {
  * @param[in] N Sample number.
  * @param[in] N_ext Extrapolation number on either end.
  * @param[out] a_ext Extrapolated sample series.
- * @throws trv::sys::ExtrapError Extrapolation error when sign change
- *                               or zero occurs.
+ * @throws trv::sys::ExtrapError When sign change or zero occurs.
  */
 void extrap_loglin(double* a, int N, int N_ext, double* a_ext);
 
@@ -96,8 +95,7 @@ void extrap_loglin(double* a, int N, int N_ext, double* a_ext);
  * @param[in] N_ext Extrapolation number on either end
  *                  (in both dimensions).
  * @param[out] a_ext Extrapolated sample bi-series.
- * @throws trv::sys::ExtrapError Extrapolation error when sign change
- *                               or zero occurs.
+ * @throws trv::sys::ExtrapError When sign change or zero occurs.
  */
 void extrap2d_logbilin(
   std::vector< std::vector<double> > a,
