@@ -37,7 +37,7 @@ cdef extern from "include/threept.hpp":
         vector[double] rbin2
         vector[double] reff1
         vector[double] reff2
-        vector[int] nmode
+        vector[int] npair
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
 
@@ -46,7 +46,7 @@ cdef extern from "include/threept.hpp":
         vector[double] rbin2
         vector[double] reff1
         vector[double] reff2
-        vector[int] nmode
+        vector[int] npair
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
 
@@ -258,7 +258,7 @@ def _compute_3pcf(
         'rbin2': np.asarray(meas.rbin2),
         'reff1': np.asarray(meas.reff1),
         'reff2': np.asarray(meas.reff2),
-        'nmode': np.asarray(meas.nmode),
+        'npair': np.asarray(meas.npair),
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
     }
@@ -314,7 +314,7 @@ def _compute_3pcf_in_box(
         'rbin2': np.asarray(meas.rbin2),
         'reff1': np.asarray(meas.reff1),
         'reff2': np.asarray(meas.reff2),
-        'nmode': np.asarray(meas.nmode),
+        'npair': np.asarray(meas.npair),
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
     }
@@ -358,7 +358,7 @@ def _compute_3pcf_window(
         'rbin2': np.asarray(meas.rbin2),
         'reff1': np.asarray(meas.reff1),
         'reff2': np.asarray(meas.reff2),
-        'nmode': np.asarray(meas.nmode),
+        'npair': np.asarray(meas.npair),
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
     }
