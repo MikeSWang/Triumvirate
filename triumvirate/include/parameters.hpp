@@ -57,7 +57,7 @@ class ParameterSet {
   std::string data_catalogue_file;  ///< data catalogue file
   std::string rand_catalogue_file;  ///< random catalogue file
   std::string catalogue_columns;    ///< catalogue data columns
-                                    ///< (comma-separated)
+                                    ///< (comma-separated without space)
   std::string output_tag;           ///< output tag
 
   /// --------------------------------------------------------------------
