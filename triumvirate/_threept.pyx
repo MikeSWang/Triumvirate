@@ -37,7 +37,7 @@ cdef extern from "include/threept.hpp":
         vector[double] rbin2
         vector[double] reff1
         vector[double] reff2
-        vector[int] nmode
+        vector[int] npair
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
 
@@ -46,7 +46,7 @@ cdef extern from "include/threept.hpp":
         vector[double] rbin2
         vector[double] reff1
         vector[double] reff2
-        vector[int] nmode
+        vector[int] npair
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
 
@@ -69,7 +69,7 @@ cdef extern from "include/threept.hpp":
         LineOfSight* los_data,
         LineOfSight* los_rand,
         CppParameterSet& params,
-        double* kbin,
+        vector[double] kbin,
         double alpha,
         double norm,
         double norm_alt,
@@ -82,7 +82,7 @@ cdef extern from "include/threept.hpp":
         LineOfSight* los_data,
         LineOfSight* los_rand,
         CppParameterSet& params,
-        double* rbin,
+        vector[double] rbin,
         double alpha,
         double norm,
         double norm_alt,
@@ -93,7 +93,7 @@ cdef extern from "include/threept.hpp":
         "trv::algo::compute_bispec_in_box" (
             CppParticleCatalogue& particles_data,
             CppParameterSet& params,
-            double* kbin,
+            vector[double] kbin,
             double norm,
             double norm_alt,
             bool_t save
@@ -103,7 +103,7 @@ cdef extern from "include/threept.hpp":
         "trv::algo::compute_3pcf_in_box" (
             CppParticleCatalogue& particles_data,
             CppParameterSet& params,
-            double* rbin,
+            vector[double] rbin,
             double norm,
             double norm_alt,
             bool_t save
@@ -114,7 +114,7 @@ cdef extern from "include/threept.hpp":
             CppParticleCatalogue& particles_rand,
             LineOfSight* los_rand,
             CppParameterSet& params,
-            double* rbin,
+            vector[double] rbin,
             double alpha,
             double norm,
             double norm_alt,
@@ -130,7 +130,7 @@ cdef extern from "include/threept.hpp":
     #         LineOfSight* los_rand,
     #         int los_choice,
     #         CppParameterSet& params,
-    #         double* kbin,
+    #         vector[double] kbin,
     #         double alpha,
     #         double norm,
     #         double norm_alt,
@@ -196,7 +196,7 @@ def _compute_bispec(
         deref(particles_data.thisptr), deref(particles_rand.thisptr),
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr),
-        &kbin[0],
+        kbin,
         alpha, norm, norm_alt,
         save
     )
@@ -248,7 +248,7 @@ def _compute_3pcf(
         deref(particles_data.thisptr), deref(particles_rand.thisptr),
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr),
-        &rbin[0],
+        rbin,
         alpha, norm, norm_alt,
         save
     )
@@ -276,7 +276,7 @@ def _compute_bispec_in_box(
     cdef BispecMeasurements meas
     meas = compute_bispec_in_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
-        &kbin[0],
+        kbin,
         norm, norm_alt,
         save
     )
@@ -304,7 +304,7 @@ def _compute_3pcf_in_box(
     cdef ThreePCFMeasurements meas
     meas = compute_3pcf_in_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
-        &rbin[0],
+        rbin,
         norm, norm_alt,
         save
     )
@@ -347,7 +347,7 @@ def _compute_3pcf_window(
         deref(particles_rand.thisptr),
         los_rand_cpp,
         deref(params.thisptr),
-        &rbin[0],
+        rbin,
         alpha, norm, norm_alt,
         wide_angle,
         save
@@ -402,7 +402,7 @@ def _compute_3pcf_window(
 #         los_data_cpp, los_rand_cpp,
 #         los_choice,
 #         deref(params.thisptr),
-#         &kbin[0],
+#         kbin,
 #         alpha, norm, norm_alt,
 #         save
 #     )

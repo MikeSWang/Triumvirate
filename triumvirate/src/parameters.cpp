@@ -75,6 +75,7 @@ int ParameterSet::read_from_file(char* parameter_file) {
       continue;
     }
 
+    /// Define convenience function for scanning string parameters.
     auto scan_par_str = [line_str, dummy_str](
       const char* par_name, const char* fmt, const char* par_value
     ) {
@@ -244,10 +245,18 @@ int ParameterSet::read_from_file(char* parameter_file) {
   /// --------------------------------------------------------------------
 
 #ifdef DBG_PARS
+  /// Define convenience function for displaying debugged parameters.
   auto debug_par_str = [](std::string name, std::string value) {
     std::cout << name << ": " << value << std::endl;
   };
+  auto debug_par_int = [](std::string name, int value) {
+    std::cout << name << ": " << value << std::endl;
+  };
+  auto debug_par_double = [](std::string name, double value) {
+    std::cout << name << ": " << value << std::endl;
+  };
 
+  /// Display debugged parameters.
   debug_par_str("catalogue_dir", this->catalogue_dir);
   debug_par_str("measurement_dir", this->measurement_dir);
   debug_par_str("data_catalogue_file", this->data_catalogue_file);
@@ -267,10 +276,6 @@ int ParameterSet::read_from_file(char* parameter_file) {
   debug_par_str("binning", this->binning);
   debug_par_str("form", this->form);
 
-  auto debug_par_int = [](std::string name, int value) {
-    std::cout << name << ": " << value << std::endl;
-  };
-
   debug_par_int("ngrid[0]", this->ngrid[0]);
   debug_par_int("ngrid[1]", this->ngrid[1]);
   debug_par_int("ngrid[2]", this->ngrid[2]);
@@ -284,10 +289,6 @@ int ParameterSet::read_from_file(char* parameter_file) {
 
   debug_par_int("num_bins", this->num_bins);
   debug_par_int("idx_bin", this->idx_bin);
-
-  auto debug_par_double = [](std::string name, double value) {
-    std::cout << name << ": " << value << std::endl;
-  };
 
   debug_par_double("boxsize[0]", this->boxsize[0])
   debug_par_double("boxsize[1]", this->boxsize[1])
@@ -469,13 +470,56 @@ int ParameterSet::validate() {
   }
 
   /// Validate numerical parameters.
+  if (this->volume < 0.) {
+    if (trv::mon::currTask == 0) {
+      throw trv::mon::InvalidParameter(
+        "[%s ERRO] Derived total box volume is non-positive: "
+        "`volume` = '%d'. Possible numerical overflow due to large `boxsize`, "
+        "or `boxsize` is unset.\n",
+        trv::mon::show_timestamp().c_str(),
+        this->nmesh
+      );
+    }
+  }
   if (this->nmesh <= 0) {
     if (trv::mon::currTask == 0) {
       throw trv::mon::InvalidParameter(
         "[%s ERRO] Derived total mesh grid number is non-positive: "
-        "`nmesh` = '%d'. Possible numerical overflow due to large `ngrid`. \n",
+        "`nmesh` = '%d'. Possible numerical overflow due to large `ngrid`, "
+        "or `ngrid` is unset.\n",
         trv::mon::show_timestamp().c_str(),
         this->nmesh
+      );
+    }
+  }
+
+  if (this->alignment == "pad") {
+    if (this->padfactor < 0.) {
+      throw trv::mon::InvalidParameter(
+        "[%s ERRO] Padding is enabled but the padding factor is negative: "
+        "`padfactor` = '%lg'.\n",
+        trv::mon::show_timestamp().c_str(),
+        this->padfactor
+      );
+    }
+    if (this->padscale == "box" && this->padfactor >= 1.) {
+      throw trv::mon::InvalidParameter(
+        "[%s ERRO] Padding is enabled but the %s padding factor is too large "
+        "for the box size: `padfactor` = '%lg'.\n",
+        trv::mon::show_timestamp().c_str(),
+        this->padscale, this->padfactor
+      );
+    }
+    if (this->padscale == "grid" && (
+        this->padfactor >= this->ngrid[0]
+        || this->padfactor >= this->ngrid[1]
+        || this->padfactor >= this->ngrid[2]
+    )) {
+      throw trv::mon::InvalidParameter(
+        "[%s ERRO] Padding is enabled but the %s padding factor is too large "
+        "for the mesh grid numbers: `padfactor` = '%lg'.\n",
+        trv::mon::show_timestamp().c_str(),
+        this->padscale, this->padfactor
       );
     }
   }
@@ -484,6 +528,15 @@ int ParameterSet::validate() {
     if (trv::mon::currTask == 0) {
       throw trv::mon::InvalidParameter(
         "[%s ERRO] Number of bins `num_bins` must be >= 2.\n",
+        trv::mon::show_timestamp().c_str()
+      );
+    }
+  }
+
+  if (this->idx_bin < 0 && this->npoint == "3pt" && this->form == "full") {
+    if (trv::mon::currTask == 0) {
+      throw trv::mon::InvalidParameter(
+        "[%s ERRO] Fixed bin index `idx_bin` must be >= 0.\n",
         trv::mon::show_timestamp().c_str()
       );
     }
@@ -556,7 +609,7 @@ int ParameterSet::printout() {
     }
   }
 
-  /// Print parameters to file.
+  /// Define convenience function for printing parameters.
   auto print_par_str = [ofileptr](const char* fmt, std::string par_val) {
     std::fprintf(ofileptr, fmt, par_val.c_str());
   };
@@ -567,6 +620,7 @@ int ParameterSet::printout() {
     std::fprintf(ofileptr, fmt, par_val);
   };
 
+  /// Print parameters to file.
   print_par_str("catalogue_dir = %s\n", this->catalogue_dir);
   print_par_str("measurement_dir = %s\n", this->measurement_dir);
   print_par_str("data_catalogue_file = %s\n", this->data_catalogue_file);
