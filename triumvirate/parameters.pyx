@@ -7,6 +7,7 @@ Configure program parameter set.
 
 """
 from os.path import abspath
+from pathlib import Path
 from pprint import pformat
 
 import numpy as np
@@ -14,7 +15,7 @@ import yaml
 
 
 class InvalidParameter(ValueError):
-    """Value error raised when a program parameter is invalid.
+    """:exc:`ValueError` raised when a program parameter is invalid.
 
     """
     pass
@@ -25,24 +26,59 @@ cdef class ParameterSet:
 
     Parameters
     ----------
-    filepath : str or :class:`pathlib.Path`
+    param_file : str or :class:`pathlib.Path`
         Parameter file path.
     logger : :class:`logging.Logger`, optional
         Program logger (default is `None`).
 
+    Notes
+    -----
+    `param_file` should be point to a YAML file.  See
+    :func:`~triumvirate.parameters.show_param_template()` to
+    generate an example file.
+
     """
 
-    def __cinit__(self, filepath, logger=None):
+    def __cinit__(self, param_file, logger=None):
 
         self.thisptr = new CppParameterSet()
 
         self._logger = logger
 
         self._status = 'original'.encode('utf-8')
-        self._source = abspath(filepath)
+        self._source = abspath(param_file)
 
-        with open(filepath, 'r') as filestream:
-            self._params = yaml.load(filestream, Loader=yaml.Loader)
+        with open(param_file, 'r') as pfile:
+            self._params = yaml.load(pfile, Loader=yaml.Loader)
+
+        self._parse_attrs()
+
+    @classmethod
+    def from_dict(cls, param_dict, logger=None):
+        """Parameter set from a dictionary.
+
+        Parameters
+        ----------
+        param_dict : dict
+            Parameter dictionary.
+        logger : :class:`logging.Logger`, optional
+            Program logger (default is `None`).
+
+        Notes
+        -----
+        `param_dict` is a nested dictionary.  See
+        :func:`~triumvirate.parameters.show_param_template()` to
+        generate an example `param_dict`.
+
+        """
+        self = object.__new__(cls)
+
+        self._logger = logger
+
+        self._status = 'original'.encode('utf-8')
+        self._source = 'dict'
+
+        self._params = param_dict
 
         self._parse_attrs()
 
@@ -64,13 +100,16 @@ cdef class ParameterSet:
         self._status = 'modified'.encode('utf-8')
 
     def printout(self, filepath=None):
-        """Print out validated parameters to a file.
+        """Print out validated parameters to a YAML file.
 
         Parameters
         ----------
         filepath : str or :class:`pathlib.Path`, optional
             Printout file path.  If `None` (default), parameters are
             printed out to a default file in measurement directory.
+
+        Raises
+        ------
 
         """
         if filepath:
@@ -97,29 +136,62 @@ cdef class ParameterSet:
         """Parse the parameter set into wrapped C++ parameter class.
 
         """
-        # RFE: Implement serialisation of catalogue files for
-        # a suite of simulations.
-        self.thisptr.catalogue_dir = \
-            self._params['directories']['catalogues']
-        self.thisptr.measurement_dir = \
-            self._params['directories']['measurements']
-        self.thisptr.data_catalogue_file = \
-            self.thisptr.catalogue_dir \
-            + self._params['filenames']['data_catalogue']
-        self.thisptr.rand_catalogue_file = \
-            self.thisptr.catalogue_dir + (
-                self._params['filenames']['rand_catalogue']
-                if self._params['filenames']['rand_catalogue'] is not None
-                else ''
-            )
-        self.thisptr.output_tag = self._params['tags']['output'] \
-            if self._params['tags']['output'] is not None \
-            else ''.encode('utf-8')
+        # ----------------------------------------------------------------
+        # I/O
+        # ----------------------------------------------------------------
+
+        try:
+            if self._params['directories']['catalogues'] is None:
+                self.thisptr.catalogue_dir = "".encode('utf-8')
+            else:
+                self.thisptr.catalogue_dir = \
+                    self._params['directories']['catalogues']
+        except KeyError:
+            self.thisptr.catalogue_dir = "".encode('utf-8')
+
+        try:
+            if self._params['directories']['measurements'] is None:
+                self.thisptr.measurement_dir = "".encode('utf-8')
+            else:
+                self.thisptr.measurement_dir = \
+                    self._params['directories']['measurements']
+        except KeyError:
+            self.thisptr.measurement_dir = "".encode('utf-8')
+
+        try:
+            if self._params['filenames']['data_catalogue'] is None:
+                self.thisptr.data_catalogue_file = "".encode('utf-8')
+            else:
+                self.thisptr.data_catalogue_file = \
+                    self._params['filenames']['data_catalogue']
+        except KeyError:
+            self.thisptr.data_catalogue_file = "".encode('utf-8')
+
+        try:
+            if self._params['filenames']['rand_catalogue'] is None:
+                self.thisptr.rand_catalogue_file = "".encode('utf-8')
+            else:
+                self.thisptr.rand_catalogue_file = \
+                    self._params['filenames']['rand_catalogue']
+        except KeyError:
+            self.thisptr.rand_catalogue_file = "".encode('utf-8')
+
+        try:
+            if self._params['tags']['output'] is None:
+                self.thisptr.output_tag = ''.encode('utf-8')
+            else:
+                self.thisptr.output_tag = self._params['tags']['output']
+        except KeyError:
+            self.thisptr.output_tag = ''.encode('utf-8')
+
+        # ----------------------------------------------------------------
+        # Mesh sampling
+        # ----------------------------------------------------------------
 
         self.thisptr.boxsize = [
-            self._params['boxsize']['x'],
-            self._params['boxsize']['y'],
-            self._params['boxsize']['z'],
+            float(self._params['boxsize']['x']),
+            float(self._params['boxsize']['y']),
+            float(self._params['boxsize']['z']),
         ]
         self.thisptr.ngrid = [
             self._params['ngrid']['x'],
@@ -127,39 +199,78 @@ cdef class ParameterSet:
             self._params['ngrid']['z'],
         ]
 
-        self.thisptr.assignment = self._params['assignment']
-        self.thisptr.interlace = self._params['interlace']
-        self.thisptr.norm_convention = self._params['norm_convention']
-        self.thisptr.shotnoise_convention = self._params['shotnoise_convention']
-
-        self.thisptr.catalogue_type = self._params['catalogue_type']
-        self.thisptr.measurement_type = self._params['measurement_type']
-
-        self.thisptr.ell1 = self._params['degrees']['ell1']
-        self.thisptr.ell2 = self._params['degrees']['ell2']
-        self.thisptr.ELL = self._params['degrees']['ELL']
-
-        self.thisptr.i_wa = self._params['wa_orders']['i']
-        self.thisptr.j_wa = self._params['wa_orders']['j']
-
-        self.thisptr.binning = self._params['binning']
-        self.thisptr.form = self._params['form']
-
-        if 'spec' in str(self.thisptr.measurement_type):
-            self.thisptr.kmin = self._params['range'][0]
-            self.thisptr.kmax = self._params['range'][1]
-            self.thisptr.num_kbin = self._params['dim']
-            self.thisptr.num_rbin = self._params['dim']  # mandatory placeholder
-            self.thisptr.ith_kbin = self._params['index']
-        if 'pcf' in str(self.thisptr.measurement_type):
-            self.thisptr.rmin = self._params['range'][0]
-            self.thisptr.rmax = self._params['range'][1]
-            self.thisptr.num_rbin = self._params['dim']
-            self.thisptr.num_kbin = self._params['dim']  # mandatory placeholder
-            self.thisptr.ith_rbin = self._params['index']
-
+        # Derived parameters.
         self.thisptr.volume = np.prod(list(self._params['boxsize'].values()))
         self.thisptr.nmesh = np.prod(list(self._params['ngrid'].values()))
+
+        if self._params['alignment'] is not None:
+            self.thisptr.alignment = self._params['alignment'].lower()
+        if self._params['padscale'] is not None:
+            self.thisptr.padscale = self._params['padscale'].lower()
+        if self._params['padfactor'] is not None:
+            self.thisptr.padfactor = self._params['padfactor']
+
+        if self._params['assignment'] is not None:
+            self.thisptr.assignment = self._params['assignment'].lower()
+        if self._params['interlace'] is not None:
+            self.thisptr.interlace = str(self._params['interlace']).lower()
+
+        # ----------------------------------------------------------------
+        # Measurement
+        # ----------------------------------------------------------------
+
+        if self._params['catalogue_type'] is not None:
+            self.thisptr.catalogue_type = \
+                self._params['catalogue_type'].lower()
+        else:
+            raise InvalidParameter("`catalogue_type` parameter must be set.")
+        if self._params['measurement_type'] is not None:
+            self.thisptr.measurement_type = \
+                self._params['measurement_type'].lower()
+        else:
+            raise InvalidParameter("`measurement_type` parameter must be set.")
+
+        if self._params['norm_convention'] is not None:
+            self.thisptr.norm_convention = \
+                self._params['norm_convention'].lower()
+        if self._params['shotnoise_convention'] is not None:
+            self.thisptr.shotnoise_convention = \
+                self._params['shotnoise_convention'].lower()
+
+        if self._params['binning'] is not None:
+            self.thisptr.binning = self._params['binning'].lower()
+        if self._params['form'] is not None:
+            self.thisptr.form = self._params['form'].lower()
+
+        if self._params['degrees']['ell1'] is not None:
+            self.thisptr.ell1 = self._params['degrees']['ell1']
+        if self._params['degrees']['ell2'] is not None:
+            self.thisptr.ell2 = self._params['degrees']['ell2']
+        if self._params['degrees']['ELL'] is not None:
+            self.thisptr.ELL = self._params['degrees']['ELL']
+        else:
+            raise InvalidParameter("`ELL` parameter must be set.")
+
+        if self._params['wa_orders']['i'] is not None:
+            self.thisptr.i_wa = self._params['wa_orders']['i']
+        if self._params['wa_orders']['j'] is not None:
+            self.thisptr.j_wa = self._params['wa_orders']['j']
+
+        self.thisptr.bin_min = float(self._params['range'][0])
+        self.thisptr.bin_max = float(self._params['range'][1])
+        if self._params['num_bins'] is not None:
+            self.thisptr.num_bins = self._params['num_bins']
+        else:
+            raise InvalidParameter("`num_bins` parameter must be set.")
+        if self._params['idx_bin'] is not None:
+            self.thisptr.idx_bin = self._params['idx_bin']
+
+        # ----------------------------------------------------------------
+        # Misc
+        # ----------------------------------------------------------------
+
+        if self._params['verbose'] is not None:
+            self.thisptr.verbose = self._params['verbose']
 
         self._validate()
 
@@ -179,3 +290,35 @@ cdef class ParameterSet:
             self._logger.info("... validated parameters.", cpp_state='end')
         except (AttributeError, TypeError):
             pass
+
+
+def show_param_template(format):
+    """Show a parameter set template, either as text file contents or
+    as a dictionary.
+
+    Parameters
+    ----------
+    format : {'yaml', 'dict'}
+        Template format, either file contents ('yaml')
+        or dictionary ('dict').
+
+    Returns
+    -------
+    template : str or dict
+        Parameter set template.
+
+    Raises
+    ------
+    ValueError
+        If `format` is neither 'yaml' nor 'dict'.
+
+    """
+    pkg_root_dir = Path(__file__).resolve()
+    tml_filepath = pkg_root_dir/"resources"/"params_example.yml"
+
+    if format.lower() == 'yaml':
+        template = Path(tml_filepath).read_text()
+    elif format.lower() == 'dict':
+        template = ParameterSet(tml_filepath)._params
+
+    return template

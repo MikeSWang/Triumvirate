@@ -1,0 +1,98 @@
+---
+
+# -- I/O -----------------------------------------------------------------
+
+# Directories for input/output.
+# If unset, the working directory is used as the default.
+directories:
+  catalogues:
+  measurements:
+
+# Filenames (including extensions) for input/output sources.
+filenames:
+  data_catalogue:
+  rand_catalogue:
+
+# Tags to be substituted into input/output paths.
+tags:
+  output: ~
+
+
+# -- Mesh sampling -------------------------------------------------------
+
+# Box size in each dimension (in Mpc/h). [mandatory]
+boxsize:
+  x:
+  y:
+  z:
+
+# Grid number in each dimension. [mandatory]
+ngrid:
+  x:
+  y:
+  z:
+
+# Mesh alignment: {'centre' (default), 'pad'}.
+alignment: centre
+
+# Padding scale: {'box' (default), 'grid'}.
+padscale: box
+
+# Padding factor (as a multiple of the size of padding scale).
+padfactor: ~
+
+# Mesh assignment scheme: {'ngp', 'cic', 'tsc' (default), 'pcs'}.
+assignment: tsc
+
+# Interlacing switch: {'true'/'on', 'false'/'off' (default))}.
+interlace: off
+
+
+# -- Measurements -------------------------------------------------------------
+
+# Type of catalogue: {'survey', 'random', 'sim'}. [mandatory]
+catalogue_type:
+
+# Type of measurement:
+# {'powspec', '2pcf', '2pcf-win', 'bispec', '3pcf', '3pcf-win', '3pcf-win-wa'}.
+# [mandatory]
+measurement_type:
+
+# Normalisation convention: {'particle' (default), 'mesh'}.
+norm_convention: particle
+
+# Shot noise convention: {'particle', 'mesh' (default)}.
+shotnoise_convention: mesh
+
+# Binning scheme in configuration space:
+# {'lin' (default), 'log', 'linpad', 'logpad', 'custom'}.
+binning: lin
+
+# Form of the three-point correlator: {'full', 'diag' (default)}.
+form: diag
+
+# Degrees of the multipoles. [optional, optional, mandatory]
+degrees:
+  ell1:
+  ell2:
+  ELL:
+
+# Orders of wide-angle corrections.
+wa_orders:
+  i:
+  j:
+
+# Minimum and maximum of the binning range
+# (i.e. range of measurement scales) as a list.
+# The binning coordinate is either wavenumbers (in h/Mpc) in Fourier space,
+# or separations (in Mpc/h) in configuration space. [mandatory]
+range:
+
+# Number of measurement bins (i.e. data vector dimension).
+# Must be >=2, or >=7 if padding is used in binning. [mandatory]
+num_bins:
+
+# Fixed bin index in the full-form three-point statistics measurements.
+idx_bin:
+
+...

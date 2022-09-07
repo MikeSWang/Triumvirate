@@ -92,6 +92,10 @@ test_harmonic: $(DIR_TEST)/test_harmonic.cpp $(DIR_SOURCES)/harmonic.cpp \
 							 $(DIR_SOURCES)/monitor.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
+test_gamma: $(DIR_TEST)/test_gamma.cpp $(DIR_SOURCES)/gamma.cpp \
+						$(DIR_SOURCES)/monitor.cpp $(DIR_SOURCES)/parameters.cpp $(DIR_SOURCES)/tools.cpp
+	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
+
 test_monitor: $(DIR_TEST)/test_monitor.cpp $(DIR_SOURCES)/monitor.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 

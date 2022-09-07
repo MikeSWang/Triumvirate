@@ -154,6 +154,8 @@ class ParameterSet {
    * @brief Validate parameters.
    *
    * @returns Exit status.
+   *
+   * @note This method is called by @ref ParameterSet::read_from_file().
    */
   int validate();
 
