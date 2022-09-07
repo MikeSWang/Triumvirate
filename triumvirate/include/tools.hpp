@@ -39,7 +39,7 @@
 namespace trv {
 
 /// **********************************************************************
-/// Arrays
+/// Extrapolation
 /// **********************************************************************
 
 namespace mon {
@@ -70,7 +70,7 @@ class ExtrapError: public std::runtime_error {
 
 }  // namespace trv::mon
 
-namespace ops {
+namespace utils {
 
 /**
  * @brief Extrapolate sample series exponentially (i.e. log-linearly).
@@ -132,11 +132,14 @@ void extrap2d_bizeros(
   std::vector< std::vector<double> >& a_ext
 );
 
-}  // namespace trv::ops
+}  // namespace trv::utils
+
 
 /// **********************************************************************
-/// Algorithms
+/// Binning
 /// **********************************************************************
+
+namespace utils {
 
 /**
  * @brief Isotropic coordinate binning.
@@ -197,6 +200,7 @@ class Binning {
   void set_bins();
 };
 
+}  // namespace trv::utils
 }  // namespace trv
 
 #endif  // !TRIUMVIRATE_INCLUDE_TOOLS_HPP_INCLUDED_

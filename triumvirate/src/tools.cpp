@@ -28,7 +28,7 @@
 namespace trv {
 
 /// **********************************************************************
-/// Arrays
+/// Extrapolation
 /// **********************************************************************
 
 namespace mon {
@@ -50,7 +50,7 @@ const char* ExtrapError::what() const noexcept {return this->err_mesg.c_str();}
 
 }  // namespace trv::mon
 
-namespace ops {
+namespace utils {
 
 void extrap_loglin(double* a, int N, int N_ext, double* a_ext) {
   /// Check for sign change or zero.
@@ -259,11 +259,14 @@ void extrap2d_bizeros(
   }
 }
 
-}  // namespace trv::ops
+}  // namespace trv::utils
+
 
 /// **********************************************************************
-/// Algorithms
+/// Binning
 /// **********************************************************************
+
+namespace utils {
 
 Binning::Binning(double coord_min, double coord_max, int nbin) {
   this->bin_min = coord_min;
@@ -402,4 +405,5 @@ void Binning::set_bins(std::string scheme, std::string space) {
 
 void Binning::set_bins() {Binning::set_bins(this->scheme, this->space);}
 
+}  // namespace trv::utils
 }  // namespace trv

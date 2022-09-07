@@ -20,8 +20,7 @@
 /**
  * @file monitor.hpp
  * @author Mike S Wang (https://github.com/MikeSWang)
- * @brief Provide tracking of program time and memory usage
- *        and exceptions.
+ * @brief Provide tracking of program resources and exceptions.
  *
  */
 
@@ -38,9 +37,6 @@
 /// FIXME: To be removed.
 extern const double BYTES_PER_GBYTES;  ///< bytes per gibibyte
 
-// const double BYTES_PER_GBYTES = 1073741824.;  ///< 1024^3 bytes
-//                                               ///< per gibibyte
-
 namespace trv {
 namespace mon {
 
@@ -49,12 +45,11 @@ namespace mon {
 /// **********************************************************************
 
 /// RFE: Sort out MPI implementation.
-
 extern int currTask;  ///< current task
-extern int numTasks;  ///< number of tasks (in a batch)
 
 extern double gbytesMem;  ///< memory usage in gibibytes
 
+/// FIXME: Add function.
 // /**
 //  * @brief Return size in gibibytes.
 //  *
@@ -62,7 +57,10 @@ extern double gbytesMem;  ///< memory usage in gibibytes
 //  * @returns Size in gibibytes.
 //  */
 // template <typename T>
-// double size_in_gb() {return sizeof(T) / BYTES_PER_GBYTES;}
+// double size_in_gb() {
+//   const double BYTES_PER_GBYTES = 1073741824.;  // 1024^3 bytes per gibibyte
+//   return sizeof(T) / BYTES_PER_GBYTES;
+// }
 
 /**
  * @brief Return the current date-time string in
@@ -87,6 +85,7 @@ std::string show_elapsed_time(double duration_in_seconds);
  */
 std::string show_timestamp();
 
+
 /// **********************************************************************
 /// Program I/O
 /// **********************************************************************
@@ -98,6 +97,7 @@ std::string show_timestamp();
  * @returns {true, false}
  */
 bool if_filepath_is_set(std::string pathstr);
+
 
 /// **********************************************************************
 /// Program exceptions

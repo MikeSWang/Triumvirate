@@ -32,18 +32,23 @@
 #ifndef TRIUMVIRATE_INCLUDE_MATHS_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_MATHS_HPP_INCLUDED_
 
-#include <cmath>
-#include <complex>
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_coupling.h>
 #include <gsl/gsl_sf_legendre.h>
 #include <gsl/gsl_spline.h>
 
+#include <cmath>
+#include <complex>
+
 #include "monitor.hpp"
 
 namespace trv {
 namespace maths {
+
+/// **********************************************************************
+/// Complex numbers
+/// **********************************************************************
 
 extern const std::complex<double> M_I;  ///< imaginary unit
 
@@ -56,6 +61,11 @@ extern const std::complex<double> M_I;  ///< imaginary unit
  * @returns Value of the complex number.
  */
 std::complex<double> eval_complex_in_polar(double r, double theta);
+
+
+/// **********************************************************************
+/// Gamma function
+/// **********************************************************************
 
 /**
  * @brief Evaluate the Lanczos approximation series f@$ A_g(z) f@$
@@ -124,6 +134,11 @@ std::complex<double> eval_gamma_ratio_asymp(
  */
 void get_lngamma_components(double x, double y, double& lnr, double& theta);
 
+
+/// **********************************************************************
+/// Spherical harmonics
+/// **********************************************************************
+
 /**
  * @brief Calculate Wigner 3-j symbol.
  *
@@ -131,38 +146,6 @@ void get_lngamma_components(double x, double y, double& lnr, double& theta);
  * @returns Value of the Wigner 3-j symbol.
  */
 double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3);
-
-/**
- * @brief Interpolated spherical Bessel function @f$ j_\ell(x) @f$
- *        of the first kind.
- *
- */
-class SphericalBesselCalculator {
- public:
-  /**
-   * @brief Construct the interpolated function.
-   *
-   * @param ell Order @f$ \ell @f$.
-   */
-  SphericalBesselCalculator(const int ell);
-
-  /**
-   * @brief Destruct the interpolated function.
-   */
-  ~SphericalBesselCalculator();
-
-  /**
-   * @brief Evaluate the interpolated function.
-   *
-   * @param x Argument f@$ x f@$.
-   * @returns Value of @f$ j_\ell @f$.
-   */
-  double eval(double x);
-
- private:
-  gsl_interp_accel* accel;  ///< interpolation accelerator
-  gsl_spline* spline;       ///< interpolation scheme
-};
 
 /**
  * @brief Reduced spherical harmonics.
@@ -224,6 +207,43 @@ class SphericalHarmonicCalculator {
     const double boxsize[3], const int ngrid[3],
     std::complex<double>* ylm_out
   );
+};
+
+
+/// **********************************************************************
+/// Spherical Bessel function
+/// **********************************************************************
+
+/**
+ * @brief Interpolated spherical Bessel function @f$ j_\ell(x) @f$
+ *        of the first kind.
+ *
+ */
+class SphericalBesselCalculator {
+ public:
+  /**
+   * @brief Construct the interpolated function.
+   *
+   * @param ell Order @f$ \ell @f$.
+   */
+  SphericalBesselCalculator(const int ell);
+
+  /**
+   * @brief Destruct the interpolated function.
+   */
+  ~SphericalBesselCalculator();
+
+  /**
+   * @brief Evaluate the interpolated function.
+   *
+   * @param x Argument f@$ x f@$.
+   * @returns Value of @f$ j_\ell @f$.
+   */
+  double eval(double x);
+
+ private:
+  gsl_interp_accel* accel;  ///< interpolation accelerator
+  gsl_spline* spline;       ///< interpolation scheme
 };
 
 }  // namespace trv::maths
