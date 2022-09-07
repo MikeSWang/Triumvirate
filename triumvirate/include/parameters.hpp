@@ -78,7 +78,7 @@ class ParameterSet {
 
   /// Derived quantities.
   double volume;  ///< box volume
-  unsigned int nmesh;  ///< total mesh grid number
+  int nmesh;  ///< total mesh grid number
 
   /// Misc.
   int batch_number;  ///< job batch number
