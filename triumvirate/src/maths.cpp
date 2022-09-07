@@ -28,11 +28,20 @@
 namespace trv {
 namespace maths {
 
+/// **********************************************************************
+/// Complex numbers
+/// **********************************************************************
+
 const std::complex<double> M_I(0., 1.);
 
 std::complex<double> eval_complex_in_polar(double r, double theta) {
   return r * (std::cos(theta) + M_I * std::sin(theta));
 }
+
+
+/// **********************************************************************
+/// Gamma function
+/// **********************************************************************
 
 /// Lanzcos approximation parameters.
 /// CAVEAT: Discretionary choices.
@@ -121,50 +130,13 @@ void get_lngamma_components(double x, double y, double& lnr, double& theta) {
   if (theta) {theta = lngamma.imag();}
 }
 
+
+/// **********************************************************************
+/// Spherical harmonics
+/// **********************************************************************
+
 double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3) {
   return gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3);
-}
-
-SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
-  /// Set up sampling range and number.
-  /// CAVEAT: Discretionary choices.
-  const double xmin = 0.;       ///< minimum of interpolation range
-  const double xmax = 10000.;   ///< maximum of interpolation range
-  const int nsample = 1000000;  ///< interpolation sample number
-
-  /// Initialise and evaluate at sample points.
-  double dx = (xmax - xmin) / (nsample - 1);
-
-  double* x = new double[nsample];
-  double* j_ell = new double[nsample];
-  for (int i = 0; i < nsample; i++) {
-    x[i] = xmin + dx * i;
-    j_ell[i] = gsl_sf_bessel_jl(ell, x[i]);
-  }
-
-  /// Initialise the interpolator using cubic spline and the accelerator.
-  this->accel = gsl_interp_accel_alloc();
-  this->spline = gsl_spline_alloc(gsl_interp_cspline, nsample);
-
-  gsl_spline_init(this->spline, x, j_ell, nsample);
-
-  /// Delete sample points.
-  delete[] x; x = nullptr;
-  delete[] j_ell; j_ell = nullptr;
-}
-
-SphericalBesselCalculator::~SphericalBesselCalculator() {
-  if (this->accel != nullptr) {
-    gsl_interp_accel_free(this->accel); this->accel = nullptr;
-  }
-
-  if (this->spline != nullptr) {
-    gsl_spline_free(this->spline); this->spline = nullptr;
-  }
-}
-
-double SphericalBesselCalculator::eval(double x) {
-  return gsl_spline_eval(this->spline, x, this->accel);
 }
 
 std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
@@ -310,6 +282,53 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_spa
       }
     }
   }
+}
+
+
+/// **********************************************************************
+/// Spherical Bessel function
+/// **********************************************************************
+
+SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
+  /// Set up sampling range and number.
+  /// CAVEAT: Discretionary choices.
+  const double xmin = 0.;       ///< minimum of interpolation range
+  const double xmax = 10000.;   ///< maximum of interpolation range
+  const int nsample = 1000000;  ///< interpolation sample number
+
+  /// Initialise and evaluate at sample points.
+  double dx = (xmax - xmin) / (nsample - 1);
+
+  double* x = new double[nsample];
+  double* j_ell = new double[nsample];
+  for (int i = 0; i < nsample; i++) {
+    x[i] = xmin + dx * i;
+    j_ell[i] = gsl_sf_bessel_jl(ell, x[i]);
+  }
+
+  /// Initialise the interpolator using cubic spline and the accelerator.
+  this->accel = gsl_interp_accel_alloc();
+  this->spline = gsl_spline_alloc(gsl_interp_cspline, nsample);
+
+  gsl_spline_init(this->spline, x, j_ell, nsample);
+
+  /// Delete sample points.
+  delete[] x; x = nullptr;
+  delete[] j_ell; j_ell = nullptr;
+}
+
+SphericalBesselCalculator::~SphericalBesselCalculator() {
+  if (this->accel != nullptr) {
+    gsl_interp_accel_free(this->accel); this->accel = nullptr;
+  }
+
+  if (this->spline != nullptr) {
+    gsl_spline_free(this->spline); this->spline = nullptr;
+  }
+}
+
+double SphericalBesselCalculator::eval(double x) {
+  return gsl_spline_eval(this->spline, x, this->accel);
 }
 
 }  // namespace trv::maths

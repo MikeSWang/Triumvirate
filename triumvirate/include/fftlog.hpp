@@ -19,7 +19,7 @@
 using namespace trv::maths;
 
 namespace trv {
-namespace ops {
+namespace utils {
 
 /**
  * Calculate a low-ringing pivot value f@$ k r = k_c r_c f@$ for the
@@ -326,7 +326,7 @@ void transform_corrfunc_to_powspec_multipole(
   }
 }
 
-}  // trv::ops::
+}  // trv::utils::
 }  // trv::
 
 #endif  // TRIUMVIRATE_INCLUDE_FFTLOG_HPP_INCLUDED_

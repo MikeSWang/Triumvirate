@@ -27,11 +27,12 @@
 #ifndef TRIUMVIRATE_INCLUDE_PARAMETERS_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_PARAMETERS_HPP_INCLUDED_
 
+#include <sys/stat.h>
+
 #include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <string>
-#include <sys/stat.h>
 
 #include "monitor.hpp"
 
