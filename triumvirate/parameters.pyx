@@ -45,8 +45,9 @@ cdef class ParameterSet:
 
         self._logger = logger
 
-        self._status = 'original'.encode('utf-8')
         self._source = abspath(param_file)
+        self._status = 'original'.encode('utf-8')
+        self._validity = 'unvalidated'.encode('utf-8')
 
         with open(param_file, 'r') as pfile:
             self._params = yaml.load(pfile, Loader=yaml.Loader)
@@ -75,8 +76,9 @@ cdef class ParameterSet:
 
         self._logger = logger
 
-        self._status = 'original'.encode('utf-8')
         self._source = 'dict'
+        self._status = 'original'.encode('utf-8')
+        self._validity = 'unvalidated'.encode('utf-8')
 
         self._params = param_dict
 
@@ -98,8 +100,9 @@ cdef class ParameterSet:
     def __setitem__(self, key, val):
         self._params.update({key: val})
         self._status = 'modified'.encode('utf-8')
+        self._validity = 'unvalidated'.encode('utf-8')
 
-    def printout(self, filepath=None):
+    def print_to_file(self, filepath=None):
         """Print out validated parameters to a YAML file.
 
         Parameters
@@ -108,29 +111,21 @@ cdef class ParameterSet:
             Printout file path.  If `None` (default), parameters are
             printed out to a default file in measurement directory.
 
-        Raises
-        ------
-
         """
-        if filepath:
-            with open(filepath, 'w') as out_file:
-                yaml.dump(
-                    self._params, out_file,
-                    sort_keys=False, default_flow_style=False
-                )
+        if filepath is None:
+            filepath = (
+                Path(self._params['directories']['measurements'])/
+                "parameters_used{}".format(self._params['tags']['output'])
+            )
 
-            if self._logger:
-                self._logger.info("Printed out parameters to %s.", filepath)
-        else:
-            if self.thisptr.printout() != 0:
-                raise RuntimeError(
-                    "Failed to print out extracted parameters to file."
-                )
+        with open(filepath, 'w') as out_file:
+            yaml.dump(
+                self._params, out_file,
+                sort_keys=False, default_flow_style=False
+            )
 
-            if self._logger:
-                self._logger.info(
-                    "Printed out parameters to measurement directory."
-                )
+        if self._logger:
+            self._logger.info("Printed out parameters to %s.", filepath)
 
     def _parse_attrs(self):
         """Parse the parameter set into wrapped C++ parameter class.
@@ -285,6 +280,14 @@ cdef class ParameterSet:
 
         if self.thisptr.validate() != 0:
             raise InvalidParameter("Invalid measurement parameters.")
+
+        # Fetch validated parameters that have been derived or transmuted.
+        # Transmuted I/O paths are not fetched.
+        self._params['npoint'] = self.thisptr.npoint
+        self._params['space'] = self.thisptr.space
+        self._params['interlace'] = self.thisptr.interlace
+
+        self._validity = 'validated'.encode('utf-8')
 
         try:
             self._logger.info("... validated parameters.", cpp_state='end')

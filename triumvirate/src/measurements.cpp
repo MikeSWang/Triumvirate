@@ -7,7 +7,7 @@
 #include "monitor.hpp"
 #include "io.hpp"
 #include "parameters.hpp"
-#include "tools.hpp"
+#include "dataobjs.hpp"
 #include "particles.hpp"
 #include "twopt.hpp"
 #include "threept.hpp"
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (!(params.printout())) {
+  if (!(params.print_to_file())) {
     if (trv::sys::currTask == 0) {
       std::printf(
         "[%s INFO] Check 'parameters_used*' file in your "
@@ -80,11 +80,11 @@ int main(int argc, char* argv[]) {
   }
 
   /// Read catalogue files.
-  trv::obj::ParticleCatalogue particles_data, particles_rand;  // catalogues
+  trv::ParticleCatalogue particles_data, particles_rand;  // catalogues
 
   std::string flag_data = "false";  // data catalogue status
   if (trv::sys::if_filepath_is_set(params.data_catalogue_file)) {
-    if (particles_data.read_particle_data_from_file(
+    if (particles_data.load_catalogue_file(
       params.data_catalogue_file, params.catalogue_columns, params.volume
     )) {
       if (trv::sys::currTask == 0) {
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
 
   std::string flag_rand = "false";  // random catalogue status
   if (trv::sys::if_filepath_is_set(params.rand_catalogue_file)) {
-    if (particles_rand.read_particle_data_from_file(
+    if (particles_rand.load_catalogue_file(
       params.rand_catalogue_file, params.catalogue_columns, params.volume
     )) {
       if (trv::sys::currTask == 0) {
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
     flag_npoint = "3pt";
   }
 
-  trv::utils::Binning binning(params);
+  trv::Binning binning(params);
   binning.set_bins();
 
   bool save = true;  // whether to save the results or not
@@ -163,8 +163,8 @@ int main(int argc, char* argv[]) {
     );
   }
 
-  trv::obj::LineOfSight* los_data =
-    new trv::obj::LineOfSight[particles_data.ntotal];  // data LoS
+  trv::LineOfSight* los_data =
+    new trv::LineOfSight[particles_data.ntotal];  // data LoS
   for (int pid = 0; pid < particles_data.ntotal; pid++) {
     double los_mag = sqrt(
       particles_data[pid].pos[0] * particles_data[pid].pos[0]
@@ -177,8 +177,8 @@ int main(int argc, char* argv[]) {
     los_data[pid].pos[2] = particles_data[pid].pos[2] / los_mag;
   }
 
-  trv::obj::LineOfSight* los_rand =
-    new trv::obj::LineOfSight[particles_rand.ntotal];  // random LoS
+  trv::LineOfSight* los_rand =
+    new trv::LineOfSight[particles_rand.ntotal];  // random LoS
   for (int pid = 0; pid < particles_rand.ntotal; pid++) {
     double los_mag = sqrt(
       particles_rand[pid].pos[0] * particles_rand[pid].pos[0]
@@ -212,13 +212,13 @@ int main(int argc, char* argv[]) {
           params.padfactor, params.padfactor, params.padfactor
         };
         if (flag_data == "true") {
-          trv::obj::ParticleCatalogue::pad_pair_in_box(
+          trv::ParticleCatalogue::pad_grids(
             particles_data, particles_rand,
             params.boxsize, params.ngrid,
             ngrid_pad
           );
         } else {
-          trv::obj::ParticleCatalogue::pad_in_box(
+          trv::ParticleCatalogue::pad_grids(
             particles_rand, params.boxsize, params.ngrid, ngrid_pad
           );
         }
@@ -228,12 +228,12 @@ int main(int argc, char* argv[]) {
           params.padfactor, params.padfactor, params.padfactor
         };
         if (flag_data == "true") {
-          trv::obj::ParticleCatalogue::pad_pair_in_box(
+          trv::ParticleCatalogue::pad_in_box(
             particles_data, particles_rand,
             params.boxsize, boxsize_pad
           );
         } else {
-          trv::obj::ParticleCatalogue::pad_in_box(
+          trv::ParticleCatalogue::pad_in_box(
             particles_rand, params.boxsize, boxsize_pad
           );
         }
@@ -241,11 +241,11 @@ int main(int argc, char* argv[]) {
     } else
     if (params.alignment == "centre") {
       if (flag_data == "true") {
-        trv::obj::ParticleCatalogue::centre_pair_in_box(
+        trv::ParticleCatalogue::centre_in_box(
           particles_data, particles_rand, params.boxsize
         );
       } else {
-        trv::obj::ParticleCatalogue::centre_in_box(
+        trv::ParticleCatalogue::centre_in_box(
           particles_rand, params.boxsize
         );
       }

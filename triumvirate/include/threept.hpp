@@ -14,12 +14,12 @@
 #include "monitor.hpp"
 #include "parameters.hpp"
 #include "maths.hpp"
+#include "dataobjs.hpp"
 #include "particles.hpp"
 #include "field.hpp"
 #include "twopt.hpp"
 
 using namespace trv::maths;
-using namespace trv::obj;
 
 const double EPS_COUPLING_3PT = 1.e-10;  /**< zero-tolerance for three-point
                                               coupling coefficients */
@@ -291,7 +291,32 @@ double calc_bispec_normalisation_from_particles(
   ParticleCatalogue& catalogue,
   double alpha=1.
 ) {
-  double norm_factor = catalogue._calc_bispec_normalisation() / alpha;
+  if (catalogue.pdata == nullptr) {
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidData(
+        "[%s ERRO] Particle data are uninitialised.\n",
+        trv::sys::show_timestamp().c_str()
+      );
+    }
+  }
+
+  double vol_sq_eff_inv = 0.;  // I_3
+  for (int pid = 0; pid < catalogue.ntotal; pid++) {
+    vol_sq_eff_inv += std::pow(catalogue[pid].nz, 2)
+      * catalogue[pid].ws * std::pow(catalogue[pid].wc, 3);
+  }
+
+  if (vol_sq_eff_inv == 0.) {
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidData(
+        "[%s ERRO] Particle 'nz' values appear to be all zeros. "
+        "Check the input catalogue contains valid 'nz' field.\n",
+        trv::sys::show_timestamp().c_str()
+      );
+    }
+  }
+
+  double norm_factor = 1. / vol_sq_eff_inv / alpha;  // I_3^(-1)
 
   return norm_factor;
 }

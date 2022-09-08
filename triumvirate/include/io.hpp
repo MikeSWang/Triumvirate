@@ -28,8 +28,8 @@
 #define TRIUMVIRATE_INCLUDE_IO_HPP_INCLUDED_
 
 #include <cstdarg>
-#include <string>
 #include <stdexcept>
+#include <string>
 
 namespace trv {
 namespace sys {

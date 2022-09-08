@@ -10,11 +10,11 @@
 #include "monitor.hpp"
 #include "parameters.hpp"
 #include "maths.hpp"
+#include "dataobjs.hpp"
 #include "particles.hpp"
 #include "field.hpp"
 
 using namespace trv::maths;
-using namespace trv::obj;
 
 const double EPS_COUPLING_2PT = 1.e-10;  /**< zero-tolerance for two-point
                                               coupling coefficients */
@@ -308,9 +308,63 @@ double calc_powspec_normalisation_from_particles(
   ParticleCatalogue& catalogue,
   double alpha=1.
 ) {
-  double norm_factor = catalogue._calc_powspec_normalisation() / alpha;
+  if (catalogue.pdata == nullptr) {
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidData(
+        "[%s ERRO] Particle data are uninitialised.\n",
+        trv::sys::show_timestamp().c_str()
+      );
+    }
+  }
+
+  double vol_eff_inv = 0.;  // I_2
+  for (int pid = 0; pid < catalogue.ntotal; pid++) {
+    vol_eff_inv += catalogue[pid].nz
+      * catalogue[pid].ws * std::pow(catalogue[pid].wc, 2);
+  }
+
+  if (vol_eff_inv == 0.) {
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidData(
+        "[%s ERRO] Particle 'nz' values appear to be all zeros. "
+        "Check the input catalogue contains valid 'nz' field.\n",
+        trv::sys::show_timestamp().c_str()
+      );
+    }
+  }
+
+  double norm_factor = 1. / vol_eff_inv / alpha;  // I_2^(-1)
 
   return norm_factor;
+}
+
+/**
+ * Calculate particle-based power spectrum shot noise.
+ *
+ * @param catalogue Particle catalogue.
+ * @param alpha Alpha ratio.
+ * @returns shotnoise Power spectrum normalisation factor.
+ */
+double calc_powspec_shotnoise_from_particles(
+  ParticleCatalogue& catalogue,
+  double alpha=1.
+) {
+  if (catalogue.pdata == nullptr) {
+    if (trv::sys::currTask == 0) {
+      throw trv::sys::InvalidData(
+        "[%s ERRO] Particle data are uninitialised.\n",
+        trv::sys::show_timestamp().c_str()
+      );
+    }
+  }
+
+  double shotnoise = 0.;
+  for (int pid = 0; pid < catalogue.ntotal; pid++) {
+    shotnoise += std::pow(catalogue[pid].ws, 2)
+      * std::pow(catalogue[pid].wc, 2);
+  }
+
+  return shotnoise;
 }
 
 /// NOBUG: Standard naming convention is not always followed for
@@ -428,8 +482,8 @@ PowspecMeasurements compute_powspec(
 
   /// Compute shot noise if the approach is particle-based.
   std::complex<double> sn_particle =
-    particles_data._calc_powspec_shotnoise()
-    + alpha * alpha * particles_rand._calc_powspec_shotnoise();
+    calc_powspec_shotnoise_from_particles(particles_data)
+    + alpha * alpha * calc_powspec_shotnoise_from_particles(particles_rand);
 
   /* * Output ************************************************************** */
 
@@ -722,7 +776,9 @@ PowspecMeasurements compute_powspec_in_box(
   }
 
   /// Compute shot noise if the approach is particle-based.
-  std::complex<double> sn_particle = particles_data._calc_powspec_shotnoise();
+  std::complex<double> sn_particle = calc_powspec_shotnoise_from_particles(
+    particles_data
+  );
 
   /// Normalisation factor should redue to
   /// ``params.volume / particles_data.ntotal / particles_data.ntotal``

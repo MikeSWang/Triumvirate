@@ -305,31 +305,31 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
 int ParameterSet::validate() {
   /// Validate and derive string parameters.
   if (this->catalogue_dir != "") {
-    this->catalogue_dir += "/";
+    this->catalogue_dir += "/";  // transmutation
   }  // any duplicate '/' has no effect
   if (this->catalogue_type == "survey") {
     if (this->data_catalogue_file != "") {
       this->data_catalogue_file = this->catalogue_dir
-        + this->data_catalogue_file;
+        + this->data_catalogue_file;  // transmutation
     }
     if (this->rand_catalogue_file != "") {
       this->rand_catalogue_file = this->catalogue_dir
-        + this->rand_catalogue_file;
+        + this->rand_catalogue_file;  // transmutation
     }
   } else
   if (this->catalogue_type == "random") {
-    this->data_catalogue_file = "";
+    this->data_catalogue_file = "";  // transmutation
     if (this->rand_catalogue_file != "") {
       this->rand_catalogue_file = this->catalogue_dir
-        + this->rand_catalogue_file;
+        + this->rand_catalogue_file;  // transmutation
     }
   } else
   if (this->catalogue_type == "sim") {
     if (this->data_catalogue_file != "") {
       this->data_catalogue_file = this->catalogue_dir
-        + this->data_catalogue_file;
+        + this->data_catalogue_file;  // transmutation
     }
-    this->rand_catalogue_file = "";
+    this->rand_catalogue_file = "";  // transmutation
   } else {
     if (trv::sys::currTask == 0) {
       throw trv::sys::InvalidParameter(
@@ -377,10 +377,10 @@ int ParameterSet::validate() {
     }
   }
   if (this->interlace == "true" || this->interlace == "on") {
-    this->interlace = "true";
+    this->interlace = "true";  // transmutation
   } else
   if (this->interlace == "false" || this->interlace == "off") {
-    this->interlace = "false";
+    this->interlace = "false";  // transmutation
   } else {
     if (trv::sys::currTask == 0) {
       throw trv::sys::InvalidParameter(
@@ -393,22 +393,22 @@ int ParameterSet::validate() {
   }
 
   if (this->measurement_type == "powspec") {
-    this->npoint = "2pt"; this->space = "fourier";
+    this->npoint = "2pt"; this->space = "fourier";  // derivation
   } else
   if (
     this->measurement_type == "2pcf" || this->measurement_type == "2pcf-win"
   ) {
-    this->npoint = "2pt"; this->space = "config";
+    this->npoint = "2pt"; this->space = "config";  // derivation
   } else
   if (this->measurement_type == "bispec") {
-    this->npoint = "3pt"; this->space = "fourier";
+    this->npoint = "3pt"; this->space = "fourier";  // derivation
   } else
   if (
     this->measurement_type == "3pcf"
     || this->measurement_type == "3pcf-win"
     || this->measurement_type == "3pcf-win-wa"
   ) {
-    this->npoint = "3pt"; this->space = "config";
+    this->npoint = "3pt"; this->space = "config";  // derivation
   } else {
     if (trv::sys::currTask == 0) {
       throw trv::sys::InvalidParameter(
@@ -544,7 +544,7 @@ int ParameterSet::validate() {
 
   /// Check for parameter conflicts.
   if (this->binning == "linpad" || this->binning == "logpad") {
-    /// SEE: See `trv::utils::Binning::set_bins()`.
+    /// SEE: See `trv::Binning::set_bins()`.
     int nbin_pad = 5;
 
     if (this->num_bins < nbin_pad + 2) {
@@ -568,7 +568,7 @@ int ParameterSet::validate() {
   }
 
   if (this->npoint == "3pt" && this->interlace == "true") {
-    this->interlace = "false";
+    this->interlace = "false";  // transmutation
 
     if (trv::sys::currTask == 0) {
       std::printf(
@@ -589,7 +589,7 @@ int ParameterSet::validate() {
   return 0;
 }
 
-int ParameterSet::printout(char* out_parameter_filepath) {
+int ParameterSet::print_to_file(char* out_parameter_filepath) {
   /// Create output file.
   std::FILE* ofileptr;
   if (!(ofileptr = std::fopen(out_parameter_filepath, "w"))) {
@@ -669,7 +669,7 @@ int ParameterSet::printout(char* out_parameter_filepath) {
   return 0;
 }
 
-int ParameterSet::printout() {
+int ParameterSet::print_to_file() {
   /// Set output file path to default.
   char ofilepath[1024];
   std::sprintf(
@@ -677,7 +677,7 @@ int ParameterSet::printout() {
     this->measurement_dir.c_str(), this->output_tag.c_str()
   );
 
-  return ParameterSet::printout(ofilepath);
+  return ParameterSet::print_to_file(ofilepath);
 }
 
 }  // namespace trv

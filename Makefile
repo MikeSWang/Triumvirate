@@ -61,7 +61,7 @@ pyinstall:
 
 test: cpptest pytest
 
-cpptest: test_monitor test_parameters test_bessel test_harmonic test_tools \
+cpptest: test_monitor test_parameters test_bessel test_harmonic test_dataobjs \
          test_particles test_field test_twopt test_threept \
 				 test_fftlog
 
@@ -104,14 +104,15 @@ test_parameters: $(DIR_TEST)/test_parameters.cpp $(DIR_SOURCES)/parameters.cpp \
 						     $(DIR_SOURCES)/monitor.cpp $(DIR_SOURCES)/io.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_particles: $(DIR_TEST)/test_particles.cpp
+test_particles: $(DIR_TEST)/test_particles.cpp \
+						    $(DIR_SOURCES)/monitor.cpp $(DIR_SOURCES)/io.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
 test_threept: $(DIR_TEST)/test_threept.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_tools: $(DIR_TEST)/test_tools.cpp $(DIR_SOURCES)/tools.cpp \
-            $(DIR_SOURCES)/monitor.cpp $(DIR_SOURCES)/parameters.cpp
+test_dataobjs: $(DIR_TEST)/test_dataobjs.cpp $(DIR_SOURCES)/dataobjs.cpp \
+               $(DIR_SOURCES)/monitor.cpp $(DIR_SOURCES)/io.cpp $(DIR_SOURCES)/parameters.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
 test_twopt: $(DIR_TEST)/test_twopt.cpp
