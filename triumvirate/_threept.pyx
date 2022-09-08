@@ -18,7 +18,7 @@ from triumvirate._catalogue cimport CppParticleCatalogue, _ParticleCatalogue
 
 
 cdef extern from "include/dataobjs.hpp":
-    struct LineOfSight:
+    struct LineOfSight "trv::LineOfSight":
         double pos[3]
 
 
