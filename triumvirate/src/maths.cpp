@@ -57,7 +57,8 @@ const double pcoeff_lanczos[] = {
      -0.13857109526572011689554707,
       9.984369578019570859563e-6,
       1.50563273514931155834e-7,
-};  ///< Lanczos approximation coefficients for `gconst` & `nterm_lanczos`
+};  ///< Lanczos approximation coefficients
+    ///< for @c gconst & @c nterm_lanczos
     // varying number of significant figures
 
 std::complex<double> eval_lanczos_approx_series(std::complex<double> z) {

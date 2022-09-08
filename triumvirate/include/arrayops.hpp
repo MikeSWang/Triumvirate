@@ -53,7 +53,7 @@ class ExtrapError: public std::runtime_error {
   std::string err_mesg;  ///< error message
 
   /**
-   * @brief Construct an ExtrapError exception.
+   * @brief Construct an @ref trv::sys::ExtrapError exception.
    *
    * @param fmt_string Error message format string.
    * @param ... An arbitrary number of substitution arguments.
