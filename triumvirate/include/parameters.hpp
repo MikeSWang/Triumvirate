@@ -74,19 +74,19 @@ class ParameterSet {
 
   /// Mesh alignment.
   std::string alignment = "centre";  ///< box alignment:
-                                     ///< {'centre' (default), 'pad'}
+                                     ///< {"centre" (default), "pad"}
   std::string padscale = "box";      ///< padding scale
-                                     ///< (if `alignment` is 'pad'):
-                                     ///< {'box' (default), 'grid'}
+                                     ///< (if @c alignment is "pad"):
+                                     ///< {"box" (default), "grid"}
   double padfactor;                  ///< padding factor
 
   /// Mesh assignment.
   std::string assignment = "tsc";   ///< mesh assignment scheme:
-                                    ///< {'ngp', 'cic',
-                                    ///<  'tsc' (default), 'pcs'}
+                                    ///< {"ngp", "cic",
+                                    ///<  "tsc" (default), "pcs"}
   std::string interlace = "false";  ///< interlacing switch:
-                                    ///< {'true'/'on',
-                                    ///<  'false'/'off' (default)}
+                                    ///< {"true"/"on",
+                                    ///<  "false"/"off" (default)}
 
   /// --------------------------------------------------------------------
   /// Measurement
@@ -94,29 +94,29 @@ class ParameterSet {
 
   /// Measurement specification.
   std::string catalogue_type;    ///< catalogue type:
-                                 ///< {'survey', 'random', 'sim'}
+                                 ///< {"survey", "random", "sim"}
   std::string measurement_type;  ///< measurement_type:
-                                 ///< {'powspec', '2pcf', '2pcf-win',
-                                 ///<  'bispec', '3pcf', '3pcf-win',
-                                 ///<  '3pcf-win-wa'}
+                                 ///< {"powspec", "2pcf", "2pcf-win",
+                                 ///<  "bispec", "3pcf", "3pcf-win",
+                                 ///<  "3pcf-win-wa"}
 
   std::string norm_convention = "particle";   ///< normalisation
                                               ///< convention:
-                                              ///< {'mesh',
-                                              ///<  'particle' (default)}
+                                              ///< {"mesh",
+                                              ///<  "particle" (default)}
   std::string shotnoise_convention = "mesh";  ///< shot noise convention:
-                                              ///< {'mesh' (default),
-                                              ///<  'particle'}
+                                              ///< {"mesh" (default),
+                                              ///<  "particle"}
 
   std::string binning = "lin";  ///< binning scheme:
-                                ///< {'lin' (default), 'log',
-                                ///<  'linpad', 'logpad', 'custom'}
+                                ///< {"lin" (default), "log",
+                                ///<  "linpad", "logpad", "custom"}
   std::string form = "diag";    ///< form of the bispectrum measurement:
-                                ///< {'diag' (default), 'full'}
+                                ///< {"diag" (default), "full"}
 
   /// Derived measurement specification.
-  std::string npoint;  ///< npoint case: {'2pt', '3pt'}
-  std::string space;   ///< coordinte space: {'fourier', 'config'}
+  std::string npoint;  ///< npoint case: {"2pt", "3pt"}
+  std::string space;   ///< coordinte space: {"fourier", "config"}
 
   /// Measurement parameters.
   int ell1;  ///< spherical degree associated with the first wavevector
@@ -130,7 +130,7 @@ class ParameterSet {
   double bin_max;  ///< measurement range maximum (in Mpc/h or h/Mpc)
 
   int num_bins;  ///< number of measurement bins
-  int idx_bin;   ///< fixed bin index in 'full' `form`
+  int idx_bin;   ///< fixed bin index in "full" @c form
                  ///< bispectrum measurements
 
   /// --------------------------------------------------------------------

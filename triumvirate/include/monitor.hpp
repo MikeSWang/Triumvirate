@@ -52,29 +52,28 @@ extern int currTask;  ///< current task
 
 extern double gbytesMem;  ///< memory usage in gibibytes
 
-/// FIXME: Add function.
-// /**
-//  * @brief Return size in gibibytes.
-//  *
-//  * @tparam T A @c typename.
-//  * @returns Size in gibibytes.
-//  */
-// template <typename T>
-// double size_in_gb() {
-//   const double BYTES_PER_GBYTES = 1073741824.;  // 1024^3 bytes per gibibyte
-//   return sizeof(T) / BYTES_PER_GBYTES;
-// }
+/**
+ * @brief Return size in gibibytes.
+ *
+ * @tparam T A @c typename.
+ * @returns Size in gibibytes.
+ */
+template <typename T>
+double size_in_gb() {
+  const double BYTES_PER_GBYTES = 1073741824.;  // 1024^3 bytes per gibibyte
+  return sizeof(T) / BYTES_PER_GBYTES;
+}
 
 /**
  * @brief Return the current date-time string in
- *        "YYYY-MM-DD HH:MM:SS" format.
+ *        'YYYY-MM-DD HH:MM:SS' format.
  *
  * @returns Timestamp string.
  */
 std::string show_current_datetime();
 
 /**
- * @brief Return the elapsed-time string in "HH:MM:SS" format.
+ * @brief Return the elapsed-time string in 'HH:MM:SS' format.
  *
  * @param duration_in_seconds Duration in seconds.
  * @returns Elapsed-time string.
@@ -102,7 +101,7 @@ class UnimplementedError: public std::logic_error {
   std::string err_mesg;  ///< error message
 
   /**
-   * @brief Construct an @c UnimplementedError exception.
+   * @brief Construct an @ref trv::sys::UnimplementedError exception.
    *
    * @param fmt_string Error message format string.
    * @param ... An arbitrary number of substitution arguments.
@@ -126,7 +125,7 @@ class InvalidParameter: public std::invalid_argument {
   std::string err_mesg;  ///< error message
 
   /**
-   * @brief Construct an @c InvalidParameter exception.
+   * @brief Construct an @ref trv::sys::InvalidParameter exception.
    *
    * @param fmt_string Error message format string.
    * @param ... An arbitrary number of substitution arguments.
@@ -150,7 +149,7 @@ class InvalidData: public std::runtime_error {
   std::string err_mesg;  ///< error message
 
   /**
-   * @brief Construct an @c InvalidData exception.
+   * @brief Construct an @ref trv::sys::InvalidData exception.
    *
    * @param fmt_string Error message format string.
    * @param ... An arbitrary number of substitution arguments.

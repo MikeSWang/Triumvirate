@@ -43,7 +43,7 @@ class IOError: public std::runtime_error {
   std::string err_mesg;  ///< error message
 
   /**
-   * @brief Construct an @c IOError exception.
+   * @brief Construct an @ref trv::sys::IOError exception.
    *
    * @param fmt_string Error message format string.
    * @param ... An arbitrary number of substitution arguments.
@@ -62,7 +62,7 @@ class IOError: public std::runtime_error {
  * @brief Check if a file path is set.
  *
  * @param pathstr File path string.
- * @returns {true, false}
+ * @returns { @c true , @c false }
  */
 bool if_filepath_is_set(std::string pathstr);
 

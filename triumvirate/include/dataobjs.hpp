@@ -65,7 +65,7 @@ class Binning {
    *
    * @param coord_min Minimum coordinate in binning range.
    * @param coord_max Maximum coordinate in binning range.
-   * @param nbin Nunber of bins.
+   * @param nbin Number of bins.
    */
   Binning(double coord_min, double coord_max, int nbin);
 
@@ -84,8 +84,8 @@ class Binning {
    * @param scheme Binning scheme, one of
    *               {"lin", "log", "linpad", "logpad", "custom"}.
    * @param space Coordinate space, one of {"fourier", "config"}.
-   * @throws trv::sys::UnimplementedError When @c "custom" binning is not
-   *                                      implemented by the user.
+   * @throws trv::sys::UnimplementedError When @c binning is set to
+   *                                      "custom" but not implemented.
    * @throws trv::sys::InvalidParameter When @c scheme is not one of the
    *                                    options above.
    */
@@ -95,7 +95,7 @@ class Binning {
    * @brief Set bins.
    *
    * The binning scheme is inferred from @c params when initialised
-   * with @ref Binning(trv::ParameterSet&).
+   * with @ref trv::Binning::Binning(trv::ParameterSet&).
    *
    * @overload
    */

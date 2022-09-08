@@ -52,7 +52,7 @@ bool if_filepath_is_set(std::string pathstr) {
   int strcomp = pathstr.compare(
     pathstr.length() - endchar.length(), endchar.length(), endchar
   );
-  if (strcomp == 0) {return false;}  // `pathstr` ends in "/"
+  if (strcomp == 0) {return false;}  // @c pathstr ends in "/"
 
   /// Check if the string contains non-whitespace characters.  If so,
   /// the path is set, otherwise not.
