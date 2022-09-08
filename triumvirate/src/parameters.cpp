@@ -662,7 +662,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
   print_par_int("num_bins = %d\n", this->num_bins);
   print_par_int("idx_bin = %d\n", this->idx_bin);
 
-  print_par_int("verbose = %s\n", this->verbose);
+  print_par_int("verbose = %d\n", this->verbose);
 
   std::fclose(ofileptr);
 

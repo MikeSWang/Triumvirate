@@ -33,6 +33,10 @@
 #include <stdexcept>
 #include <string>
 
+#ifdef DBG_MODE
+#include <iostream>
+#endif  // DBG_MODE
+
 /// FIXME: To be removed.
 extern const double BYTES_PER_GBYTES;  ///< bytes per gibibyte
 
