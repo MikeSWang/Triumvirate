@@ -15,15 +15,14 @@
 #include "monitor.hpp"
 #include "parameters.hpp"
 #include "maths.hpp"
+#include "dataobjs.hpp"
 #include "particles.hpp"
 
 using namespace trv::maths;
-using namespace trv::obj;
 
 const double EPS_GRIDSHIFT = 1.e-5;
 
 namespace trv {
-namespace obj {
 
 /**
  * Meshed density-like field instantiated from particle sources.
@@ -2583,7 +2582,6 @@ class Pseudo2ptStats {
   }
 };
 
-}  // trv::obj::
-}  // trv::
+}  // namespace trv
 
-#endif  // TRIUMVIRATE_INCLUDE_FIELD_HPP_INCLUDED_
+#endif  // !TRIUMVIRATE_INCLUDE_FIELD_HPP_INCLUDED_

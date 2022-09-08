@@ -21,7 +21,7 @@ cdef class _ParticleCatalogue:
         np.ndarray[double, ndim=1, mode='c'] wc not None
     ):
         self.thisptr = new CppParticleCatalogue()
-        self.thisptr.read_particle_data(x, y, z, nz, ws, wc)
+        self.thisptr.load_particle_data(x, y, z, nz, ws, wc)
 
     def __dealloc__(self):
         del self.thisptr

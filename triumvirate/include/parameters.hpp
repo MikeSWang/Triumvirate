@@ -169,7 +169,7 @@ class ParameterSet {
    * @param out_parameter_filepath Printout parameter file path.
    * @returns Exit status.
    */
-  int printout(char* out_parameter_filepath);
+  int print_to_file(char* out_parameter_filepath);
 
   /**
    * @brief Print out extracted parameters to the default file path in the
@@ -179,7 +179,7 @@ class ParameterSet {
    *
    * @overload
    */
-  int printout();
+  int print_to_file();
 };
 
 }  // namespace trv

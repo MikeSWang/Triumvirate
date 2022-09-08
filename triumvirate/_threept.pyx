@@ -17,7 +17,7 @@ from triumvirate.parameters cimport CppParameterSet, ParameterSet
 from triumvirate._catalogue cimport CppParticleCatalogue, _ParticleCatalogue
 
 
-cdef extern from "include/particles.hpp":
+cdef extern from "include/dataobjs.hpp":
     struct LineOfSight:
         double pos[3]
 

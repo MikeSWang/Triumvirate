@@ -14,7 +14,7 @@
 #include <fftw3.h>
 
 #include "maths.hpp"
-#include "tools.hpp"
+#include "arrayops.hpp"
 
 using namespace trv::maths;
 

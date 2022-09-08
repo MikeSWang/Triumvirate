@@ -18,26 +18,23 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * @file tools.hpp
+ * @file arrayops.hpp
  * @author Mike S Wang (https://github.com/MikeSWang)
- * @brief Miscellaneous numerical tools.
+ * @brief Array operations.
  *
- * This module provides:
- * - linear and logarithmic extrapolation of 1-d and 2-d arrays; and
- * - binning schemes.
+ * Array operations provided include:
+ * - data extrapolations.
  */
 
-#ifndef TRIUMVIRATE_INCLUDE_TOOLS_HPP_INCLUDED_
-#define TRIUMVIRATE_INCLUDE_TOOLS_HPP_INCLUDED_
+#ifndef TRIUMVIRATE_INCLUDE_ARRAYOPS_HPP_INCLUDED_
+#define TRIUMVIRATE_INCLUDE_ARRAYOPS_HPP_INCLUDED_
 
 #include <cmath>
-#include <complex>
 #include <cstdarg>
 #include <stdexcept>
 #include <vector>
 
 #include "monitor.hpp"
-#include "parameters.hpp"
 
 namespace trv {
 
@@ -134,74 +131,6 @@ void extrap2d_bizeros(
 );
 
 }  // namespace trv::utils
-
-
-/// **********************************************************************
-/// Binning
-/// **********************************************************************
-
-namespace utils {
-
-/**
- * @brief Isotropic coordinate binning.
- *
- * This sets up isotropic wavenumber or separation bins
- * in configuration or Fourier space.
- *
- */
-class Binning {
- public:
-  std::string scheme;               ///< binning scheme
-  std::string space;                ///< coordinate space
-  double bin_min;                   ///< lowest bin edge
-  double bin_max;                   ///< highest bin edge
-  int num_bins;                     ///< number of bins
-  std::vector<double> bin_centres;  ///< bin centres
-  std::vector<double> bin_edges;    ///< bin edges
-
-  /**
-   * @brief Construct binnng from bin specification.
-   *
-   * @param coord_min Minimum coordinate in binning range.
-   * @param coord_max Maximum coordinate in binning range.
-   * @param nbin Nunber of bins.
-   */
-  Binning(double coord_min, double coord_max, int nbin);
-
-  /**
-   * @brief Construct binning from a parameter set.
-   *
-   * @param params Paramater set.
-   *
-   * @overload
-   */
-  Binning(trv::ParameterSet& params);
-
-  /**
-   * @brief Set bins.
-   *
-   * @param scheme Binning scheme, one of
-   *               {"lin", "log", "linpad", "logpad", "custom"}.
-   * @param space Coordinate space, one of {"fourier", "config"}.
-   * @throws trv::sys::UnimplementedError When @c "custom" binning is not
-   *                                      implemented by the user.
-   * @throws trv::sys::InvalidParameter When @c scheme is not one of the
-   *                                    options above.
-   */
-  void set_bins(std::string scheme, std::string space);
-
-  /**
-   * @brief Set bins.
-   *
-   * The binning scheme is inferred from @c params when initialised
-   * with @ref Binning(trv::ParameterSet&).
-   *
-   * @overload
-   */
-  void set_bins();
-};
-
-}  // namespace trv::utils
 }  // namespace trv
 
-#endif  // !TRIUMVIRATE_INCLUDE_TOOLS_HPP_INCLUDED_
+#endif  // !TRIUMVIRATE_INCLUDE_ARRAYOPS_HPP_INCLUDED_

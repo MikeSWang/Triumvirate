@@ -56,7 +56,7 @@ const double pcoeff_lanczos[] = {
      12.507343278686904814458936853,
      -0.13857109526572011689554707,
       9.984369578019570859563e-6,
-      1.50563273514931155834e-7
+      1.50563273514931155834e-7,
 };  ///< Lanczos approximation coefficients for `gconst` & `nterm_lanczos`
     // varying number of significant figures
 
@@ -256,7 +256,7 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_spa
   double dr[3] = {
     boxsize[0] / double(ngrid[0]),
     boxsize[1] / double(ngrid[1]),
-    boxsize[2] / double(ngrid[2]),
+    boxsize[2] / double(ngrid[2])
   };
 
   /// Assign a position vector to each grid cell.

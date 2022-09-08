@@ -84,7 +84,6 @@ cdef extern from "include/parameters.hpp":
         # Methods
         # ----------------------------------------------------------------
 
-        int printout()
         int validate()
 
 

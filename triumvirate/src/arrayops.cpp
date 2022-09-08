@@ -18,12 +18,12 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * @file tools.cpp
+ * @file arrayops.cpp
  * @author Mike S Wang (https://github.com/MikeSWang)
  *
  */
 
-#include "tools.hpp"
+#include "arrayops.hpp"
 
 namespace trv {
 
@@ -258,152 +258,6 @@ void extrap2d_bizeros(
     }
   }
 }
-
-}  // namespace trv::utils
-
-
-/// **********************************************************************
-/// Binning
-/// **********************************************************************
-
-namespace utils {
-
-Binning::Binning(double coord_min, double coord_max, int nbin) {
-  this->bin_min = coord_min;
-  this->bin_max = coord_max;
-  this->num_bins = nbin;
-}
-
-Binning::Binning(trv::ParameterSet& params) {
-  this->scheme = params.binning;
-  this->space = params.space;
-
-  this->bin_min = params.bin_min;
-  this->bin_max = params.bin_max;
-
-  this->num_bins = params.num_bins;
-}
-
-void Binning::set_bins(std::string scheme, std::string space) {
-  /// Set up padding parameters.
-  /// CAVEAT: Discretionary choices.
-  const int nbin_pad = 5;
-
-  double dbin_pad;
-  if (space == "fourier") {
-    dbin_pad = 1.e-3;
-  } else
-  if (space == "config") {
-    dbin_pad = 10.;
-  }
-
-  /// Implement binning scheme.
-  /// --------------------------------------------------------------------
-  /// Customised binning
-  /// --------------------------------------------------------------------
-  if (scheme == "custom") {
-    /// Insert customised binning code here.
-    throw trv::sys::UnimplementedError(
-      "Customed binning not implemented. "
-      "Implement your own binning scheme here (\"tools.cpp\")."
-    );
-  } else
-  /// --------------------------------------------------------------------
-  /// Linear binning
-  /// --------------------------------------------------------------------
-  if (scheme == "lin") {
-    double dbin = (this->bin_max - this->bin_min) / double(this->num_bins);
-
-    for (int ibin = 0; ibin < this->num_bins; ibin++) {
-      double edge_left = this->bin_min + dbin * ibin;
-      double centre = edge_left + dbin / 2.;
-
-      this->bin_edges.push_back(edge_left);
-      this->bin_centres.push_back(centre);
-    }
-    this->bin_edges.push_back(this->bin_max);
-  } else
-  /// --------------------------------------------------------------------
-  /// Logarithmic binning
-  /// --------------------------------------------------------------------
-  if (scheme == "log")  {
-    if (this->bin_min == 0.) {
-      throw trv::sys::InvalidParameter(
-        "Cannot use logarithmic binning when the lowest edge is zero."
-      );
-    }
-
-    double dlnbin = (std::log(this->bin_max) - std::log(this->bin_min))
-      / double(this->num_bins);
-
-    for (int ibin = 0; ibin < this->num_bins; ibin++) {
-      double edge_left = this->bin_min * std::exp(dlnbin * ibin);
-      double edge_right = this->bin_min * std::exp(dlnbin * (ibin + 1));
-      double centre = (edge_left + edge_right) / 2.;
-
-      this->bin_edges.push_back(edge_left);
-      this->bin_centres.push_back(centre);
-    }
-    this->bin_edges.push_back(this->bin_max);
-  } else
-  /// --------------------------------------------------------------------
-  /// Padded linear binning
-  /// --------------------------------------------------------------------
-  if (scheme == "linpad") {
-    for (int ibin = 0; ibin < nbin_pad; ibin++) {
-      double edge_left = dbin_pad * ibin;
-      double centre = edge_left + dbin_pad / 2.;
-
-      this->bin_edges.push_back(edge_left);
-      this->bin_centres.push_back(centre);
-    }
-
-    double bin_min = dbin_pad * nbin_pad;
-
-    double dbin = (this->bin_max - bin_min)
-      / double(this->num_bins - nbin_pad);
-
-    for (int ibin = nbin_pad; ibin < this->num_bins; ibin++) {
-      double edge_left = bin_min + dbin * (ibin - nbin_pad);
-      double centre = edge_left + dbin / 2.;
-
-      this->bin_edges.push_back(edge_left);
-      this->bin_centres.push_back(centre);
-    }
-    this->bin_edges.push_back(this->bin_max);
-  } else
-  /// --------------------------------------------------------------------
-  /// Padded logarithmic binning
-  /// --------------------------------------------------------------------
-  if (scheme == "logpad") {
-    for (int ibin = 0; ibin < nbin_pad; ibin++) {
-      double edge_left = dbin_pad * ibin;
-      double centre = edge_left + dbin_pad / 2.;
-
-      this->bin_edges.push_back(edge_left);
-      this->bin_centres.push_back(centre);
-    }
-
-    double bin_min = dbin_pad * nbin_pad;
-
-    double dlnbin = (std::log(this->bin_max) - std::log(bin_min))
-      / double(this->num_bins - nbin_pad);
-
-    for (int ibin = nbin_pad; ibin < this->num_bins; ibin++) {
-      double edge_left = bin_min * std::exp(dlnbin * (ibin - nbin_pad));
-      double edge_right = bin_min * std::exp(dlnbin * (ibin - nbin_pad + 1));
-      double centre = (edge_left + edge_right) / 2.;
-
-      this->bin_edges.push_back(edge_left);
-      this->bin_centres.push_back(centre);
-    }
-    this->bin_edges.push_back(this->bin_max);
-  } else {
-    throw trv::sys::InvalidParameter("Invalid binning `scheme`: %s.", scheme);
-  }
-}
-
-void Binning::set_bins() {Binning::set_bins(this->scheme, this->space);}
 
 }  // namespace trv::utils
 }  // namespace trv

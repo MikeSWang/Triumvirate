@@ -44,7 +44,8 @@ padfactor: ~
 # Mesh assignment scheme: {'ngp', 'cic', 'tsc' (default), 'pcs'}.
 assignment: tsc
 
-# Interlacing switch: {'true'/'on', 'false'/'off' (default))}.
+# Interlacing switch: {true/on, false/off (default))}.
+# The switch is overriden to `false` when measuring three-point statistics.
 interlace: off
 
 
