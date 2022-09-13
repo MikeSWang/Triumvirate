@@ -20,7 +20,7 @@
 /**
  * @file io.hpp
  * @author Mike S Wang (https://github.com/MikeSWang)
- * @brief Provide I/O support.
+ * @brief I/O support including custom exceptions and utility functions.
  *
  */
 

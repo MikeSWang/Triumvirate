@@ -22,10 +22,11 @@
  * @author Mike S Wang (https://github.com/MikeSWang)
  * @brief Mathematical calculations.
  *
- * This module provides support for the calculation, approximation and
- * interpolation of special functions including spherical Bessel
- * functions of the first kind, (reduced) spherical harmonics,
- * the gamma function and Wigner 3-j symbols.
+ * Mathematical calculations provided include:
+ * - spherical Bessel functions of the first kind with interpolation;
+ * - (reduced) spherical harmonics include 3-d grid storage;
+ * - Wigner 3-j symbols;
+ * - the gamma function and related quantities with Lanzcos approximation.
  *
  */
 

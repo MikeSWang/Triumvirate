@@ -22,6 +22,10 @@
  * @author Mike S Wang (https://github.com/MikeSWang)
  * @brief Provide tracking of program resources and exceptions.
  *
+ * This module defines the global variables and functions to track
+ * time and memory usage of the program.  It also defines custom
+ * exceptions used in the program.
+ *
  */
 
 #ifndef TRIUMVIRATE_INCLUDE_MONITOR_HPP_INCLUDED_
