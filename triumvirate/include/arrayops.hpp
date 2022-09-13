@@ -23,7 +23,7 @@
  * @brief Array operations.
  *
  * Array operations provided include:
- * - data extrapolations.
+ * - data extrapolations, both linearly and logarithmically, in 1- or 2-d.
  */
 
 #ifndef TRIUMVIRATE_INCLUDE_ARRAYOPS_HPP_INCLUDED_

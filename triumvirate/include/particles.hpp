@@ -22,6 +22,10 @@
  * @author Mike S Wang (https://github.com/MikeSWang)
  * @brief Particle containers with I/O methods and operations.
  *
+ * This module defines a particle catalogue object with I/O methods,
+ * summary information and its computations, and methods to offset
+ * particle coordinates (in particular in a mesh grid box).
+ *
  */
 
 #ifndef TRIUMVIRATE_INCLUDE_PARTICLES_HPP_INCLUDED_

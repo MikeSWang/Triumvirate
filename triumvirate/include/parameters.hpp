@@ -22,6 +22,8 @@
  * @author Mike S Wang (https://github.com/MikeSWang)
  * @brief Program parameter configuration.
  *
+ * This module provides a parameter set object with methods for reading,
+ * validating and printing parameters (from/to a file).
  */
 
 #ifndef TRIUMVIRATE_INCLUDE_PARAMETERS_HPP_INCLUDED_
