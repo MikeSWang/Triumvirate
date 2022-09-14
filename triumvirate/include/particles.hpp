@@ -19,7 +19,8 @@
 
 /**
  * @file particles.hpp
- * @author Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang)
+ *          Naonori Sugiyama (https://github.com/naonori)
  * @brief Particle containers with I/O methods and operations.
  *
  * This module defines a particle catalogue object with I/O methods,
@@ -74,12 +75,12 @@ class ParticleCatalogue {
   /// --------------------------------------------------------------------
 
   /**
-   * @brief Construct the particle container with initial values.
+   * @brief Construct the particle catalogue with initial values.
    */
   ParticleCatalogue();
 
   /**
-   * @brief Destruct the particle container.
+   * @brief Destruct the particle catalogue.
    */
   ~ParticleCatalogue();
 
@@ -98,6 +99,10 @@ class ParticleCatalogue {
 
   /**
    * @brief Finalise particle data container.
+   *
+   * This is an explicit method to free the resources occupied by
+   * @ref ParticleCatalogue.pdata and may be called outside the
+   * class destructor.
    */
   void finalise_particles();
 

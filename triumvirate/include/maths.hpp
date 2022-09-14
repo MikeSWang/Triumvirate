@@ -19,7 +19,8 @@
 
 /**
  * @file maths.hpp
- * @author Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang)
+ *          Naonori Sugiyama (https://github.com/naonori)
  * @brief Mathematical calculations.
  *
  * Mathematical calculations provided include:
@@ -73,7 +74,6 @@ std::complex<double> eval_complex_in_polar(double r, double theta);
  *        for the gamma function.
  *
  * The series approximate the gamma function by
- *
  * f@[
  *   \Gamma(z + 1) = \sqrt{2\pi}
  *     (z + g + 1/2)^{z + 1/2} \mathrm{e}^{- z - g - 1/2} A_g(z)

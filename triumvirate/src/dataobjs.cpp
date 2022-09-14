@@ -19,7 +19,8 @@
 
 /**
  * @file dataobjs.cpp
- * @author Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang)
+ *          Naonori Sugiyama (https://github.com/naonori)
  *
  */
 
@@ -172,6 +173,8 @@ void Binning::set_bins() {Binning::set_bins(this->scheme, this->space);}
 /// **********************************************************************
 /// Line of sight
 /// **********************************************************************
+
+/// No definition.
 
 /// **********************************************************************
 /// Clustering statistics
