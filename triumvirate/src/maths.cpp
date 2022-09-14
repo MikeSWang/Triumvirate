@@ -59,7 +59,8 @@ const double pcoeff_lanczos[] = {
       9.984369578019570859563e-6,
       1.50563273514931155834e-7,
 };  ///< Lanczos approximation coefficients
-    ///< for @c gconst & @c nterm_lanczos
+    ///< for @ref trv::maths::gconst_lanczos &
+    ///< @ref trv::maths::nterm_lanczos
     // varying number of significant figures
 
 std::complex<double> eval_lanczos_approx_series(std::complex<double> z) {
@@ -156,9 +157,9 @@ std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmoni
   double xyz_mod_sq = 0.;
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     xyz_mod_sq += pos[iaxis] * pos[iaxis];
-  }  // r^2 = x^2 + y^2 + z^2
+  }  // r² = x² + y² + z²
 
-  double xyz_mod = std::sqrt(xyz_mod_sq);  // r = √(x^2 + y^2 + z^2)
+  double xyz_mod = std::sqrt(xyz_mod_sq);  // r = √(x² + y² + z²)
 
   /// Return zero in the trivial case.
   if (std::fabs(xyz_mod) < eps) {return 0.;}
@@ -168,7 +169,7 @@ std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmoni
 
   /// Calculate the angular variable ϕ.
   double xy_mod = std::sqrt(pos[0] * pos[0] + pos[1] * pos[1]); // r_xy =
-                                                                // √(x^2 + y^2)
+                                                                // √(x² + y²)
 
   double phi = 0.;
   if (std::fabs(xy_mod) >= eps) {

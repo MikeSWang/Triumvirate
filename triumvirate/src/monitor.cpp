@@ -27,7 +27,7 @@
 #include "monitor.hpp"
 
 /// FIXME: To be removed.
-const double BYTES_PER_GBYTES = 1073741824.;  // 1024^3 bytes per gibibyte
+const double BYTES_PER_GBYTES = 1073741824.;  // 1024³ bytes per gibibyte
 
 namespace trv {
 namespace sys {

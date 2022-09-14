@@ -88,10 +88,10 @@ class ParticleCatalogue {
    * @brief Initialise particle data container.
    *
    * @note This does not set the values of
-   *       @ref ParticleCatalogue::ParticleData,
-   *       @ref ParticleCatalogue::wtotal,
-   *       @ref ParticleCatalogue::pos_min or
-   *       @ref ParticleCatalogue::pos_max.
+   *       @ref trv::ParticleCatalogue.ParticleData,
+   *       @ref trv::ParticleCatalogue.wtotal,
+   *       @ref trv::ParticleCatalogue.pos_min or
+   *       @ref trv::ParticleCatalogue.pos_max.
    *
    * @param num Number of data units (i.e. particles).
    */
@@ -101,7 +101,7 @@ class ParticleCatalogue {
    * @brief Finalise particle data container.
    *
    * This is an explicit method to free the resources occupied by
-   * @ref ParticleCatalogue.pdata and may be called outside the
+   * @ref trv::ParticleCatalogue.pdata and may be called outside the
    * class destructor.
    */
   void finalise_particles();
@@ -156,15 +156,15 @@ class ParticleCatalogue {
   /**
    * @brief Calculate total systematic weight of particles.
    *
-   * @note This method merely sets @ref ParticleCatalogue::wtotal.
+   * @note This method merely sets @ref trv::ParticleCatalogue::wtotal.
    */
   void calc_wtotal();
 
   /**
    * @brief Calculate the extents of particle positions.
    *
-   * @note This method merely sets @ref ParticleCatalogue::pos_min
-   *       and @ref ParticleCatalogue::pos_max.
+   * @note This method merely sets @ref trv::ParticleCatalogue::pos_min
+   *       and @ref trv::ParticleCatalogue::pos_max.
    */
   void calc_pos_min_and_max();
 
