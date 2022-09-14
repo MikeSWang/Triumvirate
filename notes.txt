@@ -1,10 +1,9 @@
 [NOTE] The following code tags are in use: {
-    'TODO', 'QUEST', 'WARNING',
-    'HACK',
+    'FIXME', 'TODO',
+    'QUEST', 'WARNING', HACK',
     'RFE',
-    'SEE', 'NOBUG',
+    'SEE', 'CAVEAT', 'STYLE'
 }
 
 [NOTE] The following code tags are available for use: {
-    'FIXME'
 }

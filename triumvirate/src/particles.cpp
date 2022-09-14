@@ -34,7 +34,7 @@ namespace trv {
 
 ParticleCatalogue::ParticleCatalogue () {
   /// Set default values.
-  /// NOTE: These assignments are not needed but kept for completeness.
+  /// CAVEAT: These assignments are not needed but kept for completeness.
   this->pdata = nullptr;
   this->ntotal = 0;
   this->wtotal = 0.;
