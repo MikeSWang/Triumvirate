@@ -19,7 +19,8 @@
 
 /**
  * @file monitor.hpp
- * @author Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang)
+ *          Naonori Sugiyama (https://github.com/naonori)
  * @brief Provide tracking of program resources and exceptions.
  *
  * This module defines the global variables and functions to track
