@@ -42,6 +42,7 @@
 
 #include <cmath>
 #include <complex>
+#include <vector>
 
 #include "monitor.hpp"
 
@@ -63,6 +64,19 @@ extern const std::complex<double> M_I;  ///< imaginary unit
  * @returns Value of the complex number.
  */
 std::complex<double> eval_complex_in_polar(double r, double theta);
+
+
+/// **********************************************************************
+/// Vectors
+/// **********************************************************************
+
+/**
+ * @brief Return the magnitude of a 3-d vector.
+ *
+ * @param vec A 3-d vector.
+ * @return Vector magnitude.
+ */
+double get_vec3d_magnitude(std::vector<double> vec);
 
 
 /// **********************************************************************
