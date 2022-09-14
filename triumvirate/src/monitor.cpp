@@ -111,6 +111,7 @@ std::string show_timestamp() {
 /// Program exceptions
 /// **********************************************************************
 
+/// STYLE: Column limit exceeded here.
 UnimplementedError::UnimplementedError(const char* fmt_string, ...): std::logic_error(
     "Unimplemented error."  // mandatory default error message
 ) {
@@ -128,6 +129,7 @@ const char* UnimplementedError::what() const noexcept {
   return this->err_mesg.c_str();
 }
 
+/// STYLE: Column limit exceeded here.
 InvalidParameter::InvalidParameter(const char* fmt_string, ...): std::invalid_argument(
   "Invalid parameter error."  // mandatory default error message
 ) {

@@ -153,7 +153,6 @@ double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3);
  *
  * The 'reduced' (conjugated and unit normalised) spherical harmonics are
  * given by
- *
  * @f[
  *   y_\ell^m = \sqrt(\frac{4*\pi}{2\ell + 1}) {Y_\ell^m}^\ast
  * @f]

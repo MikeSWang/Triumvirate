@@ -141,6 +141,7 @@ double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3) {
   return gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3);
 }
 
+/// STYLE: Column limit exceeded here.
 std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
   const int ell, const int m, double pos[3]
 ) {
@@ -192,6 +193,7 @@ std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmoni
   return ylm;
 }
 
+/// STYLE: Column limit exceeded here.
 void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
   const int ell, const int m,
   const double boxsize[3], const int ngrid[3],
@@ -238,6 +240,7 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_sp
   }
 }
 
+/// STYLE: Column limit exceeded here.
 void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
   const int ell, const int m,
   const double boxsize[3], const int ngrid[3],
