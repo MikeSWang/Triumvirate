@@ -85,9 +85,9 @@ class Binning {
    * @param scheme Binning scheme, one of
    *               {"lin", "log", "linpad", "logpad", "custom"}.
    * @param space Coordinate space, one of {"fourier", "config"}.
-   * @throws trv::sys::UnimplementedError When @c binning is set to
+   * @throws trv::sys::UnimplementedError When @p scheme is set to
    *                                      "custom" but not implemented.
-   * @throws trv::sys::InvalidParameter When @c scheme is not one of the
+   * @throws trv::sys::InvalidParameter When @p scheme is not one of the
    *                                    options above.
    */
   void set_bins(std::string scheme, std::string space);
@@ -95,8 +95,8 @@ class Binning {
   /**
    * @brief Set bins.
    *
-   * The binning scheme is inferred from @c params when initialised
-   * with @ref trv::Binning::Binning(trv::ParameterSet&).
+   * The binning scheme is inferred from @ref trv::ParameterSet.binning
+   * when initialised with @ref trv::Binning::Binning(trv::ParameterSet&).
    *
    * @overload
    */

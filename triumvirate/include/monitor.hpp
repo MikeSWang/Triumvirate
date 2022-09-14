@@ -65,7 +65,7 @@ extern double gbytesMem;  ///< memory usage in gibibytes
  */
 template <typename T>
 double size_in_gb() {
-  const double BYTES_PER_GBYTES = 1073741824.;  // 1024^3 bytes per gibibyte
+  const double BYTES_PER_GBYTES = 1073741824.;  // 1024³ bytes per gibibyte
   return sizeof(T) / BYTES_PER_GBYTES;
 }
 
