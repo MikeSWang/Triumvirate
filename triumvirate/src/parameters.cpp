@@ -573,7 +573,7 @@ int ParameterSet::validate() {
 
     if (trv::sys::currTask == 0) {
       std::printf(
-        "[%s WARN] Interlacing is unsupported for 3-point measurements. "
+        "[%s WARN] Interlacing is unsupported for three-point measurements. "
         "`interlace` is set to 'false'.",
         trv::sys::show_timestamp().c_str()
       );
