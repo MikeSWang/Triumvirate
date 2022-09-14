@@ -25,7 +25,7 @@
  *
  * Mathematical calculations provided include:
  * - spherical Bessel functions of the first kind with interpolation;
- * - (reduced) spherical harmonics include 3-d grid storage;
+ * - (reduced) spherical harmonics include 3-d mesh grid storage;
  * - Wigner 3-j symbols;
  * - the gamma function and related quantities with Lanzcos approximation.
  *

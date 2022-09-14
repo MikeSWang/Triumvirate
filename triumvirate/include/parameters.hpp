@@ -73,7 +73,8 @@ class ParameterSet {
 
   /// Derived mesh quantities.
   double volume;  ///< box volume (in Mpc^3/h^3)
-  int nmesh;      ///< number of mesh grids
+  int nmesh;      ///< number of mesh grid cells
+                  // FIXME: change to @c long long
 
   /// Mesh alignment.
   std::string alignment = "centre";  ///< box alignment:
