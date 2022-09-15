@@ -26,26 +26,26 @@ cdef extern from "include/twopt.hpp":
     struct PowspecMeasurements "trv::algo::PowspecMeasurements":
         vector[double] kbin
         vector[double] keff
-        vector[int] nmode
+        vector[int] nmodes
         vector[np.complex128_t] pk_raw
         vector[np.complex128_t] pk_shot
 
     struct CorrfuncMeasurements "trv::algo::CorrfuncMeasurements":
         vector[double] rbin
         vector[double] reff
-        vector[int] npair;
+        vector[int] npairs;
         vector[np.complex128_t] xi
 
     struct PowspecWindowMeasurements "trv::algo::PowspecWindowMeasurements":
         vector[double] kbin
         vector[double] keff
-        vector[int] nmode;
+        vector[int] nmodes;
         vector[np.complex128_t] pk
 
     struct CorrfuncWindowMeasurements "trv::algo::CorrfuncWindowMeasurements":
         vector[double] rbin
         vector[double] reff
-        vector[int] npair;
+        vector[int] npairs;
         vector[np.complex128_t] xi
 
     double calc_powspec_normalisation_from_mesh_cpp \
@@ -198,7 +198,7 @@ def _compute_powspec(
     return {
         'kbin': np.asarray(meas.kbin),
         'keff': np.asarray(meas.keff),
-        'nmode': np.asarray(meas.nmode),
+        'nmodes': np.asarray(meas.nmodes),
         'pk_raw': np.asarray(meas.pk_raw),
         'pk_shot': np.asarray(meas.pk_shot),
     }
@@ -248,7 +248,7 @@ def _compute_corrfunc(
     return {
         'rbin': np.asarray(meas.rbin),
         'reff': np.asarray(meas.reff),
-        'npair': np.asarray(meas.npair),
+        'npairs': np.asarray(meas.npairs),
         'xi': np.asarray(meas.xi),
     }
 
@@ -273,7 +273,7 @@ def _compute_powspec_in_box(
     return {
         'kbin': np.asarray(meas.kbin),
         'keff': np.asarray(meas.keff),
-        'nmode': np.asarray(meas.nmode),
+        'nmodes': np.asarray(meas.nmodes),
         'pk_raw': np.asarray(meas.pk_raw),
         'pk_shot': np.asarray(meas.pk_shot),
     }
@@ -299,7 +299,7 @@ def _compute_corrfunc_in_box(
     return {
         'rbin': np.asarray(meas.rbin),
         'reff': np.asarray(meas.reff),
-        'npair': np.asarray(meas.npair),
+        'npairs': np.asarray(meas.npairs),
         'xi': np.asarray(meas.xi),
     }
 
@@ -338,7 +338,7 @@ def _compute_corrfunc_in_box(
 #     return {
 #         'kbin': np.asarray(meas.kbin),
 #         'keff': np.asarray(meas.keff),
-#         'nmode': np.asarray(meas.nmode),
+#         'nmodes': np.asarray(meas.nmodes),
 #         'pk': np.asarray(meas.pk_raw),
 #     }
 
@@ -377,6 +377,6 @@ def _compute_corrfunc_window(
     return {
         'rbin': np.asarray(meas.rbin),
         'reff': np.asarray(meas.reff),
-        'npair': np.asarray(meas.npair),
+        'npairs': np.asarray(meas.npairs),
         'xi': np.asarray(meas.xi),
     }
