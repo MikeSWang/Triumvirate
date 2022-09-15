@@ -84,6 +84,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
 
       this->bin_edges.push_back(edge_left);
       this->bin_centres.push_back(centre);
+      this->bin_widths.push_back(dbin);
     }
     this->bin_edges.push_back(this->bin_max);
   } else
@@ -107,6 +108,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
 
       this->bin_edges.push_back(edge_left);
       this->bin_centres.push_back(centre);
+      this->bin_widths.push_back(edge_right - edge_left);
     }
     this->bin_edges.push_back(this->bin_max);
   } else
@@ -120,6 +122,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
 
       this->bin_edges.push_back(edge_left);
       this->bin_centres.push_back(centre);
+      this->bin_widths.push_back(dbin_pad);
     }
 
     double bin_min = dbin_pad * nbin_pad;
@@ -133,6 +136,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
 
       this->bin_edges.push_back(edge_left);
       this->bin_centres.push_back(centre);
+      this->bin_widths.push_back(dbin);
     }
     this->bin_edges.push_back(this->bin_max);
   } else
@@ -146,6 +150,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
 
       this->bin_edges.push_back(edge_left);
       this->bin_centres.push_back(centre);
+      this->bin_widths.push_back(dbin_pad);
     }
 
     double bin_min = dbin_pad * nbin_pad;
@@ -160,6 +165,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
 
       this->bin_edges.push_back(edge_left);
       this->bin_centres.push_back(centre);
+      this->bin_widths.push_back(edge_right - edge_left);
     }
     this->bin_edges.push_back(this->bin_max);
   } else {
