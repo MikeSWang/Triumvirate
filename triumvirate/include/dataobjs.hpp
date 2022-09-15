@@ -68,6 +68,7 @@ class Binning {
    * @param coord_min Minimum coordinate in binning range.
    * @param coord_max Maximum coordinate in binning range.
    * @param nbin Number of bins.
+   * @throws trv::sys::InvalidParameter When @p coord_min is negative.
    */
   Binning(double coord_min, double coord_max, int nbin);
 
