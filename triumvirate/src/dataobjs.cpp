@@ -33,19 +33,20 @@ namespace trv {
 /// **********************************************************************
 
 Binning::Binning(double coord_min, double coord_max, int nbin) {
+  if (coord_min < 0.) {
+    throw trv::sys::InvalidParameter("Binning range must be non-negative.");
+  }
+
   this->bin_min = coord_min;
   this->bin_max = coord_max;
   this->num_bins = nbin;
 }
 
-Binning::Binning(trv::ParameterSet& params) {
+Binning::Binning(trv::ParameterSet& params) : Binning::Binning(
+  params.bin_min, params.bin_max, params.num_bins
+) {
   this->scheme = params.binning;
   this->space = params.space;
-
-  this->bin_min = params.bin_min;
-  this->bin_max = params.bin_max;
-
-  this->num_bins = params.num_bins;
 }
 
 void Binning::set_bins(std::string scheme, std::string space) {
