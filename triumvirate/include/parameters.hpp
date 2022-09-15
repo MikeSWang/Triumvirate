@@ -74,7 +74,7 @@ class ParameterSet {
   /// Derived mesh quantities.
   double volume;  ///< box volume (in Mpc^3/h^3)
   int nmesh;      ///< number of mesh grid cells
-                  // FIXME: change to @c long long
+                  // FIXME: change to @c long long and take care of int()
 
   /// Mesh alignment.
   std::string alignment = "centre";  ///< box alignment:
@@ -119,7 +119,7 @@ class ParameterSet {
                                 ///< {"diag" (default), "full"}
 
   /// Derived measurement specification.
-  std::string npoint;  ///< npoint case: {"2pt", "3pt"}
+  std::string npoint;  ///< <i>N</i>-point case: {"2pt", "3pt"}
   std::string space;   ///< coordinte space: {"fourier", "config"}
 
   /// Measurement parameters.

@@ -1,6 +1,6 @@
 /**
  * @file measurements.cpp
- * @brief Perform N-point correlator clustering measurements.
+ * @brief Perform <i>N</i>-point correlator clustering measurements.
  *
  */
 
