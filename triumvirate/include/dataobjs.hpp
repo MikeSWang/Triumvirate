@@ -58,8 +58,9 @@ class Binning {
   double bin_min;                   ///< lowest bin edge
   double bin_max;                   ///< highest bin edge
   int num_bins;                     ///< number of bins
-  std::vector<double> bin_centres;  ///< bin centres
   std::vector<double> bin_edges;    ///< bin edges
+  std::vector<double> bin_centres;  ///< bin centres
+  std::vector<double> bin_widths;   ///< bin widths
 
   /**
    * @brief Construct binnng from bin specification.
