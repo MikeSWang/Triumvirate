@@ -153,7 +153,7 @@ double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3) {
 
 /// STYLE: Column limit exceeded here.
 std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
-  const int ell, const int m, double pos[3]
+  const int ell, const int m, std::vector<double> pos
 ) {
   /// Define zero precision.
   /// CAVEAT: Discretionary choice.
@@ -226,7 +226,7 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_sp
   };
 
   /// Assign a wavevector to each grid cell.
-  double kvec[3];
+  std::vector<double> kvec(3);
   for (int i = 0; i < ngrid[0]; i++) {
     for (int j = 0; j < ngrid[1]; j++) {
       for (int k = 0; k < ngrid[2]; k++) {
@@ -275,7 +275,7 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_spa
   };
 
   /// Assign a position vector to each grid cell.
-  double rvec[3];
+  std::vector<double> rvec(3);
   for (int i = 0; i < ngrid[0]; i++) {
     for (int j = 0; j < ngrid[1]; j++) {
       for (int k = 0; k < ngrid[2]; k++) {
