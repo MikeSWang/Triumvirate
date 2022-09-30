@@ -38,7 +38,6 @@
 #include <string>
 
 #include "monitor.hpp"
-#include "io.hpp"
 
 namespace trv {
 

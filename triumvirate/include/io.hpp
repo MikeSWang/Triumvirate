@@ -28,36 +28,18 @@
 #ifndef TRIUMVIRATE_INCLUDE_IO_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_IO_HPP_INCLUDED_
 
-#include <cstdarg>
-#include <stdexcept>
 #include <string>
 
+#include "parameters.hpp"
+#include "particles.hpp"
+
 namespace trv {
+
+/// **********************************************************************
+/// System
+/// **********************************************************************
+
 namespace sys {
-
-/**
- * @brief Exception raised when an input/output operation fails.
- *
- */
-class IOError: public std::runtime_error {
- public:
-  std::string err_mesg;  ///< error message
-
-  /**
-   * @brief Construct an @ref trv::sys::IOError exception.
-   *
-   * @param fmt_string Error message format string.
-   * @param ... An arbitrary number of substitution arguments.
-   */
-  IOError(const char* fmt_string, ...);
-
-  /**
-   * @brief Exception string representation.
-   *
-   * @returns String representation of the exception.
-   */
-  virtual const char* what() const noexcept;
-};
 
 /**
  * @brief Check if a file path is set.
@@ -68,6 +50,43 @@ class IOError: public std::runtime_error {
 bool if_filepath_is_set(std::string pathstr);
 
 }  // namespace trv::sys
+
+
+/// **********************************************************************
+/// Program
+/// **********************************************************************
+
+/**
+ * @brief Print the pre-measurement header to a file including information
+ *        about the catalogue(s) and mesh grid assignment.
+ *
+ * @param fileptr File to print to.
+ * @param params Parameter set.
+ * @param catalogue_data (Data-source) particle catalogue.
+ * @param catalogue_rand (Random-source) particle catalogue.
+ * @return Header as a multi-line string.
+ */
+void print_premeasurement_info(
+  std::FILE* fileptr, trv::ParameterSet& params,
+  trv::ParticleCatalogue& catalogue_data, trv::ParticleCatalogue& catalogue_rand
+);
+
+/**
+ * @brief Print the pre-measurement header to a file including information
+ *        about the catalogue(s) and mesh grid assignment.
+ *
+ * @param fileptr File to print to.
+ * @param params Parameter set.
+ * @param catalogue Particle catalogue.
+ * @return Header as a multi-line string.
+ *
+ * @overload
+ */
+void print_premeasurement_info(
+  std::FILE* fileptr,
+  trv::ParameterSet& params, trv::ParticleCatalogue& catalogue
+);
+
 }  // namespace trv
 
 #endif  // !TRIUMVIRATE_INCLUDE_IO_HPP_INCLUDED_

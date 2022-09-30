@@ -27,22 +27,12 @@
 #include "io.hpp"
 
 namespace trv {
+
+/// **********************************************************************
+/// System
+/// **********************************************************************
+
 namespace sys {
-
-IOError::IOError(const char* fmt_string, ...): std::runtime_error(
-    "I/O error."  // mandatory default error message
-) {
-  std::va_list args;
-
-  char err_mesg_buf[4096];
-  va_start(args, fmt_string);
-  std::vsprintf(err_mesg_buf, fmt_string, args);
-  va_end(args);
-
-  this->err_mesg = std::string(err_mesg_buf);
-}
-
-const char* IOError::what() const noexcept {return this->err_mesg.c_str();}
 
 bool if_filepath_is_set(std::string pathstr) {
   /// Check if the string is empty.
@@ -65,4 +55,103 @@ bool if_filepath_is_set(std::string pathstr) {
 }
 
 }  // namespace trv::sys
+
+
+/// **********************************************************************
+/// Program
+/// **********************************************************************
+
+void print_premeasurement_info(
+  std::FILE* fileptr, trv::ParameterSet& params,
+  trv::ParticleCatalogue& catalogue_data, trv::ParticleCatalogue& catalogue_rand
+) {
+  std::fprintf(
+    fileptr,
+    "# Data catalogue: %d particles of total weight %.3f\n",
+    catalogue_data.ntotal, catalogue_data.wtotal
+  );
+  std::fprintf(
+    fileptr,
+    "# Random catalogue: %d particles of total weight %.3f\n",
+    catalogue_rand.ntotal, catalogue_rand.wtotal
+  );
+  std::fprintf(
+    fileptr,
+    "# Box size: (%.3f, %.3f, %.3f)\n",
+    params.boxsize[0], params.boxsize[1], params.boxsize[2]
+  );
+  std::fprintf(
+    fileptr,
+    "# Mesh number: (%d, %d, %d)\n",
+    params.ngrid[0], params.ngrid[1], params.ngrid[2]
+  );
+  std::fprintf(
+    fileptr,
+    "# Data-source particle extents: "
+    "([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
+    catalogue_data.pos_min[0], catalogue_data.pos_max[0],
+    catalogue_data.pos_min[1], catalogue_data.pos_max[1],
+    catalogue_data.pos_min[2], catalogue_data.pos_max[2]
+  );
+  std::fprintf(
+    fileptr,
+    "# Random-source particle extents: "
+    "([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
+    catalogue_rand.pos_min[0], catalogue_rand.pos_max[0],
+    catalogue_rand.pos_min[1], catalogue_rand.pos_max[1],
+    catalogue_rand.pos_min[2], catalogue_rand.pos_max[2]
+  );
+  std::fprintf(
+    fileptr,
+    "# Box alignment: %s,\n",
+    params.alignment.c_str()
+  );
+  std::fprintf(
+    fileptr,
+    "# Mesh assignment and interlacing: %s, %s\n",
+    params.assignment.c_str(), params.interlace.c_str()
+  );
+}
+
+void print_premeasurement_info(
+  std::FILE* fileptr,
+  trv::ParameterSet& params, trv::ParticleCatalogue& catalogue
+) {
+  std::fprintf(
+    fileptr,
+    "# Catalogue: %d particles of total weight %.3f\n",
+    catalogue.ntotal, catalogue.wtotal
+  );
+  std::fprintf(
+    fileptr,
+    "# Box size: (%.3f, %.3f, %.3f)\n",
+    params.boxsize[0], params.boxsize[1], params.boxsize[2]
+  );
+  std::fprintf(
+    fileptr,
+    "# Mesh number: (%d, %d, %d)\n",
+    params.ngrid[0], params.ngrid[1], params.ngrid[2]
+  );
+  std::fprintf(
+    fileptr,
+    "# Particle extents: "
+    "([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
+    catalogue.pos_min[0], catalogue.pos_max[0],
+    catalogue.pos_min[1], catalogue.pos_max[1],
+    catalogue.pos_min[2], catalogue.pos_max[2]
+  );
+  std::fprintf(
+    fileptr,
+    "# Box alignment: %s,\n",
+    params.alignment.c_str()
+  );
+  std::fprintf(
+    fileptr,
+    "# Mesh assignment and interlacing: %s, %s\n",
+    params.assignment.c_str(), params.interlace.c_str()
+  );
+}
+
+
+
 }  // namespace trv
