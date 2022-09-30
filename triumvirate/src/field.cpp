@@ -1255,22 +1255,25 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
             shotnoise_amp * this->calc_shotnoise_aliasing(kv);
 
           /// Apply grid corrections.
-          double win;
+          double win_pk, win_sn;
           if (this->params.interlace == "true") {
-            win = field_a.calc_assignment_window_in_fourier(kv) *
+            win_pk = field_a.calc_assignment_window_in_fourier(kv) *
               field_b.calc_assignment_window_in_fourier(kv);
+            win_sn = win_pk;
           } else
           if (this->params.interlace == "false") {
 #ifndef DBG_NOAC
-            win = calc_shotnoise_aliasing(kv);
+            win_sn = calc_shotnoise_aliasing(kv);
+            win_pk = win_sn;
 #else   // !DBG_NOAC
-            win = field_a.calc_assignment_window_in_fourier(kv) *
+            win_pk = field_a.calc_assignment_window_in_fourier(kv) *
               field_b.calc_assignment_window_in_fourier(kv);
+            win_sn = calc_shotnoise_aliasing(kv);
 #endif  // !DBG_NOAC
           }
 
-          pk_mode /= win;
-          sn_mode /= win;
+          pk_mode /= win_pk;
+          sn_mode /= win_sn;
 
           /// Weight by reduced spherical harmonics.
           std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
@@ -1362,24 +1365,28 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
         std::complex<double> sn_mode =
           shotnoise_amp * this->calc_shotnoise_aliasing(kv);
 
-        pk_mode -= sn_mode;
-
         /// Apply grid corrections.
-        double win;
+        double win_pk, win_sn;
         if (this->params.interlace == "true") {
-          win = field_a.calc_assignment_window_in_fourier(kv) *
+          win_pk = field_a.calc_assignment_window_in_fourier(kv) *
             field_b.calc_assignment_window_in_fourier(kv);
+          win_sn = win_pk;
         } else
         if (this->params.interlace == "false") {
 #ifndef DBG_NOAC
-          win = calc_shotnoise_aliasing(kv);
+          win_sn = calc_shotnoise_aliasing(kv);
+          win_pk = win_sn;
 #else   // !DBG_NOAC
-          win = field_a.calc_assignment_window_in_fourier(kv) *
+          win_pk = field_a.calc_assignment_window_in_fourier(kv) *
             field_b.calc_assignment_window_in_fourier(kv);
+          win_sn = calc_shotnoise_aliasing(kv);
 #endif  // !DBG_NOAC
         }
 
-        pk_mode /= win;
+        pk_mode /= win_pk;
+        sn_mode /= win_sn;
+
+        pk_mode -= sn_mode;
 
         twopt_3d[idx_grid][0] = pk_mode.real() / this->vol;
         twopt_3d[idx_grid][1] = pk_mode.imag() / this->vol;
@@ -1571,24 +1578,28 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
         std::complex<double> sn_mode =
           shotnoise_amp * this->calc_shotnoise_aliasing(kv);
 
-        pk_mode -= sn_mode;
-
         /// Apply grid corrections.
-        double win;
+        double win_pk, win_sn;
         if (this->params.interlace == "true") {
-          win = field_a.calc_assignment_window_in_fourier(kv) *
+          win_pk = field_a.calc_assignment_window_in_fourier(kv) *
             field_b.calc_assignment_window_in_fourier(kv);
+          win_sn = win_pk;
         } else
         if (this->params.interlace == "false") {
 #ifndef DBG_NOAC
-          win = calc_shotnoise_aliasing(kv);
+          win_sn = calc_shotnoise_aliasing(kv);
+          win_pk = win_sn;
 #else   // !DBG_NOAC
-          win = field_a.calc_assignment_window_in_fourier(kv) *
+          win_pk = field_a.calc_assignment_window_in_fourier(kv) *
             field_b.calc_assignment_window_in_fourier(kv);
+          win_sn = calc_shotnoise_aliasing(kv);
 #endif  // !DBG_NOAC
         }
 
-        pk_mode /= win;
+        pk_mode /= win_pk;
+        sn_mode /= win_sn;
+
+        pk_mode -= sn_mode;
 
         twopt_3d[idx_grid][0] = pk_mode.real() / this->vol;
         twopt_3d[idx_grid][1] = pk_mode.imag() / this->vol;
@@ -1729,24 +1740,28 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
         std::complex<double> sn_mode =
           shotnoise_amp * this->calc_shotnoise_aliasing(kv);
 
-        pk_mode -= sn_mode;
-
         /// Apply grid corrections.
-        double win;
+        double win_pk, win_sn;
         if (this->params.interlace == "true") {
-          win = field_a.calc_assignment_window_in_fourier(kv) *
+          win_pk = field_a.calc_assignment_window_in_fourier(kv) *
             field_b.calc_assignment_window_in_fourier(kv);
+          win_sn = win_pk;
         } else
         if (this->params.interlace == "false") {
 #ifndef DBG_NOAC
-          win = calc_shotnoise_aliasing(kv);
+          win_sn = calc_shotnoise_aliasing(kv);
+          win_pk = win_sn;
 #else   // !DBG_NOAC
-          win = field_a.calc_assignment_window_in_fourier(kv) *
+          win_pk = field_a.calc_assignment_window_in_fourier(kv) *
             field_b.calc_assignment_window_in_fourier(kv);
+          win_sn = calc_shotnoise_aliasing(kv);
 #endif  // !DBG_NOAC
         }
 
-        pk_mode /= win;
+        pk_mode /= win_pk;
+        sn_mode /= win_sn;
+
+        pk_mode -= sn_mode;
 
         twopt_3d[idx_grid][0] = pk_mode.real() / this->vol;
         twopt_3d[idx_grid][1] = pk_mode.imag() / this->vol;
