@@ -122,6 +122,30 @@ class UnimplementedError: public std::logic_error {
 };
 
 /**
+ * @brief Exception raised when an input/output operation fails.
+ *
+ */
+class IOError: public std::runtime_error {
+ public:
+  std::string err_mesg;  ///< error message
+
+  /**
+   * @brief Construct an @ref trv::sys::IOError exception.
+   *
+   * @param fmt_string Error message format string.
+   * @param ... An arbitrary number of substitution arguments.
+   */
+  IOError(const char* fmt_string, ...);
+
+  /**
+   * @brief Exception string representation.
+   *
+   * @returns String representation of the exception.
+   */
+  virtual const char* what() const noexcept;
+};
+
+/**
  * @brief Exception raised when parameters are invalid.
  *
  */

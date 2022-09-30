@@ -30,7 +30,7 @@ cdef extern from "include/twopt.hpp":
         vector[np.complex128_t] pk_raw
         vector[np.complex128_t] pk_shot
 
-    struct CorrfuncMeasurements "trv::algo::CorrfuncMeasurements":
+    struct TwoPCFMeasurements "trv::algo::TwoPCFMeasurements":
         vector[double] rbin
         vector[double] reff
         vector[int] npairs;
@@ -42,7 +42,7 @@ cdef extern from "include/twopt.hpp":
         vector[int] nmodes;
         vector[np.complex128_t] pk
 
-    struct CorrfuncWindowMeasurements "trv::algo::CorrfuncWindowMeasurements":
+    struct TwoPCFWindowMeasurements "trv::algo::TwoPCFWindowMeasurements":
         vector[double] rbin
         vector[double] reff
         vector[int] npairs;
@@ -74,7 +74,7 @@ cdef extern from "include/twopt.hpp":
         bool_t save
     )
 
-    CorrfuncMeasurements compute_corrfunc_cpp "trv::algo::compute_corrfunc" (
+    TwoPCFMeasurements compute_corrfunc_cpp "trv::algo::compute_corrfunc" (
         CppParticleCatalogue& particles_data,
         CppParticleCatalogue& particles_rand,
         LineOfSight* los_data,
@@ -97,7 +97,7 @@ cdef extern from "include/twopt.hpp":
             bool_t save
         )
 
-    CorrfuncMeasurements compute_corrfunc_in_box_cpp \
+    TwoPCFMeasurements compute_corrfunc_in_box_cpp \
         "trv::algo::compute_corrfunc_in_box" (
             CppParticleCatalogue& particles_data,
             CppParameterSet& params,
@@ -119,7 +119,7 @@ cdef extern from "include/twopt.hpp":
     #         bool_t save
     #     )
 
-    CorrfuncWindowMeasurements compute_corrfunc_window_cpp \
+    TwoPCFWindowMeasurements compute_corrfunc_window_cpp \
         "trv::algo::compute_corrfunc_window" (
             CppParticleCatalogue& particles_rand,
             LineOfSight* los_rand,
@@ -235,7 +235,7 @@ def _compute_corrfunc(
         los_rand_cpp[pid].pos[2] = los_z
 
     # Run algorithm.
-    cdef CorrfuncMeasurements meas
+    cdef TwoPCFMeasurements meas
     meas = compute_corrfunc_cpp(
         deref(particles_data.thisptr), deref(particles_rand.thisptr),
         los_data_cpp, los_rand_cpp,
@@ -288,7 +288,7 @@ def _compute_corrfunc_in_box(
         bool_t save
     ):
 
-    cdef CorrfuncMeasurements meas
+    cdef TwoPCFMeasurements meas
     meas = compute_corrfunc_in_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
         rbin,
@@ -364,7 +364,7 @@ def _compute_corrfunc_window(
         los_rand_cpp[pid].pos[2] = los_z
 
     # Run algorithm.
-    cdef CorrfuncWindowMeasurements meas
+    cdef TwoPCFWindowMeasurements meas
     meas = compute_corrfunc_window_cpp(
         deref(particles_rand.thisptr),
         los_rand_cpp,

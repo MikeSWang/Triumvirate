@@ -10,8 +10,9 @@
 #include "monitor.hpp"
 #include "parameters.hpp"
 #include "maths.hpp"
-#include "dataobjs.hpp"
 #include "particles.hpp"
+#include "io.hpp"
+#include "dataobjs.hpp"
 #include "field.hpp"
 
 using namespace trv::maths;
@@ -42,44 +43,10 @@ namespace algo {
 void print_2pt_meas_file_header(
   std::FILE* save_fileptr, trv::ParameterSet& params,
   ParticleCatalogue& catalogue_data, ParticleCatalogue& catalogue_rand,
-  float norm, float norm_alt, std::complex<double> pk_sn_particle,
-  std::string space
+  float norm, float norm_alt, std::complex<double> pk_sn_particle
 ) {
-  std::fprintf(
-    save_fileptr,
-    "# Data catalogue: %d particles of total weight %.3f\n",
-    catalogue_data.ntotal, catalogue_data.wtotal
-  );
-  std::fprintf(
-    save_fileptr,
-    "# Random catalogue: %d particles of total weight %.3f\n",
-    catalogue_rand.ntotal, catalogue_rand.wtotal
-  );
-  std::fprintf(
-    save_fileptr,
-    "# Box size: (%.3f, %.3f, %.3f)\n",
-    params.boxsize[0], params.boxsize[1], params.boxsize[2]
-  );
-  std::fprintf(
-    save_fileptr,
-    "# Mesh number: (%d, %d, %d)\n",
-    params.ngrid[0], params.ngrid[1], params.ngrid[2]
-  );
-  std::fprintf(
-    save_fileptr,
-    "# Particle extents: ([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
-    catalogue_data.pos_min[0], catalogue_data.pos_max[0],
-    catalogue_data.pos_min[1], catalogue_data.pos_max[1],
-    catalogue_data.pos_min[2], catalogue_data.pos_max[2]
-  );
-  std::fprintf(
-    save_fileptr,
-    "# Alignment and assignment: %s, %s\n",
-    params.alignment.c_str(), params.assignment.c_str()
-  );
-  std::fprintf(
-    save_fileptr,
-    "# Interlacing: %s\n", params.interlace.c_str()
+  trv::print_premeasurement_info(
+    save_fileptr, params, catalogue_data, catalogue_rand
   );
   std::fprintf(
     save_fileptr,
@@ -104,18 +71,18 @@ void print_2pt_meas_file_header(
       pk_sn_particle.real()
     );
   }
-  if (space == "config") {
+  if (params.space == "config") {
     std::fprintf(
       save_fileptr,
-      "# [0] r_central, [1] r_eff, [2] npair, "
+      "# [0] r_central, [1] r_eff, [2] npairs, "
       "[3] xi%d.real, [4] xi%d.imag",
       params.ELL, params.ELL
     );
   } else
-  if (space == "fourier") {
+  if (params.space == "fourier") {
     std::fprintf(
       save_fileptr,
-      "# [0] k_central, [1] k_eff, [2] nmode, "
+      "# [0] k_central, [1] k_eff, [2] nmodes, "
       "[3] pk%d_raw.real, [4] pk%d_raw.imag, "
       "[5] pk_shot.real, [6] pk_shot.imag\n",
       params.ELL, params.ELL
@@ -123,7 +90,7 @@ void print_2pt_meas_file_header(
   } else {
     throw trv::sys::InvalidParameter(
       "[%s ERRO] `space` must be either 'config' or 'fourier': %s\n",
-      trv::sys::show_timestamp().c_str(), space.c_str()
+      trv::sys::show_timestamp().c_str(), params.space.c_str()
     );
   }
 }
@@ -144,40 +111,9 @@ void print_2pt_meas_file_header(
 void print_2pt_meas_file_header(
   std::FILE* save_fileptr,trv::ParameterSet& params,
   ParticleCatalogue& catalogue, float norm, float norm_alt,
-  std::complex<double> pk_sn_particle,
-  std::string space
+  std::complex<double> pk_sn_particle
 ) {
-  std::fprintf(
-    save_fileptr,
-    "# Catalogue: %d particles of total weight %.3f\n",
-    catalogue.ntotal, catalogue.wtotal
-  );
-  std::fprintf(
-    save_fileptr,
-    "# Box size: (%.3f, %.3f, %.3f)\n",
-    params.boxsize[0], params.boxsize[1], params.boxsize[2]
-  );
-  std::fprintf(
-    save_fileptr,
-    "# Mesh number: (%d, %d, %d)\n",
-    params.ngrid[0], params.ngrid[1], params.ngrid[2]
-  );
-  std::fprintf(
-    save_fileptr,
-    "# Particle extents: ([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
-    catalogue.pos_min[0], catalogue.pos_max[0],
-    catalogue.pos_min[1], catalogue.pos_max[1],
-    catalogue.pos_min[2], catalogue.pos_max[2]
-  );
-  std::fprintf(
-    save_fileptr,
-    "# Alignment and assignment: %s, %s\n",
-    params.alignment.c_str(), params.assignment.c_str()
-  );
-  std::fprintf(
-    save_fileptr,
-    "# Interlacing: %s\n", params.interlace.c_str()
-  );
+  trv::print_premeasurement_info(save_fileptr, params, catalogue);
   std::fprintf(
     save_fileptr,
     "# Normalisation (%s-based): %.9e\n",
@@ -201,10 +137,10 @@ void print_2pt_meas_file_header(
       pk_sn_particle.real()
     );
   }
-  if (space == "config") {
+  if (params.space == "config") {
     std::fprintf(
       save_fileptr,
-      "# [0] r_central, [1] r_eff, [2] npair, "
+      "# [0] r_central, [1] r_eff, [2] npairs, "
       "[3] xi%d.real, [4] xi%d.imag",
       params.ELL, params.ELL
     );
@@ -212,7 +148,7 @@ void print_2pt_meas_file_header(
   if (space == "fourier") {
     std::fprintf(
       save_fileptr,
-      "# [0] k_central, [1] k_eff, [2] nmode, "
+      "# [0] k_central, [1] k_eff, [2] nmodes, "
       "[3] pk%d_raw.real, [4] pk%d_raw.imag, "
       "[5] pk_shot.real, [6] pk_shot.imag\n",
       params.ELL, params.ELL
@@ -224,55 +160,6 @@ void print_2pt_meas_file_header(
     );
   }
 }
-
-/**
- * Power spectrum measurements.
- *
- */
-struct PowspecMeasurements {
-  std::vector<double> kbin;  ///< central wavenumber in bins
-  std::vector<double> keff;  ///< effective wavenumber in bins
-  std::vector<int> nmode;  ///< number of contributing wavevector modes
-  std::vector< std::complex<double> > pk_raw;  /**< power spectrum
-                                                    raw measurements */
-  std::vector< std::complex<double> > pk_shot;  ///< power spectrum shot noise
-};
-
-/**
- * Two-point correlation function measurements.
- *
- */
-struct CorrfuncMeasurements {
-  std::vector<double> rbin;  ///< central separation in bins
-  std::vector<double> reff;  ///< effective separation in bins
-  std::vector<int> npair;  ///< number of contributing separation pairs
-  std::vector< std::complex<double> > xi;  /**< two-point correlation function
-                                                measurements */
-};
-
-/**
- * Power spectrum window measurements.
- *
- */
-struct PowspecWindowMeasurements {
-  std::vector<double> kbin;  ///< central wavenumber in bins
-  std::vector<double> keff;  ///< effective wavenumber in bins
-  std::vector<int> nmode;  ///< number of contributing wavevector modes
-  std::vector< std::complex<double> > pk;  /**< power spectrum
-                                                window measurements */
-};
-
-/**
- * Two-point correlation function window measurements.
- *
- */
-struct CorrfuncWindowMeasurements {
-  std::vector<double> rbin;  ///< central separation in bins
-  std::vector<double> reff;  ///< effective separation in bins
-  std::vector<int> npair;  ///< number of contributing separation pairs
-  std::vector< std::complex<double> > xi;  /**< two-point correlation function
-                                                window measurements */
-};
 
 /**
  * Calculate mesh-based power spectrum normalisation.
@@ -287,9 +174,9 @@ double calc_powspec_normalisation_from_mesh(
   trv::ParameterSet& params,
   double alpha=1.
 ) {
-  PseudoDensityField<ParticleCatalogue> catalogue_mesh(params);
+  MeshField catalogue_mesh(params);
 
-  double norm_factor = catalogue_mesh._calc_wgt_sq_volume_norm(catalogue)
+  double norm_factor = catalogue_mesh.calc_grid_based_powlaw_norm(catalogue, 2)
     / std::pow(alpha, 2);
 
   catalogue_mesh.finalise_density_field();
@@ -367,19 +254,19 @@ double calc_powspec_shotnoise_from_particles(
   return shotnoise;
 }
 
-/// NOBUG: Standard naming convention is not always followed for
+/// STYLE: Standard naming convention is not always followed for
 /// intermediary quantities in the functions below.
 
 /**
  * Compute power spectrum from paired catalogues and
  * optionally save the results.
  *
- * @param particles_data (Data-source) particle container.
- * @param particles_rand (Random-source) particle container.
+ * @param particles_data (Data-source) particle catalogue.
+ * @param particles_rand (Random-source) particle catalogue.
  * @param los_data (Data-source) particle lines of sight.
  * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
- * @param kbin Wavenumber bins.
+ * @param kbins Wavenumber bins.
  * @param alpha Alpha ratio.
  * @param norm Normalisation factor.
  * @param norm_alt Alternative normalisation factor (default is 0.) which
@@ -389,11 +276,11 @@ double calc_powspec_shotnoise_from_particles(
  *             to the measurement output file set by `params`.
  * @returns powspec_out Output power spectrum measurements.
  */
-PowspecMeasurements compute_powspec(
+trv::PowspecMeasurements compute_powspec(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
   trv::ParameterSet& params,
-  std::vector<double> kbin,
+  trv::Binning& kbins,
   double alpha,
   double norm,
   double norm_alt=0.,
@@ -413,12 +300,12 @@ PowspecMeasurements compute_powspec(
   int ell1 = params.ELL;
 
   /// Set up output.
-  int* nmode_save = new int[params.num_bins];
+  int* nmodes_save = new int[params.num_bins];
   double* k_save = new double[params.num_bins];
   std::complex<double>* pk_save = new std::complex<double>[params.num_bins];
   std::complex<double>* sn_save = new std::complex<double>[params.num_bins];
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    nmode_save[ibin] = 0;
+    nmodes_save[ibin] = 0;
     k_save[ibin] = 0.;
     pk_save[ibin] = 0.;
     sn_save[ibin] = 0.;
@@ -427,21 +314,21 @@ PowspecMeasurements compute_powspec(
   /* * Measurement ********************************************************* */
 
   /// Compute power spectrum.
-  PseudoDensityField<ParticleCatalogue> dn_00(params);
-  dn_00.compute_ylm_wgtd_fluctuation(
+  MeshField dn_00(params);
+  dn_00.compute_ylm_wgtd_field(
     particles_data, particles_rand, los_data, los_rand, alpha, 0, 0
   );
   dn_00.fourier_transform();
 
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-    PseudoDensityField<ParticleCatalogue> dn_LM(params);
-    dn_LM.compute_ylm_wgtd_fluctuation(
+    MeshField dn_LM(params);
+    dn_LM.compute_ylm_wgtd_field(
       particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_
     );
     dn_LM.fourier_transform();
 
-    Pseudo2ptStats<ParticleCatalogue> stats2pt(params);
-    std::complex<double> sn_amp = stats2pt.calc_ylm_wgtd_shotnoise_for_powspec(
+    FieldStats stats2pt(params);
+    std::complex<double> sn_amp = stats2pt.calc_ylm_wgtd_shotnoise_amp_for_powspec(
       particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_
     );
 
@@ -455,7 +342,7 @@ PowspecMeasurements compute_powspec(
       if (std::fabs(coupling) < EPS_COUPLING_2PT) {continue;}
 
       stats2pt.compute_ylm_wgtd_2pt_stats_in_fourier(
-        dn_LM, dn_00, sn_amp, kbin, ell1, m1
+        dn_LM, dn_00, sn_amp, ell1, m1, kbins
       );
 
       for (int ibin = 0; ibin < params.num_bins; ibin++) {
@@ -465,7 +352,7 @@ PowspecMeasurements compute_powspec(
 
       if (M_ == 0 && m1 == 0) {
         for (int ibin = 0; ibin < params.num_bins; ibin++) {
-          nmode_save[ibin] = stats2pt.nmode[ibin];
+          nmodes_save[ibin] = stats2pt.nmodes[ibin];
           k_save[ibin] = stats2pt.k[ibin];
         }
       }
@@ -488,11 +375,11 @@ PowspecMeasurements compute_powspec(
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  PowspecMeasurements powspec_out;
+  trv::PowspecMeasurements powspec_out;
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    powspec_out.kbin.push_back(kbin[ibin]);
+    powspec_out.kbin.push_back(kbins.bin_centres[ibin]);
     powspec_out.keff.push_back(k_save[ibin]);
-    powspec_out.nmode.push_back(nmode_save[ibin]);
+    powspec_out.nmodes.push_back(nmodes_save[ibin]);
     powspec_out.pk_raw.push_back(norm * pk_save[ibin]);
     if (params.shotnoise_convention == "mesh") {
       powspec_out.pk_shot.push_back(norm * sn_save[ibin]);
@@ -523,7 +410,7 @@ PowspecMeasurements compute_powspec(
         save_fileptr,
         "%.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         powspec_out.kbin[ibin], powspec_out.keff[ibin],
-        powspec_out.nmode[ibin],
+        powspec_out.nmodes[ibin],
         powspec_out.pk_raw[ibin].real(), powspec_out.pk_raw[ibin].imag(),
         powspec_out.pk_shot[ibin].real(), powspec_out.pk_shot[ibin].imag()
       );
@@ -539,7 +426,7 @@ PowspecMeasurements compute_powspec(
     }
   }
 
-  delete[] nmode_save; delete[] k_save; delete[] pk_save; delete[] sn_save;
+  delete[] nmodes_save; delete[] k_save; delete[] pk_save; delete[] sn_save;
 
   return powspec_out;
 }
@@ -548,12 +435,12 @@ PowspecMeasurements compute_powspec(
  * Compute two-point correlation function from paired catalogues and
  * optionally save the results.
  *
- * @param particles_data (Data-source) particle container.
- * @param particles_rand (Random-source) particle container.
+ * @param particles_data (Data-source) particle catalogue.
+ * @param particles_rand (Random-source) particle catalogue.
  * @param los_data (Data-source) particle lines of sight.
  * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
- * @param rbin Separation bins.
+ * @param rbins Separation bins.
  * @param alpha Alpha ratio.
  * @param norm Normalisation factor.
  * @param norm_alt Alternative normalisation factor (default is 0.) which
@@ -564,11 +451,11 @@ PowspecMeasurements compute_powspec(
  * @returns corrfunc_out Output two-point correlation function
  *                       measurements.
  */
-CorrfuncMeasurements compute_corrfunc(
+trv::TwoPCFMeasurements compute_corrfunc(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
   LineOfSight* los_data, LineOfSight* los_rand,
   trv::ParameterSet& params,
-  std::vector<double> rbin,
+  trv::Binning& rbins,
   double alpha,
   double norm,
   double norm_alt=0.,
@@ -588,11 +475,11 @@ CorrfuncMeasurements compute_corrfunc(
   int ell1 = params.ELL;
 
   /// Set up output.
-  int* npair_save = new int[params.num_bins];
+  int* npairs_save = new int[params.num_bins];
   double* r_save = new double[params.num_bins];
   std::complex<double>* xi_save = new std::complex<double>[params.num_bins];
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    npair_save[ibin] = 0;
+    npairs_save[ibin] = 0;
     r_save[ibin] = 0.;
     xi_save[ibin] = 0.;
   }
@@ -600,21 +487,21 @@ CorrfuncMeasurements compute_corrfunc(
   /* * Measurement ********************************************************* */
 
   /// Compute 2PCF.
-  PseudoDensityField<ParticleCatalogue> dn_00(params);
-  dn_00.compute_ylm_wgtd_fluctuation(
+  MeshField dn_00(params);
+  dn_00.compute_ylm_wgtd_field(
     particles_data, particles_rand, los_data, los_rand, alpha, 0, 0
   );
   dn_00.fourier_transform();
 
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-    PseudoDensityField<ParticleCatalogue> dn_LM(params);
-    dn_LM.compute_ylm_wgtd_fluctuation(
+    MeshField dn_LM(params);
+    dn_LM.compute_ylm_wgtd_field(
       particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_
     );
     dn_LM.fourier_transform();
 
-    Pseudo2ptStats<ParticleCatalogue> stats2pt(params);
-    std::complex<double> sn_amp = stats2pt.calc_ylm_wgtd_shotnoise_for_powspec(
+    FieldStats stats2pt(params);
+    std::complex<double> sn_amp = stats2pt.calc_ylm_wgtd_shotnoise_amp_for_powspec(
       particles_data, particles_rand, los_data, los_rand, alpha, params.ELL, M_
     );
 
@@ -628,7 +515,7 @@ CorrfuncMeasurements compute_corrfunc(
       if (std::fabs(coupling) < EPS_COUPLING_2PT) {continue;}
 
       stats2pt.compute_ylm_wgtd_2pt_stats_in_config(
-        dn_LM, dn_00, sn_amp, rbin, ell1, m1
+        dn_LM, dn_00, sn_amp, ell1, m1, rbins
       );
 
       for (int ibin = 0; ibin < params.num_bins; ibin++) {
@@ -637,7 +524,7 @@ CorrfuncMeasurements compute_corrfunc(
 
       if (M_ == 0 && m1 == 0) {
         for (int ibin = 0; ibin < params.num_bins; ibin++) {
-          npair_save[ibin] = stats2pt.npair[ibin];
+          npairs_save[ibin] = stats2pt.npairs[ibin];
           r_save[ibin] = stats2pt.r[ibin];
         }
       }
@@ -656,11 +543,11 @@ CorrfuncMeasurements compute_corrfunc(
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  CorrfuncMeasurements corrfunc_out;
+  trv::TwoPCFMeasurements corrfunc_out;
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    corrfunc_out.rbin.push_back(rbin[ibin]);
+    corrfunc_out.rbin.push_back(rbins.bin_centres[ibin]);
     corrfunc_out.reff.push_back(r_save[ibin]);
-    corrfunc_out.npair.push_back(npair_save[ibin]);
+    corrfunc_out.npairs.push_back(npairs_save[ibin]);
     corrfunc_out.xi.push_back(norm * xi_save[ibin]);
   }
 
@@ -684,7 +571,7 @@ CorrfuncMeasurements compute_corrfunc(
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
         corrfunc_out.rbin[ibin], corrfunc_out.reff[ibin],
-        corrfunc_out.npair[ibin],
+        corrfunc_out.npairs[ibin],
         corrfunc_out.xi[ibin].real(), corrfunc_out.xi[ibin].imag()
       );
     }
@@ -699,7 +586,7 @@ CorrfuncMeasurements compute_corrfunc(
     }
   }
 
-  delete[] npair_save; delete[] r_save; delete[] xi_save;
+  delete[] npairs_save; delete[] r_save; delete[] xi_save;
 
   return corrfunc_out;
 }
@@ -708,9 +595,9 @@ CorrfuncMeasurements compute_corrfunc(
  * Compute power spectrum in a periodic box and optionally
  * save the results.
  *
- * @param particles_data (Data-source) particle container.
+ * @param particles_data (Data-source) particle catalogue.
  * @param params Parameter set.
- * @param kbin Wavenumber bins.
+ * @param kbins Wavenumber bins.
  * @param norm Normalisation factor.
  * @param norm_alt Alternative normalisation factor (default is 0.) which
  *                 may be printed out in the header of the
@@ -719,10 +606,10 @@ CorrfuncMeasurements compute_corrfunc(
  *             to the measurement output file set by `params`.
  * @returns powspec_out Output power spectrum measurements.
  */
-PowspecMeasurements compute_powspec_in_box(
+trv::PowspecMeasurements compute_powspec_in_box(
   ParticleCatalogue& particles_data,
   trv::ParameterSet& params,
-  std::vector<double> kbin,
+  trv::Binning kbins,
   double norm,
   double norm_alt=0.,
   bool save=false
@@ -736,12 +623,12 @@ PowspecMeasurements compute_powspec_in_box(
 
   /* * Set-up ************************************************************** */
 
-  int* nmode_save = new int[params.num_bins];
+  int* nmodes_save = new int[params.num_bins];
   double* k_save = new double[params.num_bins];
   std::complex<double>* pk_save = new std::complex<double>[params.num_bins];
   std::complex<double>* sn_save = new std::complex<double>[params.num_bins];
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    nmode_save[ibin] = 0;
+    nmodes_save[ibin] = 0;
     k_save[ibin] = 0.;
     pk_save[ibin] = 0.;
     sn_save[ibin] = 0.;
@@ -750,19 +637,19 @@ PowspecMeasurements compute_powspec_in_box(
   /* * Measurement ********************************************************* */
 
   /// Compute power spectrum.
-  PseudoDensityField<ParticleCatalogue> dn(params);
-  dn.compute_unweighted_fluctuation_insitu(particles_data, params.volume);
+  MeshField dn(params);
+  dn.compute_unweighted_field_fluctuations_insitu(particles_data);
   dn.fourier_transform();
 
   std::complex<double> sn_amp = double(particles_data.ntotal);
 
-  Pseudo2ptStats<ParticleCatalogue> stats2pt(params);
+  FieldStats stats2pt(params);
   stats2pt.compute_ylm_wgtd_2pt_stats_in_fourier(
-    dn, dn, sn_amp, kbin, params.ELL, 0
+    dn, dn, sn_amp, params.ELL, 0, kbins
   );
 
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    nmode_save[ibin] = stats2pt.nmode[ibin];
+    nmodes_save[ibin] = stats2pt.nmodes[ibin];
     k_save[ibin] = stats2pt.k[ibin];
     pk_save[ibin] += double(2*params.ELL + 1) * stats2pt.pk[ibin];
     sn_save[ibin] += double(2*params.ELL + 1) * stats2pt.sn[ibin];
@@ -787,11 +674,11 @@ PowspecMeasurements compute_powspec_in_box(
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  PowspecMeasurements powspec_out;
+  trv::PowspecMeasurements powspec_out;
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    powspec_out.kbin.push_back(kbin[ibin]);
+    powspec_out.kbin.push_back(kbins.bin_centres[ibin]);
     powspec_out.keff.push_back(k_save[ibin]);
-    powspec_out.nmode.push_back(nmode_save[ibin]);
+    powspec_out.nmodes.push_back(nmodes_save[ibin]);
     powspec_out.pk_raw.push_back(norm * pk_save[ibin]);
     if (params.shotnoise_convention == "mesh") {
       powspec_out.pk_shot.push_back(norm * sn_save[ibin]);
@@ -822,7 +709,7 @@ PowspecMeasurements compute_powspec_in_box(
         save_fileptr,
         "%.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
         powspec_out.kbin[ibin], powspec_out.keff[ibin],
-        powspec_out.nmode[ibin],
+        powspec_out.nmodes[ibin],
         powspec_out.pk_raw[ibin].real(), powspec_out.pk_raw[ibin].imag(),
         powspec_out.pk_shot[ibin].real(), powspec_out.pk_shot[ibin].imag()
       );
@@ -838,7 +725,7 @@ PowspecMeasurements compute_powspec_in_box(
     }
   }
 
-  delete[] nmode_save; delete[] k_save; delete[] pk_save; delete[] sn_save;
+  delete[] nmodes_save; delete[] k_save; delete[] pk_save; delete[] sn_save;
 
   return powspec_out;
 }
@@ -847,7 +734,7 @@ PowspecMeasurements compute_powspec_in_box(
  * Compute two-point correlation function in a periodic box
  * and optionally save the results.
  *
- * @param particles_data (Data-source) particle container.
+ * @param particles_data (Data-source) particle catalogue.
  * @param params Parameter set.
  * @param rbin Separation bins.
  * @param norm Normalisation factor.
@@ -859,10 +746,10 @@ PowspecMeasurements compute_powspec_in_box(
  * @returns corrfunc_out Output two-point correlation function
  *                       measurements.
  */
-CorrfuncMeasurements compute_corrfunc_in_box(
+trv::TwoPCFMeasurements compute_corrfunc_in_box(
   ParticleCatalogue& particles_data,
   trv::ParameterSet& params,
-  std::vector<double> rbin,
+  trv::Binning& rbins,
   double norm,
   double norm_alt=0.,
   bool save=false
@@ -877,11 +764,11 @@ CorrfuncMeasurements compute_corrfunc_in_box(
 
   /* * Set-up ************************************************************** */
 
-  int* npair_save = new int[params.num_bins];
+  int* npairs_save = new int[params.num_bins];
   double* r_save = new double[params.num_bins];
   std::complex<double>* xi_save = new std::complex<double>[params.num_bins];
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    npair_save[ibin] = 0;
+    npairs_save[ibin] = 0;
     r_save[ibin] = 0.;
     xi_save[ibin] = 0.;
   }
@@ -889,19 +776,19 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   /* * Measurement ********************************************************* */
 
   /// Compute 2PCF.
-  PseudoDensityField<ParticleCatalogue> dn(params);
-  dn.compute_unweighted_fluctuation_insitu(particles_data, params.volume);
+  MeshField dn(params);
+  dn.compute_unweighted_field_fluctuations_insitu(particles_data);
   dn.fourier_transform();
 
   std::complex<double> sn_amp = double(particles_data.ntotal);
 
-  Pseudo2ptStats<ParticleCatalogue> stats2pt(params);
+  FieldStats stats2pt(params);
   stats2pt.compute_ylm_wgtd_2pt_stats_in_config(
-    dn, dn, sn_amp, rbin, params.ELL, 0
+    dn, dn, sn_amp, params.ELL, 0, rbins
   );
 
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    npair_save[ibin] = stats2pt.npair[ibin];
+    npairs_save[ibin] = stats2pt.npairs[ibin];
     r_save[ibin] = stats2pt.r[ibin];
     xi_save[ibin] += double(2*params.ELL + 1) * stats2pt.xi[ibin];
   }
@@ -920,11 +807,11 @@ CorrfuncMeasurements compute_corrfunc_in_box(
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  CorrfuncMeasurements corrfunc_out;
+  trv::TwoPCFMeasurements corrfunc_out;
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    corrfunc_out.rbin.push_back(rbin[ibin]);
+    corrfunc_out.rbin.push_back(rbins.bin_centres[ibin]);
     corrfunc_out.reff.push_back(r_save[ibin]);
-    corrfunc_out.npair.push_back(npair_save[ibin]);
+    corrfunc_out.npairs.push_back(npairs_save[ibin]);
     corrfunc_out.xi.push_back(norm * xi_save[ibin]);
   }
 
@@ -946,7 +833,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
         corrfunc_out.rbin[ibin], corrfunc_out.reff[ibin],
-        corrfunc_out.npair[ibin],
+        corrfunc_out.npairs[ibin],
         corrfunc_out.xi[ibin].real(), corrfunc_out.xi[ibin].imag()
       );
     }
@@ -961,7 +848,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
     }
   }
 
-  delete[] npair_save; delete[] r_save; delete[] xi_save;
+  delete[] npairs_save; delete[] r_save; delete[] xi_save;
 
   return corrfunc_out;
 }
@@ -971,7 +858,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
  * Compute power spectrum window from a random catalogue and
  * optionally save the results.
  *
- * @param particles_rand (Random-source) particle container.
+ * @param particles_rand (Random-source) particle catalogue.
  * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
  * @param kbin Wavenumber bins.
@@ -984,7 +871,7 @@ CorrfuncMeasurements compute_corrfunc_in_box(
  *             to the measurement output file set by `params`.
  * @returns powwin_out Output power spectrum window measurements.
  */
-PowspecWindowMeasurements compute_powspec_window(
+trv::PowspecWindowMeasurements compute_powspec_window(
   ParticleCatalogue& particles_rand,
   LineOfSight* los_rand,
   trv::ParameterSet& params,
@@ -1005,11 +892,11 @@ PowspecWindowMeasurements compute_powspec_window(
   /* * Set-up ************************************************************** */
 
   /// Set up output.
-  int* nmode_save = new int[params.num_bins];
+  int* nmodes_save = new int[params.num_bins];
   double* k_save = new double[params.num_bins];
   std::complex<double>* pk_save = new std::complex<double>[params.num_bins];
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    nmode_save[ibin] = 0;
+    nmodes_save[ibin] = 0;
     k_save[ibin] = 0.;
     pk_save[ibin] = 0.;
   }
@@ -1017,21 +904,21 @@ PowspecWindowMeasurements compute_powspec_window(
   /* * Measurement ********************************************************* */
 
   /// Compute power spectrum window.
-  PseudoDensityField<ParticleCatalogue> dn_00(params);
-  dn_00.compute_ylm_wgtd_density(particles_rand, los_rand, alpha, 0, 0);
+  MeshField dn_00(params);
+  dn_00.compute_ylm_wgtd_field(particles_rand, los_rand, alpha, 0, 0);
   dn_00.fourier_transform();
 
-  Pseudo2ptStats<ParticleCatalogue> stats2pt(params);
-  std::complex<double> sn_amp = stats2pt.calc_ylm_wgtd_shotnoise_for_powspec(
+  FieldStats stats2pt(params);
+  std::complex<double> sn_amp = stats2pt.calc_ylm_wgtd_shotnoise_amp_for_powspec(
     particles_rand, los_rand, alpha, params.ELL, 0
   );
 
   stats2pt.compute_ylm_wgtd_2pt_stats_in_fourier(
-    dn_00, dn_00, sn_amp, kbin, params.ELL, 0
+    dn_00, dn_00, sn_amp, params.ELL, 0, kbin
   );
 
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    nmode_save[ibin] = stats2pt.nmode[ibin];
+    nmodes_save[ibin] = stats2pt.nmodes[ibin];
     k_save[ibin] = stats2pt.k[ibin];
     pk_save[ibin] += stats2pt.pk[ibin];
   }
@@ -1044,11 +931,11 @@ PowspecWindowMeasurements compute_powspec_window(
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  PowspecWindowMeasurements powwin_out;
+  trv::PowspecWindowMeasurements powwin_out;
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
     powwin_out.kbin.push_back(kbin[ibin]);
     powwin_out.keff.push_back(k_save[ibin]);
-    powwin_out.nmode.push_back(nmode_save[ibin]);
+    powwin_out.nmodes.push_back(nmodes_save[ibin]);
     powwin_out.pk.push_back(norm * pk_save[ibin]);
   }
 
@@ -1070,7 +957,7 @@ PowspecWindowMeasurements compute_powspec_window(
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
         powwin_out.kbin[ibin], powwin_out.keff[ibin],
-        powwin_out.nmode[ibin],
+        powwin_out.nmodes[ibin],
         powwin_out.pk[ibin].real(), powwin_out.pk[ibin].imag()
       );
     }
@@ -1085,7 +972,7 @@ PowspecWindowMeasurements compute_powspec_window(
     }
   }
 
-  delete[] nmode_save; delete[] k_save; delete[] pk_save;
+  delete[] nmodes_save; delete[] k_save; delete[] pk_save;
 
   return powwin_out;
 }
@@ -1095,10 +982,10 @@ PowspecWindowMeasurements compute_powspec_window(
  * Compute two-point correlation function window from a random catalogue
  * and optionally save the results.
  *
- * @param particles_rand (Random-source) particle container.
+ * @param particles_rand (Random-source) particle catalogue.
  * @param los_rand (Random-source) particle lines of sight.
  * @param params Parameter set.
- * @param kbin Wavenumber bins.
+ * @param rbins Separation bins.
  * @param alpha Alpha ratio.
  * @param norm Normalisation factor.
  * @param norm_alt Alternative normalisation factor (default is 0.) which
@@ -1109,11 +996,11 @@ PowspecWindowMeasurements compute_powspec_window(
  * @returns corrfwin_out Output two-point correlation function
  *                       window measurements.
  */
-CorrfuncWindowMeasurements compute_corrfunc_window(
-  ParticleCatalogue& particles_rand,
-  LineOfSight* los_rand,
+trv::TwoPCFWindowMeasurements compute_corrfunc_window(
+  trv::ParticleCatalogue& particles_rand,
+  trv::LineOfSight* los_rand,
   trv::ParameterSet& params,
-  std::vector<double> rbin,
+  trv::Binning rbins,
   double alpha,
   double norm,
   double norm_alt=0.,
@@ -1133,11 +1020,11 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
   int ell1 = params.ELL;
 
   /// Set up output.
-  int* npair_save = new int[params.num_bins];
+  int* npairs_save = new int[params.num_bins];
   double* r_save = new double[params.num_bins];
   std::complex<double>* xi_save = new std::complex<double>[params.num_bins];
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    npair_save[ibin] = 0;
+    npairs_save[ibin] = 0;
     r_save[ibin] = 0.;
     xi_save[ibin] = 0.;
   }
@@ -1145,19 +1032,19 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
   /* * Measurement ********************************************************* */
 
   /// Compute 2PCF window.
-  PseudoDensityField<ParticleCatalogue> dn_00(params);
-  dn_00.compute_ylm_wgtd_density(particles_rand, los_rand, alpha, 0, 0);
+  MeshField dn_00(params);
+  dn_00.compute_ylm_wgtd_field(particles_rand, los_rand, alpha, 0, 0);
   dn_00.fourier_transform();
 
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-    PseudoDensityField<ParticleCatalogue> dn_LM(params);
-    dn_LM.compute_ylm_wgtd_density(
+    MeshField dn_LM(params);
+    dn_LM.compute_ylm_wgtd_field(
       particles_rand, los_rand, alpha, params.ELL, M_
     );
     dn_LM.fourier_transform();
 
-    Pseudo2ptStats<ParticleCatalogue> stats2pt(params);
-    std::complex<double> sn_amp = stats2pt.calc_ylm_wgtd_shotnoise_for_powspec(
+    FieldStats stats2pt(params);
+    std::complex<double> sn_amp = stats2pt.calc_ylm_wgtd_shotnoise_amp_for_powspec(
       particles_rand, los_rand, alpha, params.ELL, M_
     );
 
@@ -1171,7 +1058,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
       if (std::fabs(coupling) < EPS_COUPLING_2PT) {continue;}
 
       stats2pt.compute_ylm_wgtd_2pt_stats_in_config(
-        dn_LM, dn_00, sn_amp, rbin, ell1, m1
+        dn_LM, dn_00, sn_amp, ell1, m1, rbins
       );
 
       for (int ibin = 0; ibin < params.num_bins; ibin++) {
@@ -1180,7 +1067,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
 
       if (M_ == 0 && m1 == 0) {
         for (int ibin = 0; ibin < params.num_bins; ibin++) {
-          npair_save[ibin] = stats2pt.npair[ibin];
+          npairs_save[ibin] = stats2pt.npairs[ibin];
           r_save[ibin] = stats2pt.r[ibin];
         }
       }
@@ -1199,11 +1086,11 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
   /* * Output ************************************************************** */
 
   /// Fill in output struct.
-  CorrfuncWindowMeasurements corrfwin_out;
+  trv::TwoPCFWindowMeasurements corrfwin_out;
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    corrfwin_out.rbin.push_back(rbin[ibin]);
+    corrfwin_out.rbin.push_back(rbins.bin_centres[ibin]);
     corrfwin_out.reff.push_back(r_save[ibin]);
-    corrfwin_out.npair.push_back(npair_save[ibin]);
+    corrfwin_out.npairs.push_back(npairs_save[ibin]);
     corrfwin_out.xi.push_back(norm * xi_save[ibin]);
   }
 
@@ -1225,7 +1112,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
       std::fprintf(
         save_fileptr, "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
         corrfwin_out.rbin[ibin], corrfwin_out.reff[ibin],
-        corrfwin_out.npair[ibin],
+        corrfwin_out.npairs[ibin],
         corrfwin_out.xi[ibin].real(), corrfwin_out.xi[ibin].imag()
       );
     }
@@ -1240,7 +1127,7 @@ CorrfuncWindowMeasurements compute_corrfunc_window(
     }
   }
 
-  delete[] npair_save; delete[] r_save; delete[] xi_save;
+  delete[] npairs_save; delete[] r_save; delete[] xi_save;
 
   return corrfwin_out;
 }

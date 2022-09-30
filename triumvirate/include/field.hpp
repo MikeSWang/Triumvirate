@@ -1,16 +1,47 @@
+// Copyright (C) [GPLv3 Licence]
+//
+// This file is part of the Triumvirate program. See the COPYRIGHT
+// and LICENCE files at the top-level directory of this distribution
+// for details of copyright and licensing.
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+// See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
 /**
  * @file field.hpp
- * @brief Field operations, computations and statistics over mesh grids.
+ * @authors Mike S Wang (https://github.com/MikeSWang)
+ *          Naonori Sugiyama (https://github.com/naonori)
+ * @brief Mesh field (with one-point statistics) and
+ *        pseudo two-point statistics.
+ *
+ * This module performs the assignment of catalogue particles with
+ * weights to a mesh grid to construct discretely sampled fields, and
+ * the Fourier transform and its inverse of the said fields.  It also
+ * provides the corrections needed due to sampling effects, interlaced
+ * 'shadow' mesh grid for reducing aliasing effects, and methods to
+ * compute various constituent terms (one-point and pseudo two-point
+ * statistics) in the estimators of two- and three-point statistics.
  *
  */
 
 #ifndef TRIUMVIRATE_INCLUDE_FIELD_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_FIELD_HPP_INCLUDED_
 
+#include <fftw3.h>
+
 #include <cmath>
 #include <complex>
-
-#include <fftw3.h>
+#include <vector>
 
 #include "monitor.hpp"
 #include "parameters.hpp"
@@ -18,1921 +49,577 @@
 #include "dataobjs.hpp"
 #include "particles.hpp"
 
-using namespace trv::maths;
-
-const double EPS_GRIDSHIFT = 1.e-5;
-
 namespace trv {
 
+/// **********************************************************************
+/// Mesh field
+/// **********************************************************************
+
 /**
- * Meshed density-like field instantiated from particle sources.
- *
- * @tparam ParticleContainer Particle container class.
+ * @brief Discretely sampled field on a mesh grid from particle catalogues.
  *
  */
-template<class ParticleContainer>
-class PseudoDensityField {
+class MeshField {
  public:
-  fftw_complex* field;  ///> meshed complex field
+  trv::ParameterSet params;  ///> parameter set
+  fftw_complex* field;       ///> complex field on mesh
+
+  /// --------------------------------------------------------------------
+  /// Life cycle
+  /// --------------------------------------------------------------------
 
   /**
-   * Construct density-like field.
+   * @brief Construct the mesh field.
    *
    * @param params Parameter set.
    */
-  PseudoDensityField(trv::ParameterSet& params) {
-    /// Attach external parameters.
-    this->params = params;
-
-    /// Initialise complex field and increase allocated memory.
-    this->field = fftw_alloc_complex(this->params.nmesh);
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] = 0.;
-      this->field[gid][1] = 0.;
-    }
-
-    trv::sys::gbytesMem += double(this->params.nmesh)
-      * sizeof(fftw_complex) / BYTES_PER_GBYTES;
-
-    /// Initialise complex field for interlacing and increase
-    /// allocated memory.
-    if (this->params.interlace == "true") {
-      this->field_s = fftw_alloc_complex(this->params.nmesh);
-      for (int gid = 0; gid < this->params.nmesh; gid++) {
-        this->field_s[gid][0] = 0.;
-        this->field_s[gid][1] = 0.;
-      }
-
-      trv::sys::gbytesMem += double(this->params.nmesh)
-        * sizeof(fftw_complex) / BYTES_PER_GBYTES;
-    }
-  }
+  MeshField(trv::ParameterSet& params);
 
   /**
-   * Destruct density-like field.
+   * @brief Destruct the mesh field.
    */
-  ~PseudoDensityField() {
-    this->finalise_density_field();
-  }
+  ~MeshField();
 
   /**
-   * Return individual grid value of the field.
+   * @brief (Re-)initialise the complex field (and its shadow) on mesh.
    *
-   * @param gid Grid ID/index.
+   * This is an explicit method to reset values of
+   * @ref trv::MeshField.field and @ref trv::MeshField.field_s to zeros.
+   */
+  void initialise_density_field();
+
+  /**
+   * @brief Finalise the complex field (and its shadow) on mesh.
+   *
+   * This is an explicit method to free the resources occupied by
+   * @ref trv::MeshField.field and may be called outside the
+   * class destructor.
+   */
+  void finalise_density_field();
+
+  /// --------------------------------------------------------------------
+  /// Operators & reserved methods
+  /// --------------------------------------------------------------------
+
+  /**
+   * @brief Return mesh field grid cell value.
+   *
+   * @param gid Grid index.
    * @returns Field value.
    */
-  const fftw_complex& operator[](int gid) {
-    return this->field[gid];
-  }
+  const fftw_complex& operator[](int gid);
+
+  /// --------------------------------------------------------------------
+  /// Mesh assignment
+  /// --------------------------------------------------------------------
 
   /**
-   * Finalise density-like field data.
-   */
-  void finalise_density_field() {
-    /// Free memory usage.
-    if (this->field != NULL) {
-      fftw_free(this->field); this->field = NULL;
-      trv::sys::gbytesMem -= double(this->params.nmesh)
-        * sizeof(fftw_complex) / BYTES_PER_GBYTES;
-    }
-    if (this->params.interlace == "true" && this->field_s != NULL) {
-      fftw_free(this->field_s); this->field_s = NULL;
-      trv::sys::gbytesMem -= double(this->params.nmesh)
-        * sizeof(fftw_complex) / BYTES_PER_GBYTES;
-    }
-  }
-
-  /**
-   * Assign weighted field to a mesh by interpolation scheme.
+   * @brief Assign a weighted field to a mesh by interpolation scheme.
    *
-   * @note All interpolation schemes implicitly assumes that the
-   *
-   * @param particles Particle container.
+   * @param particles Particle catalogue.
    * @param weights Weight field.
    */
   void assign_weighted_field_to_mesh(
-    ParticleContainer& particles,
-    fftw_complex* weights
-  ) {
-    if (this->params.assignment == "ngp") {
-      this->assign_weighted_field_to_mesh_ngp(particles, weights);
-    } else
-    if (this->params.assignment == "cic") {
-      this->assign_weighted_field_to_mesh_cic(particles, weights);
-    } else
-    if (this->params.assignment == "tsc") {
-      this->assign_weighted_field_to_mesh_tsc(particles, weights);
-    } else
-    if (this->params.assignment == "pcs") {
-      this->assign_weighted_field_to_mesh_pcs(particles, weights);
-    } else {
-      if (trv::sys::currTask == 0) {
-        throw trv::sys::InvalidParameter(
-          "[%s ERRO] Unsupported mesh assignment scheme: '%s'.\n",
-          trv::sys::show_timestamp().c_str(),
-          this->params.assignment.c_str()
-        );
-      };
-    }
-  }
+    ParticleCatalogue& particles, fftw_complex* weights
+  );
+
+  /// --------------------------------------------------------------------
+  /// Field computations
+  /// --------------------------------------------------------------------
 
   /**
-   * Compute weighted density field fluctuation(s) weighted by the
-   * reduced spherical harmonics from data and random sources,
+   * @brief Compute the unweighted field.
    *
+   * This is is the number density field
    * f@[
-   *   {\delta n_{LM}}(\vec{x}) = \left(
-   *     \sum_{i \in \mathrm{data}} - \alpha \sum_{i \in \mathrm{rand}}
-   *   \right) \delta_{\mathrm{D}}(\vec{x} - \vec{x}_i)
-   *   y_{LM}^*(\hat{\vec{x}}) w(\vec{x}) \,.
+   *   n(\vec{x}) = \sum_i \delta^{(\mathrm{D})}(\vec{x} - \vec{x}_i) \,.
    * f@]
    *
-   * See eq. (34) in Sugiyama et al. (2019)
-   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   * @param particles Particle catalogue.
+   */
+  void compute_unweighted_field(ParticleCatalogue& particles);
+
+  /**
+   * @brief Compute the unweighted field fluctuations.
    *
-   * @param particles_data (Data-source) particle container.
-   * @param particles_rand (Random-source) particle container.
+   * This is typically used for the number density fluctuations in
+   * a simulation snapshot in a periodic box, with a global field value
+   * calculated from the particle number and box volume subtracted
+   * to compute the fluctuations, i.e.
+   * f@[
+   *   \delta{n}(\vec{x}) =
+   *     \sum_i \delta^{(\mathrm{D})}(\vec{x} - \vec{x}_i) - N / V \,,
+   * f@]
+   * where f@$ N f@$ is the total number of particles and f@$ V f@$ the
+   * box volume.
+   *
+   * @param particles Particle catalogue.
+   */
+  void compute_unweighted_field_fluctuations_insitu(
+    ParticleCatalogue& particles
+  );
+
+  /**
+   * @brief Compute the weighted field (fluctuations) further weighted by
+   *        the reduced spherical harmonics.
+   *
+   * For a field (or its fluctuations) f@$ f f@$, this is
+   * f@[
+   *   f_{LM}(\vec{x}) = {\sum_i}{\vphantom{\sum}}'
+   *     y_{LM}^*(\hat{\vec{x}}) w(\vec{x})
+   *     \delta^{(\mathrm{D})}(\vec{x} - \vec{x}_i) \,,
+   * f@]
+   * where if a pair of catalogues are provided,
+   * f@[
+   *   {\sum_i}{\vphantom{\sum}}' =
+   *     \sum_{i \in mathrm{data}} - \alpha \sum_{i \in mathrm{rand}}
+   * f@]
+   * with f@$ f \equiv \delta{n} f@$, and otherwise
+   * f@[
+   *   {\sum_i}{\vphantom{\sum}}' = \sum_{i \in mathrm{data or rand}}
+   * f@]
+   * with f@$ f \equiv n f@$.
+   *
+   * @note See eq. (34) in Sugiyama et al. (2019)
+   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   *
+   * @param particles_data (Data-source) particle catalogue.
+   * @param particles_rand (Random-source) particle catalogue.
    * @param los_data (Data-source) particle lines of sight.
    * @param los_rand (Random-source) particle lines of sight.
    * @param alpha Alpha ratio.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    */
-  void compute_ylm_wgtd_fluctuation(
-    ParticleContainer& particles_data, ParticleContainer& particles_rand,
+  void compute_ylm_wgtd_field(
+    ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
     LineOfSight* los_data, LineOfSight* los_rand,
-    double alpha,
-    int ell, int m
-  ) {
-    /// Initialise the random density field and the kernel weight field.
-    PseudoDensityField<ParticleCatalogue> field_rand(this->params);
-    fftw_complex* weight_kern = NULL;
-
-    /// Compute the transformed data-source field.
-    weight_kern = fftw_alloc_complex(particles_data.ntotal);
-    for (int pid = 0; pid < particles_data.ntotal; pid++) {
-      double los_[3] = {
-        los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
-      };
-
-      std::complex<double> ylm = SphericalHarmonicCalculator::
-        calc_reduced_spherical_harmonic(ell, m, los_);
-
-      weight_kern[pid][0] = ylm.real() * particles_data[pid].w;
-      weight_kern[pid][1] = ylm.imag() * particles_data[pid].w;
-    }
-
-    this->assign_weighted_field_to_mesh(particles_data, weight_kern);
-
-    fftw_free(weight_kern); weight_kern = NULL;
-
-    /// Compute the random-source transformed weighted field.
-    weight_kern = fftw_alloc_complex(particles_rand.ntotal);
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      double los_[3] = {
-        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-      };
-
-      std::complex<double> ylm = SphericalHarmonicCalculator::
-        calc_reduced_spherical_harmonic(ell, m, los_);
-
-      weight_kern[pid][0] = ylm.real() * particles_rand[pid].w;
-      weight_kern[pid][1] = ylm.imag() * particles_rand[pid].w;
-    }
-
-    field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
-
-    fftw_free(weight_kern); weight_kern = NULL;
-
-    /// Subtract to compute fluctuations, i.e. δn_LM.
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] -= alpha * field_rand[gid][0];
-      this->field[gid][1] -= alpha * field_rand[gid][1];
-    }
-
-    if (this->params.interlace == "true") {
-      for (int gid = 0; gid < this->params.nmesh; gid++) {
-        this->field_s[gid][0] -= alpha * field_rand.field_s[gid][0];
-        this->field_s[gid][1] -= alpha * field_rand.field_s[gid][1];
-      }
-    }
-  }
+    double alpha, int ell, int m
+  );
 
   /**
-   * Compute the weighted density field weighted by the
-   * reduced spherical harmonics from a (random) source,
+   * @brief Compute the weighted field further weighted by the
+   *        reduced spherical harmonics.
    *
-   * f@[
-   *   \bar{n}_{LM}(\vec{x}) = \alpha \sum_{i \in \mathrm{rand}}
-   *     \delta_{\mathrm{D}}(\vec{x} - \vec{x}_i)
-   *     y_{LM}^*(\hat{\vec{x}}) w(\vec{x}) \,.
-   * f@]
-   *
-   * @param particles_rand (Random-source) particle container.
-   * @param los_rand (Random-source) particle lines of sight.
-   * @param alpha Alpha ratio.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
-   *
-   * @see PseudoDensityField::compute_ylm_wgtd_fluctuation(
-   *        ParticleContainer&, ParticleContainer&,
-   *        LineOfSight*, LineOfSight*,
-   *        double, int, int
-   *      )
-   *      Analogous but here for the (mean-)density field represented by
-   *      a (random) particle container.
-   */
-  void compute_ylm_wgtd_density(
-    ParticleContainer& particles_rand,
-    LineOfSight* los_rand,
-    double alpha,
-    int ell, int m
-  ) {
-    /// Initialise the kernel weight field.
-    fftw_complex* weight_kern = NULL;
-
-    /// Compute the transformed weighted field.
-    weight_kern = fftw_alloc_complex(particles_rand.ntotal);
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      double los_[3] = {
-        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-      };
-
-      std::complex<double> ylm = SphericalHarmonicCalculator::
-        calc_reduced_spherical_harmonic(ell, m, los_);
-
-      weight_kern[pid][0] = ylm.real() * particles_rand[pid].w;
-      weight_kern[pid][1] = ylm.imag() * particles_rand[pid].w;
-    }
-
-    this->assign_weighted_field_to_mesh(particles_rand, weight_kern);
-
-    fftw_free(weight_kern); weight_kern = NULL;
-
-    /// Apply mean-density matching normalisation (i.e. alpha ratio)
-    /// to compute \bar{n}_LM.
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] *= alpha;
-      this->field[gid][1] *= alpha;
-    }
-  }
-
-  /**
-   * Compute unweighted density field fluctuation(s).
-   *
-   * @note This is typically used in the case of reconstruction.
-   *
-   * @param particles_data (Data-source) particle container.
-   * @param particles_rand (Random-source) particle container.
-   * @param alpha Alpha ratio.
-   */
-  void compute_unweighted_fluctuation(
-    ParticleContainer& particles_data, ParticleContainer& particles_rand,
-    double alpha
-  ) {
-    /// Initialise the random field and the weight field.
-    PseudoDensityField<ParticleCatalogue> field_rand(this->params);
-    fftw_complex* weight = NULL;
-
-    /// Compute the data-source field.
-    weight = fftw_alloc_complex(particles_data.ntotal);
-    for (int pid = 0; pid < particles_data.ntotal; pid++) {
-      weight[pid][0] = 1.;
-      weight[pid][1] = 0.;
-    }
-
-    this->assign_weighted_field_to_mesh(particles_data, weight);
-
-    fftw_free(weight); weight = NULL;
-
-    /// Compute the random-source field.
-    weight = fftw_alloc_complex(particles_rand.ntotal);
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      weight[pid][0] = 1.;
-      weight[pid][1] = 0.;
-    }
-
-    field_rand.assign_weighted_field_to_mesh(particles_rand, weight);
-
-    fftw_free(weight); weight = NULL;
-
-    /// Subtract to compute fluctuations, i.e. δn.
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] -= alpha * field_rand[gid][0];
-      this->field[gid][1] -= alpha * field_rand[gid][1];
-    }
-
-    if (this->params.interlace == "true") {
-      for (int gid = 0; gid < this->params.nmesh; gid++) {
-        this->field_s[gid][0] -= alpha * field_rand.field_s[gid][0];
-        this->field_s[gid][1] -= alpha * field_rand.field_s[gid][1];
-      }
-    }
-  }
-
-  /**
-   * Compute unweighted density field fluctuation(s) within a source.
-   *
-   * @note This is typically used for simulations in a box.
-   *
-   * @param particles_data (Data-source) particle container.
-   * @param volume Box volume.
-   */
-  void compute_unweighted_fluctuation_insitu(
-    ParticleContainer& particles_data,
-    double volume
-  ) {
-    /// Initialise the weight field.
-    fftw_complex* weight = NULL;
-
-    /// Compute the unit-weighted field.
-    weight = fftw_alloc_complex(particles_data.ntotal);
-    for (int pid = 0; pid < particles_data.ntotal; pid++) {
-      weight[pid][0] = 1.;
-      weight[pid][1] = 0.;
-    }
-
-    this->assign_weighted_field_to_mesh(particles_data, weight);
-
-    fftw_free(weight); weight = NULL;
-
-    /// Subtract the global mean density to compute fluctuations, i.e. δn.
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] -= double(particles_data.ntotal) / params.volume;
-      this->field[gid][1] -= 0.;
-    }
-  }
-
-  /**
-   * Compute the unweighted density field.
-   *
-   * @note This is typically used for simulations in a periodic box and
-   *       for bispectrum calculations.
-   *
-   * @param particles_data (Data-source) particle container.
-   */
-  void compute_unweighted_density(ParticleContainer& particles_data) {
-    /// Initialise the weight field.
-    fftw_complex* weight = NULL;
-
-    /// Compute the unit-weighted field, i.e. n.
-    weight = fftw_alloc_complex(particles_data.ntotal);
-    for (int pid = 0; pid < particles_data.ntotal; pid++) {
-      weight[pid][0] = 1.;
-      weight[pid][1] = 0.;
-    }
-
-    this->assign_weighted_field_to_mesh(particles_data, weight);
-
-    fftw_free(weight); weight = NULL;
-  }
-
-  /**
-   * Compute two-point self-contribution component in shot noise,
-   * weighted by the reduced spherical harmonics,
-   * from data and random sources,
-   *
-   * f@[
-   *   N_{LM}(\vec{x}) = \left(
-   *     \sum_{i \in \mathrm{data}} + \alpha^2 \sum_{i \in \mathrm{rand}}
-   *   \right) \delta_{\mathrm{D}}(\vec{x} - \vec{x}_i)
-   *   y_{LM}(\vec{x}) w(\vec{x})^2 \,.
-   * f@]
-   *
-   * See eq. (46) in Sugiyama et al. (2019)
-   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
-   *
-   * @param particles_data (Data-source) particle container.
-   * @param particles_rand (Random-source) particle container.
-   * @param los_data (Data-source) particle lines of sight.
-   * @param los_rand (Random-source) particle lines of sight.
-   * @param alpha Alpha ratio.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
-   */
-  void compute_ylm_wgtd_2pt_self_component_for_shotnoise(
-    ParticleContainer& particles_data, ParticleContainer& particles_rand,
-    LineOfSight* los_data, LineOfSight* los_rand,
-    double alpha,
-    int ell, int m
-  ) {
-    /// Initialise the random density field and the kernel weight field.
-    PseudoDensityField<ParticleCatalogue> field_rand(this->params);
-    fftw_complex* weight_kern = NULL;
-
-    /// Compute the transformed data-source field.
-    weight_kern = fftw_alloc_complex(particles_data.ntotal);
-    for (int pid = 0; pid < particles_data.ntotal; pid++) {
-      double los_[3] = {
-        los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
-      };
-
-      std::complex<double> ylm = SphericalHarmonicCalculator::
-        calc_reduced_spherical_harmonic(ell, m, los_);
-
-      ylm = std::conj(ylm);  // cojugation is essential
-
-      weight_kern[pid][0] = ylm.real() * std::pow(particles_data[pid].w, 2);
-      weight_kern[pid][1] = ylm.imag() * std::pow(particles_data[pid].w, 2);
-    }
-
-    this->assign_weighted_field_to_mesh(particles_data, weight_kern);
-
-    fftw_free(weight_kern); weight_kern = NULL;
-
-    /// Compute the random-source transformed weighted field.
-    weight_kern = fftw_alloc_complex(particles_rand.ntotal);
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      double los_[3] = {
-        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-      };
-
-      std::complex<double> ylm = SphericalHarmonicCalculator::
-        calc_reduced_spherical_harmonic(ell, m, los_);
-
-      ylm = std::conj(ylm);  // cojugation is essential
-
-      weight_kern[pid][0] = ylm.real() * std::pow(particles_rand[pid].w, 2);
-      weight_kern[pid][1] = ylm.imag() * std::pow(particles_rand[pid].w, 2);
-    }
-
-    field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
-
-    fftw_free(weight_kern); weight_kern = NULL;
-
-    /// Add to compute total shot-noise contribution, i.e. N_LM.
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] += alpha * alpha * field_rand[gid][0];
-      this->field[gid][1] += alpha * alpha * field_rand[gid][1];
-    }
-
-    if (this->params.interlace == "true") {
-      for (int gid = 0; gid < this->params.nmesh; gid++) {
-        this->field_s[gid][0] += alpha * alpha * field_rand.field_s[gid][0];
-        this->field_s[gid][1] += alpha * alpha * field_rand.field_s[gid][1];
-      }
-    }
-  }
-
-  /**
-   * Compute two-point self-contribution component in shot noise,
-   * weighted by the reduced spherical harmonics,
-   * from a (random) source.
-   *
-   * @note This is used for calculating shot noise in window functions,
-   *       with the (mean-)density field represented by a (random)
-   *       particle source only.
-   *
-   * @param particles_rand (Random-source) particle container.
-   * @param los_rand (Random-source) particle lines of sight.
+   * @param particles Particle catalogue.
+   * @param los Particle lines of sight.
    * @param alpha Alpha ratio.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    *
    * @overload
    */
-  void compute_ylm_wgtd_2pt_self_component_for_shotnoise(
-    ParticleContainer& particles_rand,
-    LineOfSight* los_rand,
-    double alpha,
-    int ell, int m
-  ) {
-    /// Initialise the kernel weight field.
-    fftw_complex* weight_kern = NULL;
-
-    /// Compute the transformed weighted field.
-    weight_kern = fftw_alloc_complex(particles_rand.ntotal);
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      double los_[3] = {
-        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-      };
-
-      std::complex<double> ylm = SphericalHarmonicCalculator::
-        calc_reduced_spherical_harmonic(ell, m, los_);
-
-      ylm = std::conj(ylm);  // cojugation is essential
-
-      weight_kern[pid][0] = ylm.real() * std::pow(particles_rand[pid].w, 2);
-      weight_kern[pid][1] = ylm.imag() * std::pow(particles_rand[pid].w, 2);
-    }
-
-    this->assign_weighted_field_to_mesh(particles_rand, weight_kern);
-
-    fftw_free(weight_kern); weight_kern = NULL;
-
-    /// Apply mean-density matching normalisation (i.e. alpha ratio)
-    /// to compute N_LM.
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] *= alpha * alpha;
-      this->field[gid][1] *= alpha * alpha;
-    }
-  }
+  void compute_ylm_wgtd_field(
+    ParticleCatalogue& particles, LineOfSight* los,
+    double alpha, int ell, int m
+  );
 
   /**
-   * Fourier transform the field.
-   */
-  void fourier_transform() {
-    /// Apply FFT volume normalisation, where ∫d^3x corresponds to
-    /// dV Σ_i, dV =: `vol_cell`.
-    double vol_cell = this->params.volume / double(this->params.nmesh);
-
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] *= vol_cell;
-      this->field[gid][1] *= vol_cell;
-    }
-
-    /// Perform FFT.
-    fftw_plan transform = fftw_plan_dft_3d(
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      this->field, this->field,
-      FFTW_FORWARD, FFTW_ESTIMATE
-    );
-
-    fftw_execute(transform);
-    fftw_destroy_plan(transform);
-
-    if (this->params.interlace == "true") {
-      for (int gid = 0; gid < this->params.nmesh; gid++) {
-        this->field_s[gid][0] *= vol_cell;
-        this->field_s[gid][1] *= vol_cell;
-      }
-
-      fftw_plan transform_s = fftw_plan_dft_3d(
-        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-        this->field_s, this->field_s,
-        FFTW_FORWARD, FFTW_ESTIMATE
-      );
-
-      fftw_execute(transform_s);
-      fftw_destroy_plan(transform_s);
-
-      double m[3];
-      for (int i = 0; i < this->params.ngrid[0]; i++) {
-        for (int j = 0; j < this->params.ngrid[1]; j++) {
-          for (int k = 0; k < this->params.ngrid[2]; k++) {
-            long long idx_grid =
-              (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
-
-            /// Calculate the cell index vector representing the grid.
-            m[0] = (i < this->params.ngrid[0]/2)
-              ? double(i) / this->params.ngrid[0]
-              : (double(i) / this->params.ngrid[0] - 1);
-            m[1] = (j < this->params.ngrid[1]/2)
-              ? double(j) / this->params.ngrid[1]
-              : (double(j) / this->params.ngrid[1] - 1);
-            m[2] = (k < this->params.ngrid[2]/2)
-              ? double(k) / this->params.ngrid[2]
-              : (double(k) / this->params.ngrid[2] - 1);
-
-            double arg = M_PI * (m[0] + m[1] + m[2]);
-
-            this->field[idx_grid][0] +=
-              std::cos(arg) * this->field_s[idx_grid][0]
-              - std::sin(arg) * this->field_s[idx_grid][1]
-            ;
-            this->field[idx_grid][1] +=
-              std::sin(arg) * this->field_s[idx_grid][0]
-              + std::cos(arg) * this->field_s[idx_grid][1]
-            ;
-            this->field[idx_grid][0] /= 2.;
-            this->field[idx_grid][1] /= 2.;
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Inverse Fourier transform the (FFT-transformed) field.
-   */
-  void inv_fourier_transform() {
-    /// Apply inverse FFT volume normalisation, where ∫d^3k / (2\pi)^3
-    /// corresponds to (1/V) Σ_i, V =: `vol`.
-    double vol = this->params.volume;
-
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] /= vol;
-      this->field[gid][1] /= vol;
-    }
-
-    /// Perform inverse FFT.
-    fftw_plan inv_transform = fftw_plan_dft_3d(
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      this->field, this->field,
-      FFTW_BACKWARD, FFTW_ESTIMATE
-    );
-
-    fftw_execute(inv_transform);
-    fftw_destroy_plan(inv_transform);
-  }
-
-  /**
-   * Inverse Fourier transform the (FFT-transformed) field weighted by
-   * the reduce spherical harmonics in a wavenumber bin,
+   * @brief Compute the quadratic weighted field (fluctuations) further
+   *        weighted by the reduced spherical harmonics.
    *
+   * For a quadratic field (of fluctuations) f@$ f f@$, this is
+   * f@[
+   *   f_{LM}(\vec{x}) = {\sum_i}{\vphantom{\sum}}'
+   *     y_{LM}^*(\hat{\vec{x}}) w(\vec{x})^2
+   *     \delta^{(\mathrm{D})}(\vec{x} - \vec{x}_i) \,,
+   * f@]
+   * where if a pair of catalogues are provided,
+   * f@[
+   *   {\sum_i}{\vphantom{\sum}}' =
+   *     \sum_{i \in mathrm{data}} + \alpha^2 \sum_{i \in mathrm{rand}} \,,
+   * f@]
+   * and otherwise
+   * f@[
+   *   {\sum_i}{\vphantom{\sum}}' = \sum_{i \in mathrm{data or rand}} \,.
+   * f@]
+   *
+   * @note See eq. (46) in Sugiyama et al. (2019)
+   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   *
+   * @param particles_data (Data-source) particle catalogue.
+   * @param particles_rand (Random-source) particle catalogue.
+   * @param los_data (Data-source) particle lines of sight.
+   * @param los_rand (Random-source) particle lines of sight.
+   * @param alpha Alpha ratio.
+   * @param ell Degree of the spherical harmonic.
+   * @param m Order of the spherical harmonic.
+   */
+  void compute_ylm_wgtd_quad_field(
+    ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
+    LineOfSight* los_data, LineOfSight* los_rand,
+    double alpha, int ell, int m
+  );
+
+  /**
+   * @brief Compute the quadratic weighted field (fluctuations) further
+   *        weighted by the reduced spherical harmonics.
+   *
+   * @param particles Particle catalogue.
+   * @param los Particle lines of sight.
+   * @param alpha Alpha ratio.
+   * @param ell Degree of the spherical harmonic.
+   * @param m Order of the spherical harmonic.
+   *
+   * @overload
+   */
+  void compute_ylm_wgtd_quad_field(
+    ParticleCatalogue& particles, LineOfSight* los,
+    double alpha, int ell, int m
+  );
+
+  /// --------------------------------------------------------------------
+  /// Field transforms
+  /// --------------------------------------------------------------------
+
+  /**
+   * @brief Fourier transform the field.
+   *
+   * If @ref trv::MeshField.params.interlace is set to "true", interlacing
+   * is performed where a phase factor is multiplied into the 'shadow'
+   * complex field before the average of the complex field and its shadow
+   * is taken.
+   */
+  void fourier_transform();
+
+  /**
+   * @brief Inverse Fourier transform the (FFT-transformed) field.
+   */
+  void inv_fourier_transform();
+
+  /// --------------------------------------------------------------------
+  /// Field operations
+  /// --------------------------------------------------------------------
+
+  /**
+   * @brief Apply wide-angle correction kernel in configuration space.
+   *
+   * This multiplies the field by a power law f@$ r^{- i - j} f@$ at order
+   * f@$ (i, j) f@$ where f@$ r f@$ is the grid cell radial distance.
+   */
+  void apply_wide_angle_pow_law_kernel();
+
+  /**
+   * @brief Apply compensation needed after Fourier transform for
+   *        assignment schemes.
+   */
+  void apply_assignment_compensation();
+
+  /// --------------------------------------------------------------------
+  /// One-point statistics
+  /// --------------------------------------------------------------------
+
+  /**
+   * @brief Inverse Fourier transform a field f@$ f f@$ weighted by the
+   *        reduced spherical harmonics restricted to a wavenumber band.
+   *
+   * This method computes the quantity
    * f@[
    *   F_{LM}(\vec{x}; k) = \frac{(2\pi)^3}{4\pi k^2}
    *     \int \frac{\mathrm{d}^3\,\vec{k}'}{(2\pi)^3}
    *       \mathrm{e}^{\mathrm{i} \vec{k}' \cdot \vec{x}}
-   *       \delta_\mathrm{D}(k' - k) y_{LM}(\hat{\vec{k}})
-   *       \delta n_{LM}(\vec{k}) \,.
+   *       \delta^{(\mathrm{D})}(k' - k)
+   *       y_{LM}(\hat{\vec{k}}) f(\vec{k}) \,.
    * f@]
    *
-   * See eq. (42) in Sugiyama et al. (2019)
-   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   * @note See eq. (42) in Sugiyama et al. (2019)
+   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
-   * @param[in] density (FFT-transformed) density-like field.
+   * @param[in] field_fourier A Fourier-space field.
    * @param[in] ylm Reduced spherical harmonic on a mesh.
-   * @param[in] k_in Wavenumber bin wavenumber.
-   * @param[in] dk_in Wavenumber bin width.
-   * @param[out] k_eff Effective wavenunber in bin.
-   * @param[out] nmode Number of contributing wavevector modes in bin.
+   * @param[in] k_band Band wavenumber.
+   * @param[in] dk_band Band width.
+   * @param[out] k_eff Effective band wavenumber.
+   * @param[out] nmodes Number of wavevector modes in band.
    */
-  void inv_fourier_transform_for_ylm_wgtd_field_in_wavenum_bin(
-    PseudoDensityField& density,
-    std::complex<double>* ylm,
-    double k_in,
-    double dk_in,
-    double& k_eff,
-    int& nmode
-  ) {
-    /// Reset field with zero values.
-    for (int i = 0; i < this->params.nmesh; i++) {
-      this->field[i][0] = 0.;
-      this->field[i][1] = 0.;
-    }
-
-    /// Set up mode sampling within the wavenumber bin.
-    double k_lower = (k_in > dk_in/2) ? (k_in - dk_in/2) : 0.;
-    double k_upper = k_in + dk_in/2;
-
-    double dk[3];
-    dk[0] = 2.*M_PI / this->params.boxsize[0];
-    dk[1] = 2.*M_PI / this->params.boxsize[1];
-    dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    k_eff = 0.;
-    nmode = 0;
-    double kv[3];
-    for (int i = 0; i < this->params.ngrid[0]; i++) {
-      for (int j = 0; j < this->params.ngrid[1]; j++) {
-        for (int k = 0; k < this->params.ngrid[2]; k++) {
-          long long idx_grid =
-            (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
-
-          /// Calculate the wave-vector/-number representing the grid.
-          kv[0] = (i < this->params.ngrid[0]/2) ?
-            i * dk[0] : (i - this->params.ngrid[0]) * dk[0];
-          kv[1] = (j < this->params.ngrid[1]/2) ?
-            j * dk[1] : (j - this->params.ngrid[1]) * dk[1];
-          kv[2] = (k < this->params.ngrid[2]/2) ?
-            k * dk[2] : (k - this->params.ngrid[2]) * dk[2];
-
-          double k_ = std::sqrt(kv[0] * kv[0] + kv[1] * kv[1] + kv[2] * kv[2]);
-
-          /// Determine grid contribution to the bin.
-          if (k_ > k_lower && k_ <= k_upper) {
-            std::complex<double> delta_n(
-              density[idx_grid][0], density[idx_grid][1]
-            );
-
-            /// Apply assignment compensation.
-            double win = this->calc_assignment_window_in_fourier(kv);
-            delta_n /= win;
-
-            /// Weight the field.
-            this->field[idx_grid][0] = (ylm[idx_grid] * delta_n).real();
-            this->field[idx_grid][1] = (ylm[idx_grid] * delta_n).imag();
-
-            k_eff += k_;
-            nmode++;
-          } else {
-            this->field[idx_grid][0] = 0.;
-            this->field[idx_grid][1] = 0.;
-          }
-        }
-      }
-    }
-
-    fftw_plan inv_transform = fftw_plan_dft_3d(
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      this->field, this->field,
-      FFTW_BACKWARD, FFTW_ESTIMATE
-    );
-
-    fftw_execute(inv_transform);
-    fftw_destroy_plan(inv_transform);
-
-    /// Apply the 4π-factor by equivalently mode averaging.
-    for (int i = 0; i < this->params.nmesh; i++) {
-      this->field[i][0] /= double(nmode);
-      this->field[i][1] /= double(nmode);
-    }
-
-    k_eff /= double(nmode);
-  }
+  void inv_fourier_transform_ylm_wgtd_field_band_limited(
+    MeshField& field_fourier, std::complex<double>* ylm,
+    double k_band, double dk_band,
+    double& k_eff, int& nmodes
+  );
 
   /**
-   * Inverse Fourier transform a (FFT-transformed) field weighted by
-   * the reduce spherical harmonics and spherical Bessel functions,
+   * @brief Inverse Fourier transform a field f@$ f f@$ weighted by the
+   *        spherical Bessel function and reduced spherical harmonics.
    *
+   * This method computes the quantity
    * f@[
-   *   F_{LM}(\vec{x}; r) = \mathrm{i}^\ell
+   *   F_{LM}(\vec{x}; r) = \mathrm{i}^L
    *     \int \frac{\mathrm{d}^3\,\vec{k}}{(2\pi)^3}
    *       \mathrm{e}^{\mathrm{i} \vec{k} \cdot \vec{x}}
-   *       j_L(k r) y_{LM}(\hat{\vec{k}})
-   *       \delta n_{LM}(\vec{k}) \,.
+   *       j_L(kr) y_{LM}(\hat{\vec{k}}) f(\vec{k}) \,.
    * f@]
    *
-   * @param density (FFT-transformed) density-like field.
+   * @note See eq. (49) in Sugiyama et al. (2019)
+   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   *
+   * @param field_fourier A Fourier-space field.
    * @param ylm Reduced spherical harmonic on a mesh.
    * @param sjl Spherical Bessel function interpolator.
-   * @param r_in Separation magnitude.
+   * @param r Separation in configuration space.
    */
-  void inv_fourier_transform_for_sjl_ylm_wgtd_field(
-    PseudoDensityField& density,
-    std::complex<double>* ylm,
-    SphericalBesselCalculator& sjl,
-    double r_in
-  ) {
-    /// Reset field with zero values.
-    for (int i = 0; i < this->params.nmesh; i++) {
-      this->field[i][0] = 0.;
-      this->field[i][1] = 0.;
-    }
+  void inv_fourier_transform_sjl_ylm_wgtd_field(
+    MeshField& field_fourier,
+    std::complex<double>* ylm, trvm::SphericalBesselCalculator& sjl,
+    double r
+  );
 
-    /// Set inverse FFT volume normalisation, where ∫d^3k / (2\pi)^3
-    /// corresponds to (1/V) Σ_i, V =: `vol`.
-    double vol = this->params.volume;
-
-    /// Set up grid modes.
-    double dk[3];
-    dk[0] = 2.*M_PI / this->params.boxsize[0];
-    dk[1] = 2.*M_PI / this->params.boxsize[1];
-    dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    double kv[3];
-    for (int i = 0; i < this->params.ngrid[0]; i++) {
-      for (int j = 0; j < this->params.ngrid[1]; j++) {
-        for (int k = 0; k < this->params.ngrid[2]; k++) {
-          long long idx_grid =
-            (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
-
-          /// Calculate the wave-vector/-number representing the grid.
-          kv[0] = (i < this->params.ngrid[0]/2) ?
-            i * dk[0] : (i - this->params.ngrid[0]) * dk[0];
-          kv[1] = (j < this->params.ngrid[1]/2) ?
-            j * dk[1] : (j - this->params.ngrid[1]) * dk[1];
-          kv[2] = (k < this->params.ngrid[2]/2) ?
-            k * dk[2] : (k - this->params.ngrid[2]) * dk[2];
-
-          double k_ = std::sqrt(kv[0] * kv[0] + kv[1] * kv[1] + kv[2] * kv[2]);
-
-          /// Apply assignment compensation.
-          std::complex<double> den(
-            density[idx_grid][0], density[idx_grid][1]
-          );
-
-          double win = this->calc_assignment_window_in_fourier(kv);
-          den /= win;
-
-          /// Weight the field.  Apply inverse FFT volume normalisation.
-          this->field[idx_grid][0] =
-            sjl.eval(k_ * r_in) * (ylm[idx_grid] * den).real() / vol;
-          this->field[idx_grid][1] =
-            sjl.eval(k_ * r_in) * (ylm[idx_grid] * den).imag() / vol;
-        }
-      }
-    }
-
-    fftw_plan inv_transform = fftw_plan_dft_3d(
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      this->field, this->field,
-      FFTW_BACKWARD, FFTW_ESTIMATE
-    );
-
-    fftw_execute(inv_transform);
-    fftw_destroy_plan(inv_transform);
-  }
+  /// --------------------------------------------------------------------
+  /// Misc
+  /// --------------------------------------------------------------------
 
   /**
-   * Apply separation power-law weight f@$ r^{- i - j} f@$ for
-   * wide-angle corrections at order f@$ (i, j) f@$.
-   */
-  void apply_power_law_weight_for_wide_angle() {
-    const double eps = 1.e-10;
-
-    double dr[3];
-    dr[0] = this->params.boxsize[0] / double(this->params.ngrid[0]);
-    dr[1] = this->params.boxsize[1] / double(this->params.ngrid[1]);
-    dr[2] = this->params.boxsize[2] / double(this->params.ngrid[2]);
-
-    double rv[3];
-    for (int i = 0; i < this->params.ngrid[0]; i++) {
-      for (int j = 0; j < this->params.ngrid[1]; j++) {
-        for (int k = 0; k < this->params.ngrid[2]; k++) {
-          long long idx_grid =
-            (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
-          rv[0] = (i < this->params.ngrid[0]/2) ?
-            i * dr[0] : (i - this->params.ngrid[0]) * dr[0];
-          rv[1] = (j < this->params.ngrid[1]/2) ?
-            j * dr[1] : (j - this->params.ngrid[1]) * dr[1];
-          rv[2] = (k < this->params.ngrid[2]/2) ?
-            k * dr[2] : (k - this->params.ngrid[2]) * dr[2];
-
-          double r_ = std::sqrt(rv[0] * rv[0] + rv[1] * rv[1] + rv[2] * rv[2]);
-
-          if (r_ < eps) {
-            this->field[idx_grid][0] *= 0.;
-            this->field[idx_grid][1] *= 0.;
-          } else {
-            this->field[idx_grid][0] *=
-              std::pow(r_, - this->params.i_wa - this->params.j_wa);
-            this->field[idx_grid][1] *=
-              std::pow(r_, - this->params.i_wa - this->params.j_wa);
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Apply compensation needed in Fourier transform for
-   * assignment schemes.
-   */
-  void apply_assignment_compensation() {
-    double dk[3];
-    dk[0] = 2.*M_PI / this->params.boxsize[0];
-    dk[1] = 2.*M_PI / this->params.boxsize[1];
-    dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    double kv[3];
-    for (int i = 0; i < this->params.ngrid[0]; i++) {
-      for (int j = 0; j < this->params.ngrid[1]; j++) {
-        for (int k = 0; k < this->params.ngrid[2]; k++) {
-          long long idx_grid =
-            (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
-
-          kv[0] = (i < this->params.ngrid[0]/2) ?
-            i * dk[0] : (i - this->params.ngrid[0]) * dk[0];
-          kv[1] = (j < this->params.ngrid[1]/2) ?
-            j * dk[1] : (j - this->params.ngrid[1]) * dk[1];
-          kv[2] = (k < this->params.ngrid[2]/2) ?
-            k * dk[2] : (k - this->params.ngrid[2]) * dk[2];
-
-          double win = this->calc_assignment_window_in_fourier(kv);
-
-          this->field[idx_grid][0] /= win;
-          this->field[idx_grid][1] /= win;
-        }
-      }
-    }
-  }
-
-  /**
-   * Calculate (effective) volume normalisation factor f@$ 1/I_2 f@$
+   * Calculate the normalisation factor f@$ 1/I_N f@$ for <i>N</i>-point
    * (for two-point correlators), where
-   *
    * f@[
-   *   I_2 = \int\mathrm{d}^3\,\vec{x} w(\vec{x})^2 \bar{n}(\vec{x})^2 \,.
+   *   I_N = \int\mathrm{d}^3\,\vec{x} w(\vec{x})^N \bar{n}(\vec{x})^N \,.
    * f@]
    *
-   * @param particles (Typically random-source) particle container.
-   * @returns norm_factor Volume normalisation factor.
+   * @param particles (Typically random-source) particle catalogue.
+   * @param order Order f@$ N f@$ of the <i>N</i>-point statistics.
+   * @returns norm_factor Normalisation factor.
    */
-  double _calc_wgt_sq_volume_norm(ParticleContainer& particles) {
-    /// Initialise the weight field.
-    fftw_complex* weight = NULL;
-
-    weight = fftw_alloc_complex(particles.ntotal);
-    for (int pid = 0; pid < particles.ntotal; pid++) {
-      weight[pid][0] = particles[pid].w;
-      weight[pid][1] = 0.;
-    }
-
-    /// Compute the weighted field.
-    this->assign_weighted_field_to_mesh(particles, weight);
-
-    fftw_free(weight); weight = NULL;
-
-    /// Compute volume normalisation integral, where ∫d^3x corresponds
-    /// to dV Σ_i, dV =: `vol_cell`.
-    double vol_cell = this->params.volume / double(this->params.nmesh);
-
-    double vol_eff_inv = 0.;
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      vol_eff_inv += std::pow(this->field[gid][0], 2);
-    }
-    vol_eff_inv *= vol_cell;
-
-    double norm_factor = 1. / vol_eff_inv;
-
-    return norm_factor;
-  }
-
-  /**
-   * Calculate (effective) quadratic-volume normalisation factor
-   * f@$ 1/I_3 f@$ (for three-point correlators), where
-   *
-   * f@[
-   *   I_3 = \int\mathrm{d}^3\,\vec{x} w(\vec{x})^3 \bar{n}(\vec{x})^3 \,.
-   * f@]
-   *
-   * @param particles (Typically random-source) particle container.
-   * @returns norm_factor Quadratic-volume normalisation factor.
-   */
-  double _calc_wgt_cu_volume_norm(ParticleContainer& particles) {
-    /// Initialise the weight field.
-    fftw_complex* weight = NULL;
-
-    weight = fftw_alloc_complex(particles.ntotal);
-    for (int pid = 0; pid < particles.ntotal; pid++) {
-      weight[pid][0] = particles[pid].w;
-      weight[pid][1] = 0.;
-    }
-
-    /// Compute the weighted field.
-    this->assign_weighted_field_to_mesh(particles, weight);
-
-    fftw_free(weight); weight = NULL;
-
-    /// Compute volume normalisation integral, where ∫d^3x corresponds
-    /// to dV Σ_i, dV =: `vol_cell`.
-    double vol_cell = this->params.volume / double(this->params.nmesh);
-
-    double vol_sq_eff_inv = 0.;
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      vol_sq_eff_inv += std::pow(this->field[gid][0], 3);
-    }
-    vol_sq_eff_inv *= vol_cell;
-
-    double norm_factor = 1. / vol_sq_eff_inv;
-
-    return norm_factor;
-  }
+  double calc_grid_based_powlaw_norm(ParticleCatalogue& particles, int order);
 
  private:
-  trv::ParameterSet params;
-  fftw_complex* field_s;  ///> half-grid shifted meshed complex field
+  fftw_complex* field_s;  ///> half-grid shifted complex field on mesh
+  double dr[3];           ///> grid size in each dimension
+  double dk[3];           ///> fundamental wavenumber in each dimension
+  double vol;             ///> mesh volume
+  double vol_cell;        ///> mesh grid cell volume
+
+  friend class FieldStats;
+
+  /// --------------------------------------------------------------------
+  /// Mesh grid properties
+  /// --------------------------------------------------------------------
 
   /**
-   * Assign weighted field to a mesh by the nearest-grid-point
-   * (NGP) scheme.
+   * @brief Return the grid cell index.
    *
-   * @param particles Particle container.
-   * @param weight Particle weight.
+   * @param i, j, k Grid index in each dimension.
+   * @returns Grid cell index.
+   */
+  long long get_grid_index(int i, int j, int k);
+
+  /**
+   * @brief Return the grid cell position vector.
+   *
+   * @param i, j, k Grid index in each dimension.
+   * @returns Position vector to the grid cell centre.
+   */
+  std::vector<double> get_grid_pos_vector(int i, int j, int k);
+
+  /**
+   * @brief Return the grid cell wavevector.
+   *
+   * @param i, j, k Grid index in each dimension.
+   * @returns Wavevector to the grid cell centre.
+   */
+  std::vector<double> get_grid_wavevector(int i, int j, int k);
+
+  /// --------------------------------------------------------------------
+  /// Mesh assignment
+  /// --------------------------------------------------------------------
+
+  /**
+   * @brief Assign weighted field to a mesh by the nearest-grid-point
+   *        (NGP) scheme.
+   *
+   * @param particles Particle catalogue.
+   * @param weight Particle weights.
    */
   void assign_weighted_field_to_mesh_ngp(
-    ParticleContainer& particles,
-    fftw_complex* weight
-  ) {
-    /// Set interpolation order, i.e. number of grids, per dimension,
-    /// to which a single particle is assigned
-    int order = 1;
-
-    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
-    /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
-    double vol_cell = this->params.volume / double(this->params.nmesh);
-    double inv_vol_cell = 1. / vol_cell;
-
-    /// Reset field with zero values.
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] = 0.;
-      this->field[gid][1] = 0.;
-    }
-
-    /// Perform assignment.
-    int ijk[order][3];  // coordinates of covered mesh grids
-    double win[order][3];  // interpolation window
-    double loc_grid;  // coordinates in grid numbers in each dimension
-    long long idx_grid;  // flattened grid index
-    for (int pid = 0; pid < particles.ntotal; pid++) {
-      for (int iaxis = 0; iaxis < 3; iaxis++) {
-        loc_grid = this->params.ngrid[iaxis]
-          * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
-
-        /// Set only 0th element as `order == 1`.
-        ijk[0][iaxis] = int(loc_grid + 0.5);
-        win[0][iaxis] = 1.;
-      }
-
-      for (int iloc = 0; iloc < order; iloc++) {
-        for (int jloc = 0; jloc < order; jloc++) {
-          for (int kloc = 0; kloc < order; kloc++) {
-            idx_grid = (
-              ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
-            ) * this->params.ngrid[2] + ijk[kloc][2];
-
-            if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
-              this->field[idx_grid][0] += inv_vol_cell
-                * weight[pid][0]
-                * win[iloc][0] * win[jloc][1] * win[kloc][2];
-              this->field[idx_grid][1] += inv_vol_cell
-                * weight[pid][1]
-                * win[iloc][0] * win[jloc][1] * win[kloc][2];
-            }
-          }
-        }
-      }
-    }
-
-    /// Perform interlacing if needed.
-    if (this->params.interlace == "true") {
-      /// Reset field with zero values.
-      for (int gid = 0; gid < this->params.nmesh; gid++) {
-        this->field_s[gid][0] = 0.;
-        this->field_s[gid][1] = 0.;
-      }
-
-      /// Perform assignment.
-      int ijk[order][3];  // coordinates of covered mesh grids
-      double win[order][3];  // interpolation window
-      long long idx_grid;  // flattened grid index
-      double loc_grid;  // coordinates in grid numbers in each dimension
-      for (int pid = 0; pid < particles.ntotal; pid++) {
-        for (int iaxis = 0; iaxis < 3; iaxis++) {
-          loc_grid = this->params.ngrid[iaxis]
-            * particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
-            + 0.5;  // apply half-grid shift
-          if (loc_grid > this->params.ngrid[iaxis]) {
-            loc_grid -= this->params.ngrid[iaxis];
-          }  // apply periodic boundary condition
-
-          /// Set only 0th element as `order == 1`.
-          ijk[0][iaxis] = int(loc_grid + 0.5);
-          win[0][iaxis] = 1.;
-        }
-
-        for (int iloc = 0; iloc < order; iloc++) {
-          for (int jloc = 0; jloc < order; jloc++) {
-            for (int kloc = 0; kloc < order; kloc++) {
-              idx_grid = (
-                ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
-              ) * this->params.ngrid[2] + ijk[kloc][2];
-
-              if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
-                this->field_s[idx_grid][0] += inv_vol_cell
-                  * weight[pid][0]
-                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
-                this->field_s[idx_grid][1] += inv_vol_cell
-                  * weight[pid][1]
-                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+    ParticleCatalogue& particles, fftw_complex* weight
+  );
 
   /**
-   * Assign weighted field to a mesh by the cloud-in-cell (CIC) scheme.
+   * @brief Assign weighted field to a mesh by the cloud-in-cell
+   *        (CIC) scheme.
    *
-   * @param particles Particle container.
-   * @param weight Particle weight.
+   * @param particles Particle catalogue.
+   * @param weight Particle weights.
    */
   void assign_weighted_field_to_mesh_cic(
-    ParticleContainer& particles,
-    fftw_complex* weight
-  ) {
-    /// Set interpolation order, i.e. number of grids, per dimension,
-    /// to which a single particle is assigned
-    int order = 2;
-
-    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
-    /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
-    double vol_cell = this->params.volume / double(this->params.nmesh);
-    double inv_vol_cell = 1. / vol_cell;
-
-    /// Reset field with zero values.
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] = 0.;
-      this->field[gid][1] = 0.;
-    }
-
-    /// Perform assignment.
-    int ijk[order][3];  // coordinates of covered mesh grids
-    double win[order][3];  // interpolation window
-    double loc_grid;  // coordinates in grid numbers in each dimension
-    double s;  // particle grid distance;
-    long long idx_grid;  // flattened grid index
-    for (int pid = 0; pid < particles.ntotal; pid++) {
-      for (int iaxis = 0; iaxis < 3; iaxis++) {
-        loc_grid = this->params.ngrid[iaxis]
-          * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
-        s = loc_grid - double(int(loc_grid));
-
-        /// Set up to 1st element as `order == 2`.
-        ijk[0][iaxis] = int(loc_grid);
-        ijk[1][iaxis] = int(loc_grid) + 1;
-
-        win[0][iaxis] = 1. - s;
-        win[1][iaxis] = s;
-      }
-
-      for (int iloc = 0; iloc < order; iloc++) {
-        for (int jloc = 0; jloc < order; jloc++) {
-          for (int kloc = 0; kloc < order; kloc++) {
-            idx_grid = (
-              ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
-            ) * this->params.ngrid[2] + ijk[kloc][2];
-
-            if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
-              this->field[idx_grid][0] += inv_vol_cell
-                * weight[pid][0]
-                * win[iloc][0] * win[jloc][1] * win[kloc][2];
-              this->field[idx_grid][1] += inv_vol_cell
-                * weight[pid][1]
-                * win[iloc][0] * win[jloc][1] * win[kloc][2];
-            }
-          }
-        }
-      }
-    }
-
-    /// Perform interlacing if needed.
-    if (this->params.interlace == "true") {
-      /// Reset field with zero values.
-      for (int gid = 0; gid < this->params.nmesh; gid++) {
-        this->field_s[gid][0] = 0.;
-        this->field_s[gid][1] = 0.;
-      }
-
-      /// Perform assignment.
-      int ijk[order][3];  // coordinates of covered mesh grids
-      double win[order][3];  // interpolation window
-      double loc_grid;  // coordinates in grid numbers in each dimension
-      double s;  // particle grid distance;
-      long long idx_grid;  // flattened grid index
-      for (int pid = 0; pid < particles.ntotal; pid++) {
-        for (int iaxis = 0; iaxis < 3; iaxis++) {
-          loc_grid = this->params.ngrid[iaxis]
-            * particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
-            + 0.5;  // apply half-grid shift
-          if (loc_grid > this->params.ngrid[iaxis]) {
-            loc_grid -= this->params.ngrid[iaxis];
-          }  // apply periodic boundary condition
-          s = loc_grid - double(int(loc_grid));
-
-          /// Set up to 1st element as `order == 2`.
-          ijk[0][iaxis] = int(loc_grid);
-          ijk[1][iaxis] = int(loc_grid) + 1;
-
-          win[0][iaxis] = 1. - s;
-          win[1][iaxis] = s;
-        }
-
-        for (int iloc = 0; iloc < order; iloc++) {
-          for (int jloc = 0; jloc < order; jloc++) {
-            for (int kloc = 0; kloc < order; kloc++) {
-              idx_grid = (
-                ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
-              ) * this->params.ngrid[2] + ijk[kloc][2];
-
-              if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
-                this->field_s[idx_grid][0] += inv_vol_cell
-                  * weight[pid][0]
-                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
-                this->field_s[idx_grid][1] += inv_vol_cell
-                  * weight[pid][1]
-                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+    ParticleCatalogue& particles, fftw_complex* weight
+  );
 
   /**
-   * Assign weighted field to a mesh by the triangular-shaped-cloud
-   * (TSC) scheme.
+   * @brief Assign weighted field to a mesh by the triangular-shaped-cloud
+   *        (TSC) scheme.
    *
-   * @param particles Particle container.
-   * @param weight Particle weight.
+   * @param particles Particle catalogue.
+   * @param weight Particle weights.
    */
   void assign_weighted_field_to_mesh_tsc(
-    ParticleContainer& particles,
-    fftw_complex* weight
-  ) {
-    /// Set interpolation order, i.e. number of grids, per dimension,
-    /// to which a single particle is assigned
-    int order = 3;
-
-    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
-    /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
-    double vol_cell = this->params.volume / double(this->params.nmesh);
-    double inv_vol_cell = 1. / vol_cell;
-
-    /// Reset field with zero values.
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] = 0.;
-      this->field[gid][1] = 0.;
-    }
-
-    /// Perform assignment.
-    int ijk[order][3];  // coordinates of covered mesh grids
-    double win[order][3];  // interpolation window
-    double loc_grid;  // coordinates in grid numbers in each dimension
-    double s;  // particle grid distance;
-    long long idx_grid;  // flattened grid index
-    for (int pid = 0; pid < particles.ntotal; pid++) {
-      for (int iaxis = 0; iaxis < 3; iaxis++) {
-        loc_grid = this->params.ngrid[iaxis]
-          * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
-        s = loc_grid - double(int(loc_grid + 0.5));
-
-        /// Set up to 2nd element as `order == 3`.
-        ijk[0][iaxis] = int(loc_grid + 0.5) - 1;
-        ijk[1][iaxis] = int(loc_grid + 0.5);
-        ijk[2][iaxis] = int(loc_grid + 0.5) + 1;
-
-        win[0][iaxis] = 0.5 * (0.5 - s) * (0.5 - s);
-        win[1][iaxis] = 0.75 - s * s;
-        win[2][iaxis] = 0.5 * (0.5 + s) * (0.5 + s);
-      }
-
-      for (int iloc = 0; iloc < order; iloc++) {
-        for (int jloc = 0; jloc < order; jloc++) {
-          for (int kloc = 0; kloc < order; kloc++) {
-            idx_grid = (
-              ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
-            ) * this->params.ngrid[2] + ijk[kloc][2];
-
-            if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
-              this->field[idx_grid][0] += inv_vol_cell
-                * weight[pid][0]
-                * win[iloc][0] * win[jloc][1] * win[kloc][2];
-              this->field[idx_grid][1] += inv_vol_cell
-                * weight[pid][1]
-                * win[iloc][0] * win[jloc][1] * win[kloc][2];
-            }
-          }
-        }
-      }
-    }
-
-    /// Perform interlacing if needed.
-    if (this->params.interlace == "true") {
-      /// Reset field with zero values.
-      for (int gid = 0; gid < this->params.nmesh; gid++) {
-        this->field_s[gid][0] = 0.;
-        this->field_s[gid][1] = 0.;
-      }
-
-      /// Perform assignment.
-      int ijk[order][3];  // coordinates of covered mesh grids
-      double win[order][3];  // interpolation window
-      double loc_grid;  // coordinates in grid numbers in each dimension
-      double s;  // particle grid distance;
-      long long idx_grid;  // flattened grid index
-      for (int pid = 0; pid < particles.ntotal; pid++) {
-        for (int iaxis = 0; iaxis < 3; iaxis++) {
-          loc_grid = this->params.ngrid[iaxis]
-            * particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
-            + 0.5;  // apply half-grid shift
-          if (loc_grid > this->params.ngrid[iaxis]) {
-            loc_grid -= this->params.ngrid[iaxis];
-          }  // apply periodic boundary condition
-          s = loc_grid - double(int(loc_grid + 0.5));
-
-          /// Set up to 2nd element as `order == 3`.
-          ijk[0][iaxis] = int(loc_grid + 0.5) - 1;
-          ijk[1][iaxis] = int(loc_grid + 0.5);
-          ijk[2][iaxis] = int(loc_grid + 0.5) + 1;
-
-          win[0][iaxis] = 0.5 * (0.5 - s) * (0.5 - s);
-          win[1][iaxis] = 0.75 - s * s;
-          win[2][iaxis] = 0.5 * (0.5 + s) * (0.5 + s);
-        }
-
-        for (int iloc = 0; iloc < order; iloc++) {
-          for (int jloc = 0; jloc < order; jloc++) {
-            for (int kloc = 0; kloc < order; kloc++) {
-              idx_grid = (
-                ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
-              ) * this->params.ngrid[2] + ijk[kloc][2];
-
-              if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
-                this->field_s[idx_grid][0] += inv_vol_cell
-                  * weight[pid][0]
-                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
-                this->field_s[idx_grid][1] += inv_vol_cell
-                  * weight[pid][1]
-                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+    ParticleCatalogue& particles, fftw_complex* weight
+  );
 
   /**
-   * Assign weighted field to a mesh by the piecewise cubib spline (PCS)
-   * scheme.
+   * @brief Assign weighted field to a mesh by the piecewise cubib spline
+   *        (PCS) scheme.
    *
-   * @param particles Particle container.
-   * @param weight Particle weight.
+   * @param particles Particle catalogue.
+   * @param weight Particle weights.
    */
   void assign_weighted_field_to_mesh_pcs(
-    ParticleContainer& particles,
-    fftw_complex* weight
-  ) {
-    /// Set interpolation order, i.e. number of grids, per dimension,
-    /// to which a single particle is assigned
-    int order = 4;
-
-    /// Here the field is given by Σ_i w_i δ_D(x - x_i),
-    /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
-    double vol_cell = this->params.volume / double(this->params.nmesh);
-    double inv_vol_cell = 1. / vol_cell;
-
-    /// Reset field with zero values.
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      this->field[gid][0] = 0.;
-      this->field[gid][1] = 0.;
-    }
-
-    /// Perform assignment.
-    int ijk[order][3];  // coordinates of covered mesh grids
-    double win[order][3];  // interpolation window
-    double loc_grid;  // coordinates in grid numbers in each dimension
-    double s;  // particle grid distance;
-    long long idx_grid;  // flattened grid index
-    for (int pid = 0; pid < particles.ntotal; pid++) {
-      for (int iaxis = 0; iaxis < 3; iaxis++) {
-        loc_grid = this->params.ngrid[iaxis]
-          * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
-        s = loc_grid - double(int(loc_grid));
-
-        /// Set up to 3rd element as `order == 4`.
-        ijk[0][iaxis] = int(loc_grid) - 1;
-        ijk[1][iaxis] = int(loc_grid);
-        ijk[2][iaxis] = int(loc_grid) + 1;
-        ijk[3][iaxis] = int(loc_grid) + 2;
-
-        win[0][iaxis] = 1./6. * (1. - s) * (1. - s) * (1. - s);
-        win[1][iaxis] = 1./6. * (4. - 6. * s * s + 3. * s * s * s);
-        win[2][iaxis] = 1./6. * (
-          4. - 6. * (1. - s) * (1. - s) + 3. * (1. - s) * (1. - s) * (1. - s)
-        );
-        win[3][iaxis] = 1./6. * s * s * s;
-      }
-
-      for (int iloc = 0; iloc < order; iloc++) {
-        for (int jloc = 0; jloc < order; jloc++) {
-          for (int kloc = 0; kloc < order; kloc++) {
-            idx_grid = (
-              ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
-            ) * this->params.ngrid[2] + ijk[kloc][2];
-
-            if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
-              this->field[idx_grid][0] += inv_vol_cell
-                * weight[pid][0]
-                * win[iloc][0] * win[jloc][1] * win[kloc][2];
-              this->field[idx_grid][1] += inv_vol_cell
-                * weight[pid][1]
-                * win[iloc][0] * win[jloc][1] * win[kloc][2];
-            }
-          }
-        }
-      }
-    }
-
-    /// Perform interlacing if needed.
-    if (this->params.interlace == "true") {
-      /// Reset field with zero values.
-      for (int gid = 0; gid < this->params.nmesh; gid++) {
-        this->field_s[gid][0] = 0.;
-        this->field_s[gid][1] = 0.;
-      }
-
-      /// Perform assignment.
-      int ijk[order][3];  // coordinates of covered mesh grids
-      double win[order][3];  // interpolation window
-      double loc_grid;  // coordinates in grid numbers in each dimension
-      double s;  // particle grid distance;
-      long long idx_grid;  // flattened grid index
-      for (int pid = 0; pid < particles.ntotal; pid++) {
-        for (int iaxis = 0; iaxis < 3; iaxis++) {
-          loc_grid = this->params.ngrid[iaxis]
-            * particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
-            + 0.5;  // apply half-grid shift
-          if (loc_grid > this->params.ngrid[iaxis]) {
-            loc_grid -= this->params.ngrid[iaxis];
-          }  // apply periodic boundary condition
-          s = loc_grid - double(int(loc_grid));
-
-          /// Set up to 3rd element as `order == 4`.
-          ijk[0][iaxis] = int(loc_grid) - 1;
-          ijk[1][iaxis] = int(loc_grid);
-          ijk[2][iaxis] = int(loc_grid) + 1;
-          ijk[3][iaxis] = int(loc_grid) + 2;
-
-          win[0][iaxis] = 1./6. * (1. - s) * (1. - s) * (1. - s);
-          win[1][iaxis] = 1./6. * (4. - 6. * s * s + 3. * s * s * s);
-          win[2][iaxis] = 1./6. * (
-            4. - 6. * (1. - s) * (1. - s) + 3. * (1. - s) * (1. - s) * (1. - s)
-          );
-          win[3][iaxis] = 1./6. * s * s * s;
-        }
-
-        for (int iloc = 0; iloc < order; iloc++) {
-          for (int jloc = 0; jloc < order; jloc++) {
-            for (int kloc = 0; kloc < order; kloc++) {
-              idx_grid = (
-                ijk[iloc][0] * this->params.ngrid[1] + ijk[jloc][1]
-              ) * this->params.ngrid[2] + ijk[kloc][2];
-
-              if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
-                this->field_s[idx_grid][0] += inv_vol_cell
-                  * weight[pid][0]
-                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
-                this->field_s[idx_grid][1] += inv_vol_cell
-                  * weight[pid][1]
-                  * win[iloc][0] * win[jloc][1] * win[kloc][2];
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+    ParticleCatalogue& particles, fftw_complex* weight
+  );
 
   /**
-   * Calculate the interpolation window in Fourier space for
-   * assignment schemes.
+   * @brief Calculate the interpolation window in Fourier space for
+   *        different assignment schemes.
+   *
+   * @param i, j, k Grid cell indices.
+   * @returns Window value.
+   *
+   * @overload
+   */
+  double calc_assignment_window_in_fourier(int i, int j, int k);
+
+  /**
+   * @brief Calculate the interpolation window in Fourier space for
+   *        different assignment schemes.
    *
    * @param kvec Wavevector.
-   * @returns Window value in Fourier space.
+   * @returns Window value.
    */
-  double calc_assignment_window_in_fourier(double* kvec) {
-    int order;
-    if (this->params.assignment == "ngp") {
-      order = 1;
-    } else
-    if (this->params.assignment == "cic") {
-      order = 2;
-    } else
-    if (this->params.assignment == "tsc") {
-      order = 3;
-    } else
-    if (this->params.assignment == "pcs") {
-      order = 4;
-    }
-
-    double dk[3];
-    dk[0] = 2.*M_PI / this->params.boxsize[0];
-    dk[1] = 2.*M_PI / this->params.boxsize[1];
-    dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    int i = int(kvec[0] / dk[0] + EPS_GRIDSHIFT);
-    int j = int(kvec[1] / dk[1] + EPS_GRIDSHIFT);
-    int k = int(kvec[2] / dk[2] + EPS_GRIDSHIFT);
-
-    double k_x = M_PI * i / double(this->params.ngrid[0]);
-    double k_y = M_PI * j / double(this->params.ngrid[1]);
-    double k_z = M_PI * k / double(this->params.ngrid[2]);
-
-    /// Note sin(u) / u -> 1 as u -> 0.
-    double wk_x = (i != 0) ? std::sin(k_x) / k_x : 1.;
-    double wk_y = (j != 0) ? std::sin(k_y) / k_y : 1.;
-    double wk_z = (k != 0) ? std::sin(k_z) / k_z : 1.;
-
-    double wk = wk_x * wk_y * wk_z;
-
-    return std::pow(wk, order);
-  }
+  double calc_assignment_window_in_fourier(std::vector<double> kvec);
 };
 
+
+/// **********************************************************************
+/// Field statistics
+/// **********************************************************************
+
 /**
- * Binned pseudo two-point statistics from particle sources.
+ * @brief Field (pseudo-two-point) statistics.
  *
- * @tparam ParticleContainer Particle container class.
+ * This provides the computation of both binned and unbinned (pseudo)
+ * two-point statistiscs that aid the computation of full two- and
+ * three-point statistics.
  *
  */
-template<class ParticleContainer>
-class Pseudo2ptStats {
+class FieldStats {
  public:
-  int* nmode;  ///< number of wavevector modes in bins/shells
-  int* npair;  ///< number of separation pairs in bins/shells
-  double* k;  ///< average wavenumber in bins/shells
-  double* r;  ///< average separation in bins/shells
-  std::complex<double>* sn;  ///< shot-noise statistics in Fourier space
-  std::complex<double>* pk;  ///< pseudo power spectrum statistics
-  std::complex<double>* xi;  /**< pseudo two-point correlation
-                                  function statistics */
+  std::vector<int> nmodes;  ///< number of wavevector modes in bins
+  std::vector<int> npairs;  ///< number of separation pairs in bins
+  std::vector<double> k;    ///< average wavenumber in bins
+  std::vector<double> r;    ///< average separation in bins
+  std::vector< std::complex<double> > sn;  ///< shot-noise power in bins
+  std::vector< std::complex<double> > pk;  ///< pseudo power spectrum
+                                           ///< in bins
+  std::vector< std::complex<double> > xi;  ///< pseudo two-point
+                                           ///< correlation function
+                                           ///< in bins
+
+  /// --------------------------------------------------------------------
+  /// Life cycle
+  /// --------------------------------------------------------------------
 
   /**
-   * Construct two-point statistics.
+   * @brief Construct pseudo two-point statistics.
    *
    * @param params Parameter set.
    */
-  Pseudo2ptStats(trv::ParameterSet& params){
-    this->params = params;
-
-    /// Set up binned power spectrum and mode counter.
-    this->k = new double[params.num_bins];
-    this->sn = new std::complex<double>[params.num_bins];
-    this->pk = new std::complex<double>[params.num_bins];
-    this->nmode = new int[params.num_bins];
-
-    /// Set up binned 2PCF and pair counter.
-    this->r = new double[params.num_bins];
-    this->xi = new std::complex<double>[params.num_bins];
-    this->npair = new int[params.num_bins];
-
-    this->reset_2pt_stats();
-  }
+  FieldStats(trv::ParameterSet& params);
 
   /**
-   * Destruct two-point statistics.
+   * @brief Destruct two-point statistics.
    */
-  ~Pseudo2ptStats(){
-    this->finalise_2pt_stats();
-  }
+  ~FieldStats();
 
   /**
-   * Reset two-point statistics.
+   * @brief Reset two-point statistics.
    */
-  void reset_2pt_stats() {
-    for (int ibin = 0; ibin < params.num_bins; ibin++) {
-      this->k[ibin] = 0.;
-      this->pk[ibin] = 0.;
-      this->sn[ibin] = 0.;
-      this->nmode[ibin] = 0;
-    }
+  void reset_stats();
 
-    for (int ibin = 0; ibin < params.num_bins; ibin++) {
-      this->r[ibin] = 0.;
-      this->xi[ibin] = 0.;
-      this->npair[ibin] = 0;
-    }
-  }
+  /// --------------------------------------------------------------------
+  /// Binned statistics
+  /// --------------------------------------------------------------------
 
   /**
-   * Finalise two-point statistics.
-   */
-  void finalise_2pt_stats() {
-    delete[] this->k; this->k = NULL;
-    delete[] this->sn; this->sn = NULL;
-    delete[] this->pk; this->pk = NULL;
-    delete[] this->nmode; this->nmode = NULL;
-    delete[] this->r; this->r = NULL;
-    delete[] this->xi; this->xi = NULL;
-    delete[] this->npair; this->npair = NULL;
-  }
-
-  /**
-   * Compute binned two-point statistics in Fourier space.
+   * @brief Compute binned two-point statistics in Fourier space.
    *
-   * As well as for calculating the power spectrum, this is also used
-   * for calculating f@$ S_{\ell_1 \ell_2 L}|_{i \neq j = k} f@$
-   * and f@$ S_{\ell_1 \ell_2 L}|_{j \neq i = k} f@$ in eq. (45)
-   * in Sugiyama et al. (2019)
-   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].  Note
-   * that this quantity is diagonal so effectively one-dimensional.
+   * For a pair of Fourier-space fields f@$ f_{a,b} f@$, this computes
+   * f@[
+   *   \int \frac{\mathrm{d}^2\,\hat{\vec{k}}}{4\pi} y_{LM}(\hat{\vec{k}})
+   *     W(\vec{k})^{-2} [
+   *       f_a(\vec{k}) f_b(\vec{k}) - P_\mathrm{shot} C_1(\vec{k})
+   *     ] \,,
+   * f@]
+   * where f@$ W(\vec{k}) f@$ is the mesh assignment window in Fourier
+   * space, f@$ P_\mathrm{shot} f@$ is the shot noise amplitude, and
+   * f@$ C_1 f@$ is the mode-dependent aliasing function.
    *
-   * @param field_a First density-like field.
-   * @param field_b Second density-like field.
+   * @note See eq. (20) in Jing (2004)
+   *       [<a href="https://arxiv.org/abs/astro-ph/0409240">astro-ph/0409240</a>].
+   *
+   * @param field_a First field.
+   * @param field_b Second field.
    * @param shotnoise_amp Shot-noise amplitude.
-   * @param kbin Wavenumber bins.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
+   * @param kbin Wavenumber bins.
+   * @throws trv::sys::InvalidData When @p field_a and @p field_b have
+   *                               incompatible physical properties.
+   *
+   * @note @p field_a and @p field_b are Fourier-space fields and their
+   *       entries are arranged in the FFTW convention (i.e. shifted).
    */
   void compute_ylm_wgtd_2pt_stats_in_fourier(
-    PseudoDensityField<ParticleContainer>& field_a,
-    PseudoDensityField<ParticleContainer>& field_b,
-    std::complex<double> shotnoise_amp,
-    std::vector<double> kbin,
-    int ell, int m
-  ) {
-    /// Set up fine-sampling of wavenumbers.
-    /// CAVEAT: Discretionary choices.
-    const double dk_sample = 1.e-4;
-    const int n_sample = 100000;
-
-    double* ks_sample = new double[n_sample];
-    int* nmode_sample = new int[n_sample];
-    std::complex<double>* sn_sample = new std::complex<double>[n_sample];
-    std::complex<double>* pk_sample = new std::complex<double>[n_sample];
-    for (int i = 0; i < n_sample; i++) {
-      ks_sample[i] = 0.;
-      sn_sample[i] = 0.;
-      pk_sample[i] = 0.;
-      nmode_sample[i] = 0;
-    }
-
-    /// Reset binned statistics.
-    this->reset_2pt_stats();
-
-    /// Perform fine sampling.
-    double dk[3];
-    dk[0] = 2.*M_PI / this->params.boxsize[0];
-    dk[1] = 2.*M_PI / this->params.boxsize[1];
-    dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    double kv[3];
-    for (int i = 0; i < this->params.ngrid[0]; i++) {
-      for (int j = 0; j < this->params.ngrid[1]; j++) {
-        for (int k = 0; k < this->params.ngrid[2]; k++) {
-          long long idx_grid =
-            (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
-
-          kv[0] = (i < this->params.ngrid[0]/2) ?
-            i * dk[0] : (i - this->params.ngrid[0]) * dk[0];
-          kv[1] = (j < this->params.ngrid[1]/2) ?
-            j * dk[1] : (j - this->params.ngrid[1]) * dk[1];
-          kv[2] = (k < this->params.ngrid[2]/2) ?
-            k * dk[2] :  (k - this->params.ngrid[2]) * dk[2];
-
-          double k_ = std::sqrt(kv[0] * kv[0] + kv[1] * kv[1] + kv[2] * kv[2]);
-
-          int idx_k = int(k_ / dk_sample + 0.5);
-          if (idx_k < n_sample) {
-            std::complex<double> delta_a(
-              field_a[idx_grid][0], field_a[idx_grid][1]
-            );
-            std::complex<double> delta_b(
-              field_b[idx_grid][0], field_b[idx_grid][1]
-            );
-
-            std::complex<double> mode_power = delta_a * std::conj(delta_b);
-            std::complex<double> mode_sn =
-              shotnoise_amp * this->calc_shotnoise_aliasing(kv);
-
-            /// Apply assignment compensation.
-            double win = this->calc_2pt_fftgrid_correction(kv);
-
-            mode_power /= win;
-            mode_sn /= win;
-
-            /// Weight by reduced spherical harmonics.
-            std::complex<double> ylm = SphericalHarmonicCalculator::
-              calc_reduced_spherical_harmonic(ell, m, kv);
-
-            mode_power *= ylm;
-            mode_sn *= ylm;
-
-            /// Add contribution.
-            ks_sample[idx_k] += k_;
-            sn_sample[idx_k] += mode_sn;
-            pk_sample[idx_k] += mode_power;
-            nmode_sample[idx_k]++;
-          }
-        }
-      }
-    }
-
-    /// Perform binning.
-    double dkbin[this->params.num_bins - 1];
-    for (int ibin = 0; ibin < this->params.num_bins - 1; ibin++) {
-      #ifdef DBG_BINWIDTH
-        dkbin[ibin] = kbin[1] - kbin[0];
-      #else  // DBG_BINWIDTH
-        dkbin[ibin] = kbin[ibin + 1] - kbin[ibin];
-      #endif  // DBG_BINWIDTH
-    }
-
-    for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
-      double k_lower = 0.;
-      if (ibin == 0) {
-        k_lower = (kbin[ibin] > dkbin[ibin]/2) ?
-          (kbin[ibin] - dkbin[ibin]/2) : 0.;
-      } else {
-        k_lower = kbin[ibin] - dkbin[ibin - 1]/2;
-      }
-
-      double k_upper = 0.;
-      if (ibin == this->params.num_bins - 1) {
-        k_upper = kbin[ibin] + dkbin[ibin - 1]/2;
-      } else {
-        k_upper = kbin[ibin] + dkbin[ibin]/2;
-      }
-
-      for (int i = 0; i < n_sample; i++) {
-        double k_sample = i * dk_sample;
-        if (k_lower < k_sample && k_sample <= k_upper) {
-          this->k[ibin] += ks_sample[i];
-          this->sn[ibin] += sn_sample[i];
-          this->pk[ibin] += pk_sample[i];
-          this->nmode[ibin] += nmode_sample[i];
-        }
-      }
-
-      if (this->nmode[ibin] != 0) {
-        this->k[ibin] /= double(this->nmode[ibin]);
-        this->sn[ibin] /= double(this->nmode[ibin]);
-        this->pk[ibin] /= double(this->nmode[ibin]);
-      } else {
-        this->k[ibin] = (k_lower + k_upper) / 2;
-        this->sn[ibin] = 0.;
-        this->pk[ibin] = 0.;
-      }
-    }
-
-    delete[] ks_sample;
-    delete[] pk_sample;
-    delete[] sn_sample;
-    delete[] nmode_sample;
-  }
+    MeshField& field_a, MeshField& field_b, std::complex<double> shotnoise_amp,
+    int ell, int m, trv::Binning& kbins
+  );
 
   /**
-   * Compute binned two-point statistics in configuration space.
+   * @brief Compute binned two-point statistics in configuration space.
    *
-   * @param field_a First density-like field.
-   * @param field_b Second density-like field.
+   * This involves an inverse Fourier transform added to the algorithm
+   * in @ref trv::FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier
+   * before binning.
+   *
+   * @param field_a First field.
+   * @param field_b Second field.
    * @param shotnoise_amp Shot-noise amplitude.
-   * @param rbin Separation bins.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
+   * @param rbin Separation bins.
+   *
+   * @note @p field_a and @p field_b are Fourier-space fields and their
+   *       entries are arranged in the FFTW convention (i.e. shifted).
    */
   void compute_ylm_wgtd_2pt_stats_in_config(
-    PseudoDensityField<ParticleContainer>& field_a,
-    PseudoDensityField<ParticleContainer>& field_b,
-    std::complex<double> shotnoise_amp,
-    std::vector<double> rbin,
-    int ell, int m
-  ) {
-    /// Set up grid sampling (before inverse Fourier transform).
-    fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      twopt_3d[gid][0] = 0.;
-      twopt_3d[gid][1] = 0.;
-    }
+    MeshField& field_a, MeshField& field_b, std::complex<double> shotnoise_amp,
+    int ell, int m, trv::Binning& rbins
+  );
 
-    /// Set inverse FFT volume normalisation, where ∫d^3k / (2\pi)^3
-    /// corresponds to (1/V) Σ_i, V =: `vol`.
-    double vol = this->params.volume;
-
-    /// Compute meshed statistics.
-    double dk[3];
-    dk[0] = 2.*M_PI / this->params.boxsize[0];
-    dk[1] = 2.*M_PI / this->params.boxsize[1];
-    dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    double kv[3];
-    for (int i = 0; i < this->params.ngrid[0]; i++) {
-      for (int j = 0; j < this->params.ngrid[1]; j++) {
-        for (int k = 0; k < this->params.ngrid[2]; k++) {
-          long long idx_grid =
-            (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
-
-          kv[0] = (i < this->params.ngrid[0]/2) ?
-            i * dk[0] : (i - this->params.ngrid[0]) * dk[0];
-          kv[1] = (j < this->params.ngrid[1]/2) ?
-            j * dk[1] : (j - this->params.ngrid[1]) * dk[1];
-          kv[2] = (k < this->params.ngrid[2]/2) ?
-            k * dk[2] : (k - this->params.ngrid[2]) * dk[2];
-
-          std::complex<double> delta_a(
-            field_a[idx_grid][0], field_a[idx_grid][1]
-          );
-          std::complex<double> delta_b(
-            field_b[idx_grid][0], field_b[idx_grid][1]
-          );
-
-          std::complex<double> mode_power = delta_a * std::conj(delta_b);
-
-          /// Subtract shot-noise component.
-          mode_power -=
-            shotnoise_amp * this->calc_shotnoise_aliasing(kv);
-
-          /// Apply assignment compensation.
-          double win = this->calc_2pt_fftgrid_correction(kv);
-
-          mode_power /= win;
-
-          twopt_3d[idx_grid][0] = mode_power.real() / vol;
-          twopt_3d[idx_grid][1] = mode_power.imag() / vol;
-        }
-      }
-    }
-
-    /// Inverse Fourier transform.
-    fftw_plan inv_transform = fftw_plan_dft_3d(
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      twopt_3d, twopt_3d,
-      FFTW_BACKWARD, FFTW_ESTIMATE
-    );
-
-    fftw_execute(inv_transform);
-    fftw_destroy_plan(inv_transform);
-
-    /// Set up fine-sampling of separations.
-    /// CAVEAT: Discretionary choices.
-    const double dr_sample = 0.5;
-    const int n_sample = 20000;
-
-    double* rs_sample = new double[n_sample];
-    std::complex<double>* xi_sample = new std::complex<double>[n_sample];
-    int* npair_sample = new int[n_sample];
-    for (int i = 0; i < n_sample; i++) {
-      rs_sample[i] = 0.;
-      xi_sample[i] = 0.;
-      npair_sample[i] = 0;
-    }
-
-    /// Reset binned statistics.
-    this->reset_2pt_stats();
-
-    /// Perform fine sampling.
-    double dr[3];
-    dr[0] = this->params.boxsize[0] / double(this->params.ngrid[0]);
-    dr[1] = this->params.boxsize[1] / double(this->params.ngrid[1]);
-    dr[2] = this->params.boxsize[2] / double(this->params.ngrid[2]);
-
-    double rv[3];
-    for (int i = 0; i < this->params.ngrid[0]; i++) {
-      for (int j = 0; j < this->params.ngrid[1]; j++) {
-        for (int k = 0; k < this->params.ngrid[2]; k++) {
-          long long idx_grid =
-            (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
-
-          rv[0] = (i < this->params.ngrid[0]/2) ?
-            i * dr[0] : (i - this->params.ngrid[0]) * dr[0];
-          rv[1] = (j < this->params.ngrid[1]/2) ?
-            j * dr[1] : (j - this->params.ngrid[1]) * dr[1];
-          rv[2] = (k < this->params.ngrid[2]/2) ?
-            k * dr[2] : (k - this->params.ngrid[2]) * dr[2];
-
-          double r_ = std::sqrt(rv[0] * rv[0] + rv[1] * rv[1] + rv[2] * rv[2]);
-
-          int idx_r = int(r_ / dr_sample + 0.5);
-          if (idx_r < n_sample) {
-            std::complex<double> pair_corr(
-              twopt_3d[idx_grid][0], twopt_3d[idx_grid][1]
-            );
-
-            /// Weight by reduced spherical harmonics.
-            std::complex<double> ylm = SphericalHarmonicCalculator::
-              calc_reduced_spherical_harmonic(ell, m, rv);
-
-            pair_corr *= ylm;
-
-            /// Add contribution.
-            rs_sample[idx_r] += r_;
-            xi_sample[idx_r] += pair_corr;
-            npair_sample[idx_r]++;
-          }
-        }
-      }
-    }
-
-    /// Perform binning.
-    double drbin[this->params.num_bins - 1];
-    for (int ibin = 0; ibin < this->params.num_bins - 1; ibin++) {
-      drbin[ibin] = rbin[ibin + 1] - rbin[ibin];
-    }
-
-    for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
-      double r_lower = 0.;
-      if (ibin == 0) {
-        r_lower = (rbin[ibin] > drbin[ibin]/2) ?
-          (rbin[ibin] - drbin[ibin]/2) : 0.;
-      } else {
-        r_lower = rbin[ibin] - drbin[ibin - 1]/2;
-      }
-
-      double r_upper = 0.;
-      if (ibin == this->params.num_bins - 1) {
-        r_upper = rbin[ibin] + drbin[ibin - 1]/2;
-      } else {
-        r_upper = rbin[ibin] + drbin[ibin]/2;
-      }
-
-      for (int i = 0; i < n_sample; i++) {
-        double r_sample = i * dr_sample;
-        if (r_lower < r_sample && r_sample <= r_upper) {
-          this->r[ibin] += rs_sample[i];
-          this->xi[ibin] += xi_sample[i];
-          this->npair[ibin] += npair_sample[i];
-        }
-      }
-
-      if (this->npair[ibin] != 0) {
-        this->r[ibin] /= double(this->npair[ibin]);
-        this->xi[ibin] /= double(this->npair[ibin]);
-      } else {
-        this->r[ibin] = (r_lower + r_upper) / 2;
-        this->xi[ibin] = 0.;
-      }
-    }
-
-    delete[] twopt_3d;
-    delete[] rs_sample;
-    delete[] xi_sample;
-    delete[] npair_sample;
-  }
+  /// --------------------------------------------------------------------
+  /// Shot noise
+  /// --------------------------------------------------------------------
 
   /**
-   * Calculate two-point self-contribution shot noise in power spectrum,
-   * weighted by reduced spherical harmonics,
-   * from data and random sources.
+   * @brief Calculate power spectrum shot noise weighted by
+   *        reduced spherical harmonics.
    *
-   * @param particles_data (Data-source) particle container.
-   * @param particles_rand (Random-source) particle container.
+   * This calculates the quantity
+   * f@[
+   *   \bar{N}_{LM}(\vec{x}) = {\sum_i}{\vphantom{\sum}}'
+   *     y_{LM}^*(\hat{\vec{x}}) w(\vec{x})^2 \,,
+   * f@]
+   * where if a pair of catalogues are provided,
+   * f@[
+   *   {\sum_i}{\vphantom{\sum}}' =
+   *     \sum_{i \in mathrm{data}} + \alpha^2 \sum_{i \in mathrm{rand}} \,,
+   * f@]
+   * and otherwise
+   * f@[
+   *   {\sum_i}{\vphantom{\sum}}' =
+   *     \alpha^2 \sum_{i \in mathrm{data or rand}} \,.
+   * f@]
+   *
+   * @param particles_data (Data-source) particle catalogue.
+   * @param particles_rand (Random-source) particle catalogue.
    * @param los_data (Data-source) particle lines of sight.
    * @param los_rand (Random-source) particle lines of sight.
    * @param alpha Alpha ratio.
@@ -1940,646 +627,258 @@ class Pseudo2ptStats {
    * @param m Order of the spherical harmonic.
    * @returns Weighted shot noise for power spectrum.
    */
-  std::complex<double> calc_ylm_wgtd_shotnoise_for_powspec(
-    ParticleContainer& particles_data,
-    ParticleContainer& particles_rand,
-    LineOfSight* los_data,
-    LineOfSight* los_rand,
-    double alpha,
-    int ell, int m
-  ) {
-    std::complex<double> sum_data = 0.;
-    std::complex<double> sum_rand = 0.;
-
-    for (int pid = 0; pid < particles_data.ntotal; pid++) {
-      double los_[3] = {
-        los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
-      };
-
-      std::complex<double> ylm = SphericalHarmonicCalculator::
-        calc_reduced_spherical_harmonic(ell, m, los_);
-
-      sum_data += ylm * std::pow(particles_data[pid].w, 2);
-    }
-
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      double los_[3] = {
-        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-      };
-
-      std::complex<double> ylm = SphericalHarmonicCalculator::
-        calc_reduced_spherical_harmonic(ell, m, los_);
-
-      sum_rand += ylm * std::pow(particles_rand[pid].w, 2);
-    }
-
-    return sum_data + std::pow(alpha, 2) * sum_rand;
-  }
+  std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_powspec(
+    ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
+    LineOfSight* los_data, LineOfSight* los_rand,
+    double alpha, int ell, int m
+  );
 
   /**
-   * Calculate two-point self-contribution shot noise in power spectrum,
-   * weighted by reduced spherical harmonics, from a (random) source.
+   * @brief Calculate power spectrum shot noise weighted by
+   *        reduced spherical harmonics.
    *
-   * @param particles_rand (Random-source) particle container.
-   * @param los_rand (Random-source) particle lines of sight.
+   * @param particles Particle catalogue.
+   * @param los Particle lines of sight.
    * @param alpha Alpha ratio.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
-   * @returns Weighted shot noise for power spectrum.
+   * @returns Weighted power spectrum shot noise.
    *
    * @overload
    */
-  std::complex<double> calc_ylm_wgtd_shotnoise_for_powspec(
-    ParticleContainer& particles_rand,
-    LineOfSight* los_rand,
-    double alpha,
-    int ell, int m
-  ) {
-    std::complex<double> sum_rand = 0.;
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      double los_[3] = {
-        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-      };
+  std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_powspec(
+    ParticleCatalogue& particles, LineOfSight* los,
+    double alpha, int ell, int m
+  );
 
-      std::complex<double> ylm = SphericalHarmonicCalculator::
-        calc_reduced_spherical_harmonic(ell, m, los_);
 
-      sum_rand += ylm * std::pow(particles_rand[pid].w, 2);
-    }
-
-    return std::pow(alpha, 2) * sum_rand;
-  }
+/// ----------------------------------------------------------------------
+/// Shot noise
+/// ----------------------------------------------------------------------
 
   /**
-   * Calculate shot noise for power spectrum with no weighting.
+   * @brief Compute binned uncoupled three-point correlation function
+   *        shot noise.
    *
-   * @param particles_data (Data-source) particle container.
-   * @param particles_rand (Random-source) particle container.
-   * @param alpha Alpha ratio.
-   * @returns Unweighted shot noise for power spectrum.
-   */
-  std::complex<double> calc_unweighted_shotnoise_for_powspec(
-    ParticleContainer& particles_data,
-    ParticleContainer& particles_rand,
-    double alpha
-  ) {
-    std::complex<double> sum_data = double(particles_data.ntotal);
-    std::complex<double> sum_rand = double(particles_rand.ntotal);
-
-    return sum_data + std::pow(alpha, 2) * sum_rand;
-  }
-
-  /**
-   * Compute two-point statistics for calculating shot-noise components
-   * in the three-point correlation function.
+   * This computes the quantity
+   * f@[
+   *   \frac{(-1)^{\ell_a + \ell_b}}{N_\mathrm{mode}(r) V_\mathrm{cell}}
+   *   \int \frac{\mathrm{d}^2\,\hat{\vec{r}}}{4\pi}
+   *     y^*_{\ell_a m_a}(\hat{\vec{r}}) y^*_{\ell_b m_b}(\hat{\vec{r}})
+   *   \int \frac{\mathrm{d}^3\,\vec{k}}{(2\pi)^3}
+   *     \mathrm{e}^{\mathrm{i} \vec{k} \cdot \vec{r}}
+   *     W(\vec{k})^{-2} [f_a(\vec{k}) f_b(\vec{k}) - S C_1(\vec{k})] \,,
+   * f@]
+   * where f@$ S f@$ is the shot noise amplitude (see
+   * @ref trv::FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier
+   * for other notations).
    *
-   * See f@$ S_{\ell_1 \ell_2 L}|_{i = j \neq k} f@$ in eq. (51)
-   * in Sugiyama et al. (2019)
-   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].  Note
-   * that this quantity is diagonal so effectively one-dimensional.
+   * This method involves additional reduced spherical-harmonic weights
+   * after the inverse Fourier transform as in
+   * @ref trv::FieldStats::compute_ylm_wgtd_2pt_stats_in_config
+   * before binning and additional normalisation.
    *
-   * @param field_a First density-like field.
-   * @param field_b Second density-like field.
+   * @note See eq. (51) in Sugiyama et al. (2019)
+   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   *
+   * @param field_a First field.
+   * @param field_b Second field.
    * @param ylm_a Reduced spherical harmonics over the first field mesh.
    * @param ylm_b Reduced spherical harmonics over the second field mesh.
    * @param shotnoise_amp Shot-noise amplitude.
    * @param rbin Separation bins.
    */
   void compute_uncoupled_shotnoise_for_3pcf(
-    PseudoDensityField<ParticleContainer>& field_a,
-    PseudoDensityField<ParticleContainer>& field_b,
+    MeshField& field_a, MeshField& field_b,
     std::complex<double>* ylm_a, std::complex<double>* ylm_b,
     std::complex<double> shotnoise_amp,
-    std::vector<double> rbin
-  ) {
-    /// Set up grid sampling (before inverse Fourier transform).
-    fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
-      twopt_3d[gid][0] = 0.;
-      twopt_3d[gid][1] = 0.;
-    }
-
-    /// Set inverse FFT volume normalisation, where ∫d^3k / (2\pi)^3
-    /// corresponds to (1/V) Σ_i, V =: `vol`.
-    double vol = this->params.volume;
-
-    /// Compute meshed statistics.
-    double dk[3];
-    dk[0] = 2.*M_PI / this->params.boxsize[0];
-    dk[1] = 2.*M_PI / this->params.boxsize[1];
-    dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    double kv[3];
-    for (int i = 0; i < this->params.ngrid[0]; i++) {
-      for (int j = 0; j < this->params.ngrid[1]; j++) {
-        for (int k = 0; k < this->params.ngrid[2]; k++) {
-          long long idx_grid =
-            (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
-
-          kv[0] = (i < this->params.ngrid[0]/2) ?
-            i * dk[0] : (i - this->params.ngrid[0]) * dk[0];
-          kv[1] = (j < this->params.ngrid[1]/2) ?
-            j * dk[1] : (j - this->params.ngrid[1]) * dk[1];
-          kv[2] = (k < this->params.ngrid[2]/2) ?
-            k * dk[2] : (k - this->params.ngrid[2]) * dk[2];
-
-          std::complex<double> delta_a(
-            field_a[idx_grid][0], field_a[idx_grid][1]
-          );
-          std::complex<double> delta_b(
-            field_b[idx_grid][0], field_b[idx_grid][1]
-          );
-
-          std::complex<double> mode_power = delta_a * std::conj(delta_b);
-
-          /// Subtract shot noise component.
-          mode_power -= shotnoise_amp * calc_shotnoise_aliasing(kv);
-
-          /// Apply assignment compensation.
-          double win = this->calc_2pt_fftgrid_correction(kv);
-
-          mode_power /= win;
-
-          twopt_3d[idx_grid][0] = mode_power.real() / vol;
-          twopt_3d[idx_grid][1] = mode_power.imag() / vol;
-        }
-      }
-    }
-
-    /// Inverse Fourier transform.
-    fftw_plan inv_transform = fftw_plan_dft_3d(
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      twopt_3d, twopt_3d,
-      FFTW_BACKWARD, FFTW_ESTIMATE
-    );
-
-    fftw_execute(inv_transform);
-    fftw_destroy_plan(inv_transform);
-
-    /// Set up fine-sampling of separations.
-    /// CAVEAT: Discretionary choices.
-    const double dr_sample = 0.5;
-    const int n_sample = 10000;
-
-    double* rs_sample = new double[n_sample];
-    std::complex<double>* xi_sample = new std::complex<double>[n_sample];
-    int* npair_sample = new int[n_sample];
-    for (int i = 0; i < n_sample; i++) {
-      rs_sample[i] = 0.;
-      xi_sample[i] = 0.;
-      npair_sample[i] = 0;
-    }
-
-    /// Reset binned statistics.
-    this->reset_2pt_stats();
-
-    /// Perform fine sampling.
-    double dr[3];
-    dr[0] = this->params.boxsize[0] / double(this->params.ngrid[0]);
-    dr[1] = this->params.boxsize[1] / double(this->params.ngrid[1]);
-    dr[2] = this->params.boxsize[2] / double(this->params.ngrid[2]);
-
-    double rv[3];
-    for (int i = 0; i < this->params.ngrid[0]; i++) {
-      for (int j = 0; j < this->params.ngrid[1]; j++) {
-        for (int k = 0; k < this->params.ngrid[2]; k++) {
-          long long idx_grid =
-            (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
-
-          rv[0] = (i < this->params.ngrid[0]/2) ?
-            i * dr[0] : (i - this->params.ngrid[0]) * dr[0];
-          rv[1] = (j < this->params.ngrid[1]/2) ?
-            j * dr[1] : (j - this->params.ngrid[1]) * dr[1];
-          rv[2] = (k < this->params.ngrid[2]/2) ?
-            k * dr[2] : (k - this->params.ngrid[2]) * dr[2];
-
-          double r_ = std::sqrt(rv[0] * rv[0] + rv[1] * rv[1] + rv[2] * rv[2]);
-
-          int idx_r = int(r_ / dr_sample + 0.5);
-          if (idx_r < n_sample) {
-            std::complex<double> pair_corr(
-              twopt_3d[idx_grid][0], twopt_3d[idx_grid][1]
-            );
-
-            /// Weight by reduced spherical harmonics.
-            pair_corr *= ylm_a[idx_grid] * ylm_b[idx_grid];
-
-            /// Add contribution.
-            rs_sample[idx_r] += r_;
-            xi_sample[idx_r] += pair_corr;
-            npair_sample[idx_r]++;
-          }
-        }
-      }
-    }
-
-    /// Perform binning.
-    double drbin[this->params.num_bins - 1];
-    for (int ibin = 0; ibin < this->params.num_bins - 1; ibin++) {
-      drbin[ibin] = rbin[ibin + 1] - rbin[ibin];
-    }
-
-    for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
-      double r_lower = 0.;
-      if (ibin == 0) {
-        r_lower = (rbin[ibin] > drbin[ibin]/2) ?
-          (rbin[ibin] - drbin[ibin]/2) : 0.;
-      } else {
-        r_lower = rbin[ibin] - drbin[ibin - 1]/2;
-      }
-
-      double r_upper = 0.;
-      if (ibin == this->params.num_bins - 1) {
-        r_upper = rbin[ibin] + drbin[ibin - 1]/2;
-      } else {
-        r_upper = rbin[ibin] + drbin[ibin]/2;
-      }
-
-      for (int i = 0; i < n_sample; i++) {
-        double r_sample = i * dr_sample;
-        if (r_lower < r_sample && r_sample <= r_upper) {
-          this->r[ibin] += rs_sample[i];
-          this->xi[ibin] += xi_sample[i];
-          this->npair[ibin] += npair_sample[i];
-        }
-      }
-
-      if (this->npair[ibin] != 0) {
-        this->r[ibin] /= double(this->npair[ibin]);
-        this->xi[ibin] /= double(this->npair[ibin]);
-      } else {
-        this->r[ibin] = (r_lower + r_upper) / 2;
-        this->xi[ibin] = 0.;
-      }
-    }
-
-    /// Apply normalisation constants.
-    double vol_cell = this->params.volume / double(this->params.nmesh);
-
-    for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
-      if (this->npair[ibin] != 0) {
-        this->xi[ibin] *= 1 / vol_cell
-          * std::pow(-1, this->params.ell1 + this->params.ell2)
-          / this->npair[ibin];
-      }
-    }
-
-    delete[] twopt_3d;
-    delete[] rs_sample;
-    delete[] xi_sample;
-    delete[] npair_sample;
-  }
+    trv::Binning& rbin
+  );
 
   /**
-   * Compute shot noise for bispectrum over a mesh.
+   * @brief Compute unbinned uncoupled bispectrum shot noise on the FFT
+   *        mesh grid.
    *
-   * See f@$ S_{\ell_1 \ell_2 L}|_{i = j \neq k} f@$ in eq. (45)
-   * in Sugiyama et al. (2019)
-   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].  Note
-   * that this quantity is two-dimensional and here the pre-binning
-   * three-dimensional quantity is computed.
-   *
-   * @param[in] field_a First density-like field.
-   * @param[in] field_b Second density-like field.
-   * @param[in] shotnoise_amp Shot-noise amplitude.
-   * @param[out] threept_3d Three-point statistics on mesh grids.
-   */
-  void compute_uncoupled_shotnoise_for_bispec_meshgrid(
-    PseudoDensityField<ParticleContainer>& field_a,
-    PseudoDensityField<ParticleContainer>& field_b,
-    std::complex<double> shotnoise_amp,
-    fftw_complex* threept_3d
-  ) {
-    /// Set inverse FFT volume normalisation, where ∫d^3k / (2\pi)^3
-    /// corresponds to (1/V) Σ_i, V =: `vol`.
-    double vol = this->params.volume;
-
-    /// Compute mesh statistics.
-    double dk[3];
-    dk[0] = 2.*M_PI / this->params.boxsize[0];
-    dk[1] = 2.*M_PI / this->params.boxsize[1];
-    dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    double kv[3];
-    for (int i = 0; i < this->params.ngrid[0]; i++) {
-      for (int j = 0; j < this->params.ngrid[1]; j++) {
-        for (int k = 0; k < this->params.ngrid[2]; k++) {
-          long long idx_grid =
-            (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
-
-          kv[0] = (i < this->params.ngrid[0]/2) ?
-            i * dk[0] : (i - this->params.ngrid[0]) * dk[0];
-          kv[1] = (j < this->params.ngrid[1]/2) ?
-            j * dk[1] : (j - this->params.ngrid[1]) * dk[1];
-          kv[2] = (k < this->params.ngrid[2]/2) ?
-            k * dk[2] : (k - this->params.ngrid[2]) * dk[2];
-
-          std::complex<double> delta_a(
-            field_a[idx_grid][0], field_a[idx_grid][1]
-          );
-          std::complex<double> delta_b(
-            field_b[idx_grid][0], field_b[idx_grid][1]
-          );
-
-          std::complex<double> mode_power = delta_a * std::conj(delta_b);
-
-          /// Subtract shot noise component.
-          mode_power -= shotnoise_amp * calc_shotnoise_aliasing(kv);
-
-          /// Apply assignment compensation.
-          double win = this->calc_2pt_fftgrid_correction(kv);
-
-          mode_power /= win;
-
-          threept_3d[idx_grid][0] = mode_power.real() / vol;
-          threept_3d[idx_grid][1] = mode_power.imag() / vol;
-        }
-      }
-    }
-
-    /// Inverse Fourier transform.
-    fftw_plan inv_transform = fftw_plan_dft_3d(
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      threept_3d, threept_3d,
-      FFTW_BACKWARD, FFTW_ESTIMATE
-    );
-
-    fftw_execute(inv_transform);
-    fftw_destroy_plan(inv_transform);
-  }
-
-  /**
-   * Calculate three-point self-contribution component to (three-point
-   * correlator) shot noise, weighted by the reduced spherical harmonics,
-   * from data and random sources,
-   *
+   * This computes the quantity
    * f@[
-   *   \bar{S}_{LM} = \left(
-   *     \sum_{i \in \mathrm{data}} - \alpha^3 \sum_{i \in \mathrm{rand}}
-   *   \right) y_{LM}^*(\vec{x}_i) w(\vec{x}_i)^3 \,.
+   *   \int \mathrm{d}^3\,\vec{r}
+   *     j_{\ell_a}(k_a r) j_{\ell_b}(k_b r)
+   *     y^*_{\ell_a m_a}(\hat{\vec{x}}) y^*_{\ell_b m_b}(\hat{\vec{x}})
+   *   \int \frac{\mathrm{d}^3\,\vec{k}}{(2\pi)^3}
+   *     \mathrm{e}^{\mathrm{i} \vec{k} \cdot \vec{r}}
+   *     W(\vec{k})^{-2} [f_a(\vec{k}) f_b(\vec{k}) - S C_1(\vec{k})]
+   * f@]
+   * (see
+   * @ref trv::FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier
+   * for other notations).
+   *
+   * This method involves additional reduced spherical-harmonic weights
+   * after the inverse Fourier transform as in
+   * @ref trv::FieldStats::compute_ylm_wgtd_2pt_stats_in_config
+   * before binning and additional normalisation.
+   *
+   * @note See eq. (45) in Sugiyama et al. (2019)
+   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   *
+   * @param field_a First field.
+   * @param field_b Second field.
+   * @param ylm_a Reduced spherical harmonics over the first
+   *              field mesh.
+   * @param ylm_b Reduced spherical harmonics over the second
+   *              field mesh.
+   * @param sj_a First spherical Bessel function.
+   * @param sj_b Second spherical Bessel function.
+   * @param shotnoise_amp Shot-noise amplitude.
+   * @param k_a, k_b Wavenumbers at which the shot noise is evaluated.
+   */
+  std::complex<double> compute_uncoupled_shotnoise_for_bispec_per_bin(
+    MeshField& field_a, MeshField& field_b,
+    std::complex<double>* ylm_a, std::complex<double>* ylm_b,
+    trvm::SphericalBesselCalculator& sj1, trvm::SphericalBesselCalculator& sj2,
+    std::complex<double> shotnoise_amp,
+    double k_a, double k_b
+  );
+
+  /**
+   * @brief Calculate bispectrum shot noise amplitude weighted by
+   *        reduced spherical harmonics.
+   *
+   * This calculates the quantity
+   * f@[
+   *   \bar{S}_{LM} = {\sum_i}{\vphantom{\sum}}'
+   *     y_{LM}^*(\vec{x}_i) w(\vec{x}_i)^3 \,,
+   * f@]
+   * where if a pair of catalogues are provided,
+   * f@[
+   *   {\sum_i}{\vphantom{\sum}}' =
+   *     \sum_{i \in mathrm{data}} - \alpha^3 \sum_{i \in mathrm{rand}} \,,
+   * f@]
+   * and otherwise
+   * f@[
+   *   {\sum_i}{\vphantom{\sum}}' =
+   *     \alpha^3  \sum_{i \in mathrm{data or rand}} \,.
    * f@]
    *
-   * See eq. (46) in Sugiyama et al. (2019)
-   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   * @note See eq. (46) in Sugiyama et al. (2019)
+   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
-   * @param particles_data (Data-source) particle container.
-   * @param particles_rand (Random-source) particle container.
+   * @param particles_data (Data-source) particle catalogue.
+   * @param particles_rand (Random-source) particle catalogue.
    * @param los_data (Data-source) particle lines of sight.
    * @param los_rand (Random-source) particle lines of sight.
    * @param alpha Alpha ratio.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    * @returns Weighted shot-noise contribution for bispectrum.
-   *
-   * @see PseudoDensityField::compute_ylm_wgtd_2pt_self_component_for_shotnoise(
-   *        ParticleContainer&, ParticleContainer&,
-   *        LineOfSight*, LineOfSight*,
-   *        double, int, int
-   *      )
-   *      Analogous but here the quantity is not a field as it is
-   *      spatially invariant.
    */
-  std::complex<double> calc_ylm_wgtd_3pt_self_component_for_shotnoise(
-    ParticleContainer& particles_data, ParticleContainer& particles_rand,
+  std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
+    ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
     LineOfSight* los_data, LineOfSight* los_rand,
-    double alpha,
-    int ell, int m
-  ) {
-    /// Initialise shot-noise contributions.
-    std::complex<double> sum_data = 0.;
-    std::complex<double> sum_rand = 0.;
+    double alpha, int ell, int m
+  );
 
-    /// Perform direct summation with spherical harmonic weighting.
-    for (int pid = 0; pid < particles_data.ntotal; pid++) {
-      double los_[3] = {
-        los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
-      };
-
-      std::complex<double> ylm = SphericalHarmonicCalculator::
-        calc_reduced_spherical_harmonic(ell, m, los_);
-
-      sum_data += ylm * std::pow(particles_data[pid].w, 3);
-    }
-
-    for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-      double los_[3] = {
-        los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-      };
-
-      std::complex<double> ylm = SphericalHarmonicCalculator::
-        calc_reduced_spherical_harmonic(ell, m, los_);
-
-      sum_rand += ylm * std::pow(particles_rand[pid].w, 3);
-    }
-
-    return sum_data - std::pow(alpha, 3) * sum_rand;
-  }
+  /**
+   * @brief Calculate bispectrum shot noise amplitude weighted by
+   *        reduced spherical harmonics.
+   *
+   * @param particles Particle catalogue.
+   * @param los Particle lines of sight.
+   * @param alpha Alpha ratio.
+   * @param ell Degree of the spherical harmonic.
+   * @param m Order of the spherical harmonic.
+   * @returns Weighted shot-noise amplitude for bispectrum.
+   *
+   * @overload
+   */
+  std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
+    ParticleCatalogue& particles, LineOfSight* los,
+    double alpha, int ell, int m
+  );
 
  private:
-  trv::ParameterSet params;
+  trv::ParameterSet params;  ///> parameter set
+  double dr[3];              ///> grid size in each dimension
+  double dk[3];              ///> fundamental wavenumber in each dimension
+  double vol;                ///> mesh volume
+  double vol_cell;           ///> mesh grid cell volume
+
+  /// --------------------------------------------------------------------
+  /// Utilities
+  /// --------------------------------------------------------------------
 
   /**
-   * Calculate the interpolation grid corrections needed after FFT.
+   * @brief Check if two mesh fields have compatible properties.
    *
-   * @param kvec Wavevector.
-   * @returns Window sum in Fourier space.
+   * @param field_a First field.
+   * @param field_b Second field.
+   * @return { @c true , @c false }
    */
-  double calc_2pt_fftgrid_correction(double* kvec) {
-    if (this->params.interlace == "true") {
-      return std::pow(calc_assignment_window_in_fourier(kvec), 2);
-    }
-    #ifndef DBG_NOAC
-    if (this->params.interlace == "false") {
-      return calc_shotnoise_aliasing(kvec);
-    }
-    #endif
-    return std::pow(calc_assignment_window_in_fourier(kvec), 2);  // default
-  }
+  bool if_fields_compatible(MeshField& field_a, MeshField& field_b);
+
+  /// --------------------------------------------------------------------
+  /// Sampling corrections
+  /// --------------------------------------------------------------------
 
   /**
-   * Calculate the interpolation window in Fourier space for
-   * assignment schemes.
+   * @brief Calculate the shot-noise scale-dependent aliasing function
+   *        f@$ C_1(\vec{k}) f@$.
+   *
+   * @note See eqs. (45) and (46) in Sugiyama et al. (2019)
+   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>]
+   *       and Jing (2004)
+   *       [<a href="https://arxiv.org/abs/astro-ph/0409240">astro-ph/0409240</a>].
    *
    * @param kvec Wavevector.
-   * @returns Window value in Fourier space.
+   * @returns Value of the aliasing function.
    */
-  double calc_assignment_window_in_fourier(double* kvec) {
-    int order;
-    if (this->params.assignment == "ngp") {
-      order = 1;
-    } else
-    if (this->params.assignment == "cic") {
-      order = 2;
-    } else
-    if (this->params.assignment == "tsc") {
-      order = 3;
-    } else
-    if (this->params.assignment == "pcs") {
-      order = 4;
-    }
-
-    double dk[3];
-    dk[0] = 2.*M_PI / this->params.boxsize[0];
-    dk[1] = 2.*M_PI / this->params.boxsize[1];
-    dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    int i = int(kvec[0] / dk[0] + EPS_GRIDSHIFT);
-    int j = int(kvec[1] / dk[1] + EPS_GRIDSHIFT);
-    int k = int(kvec[2] / dk[2] + EPS_GRIDSHIFT);
-
-    double k_x = M_PI * i / double(this->params.ngrid[0]);
-    double k_y = M_PI * j / double(this->params.ngrid[1]);
-    double k_z = M_PI * k / double(this->params.ngrid[2]);
-
-    /// Note sin(u) / u -> 1 as u -> 0.
-    double wk_x = (i != 0) ? std::sin(k_x) / k_x : 1.;
-    double wk_y = (j != 0) ? std::sin(k_y) / k_y : 1.;
-    double wk_z = (k != 0) ? std::sin(k_z) / k_z : 1.;
-
-    double wk = wk_x * wk_y * wk_z;
-
-    return std::pow(wk, order);
-  }
+  double calc_shotnoise_aliasing(std::vector<double> kvec);
 
   /**
-   * Calculate the shot-noise aliasing scale-dependence function
-   * f@$ C_1(\vec{k}) f@$.
+   * @brief Calculate the shot-noise aliasing scale-dependence function
+   *        f@$ C_1(\vec{k}) f@$.
    *
-   * See eqs. (45) and (46) in Sugiyama et al. (2019)
-   * [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>]
-   * and Jing (2004)
-   * [<a href="https://arxiv.org/abs/astro-ph/0409240">astro-ph/0409240</a>].
+   * @param i, j, k Grid indices.
+   * @returns Value of the aliasing function.
    *
-   * @param kvec Wavevector.
-   * @returns Value of the scale-dependence function.
+   * @overload
    */
-  double calc_shotnoise_aliasing(double* kvec) {
-    if (this->params.interlace == "true") {
-      return std::pow(this->calc_assignment_window_in_fourier(kvec), 2);
-    }
-
-    if (this->params.assignment == "ngp") {
-      return this->calc_shotnoise_scale_dependence_ngp(kvec);
-    }
-    if (this->params.assignment == "cic") {
-      return this->calc_shotnoise_scale_dependence_cic(kvec);
-    }
-    if (this->params.assignment == "tsc") {
-      return this->calc_shotnoise_scale_dependence_tsc(kvec);
-    }
-    if (this->params.assignment == "pcs") {
-      return this->calc_shotnoise_scale_dependence_pcs(kvec);
-    }
-
-    return 1.;  // default
-  }
+  double calc_shotnoise_aliasing(int i, int j, int k);
 
   /**
-   * Calculate the shot-noise scale-dependence function for the
-   * nearest-grid-point assignment scheme.
+   * Calculate the shot-noise aliasing function for the
+   * nearest-grid-point (NGP) assignment scheme.
    *
-   * @param kvec Wavevector.
+   * @param i, j, k Grid indices.
    * @returns Function value.
    */
-  double calc_shotnoise_scale_dependence_ngp(double* kvec) {
-    return 1.;
-  }
+  double calc_shotnoise_aliasing_ngp(int i, int j, int k);
 
   /**
-   * Calculate the shot-noise scale-dependence function for the
-   * cloud-in-cell assignment scheme.
+   * Calculate the shot-noise aliasing function for the
+   * cloud-in-cell (CIC) assignment scheme.
    *
-   * @param kvec Wavevector.
+   * @param i, j, k Grid indices.
    * @returns Function value.
    */
-  double calc_shotnoise_scale_dependence_cic(double* kvec) {
-    double dk[3];
-    dk[0] = 2.*M_PI / this->params.boxsize[0];
-    dk[1] = 2.*M_PI / this->params.boxsize[1];
-    dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    int i = int(kvec[0] / dk[0] + EPS_GRIDSHIFT);
-    int j = int(kvec[1] / dk[1] + EPS_GRIDSHIFT);
-    int k = int(kvec[2] / dk[2] + EPS_GRIDSHIFT);
-
-    double k_x = M_PI * i / double(this->params.ngrid[0]);
-    double k_y = M_PI * j / double(this->params.ngrid[1]);
-    double k_z = M_PI * k / double(this->params.ngrid[2]);
-
-    double cx2 = (i != 0) ? std::sin(k_x) * std::sin(k_x) : 0.;
-    double cy2 = (j != 0) ? std::sin(k_y) * std::sin(k_y) : 0.;
-    double cz2 = (k != 0) ? std::sin(k_z) * std::sin(k_z) : 0.;
-
-    double val = (1. - 2./3. * cx2) * (1. - 2./3. * cy2) * (1. - 2./3. * cz2);
-
-    return val;
-  }
+  double calc_shotnoise_aliasing_cic(int i, int j, int k);
 
   /**
-   * Calculate the shot-noise scale-dependence function for the
-   * triangular-shaped-cloud assignment scheme.
+   * Calculate the shot-noise aliasing function for the
+   * triangular-shaped-cloud (TSC) assignment scheme.
    *
-   * @param kvec Wavevector.
+   * @param i, j, k Grid indices.
    * @returns Function value.
    */
-  double calc_shotnoise_scale_dependence_tsc(double* kvec) {
-    double dk[3];
-    dk[0] = 2.*M_PI / this->params.boxsize[0];
-    dk[1] = 2.*M_PI / this->params.boxsize[1];
-    dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    int i = int(kvec[0] / dk[0] + EPS_GRIDSHIFT);
-    int j = int(kvec[1] / dk[1] + EPS_GRIDSHIFT);
-    int k = int(kvec[2] / dk[2] + EPS_GRIDSHIFT);
-
-    double k_x = M_PI * i / double(this->params.ngrid[0]);
-    double k_y = M_PI * j / double(this->params.ngrid[1]);
-    double k_z = M_PI * k / double(this->params.ngrid[2]);
-
-    double cx2 = (i != 0) ? std::sin(k_x) * std::sin(k_x) : 0.;
-    double cy2 = (j != 0) ? std::sin(k_y) * std::sin(k_y) : 0.;
-    double cz2 = (k != 0) ? std::sin(k_z) * std::sin(k_z) : 0.;
-
-    double val =
-      (1. - cx2 + 2./15. * cx2 * cx2)
-      * (1. - cy2 + 2./15. * cy2 * cy2)
-      * (1. - cz2 + 2./15. * cz2 * cz2);
-
-    return val;
-  }
+  double calc_shotnoise_aliasing_tsc(int i, int j, int k);
 
   /**
-   * Calculate the shot-noise scale-dependence function for the
-   * piecewise-cubic-spline assignment scheme.
+   * Calculate the shot-noise aliasing function for the
+   * piecewise-cubic-spline (PCS) assignment scheme.
    *
-   * @param kvec Wavevector.
+   * @param i, j, k Grid indices.
    * @returns Function value.
    */
-  double calc_shotnoise_scale_dependence_pcs(double* kvec) {
-    double dk[3];
-    dk[0] = 2.*M_PI / this->params.boxsize[0];
-    dk[1] = 2.*M_PI / this->params.boxsize[1];
-    dk[2] = 2.*M_PI / this->params.boxsize[2];
-
-    int i = int(kvec[0] / dk[0] + EPS_GRIDSHIFT);
-    int j = int(kvec[1] / dk[1] + EPS_GRIDSHIFT);
-    int k = int(kvec[2] / dk[2] + EPS_GRIDSHIFT);
-
-    double k_x = M_PI * i / double(this->params.ngrid[0]);
-    double k_y = M_PI * j / double(this->params.ngrid[1]);
-    double k_z = M_PI * k / double(this->params.ngrid[2]);
-
-    double cx2 = (i != 0) ? std::sin(k_x) * std::sin(k_x) : 0.;
-    double cy2 = (j != 0) ? std::sin(k_y) * std::sin(k_y) : 0.;
-    double cz2 = (k != 0) ? std::sin(k_z) * std::sin(k_z) : 0.;
-
-    double val =
-      (1. - 4./3. * cx2 + 2./5. * cx2 * cx2 - 4./315. * cx2 * cx2 * cx2)
-      * (1. - 4./3. * cy2 + 2./5. * cy2 * cy2 - 4./315. * cy2 * cy2 * cy2)
-      * (1. - 4./3. * cz2 + 2./5. * cz2 * cz2 - 4./315. * cz2 * cz2 * cz2);
-
-    return val;
-  }
+  double calc_shotnoise_aliasing_pcs(int i, int j, int k);
 };
 
 }  // namespace trv

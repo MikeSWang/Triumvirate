@@ -129,6 +129,21 @@ const char* UnimplementedError::what() const noexcept {
   return this->err_mesg.c_str();
 }
 
+IOError::IOError(const char* fmt_string, ...): std::runtime_error(
+    "I/O error."  // mandatory default error message
+) {
+  std::va_list args;
+
+  char err_mesg_buf[4096];
+  va_start(args, fmt_string);
+  std::vsprintf(err_mesg_buf, fmt_string, args);
+  va_end(args);
+
+  this->err_mesg = std::string(err_mesg_buf);
+}
+
+const char* IOError::what() const noexcept {return this->err_mesg.c_str();}
+
 /// STYLE: Column limit exceeded here.
 InvalidParameter::InvalidParameter(const char* fmt_string, ...): std::invalid_argument(
   "Invalid parameter error."  // mandatory default error message
