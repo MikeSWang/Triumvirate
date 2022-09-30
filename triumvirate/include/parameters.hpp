@@ -107,9 +107,6 @@ class ParameterSet {
                                               ///< convention:
                                               ///< {"mesh",
                                               ///<  "particle" (default)}
-  std::string shotnoise_convention = "mesh";  ///< shot noise convention:
-                                              ///< {"mesh" (default),
-                                              ///<  "particle"}
 
   std::string binning = "lin";  ///< binning scheme:
                                 ///< {"lin" (default), "log",
