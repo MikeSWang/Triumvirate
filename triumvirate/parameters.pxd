@@ -56,7 +56,6 @@ cdef extern from "include/parameters.hpp":
         string measurement_type
 
         string norm_convention
-        string shotnoise_convention
 
         string binning
         string form

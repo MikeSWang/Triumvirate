@@ -228,9 +228,6 @@ cdef class ParameterSet:
         if self._params['norm_convention'] is not None:
             self.thisptr.norm_convention = \
                 self._params['norm_convention'].lower()
-        if self._params['shotnoise_convention'] is not None:
-            self.thisptr.shotnoise_convention = \
-                self._params['shotnoise_convention'].lower()
 
         if self._params['binning'] is not None:
             self.thisptr.binning = self._params['binning'].lower()
