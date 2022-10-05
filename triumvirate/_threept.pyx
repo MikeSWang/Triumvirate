@@ -24,28 +24,28 @@ cdef extern from "include/dataobjs.hpp":
 
 cdef extern from "include/threept.hpp":
     struct BispecMeasurements "trv::algo::BispecMeasurements":
-        vector[double] kbin1
-        vector[double] kbin2
-        vector[double] keff1
-        vector[double] keff2
+        vector[double] k1bin
+        vector[double] k2bin
+        vector[double] k1eff
+        vector[double] k2eff
         vector[int] nmodes
         vector[np.complex128_t] bk_raw
         vector[np.complex128_t] bk_shot
 
     struct ThreePCFMeasurements "trv::algo::ThreePCFMeasurements":
-        vector[double] rbin1
-        vector[double] rbin2
-        vector[double] reff1
-        vector[double] reff2
+        vector[double] r1bin
+        vector[double] r2bin
+        vector[double] r1eff
+        vector[double] r2eff
         vector[int] npairs
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
 
     struct ThreePCFWindowMeasurements "trv::algo::ThreePCFWindowMeasurements":
-        vector[double] rbin1
-        vector[double] rbin2
-        vector[double] reff1
-        vector[double] reff2
+        vector[double] r1bin
+        vector[double] r2bin
+        vector[double] r1eff
+        vector[double] r2eff
         vector[int] npairs
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
@@ -202,10 +202,10 @@ def _compute_bispec(
     )
 
     return {
-        'kbin1': np.asarray(meas.kbin1),
-        'kbin2': np.asarray(meas.kbin2),
-        'keff1': np.asarray(meas.keff1),
-        'keff2': np.asarray(meas.keff2),
+        'k1bin': np.asarray(meas.k1bin),
+        'k2bin': np.asarray(meas.k2bin),
+        'k1eff': np.asarray(meas.k1eff),
+        'k2eff': np.asarray(meas.k2eff),
         'nmodes': np.asarray(meas.nmodes),
         'bk_raw': np.asarray(meas.bk_raw),
         'bk_shot': np.asarray(meas.bk_shot),
@@ -254,10 +254,10 @@ def _compute_3pcf(
     )
 
     return {
-        'rbin1': np.asarray(meas.rbin1),
-        'rbin2': np.asarray(meas.rbin2),
-        'reff1': np.asarray(meas.reff1),
-        'reff2': np.asarray(meas.reff2),
+        'r1bin': np.asarray(meas.r1bin),
+        'r2bin': np.asarray(meas.r2bin),
+        'r1eff': np.asarray(meas.r1eff),
+        'r2eff': np.asarray(meas.r2eff),
         'nmodes': np.asarray(meas.nmodes),
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
@@ -282,10 +282,10 @@ def _compute_bispec_in_box(
     )
 
     return {
-        'kbin1': np.asarray(meas.kbin1),
-        'kbin2': np.asarray(meas.kbin2),
-        'keff1': np.asarray(meas.keff1),
-        'keff2': np.asarray(meas.keff2),
+        'k1bin': np.asarray(meas.k1bin),
+        'k2bin': np.asarray(meas.k2bin),
+        'k1eff': np.asarray(meas.k1eff),
+        'k2eff': np.asarray(meas.k2eff),
         'nmodes': np.asarray(meas.nmodes),
         'bk_raw': np.asarray(meas.bk_raw),
         'bk_shot': np.asarray(meas.bk_shot),
@@ -310,10 +310,10 @@ def _compute_3pcf_in_box(
     )
 
     return {
-        'rbin1': np.asarray(meas.rbin1),
-        'rbin2': np.asarray(meas.rbin2),
-        'reff1': np.asarray(meas.reff1),
-        'reff2': np.asarray(meas.reff2),
+        'r1bin': np.asarray(meas.r1bin),
+        'r2bin': np.asarray(meas.r2bin),
+        'r1eff': np.asarray(meas.r1eff),
+        'r2eff': np.asarray(meas.r2eff),
         'nmodes': np.asarray(meas.nmodes),
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
@@ -354,10 +354,10 @@ def _compute_3pcf_window(
     )
 
     return {
-        'rbin1': np.asarray(meas.rbin1),
-        'rbin2': np.asarray(meas.rbin2),
-        'reff1': np.asarray(meas.reff1),
-        'reff2': np.asarray(meas.reff2),
+        'r1bin': np.asarray(meas.r1bin),
+        'r2bin': np.asarray(meas.r2bin),
+        'r1eff': np.asarray(meas.r1eff),
+        'r2eff': np.asarray(meas.r2eff),
         'nmodes': np.asarray(meas.nmodes),
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
@@ -408,10 +408,10 @@ def _compute_3pcf_window(
 #     )
 #
 #     return {
-#         'kbin1': np.asarray(meas.kbin1),
-#         'kbin2': np.asarray(meas.kbin2),
-#         'keff1': np.asarray(meas.keff1),
-#         'keff2': np.asarray(meas.keff2),
+#         'k1bin': np.asarray(meas.k1bin),
+#         'k2bin': np.asarray(meas.k2bin),
+#         'k1eff': np.asarray(meas.k1eff),
+#         'k2eff': np.asarray(meas.k2eff),
 #         'nmodes': np.asarray(meas.nmodes),
 #         'bk_raw': np.asarray(meas.bk_raw),
 #         'bk_shot': np.asarray(meas.bk_shot),

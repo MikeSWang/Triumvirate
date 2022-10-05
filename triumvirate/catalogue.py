@@ -392,7 +392,7 @@ class ParticleCatalogue:
         Parameters
         ----------
         alpha : float, optional
-            Alpha ratio (default is 1.).
+            Alpha contrast (default is 1.).
 
         Returns
         -------
@@ -418,7 +418,7 @@ class ParticleCatalogue:
         Parameters
         ----------
         alpha : float, optional
-            Alpha ratio (default is 1.).
+            Alpha contrast (default is 1.).
 
         Returns
         -------
