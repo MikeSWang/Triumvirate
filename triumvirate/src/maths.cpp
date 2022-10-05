@@ -48,6 +48,10 @@ double get_vec3d_magnitude(std::vector<double> vec) {
   return std::sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
 }
 
+double get_vec3d_magnitude(double vec[3]) {
+  return std::sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
+}
+
 
 /// **********************************************************************
 /// Gamma function
@@ -146,6 +150,9 @@ void get_lngamma_components(double x, double y, double& lnr, double& theta) {
 /// **********************************************************************
 /// Spherical harmonics
 /// **********************************************************************
+
+/// CAVEAT: Discretionary choice.
+const double eps_coupling = 1.e-10;
 
 double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3) {
   return gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3);

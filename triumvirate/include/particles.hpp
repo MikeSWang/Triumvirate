@@ -55,6 +55,8 @@ namespace trv {
  */
 class ParticleCatalogue {
  public:
+  std::string source;  ///< catalogue source
+
   struct ParticleData {
     double pos[3];  ///< particle position vector
     double nz;      ///< redshift-dependent expected number density
@@ -284,9 +286,6 @@ class ParticleCatalogue {
     ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
     const double boxsize[3], const int ngrid[3], const double ngrid_pad[3]
   );
-
- private:
-  std::string source;  ///< catalogue source
 };
 
 }  // namespace trv
