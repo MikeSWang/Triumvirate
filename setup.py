@@ -51,9 +51,8 @@ extra_compile_args = ['-std=c++11']
 
 self_includes = [f"{pkgdir}/include"]
 self_macros = [
-    # ('DBG_NORMALT', None),
+    # ('DBG_MODE', None),
     # ('DBG_PARS', None),
-    # ('DBG_BINWIDTH', None),
 ]
 
 npy_includes = [numpy.get_include()]
