@@ -73,7 +73,7 @@ class ParameterSet {
   /// Derived mesh quantities.
   double volume;  ///< box volume (in Mpc^3/h^3)
   int nmesh;      ///< number of mesh grid cells
-                  // FIXME: change to @c long long and take care of int()
+                  // TODO: change to @c long long and take care of int()
 
   /// Mesh alignment.
   std::string alignment = "centre";  ///< box alignment:
@@ -137,7 +137,7 @@ class ParameterSet {
   /// Misc
   /// --------------------------------------------------------------------
 
-  /// FIXME: Implement verbosity in log messages.
+  /// TODO: Implement verbosity in log messages.
   int verbose = 3;  ///< logging verbosity level:
                     ///< {0 (unset),
                     ///<  1 (ERRO, WARN),

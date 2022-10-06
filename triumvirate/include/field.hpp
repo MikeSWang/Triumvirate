@@ -49,6 +49,8 @@
 #include "dataobjs.hpp"
 #include "particles.hpp"
 
+namespace trvm = trv::maths;
+
 namespace trv {
 
 /// **********************************************************************
@@ -63,6 +65,10 @@ class MeshField {
  public:
   trv::ParameterSet params;  ///> parameter set
   fftw_complex* field;       ///> complex field on mesh
+  double dr[3];              ///> grid size in each dimension
+  double dk[3];              ///> fundamental wavenumber in each dimension
+  double vol;                ///> mesh volume
+  double vol_cell;           ///> mesh grid cell volume
 
   /// --------------------------------------------------------------------
   /// Life cycle
@@ -187,7 +193,7 @@ class MeshField {
    * @param particles_rand (Random-source) particle catalogue.
    * @param los_data (Data-source) particle lines of sight.
    * @param los_rand (Random-source) particle lines of sight.
-   * @param alpha Alpha ratio.
+   * @param alpha Alpha contrast.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    */
@@ -203,7 +209,7 @@ class MeshField {
    *
    * @param particles Particle catalogue.
    * @param los Particle lines of sight.
-   * @param alpha Alpha ratio.
+   * @param alpha Alpha contrast.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    *
@@ -241,7 +247,7 @@ class MeshField {
    * @param particles_rand (Random-source) particle catalogue.
    * @param los_data (Data-source) particle lines of sight.
    * @param los_rand (Random-source) particle lines of sight.
-   * @param alpha Alpha ratio.
+   * @param alpha Alpha contrast.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    */
@@ -257,7 +263,7 @@ class MeshField {
    *
    * @param particles Particle catalogue.
    * @param los Particle lines of sight.
-   * @param alpha Alpha ratio.
+   * @param alpha Alpha contrast.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    *
@@ -327,8 +333,8 @@ class MeshField {
    *
    * @param[in] field_fourier A Fourier-space field.
    * @param[in] ylm Reduced spherical harmonic on a mesh.
-   * @param[in] k_band Band wavenumber.
-   * @param[in] dk_band Band width.
+   * @param[in] k_lower Band lower wavenumber.
+   * @param[in] k_upper Band upper wavenumber.
    * @param[out] k_eff Effective band wavenumber.
    * @param[out] nmodes Number of wavevector modes in band.
    */
@@ -383,10 +389,6 @@ class MeshField {
 
  private:
   fftw_complex* field_s;  ///> half-grid shifted complex field on mesh
-  double dr[3];           ///> grid size in each dimension
-  double dk[3];           ///> fundamental wavenumber in each dimension
-  double vol;             ///> mesh volume
-  double vol_cell;        ///> mesh grid cell volume
 
   friend class FieldStats;
 
@@ -560,7 +562,7 @@ class FieldStats {
    * @param shotnoise_amp Shot-noise amplitude.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
-   * @param kbin Wavenumber bins.
+   * @param kbinning Wavenumber bins.
    * @throws trv::sys::InvalidData When @p field_a and @p field_b have
    *                               incompatible physical properties.
    *
@@ -569,7 +571,7 @@ class FieldStats {
    */
   void compute_ylm_wgtd_2pt_stats_in_fourier(
     MeshField& field_a, MeshField& field_b, std::complex<double> shotnoise_amp,
-    int ell, int m, trv::Binning& kbins
+    int ell, int m, trv::Binning& kbinning
   );
 
   /**
@@ -584,77 +586,15 @@ class FieldStats {
    * @param shotnoise_amp Shot-noise amplitude.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
-   * @param rbin Separation bins.
+   * @param rbinning Separation bins.
    *
    * @note @p field_a and @p field_b are Fourier-space fields and their
    *       entries are arranged in the FFTW convention (i.e. shifted).
    */
   void compute_ylm_wgtd_2pt_stats_in_config(
     MeshField& field_a, MeshField& field_b, std::complex<double> shotnoise_amp,
-    int ell, int m, trv::Binning& rbins
+    int ell, int m, trv::Binning& rbinning
   );
-
-  /// --------------------------------------------------------------------
-  /// Shot noise
-  /// --------------------------------------------------------------------
-
-  /**
-   * @brief Calculate power spectrum shot noise weighted by
-   *        reduced spherical harmonics.
-   *
-   * This calculates the quantity
-   * f@[
-   *   \bar{N}_{LM}(\vec{x}) = {\sum_i}{\vphantom{\sum}}'
-   *     y_{LM}^*(\hat{\vec{x}}) w(\vec{x})^2 \,,
-   * f@]
-   * where if a pair of catalogues are provided,
-   * f@[
-   *   {\sum_i}{\vphantom{\sum}}' =
-   *     \sum_{i \in mathrm{data}} + \alpha^2 \sum_{i \in mathrm{rand}} \,,
-   * f@]
-   * and otherwise
-   * f@[
-   *   {\sum_i}{\vphantom{\sum}}' =
-   *     \alpha^2 \sum_{i \in mathrm{data or rand}} \,.
-   * f@]
-   *
-   * @param particles_data (Data-source) particle catalogue.
-   * @param particles_rand (Random-source) particle catalogue.
-   * @param los_data (Data-source) particle lines of sight.
-   * @param los_rand (Random-source) particle lines of sight.
-   * @param alpha Alpha ratio.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
-   * @returns Weighted shot noise for power spectrum.
-   */
-  std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_powspec(
-    ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
-    LineOfSight* los_data, LineOfSight* los_rand,
-    double alpha, int ell, int m
-  );
-
-  /**
-   * @brief Calculate power spectrum shot noise weighted by
-   *        reduced spherical harmonics.
-   *
-   * @param particles Particle catalogue.
-   * @param los Particle lines of sight.
-   * @param alpha Alpha ratio.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
-   * @returns Weighted power spectrum shot noise.
-   *
-   * @overload
-   */
-  std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_powspec(
-    ParticleCatalogue& particles, LineOfSight* los,
-    double alpha, int ell, int m
-  );
-
-
-/// ----------------------------------------------------------------------
-/// Shot noise
-/// ----------------------------------------------------------------------
 
   /**
    * @brief Compute binned uncoupled three-point correlation function
@@ -686,13 +626,13 @@ class FieldStats {
    * @param ylm_a Reduced spherical harmonics over the first field mesh.
    * @param ylm_b Reduced spherical harmonics over the second field mesh.
    * @param shotnoise_amp Shot-noise amplitude.
-   * @param rbin Separation bins.
+   * @param rbinning Separation bins.
    */
   void compute_uncoupled_shotnoise_for_3pcf(
     MeshField& field_a, MeshField& field_b,
     std::complex<double>* ylm_a, std::complex<double>* ylm_b,
     std::complex<double> shotnoise_amp,
-    trv::Binning& rbin
+    trv::Binning& rbinning
   );
 
   /**
@@ -737,62 +677,6 @@ class FieldStats {
     trvm::SphericalBesselCalculator& sj1, trvm::SphericalBesselCalculator& sj2,
     std::complex<double> shotnoise_amp,
     double k_a, double k_b
-  );
-
-  /**
-   * @brief Calculate bispectrum shot noise amplitude weighted by
-   *        reduced spherical harmonics.
-   *
-   * This calculates the quantity
-   * f@[
-   *   \bar{S}_{LM} = {\sum_i}{\vphantom{\sum}}'
-   *     y_{LM}^*(\vec{x}_i) w(\vec{x}_i)^3 \,,
-   * f@]
-   * where if a pair of catalogues are provided,
-   * f@[
-   *   {\sum_i}{\vphantom{\sum}}' =
-   *     \sum_{i \in mathrm{data}} - \alpha^3 \sum_{i \in mathrm{rand}} \,,
-   * f@]
-   * and otherwise
-   * f@[
-   *   {\sum_i}{\vphantom{\sum}}' =
-   *     \alpha^3  \sum_{i \in mathrm{data or rand}} \,.
-   * f@]
-   *
-   * @note See eq. (46) in Sugiyama et al. (2019)
-   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
-   *
-   * @param particles_data (Data-source) particle catalogue.
-   * @param particles_rand (Random-source) particle catalogue.
-   * @param los_data (Data-source) particle lines of sight.
-   * @param los_rand (Random-source) particle lines of sight.
-   * @param alpha Alpha ratio.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
-   * @returns Weighted shot-noise contribution for bispectrum.
-   */
-  std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
-    ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
-    LineOfSight* los_data, LineOfSight* los_rand,
-    double alpha, int ell, int m
-  );
-
-  /**
-   * @brief Calculate bispectrum shot noise amplitude weighted by
-   *        reduced spherical harmonics.
-   *
-   * @param particles Particle catalogue.
-   * @param los Particle lines of sight.
-   * @param alpha Alpha ratio.
-   * @param ell Degree of the spherical harmonic.
-   * @param m Order of the spherical harmonic.
-   * @returns Weighted shot-noise amplitude for bispectrum.
-   *
-   * @overload
-   */
-  std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
-    ParticleCatalogue& particles, LineOfSight* los,
-    double alpha, int ell, int m
   );
 
  private:
