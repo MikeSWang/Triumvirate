@@ -258,7 +258,7 @@ def _compute_3pcf(
         'r2bin': np.asarray(meas.r2bin),
         'r1eff': np.asarray(meas.r1eff),
         'r2eff': np.asarray(meas.r2eff),
-        'nmodes': np.asarray(meas.nmodes),
+        'npairs': np.asarray(meas.npairs),
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
     }
@@ -314,7 +314,7 @@ def _compute_3pcf_in_gpp_box(
         'r2bin': np.asarray(meas.r2bin),
         'r1eff': np.asarray(meas.r1eff),
         'r2eff': np.asarray(meas.r2eff),
-        'nmodes': np.asarray(meas.nmodes),
+        'npairs': np.asarray(meas.npairs),
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
     }
@@ -358,7 +358,7 @@ def _compute_3pcf_window(
         'r2bin': np.asarray(meas.r2bin),
         'r1eff': np.asarray(meas.r1eff),
         'r2eff': np.asarray(meas.r2eff),
-        'nmodes': np.asarray(meas.nmodes),
+        'npairs': np.asarray(meas.npairs),
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
     }
