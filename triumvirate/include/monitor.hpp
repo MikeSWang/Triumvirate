@@ -42,7 +42,7 @@
 #include <iostream>
 #endif  // DBG_MODE
 
-/// FIXME: To be removed.
+/// TODO: To be removed.
 extern const double BYTES_PER_GBYTES;  ///< bytes per gibibyte
 
 namespace trv {

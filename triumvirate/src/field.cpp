@@ -26,9 +26,8 @@
 
 #include "field.hpp"
 
-namespace trvm = trv::maths;
-
-const double eps_gridsize_fourier = 1.e-5;  // FIXME: check value
+/// CAVEAT: Discretionary choice.
+const double eps_gridsize_fourier = 1.e-5;
 
 namespace trv {
 
@@ -185,7 +184,7 @@ void MeshField::assign_weighted_field_to_mesh_ngp(
   /// to which a single particle is assigned.
   const int order = 1;
 
-  /// Here the field is given by Σᵢ wᵢ δ_D(x - xᵢ), where δ_D ↔ δ_K / dV,
+  /// Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ), where δᴰ ↔ δᴷ / dV,
   /// dV =: `vol_cell`.
   const double inv_vol_cell = 1 / this->vol_cell;
 
@@ -270,7 +269,7 @@ void MeshField::assign_weighted_field_to_mesh_cic(
   /// to which a single particle is assigned.
   const int order = 2;
 
-  /// Here the field is given by Σᵢ wᵢ δ_D(x - xᵢ), where δ_D ↔ δ_K / dV,
+  /// Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ), where δᴰ ↔ δᴷ / dV,
   /// dV =: `vol_cell`.
   const double inv_vol_cell = 1 / this->vol_cell;
 
@@ -363,7 +362,7 @@ void MeshField::assign_weighted_field_to_mesh_tsc(
   /// to which a single particle is assigned.
   const int order = 3;
 
-  /// Here the field is given by Σᵢ wᵢ δ_D(x - xᵢ), where δ_D ↔ δ_K / dV,
+  /// Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ), where δᴰ ↔ δᴷ / dV,
   /// dV =: `vol_cell`.
   const double inv_vol_cell = 1 / this->vol_cell;
 
@@ -460,8 +459,8 @@ void MeshField::assign_weighted_field_to_mesh_pcs(
   /// to which a single particle is assigned.
   const int order = 4;
 
-  /// Here the field is given by Σᵢ wᵢ δ_D(x - xᵢ),
-  /// where δ_D corresponds to δ_K / dV, dV =: `vol_cell`.
+  /// Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ),
+  /// where δᴰ corresponds to δᴷ / dV, dV =: `vol_cell`.
   const double inv_vol_cell = 1 / this->vol_cell;
 
   /// Reset field values to zero.
@@ -710,7 +709,7 @@ void MeshField::compute_ylm_wgtd_field(
 
   fftw_free(weight_kern); weight_kern = nullptr;
 
-  /// Apply the normalising alpha ratio.
+  /// Apply the normalising alpha contrast.
   for (int gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] *= alpha;
     this->field[gid][1] *= alpha;
@@ -804,7 +803,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
 
   fftw_free(weight_kern); weight_kern = nullptr;
 
-  /// Apply mean-density matching normalisation (i.e. alpha ratio)
+  /// Apply mean-density matching normalisation (i.e. alpha contrast)
   /// to compute N_LM.
   for (int gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] *= std::pow(alpha, 2);
@@ -914,7 +913,8 @@ void MeshField::inv_fourier_transform() {
 /// ----------------------------------------------------------------------
 
 void MeshField::apply_wide_angle_pow_law_kernel() {
-  const double eps_r = 1.e-10;
+  /// CAVEAT: Discretionary choice.
+  const double eps_r = 1.e-5;
 
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
@@ -963,7 +963,7 @@ void MeshField::apply_assignment_compensation() {
 
 void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   MeshField& field_fourier, std::complex<double>* ylm,
-  double k_band, double dk_band,
+  double k_lower, double k_upper,
   double& k_eff, int& nmodes
 ) {
   /// Reset field values to zero.
@@ -974,9 +974,6 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   nmodes = 0;
 
   /// Perform wavevector mode binning in the band.
-  double k_lower = (k_band > dk_band/2.) ? (k_band - dk_band/2.) : 0.;
-  double k_upper = k_band + dk_band/2.;
-
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
@@ -993,7 +990,6 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
           );
 
           /// Apply assignment compensation.
-          /// FIXME: Double compensated?
           double win = this->calc_assignment_window_in_fourier(kv);
           fk /= win;
 
@@ -1050,7 +1046,6 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
         double k_ = trvm::get_vec3d_magnitude(kv);
 
         /// Apply assignment compensation.
-        /// FIXME: Double compensated?
         std::complex<double> fk(
           field_fourier[idx_grid][0], field_fourier[idx_grid][1]
         );
@@ -1207,7 +1202,7 @@ bool FieldStats::if_fields_compatible(
 
 void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
   MeshField& field_a, MeshField& field_b, std::complex<double> shotnoise_amp,
-  int ell, int m, trv::Binning& kbins
+  int ell, int m, trv::Binning& kbinning
 ) {
   /// Check mesh fields compatibility and reuse methods of the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
@@ -1294,8 +1289,8 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
 
   /// Perform binning.
   for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
-    double k_lower = kbins.bin_edges[ibin];
-    double k_upper = kbins.bin_edges[ibin + 1];
+    double k_lower = kbinning.bin_edges[ibin];
+    double k_upper = kbinning.bin_edges[ibin + 1];
     for (int i = 0; i < n_sample; i++) {
       double k_ = i * dk_sample;
       if (k_lower < k_ && k_ <= k_upper) {
@@ -1311,7 +1306,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
       this->pk[ibin] /= double(this->nmodes[ibin]);
       this->sn[ibin] /= double(this->nmodes[ibin]);
     } else {
-      this->k[ibin] = kbins.bin_centres[ibin];
+      this->k[ibin] = kbinning.bin_centres[ibin];
       this->pk[ibin] = 0.;
       this->sn[ibin] = 0.;
     }
@@ -1320,7 +1315,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
 
 void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   MeshField& field_a, MeshField& field_b, std::complex<double> shotnoise_amp,
-  int ell, int m, trv::Binning& rbins
+  int ell, int m, trv::Binning& rbinning
 ) {
   /// Check mesh fields compatibility and reuse properties and methods of
   /// the first mesh field.
@@ -1447,8 +1442,8 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
 
   /// Perform binning.
   for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
-    double r_lower = rbins.bin_edges[ibin];
-    double r_upper = rbins.bin_edges[ibin + 1];
+    double r_lower = rbinning.bin_edges[ibin];
+    double r_upper = rbinning.bin_edges[ibin + 1];
     for (int i = 0; i < n_sample; i++) {
       double r_ = i * dr_sample;
       if (r_lower < r_ && r_ <= r_upper) {
@@ -1462,7 +1457,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
       this->r[ibin] /= double(this->npairs[ibin]);
       this->xi[ibin] /= double(this->npairs[ibin]);
     } else {
-      this->r[ibin] = rbins.bin_centres[ibin];
+      this->r[ibin] = rbinning.bin_centres[ibin];
       this->xi[ibin] = 0.;
     }
   }
@@ -1470,70 +1465,11 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   delete[] twopt_3d;
 }
 
-
-/// ----------------------------------------------------------------------
-/// Shot noise
-/// ----------------------------------------------------------------------
-
-std::complex<double> FieldStats::calc_ylm_wgtd_shotnoise_amp_for_powspec(
-  ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
-  LineOfSight* los_data, LineOfSight* los_rand,
-  double alpha, int ell, int m
-) {
-  std::complex<double> sn_data = 0.;
-  for (int pid = 0; pid < particles_data.ntotal; pid++) {
-    std::vector<double> los_{
-      los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
-    };
-
-    std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
-      calc_reduced_spherical_harmonic(ell, m, los_);
-
-    sn_data += ylm * std::pow(particles_data[pid].w, 2);
-  }
-
-  std::complex<double> sn_rand = 0.;
-  for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-    std::vector<double> los_{
-      los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-    };
-
-    std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
-      calc_reduced_spherical_harmonic(ell, m, los_);
-
-    sn_rand += ylm * std::pow(particles_rand[pid].w, 2);
-  }
-
-  return sn_data + std::pow(alpha, 2) * sn_rand;
-}
-
-std::complex<double> FieldStats::calc_ylm_wgtd_shotnoise_amp_for_powspec(
-  ParticleCatalogue& particles, LineOfSight* los,
-  double alpha, int ell, int m
-) {
-  std::complex<double> sn = 0.;
-  for (int pid = 0; pid < particles.ntotal; pid++) {
-    std::vector<double> los_{los[pid].pos[0], los[pid].pos[1], los[pid].pos[2]};
-
-    std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
-      calc_reduced_spherical_harmonic(ell, m, los_);
-
-    sn += ylm * std::pow(particles[pid].w, 2);
-  }
-
-  return std::pow(alpha, 2) * sn;
-}
-
-
-/// ----------------------------------------------------------------------
-/// Shot noise
-/// ----------------------------------------------------------------------
-
 void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   MeshField& field_a, MeshField& field_b,
   std::complex<double>* ylm_a, std::complex<double>* ylm_b,
   std::complex<double> shotnoise_amp,
-  trv::Binning& rbins
+  trv::Binning& rbinning
 ) {
   /// Check mesh fields compatibility and reuse properties and methods of
   /// the first mesh field.
@@ -1657,8 +1593,8 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
 
   /// Perform binning.
   for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
-    double r_lower = rbins.bin_edges[ibin];
-    double r_upper = rbins.bin_edges[ibin + 1];
+    double r_lower = rbinning.bin_edges[ibin];
+    double r_upper = rbinning.bin_edges[ibin + 1];
     for (int i = 0; i < n_sample; i++) {
       double r_ = i * dr_sample;
       if (r_lower < r_ && r_ <= r_upper) {
@@ -1672,7 +1608,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
       this->r[ibin] /= double(this->npairs[ibin]);
       this->xi[ibin] /= double(this->npairs[ibin]);
     } else {
-      this->r[ibin] = rbins.bin_centres[ibin];
+      this->r[ibin] = rbinning.bin_centres[ibin];
       this->xi[ibin] = 0.;
     }
   }
@@ -1808,54 +1744,10 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   return S_ij_k;
 }
 
-std::complex<double> FieldStats::calc_ylm_wgtd_shotnoise_amp_for_bispec(
-  ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
-  LineOfSight* los_data, LineOfSight* los_rand,
-  double alpha, int ell, int m
-) {
-  std::complex<double> sn_data = 0.;
-  for (int pid = 0; pid < particles_data.ntotal; pid++) {
-    std::vector<double> los_{
-      los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
-    };
 
-    std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
-      calc_reduced_spherical_harmonic(ell, m, los_);
-
-    sn_data += ylm * std::pow(particles_data[pid].w, 3);
-  }
-
-  std::complex<double> sn_rand = 0.;
-  for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-    std::vector<double> los_{
-      los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
-    };
-
-    std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
-      calc_reduced_spherical_harmonic(ell, m, los_);
-
-    sn_rand += ylm * std::pow(particles_rand[pid].w, 3);
-  }
-
-  return sn_data + std::pow(alpha, 3) * sn_rand;
-}
-
-std::complex<double> FieldStats::calc_ylm_wgtd_shotnoise_amp_for_bispec(
-  ParticleCatalogue& particles, LineOfSight* los,
-  double alpha, int ell, int m
-) {
-  std::complex<double> sn = 0.;
-  for (int pid = 0; pid < particles.ntotal; pid++) {
-    std::vector<double> los_{los[pid].pos[0], los[pid].pos[1], los[pid].pos[2]};
-
-    std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
-      calc_reduced_spherical_harmonic(ell, m, los_);
-
-    sn += ylm * std::pow(particles[pid].w, 3);
-  }
-
-  return std::pow(alpha, 3) * sn;
-}
+/// ----------------------------------------------------------------------
+/// Sampling corrections
+/// ----------------------------------------------------------------------
 
 double FieldStats::calc_shotnoise_aliasing(std::vector<double> kvec) {
   /// Translate the input wavevector to one representing the corresponding

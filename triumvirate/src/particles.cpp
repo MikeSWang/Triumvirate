@@ -33,8 +33,7 @@ namespace trv {
 /// **********************************************************************
 
 ParticleCatalogue::ParticleCatalogue () {
-  /// Set default values.
-  /// CAVEAT: These assignments are not needed but kept for completeness.
+  /// Set default values (likely redundant but safe).
   this->pdata = nullptr;
   this->ntotal = 0;
   this->wtotal = 0.;
@@ -410,7 +409,7 @@ void ParticleCatalogue::offset_coords_for_periodicity(const double boxsize[3]) {
   this->calc_pos_min_and_max();
 }
 
-void ParticleCatalogue::centre_in_box(
+void ParticleCatalogue::centre_in_gpp_box(
   ParticleCatalogue& catalogue,
   const double boxsize[3]
 ) {
@@ -427,7 +426,7 @@ void ParticleCatalogue::centre_in_box(
   catalogue.offset_coords(dvec);
 }
 
-void ParticleCatalogue::centre_in_box(
+void ParticleCatalogue::centre_in_gpp_box(
   ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
   const double boxsize[3]
 ) {
@@ -445,7 +444,7 @@ void ParticleCatalogue::centre_in_box(
   catalogue.offset_coords(dvec);
 }
 
-void ParticleCatalogue::pad_in_box(
+void ParticleCatalogue::pad_in_gpp_box(
   ParticleCatalogue& catalogue,
   const double boxsize[3], const double boxsize_pad[3]
 ) {
@@ -460,7 +459,7 @@ void ParticleCatalogue::pad_in_box(
   catalogue.offset_coords(dvec);
 }
 
-void ParticleCatalogue::pad_in_box(
+void ParticleCatalogue::pad_in_gpp_box(
     ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
     const double boxsize[3], const double boxsize_pad[3]
 ) {

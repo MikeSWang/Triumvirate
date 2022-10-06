@@ -32,11 +32,12 @@
 
 #include "parameters.hpp"
 #include "particles.hpp"
+#include "dataobjs.hpp"
 
 namespace trv {
 
 /// **********************************************************************
-/// System
+/// Utilities
 /// **********************************************************************
 
 namespace sys {
@@ -53,8 +54,14 @@ bool if_filepath_is_set(std::string pathstr);
 
 
 /// **********************************************************************
-/// Program
+/// Outputs
 /// **********************************************************************
+
+const char comment_delimiter[] = "#";  ///< header comment delimiter
+
+/// ----------------------------------------------------------------------
+/// Pre-measurement header
+/// ----------------------------------------------------------------------
 
 /**
  * @brief Print the pre-measurement header to a file including information
@@ -64,11 +71,13 @@ bool if_filepath_is_set(std::string pathstr);
  * @param params Parameter set.
  * @param catalogue_data (Data-source) particle catalogue.
  * @param catalogue_rand (Random-source) particle catalogue.
- * @return Header as a multi-line string.
+ * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor.
  */
-void print_premeasurement_info(
+void print_measurement_header_to_file(
   std::FILE* fileptr, trv::ParameterSet& params,
-  trv::ParticleCatalogue& catalogue_data, trv::ParticleCatalogue& catalogue_rand
+  trv::ParticleCatalogue& catalogue_data, trv::ParticleCatalogue& catalogue_rand,
+  double norm, double norm_alt
 );
 
 /**
@@ -78,13 +87,129 @@ void print_premeasurement_info(
  * @param fileptr File to print to.
  * @param params Parameter set.
  * @param catalogue Particle catalogue.
- * @return Header as a multi-line string.
+ * @param norm Normalisation factor.
+ * @param norm_alt Alternative normalisation factor.
  *
  * @overload
  */
-void print_premeasurement_info(
+void print_measurement_header_to_file(
   std::FILE* fileptr,
-  trv::ParameterSet& params, trv::ParticleCatalogue& catalogue
+  trv::ParameterSet& params, trv::ParticleCatalogue& catalogue,
+  double norm, double norm_alt
+);
+
+
+/// ----------------------------------------------------------------------
+/// Two-point measurement header
+/// ----------------------------------------------------------------------
+
+/**
+ * @brief Print measurements to a file including the normalisation
+ *        factors and data table columns.
+ *
+ * @param fileptr File to print to.
+ * @param params Parameter set.
+ * @param meas_powspec Power spectrum measurements.
+ */
+void print_measurement_datatab_to_file(
+  std::FILE* fileptr,
+  trv::ParameterSet& params, trv::PowspecMeasurements& meas_powspec
+);
+
+/**
+ * @brief Print measurements to a file including the normalisation
+ *        factors and data table columns.
+ *
+ * @param fileptr File to print to.
+ * @param params Parameter set.
+ * @param meas_2pcf Two-point correlation function measurements.
+ *
+ * @overload
+ */
+void print_measurement_datatab_to_file(
+  std::FILE* fileptr,
+  trv::ParameterSet& params, trv::TwoPCFMeasurements& meas_2pcf
+);
+
+/**
+ * @brief Print measurements to a file including the normalisation
+ *        factors and data table columns.
+ *
+ * @param fileptr File to print to.
+ * @param params Parameter set.
+ * @param meas_powspec_win Power spectrum window measurements.
+ *
+ * @overload
+ */
+void print_measurement_datatab_to_file(
+  std::FILE* fileptr,
+  trv::ParameterSet& params, trv::PowspecWindowMeasurements& meas_powspec_win
+);
+
+/**
+ * @brief Print measurements to a file including the normalisation
+ *        factors and data table columns.
+ *
+ * @param fileptr File to print to.
+ * @param params Parameter set.
+ * @param meas_2pcf_win Two-point correlation function window measurements.
+ *
+ * @overload
+ */
+void print_measurement_datatab_to_file(
+  std::FILE* fileptr,
+  trv::ParameterSet& params, trv::TwoPCFWindowMeasurements& meas_2pcf_win
+);
+
+
+/// ----------------------------------------------------------------------
+/// Three-point measurement header
+/// ----------------------------------------------------------------------
+
+/**
+ * @brief Print measurements to a file including the normalisation
+ *        factors and data table columns.
+ *
+ * @param fileptr File to print to.
+ * @param params Parameter set.
+ * @param meas_bispec Bispectrum measurements.
+ *
+ * @overload
+ */
+void print_measurement_datatab_to_file(
+  std::FILE* fileptr,
+  trv::ParameterSet& params, trv::BispecMeasurements& meas_bispec
+);
+
+/**
+ * @brief Print measurements to a file including the normalisation
+ *        factors and data table columns.
+ *
+ * @param fileptr File to print to.
+ * @param params Parameter set.
+ * @param meas_3pcf Three-point correlation function measurements.
+ *
+ * @overload
+ */
+void print_measurement_datatab_to_file(
+  std::FILE* fileptr,
+  trv::ParameterSet& params, trv::ThreePCFMeasurements& meas_3pcf
+);
+
+/**
+ * @brief Print measurements to a file including the normalisation
+ *        factors and data table columns.
+ *
+ * @param fileptr File to print to.
+ * @param params Parameter set.
+ * @param meas_3pcf_win Three-point correlation function window
+ *                      measurements.
+ *
+ * @overload
+ */
+void print_measurement_datatab_to_file(
+  std::FILE* fileptr,
+  trv::ParameterSet& params, trv::ThreePCFWindowMeasurements& meas_3pcf_win
 );
 
 }  // namespace trv
