@@ -89,8 +89,8 @@ cdef extern from "include/threept.hpp":
         bool_t save
     )
 
-    BispecMeasurements compute_bispec_in_box_cpp \
-        "trv::algo::compute_bispec_in_box" (
+    BispecMeasurements compute_bispec_in_gpp_box_cpp \
+        "trv::algo::compute_bispec_in_gpp_box" (
             CppParticleCatalogue& particles_data,
             CppParameterSet& params,
             vector[double] kbin,
@@ -99,8 +99,8 @@ cdef extern from "include/threept.hpp":
             bool_t save
         )
 
-    ThreePCFMeasurements compute_3pcf_in_box_cpp \
-        "trv::algo::compute_3pcf_in_box" (
+    ThreePCFMeasurements compute_3pcf_in_gpp_box_cpp \
+        "trv::algo::compute_3pcf_in_gpp_box" (
             CppParticleCatalogue& particles_data,
             CppParameterSet& params,
             vector[double] rbin,
@@ -264,7 +264,7 @@ def _compute_3pcf(
     }
 
 
-def _compute_bispec_in_box(
+def _compute_bispec_in_gpp_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
         np.ndarray[double, ndim=1, mode='c'] kbin not None,
@@ -274,7 +274,7 @@ def _compute_bispec_in_box(
     ):
 
     cdef BispecMeasurements meas
-    meas = compute_bispec_in_box_cpp(
+    meas = compute_bispec_in_gpp_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
         kbin,
         norm, norm_alt,
@@ -292,7 +292,7 @@ def _compute_bispec_in_box(
     }
 
 
-def _compute_3pcf_in_box(
+def _compute_3pcf_in_gpp_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
         np.ndarray[double, ndim=1, mode='c'] rbin not None,
@@ -302,7 +302,7 @@ def _compute_3pcf_in_box(
     ):
 
     cdef ThreePCFMeasurements meas
-    meas = compute_3pcf_in_box_cpp(
+    meas = compute_3pcf_in_gpp_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
         rbin,
         norm, norm_alt,

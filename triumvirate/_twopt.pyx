@@ -87,8 +87,8 @@ cdef extern from "include/twopt.hpp":
         bool_t save
     )
 
-    PowspecMeasurements compute_powspec_in_box_cpp \
-        "trv::algo::compute_powspec_in_box" (
+    PowspecMeasurements compute_powspec_in_gpp_box_cpp \
+        "trv::algo::compute_powspec_in_gpp_box" (
             CppParticleCatalogue& particles_data,
             CppParameterSet& params,
             vector[double] kbin,
@@ -97,8 +97,8 @@ cdef extern from "include/twopt.hpp":
             bool_t save
         )
 
-    TwoPCFMeasurements compute_corrfunc_in_box_cpp \
-        "trv::algo::compute_corrfunc_in_box" (
+    TwoPCFMeasurements compute_corrfunc_in_gpp_box_cpp \
+        "trv::algo::compute_corrfunc_in_gpp_box" (
             CppParticleCatalogue& particles_data,
             CppParameterSet& params,
             vector[double] rbin,
@@ -253,7 +253,7 @@ def _compute_corrfunc(
     }
 
 
-def _compute_powspec_in_box(
+def _compute_powspec_in_gpp_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
         np.ndarray[double, ndim=1, mode='c'] kbin not None,
@@ -263,7 +263,7 @@ def _compute_powspec_in_box(
     ):
 
     cdef PowspecMeasurements meas
-    meas = compute_powspec_in_box_cpp(
+    meas = compute_powspec_in_gpp_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
         kbin,
         norm, norm_alt,
@@ -279,7 +279,7 @@ def _compute_powspec_in_box(
     }
 
 
-def _compute_corrfunc_in_box(
+def _compute_corrfunc_in_gpp_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
         np.ndarray[double, ndim=1, mode='c'] rbin not None,
@@ -289,7 +289,7 @@ def _compute_corrfunc_in_box(
     ):
 
     cdef TwoPCFMeasurements meas
-    meas = compute_corrfunc_in_box_cpp(
+    meas = compute_corrfunc_in_gpp_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
         rbin,
         norm, norm_alt,
