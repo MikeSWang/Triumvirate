@@ -73,7 +73,7 @@ class ParameterSet {
   /// Derived mesh quantities.
   double volume;  ///< box volume (in Mpc^3/h^3)
   int nmesh;      ///< number of mesh grid cells
-                  // TODO: change to @c long long and take care of int()
+                  // RFE: change to @c long long and take care of int()
 
   /// Mesh alignment.
   std::string alignment = "centre";  ///< box alignment:
