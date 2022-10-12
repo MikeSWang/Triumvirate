@@ -50,8 +50,6 @@
 #include "field.hpp"
 #include "twopt.hpp"
 
-namespace trvm = trv::maths;
-
 namespace trv {
 
 /// **********************************************************************

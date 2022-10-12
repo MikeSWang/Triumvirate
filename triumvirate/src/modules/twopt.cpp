@@ -29,6 +29,7 @@
 /// CAVEAT: Discretionary choice.
 const double eps_norm = 1.e-5;
 
+namespace trvs = trv::sys;
 namespace trvm = trv::maths;
 
 namespace trv {
@@ -66,11 +67,9 @@ double calc_powspec_normalisation_from_particles(
   ParticleCatalogue& particles, double alpha
 ) {
   if (particles.pdata == nullptr) {
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::InvalidData(
-        "[%s ERRO] Particle data are uninitialised.\n",
-        trv::sys::show_timestamp().c_str()
-      );
+    if (trvs::currTask == 0) {
+      trvs::logger.error("Particle data are uninitialised.");
+      throw trvs::InvalidData("Particle data are uninitialised.\n");
     }
   }
 
@@ -81,11 +80,14 @@ double calc_powspec_normalisation_from_particles(
   }
 
   if (norm == 0.) {
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::InvalidData(
-        "[%s ERRO] Particle 'nz' values appear to be all zeros. "
-        "Check the input catalogue contains valid 'nz' field.\n",
-        trv::sys::show_timestamp().c_str()
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Particle 'nz' values appear to be all zeros. "
+        "Check the input catalogue contains valid 'nz' field."
+      );
+      throw trvs::InvalidData(
+        "Particle 'nz' values appear to be all zeros. "
+        "Check the input catalogue contains valid 'nz' field.\n"
       );
     }
   }
@@ -104,11 +106,9 @@ double calc_powspec_shotnoise_from_particles(
   ParticleCatalogue& particles, double alpha
 ) {
   if (particles.pdata == nullptr) {
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::InvalidData(
-        "[%s ERRO] Particle data are uninitialised.\n",
-        trv::sys::show_timestamp().c_str()
-      );
+    if (trvs::currTask == 0) {
+      trvs::logger.error("Particle data are uninitialised.");
+      throw trvs::InvalidData("Particle data are uninitialised.\n");
     }
   }
 
@@ -184,11 +184,9 @@ trv::PowspecMeasurements compute_powspec(
   trv::ParameterSet& params, trv::Binning& kbinning,
   double norm_factor
 ) {
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Measuring power spectrum from "
-      "paired survey-type catalogues...\n",
-      trv::sys::show_timestamp().c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "Measuring power spectrum from paired survey-type catalogues..."
     );
   }
 
@@ -257,12 +255,8 @@ trv::PowspecMeasurements compute_powspec(
       }
     }
 
-    if (trv::sys::currTask == 0) {
-      std::printf(
-        "[%s STAT] Power spectrum term at order M = %d computed.\n",
-        trv::sys::show_timestamp().c_str(),
-        M_
-      );
+    if (trvs::currTask == 0) {
+      trvs::logger.stat("Power spectrum term at order M = %d computed.", M_);
     }
   }
 
@@ -281,11 +275,9 @@ trv::PowspecMeasurements compute_powspec(
 
   delete[] nmodes_save; delete[] k_save; delete[] pk_save; delete[] sn_save;
 
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... measured power spectrum "
-      "from paired survey-type catalogues.\n",
-      trv::sys::show_timestamp().c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "... measured power spectrum from paired survey-type catalogues."
     );
   }
 
@@ -298,11 +290,10 @@ trv::TwoPCFMeasurements compute_corrfunc(
   trv::ParameterSet& params, trv::Binning& rbinning,
   double norm_factor
 ) {
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Measuring two-point correlation function "
-      "from paired survey-type catalogues...\n",
-      trv::sys::show_timestamp().c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "Measuring two-point correlation function "
+      "from paired survey-type catalogues..."
     );
   }
 
@@ -368,12 +359,9 @@ trv::TwoPCFMeasurements compute_corrfunc(
       }
     }
 
-    if (trv::sys::currTask == 0) {
-      std::printf(
-        "[%s STAT] Two-point correlation function term at "
-        "order M = %d computed.\n",
-        trv::sys::show_timestamp().c_str(),
-        M_
+    if (trvs::currTask == 0) {
+      trvs::logger.stat(
+        "Two-point correlation function term at order M = %d computed.", M_
       );
     }
   }
@@ -392,11 +380,10 @@ trv::TwoPCFMeasurements compute_corrfunc(
 
   delete[] npairs_save; delete[] r_save; delete[] xi_save;
 
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... measured two-point correlation function "
-      "from paired survey-type catalogues.\n",
-      trv::sys::show_timestamp().c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "... measured two-point correlation function "
+      "from paired survey-type catalogues."
     );
   }
 
@@ -408,12 +395,10 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
   trv::ParameterSet& params, trv::Binning kbinning,
   double norm_factor
 ) {
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Measuring power spectrum from "
-      "a periodic-box simulation-type catalogue "
-      "in the global plane-parallel approximation.\n",
-      trv::sys::show_timestamp().c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "Measuring power spectrum from a periodic-box simulation-type catalogue "
+      "in the global plane-parallel approximation."
     );
   }
 
@@ -435,10 +420,9 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
   /// Check input normalisation matches expectation.
   double norm = catalogue_data.ntotal * catalogue_data.ntotal / params.volume;
   if (std::fabs(1 - norm * norm_factor) < eps_norm) {
-    std::printf(
-      "[%s WARN] Power spectrum normalisation input differs from "
-      "expected value for an unweight field in a periodic box.\n",
-      trv::sys::show_timestamp().c_str()
+    trvs::logger.warn(
+      "Power spectrum normalisation input differs from "
+      "expected value for an unweight field in a periodic box."
     );
   }
 
@@ -483,12 +467,11 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
 
   delete[] nmodes_save; delete[] k_save; delete[] pk_save; delete[] sn_save;
 
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... measured power spectrum from "
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "... measured power spectrum from "
       "a periodic-box simulation-type catalogue "
-      "in the global plane-parallel approximation.\n",
-      trv::sys::show_timestamp().c_str()
+      "in the global plane-parallel approximation."
     );
   }
 
@@ -500,12 +483,11 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
   trv::ParameterSet& params, trv::Binning& rbinning,
   double norm_factor
 ) {
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Measuring two-point correlation function "
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "Measuring two-point correlation function "
       "a periodic-box simulation-type catalogue "
-      "in the global plane-parallel approximation.\n",
-      trv::sys::show_timestamp().c_str()
+      "in the global plane-parallel approximation."
     );
   }
 
@@ -525,10 +507,9 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
   /// Check input normalisation matches expectation.
   double norm = catalogue_data.ntotal * catalogue_data.ntotal / params.volume;
   if (std::fabs(1 - norm * norm_factor) < eps_norm) {
-    std::printf(
-      "[%s WARN] Two-point correlation function normalisation input differs "
-      "from expected value for an unweight field in a periodic box.\n",
-      trv::sys::show_timestamp().c_str()
+    trvs::logger.warn(
+      "Two-point correlation function normalisation input differs from "
+      "expected value for an unweight field in a periodic box."
     );
   }
 
@@ -571,12 +552,11 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
 
   delete[] npairs_save; delete[] r_save; delete[] xi_save;
 
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... measured two-point correlation function "
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "... measured two-point correlation function "
       "a periodic-box simulation-type catalogue "
-      "in the global plane-parallel approximation.\n",
-      trv::sys::show_timestamp().c_str()
+      "in the global plane-parallel approximation."
     );
   }
 
@@ -588,11 +568,10 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
   trv::ParameterSet& params, trv::Binning rbinning,
   double alpha, double norm_factor
 ) {
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Measuring two-point correlation function window "
-      "from a random catalogue...\n",
-      trv::sys::show_timestamp().c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "Measuring two-point correlation function window "
+      "from a random catalogue..."
     );
   }
 
@@ -655,11 +634,9 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
       }
     }
 
-    if (trv::sys::currTask == 0) {
-      std::printf(
-        "[%s STAT] Two-point correlation function window term "
-        "at order M = %d computed.\n",
-        trv::sys::show_timestamp().c_str(),
+    if (trvs::currTask == 0) {
+      trvs::logger.stat(
+        "Two-point correlation function window term at order M = %d computed.",
         M_
       );
     }
@@ -679,11 +656,10 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
 
   delete[] npairs_save; delete[] r_save; delete[] xi_save;
 
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... measured two-point correlation function window "
-      "from a random catalogue.\n",
-      trv::sys::show_timestamp().c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "... measured two-point correlation function window "
+      "from a random catalogue."
     );
   }
 

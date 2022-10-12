@@ -26,6 +26,9 @@
 
 #include "field.hpp"
 
+namespace trvs = trv::sys;
+namespace trvm = trv::maths;
+
 /// CAVEAT: Discretionary choice.
 const double eps_gridsize_fourier = 1.e-5;
 
@@ -47,14 +50,12 @@ MeshField::MeshField(trv::ParameterSet& params) {
   /// and increase allocated memory.
   this->field = fftw_alloc_complex(this->params.nmesh);
 
-  trv::sys::gbytesMem += double(this->params.nmesh)
-    * sizeof(fftw_complex) / BYTES_PER_GBYTES;
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
 
   if (this->params.interlace == "true") {
     this->field_s = fftw_alloc_complex(this->params.nmesh);
 
-    trv::sys::gbytesMem += double(this->params.nmesh)
-      * sizeof(fftw_complex) / BYTES_PER_GBYTES;
+    trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   }
 
   this->initialise_density_field();  // likely redundant but safe
@@ -93,13 +94,11 @@ void MeshField::finalise_density_field() {
   /// Free memory usage.
   if (this->field != nullptr) {
     fftw_free(this->field); this->field = nullptr;
-    trv::sys::gbytesMem -= double(this->params.nmesh)
-      * sizeof(fftw_complex) / BYTES_PER_GBYTES;
+    trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   }
   if (this->field_s != nullptr) {
     fftw_free(this->field_s); this->field_s = nullptr;
-    trv::sys::gbytesMem -= double(this->params.nmesh)
-      * sizeof(fftw_complex) / BYTES_PER_GBYTES;
+    trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   }
 }
 
@@ -167,10 +166,13 @@ void MeshField::assign_weighted_field_to_mesh(
   if (this->params.assignment == "pcs") {
     this->assign_weighted_field_to_mesh_pcs(particles, weights);
   } else {
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::InvalidParameter(
-        "[%s ERRO] Unsupported mesh assignment scheme: '%s'.\n",
-        trv::sys::show_timestamp().c_str(),
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Unsupported mesh assignment scheme: '%s'.",
+        this->params.assignment.c_str()
+      );
+      throw trvs::InvalidParameter(
+        "Unsupported mesh assignment scheme: '%s'.\n",
         this->params.assignment.c_str()
       );
     };
@@ -1206,8 +1208,11 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
 ) {
   /// Check mesh fields compatibility and reuse methods of the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
-    throw trv::sys::InvalidData(
+    trvs::logger.error(
       "Input mesh fields have incompatible physical properties."
+    );
+    throw trvs::InvalidData(
+      "Input mesh fields have incompatible physical properties.\n"
     );
   }
 
@@ -1320,8 +1325,11 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   /// Check mesh fields compatibility and reuse properties and methods of
   /// the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
-    throw trv::sys::InvalidData(
+    trvs::logger.error(
       "Input mesh fields have incompatible physical properties."
+    );
+    throw trvs::InvalidData(
+      "Input mesh fields have incompatible physical properties.\n"
     );
   }
 
@@ -1474,8 +1482,11 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   /// Check mesh fields compatibility and reuse properties and methods of
   /// the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
-    throw trv::sys::InvalidData(
+    trvs::logger.error(
       "Input mesh fields have incompatible physical properties."
+    );
+    throw trvs::InvalidData(
+      "Input mesh fields have incompatible physical properties.\n"
     );
   }
 
@@ -1636,8 +1647,11 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   /// Check mesh fields compatibility and reuse properties and methods of
   /// the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
-    throw trv::sys::InvalidData(
+    trvs::logger.error(
       "Input mesh fields have incompatible physical properties."
+    );
+    throw trvs::InvalidData(
+      "Input mesh fields have incompatible physical properties.\n"
     );
   }
 

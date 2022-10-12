@@ -137,12 +137,13 @@ class ParameterSet {
   /// Misc
   /// --------------------------------------------------------------------
 
-  /// TODO: Implement verbosity in log messages.
-  int verbose = 3;  ///< logging verbosity level:
-                    ///< {0 (unset),
-                    ///<  1 (ERRO, WARN),
-                    ///<  2 (INFO),
-                    ///<  3 (STAT) (default)}
+  int verbose = 20;  ///< logging verbosity level:
+                     ///< {0  (NSET),
+                     ///<  10 (DBUG),
+                     ///<  20 (STAT) (default),
+                     ///<  30 (INFO),
+                     ///<  40 (WARN),
+                     ///<  50 (ERRO)}
 
   /**
    * @brief Read parameters from a file.

@@ -49,8 +49,6 @@
 #include "io.hpp"
 #include "field.hpp"
 
-namespace trvm = trv::maths;
-
 namespace trv {
 
 /// **********************************************************************

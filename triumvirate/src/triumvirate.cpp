@@ -18,7 +18,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * @file measurements.cpp
+ * @file triumvirate.cpp
  * @authors Mike S Wang (https://github.com/MikeSWang)
  *          Naonori Sugiyama (https://github.com/naonori)
  * @brief Perform <i>N</i>-point correlator clustering measurements.
@@ -51,10 +51,7 @@ int main(int argc, char* argv[]) {
   /// ====================================================================
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Parameters and source data are being initialised.\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trv::sys::logger.stat("Parameters and source data are being initialised.");
   }
 
   /// --------------------------------------------------------------------
@@ -62,17 +59,16 @@ int main(int argc, char* argv[]) {
   /// --------------------------------------------------------------------
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Reading parameters...\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trv::sys::logger.stat("Reading parameters...");
   }
 
   if (argc < 2) {
     if (trv::sys::currTask == 0) {
+      trv::sys::logger.error(
+        "Failed to initialise program: missing parameter file."
+      );
       throw trv::sys::IOError(
-        "[%s ERRO] Failed to initialise program: missing parameter file.\n",
-        trv::sys::show_timestamp().c_str()
+        "Failed to initialise program: missing parameter file.\n"
       );
     }
   }
@@ -80,39 +76,36 @@ int main(int argc, char* argv[]) {
   trv::ParameterSet params;  ///> program parameters
   if (params.read_from_file(argv[1])) {
     if (trv::sys::currTask == 0) {
+      trv::sys::logger.error(
+        "Failed to initialise program: invalidated parameters."
+      );
       throw trv::sys::IOError(
-        "[%s ERRO] Failed to initialise program: invalidated parameters.\n",
-        trv::sys::show_timestamp().c_str()
+        "Failed to initialise program: invalidated parameters.\n"
       );
     }
   }
 
   if (!(params.print_to_file())) {
     if (trv::sys::currTask == 0) {
-      std::printf(
-        "[%s INFO] Check 'parameters_used*' file in your "
-        "measurement output directory for reference.\n",
-        trv::sys::show_timestamp().c_str()
+      trv::sys::logger.info(
+        "Check 'parameters_used*' file in "
+        "your measurement output directory for reference."
       );
     }
   }
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... read parameters.\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trv::sys::logger.stat("... read parameters.");
   }
+
+  trv::sys::logger.reset_level(params.verbose);
 
   /// --------------------------------------------------------------------
   /// Data I/O
   /// --------------------------------------------------------------------
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Reading catalogues...\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trv::sys::logger.stat("Reading catalogues...");
   }
 
   trv::ParticleCatalogue catalogue_data; ///> data-source catalogue
@@ -120,10 +113,13 @@ int main(int argc, char* argv[]) {
   if (params.catalogue_type == "survey" || params.catalogue_type == "sim") {
     if (!(trv::sys::if_filepath_is_set(params.data_catalogue_file))) {
       if (trv::sys::currTask == 0) {
+        trv::sys::logger.error(
+          "Failed to initialise program: "
+          "unspecified data-source catalogue file."
+        );
         throw trv::sys::IOError(
-          "[%s ERRO] Failed to initialise program: "
-          "unspecified data-source catalogue file.\n",
-          trv::sys::show_timestamp().c_str()
+          "Failed to initialise program: "
+          "unspecified data-source catalogue file.\n"
         );
       }
     }
@@ -131,10 +127,13 @@ int main(int argc, char* argv[]) {
       params.data_catalogue_file, params.catalogue_columns, params.volume
     )) {
       if (trv::sys::currTask == 0) {
+        trv::sys::logger.error(
+          "Failed to initialise program: "
+          "unloadable data-source catalogue file."
+        );
         throw trv::sys::IOError(
-          "[%s ERRO] Failed to initialise program: "
-          "unloadable data-source catalogue file.\n",
-          trv::sys::show_timestamp().c_str()
+          "Failed to initialise program: "
+          "unloadable data-source catalogue file.\n"
         );
       }
     }
@@ -146,10 +145,13 @@ int main(int argc, char* argv[]) {
   if (params.catalogue_type == "survey" || params.catalogue_type == "random") {
     if (!(trv::sys::if_filepath_is_set(params.rand_catalogue_file))) {
       if (trv::sys::currTask == 0) {
+        trv::sys::logger.error(
+          "Failed to initialise program: "
+          "unspecified random-source catalogue file."
+        );
         throw trv::sys::IOError(
-          "[%s ERRO] Failed to initialise program: "
-          "unspecified random-source catalogue file.\n",
-          trv::sys::show_timestamp().c_str()
+          "Failed to initialise program: "
+          "unspecified random-source catalogue file.\n"
         );
       }
     }
@@ -157,10 +159,13 @@ int main(int argc, char* argv[]) {
       params.rand_catalogue_file, params.catalogue_columns, params.volume
     )) {
       if (trv::sys::currTask == 0) {
+        trv::sys::logger.error(
+          "Failed to initialise program: "
+          "unloadable random-source catalogue file."
+        );
         throw trv::sys::IOError(
-          "[%s ERRO] Failed to initialise program: "
-          "unloadable random-source catalogue file.\n",
-          trv::sys::show_timestamp().c_str()
+          "Failed to initialise program: "
+          "unloadable random-source catalogue file.\n"
         );
       }
     }
@@ -168,10 +173,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... read catalogues.\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trv::sys::logger.stat("... read catalogues.");
   }
 
   /// ====================================================================
@@ -179,10 +181,7 @@ int main(int argc, char* argv[]) {
   /// ====================================================================
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Clustering statistics are being measured.\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trv::sys::logger.stat("Clustering statistics are being measured.");
   }
 
   /// --------------------------------------------------------------------
@@ -190,20 +189,14 @@ int main(int argc, char* argv[]) {
   /// --------------------------------------------------------------------
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Setting up binning...\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trv::sys::logger.stat("Setting up binning...");
   }
 
   trv::Binning binning(params);  ///> binning
   binning.set_bins();
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... set up binning.\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trv::sys::logger.stat("... set up binning.");
   }
 
   /// --------------------------------------------------------------------
@@ -211,16 +204,12 @@ int main(int argc, char* argv[]) {
   /// --------------------------------------------------------------------
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Computing lines of sight...\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trv::sys::logger.stat("Computing lines of sight...");
   }
 
   trv::LineOfSight* los_data =
     new trv::LineOfSight[catalogue_data.ntotal];  ///> data-source LoS
-  trv::sys::gbytesMem += double(catalogue_data.ntotal)
-    * 3 * sizeof(float) / BYTES_PER_GBYTES;
+  trv::sys::gbytesMem += trv::sys::size_in_gb<float>(3 * catalogue_data.ntotal);
   for (int pid = 0; pid < catalogue_data.ntotal; pid++) {
     double los_mag = trv::maths::get_vec3d_magnitude(catalogue_data[pid].pos);
 
@@ -231,8 +220,7 @@ int main(int argc, char* argv[]) {
 
   trv::LineOfSight* los_rand =
     new trv::LineOfSight[catalogue_rand.ntotal];  ///> random-source LoS
-  trv::sys::gbytesMem += double(catalogue_rand.ntotal)
-    * 3 * sizeof(float) / BYTES_PER_GBYTES;
+  trv::sys::gbytesMem += trv::sys::size_in_gb<float>(3 * catalogue_rand.ntotal);
   for (int pid = 0; pid < catalogue_rand.ntotal; pid++) {
     double los_mag = trv::maths::get_vec3d_magnitude(catalogue_rand[pid].pos);
 
@@ -243,10 +231,7 @@ int main(int argc, char* argv[]) {
 
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... computed lines of sight.\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trv::sys::logger.stat("... computed lines of sight.");
   }
 
   /// --------------------------------------------------------------------
@@ -254,10 +239,7 @@ int main(int argc, char* argv[]) {
   /// --------------------------------------------------------------------
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Aligning catalogues inside measurement box...\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trv::sys::logger.stat("Aligning catalogues inside measurement box...");
   }
 
   if (params.catalogue_type == "survey") {
@@ -318,10 +300,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... aligned catalogues inside measurement box.\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trv::sys::logger.stat("... aligned catalogues inside measurement box.");
   }
 
   /// --------------------------------------------------------------------
@@ -336,10 +315,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s INFO] Alpha contrast: %.6e.\n",
-      trv::sys::show_timestamp().c_str(), alpha
-    );
+    trv::sys::logger.info("Alpha contrast: %.6e.", alpha);
   }
 
   /// --------------------------------------------------------------------
@@ -388,9 +364,8 @@ int main(int argc, char* argv[]) {
   }
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s INFO] Normalisation factors: %.6e (used), %.6e (alternative).\n",
-      trv::sys::show_timestamp().c_str(),
+    trv::sys::logger.info(
+      "Normalisation factors: %.6e (used), %.6e (alternative).",
       norm_factor, norm_factor_alt
     );
   }
@@ -587,17 +562,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Measurements saved to %s.\n",
-      trv::sys::show_timestamp().c_str(), save_filepath
-    );
-  }
-
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... made measurements.\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trv::sys::logger.info("Measurements saved to %s.", save_filepath);
   }
 
   /// ====================================================================
@@ -610,14 +575,15 @@ int main(int argc, char* argv[]) {
 
   delete[] los_data; los_data = nullptr;
   delete[] los_rand; los_rand = nullptr;
-  trv::sys::gbytesMem -= double(catalogue_data.ntotal + catalogue_rand.ntotal)
-    * 3 * sizeof(float) / BYTES_PER_GBYTES;
+  trv::sys::gbytesMem -= trv::sys::size_in_gb<float>(
+    3 * (catalogue_data.ntotal + catalogue_rand.ntotal)
+  );
 
   if (trv::sys::gbytesMem > 0.) {
     if (trv::sys::currTask == 0) {
-      std::printf(
-        "[%s WARN] Uncleared dynamically allocated memory: %.0f gigabytes.\n",
-        trv::sys::show_timestamp().c_str(), trv::sys::gbytesMem
+      trv::sys::logger.warn(
+        "Uncleared dynamically allocated memory: %.0f gigabytes.",
+        trv::sys::gbytesMem
       );
     }
   }

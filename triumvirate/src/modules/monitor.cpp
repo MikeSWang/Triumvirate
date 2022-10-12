@@ -26,9 +26,6 @@
 
 #include "monitor.hpp"
 
-/// TODO: To be removed.
-const double BYTES_PER_GBYTES = 1073741824.;  // 1024³ bytes per gibibyte
-
 namespace trv {
 namespace sys {
 
@@ -42,6 +39,8 @@ double gbytesMem = 0.;
 
 auto clockStart = std::chrono::steady_clock::now();  ///< program
                                                      ///< starting time
+
+Logger logger(NSET);
 
 std::string show_current_datetime() {
   /// Get current time.
@@ -104,6 +103,128 @@ std::string show_timestamp() {
   std::string timestamp(timestamp_);
 
   return timestamp;
+}
+
+Logger::Logger(LogLevel level) {
+  Logger::reset_level(level);
+}
+
+Logger::Logger(int level) {
+  Logger::reset_level(level);
+}
+
+void Logger::reset_level(LogLevel level) {
+  this->level_limit = level;
+}
+
+void Logger::reset_level(int level) {
+  this->level_limit = level;
+}
+
+void Logger::emit(
+  std::string log_type, const char* fmt_string, std::va_list args
+) {
+  char log_mesg_buf[4096];
+  std::vsprintf(log_mesg_buf, fmt_string, args);
+
+  std::printf(
+    "[%s %s] %s\n",
+    trv::sys::show_timestamp().c_str(), log_type.c_str(), log_mesg_buf
+  );
+}
+
+void Logger::log(LogLevel entry_level, const char* fmt_string, ...) {
+  if (entry_level >= this->level_limit) {
+    std::string log_type;
+    switch (entry_level) {
+      case DBUG:
+        log_type = "DBUG";
+      case STAT:
+        log_type = "STAT";
+      case INFO:
+        log_type = "INFO";
+      case WARN:
+        log_type = "WARN";
+      case ERRO:
+        log_type = "ERRO";
+    }
+
+    std::va_list args;
+    va_start(args, fmt_string);
+    Logger::emit(log_type, fmt_string, args);
+    va_end(args);
+  }
+}
+
+void Logger::log(int level_entry, const char* fmt_string, ...) {
+  if (level_entry >= this->level_limit) {
+    /// SEE: trv::sys::LogLevel.
+    level_entry /= 10;
+
+    std::string log_type;
+    switch (level_entry) {
+      case DBUG:
+        log_type = "DBUG";
+      case STAT:
+        log_type = "STAT";
+      case INFO:
+        log_type = "INFO";
+      case WARN:
+        log_type = "WARN";
+      case ERRO:
+        log_type = "ERRO";
+    }
+
+    std::va_list args;
+    va_start(args, fmt_string);
+    Logger::emit(log_type, fmt_string, args);
+    va_end(args);
+  }
+}
+
+void Logger::debug(const char* fmt_string, ...) {
+  if (this->level_limit <= DBUG) {
+    std::va_list args;
+    va_start(args, fmt_string);
+    Logger::emit("DBUG", fmt_string, args);
+    va_end(args);
+  }
+}
+
+void Logger::stat(const char* fmt_string, ...) {
+  if (this->level_limit <= DBUG) {
+    std::va_list args;
+    va_start(args, fmt_string);
+    Logger::emit("STAT", fmt_string, args);
+    va_end(args);
+  }
+}
+
+void Logger::info(const char* fmt_string, ...) {
+  if (this->level_limit <= DBUG) {
+    std::va_list args;
+    va_start(args, fmt_string);
+    Logger::emit("INFO", fmt_string, args);
+    va_end(args);
+  }
+}
+
+void Logger::warn(const char* fmt_string, ...) {
+  if (this->level_limit <= DBUG) {
+    std::va_list args;
+    va_start(args, fmt_string);
+    Logger::emit("WARN", fmt_string, args);
+    va_end(args);
+  }
+}
+
+void Logger::error(const char* fmt_string, ...) {
+  if (this->level_limit <= DBUG) {
+    std::va_list args;
+    va_start(args, fmt_string);
+    Logger::emit("ERRO", fmt_string, args);
+    va_end(args);
+  }
 }
 
 

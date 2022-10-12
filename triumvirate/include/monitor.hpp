@@ -42,9 +42,6 @@
 #include <iostream>
 #endif  // DBG_MODE
 
-/// TODO: To be removed.
-extern const double BYTES_PER_GBYTES;  ///< bytes per gibibyte
-
 namespace trv {
 namespace sys {
 
@@ -64,9 +61,9 @@ extern double gbytesMem;  ///< memory usage in gibibytes
  * @returns Size in gibibytes.
  */
 template <typename T>
-double size_in_gb() {
+double size_in_gb(int num) {
   const double BYTES_PER_GBYTES = 1073741824.;  // 1024³ bytes per gibibyte
-  return sizeof(T) / BYTES_PER_GBYTES;
+  return double(num) * sizeof(T) / BYTES_PER_GBYTES;
 }
 
 /**
@@ -91,6 +88,144 @@ std::string show_elapsed_time(double duration_in_seconds);
  * @returns Timestamp string.
  */
 std::string show_timestamp();
+
+/**
+ * @brief Logging levels.
+ *
+ */
+enum LogLevel {
+  /// CAVEAT: Discretionary choices.
+  NSET = 0,   ///>  0: unset
+  DBUG = 10,  ///> 10: debugging
+  STAT = 20,  ///> 20: status
+  INFO = 30,  ///> 30: info
+  WARN = 40,  ///> 40: warning
+  ERRO = 50   ///> 50: error/critical
+};
+
+/**
+ * @brief Logger with logging level differentiation.
+ *
+ */
+class Logger {
+ public:
+  int level_limit;  ///> logger threshold level
+
+  /**
+   * @brief Construct the logger with the specified threshold level.
+   *
+   * @param level Threshold level (from enumerated options) (default
+   *              is `NSET`).
+   */
+  Logger(LogLevel level);
+
+  /**
+   * @brief Construct the logger with the specified threshold level.
+   *
+   * @param level Threshold level (as a non-negative integer) (default
+   *              is 0).
+   *
+   * @overload
+   */
+  Logger(int level);
+
+  /**
+   * @brief Reset the logger threshold level.
+   *
+   * @param level Threshold level (from enumerated options).
+   */
+  void reset_level(LogLevel level);
+
+  /**
+   * @brief Reset the logger threshold level.
+   *
+   * @param level Threshold level (as a non-negative integer).
+   *
+   * @overload
+   */
+  void reset_level(int level);
+
+  /**
+   * @brief Log a message at the specified level.
+   *
+   * If the specified level is below the threshold, no messages will be
+   * logged.
+   *
+   * @param level_entry Message level (from enumerated options).
+   * @param fmt_string Log message format string.
+   * @param ... An arbitrary number of substitution arguments.
+   */
+  void log(LogLevel level_entry, const char* fmt_string, ...);
+
+  /**
+   * @brief Log a message at the specified level.
+   *
+   * If the specified level is below the threshold, no messages will be
+   * logged.
+   *
+   * @param level_entry Message level (as a non-negative integer).
+   * @param fmt_string Log message format string.
+   * @param ... An arbitrary number of substitution arguments.
+   *
+   * @overload
+   */
+  void log(int level_entry, const char* fmt_string, ...);
+
+  /**
+   * @brief Emit a debugging-level message.
+   *
+   * If the threshold level is higher, no messages will be emitted.
+   *
+   * @param fmt_string Log message format string.
+   * @param ... An arbitrary number of substitution arguments.
+   */
+  void debug(const char* fmt_string, ...);
+
+  /**
+   * @brief Emit a status-level message.
+   *
+   * If the threshold level is higher, no messages will be emitted.
+   *
+   * @param fmt_string Log message format string.
+   * @param ... An arbitrary number of substitution arguments.
+   */
+  void stat(const char* fmt_string, ...);
+
+  /**
+   * @brief Emit a information-level message.
+   *
+   * If the threshold level is higher, no messages will be emitted.
+   *
+   * @param fmt_string Log message format string.
+   * @param ... An arbitrary number of substitution arguments.
+   */
+  void info(const char* fmt_string, ...);
+
+  /**
+   * @brief Emit a warning-level message.
+   *
+   * If the threshold level is higher, no messages will be emitted.
+   *
+   * @param fmt_string Log message format string.
+   * @param ... An arbitrary number of substitution arguments.
+   */
+  void warn(const char* fmt_string, ...);
+
+  /**
+   * @brief Emit a warning-level message.
+   *
+   * If the threshold level is higher, no messages will be emitted.
+   *
+   * @param fmt_string Log message format string.
+   * @param ... An arbitrary number of substitution arguments.
+   */
+  void error(const char* fmt_string, ...);
+
+ private:
+  void emit(std::string log_type, const char* fmt_string, std::va_list args);
+};
+
+extern Logger logger;  ///< default logger at `NSET` level
 
 
 /// **********************************************************************
