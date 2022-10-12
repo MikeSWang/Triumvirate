@@ -6,7 +6,7 @@ directories:
   catalogues: tests/test_input/catalogues
   measurements: tests/test_output/measurements
 
-filenames:
+files:
   data_catalogue: catalogue_test_data.dat
   rand_catalogue: catalogue_test_rand.dat
 

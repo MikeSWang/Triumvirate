@@ -8,8 +8,8 @@ directories:
   catalogues:
   measurements:
 
-# Filenames (including extensions) for input/output sources.
-filenames:
+# Filenames (with extensions) for input/output sources.
+files:
   data_catalogue:
   rand_catalogue:
 
@@ -92,5 +92,15 @@ num_bins:
 
 # Fixed bin index in the full-form three-point statistics measurements.
 idx_bin:
+
+
+# -- Measurements -------------------------------------------------------------
+
+# Logging verbosity level: an integer between 0 and 50 (inclusive).
+# Typical values are: {
+#   0 (unset), 10 (debug), 20 (status) (default),
+#   30 (info), 40 (warning), 50 (error)
+# }.
+verbose: 20
 
 ...

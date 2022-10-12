@@ -154,20 +154,20 @@ cdef class ParameterSet:
             self.thisptr.measurement_dir = "".encode('utf-8')
 
         try:
-            if self._params['filenames']['data_catalogue'] is None:
+            if self._params['files']['data_catalogue'] is None:
                 self.thisptr.data_catalogue_file = "".encode('utf-8')
             else:
                 self.thisptr.data_catalogue_file = \
-                    self._params['filenames']['data_catalogue']
+                    self._params['files']['data_catalogue']
         except KeyError:
             self.thisptr.data_catalogue_file = "".encode('utf-8')
 
         try:
-            if self._params['filenames']['rand_catalogue'] is None:
+            if self._params['files']['rand_catalogue'] is None:
                 self.thisptr.rand_catalogue_file = "".encode('utf-8')
             else:
                 self.thisptr.rand_catalogue_file = \
-                    self._params['filenames']['rand_catalogue']
+                    self._params['files']['rand_catalogue']
         except KeyError:
             self.thisptr.rand_catalogue_file = "".encode('utf-8')
 
