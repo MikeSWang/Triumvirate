@@ -11,11 +11,11 @@ DIR_ROOT := $(shell pwd)
 DIR_PROG = ${DIR_ROOT}/${PROGNAME}
 DIR_BUILD = ${DIR_ROOT}/build
 
-DIR_INCLUDES = ${DIR_PROG}/include
-DIR_SOURCES = ${DIR_PROG}/src
+DIR_INCLUDE = ${DIR_PROG}/include
+DIR_SRC = ${DIR_PROG}/src
 DIR_TESTS = ${DIR_PROG}/tests
 
-DIR_MODULESRC = ${DIR_SOURCES}/modules
+DIR_SRCMODULES = ${DIR_SRC}/modules
 
 DIR_TESTBUILD = ${DIR_TESTS}/test_build
 DIR_TESTOUT = ${DIR_TESTS}/test_output
@@ -23,7 +23,7 @@ DIR_TESTOUT = ${DIR_TESTS}/test_output
 
 # -- Common configuration ------------------------------------------------
 
-INCLUDES = -I${DIR_INCLUDES}
+INCLUDES = -I${DIR_INCLUDE}
 LIBS = -lgsl -lgslcblas -lfftw3
 CLIBS =
 
@@ -72,7 +72,7 @@ endif
 # Build
 # ========================================================================
 
-MODULESRC = $(wildcard ${DIR_MODULESRC}/*.cpp)
+MODULESRC = $(wildcard ${DIR_SRCMODULES}/*.cpp)
 
 # -- Installation build --------------------------------------------------
 
@@ -97,14 +97,14 @@ pytest:
 
 # -- Invididual build ----------------------------------------------------
 
-${PROGNAME}: ${DIR_SOURCES}/${PROGNAME}.cpp
+${PROGNAME}: ${DIR_SRC}/${PROGNAME}.cpp
 	$(CC) $(CFLAGS) \
 	-o $(addprefix $(DIR_BUILD)/, $(notdir $@)) \
 	$< $(MODULESRC) $(INCLUDES) $(LIBS) $(CLIBS)
 
 test_fftlog: ${DIR_TESTS}/test_fftlog.cpp \
-						 ${DIR_MODULESRC}/fftlog.cpp \
-						 ${DIR_MODULESRC}/monitor.cpp ${DIR_MODULESRC}/maths.cpp ${DIR_MODULESRC}/arrayops.cpp
+						 ${DIR_SRCMODULES}/fftlog.cpp \
+						 ${DIR_SRCMODULES}/monitor.cpp ${DIR_SRCMODULES}/maths.cpp ${DIR_SRCMODULES}/arrayops.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
 
