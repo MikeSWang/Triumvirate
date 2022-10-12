@@ -3,6 +3,7 @@
 # -- I/O -----------------------------------------------------------------
 
 # Directories for input/output.
+# The paths can be either absolute or relative to the working directory.
 # If unset, the working directory is used as the default.
 directories:
   catalogues:
@@ -62,8 +63,7 @@ measurement_type:
 # Normalisation convention: {'particle' (default), 'mesh'}.
 norm_convention: particle
 
-# Binning scheme in configuration space:
-# {'lin' (default), 'log', 'linpad', 'logpad', 'custom'}.
+# Binning scheme: {'lin' (default), 'log', 'linpad', 'logpad', 'custom'}.
 binning: lin
 
 # Form of the three-point correlator: {'full', 'diag' (default)}.
@@ -94,7 +94,7 @@ num_bins:
 idx_bin:
 
 
-# -- Measurements -------------------------------------------------------------
+# -- Misc ----------------------------------------------------------------
 
 # Logging verbosity level: an integer between 0 and 50 (inclusive).
 # Typical values are: {
