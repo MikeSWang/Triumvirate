@@ -37,8 +37,6 @@
 #include "maths.hpp"
 #include "arrayops.hpp"
 
-namespace trvm = trv::maths;
-
 namespace trv {
 
 namespace utils {

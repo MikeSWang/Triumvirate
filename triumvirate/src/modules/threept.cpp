@@ -26,6 +26,7 @@
 
 #include "threept.hpp"
 
+namespace trvs = trv::sys;
 namespace trvm = trv::maths;
 
 namespace trv {
@@ -47,11 +48,14 @@ void validate_multipole_coupling(trv::ParameterSet& params) {
     params.ell1, params.ell2, params.ELL, 0, 0, 0
   );
   if (std::fabs(coupling_) < trvm::eps_coupling) {
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::InvalidParameter(
-        "[%s ERRO] Specified three-point correlator multipole "
-        "vanishes identically owing to zero-valued Wigner 3-j symbol.\n",
-        trv::sys::show_timestamp().c_str()
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Specified three-point correlator multipole "
+        "vanishes identically owing to zero-valued Wigner 3-j symbol."
+      );
+      throw trvs::InvalidParameter(
+        "Specified three-point correlator multipole "
+        "vanishes identically owing to zero-valued Wigner 3-j symbol.\n"
       );
     }
   }
@@ -80,11 +84,9 @@ double calc_bispec_normalisation_from_particles(
   ParticleCatalogue& particles, double alpha
 ) {
   if (particles.pdata == nullptr) {
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::InvalidData(
-        "[%s ERRO] Particle data are uninitialised.\n",
-        trv::sys::show_timestamp().c_str()
-      );
+    if (trvs::currTask == 0) {
+      trvs::logger.error("Particle data are uninitialised.");
+      throw trvs::InvalidData("Particle data are uninitialised.\n");
     }
   }
 
@@ -95,11 +97,14 @@ double calc_bispec_normalisation_from_particles(
   }
 
   if (norm == 0.) {
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::InvalidData(
-        "[%s ERRO] Particle 'nz' values appear to be all zeros. "
-        "Check the input catalogue contains valid 'nz' field.\n",
-        trv::sys::show_timestamp().c_str()
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Particle 'nz' values appear to be all zeros. "
+        "Check the input catalogue contains valid 'nz' field."
+      );
+      throw trvs::InvalidData(
+        "Particle 'nz' values appear to be all zeros. "
+        "Check the input catalogue contains valid 'nz' field.\n"
       );
     }
   }
@@ -179,10 +184,9 @@ trv::BispecMeasurements compute_bispec(
   trv::ParameterSet& params, trv::Binning& kbinning,
   double norm_factor
 ) {
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Measuring bispectrum from paired survey-type catalogues...\n",
-      trv::sys::show_timestamp().c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "Measuring bispectrum from paired survey-type catalogues..."
     );
   }
 
@@ -257,8 +261,8 @@ trv::BispecMeasurements compute_bispec(
       std::complex<double>* ylm_k_b = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_r_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_r_b = new std::complex<double>[params.nmesh];
-      trv::sys::gbytesMem += 4 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+      trvs::gbytesMem +=
+        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_fourier_space(
@@ -434,11 +438,9 @@ trv::BispecMeasurements compute_bispec(
           sn_save[ibin] += coupling * S_ij_k;
         }
 
-        if (trv::sys::currTask == 0) {
-          std::printf(
-            "[%s STAT] Bispectrum term at orders "
-            "(m1, m2, M) = (%d, %d, %d) computed.\n",
-            trv::sys::show_timestamp().c_str(),
+        if (trvs::currTask == 0) {
+          trvs::logger.stat(
+            "Bispectrum term at orders (m1, m2, M) = (%d, %d, %d) computed.",
             m1_, m2_, M_
           );
         }
@@ -448,8 +450,8 @@ trv::BispecMeasurements compute_bispec(
       delete[] ylm_k_b; ylm_k_b = nullptr;
       delete[] ylm_r_a; ylm_r_a = nullptr;
       delete[] ylm_r_b; ylm_r_b = nullptr;
-      trv::sys::gbytesMem -= 4 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+      trvs::gbytesMem -=
+        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
     }
   }
 
@@ -479,10 +481,9 @@ trv::BispecMeasurements compute_bispec(
   delete[] nmodes_save; delete[] k1_save; delete[] k2_save;
   delete[] bk_save; delete[] sn_save;
 
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... measured bispectrum from paired survey-type catalogues.\n",
-      trv::sys::show_timestamp().c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "... measured bispectrum from paired survey-type catalogues."
     );
   }
 
@@ -495,11 +496,10 @@ trv::ThreePCFMeasurements compute_3pcf(
   trv::ParameterSet& params, trv::Binning& rbinning,
   double norm_factor
 ) {
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Measuring three-point correlation function "
-      "from paired survey-type catalogues...\n",
-      trv::sys::show_timestamp().c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "Measuring three-point correlation function "
+      "from paired survey-type catalogues..."
     );
   }
 
@@ -572,8 +572,8 @@ trv::ThreePCFMeasurements compute_3pcf(
       std::complex<double>* ylm_r_b = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_k_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_k_b = new std::complex<double>[params.nmesh];
-      trv::sys::gbytesMem += 4 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+      trvs::gbytesMem +=
+        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_config_space(
@@ -703,11 +703,10 @@ trv::ThreePCFMeasurements compute_3pcf(
           zeta_save[ibin] += parity * coupling * vol_cell * zeta_component;
         }
 
-        if (trv::sys::currTask == 0) {
-          std::printf(
-            "[%s STAT] Three-point correlation function term at orders "
-            "(m1, m2, M) = (%d, %d, %d) computed.\n",
-            trv::sys::show_timestamp().c_str(),
+        if (trvs::currTask == 0) {
+          trvs::logger.stat(
+            "Three-point correlation function term at orders "
+            "(m1, m2, M) = (%d, %d, %d) computed.",
             m1_, m2_, M_
           );
         }
@@ -717,8 +716,8 @@ trv::ThreePCFMeasurements compute_3pcf(
       delete[] ylm_r_b; ylm_r_b = nullptr;
       delete[] ylm_k_a; ylm_k_a = nullptr;
       delete[] ylm_k_b; ylm_k_b = nullptr;
-      trv::sys::gbytesMem -= 4 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+      trvs::gbytesMem -=
+        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
     }
   }
 
@@ -748,11 +747,10 @@ trv::ThreePCFMeasurements compute_3pcf(
   delete[] npairs_save; delete[] r1_save; delete[] r2_save;
   delete[] zeta_save; delete[] sn_save;
 
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... measured 3-point correlation function "
-      "from paired survey-type catalogues.\n",
-      trv::sys::show_timestamp().c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "... measured 3-point correlation function "
+      "from paired survey-type catalogues."
     );
   }
 
@@ -764,12 +762,10 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   trv::ParameterSet& params, trv::Binning kbinning,
   double norm_factor
 ) {
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Measuring bispectrum from "
-      "a periodic-box simulation-type catalogue "
-      "in the global plane-parallel approximation.\n",
-      trv::sys::show_timestamp().c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "Measuring bispectrum from a periodic-box simulation-type catalogue "
+      "in the global plane-parallel approximation."
     );
   }
 
@@ -840,8 +836,8 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       std::complex<double>* ylm_k_b = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_r_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_r_b = new std::complex<double>[params.nmesh];
-      trv::sys::gbytesMem += 4 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+      trvs::gbytesMem +=
+        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_fourier_space(
@@ -989,11 +985,9 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         sn_save[ibin] += coupling * S_ij_k;
       }
 
-      if (trv::sys::currTask == 0) {
-        std::printf(
-          "[%s STAT] Bispectrum term at orders "
-          "(m1, m2, 0) = (%d, %d, 0) computed.\n",
-          trv::sys::show_timestamp().c_str(),
+      if (trvs::currTask == 0) {
+        trvs::logger.stat(
+          "Bispectrum term at orders (m1, m2, 0) = (%d, %d, 0) computed.",
           m1_, m2_
         );
       }
@@ -1002,8 +996,8 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       delete[] ylm_r_b; ylm_r_b = nullptr;
       delete[] ylm_k_a; ylm_k_a = nullptr;
       delete[] ylm_k_b; ylm_k_b = nullptr;
-      trv::sys::gbytesMem -= 4 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+      trvs::gbytesMem -=
+        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
     }
   }
 
@@ -1033,12 +1027,10 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   delete[] nmodes_save; delete[] k1_save; delete[] k2_save;
   delete[] bk_save; delete[] sn_save;
 
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... measured bispectrum from "
-      "a periodic-box simulation-type catalogue "
-      "in the global plane-parallel approximation.\n",
-      trv::sys::show_timestamp().c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "... measured bispectrum from a periodic-box simulation-type catalogue "
+      "in the global plane-parallel approximation."
     );
   }
 
@@ -1050,12 +1042,11 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   trv::ParameterSet& params, trv::Binning& rbinning,
   double norm_factor
 ) {
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Measuring three-point correlation function from "
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "Measuring three-point correlation function from "
       "a periodic-box simulation-type catalogue "
-      "in the global plane-parallel approximation.\n",
-      trv::sys::show_timestamp().c_str()
+      "in the global plane-parallel approximation."
     );
   }
 
@@ -1120,8 +1111,8 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       std::complex<double>* ylm_r_b = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_k_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_k_b = new std::complex<double>[params.nmesh];
-      trv::sys::gbytesMem += 4 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+      trvs::gbytesMem +=
+        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_config_space(
@@ -1234,11 +1225,10 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         zeta_save[ibin] += parity * coupling * vol_cell * zeta_component;
       }
 
-      if (trv::sys::currTask == 0) {
-        std::printf(
-          "[%s STAT] Three-point correlation function term at orders "
+      if (trvs::currTask == 0) {
+        trvs::logger.stat(
+          "Three-point correlation function term at orders "
           "(m1, m2, 0) = (%d, %d, 0) computed.\n",
-          trv::sys::show_timestamp().c_str(),
           m1_, m2_
         );
       }
@@ -1247,8 +1237,8 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       delete[] ylm_r_b; ylm_r_b = nullptr;
       delete[] ylm_k_a; ylm_k_a = nullptr;
       delete[] ylm_k_b; ylm_k_b = nullptr;
-      trv::sys::gbytesMem -= 4 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+      trvs::gbytesMem -=
+        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
     }
   }
 
@@ -1278,12 +1268,11 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   delete[] npairs_save; delete[] r1_save; delete[] r2_save;
   delete[] zeta_save; delete[] sn_save;
 
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... measured 3-point correlation function from "
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "... measured 3-point correlation function from "
       "a periodic-box simulation-type catalogue "
-      "in the global plane-parallel approximation.\n",
-      trv::sys::show_timestamp().c_str()
+      "in the global plane-parallel approximation."
     );
   }
 
@@ -1296,11 +1285,11 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   double alpha, double norm_factor, bool wide_angle
 ) {
   std::string msg_tag = wide_angle ? "wide-angle corrections " : "";
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Measuring three-point correlation function window %s"
-      "from random catalogue.\n",
-      trv::sys::show_timestamp().c_str(), msg_tag.c_str()
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "Measuring three-point correlation function window %s"
+      "from random catalogue.",
+      msg_tag.c_str()
     );
   }
 
@@ -1367,8 +1356,8 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
       std::complex<double>* ylm_r_b = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_k_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_k_b = new std::complex<double>[params.nmesh];
-      trv::sys::gbytesMem += 4 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+      trvs::gbytesMem +=
+        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_config_space(
@@ -1500,11 +1489,10 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           zeta_save[ibin] += parity * coupling * vol_cell * zeta_component;
         }
 
-        if (trv::sys::currTask == 0) {
-          std::printf(
-            "[%s STAT] Three-point correlation function window term at orders "
-            "(m1, m2, M) = (%d, %d, %d) computed.\n",
-            trv::sys::show_timestamp().c_str(),
+        if (trvs::currTask == 0) {
+          trvs::logger.stat(
+            "Three-point correlation function window term at orders "
+            "(m1, m2, M) = (%d, %d, %d) computed.",
             m1_, m2_, M_
           );
         }
@@ -1514,8 +1502,8 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
       delete[] ylm_r_b; ylm_r_b = nullptr;
       delete[] ylm_k_a; ylm_k_a = nullptr;
       delete[] ylm_k_b; ylm_k_b = nullptr;
-      trv::sys::gbytesMem -= 4 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+      trvs::gbytesMem -=
+        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
     }
   }
 
@@ -1556,11 +1544,11 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   trv::ParameterSet& params, trv::Binning& kbinning,
   double norm_factor
 ) {
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] Measuring bispectrum from paired survey-type catalogues "
-      "for line-of-sight choice %d...\n",
-      trv::sys::show_timestamp().c_str(), los_choice
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "Measuring bispectrum from paired survey-type catalogues "
+      "for line-of-sight choice %d...",
+      los_choice
     );
   }
 
@@ -1631,8 +1619,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
       std::complex<double>* ylm_k_b = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_r_a = new std::complex<double>[params.nmesh];
       std::complex<double>* ylm_r_b = new std::complex<double>[params.nmesh];
-      trv::sys::gbytesMem += 4 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+      trvs::gbytesMem +=
+        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_fourier_space(
@@ -1886,11 +1874,9 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           sn_save[ibin] += coupling * S_ij_k;
         }
 
-        if (trv::sys::currTask == 0) {
-          std::printf(
-            "[%s STAT] Bispectrum term at orders "
-            "(m1, m2, M) = (%d, %d, %d) computed.\n",
-            trv::sys::show_timestamp().c_str(),
+        if (trvs::currTask == 0) {
+          trvs::logger.stat(
+            "Bispectrum term at orders (m1, m2, M) = (%d, %d, %d) computed.",
             m1_, m2_, M_
           );
         }
@@ -1900,8 +1886,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
       delete[] ylm_k_b; ylm_k_b = nullptr;
       delete[] ylm_r_a; ylm_r_a = nullptr;
       delete[] ylm_r_b; ylm_r_b = nullptr;
-      trv::sys::gbytesMem -= 4 * double(params.nmesh)
-        * sizeof(std::complex<double>) / BYTES_PER_GBYTES;
+      trvs::gbytesMem -=
+        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
     }
   }
 
@@ -1931,11 +1917,11 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   delete[] nmodes_save; delete[] k1_save; delete[] k2_save;
   delete[] bk_save; delete[] sn_save;
 
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s STAT] ... measured bispectrum from paired survey-type catalogues "
-      "for line-of-sight choice %d.\n",
-      trv::sys::show_timestamp().c_str(), los_choice
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "... measured bispectrum from paired survey-type catalogues "
+      "for line-of-sight choice %d.",
+      los_choice
     );
   }
 

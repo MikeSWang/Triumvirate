@@ -26,6 +26,8 @@
 
 #include "maths.hpp"
 
+namespace trvs = trv::sys;
+
 namespace trv {
 namespace maths {
 
@@ -218,11 +220,14 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_sp
 ) {
   /// Throw an exception when the output variable is provided.
   if (ylm_out == nullptr) {
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::InvalidData(
-        "[%s ERRO] Cannot store computed spherical harmonics. "
-        "Output array is not provided.\n",
-        trv::sys::show_timestamp().c_str()
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Cannot store computed spherical harmonics. "
+        "Output array is not provided."
+      );
+      throw trvs::InvalidData(
+        "Cannot store computed spherical harmonics. "
+        "Output array is not provided.\n"
       );
     }
   }
@@ -265,11 +270,14 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_spa
 ) {
   /// Throw an exception when the output variable is provided.
   if (ylm_out == nullptr) {
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::InvalidData(
-        "[%s ERRO] Cannot store computed spherical harmonics. "
-        "Output array is not provided.\n",
-        trv::sys::show_timestamp().c_str()
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Cannot store computed spherical harmonics. "
+        "Output array is not provided."
+      );
+      throw trvs::InvalidData(
+        "Cannot store computed spherical harmonics. "
+        "Output array is not provided.\n"
       );
     }
   }

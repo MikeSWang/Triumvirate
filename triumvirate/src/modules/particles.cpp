@@ -26,6 +26,8 @@
 
 #include "particles.hpp"
 
+namespace trvs = trv::sys;
+
 namespace trv {
 
 /// **********************************************************************
@@ -48,10 +50,8 @@ ParticleCatalogue::~ParticleCatalogue() {this->finalise_particles();}
 void ParticleCatalogue::initialise_particles(const int num) {
   /// Check the total number of particles.
   if (num <= 0) {
-    throw trv::sys::InvalidParameter(
-      "[%s WARN] Number of particles is non-positive.\n",
-      trv::sys::show_timestamp().c_str()
-    );
+    trvs::logger.error("Number of particles is non-positive.");
+    throw trvs::InvalidParameter("Number of particles is non-positive.\n");
   }
 
   this->ntotal = num;
@@ -61,16 +61,14 @@ void ParticleCatalogue::initialise_particles(const int num) {
 
   this->pdata = new ParticleData[this->ntotal];
 
-  trv::sys::gbytesMem += double(this->ntotal)
-    * sizeof(struct ParticleData) / BYTES_PER_GBYTES;
+  trvs::gbytesMem += trvs::size_in_gb<struct ParticleData>(this->ntotal);
 }
 
 void ParticleCatalogue::finalise_particles() {
   /// Free particle data.
   if (this->pdata != nullptr) {
     delete[] this->pdata; this->pdata = nullptr;
-    trv::sys::gbytesMem -= double(this->ntotal)
-      * sizeof(struct ParticleData) / BYTES_PER_GBYTES;
+    trvs::gbytesMem -= trvs::size_in_gb<struct ParticleData>(this->ntotal);
   }
 }
 
@@ -125,11 +123,10 @@ int ParticleCatalogue::load_catalogue_file(
 
   /// Check for the 'nz' column.
   if (name_indices[3] == -1) {
-    if (trv::sys::currTask == 0) {
-      std::printf(
-        "[%s WARN] Catalogue 'nz' field is unavailable, "
-        "which may raise errors in some computations (source=%s).\n",
-        trv::sys::show_timestamp().c_str(),
+    if (trvs::currTask == 0) {
+      trvs::logger.warn(
+        "Catalogue 'nz' field is unavailable, "
+        "which may raise errors in some computations (source=%s).",
         this->source.c_str()
       );
     }
@@ -145,12 +142,9 @@ int ParticleCatalogue::load_catalogue_file(
 
   if (fin.fail()) {
     fin.close();
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::IOError(
-        "[%s ERRO] Failed to open file '%s'.\n",
-        trv::sys::show_timestamp().c_str(),
-        this->source.c_str()
-      );
+    if (trvs::currTask == 0) {
+      trvs::logger.error("Failed to open file '%s'.", this->source.c_str());
+      throw trvs::IOError("Failed to open file '%s'.\n", this->source.c_str());
     }
   }
 
@@ -259,10 +253,13 @@ int ParticleCatalogue::load_particle_data(
     && ntotal == ws.size()
     && ntotal == wc.size()
   )) {
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::InvalidData(
-        "[%s ERRO] Inconsistent particle data dimensions (source=%s).\n",
-        trv::sys::show_timestamp().c_str(),
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Inconsistent particle data dimensions (source=%s).",
+        this->source.c_str()
+      );
+      throw trvs::InvalidData(
+        "Inconsistent particle data dimensions (source=%s).\n",
         this->source.c_str()
       );
     }
@@ -297,11 +294,9 @@ int ParticleCatalogue::load_particle_data(
 
 void ParticleCatalogue::calc_wtotal() {
   if (this->pdata == nullptr) {
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::InvalidData(
-        "[%s ERRO] Particle data are uninitialised.\n",
-        trv::sys::show_timestamp().c_str()
-      );
+    if (trvs::currTask == 0) {
+      trvs::logger.error("Particle data are uninitialised.");
+      throw trvs::InvalidData("Particle data are uninitialised.\n");
     }
   }
 
@@ -312,11 +307,10 @@ void ParticleCatalogue::calc_wtotal() {
 
   this->wtotal = wtotal;
 
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s INFO] Catalogue loaded: %d particles with "
-      "total systematic weights %.3f (source=%s).\n",
-      trv::sys::show_timestamp().c_str(),
+  if (trvs::currTask == 0) {
+    trvs::logger.info(
+      "Catalogue loaded: %d particles with "
+      "total systematic weights %.3f (source=%s).",
       this->ntotal, this->wtotal, this->source.c_str()
     );
   }
@@ -324,11 +318,9 @@ void ParticleCatalogue::calc_wtotal() {
 
 void ParticleCatalogue::calc_pos_min_and_max() {
   if (this->pdata == nullptr) {
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::InvalidData(
-        "[%s ERRO] Particle data are uninitialised.\n",
-        trv::sys::show_timestamp().c_str()
-      );
+    if (trvs::currTask == 0) {
+      trvs::logger.error("Particle data are uninitialised.");
+      throw trvs::InvalidData("Particle data are uninitialised.\n");
     }
   }
 
@@ -356,12 +348,11 @@ void ParticleCatalogue::calc_pos_min_and_max() {
     this->pos_max[iaxis] = pos_max[iaxis];
   }
 
-  if (trv::sys::currTask == 0) {
-    std::printf(
-      "[%s INFO] Extents of particle coordinates: "
+  if (trvs::currTask == 0) {
+    trvs::logger.info(
+      "Extents of particle coordinates: "
       "{'x': (%.3f, %.3f), 'y': (%.3f, %.3f), 'z': (%.3f, %.3f)} "
-      "(source=%s).\n",
-      trv::sys::show_timestamp().c_str(),
+      "(source=%s).",
       this->pos_min[0], this->pos_max[0],
       this->pos_min[1], this->pos_max[1],
       this->pos_min[2], this->pos_max[2],
@@ -377,11 +368,9 @@ void ParticleCatalogue::calc_pos_min_and_max() {
 
 void ParticleCatalogue::offset_coords(const double dpos[3]) {
   if (this->pdata == nullptr) {
-    if (trv::sys::currTask == 0) {
-      throw trv::sys::InvalidData(
-        "[%s ERRO] Particle data are uninitialised.\n",
-        trv::sys::show_timestamp().c_str()
-      );
+    if (trvs::currTask == 0) {
+      trvs::logger.error("Particle data are uninitialised.");
+      throw trvs::InvalidData("Particle data are uninitialised.\n");
     }
   }
 
