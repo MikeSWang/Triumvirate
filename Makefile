@@ -72,6 +72,8 @@ endif
 # Build
 # ========================================================================
 
+.PHONY: ${PROGNAME}
+
 MODULESRC = $(wildcard ${DIR_SRCMODULES}/*.cpp)
 
 # -- Installation build --------------------------------------------------

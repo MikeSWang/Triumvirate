@@ -289,13 +289,13 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   debug_par_int("num_bins", this->num_bins);
   debug_par_int("idx_bin", this->idx_bin);
 
-  debug_par_double("boxsize[0]", this->boxsize[0])
-  debug_par_double("boxsize[1]", this->boxsize[1])
-  debug_par_double("boxsize[2]", this->boxsize[2])
-  debug_par_double("volume", this->volume)
-  debug_par_double("padfactor", this->padfactor)
-  debug_par_double("bin_min", this->bin_min)
-  debug_par_double("bin_max", this->bin_max)
+  debug_par_double("boxsize[0]", this->boxsize[0]);
+  debug_par_double("boxsize[1]", this->boxsize[1]);
+  debug_par_double("boxsize[2]", this->boxsize[2]);
+  debug_par_double("volume", this->volume);
+  debug_par_double("padfactor", this->padfactor);
+  debug_par_double("bin_min", this->bin_min);
+  debug_par_double("bin_max", this->bin_max);
 #endif  // DBG_PARS
 
   return this->validate();
