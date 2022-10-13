@@ -89,11 +89,11 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (!(params.print_to_file())) {
+  if (params.print_to_file()) {
     if (trv::sys::currTask == 0) {
-      trv::sys::logger.info(
-        "Check 'parameters_used*' file in "
-        "your measurement output directory for reference."
+      trv::sys::logger.warn(
+        "Failed to print used parameters to file "
+        "in the measurement output directory."
       );
     }
   }

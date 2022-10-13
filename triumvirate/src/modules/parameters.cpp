@@ -702,6 +702,12 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
 
   std::fclose(ofileptr);
 
+  if (trv::sys::currTask == 0) {
+    trv::sys::logger.info(
+      "Check used-parameter file for reference: %s.", out_parameter_filepath
+    );
+  }
+
   return 0;
 }
 
