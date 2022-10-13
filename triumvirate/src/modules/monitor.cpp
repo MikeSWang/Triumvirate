@@ -192,7 +192,7 @@ void Logger::debug(const char* fmt_string, ...) {
 }
 
 void Logger::stat(const char* fmt_string, ...) {
-  if (this->level_limit <= DBUG) {
+  if (this->level_limit <= STAT) {
     std::va_list args;
     va_start(args, fmt_string);
     Logger::emit("STAT", fmt_string, args);
@@ -201,7 +201,7 @@ void Logger::stat(const char* fmt_string, ...) {
 }
 
 void Logger::info(const char* fmt_string, ...) {
-  if (this->level_limit <= DBUG) {
+  if (this->level_limit <= INFO) {
     std::va_list args;
     va_start(args, fmt_string);
     Logger::emit("INFO", fmt_string, args);
@@ -210,7 +210,7 @@ void Logger::info(const char* fmt_string, ...) {
 }
 
 void Logger::warn(const char* fmt_string, ...) {
-  if (this->level_limit <= DBUG) {
+  if (this->level_limit <= WARN) {
     std::va_list args;
     va_start(args, fmt_string);
     Logger::emit("WARN", fmt_string, args);
@@ -219,7 +219,7 @@ void Logger::warn(const char* fmt_string, ...) {
 }
 
 void Logger::error(const char* fmt_string, ...) {
-  if (this->level_limit <= DBUG) {
+  if (this->level_limit <= ERRO) {
     std::va_list args;
     va_start(args, fmt_string);
     Logger::emit("ERRO", fmt_string, args);
