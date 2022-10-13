@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
         );
       }
     }
-    if (catalogue_data.load_catalogue_file(
+    if (catalogue_rand.load_catalogue_file(
       params.rand_catalogue_file, params.catalogue_columns, params.volume
     )) {
       if (trv::sys::currTask == 0) {
@@ -264,14 +264,14 @@ int main(int argc, char* argv[]) {
         double boxsize_pad[3] = {
           params.padfactor, params.padfactor, params.padfactor
         };
-        trv::ParticleCatalogue::pad_in_gpp_box(
+        trv::ParticleCatalogue::pad_in_box(
           catalogue_data, catalogue_rand,
           params.boxsize, boxsize_pad
         );
       }
     } else
     if (params.alignment == "centre") {
-      trv::ParticleCatalogue::centre_in_gpp_box(
+      trv::ParticleCatalogue::centre_in_box(
         catalogue_data, catalogue_rand, params.boxsize
       );
     }
@@ -293,13 +293,13 @@ int main(int argc, char* argv[]) {
         double boxsize_pad[3] = {
           params.padfactor, params.padfactor, params.padfactor
         };
-        trv::ParticleCatalogue::pad_in_gpp_box(
+        trv::ParticleCatalogue::pad_in_box(
           catalogue_rand, params.boxsize, boxsize_pad
         );
       }
     } else
     if (params.alignment == "centre") {
-      trv::ParticleCatalogue::centre_in_gpp_box(
+      trv::ParticleCatalogue::centre_in_box(
         catalogue_data, catalogue_rand, params.boxsize
       );
     }

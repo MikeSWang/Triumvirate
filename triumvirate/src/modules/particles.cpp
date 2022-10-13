@@ -91,6 +91,15 @@ int ParticleCatalogue::load_catalogue_file(
   const std::string& catalogue_columns,
   double volume
 ) {
+  if (!(this->source.empty())) {
+    trvs::logger.error(
+      "Catalogue already loaded from another source: %s.", this->source.c_str()
+    );
+    throw trvs::InvalidData(
+      "Catalogue already loaded from another source: %s.\n",
+      this->source.c_str()
+    );
+  }
   this->source = "extfile:" + catalogue_filepath;
 
   /// --------------------------------------------------------------------
@@ -319,7 +328,9 @@ void ParticleCatalogue::calc_wtotal() {
 void ParticleCatalogue::calc_pos_min_and_max() {
   if (this->pdata == nullptr) {
     if (trvs::currTask == 0) {
+      std::printf("%s\n", this->source.c_str());
       trvs::logger.error("Particle data are uninitialised.");
+      std::printf("Here too!\n");
       throw trvs::InvalidData("Particle data are uninitialised.\n");
     }
   }
@@ -398,7 +409,7 @@ void ParticleCatalogue::offset_coords_for_periodicity(const double boxsize[3]) {
   this->calc_pos_min_and_max();
 }
 
-void ParticleCatalogue::centre_in_gpp_box(
+void ParticleCatalogue::centre_in_box(
   ParticleCatalogue& catalogue,
   const double boxsize[3]
 ) {
@@ -415,7 +426,7 @@ void ParticleCatalogue::centre_in_gpp_box(
   catalogue.offset_coords(dvec);
 }
 
-void ParticleCatalogue::centre_in_gpp_box(
+void ParticleCatalogue::centre_in_box(
   ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
   const double boxsize[3]
 ) {
@@ -433,7 +444,7 @@ void ParticleCatalogue::centre_in_gpp_box(
   catalogue.offset_coords(dvec);
 }
 
-void ParticleCatalogue::pad_in_gpp_box(
+void ParticleCatalogue::pad_in_box(
   ParticleCatalogue& catalogue,
   const double boxsize[3], const double boxsize_pad[3]
 ) {
@@ -448,7 +459,7 @@ void ParticleCatalogue::pad_in_gpp_box(
   catalogue.offset_coords(dvec);
 }
 
-void ParticleCatalogue::pad_in_gpp_box(
+void ParticleCatalogue::pad_in_box(
     ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
     const double boxsize[3], const double boxsize_pad[3]
 ) {

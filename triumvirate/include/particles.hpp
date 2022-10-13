@@ -195,7 +195,7 @@ class ParticleCatalogue {
    * @param catalogue Particle catalogue.
    * @param boxsize Box size in each dimension.
    */
-  static void centre_in_gpp_box(
+  static void centre_in_box(
     ParticleCatalogue& catalogue,
     const double boxsize[3]
   );
@@ -212,7 +212,7 @@ class ParticleCatalogue {
    *
    * @overload
    */
-  static void centre_in_gpp_box(
+  static void centre_in_box(
     ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
     const double boxsize[3]
   );
@@ -226,7 +226,7 @@ class ParticleCatalogue {
    * @param boxsize Box size in each dimension.
    * @param boxsize_pad Box size padding factor in each dimension.
    */
-  static void pad_in_gpp_box(
+  static void pad_in_box(
     ParticleCatalogue& catalogue,
     const double boxsize[3], const double boxsize_pad[3]
   );
@@ -246,7 +246,7 @@ class ParticleCatalogue {
    *
    * @overload
    */
-  static void pad_in_gpp_box(
+  static void pad_in_box(
     ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
     const double boxsize[3], const double boxsize_pad[3]
   );
