@@ -107,7 +107,7 @@ void print_2pt_meas_file_header(
     std::fprintf(
       save_fileptr,
       "# [0] r_central, [1] r_eff, [2] npair, "
-      "[3] xi%d.real, [4] xi%d.imag",
+      "[3] xi%d.real, [4] xi%d.imag\n",
       params.ELL, params.ELL
     );
   } else
@@ -204,7 +204,7 @@ void print_2pt_meas_file_header(
     std::fprintf(
       save_fileptr,
       "# [0] r_central, [1] r_eff, [2] npair, "
-      "[3] xi%d.real, [4] xi%d.imag",
+      "[3] xi%d.real, [4] xi%d.imag\n",
       params.ELL, params.ELL
     );
   } else
