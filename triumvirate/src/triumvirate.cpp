@@ -42,24 +42,28 @@
  *
  */
 int main(int argc, char* argv[]) {
+  // trv::sys::display_prog_notice();
+
   if (trv::sys::currTask == 0) {
     std::printf("%s\n", std::string(80, '>').c_str());
   }
 
   /// ====================================================================
-  /// Initialisation
+  /// A Initialisation
   /// ====================================================================
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("Parameters and source data are being initialised.");
+    trv::sys::logger.stat(
+      "[A] Parameters and source data are being initialised."
+    );
   }
 
   /// --------------------------------------------------------------------
-  /// Parameter I/O
+  /// A.1 Parameter I/O
   /// --------------------------------------------------------------------
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("Reading parameters...");
+    trv::sys::logger.stat("[A.1] Reading parameters...");
   }
 
   if (argc < 2) {
@@ -95,17 +99,17 @@ int main(int argc, char* argv[]) {
   }
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("... read parameters.");
+    trv::sys::logger.stat("[A.1] ... read parameters.");
   }
 
   trv::sys::logger.reset_level(params.verbose);
 
   /// --------------------------------------------------------------------
-  /// Data I/O
+  /// A.2 Data I/O
   /// --------------------------------------------------------------------
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("Reading catalogues...");
+    trv::sys::logger.stat("[A.2] Reading catalogues...");
   }
 
   trv::ParticleCatalogue catalogue_data; ///> data-source catalogue
@@ -173,38 +177,38 @@ int main(int argc, char* argv[]) {
   }
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("... read catalogues.");
+    trv::sys::logger.stat("[A.2] ... read catalogues.");
   }
 
   /// ====================================================================
-  /// Measurements
+  /// B Measurements
   /// ====================================================================
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("Clustering statistics are being measured.");
+    trv::sys::logger.stat("[B] Clustering statistics are being measured.");
   }
 
   /// --------------------------------------------------------------------
-  /// Binning
+  /// B.1 Binning
   /// --------------------------------------------------------------------
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("Setting up binning...");
+    trv::sys::logger.stat("[B.1] Setting up binning...");
   }
 
   trv::Binning binning(params);  ///> binning
   binning.set_bins();
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("... set up binning.");
+    trv::sys::logger.stat("[B.1] ... set up binning.");
   }
 
   /// --------------------------------------------------------------------
-  /// Line of sight
+  /// B.2 Line of sight
   /// --------------------------------------------------------------------
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("Computing lines of sight...");
+    trv::sys::logger.stat("[B.2] Computing lines of sight...");
   }
 
   trv::LineOfSight* los_data =
@@ -231,15 +235,17 @@ int main(int argc, char* argv[]) {
 
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("... computed lines of sight.");
+    trv::sys::logger.stat("[B.2] ... computed lines of sight.");
   }
 
   /// --------------------------------------------------------------------
-  /// Box alignment
+  /// B.3 Box alignment
   /// --------------------------------------------------------------------
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("Aligning catalogues inside measurement box...");
+    trv::sys::logger.stat(
+      "[B.3] Aligning catalogues inside measurement box..."
+    );
   }
 
   if (params.catalogue_type == "survey") {
@@ -300,11 +306,13 @@ int main(int argc, char* argv[]) {
   }
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("... aligned catalogues inside measurement box.");
+    trv::sys::logger.stat(
+      "[B.3] ... aligned catalogues inside measurement box."
+    );
   }
 
   /// --------------------------------------------------------------------
-  /// Alpha contrast
+  /// B.4 Constants
   /// --------------------------------------------------------------------
 
   double alpha;  ///> alpha contrast
@@ -317,10 +325,6 @@ int main(int argc, char* argv[]) {
   if (trv::sys::currTask == 0) {
     trv::sys::logger.info("Alpha contrast: %.6e.", alpha);
   }
-
-  /// --------------------------------------------------------------------
-  /// Normalisation factors
-  /// --------------------------------------------------------------------
 
   trv::ParticleCatalogue& catalogue_for_norm =
     (flag_rand == "true") ? catalogue_rand : catalogue_data;
@@ -371,7 +375,7 @@ int main(int argc, char* argv[]) {
   }
 
   /// --------------------------------------------------------------------
-  /// Clustering algorithms
+  /// B.5 Clustering algorithms
   /// --------------------------------------------------------------------
 
   bool save = true;
@@ -566,7 +570,7 @@ int main(int argc, char* argv[]) {
   }
 
   /// ====================================================================
-  /// Finalisation
+  /// C Finalisation
   /// ====================================================================
 
   /// Clear dynamically allocated memory.

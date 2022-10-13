@@ -328,6 +328,17 @@ class InvalidData: public std::runtime_error {
   virtual const char* what() const noexcept;
 };
 
+
+/// **********************************************************************
+/// Program notices
+/// **********************************************************************
+
+/**
+ * @brief Display program notice including logo in @c stdout.
+ *
+ */
+void display_prog_notice();
+
 }  // namespace trv::sys
 }  // namespace trv
 
