@@ -2071,7 +2071,7 @@ ThreePCFMeasurements compute_3pcf_in_box(
     if (params.form == "full") {
       threepcf_out.rbin1.push_back(rbin[params.ith_rbin]);
     }
-    threepcf_out.reff2.push_back(r1_save[ibin]);
+    threepcf_out.reff1.push_back(r1_save[ibin]);
     threepcf_out.rbin2.push_back(rbin[ibin]);
     threepcf_out.reff2.push_back(r2_save[ibin]);
     threepcf_out.npair.push_back(npair_save[ibin]);
