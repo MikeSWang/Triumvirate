@@ -300,7 +300,7 @@ int main(int argc, char* argv[]) {
     } else
     if (params.alignment == "centre") {
       trv::ParticleCatalogue::centre_in_box(
-        catalogue_data, catalogue_rand, params.boxsize
+        catalogue_rand, params.boxsize
       );
     }
   }
