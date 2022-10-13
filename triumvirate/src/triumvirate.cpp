@@ -441,7 +441,7 @@ int main(int argc, char* argv[]) {
   } else
   if (params.measurement_type == "2pcf-win") {
     std::sprintf(
-      save_filepath, "%s/xiw%d_%s",
+      save_filepath, "%s/xiw%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
@@ -454,7 +454,7 @@ int main(int argc, char* argv[]) {
   if (params.measurement_type == "bispec") {
     if (params.form == "full") {
       std::sprintf(
-        save_filepath, "%s/bk%d%d%d_bin%02d_%s",
+        save_filepath, "%s/bk%d%d%d_bin%02d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL, params.idx_bin,
         params.output_tag.c_str()
@@ -462,7 +462,7 @@ int main(int argc, char* argv[]) {
     } else
     if (params.form == "diag") {
       std::sprintf(
-        save_filepath, "%s/bk%d%d%d_diag_%s",
+        save_filepath, "%s/bk%d%d%d_diag%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
         params.output_tag.c_str()
@@ -495,7 +495,7 @@ int main(int argc, char* argv[]) {
   if (params.measurement_type == "3pcf") {
     if (params.form == "full") {
       std::sprintf(
-        save_filepath, "%s/zeta%d%d%d_bin%02d_%s",
+        save_filepath, "%s/zeta%d%d%d_bin%02d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL, params.idx_bin,
         params.output_tag.c_str()
@@ -503,7 +503,7 @@ int main(int argc, char* argv[]) {
     } else
     if (params.form == "diag") {
       std::sprintf(
-        save_filepath, "%s/zeta%d%d%d_diag_%s",
+        save_filepath, "%s/zeta%d%d%d_diag%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
         params.output_tag.c_str()
@@ -535,7 +535,7 @@ int main(int argc, char* argv[]) {
   } else
   if (params.measurement_type == "3pcf-win") {
     std::sprintf(
-      save_filepath, "%s/zetaw%d%d%d_bin%02d_%s",
+      save_filepath, "%s/zetaw%d%d%d_bin%02d%s",
       params.measurement_dir.c_str(),
       params.ell1, params.ell2, params.ELL, params.idx_bin,
       params.output_tag.c_str()
@@ -550,7 +550,7 @@ int main(int argc, char* argv[]) {
   } else
   if (params.measurement_type == "3pcf-win-wa") {
     std::sprintf(
-      save_filepath, "%s/zetaw%d%d%d_wa%d%d_bin%02d_%s",
+      save_filepath, "%s/zetaw%d%d%d_wa%d%d_bin%02d%s",
       params.measurement_dir.c_str(),
       params.ell1, params.ell2, params.ELL, params.i_wa, params.j_wa,
       params.idx_bin,
