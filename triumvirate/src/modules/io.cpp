@@ -315,7 +315,7 @@ void print_measurement_datatab_to_file(
   /// Print data table columns.
   std::fprintf(
     fileptr,
-    "%s [0] r_cen, [1] r_eff, [2] npairs, [3] Re{xi%d}, [4] Im{xi%d}",
+    "%s [0] r_cen, [1] r_eff, [2] npairs, [3] Re{xi%d}, [4] Im{xi%d}\n",
     comment_delimiter,
     params.ELL, params.ELL
   );
