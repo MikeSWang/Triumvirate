@@ -1257,7 +1257,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
     if (params.form == "full") {
       threepcf_out.r1bin.push_back(rbinning.bin_centres[params.idx_bin]);
     }
-    threepcf_out.r2eff.push_back(r1_save[ibin]);
+    threepcf_out.r1eff.push_back(r1_save[ibin]);
     threepcf_out.r2bin.push_back(rbinning.bin_centres[ibin]);
     threepcf_out.r2eff.push_back(r2_save[ibin]);
     threepcf_out.npairs.push_back(npairs_save[ibin]);
