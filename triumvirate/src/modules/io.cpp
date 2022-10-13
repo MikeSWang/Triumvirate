@@ -72,15 +72,23 @@ void print_measurement_header_to_file(
 ) {
   std::fprintf(
     fileptr,
-    "%s Data catalogue: %d particles of total weight %.3f (source=%s)\n",
-    comment_delimiter,
-    catalogue_data.ntotal, catalogue_data.wtotal, catalogue_data.source.c_str()
+    "%s Data catalogue: source from %s\n",
+    comment_delimiter, catalogue_data.source.c_str()
   );
   std::fprintf(
     fileptr,
-    "%s Random catalogue: %d particles of total weight %.3f (source=%s)\n",
-    comment_delimiter,
-    catalogue_rand.ntotal, catalogue_rand.wtotal, catalogue_rand.source.c_str()
+    "%s Data catalogue: %d particles of total weight %.3f\n",
+    comment_delimiter, catalogue_data.ntotal, catalogue_data.wtotal
+  );
+  std::fprintf(
+    fileptr,
+    "%s Random catalogue: source from %s\n",
+    comment_delimiter, catalogue_rand.source.c_str()
+  );
+  std::fprintf(
+    fileptr,
+    "%s Random catalogue: %d particles of total weight %.3f\n",
+    comment_delimiter, catalogue_rand.ntotal, catalogue_rand.wtotal
   );
 
   std::fprintf(
@@ -153,9 +161,13 @@ void print_measurement_header_to_file(
 ) {
   std::fprintf(
     fileptr,
-    "%s Catalogue: %d particles of total weight %.3f (source=%s)\n",
-    comment_delimiter,
-    catalogue.ntotal, catalogue.wtotal, catalogue.source.c_str()
+    "%s Catalogue: source from %s\n",
+    comment_delimiter, catalogue.source.c_str()
+  );
+  std::fprintf(
+    fileptr,
+    "%s Catalogue: %d particles of total weight %.3f\n",
+    comment_delimiter, catalogue.ntotal, catalogue.wtotal
   );
 
   std::fprintf(
