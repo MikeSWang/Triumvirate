@@ -388,7 +388,7 @@ class MeshField {
   double calc_grid_based_powlaw_norm(ParticleCatalogue& particles, int order);
 
  private:
-  fftw_complex* field_s;  ///> half-grid shifted complex field on mesh
+  fftw_complex* field_s = nullptr;  ///> half-grid shifted complex field on mesh
 
   friend class FieldStats;
 
