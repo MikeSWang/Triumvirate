@@ -265,7 +265,7 @@ void print_measurement_datatab_to_file(
   /// Print data table columns.
   std::fprintf(
     fileptr,
-    "%s [0] r_cen, [1] r_eff, [2] npairs, [3] Re{xi%d}, [4] Im{xi%d}",
+    "%s [0] r_cen, [1] r_eff, [2] npairs, [3] Re{xi%d}, [4] Im{xi%d}\n",
     comment_delimiter,
     params.ELL, params.ELL
   );
@@ -290,7 +290,7 @@ void print_measurement_datatab_to_file(
   /// Print data table columns.
   std::fprintf(
     fileptr,
-    "%s [0] k_cen, [1] k_eff, [2] nmodes, [3] Re{pk%d}, [4] Im{pk%d}",
+    "%s [0] k_cen, [1] k_eff, [2] nmodes, [3] Re{pk%d}, [4] Im{pk%d}\n",
     comment_delimiter,
     params.ELL, params.ELL
   );
