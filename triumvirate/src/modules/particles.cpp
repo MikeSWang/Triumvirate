@@ -125,8 +125,8 @@ int ParticleCatalogue::load_catalogue_file(
   if (name_indices[3] == -1) {
     if (trvs::currTask == 0) {
       trvs::logger.warn(
-        "Catalogue 'nz' field is unavailable, "
-        "which may raise errors in some computations (source=%s).",
+        "Catalogue 'nz' field is unavailable and "
+        "will be set to the mean density in the bounding box (source=%s).",
         this->source.c_str()
       );
     }
