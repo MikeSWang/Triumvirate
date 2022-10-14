@@ -1,8 +1,8 @@
 """Generate parameter files from a template.
 
 For C++, the parameter files are assumed to use '%' as the comment
-delimiter, and parameter assignment is in the form
-'<param_name> = <param_value>' each on a single line.
+delimiter, and each parameter assignment is in the form
+``<param_name> = <param_value>`` on a single line.
 
 For Python, YAML files are used.
 
