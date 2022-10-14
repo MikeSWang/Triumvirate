@@ -1229,6 +1229,12 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
   double k_sample[n_sample];
   std::complex<double> pk_sample[n_sample];
   std::complex<double> sn_sample[n_sample];
+  for (int i = 0; i < n_sample; i++) {
+    nmodes_sample[i] = 0;
+    k_sample[i] = 0.;
+    pk_sample[i] = 0.;
+    sn_sample[i] = 0.;
+  }
 
   this->reset_stats();
 
@@ -1414,6 +1420,11 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   int npairs_sample[n_sample];
   double r_sample[n_sample];
   std::complex<double> xi_sample[n_sample];
+  for (int i = 0; i < n_sample; i++) {
+    npairs_sample[i] = 0;
+    r_sample[i] = 0.;
+    xi_sample[i] = 0.;
+  }
 
   this->reset_stats();
 
@@ -1573,6 +1584,11 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   int npairs_sample[n_sample];
   double r_sample[n_sample];
   std::complex<double> xi_sample[n_sample];
+  for (int i = 0; i < n_sample; i++) {
+    npairs_sample[i] = 0;
+    r_sample[i] = 0.;
+    xi_sample[i] = 0.;
+  }
 
   this->reset_stats();
 
