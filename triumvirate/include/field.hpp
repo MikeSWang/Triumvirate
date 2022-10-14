@@ -407,18 +407,18 @@ class MeshField {
   /**
    * @brief Return the grid cell position vector.
    *
-   * @param i, j, k Grid index in each dimension.
-   * @returns Position vector to the grid cell centre.
+   * @param[in] i, j, k Grid index in each dimension.
+   * @param[out] rvec Position vector to the grid cell centre.
    */
-  std::vector<double> get_grid_pos_vector(int i, int j, int k);
+  void get_grid_pos_vector(int i, int j, int k, double rvec[3]);
 
   /**
    * @brief Return the grid cell wavevector.
    *
-   * @param i, j, k Grid index in each dimension.
-   * @returns Wavevector to the grid cell centre.
+   * @param[in] i, j, k Grid index in each dimension.
+   * @param[out] kvec Position vector to the grid cell centre.
    */
-  std::vector<double> get_grid_wavevector(int i, int j, int k);
+  void get_grid_wavevector(int i, int j, int k, double kvec[3]);
 
   /// --------------------------------------------------------------------
   /// Mesh assignment
@@ -486,7 +486,7 @@ class MeshField {
    * @param kvec Wavevector.
    * @returns Window value.
    */
-  double calc_assignment_window_in_fourier(std::vector<double> kvec);
+  double calc_assignment_window_in_fourier(double kvec[3]);
 };
 
 
@@ -715,7 +715,7 @@ class FieldStats {
    * @param kvec Wavevector.
    * @returns Value of the aliasing function.
    */
-  double calc_shotnoise_aliasing(std::vector<double> kvec);
+  double calc_shotnoise_aliasing(double kvec[3]);
 
   /**
    * @brief Calculate the shot-noise aliasing scale-dependence function
