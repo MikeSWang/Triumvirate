@@ -321,10 +321,10 @@ class ParticleCatalogue:
                 catalogue_ref.bounds[axis][0] for axis in ['x', 'y', 'z']
             ])
 
-        if ngrid_pad:
-            origin -= np.multiply(ngrid_pad, np.divide(boxsize, ngrid))
         if boxsize_pad:
             origin -= np.multiply(boxsize_pad, boxsize)
+        if ngrid_pad:
+            origin -= np.multiply(ngrid_pad, np.divide(boxsize, ngrid))
 
         self.offset_coords(origin)
         if catalogue_ref is not None:
@@ -392,7 +392,7 @@ class ParticleCatalogue:
         Parameters
         ----------
         alpha : float, optional
-            Alpha ratio (default is 1.).
+            Alpha contrast (default is 1.).
 
         Returns
         -------
@@ -418,7 +418,7 @@ class ParticleCatalogue:
         Parameters
         ----------
         alpha : float, optional
-            Alpha ratio (default is 1.).
+            Alpha contrast (default is 1.).
 
         Returns
         -------

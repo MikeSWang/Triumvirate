@@ -17,8 +17,8 @@ from triumvirate.parameters cimport CppParameterSet, ParameterSet
 from triumvirate._catalogue cimport CppParticleCatalogue, _ParticleCatalogue
 
 
-cdef extern from "include/particles.hpp":
-    struct LineOfSight:
+cdef extern from "include/dataobjs.hpp":
+    struct LineOfSight "trv::LineOfSight":
         double pos[3]
 
 
@@ -26,26 +26,26 @@ cdef extern from "include/twopt.hpp":
     struct PowspecMeasurements "trv::algo::PowspecMeasurements":
         vector[double] kbin
         vector[double] keff
-        vector[int] nmode
+        vector[int] nmodes
         vector[np.complex128_t] pk_raw
         vector[np.complex128_t] pk_shot
 
-    struct CorrfuncMeasurements "trv::algo::CorrfuncMeasurements":
+    struct TwoPCFMeasurements "trv::algo::TwoPCFMeasurements":
         vector[double] rbin
         vector[double] reff
-        vector[int] npair;
+        vector[int] npairs;
         vector[np.complex128_t] xi
 
     struct PowspecWindowMeasurements "trv::algo::PowspecWindowMeasurements":
         vector[double] kbin
         vector[double] keff
-        vector[int] nmode;
+        vector[int] nmodes;
         vector[np.complex128_t] pk
 
-    struct CorrfuncWindowMeasurements "trv::algo::CorrfuncWindowMeasurements":
+    struct TwoPCFWindowMeasurements "trv::algo::TwoPCFWindowMeasurements":
         vector[double] rbin
         vector[double] reff
-        vector[int] npair;
+        vector[int] npairs;
         vector[np.complex128_t] xi
 
     double calc_powspec_normalisation_from_mesh_cpp \
@@ -67,41 +67,41 @@ cdef extern from "include/twopt.hpp":
         LineOfSight* los_data,
         LineOfSight* los_rand,
         CppParameterSet& params,
-        double* kbin,
+        vector[double] kbin,
         double alpha,
         double norm,
         double norm_alt,
         bool_t save
     )
 
-    CorrfuncMeasurements compute_corrfunc_cpp "trv::algo::compute_corrfunc" (
+    TwoPCFMeasurements compute_corrfunc_cpp "trv::algo::compute_corrfunc" (
         CppParticleCatalogue& particles_data,
         CppParticleCatalogue& particles_rand,
         LineOfSight* los_data,
         LineOfSight* los_rand,
         CppParameterSet& params,
-        double* rbin,
+        vector[double] rbin,
         double alpha,
         double norm,
         double norm_alt,
         bool_t save
     )
 
-    PowspecMeasurements compute_powspec_in_box_cpp \
-        "trv::algo::compute_powspec_in_box" (
+    PowspecMeasurements compute_powspec_in_gpp_box_cpp \
+        "trv::algo::compute_powspec_in_gpp_box" (
             CppParticleCatalogue& particles_data,
             CppParameterSet& params,
-            double* kbin,
+            vector[double] kbin,
             double norm,
             double norm_alt,
             bool_t save
         )
 
-    CorrfuncMeasurements compute_corrfunc_in_box_cpp \
-        "trv::algo::compute_corrfunc_in_box" (
+    TwoPCFMeasurements compute_corrfunc_in_gpp_box_cpp \
+        "trv::algo::compute_corrfunc_in_gpp_box" (
             CppParticleCatalogue& particles_data,
             CppParameterSet& params,
-            double* rbin,
+            vector[double] rbin,
             double norm,
             double norm_alt,
             bool_t save
@@ -112,19 +112,19 @@ cdef extern from "include/twopt.hpp":
     #         CppParticleCatalogue& particles_rand,
     #         LineOfSight* los_rand,
     #         CppParameterSet& params,
-    #         double* kbin,
+    #         vector[double] kbin,
     #         double alpha,
     #         double norm,
     #         double norm_alt,
     #         bool_t save
     #     )
 
-    CorrfuncWindowMeasurements compute_corrfunc_window_cpp \
+    TwoPCFWindowMeasurements compute_corrfunc_window_cpp \
         "trv::algo::compute_corrfunc_window" (
             CppParticleCatalogue& particles_rand,
             LineOfSight* los_rand,
             CppParameterSet& params,
-            double* rbin,
+            vector[double] rbin,
             double alpha,
             double norm,
             double norm_alt,
@@ -190,7 +190,7 @@ def _compute_powspec(
         deref(particles_data.thisptr), deref(particles_rand.thisptr),
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr),
-        &kbin[0],
+        kbin,
         alpha, norm, norm_alt,
         save
     )
@@ -198,7 +198,7 @@ def _compute_powspec(
     return {
         'kbin': np.asarray(meas.kbin),
         'keff': np.asarray(meas.keff),
-        'nmode': np.asarray(meas.nmode),
+        'nmodes': np.asarray(meas.nmodes),
         'pk_raw': np.asarray(meas.pk_raw),
         'pk_shot': np.asarray(meas.pk_shot),
     }
@@ -235,12 +235,12 @@ def _compute_corrfunc(
         los_rand_cpp[pid].pos[2] = los_z
 
     # Run algorithm.
-    cdef CorrfuncMeasurements meas
+    cdef TwoPCFMeasurements meas
     meas = compute_corrfunc_cpp(
         deref(particles_data.thisptr), deref(particles_rand.thisptr),
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr),
-        &rbin[0],
+        rbin,
         alpha, norm, norm_alt,
         save
     )
@@ -248,12 +248,12 @@ def _compute_corrfunc(
     return {
         'rbin': np.asarray(meas.rbin),
         'reff': np.asarray(meas.reff),
-        'npair': np.asarray(meas.npair),
+        'npairs': np.asarray(meas.npairs),
         'xi': np.asarray(meas.xi),
     }
 
 
-def _compute_powspec_in_box(
+def _compute_powspec_in_gpp_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
         np.ndarray[double, ndim=1, mode='c'] kbin not None,
@@ -263,9 +263,9 @@ def _compute_powspec_in_box(
     ):
 
     cdef PowspecMeasurements meas
-    meas = compute_powspec_in_box_cpp(
+    meas = compute_powspec_in_gpp_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
-        &kbin[0],
+        kbin,
         norm, norm_alt,
         save
     )
@@ -273,13 +273,13 @@ def _compute_powspec_in_box(
     return {
         'kbin': np.asarray(meas.kbin),
         'keff': np.asarray(meas.keff),
-        'nmode': np.asarray(meas.nmode),
+        'nmodes': np.asarray(meas.nmodes),
         'pk_raw': np.asarray(meas.pk_raw),
         'pk_shot': np.asarray(meas.pk_shot),
     }
 
 
-def _compute_corrfunc_in_box(
+def _compute_corrfunc_in_gpp_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
         np.ndarray[double, ndim=1, mode='c'] rbin not None,
@@ -288,10 +288,10 @@ def _compute_corrfunc_in_box(
         bool_t save
     ):
 
-    cdef CorrfuncMeasurements meas
-    meas = compute_corrfunc_in_box_cpp(
+    cdef TwoPCFMeasurements meas
+    meas = compute_corrfunc_in_gpp_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
-        &rbin[0],
+        rbin,
         norm, norm_alt,
         save
     )
@@ -299,7 +299,7 @@ def _compute_corrfunc_in_box(
     return {
         'rbin': np.asarray(meas.rbin),
         'reff': np.asarray(meas.reff),
-        'npair': np.asarray(meas.npair),
+        'npairs': np.asarray(meas.npairs),
         'xi': np.asarray(meas.xi),
     }
 
@@ -330,7 +330,7 @@ def _compute_corrfunc_in_box(
 #         deref(particles_rand.thisptr),
 #         los_rand_cpp,
 #         deref(params.thisptr),
-#         &kbin[0],
+#         kbin,
 #         alpha, norm, norm_alt,
 #         save
 #     )
@@ -338,7 +338,7 @@ def _compute_corrfunc_in_box(
 #     return {
 #         'kbin': np.asarray(meas.kbin),
 #         'keff': np.asarray(meas.keff),
-#         'nmode': np.asarray(meas.nmode),
+#         'nmodes': np.asarray(meas.nmodes),
 #         'pk': np.asarray(meas.pk_raw),
 #     }
 
@@ -364,12 +364,12 @@ def _compute_corrfunc_window(
         los_rand_cpp[pid].pos[2] = los_z
 
     # Run algorithm.
-    cdef CorrfuncWindowMeasurements meas
+    cdef TwoPCFWindowMeasurements meas
     meas = compute_corrfunc_window_cpp(
         deref(particles_rand.thisptr),
         los_rand_cpp,
         deref(params.thisptr),
-        &rbin[0],
+        rbin,
         alpha, norm, norm_alt,
         save
     )
@@ -377,6 +377,6 @@ def _compute_corrfunc_window(
     return {
         'rbin': np.asarray(meas.rbin),
         'reff': np.asarray(meas.reff),
-        'npair': np.asarray(meas.npair),
+        'npairs': np.asarray(meas.npairs),
         'xi': np.asarray(meas.xi),
     }

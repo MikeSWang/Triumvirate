@@ -279,8 +279,8 @@ def extrap2d_bipad(a, n_ext, n_ext_col=None, a_const=0., a_const_col=None):
 
 def transform_bispec_to_3pcf(ell1, ell2, bk_in, k_in, r_out,
                              n_fftlog, n_extrap=None, extrap=None):
-    """Transform bispectrum samples to 3-point correlation function (3PCF)
-    samples using 1-d FFTLog.
+    """Transform bispectrum samples to three-point correlation function
+    (3PCF) samples using 1-d FFTLog.
 
     Parameters
     ----------
@@ -405,8 +405,8 @@ def transform_bispec_to_3pcf(ell1, ell2, bk_in, k_in, r_out,
 
 def transform_3pcf_to_bispec(ell1, ell2, zeta_in, r_in, k_out,
                              n_fftlog, n_extrap=None, extrap=None):
-    """Transform 3-point correlation function (3PCF) samples to bispectrum
-    samples using 1-d FFTLog.
+    """Transform three-point correlation function (3PCF) samples to
+    bispectrum samples using 1-d FFTLog.
 
     Parameters
     ----------

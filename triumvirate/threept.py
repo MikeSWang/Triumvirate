@@ -16,9 +16,9 @@ from triumvirate._threept import (
     _calc_bispec_normalisation_from_particles,
     _compute_bispec,
     # _compute_bispec_for_los_choice,
-    _compute_bispec_in_box,
+    _compute_bispec_in_gpp_box,
     _compute_3pcf,
-    _compute_3pcf_in_box,
+    _compute_3pcf_in_gpp_box,
     _compute_3pcf_window,
 )
 
@@ -305,7 +305,7 @@ def compute_3pcf(catalogue_data, catalogue_rand, params,
     return results
 
 
-def compute_bispec_in_box(catalogue_data, params, save=False, logger=None):
+def compute_bispec_in_gpp_box(catalogue_data, params, save=False, logger=None):
     """Compute power spectrum in a box.
 
     Parameters
@@ -379,7 +379,7 @@ def compute_bispec_in_box(catalogue_data, params, save=False, logger=None):
     except (AttributeError, TypeError):
         pass
 
-    results = _compute_bispec_in_box(
+    results = _compute_bispec_in_gpp_box(
         particles_data, params, kbin, norm, _norm_alt, save
     )
 
@@ -393,7 +393,7 @@ def compute_bispec_in_box(catalogue_data, params, save=False, logger=None):
     return results
 
 
-def compute_3pcf_in_box(catalogue_data, params, save=False, logger=None):
+def compute_3pcf_in_gpp_box(catalogue_data, params, save=False, logger=None):
     """Compute correlation function in a box.
 
     Parameters
@@ -467,7 +467,7 @@ def compute_3pcf_in_box(catalogue_data, params, save=False, logger=None):
     except (AttributeError, TypeError):
         pass
 
-    results = _compute_3pcf_in_box(
+    results = _compute_3pcf_in_gpp_box(
         particles_data, params, rbin, norm, _norm_alt, save
     )
 

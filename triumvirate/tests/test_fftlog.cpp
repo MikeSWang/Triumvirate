@@ -33,8 +33,8 @@ int main(int argc, char const *argv[]) {
   /// Perform transform.
   double r[Nk], xi[Nk];
 
-  trv::ops::sj_transform(ell, m, Nk, k, pk, r, xi);
-  // trv::ops::transform_powspec_to_corrfunc_multipole(ell, Nk, k, pk, r, xi);
+  trv::utils::sj_transform(ell, m, Nk, k, pk, r, xi);
+  // trv::utils::transform_powspec_to_corrfunc_multipole(ell, Nk, k, pk, r, xi);
 
   /// Save test results.
   char test_fname_out[]= "triumvirate/tests/test_output/xi0.dat";

@@ -2,9 +2,9 @@ from libcpp.vector cimport vector
 
 
 cdef extern from "include/particles.hpp":
-    cppclass CppParticleCatalogue "trv::obj::ParticleCatalogue":
+    cppclass CppParticleCatalogue "trv::ParticleCatalogue":
         CppParticleCatalogue()
-        int read_particle_data(
+        int load_particle_data(
             vector[double] x,
             vector[double] y,
             vector[double] z,

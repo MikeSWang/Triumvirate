@@ -15,10 +15,10 @@ from triumvirate._twopt import (
     _calc_powspec_normalisation_from_mesh,
     _calc_powspec_normalisation_from_particles,
     _compute_corrfunc,
-    _compute_corrfunc_in_box,
+    _compute_corrfunc_in_gpp_box,
     _compute_corrfunc_window,
     _compute_powspec,
-    _compute_powspec_in_box,
+    _compute_powspec_in_gpp_box,
     # _compute_powspec_window,
 )
 
@@ -302,7 +302,7 @@ def compute_corrfunc(catalogue_data, catalogue_rand, params,
     return results
 
 
-def compute_powspec_in_box(catalogue_data, params, save=False, logger=None):
+def compute_powspec_in_gpp_box(catalogue_data, params, save=False, logger=None):
     """Compute power spectrum in a box.
 
     Parameters
@@ -376,7 +376,7 @@ def compute_powspec_in_box(catalogue_data, params, save=False, logger=None):
     except (AttributeError, TypeError):
         pass
 
-    results = _compute_powspec_in_box(
+    results = _compute_powspec_in_gpp_box(
         particles_data, params, kbin, norm, _norm_alt, save
     )
 
@@ -390,7 +390,7 @@ def compute_powspec_in_box(catalogue_data, params, save=False, logger=None):
     return results
 
 
-def compute_corrfunc_in_box(catalogue_data, params, save=False, logger=None):
+def compute_corrfunc_in_gpp_box(catalogue_data, params, save=False, logger=None):
     """Compute correlation function in a box.
 
     Parameters
@@ -464,7 +464,7 @@ def compute_corrfunc_in_box(catalogue_data, params, save=False, logger=None):
     except (AttributeError, TypeError):
         pass
 
-    results = _compute_corrfunc_in_box(
+    results = _compute_corrfunc_in_gpp_box(
         particles_data, params, rbin, norm, _norm_alt, save
     )
 

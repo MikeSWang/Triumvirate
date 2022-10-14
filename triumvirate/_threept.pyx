@@ -17,36 +17,36 @@ from triumvirate.parameters cimport CppParameterSet, ParameterSet
 from triumvirate._catalogue cimport CppParticleCatalogue, _ParticleCatalogue
 
 
-cdef extern from "include/particles.hpp":
-    struct LineOfSight:
+cdef extern from "include/dataobjs.hpp":
+    struct LineOfSight "trv::LineOfSight":
         double pos[3]
 
 
 cdef extern from "include/threept.hpp":
     struct BispecMeasurements "trv::algo::BispecMeasurements":
-        vector[double] kbin1
-        vector[double] kbin2
-        vector[double] keff1
-        vector[double] keff2
-        vector[int] nmode
+        vector[double] k1bin
+        vector[double] k2bin
+        vector[double] k1eff
+        vector[double] k2eff
+        vector[int] nmodes
         vector[np.complex128_t] bk_raw
         vector[np.complex128_t] bk_shot
 
     struct ThreePCFMeasurements "trv::algo::ThreePCFMeasurements":
-        vector[double] rbin1
-        vector[double] rbin2
-        vector[double] reff1
-        vector[double] reff2
-        vector[int] npair
+        vector[double] r1bin
+        vector[double] r2bin
+        vector[double] r1eff
+        vector[double] r2eff
+        vector[int] npairs
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
 
     struct ThreePCFWindowMeasurements "trv::algo::ThreePCFWindowMeasurements":
-        vector[double] rbin1
-        vector[double] rbin2
-        vector[double] reff1
-        vector[double] reff2
-        vector[int] npair
+        vector[double] r1bin
+        vector[double] r2bin
+        vector[double] r1eff
+        vector[double] r2eff
+        vector[int] npairs
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
 
@@ -69,7 +69,7 @@ cdef extern from "include/threept.hpp":
         LineOfSight* los_data,
         LineOfSight* los_rand,
         CppParameterSet& params,
-        double* kbin,
+        vector[double] kbin,
         double alpha,
         double norm,
         double norm_alt,
@@ -82,28 +82,28 @@ cdef extern from "include/threept.hpp":
         LineOfSight* los_data,
         LineOfSight* los_rand,
         CppParameterSet& params,
-        double* rbin,
+        vector[double] rbin,
         double alpha,
         double norm,
         double norm_alt,
         bool_t save
     )
 
-    BispecMeasurements compute_bispec_in_box_cpp \
-        "trv::algo::compute_bispec_in_box" (
+    BispecMeasurements compute_bispec_in_gpp_box_cpp \
+        "trv::algo::compute_bispec_in_gpp_box" (
             CppParticleCatalogue& particles_data,
             CppParameterSet& params,
-            double* kbin,
+            vector[double] kbin,
             double norm,
             double norm_alt,
             bool_t save
         )
 
-    ThreePCFMeasurements compute_3pcf_in_box_cpp \
-        "trv::algo::compute_3pcf_in_box" (
+    ThreePCFMeasurements compute_3pcf_in_gpp_box_cpp \
+        "trv::algo::compute_3pcf_in_gpp_box" (
             CppParticleCatalogue& particles_data,
             CppParameterSet& params,
-            double* rbin,
+            vector[double] rbin,
             double norm,
             double norm_alt,
             bool_t save
@@ -114,7 +114,7 @@ cdef extern from "include/threept.hpp":
             CppParticleCatalogue& particles_rand,
             LineOfSight* los_rand,
             CppParameterSet& params,
-            double* rbin,
+            vector[double] rbin,
             double alpha,
             double norm,
             double norm_alt,
@@ -130,7 +130,7 @@ cdef extern from "include/threept.hpp":
     #         LineOfSight* los_rand,
     #         int los_choice,
     #         CppParameterSet& params,
-    #         double* kbin,
+    #         vector[double] kbin,
     #         double alpha,
     #         double norm,
     #         double norm_alt,
@@ -196,17 +196,17 @@ def _compute_bispec(
         deref(particles_data.thisptr), deref(particles_rand.thisptr),
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr),
-        &kbin[0],
+        kbin,
         alpha, norm, norm_alt,
         save
     )
 
     return {
-        'kbin1': np.asarray(meas.kbin1),
-        'kbin2': np.asarray(meas.kbin2),
-        'keff1': np.asarray(meas.keff1),
-        'keff2': np.asarray(meas.keff2),
-        'nmode': np.asarray(meas.nmode),
+        'k1bin': np.asarray(meas.k1bin),
+        'k2bin': np.asarray(meas.k2bin),
+        'k1eff': np.asarray(meas.k1eff),
+        'k2eff': np.asarray(meas.k2eff),
+        'nmodes': np.asarray(meas.nmodes),
         'bk_raw': np.asarray(meas.bk_raw),
         'bk_shot': np.asarray(meas.bk_shot),
     }
@@ -248,23 +248,23 @@ def _compute_3pcf(
         deref(particles_data.thisptr), deref(particles_rand.thisptr),
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr),
-        &rbin[0],
+        rbin,
         alpha, norm, norm_alt,
         save
     )
 
     return {
-        'rbin1': np.asarray(meas.rbin1),
-        'rbin2': np.asarray(meas.rbin2),
-        'reff1': np.asarray(meas.reff1),
-        'reff2': np.asarray(meas.reff2),
-        'npair': np.asarray(meas.npair),
+        'r1bin': np.asarray(meas.r1bin),
+        'r2bin': np.asarray(meas.r2bin),
+        'r1eff': np.asarray(meas.r1eff),
+        'r2eff': np.asarray(meas.r2eff),
+        'npairs': np.asarray(meas.npairs),
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
     }
 
 
-def _compute_bispec_in_box(
+def _compute_bispec_in_gpp_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
         np.ndarray[double, ndim=1, mode='c'] kbin not None,
@@ -274,25 +274,25 @@ def _compute_bispec_in_box(
     ):
 
     cdef BispecMeasurements meas
-    meas = compute_bispec_in_box_cpp(
+    meas = compute_bispec_in_gpp_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
-        &kbin[0],
+        kbin,
         norm, norm_alt,
         save
     )
 
     return {
-        'kbin1': np.asarray(meas.kbin1),
-        'kbin2': np.asarray(meas.kbin2),
-        'keff1': np.asarray(meas.keff1),
-        'keff2': np.asarray(meas.keff2),
-        'nmode': np.asarray(meas.nmode),
+        'k1bin': np.asarray(meas.k1bin),
+        'k2bin': np.asarray(meas.k2bin),
+        'k1eff': np.asarray(meas.k1eff),
+        'k2eff': np.asarray(meas.k2eff),
+        'nmodes': np.asarray(meas.nmodes),
         'bk_raw': np.asarray(meas.bk_raw),
         'bk_shot': np.asarray(meas.bk_shot),
     }
 
 
-def _compute_3pcf_in_box(
+def _compute_3pcf_in_gpp_box(
         _ParticleCatalogue particles_data not None,
         ParameterSet params not None,
         np.ndarray[double, ndim=1, mode='c'] rbin not None,
@@ -302,19 +302,19 @@ def _compute_3pcf_in_box(
     ):
 
     cdef ThreePCFMeasurements meas
-    meas = compute_3pcf_in_box_cpp(
+    meas = compute_3pcf_in_gpp_box_cpp(
         deref(particles_data.thisptr), deref(params.thisptr),
-        &rbin[0],
+        rbin,
         norm, norm_alt,
         save
     )
 
     return {
-        'rbin1': np.asarray(meas.rbin1),
-        'rbin2': np.asarray(meas.rbin2),
-        'reff1': np.asarray(meas.reff1),
-        'reff2': np.asarray(meas.reff2),
-        'npair': np.asarray(meas.npair),
+        'r1bin': np.asarray(meas.r1bin),
+        'r2bin': np.asarray(meas.r2bin),
+        'r1eff': np.asarray(meas.r1eff),
+        'r2eff': np.asarray(meas.r2eff),
+        'npairs': np.asarray(meas.npairs),
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
     }
@@ -347,18 +347,18 @@ def _compute_3pcf_window(
         deref(particles_rand.thisptr),
         los_rand_cpp,
         deref(params.thisptr),
-        &rbin[0],
+        rbin,
         alpha, norm, norm_alt,
         wide_angle,
         save
     )
 
     return {
-        'rbin1': np.asarray(meas.rbin1),
-        'rbin2': np.asarray(meas.rbin2),
-        'reff1': np.asarray(meas.reff1),
-        'reff2': np.asarray(meas.reff2),
-        'npair': np.asarray(meas.npair),
+        'r1bin': np.asarray(meas.r1bin),
+        'r2bin': np.asarray(meas.r2bin),
+        'r1eff': np.asarray(meas.r1eff),
+        'r2eff': np.asarray(meas.r2eff),
+        'npairs': np.asarray(meas.npairs),
         'zeta_raw': np.asarray(meas.zeta_raw),
         'zeta_shot': np.asarray(meas.zeta_shot),
     }
@@ -402,17 +402,17 @@ def _compute_3pcf_window(
 #         los_data_cpp, los_rand_cpp,
 #         los_choice,
 #         deref(params.thisptr),
-#         &kbin[0],
+#         kbin,
 #         alpha, norm, norm_alt,
 #         save
 #     )
 #
 #     return {
-#         'kbin1': np.asarray(meas.kbin1),
-#         'kbin2': np.asarray(meas.kbin2),
-#         'keff1': np.asarray(meas.keff1),
-#         'keff2': np.asarray(meas.keff2),
-#         'nmode': np.asarray(meas.nmode),
+#         'k1bin': np.asarray(meas.k1bin),
+#         'k2bin': np.asarray(meas.k2bin),
+#         'k1eff': np.asarray(meas.k1eff),
+#         'k2eff': np.asarray(meas.k2eff),
+#         'nmodes': np.asarray(meas.nmodes),
 #         'bk_raw': np.asarray(meas.bk_raw),
 #         'bk_shot': np.asarray(meas.bk_shot),
 #     }
