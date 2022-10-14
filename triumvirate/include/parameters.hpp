@@ -105,8 +105,8 @@ class ParameterSet {
 
   std::string norm_convention = "particle";   ///< normalisation
                                               ///< convention:
-                                              ///< {"mesh",
-                                              ///<  "particle" (default)}
+                                              ///< {"particle" (default),
+                                              ///<  "mesh"}
 
   std::string binning = "lin";  ///< binning scheme:
                                 ///< {"lin" (default), "log",
