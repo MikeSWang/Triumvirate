@@ -45,7 +45,7 @@ storage/output/**
 sandbox/
 
 # Exclusions
-# Directory: triumvirate/tests/test_input/catalogues/
+# Directory: triumvirate/tests/test_input/catalogues
 triumvirate/tests/test_input/catalogues/**
 
 # File: triumvirate/*.cpp

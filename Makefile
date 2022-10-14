@@ -1,33 +1,57 @@
-# -- Configuration ------------------------------------------------------------
+# ========================================================================
+# Configuration
+# ========================================================================
 
-# -- System detection
+PROGNAME := triumvirate
 
-# Check for the NERSC computing cluster here.
+# -- Directories ---------------------------------------------------------
+
+DIR_ROOT := $(shell pwd)
+
+DIR_PROG = ${DIR_ROOT}/${PROGNAME}
+DIR_BUILD = ${DIR_ROOT}/build
+
+DIR_INCLUDE = ${DIR_PROG}/include
+DIR_SRC = ${DIR_PROG}/src
+DIR_TESTS = ${DIR_PROG}/tests
+
+DIR_SRCMODULES = ${DIR_SRC}/modules
+
+DIR_TESTBUILD = ${DIR_TESTS}/test_build
+DIR_TESTOUT = ${DIR_TESTS}/test_output
+
+
+# -- Common configuration ------------------------------------------------
+
+INCLUDES = -I${DIR_INCLUDE}
+LIBS = -lgsl -lgslcblas -lfftw3
+CLIBS =
+
+
+# -- System-specific configuration ---------------------------------------
+
 SYSTYPE := $(if ${NERSC_HOST}, cluster, local)
 
-# -- Common configuration
-
-INCLUDES = -I./triumvirate/include
-LIBS = -lgsl -lgslcblas -lfftw3
-
-# -- System-dependent configuration
-
+# CC: compilers, {g++,}
+# CFLAGS: compilation flags, {-DTRV_USE_LEGACY_CODE, -DDBG_MODE, -DDBG_PARS, -DDBG_NOAC,}
 ifeq ($(strip ${SYSTYPE}), local)
 
 CC = g++
-CFLAGS = -DDBG_NORMALT# {-DTRV_USE_DISABLED_CODE, -DDBG_PARS, -DDBG_NORMALT, -DDBG_NOAC, -DDBG_BINWIDTH, ...}
+CFLAGS =
 
 endif
 
-# Adapt for the NERSC computing cluster here.
 ifeq ($(strip ${SYSTYPE}), cluster)
 
 CC = g++
-CFLAGS = -DDBG_NORMALT# {-DTRV_USE_DISABLED_CODE, -DDBG_PARS, -DDBG_NORMALT, -DDBG_NOAC, -DDBG_BINWIDTH, ...}
+CFLAGS =
 
 FFTW_DIR = ${FFTW_ROOT}
 
 endif
+
+
+# -- Library-specific configuration --------------------------------------
 
 ifdef GSL_DIR
 
@@ -39,79 +63,64 @@ endif
 ifdef FFTW_DIR
 
 INCLUDES += -I${FFTW_DIR}/include
-LIBS += -L$(FFTW_DIR)/lib
+LIBS += -L${FFTW_DIR}/lib
 
 endif
 
 
-# -- Build --------------------------------------------------------------------
+# ========================================================================
+# Build
+# ========================================================================
 
-# Installation build
+.PHONY: ${PROGNAME}
+
+MODULESRC = $(wildcard ${DIR_SRCMODULES}/*.cpp)
+
+# -- Installation build --------------------------------------------------
 
 install: cppinstall pyinstall
 
-cppinstall: measurements
+cppinstall: ${PROGNAME}
 
 pyinstall:
 	echo "${INCLUDES}" > includes.txt
 	pip install --user -e .
 	rm includes.txt
 
-# Testing build
+
+# -- Testing build -------------------------------------------------------
 
 test: cpptest pytest
 
-cpptest: test_monitor test_parameters test_bessel test_harmonic test_tools \
-         test_particles test_field test_twopt test_threept \
-				 test_fftlog
+cpptest: test_fftlog
 
 pytest:
 
-# Invididual build
 
-measurements: triumvirate/src/measurements.cpp
-	$(CC) $(CFLAGS) -o $(addprefix build/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
+# -- Invididual build ----------------------------------------------------
 
-test_bessel: triumvirate/tests/test_bessel.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+${PROGNAME}: ${DIR_SRC}/${PROGNAME}.cpp
+	$(CC) $(CFLAGS) \
+	-o $(addprefix $(DIR_BUILD)/, $(notdir $@)) \
+	$< $(MODULESRC) $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_fftlog: triumvirate/tests/test_fftlog.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
+test_fftlog: ${DIR_TESTS}/test_fftlog.cpp \
+						 ${DIR_SRCMODULES}/fftlog.cpp \
+						 ${DIR_SRCMODULES}/monitor.cpp ${DIR_SRCMODULES}/maths.cpp ${DIR_SRCMODULES}/arrayops.cpp
+	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_field: triumvirate/tests/test_field.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
 
-test_harmonic: triumvirate/tests/test_harmonic.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
-
-test_monitor: triumvirate/tests/test_monitor.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
-
-test_parameters: triumvirate/tests/test_parameters.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
-
-test_particles: triumvirate/tests/test_particles.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
-
-test_threept: triumvirate/tests/test_threept.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
-
-test_tools: triumvirate/tests/test_tools.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
-
-test_twopt: triumvirate/tests/test_twopt.cpp
-	$(CC) $(CFLAGS) -o $(addprefix triumvirate/tests/test_build/, $(notdir $@)) $< $(INCLUDES) $(LIBS) $(CLIBS)
-
-# Build clean-up
+# ========================================================================
+# Clean
+# ========================================================================
 
 clean:
-	rm -rf triumvirate/*.cpp triumvirate/*.so triumvirate/*.o
-	rm -rf build/* core
+	rm -rf ${DIR_PROG}/*.cpp ${DIR_PROG}/*.o ${DIR_PROG}/*.so
+	rm -rf core ${DIR_BUILD}/*
 	rm -rf *.egg-info
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +
 
 cleantest:
-	rm -rf triumvirate/tests/test_build/* triumvirate/tests/test_output/*
-	rm -rf core
+	rm -rf core ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/*
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +

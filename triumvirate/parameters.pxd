@@ -1,28 +1,67 @@
+# Copyright (C) [GPLv3 Licence]
+#
+# This file is part of the Triumvirate program. See the COPYRIGHT
+# and LICENCE files at the top-level directory of this distribution
+# for details of copyright and licensing.
+#
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https:#www.gnu.org/licenses/>.
+
 from libcpp.string cimport string
 
 
 cdef extern from "include/parameters.hpp":
-    cppclass CppParameterSet "trv::scheme::ParameterSet":
+    cppclass CppParameterSet "trv::ParameterSet":
+        # ----------------------------------------------------------------
+        # Members
+        # ----------------------------------------------------------------
+
+        # -- I/O ---------------------------------------------------------
+
         string catalogue_dir
         string measurement_dir
         string data_catalogue_file
         string rand_catalogue_file
-        # string catalogue_header
+        # string catalogue_columns
         string output_tag
+
+        # -- Mesh sampling -----------------------------------------------
 
         double boxsize[3]
         int ngrid[3]
-        # double padfactor
 
-        # string alignment
-        # string padscale
+        double volume
+        int nmesh
+
+        string alignment
+        string padscale
+        double padfactor
+
         string assignment
         string interlace
-        string norm_convention
-        string shotnoise_convention
+
+        # -- Measurement -------------------------------------------------
 
         string catalogue_type
         string measurement_type
+
+        string norm_convention
+
+        string binning
+        string form
+
+        string npoint
+        string space
 
         int ell1
         int ell2
@@ -31,22 +70,19 @@ cdef extern from "include/parameters.hpp":
         int i_wa
         int j_wa
 
-        string binning
-        string form
+        double bin_min
+        double bin_max
+        int num_bins
+        int idx_bin
 
-        double kmin
-        double kmax
-        int num_kbin
-        int ith_kbin
-        double rmin
-        double rmax
-        int num_rbin
-        int ith_rbin
+        # -- Misc --------------------------------------------------------
 
-        double volume
-        int nmesh
+        int verbose
 
-        int printout()
+        # ----------------------------------------------------------------
+        # Methods
+        # ----------------------------------------------------------------
+
         int validate()
 
 
