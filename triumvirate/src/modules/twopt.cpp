@@ -128,7 +128,7 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_powspec(
 ) {
   std::complex<double> sn_data = 0.;
   for (int pid = 0; pid < particles_data.ntotal; pid++) {
-    std::vector<double> los_{
+    double los_[3] = {
       los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
     };
 
@@ -140,7 +140,7 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_powspec(
 
   std::complex<double> sn_rand = 0.;
   for (int pid = 0; pid < particles_rand.ntotal; pid++) {
-    std::vector<double> los_{
+    double los_[3] = {
       los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
     };
 
@@ -159,7 +159,7 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_powspec(
 ) {
   std::complex<double> sn = 0.;
   for (int pid = 0; pid < particles.ntotal; pid++) {
-    std::vector<double> los_{los[pid].pos[0], los[pid].pos[1], los[pid].pos[2]};
+    double los_[3] = {los[pid].pos[0], los[pid].pos[1], los[pid].pos[2]};
 
     std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
       calc_reduced_spherical_harmonic(ell, m, los_);

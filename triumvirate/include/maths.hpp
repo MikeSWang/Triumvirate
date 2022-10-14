@@ -197,7 +197,7 @@ class SphericalHarmonicCalculator {
    * @returns Value of @f$ y_\ell^m f@$.
    */
   static std::complex<double> calc_reduced_spherical_harmonic(
-    const int ell, const int m, std::vector<double> pos
+    const int ell, const int m, double pos[3]
   );
 
   /**
