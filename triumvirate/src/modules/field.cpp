@@ -146,6 +146,19 @@ void MeshField::get_grid_wavevector(int i, int j, int k, double kvec[3]) {
 void MeshField::assign_weighted_field_to_mesh(
   ParticleCatalogue& particles, fftw_complex* weights
 ) {
+  for (int iaxis = 0; iaxis < 3; iaxis++) {
+    double extent = particles.pos_max[iaxis] - particles.pos_min[iaxis];
+    if (params.boxsize[iaxis] < extent) {
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "Box size in dimension %d is smaller than catalogue extents: "
+          "%.3f < %.3f.",
+          iaxis, params.boxsize[iaxis], extent
+        );
+      }
+    }
+  }
+
   if (this->params.assignment == "ngp") {
     this->assign_weighted_field_to_mesh_ngp(particles, weights);
   } else

@@ -561,6 +561,29 @@ int ParameterSet::validate() {
     }
   }
 
+  if (this->space == "fourier") {
+    double wavenum_nyquist = M_PI *
+      *std::min_element(this->ngrid, this->ngrid + 3)
+      / *std::max_element(this->boxsize, this->boxsize + 3);
+    if (this->bin_min > wavenum_nyquist) {
+      trvs::logger.warn(
+        "Lower wavenumber limit exceeds the Nyquist wavenumber %.3e.",
+        wavenum_nyquist
+      );
+    }
+  } else
+  if (this->space == "config") {
+    double separation_nyquist = 2 *
+      *std::max_element(this->boxsize, this->boxsize + 3)
+      / *std::min_element(this->ngrid, this->ngrid + 3);
+    if (this->bin_max < separation_nyquist) {
+      trvs::logger.warn(
+        "Upper separation limit undershoots the Nyquist scale %.3f.",
+        separation_nyquist
+      );
+    }
+  }
+
   if (this->num_bins < 2) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Number of bins `num_bins` must be >= 2.");

@@ -386,13 +386,14 @@ int main(int argc, char* argv[]) {
       save_filepath, "%s/pk%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
-    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
+    std::FILE* save_fileptr;
     trv::PowspecMeasurements meas_powspec;  ///> power spectrum
     if (params.catalogue_type == "survey") {
       meas_powspec = trv::compute_powspec(
         catalogue_data, catalogue_rand, los_data, los_rand,
         params, binning, norm_factor
       );
+      save_fileptr = std::fopen(save_filepath, "w");
       trv::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, catalogue_rand,
         norm_factor, norm_factor_alt
@@ -402,6 +403,7 @@ int main(int argc, char* argv[]) {
       meas_powspec = trv::compute_powspec_in_gpp_box(
         catalogue_data, params, binning, norm_factor
       );
+      save_fileptr = std::fopen(save_filepath, "w");
       trv::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, norm_factor, norm_factor_alt
       );
@@ -414,13 +416,14 @@ int main(int argc, char* argv[]) {
       save_filepath, "%s/xi%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
-    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
+    std::FILE* save_fileptr;
     trv::TwoPCFMeasurements meas_2pcf;  ///> two-point correlation function
     if (params.catalogue_type == "survey") {
       meas_2pcf = trv::compute_corrfunc(
         catalogue_data, catalogue_rand, los_data, los_rand,
         params, binning, norm_factor
       );
+      save_fileptr = std::fopen(save_filepath, "w");
       trv::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, catalogue_rand,
         norm_factor, norm_factor_alt
@@ -430,6 +433,7 @@ int main(int argc, char* argv[]) {
       meas_2pcf = trv::compute_corrfunc_in_gpp_box(
         catalogue_data, params, binning, norm_factor
       );
+      save_fileptr = std::fopen(save_filepath, "w");
       trv::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, norm_factor, norm_factor_alt
       );
@@ -442,10 +446,10 @@ int main(int argc, char* argv[]) {
       save_filepath, "%s/xiw%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
-    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     trv::TwoPCFWindowMeasurements meas_2pcf_win = trv::compute_corrfunc_window(
       catalogue_rand, los_rand, params, binning, alpha, norm_factor
     );  ///> two-point correlation function window
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     trv::print_measurement_header_to_file(
       save_fileptr, params, catalogue_rand, norm_factor, norm_factor_alt
     );
@@ -469,13 +473,14 @@ int main(int argc, char* argv[]) {
         params.output_tag.c_str()
       );
     }
-    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
+    std::FILE* save_fileptr;
     trv::BispecMeasurements meas_bispec;  ///> bispectrum
     if (params.catalogue_type == "survey") {
       meas_bispec = trv::compute_bispec(
         catalogue_data, catalogue_rand, los_data, los_rand,
         params, binning, norm_factor
       );
+      save_fileptr = std::fopen(save_filepath, "w");
       trv::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, catalogue_rand,
         norm_factor, norm_factor_alt
@@ -485,6 +490,7 @@ int main(int argc, char* argv[]) {
       meas_bispec = trv::compute_bispec_in_gpp_box(
         catalogue_data, params, binning, norm_factor
       );
+      save_fileptr = std::fopen(save_filepath, "w");
       trv::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, norm_factor, norm_factor_alt
       );
@@ -509,13 +515,14 @@ int main(int argc, char* argv[]) {
         params.output_tag.c_str()
       );
     }
-    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
+    std::FILE* save_fileptr;
     trv::ThreePCFMeasurements meas_3pcf;  ///> three-point correlation function
     if (params.catalogue_type == "survey") {
       meas_3pcf = trv::compute_3pcf(
         catalogue_data, catalogue_rand, los_data, los_rand,
         params, binning, norm_factor
       );
+      save_fileptr = std::fopen(save_filepath, "w");
       trv::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, catalogue_rand,
         norm_factor, norm_factor_alt
@@ -525,6 +532,7 @@ int main(int argc, char* argv[]) {
       meas_3pcf = trv::compute_3pcf_in_gpp_box(
         catalogue_data, params, binning, norm_factor
       );
+      save_fileptr = std::fopen(save_filepath, "w");
       trv::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, norm_factor, norm_factor_alt
       );
@@ -549,11 +557,11 @@ int main(int argc, char* argv[]) {
         params.output_tag.c_str()
       );
     }
-    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     bool wa = false;
     trv::ThreePCFWindowMeasurements meas_3pcf_win = trv::compute_3pcf_window(
       catalogue_rand, los_rand, params, binning, alpha, norm_factor, wa
     );  ///> three-point correlation function window
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     trv::print_measurement_header_to_file(
       save_fileptr, params, catalogue_rand, norm_factor, norm_factor_alt
     );
@@ -578,11 +586,11 @@ int main(int argc, char* argv[]) {
         params.output_tag.c_str()
       );
     }
-    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     bool wa = true;
     trv::ThreePCFWindowMeasurements meas_3pcf_win_wa = trv::compute_3pcf_window(
       catalogue_rand, los_rand, params, binning, alpha, norm_factor, wa
     );  ///> three-point correlation function window wide-angle corrections
+    std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     trv::print_measurement_header_to_file(
       save_fileptr, params, catalogue_rand, norm_factor, norm_factor_alt
     );
