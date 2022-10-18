@@ -1228,7 +1228,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       if (trvs::currTask == 0) {
         trvs::logger.stat(
           "Three-point correlation function term at orders "
-          "(m1, m2, 0) = (%d, %d, 0) computed.\n",
+          "(m1, m2, 0) = (%d, %d, 0) computed.",
           m1_, m2_
         );
       }
