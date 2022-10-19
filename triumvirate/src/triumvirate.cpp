@@ -217,6 +217,13 @@ int main(int argc, char* argv[]) {
   for (int pid = 0; pid < catalogue_data.ntotal; pid++) {
     double los_mag = trv::maths::get_vec3d_magnitude(catalogue_data[pid].pos);
 
+    if (los_mag == 0.) {
+      trv::sys::logger.warn(
+        "A data-catalogue particle coincides with the origin."
+      );
+      los_mag = 1.;
+    }
+
     los_data[pid].pos[0] = catalogue_data[pid].pos[0] / los_mag;
     los_data[pid].pos[1] = catalogue_data[pid].pos[1] / los_mag;
     los_data[pid].pos[2] = catalogue_data[pid].pos[2] / los_mag;
@@ -227,6 +234,13 @@ int main(int argc, char* argv[]) {
   trv::sys::gbytesMem += trv::sys::size_in_gb<float>(3 * catalogue_rand.ntotal);
   for (int pid = 0; pid < catalogue_rand.ntotal; pid++) {
     double los_mag = trv::maths::get_vec3d_magnitude(catalogue_rand[pid].pos);
+
+    if (los_mag == 0.) {
+      trv::sys::logger.warn(
+        "A random-catalogue particle coincides with the origin."
+      );
+      los_mag = 1.;
+    }
 
     los_rand[pid].pos[0] = catalogue_rand[pid].pos[0] / los_mag;
     los_rand[pid].pos[1] = catalogue_rand[pid].pos[1] / los_mag;
