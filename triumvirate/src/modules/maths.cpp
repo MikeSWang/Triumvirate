@@ -329,8 +329,8 @@ SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
   /// Initialise and evaluate at sample points.
   double dx = (xmax - xmin) / (nsample - 1);
 
-  double* x = new double[nsample];
-  double* j_ell = new double[nsample];
+  double x[nsample];
+  double j_ell[nsample];
   for (int i = 0; i < nsample; i++) {
     x[i] = xmin + dx * i;
     j_ell[i] = gsl_sf_bessel_jl(ell, x[i]);
@@ -341,10 +341,6 @@ SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
   this->spline = gsl_spline_alloc(gsl_interp_cspline, nsample);
 
   gsl_spline_init(this->spline, x, j_ell, nsample);
-
-  /// Delete sample points.
-  delete[] x; x = nullptr;
-  delete[] j_ell; j_ell = nullptr;
 }
 
 SphericalBesselCalculator::~SphericalBesselCalculator() {

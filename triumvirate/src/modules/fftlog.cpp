@@ -105,8 +105,8 @@ void hankel_transform(
   double L = N * std::log(r[N - 1] / r[0]) / (N - 1.);
 
   /// Compute the forward transform kernel.
-  std::complex<double>* u_ = NULL;
-  if (u == NULL) {
+  std::complex<double>* u_ = nullptr;
+  if (u == nullptr) {
     u_ = new std::complex<double>[N];
 
     if (lowring) {
@@ -163,21 +163,19 @@ void sj_transform(
   double kr_c = 1.;
   bool lowring = true;
 
-  std::complex<double>* A = new std::complex<double>[N];
-  std::complex<double>* B = new std::complex<double>[N];
+  std::complex<double> A[N];
+  std::complex<double> B[N];
 
   for (int j = 0; j < N; j++) {
     A[j] = std::pow(r[j], m - 1./2) * a[j];
   }
 
-  hankel_transform(mu, q, kr_c, N, lowring, r, A, k, B, NULL);
+  hankel_transform(mu, q, kr_c, N, lowring, r, A, k, B, nullptr);
 
   for (int j = 0; j < N; j++) {
     std::complex<double> bj = std::pow(2*M_PI * k[j], -3./2) * B[j];
     b[j] = bj.real();
   }
-
-  delete[] A; delete[] B;
 }
 
 void sj_transform_symm_biased(
@@ -189,21 +187,19 @@ void sj_transform_symm_biased(
   double kr_c = 1.;
   bool lowring = true;
 
-  std::complex<double>* A = new std::complex<double>[N];
-  std::complex<double>* B = new std::complex<double>[N];
+  std::complex<double> A[N];
+  std::complex<double> B[N];
 
   for (int j = 0; j < N; j++) {
     A[j] = std::pow(r[j], m + i - 1./2) * a[j];
   }
 
-  hankel_transform(mu, q, kr_c, N, lowring, r, A, k, B, NULL);
+  hankel_transform(mu, q, kr_c, N, lowring, r, A, k, B, nullptr);
 
   for (int j = 0; j < N; j++) {
     std::complex<double> bj = std::pow(2*M_PI * k[j], -3./2) * B[j];
     b[j] = bj.real();
   }
-
-  delete[] A; delete[] B;
 }
 
 void transform_powspec_to_corrfunc_multipole(
