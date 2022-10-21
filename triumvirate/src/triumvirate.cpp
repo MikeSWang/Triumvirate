@@ -21,7 +21,7 @@
  * @file triumvirate.cpp
  * @authors Mike S Wang (https://github.com/MikeSWang)
  *          Naonori Sugiyama (https://github.com/naonori)
- * @brief Perform <i>N</i>-point correlator clustering measurements.
+ * @brief Perform two- and three-point correlator clustering measurements.
  *
  */
 

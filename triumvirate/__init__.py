@@ -1,14 +1,14 @@
 """
-############################################################################
-``Triumvirate`` | Measuring Three-Point Correlators in Large-Scale Structure
-############################################################################
+##########################################################################
+``Triumvirate`` | Two- & Three-Point Clustering Statistics
+##########################################################################
 
-``Triumvirate`` is a Python/C++ package that measures the three-point
-correlators in large-scale structure clustering analysis.
+``Triumvirate`` is a Python/C++ package that performs two- and three-point
+clustering statistic measurements in large-scale structure analysis.
 
 .. topic:: Licence Statement
 
-    Copyright (C) 2021--2022, M S Wang
+    Copyright (C) 2022, M S Wang
 
     This program is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
