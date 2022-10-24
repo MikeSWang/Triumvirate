@@ -1,3 +1,6 @@
+"""Set-up for the Python package and Cythonised extension modules.
+
+"""
 import os
 from distutils.sysconfig import get_config_vars
 from distutils.util import convert_path
@@ -11,33 +14,43 @@ import numpy
 
 PKG_NAME = 'Triumvirate'
 
-# -- Repository ---------------------------------------------------------------
+# -- Repository ----------------------------------------------------------
 
-pkgdir = PKG_NAME.lower()
-pkginfo = {}
-
-with open(convert_path(f"{pkgdir}/_pkginfo.py")) as fpinfo:
-    exec(fpinfo.read(), pkginfo)
-
+# Extract instructions and package dependencies.
 with open("README.md", 'r') as freadme:
     readme = freadme.read()
 
-with open("requirements.txt", 'r') as frequirements:
-    requirements = [pkg.strip() for pkg in frequirements]
+with open("requirements.txt", 'r') as requirements_file:
+    requirements = [pkg.strip() for pkg in requirements_file]
 
-version_tag = pkginfo.get('_release_')
-if version_tag == 'latest':
+# Extract package information.
+pkgdir = PKG_NAME.lower()
+pkginfo = {}
+with open(convert_path(f"{pkgdir}/_pkginfo.py")) as pkginfo_file:
+    exec(pkginfo_file.read(), pkginfo)
+
+# Determine repository branch.
+version_tag = pkginfo.get('__version__')
+if any([segment in version_tag for segment in ['a', 'b', 'rc']]):
     branch = 'main'
-elif version_tag == 'development':
+elif 'dev' in version_tag:
     branch = 'dev'
 else:
-    branch = version_tag
+    branch = 'stable'
 
 
 # -- Compilation --------------------------------------------------------------
 
-os.environ['CC'] = 'g++'  # change as necessary
+# Specify language.
+language = 'c++'
 
+# Set compiler.
+os.environ['CC'] = 'g++'
+
+# Modify compilation options.
+options = ['-std=c++11']
+
+# Suppress irrelevant compiler warnings.
 config_vars = get_config_vars()
 for key, val in config_vars.items():
     if isinstance(val, str):
@@ -46,16 +59,17 @@ for key, val in config_vars.items():
 
 # -- Extensions ---------------------------------------------------------------
 
-language = 'c++'
-extra_compile_args = ['-std=c++11']
-
-self_includes = [f"{pkgdir}/include"]
+# Set include, library and source paths.
+self_include = f"{pkgdir}/include"
+self_modulesrc = f"{pkgdir}/src/modules"
 self_macros = [
+    # ('TRV_USE_LEGACY_CODE', None),
     # ('DBG_MODE', None),
     # ('DBG_PARS', None),
+    # ('DBG_NOAC', None),
 ]
 
-npy_includes = [numpy.get_include()]
+npy_include = numpy.get_include()
 npy_macros = [
     ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
 ]
@@ -67,54 +81,65 @@ except FileNotFoundError:
     ext_includes = []
 finally:
     ext_includes = [incl_ for incl_ in ext_includes if pkgdir not in incl_]
-    ext_libraries = ['gsl']
+    ext_libraries = ['gsl',]
 
-ext_modules = [
+includes = [self_include,] + [npy_include,] + ext_includes
+libraries = ext_libraries
+macros = self_macros + npy_macros
+
+# Define extension modules.
+modules = [
     Extension(
         f'{pkgdir}.parameters',
-        sources=[f"{pkgdir}/parameters.pyx"],
+        sources=[
+            f"{pkgdir}/parameters.pyx",
+            f"{self_modulesrc}/parameters.cpp",
+            f"{self_modulesrc}/monitor.cpp",
+        ],
         language=language,
-        extra_compile_args=extra_compile_args
+        extra_compile_args=options,
+        include_dirs=includes,
+        define_macros=macros,
     ),
-    Extension(
-        f'{pkgdir}._catalogue',
-        sources=[f"{pkgdir}/_catalogue.pyx"],
-        language=language,
-        extra_compile_args=extra_compile_args,
-        include_dirs=npy_includes,
-        define_macros=npy_macros,
-    ),
-    Extension(
-        f'{pkgdir}._twopt',
-        sources=[f"{pkgdir}/_twopt.pyx"],
-        language=language,
-        extra_compile_args=extra_compile_args,
-        include_dirs=self_includes+npy_includes+ext_includes,
-        libraries=ext_libraries,
-        define_macros=npy_macros,
-    ),
-    Extension(
-        f'{pkgdir}._threept',
-        sources=[f"{pkgdir}/_threept.pyx"],
-        language=language,
-        extra_compile_args=extra_compile_args,
-        include_dirs=self_includes+npy_includes+ext_includes,
-        libraries=ext_libraries,
-        define_macros=npy_macros,
-    ),
-    Extension(
-        f'{pkgdir}._fftlog',
-        sources=[f"{pkgdir}/_fftlog.pyx"],
-        language=language,
-        extra_compile_args=extra_compile_args,
-        include_dirs=self_includes+npy_includes+ext_includes,
-        libraries=ext_libraries,
-        define_macros=npy_macros,
-    ),
+    # Extension(
+    #     f'{pkgdir}._catalogue',
+    #     sources=[f"{pkgdir}/_catalogue.pyx",]+self_modulesrc,
+    #     language=language,
+    #     extra_compile_args=options,
+    #     include_dirs=includes,
+    #     define_macros=macros,
+    # ),
+    # Extension(
+    #     f'{pkgdir}._twopt',
+    #     sources=[f"{pkgdir}/_twopt.pyx",]+self_modulesrc,
+    #     language=language,
+    #     extra_compile_args=options,
+    #     include_dirs=includes,
+    #     libraries=libraries,
+    #     define_macros=macros,
+    # ),
+    # Extension(
+    #     f'{pkgdir}._threept',
+    #     sources=[f"{pkgdir}/_threept.pyx",]+self_modulesrc,
+    #     language=language,
+    #     extra_compile_args=options,
+    #     include_dirs=includes,
+    #     libraries=libraries,
+    #     define_macros=macros,
+    # ),
+    # Extension(
+    #     f'{pkgdir}._fftlog',
+    #     sources=[f"{pkgdir}/_fftlog.pyx",]+self_modulesrc,
+    #     language=language,
+    #     extra_compile_args=options,
+    #     include_dirs=includes,
+    #     libraries=libraries,
+    #     define_macros=macros,
+    # ),
 ]
 
 setup(
-    name=PKG_NAME,
+    name=PKG_NAME.capitalize(),
     version=pkginfo.get('__version__'),
     license=pkginfo.get('__license__'),
     author=pkginfo.get('__author__'),
@@ -135,9 +160,9 @@ setup(
         "Documentation": "https://mikeswang.github.io/Triumvirate",
         "Source": "https://github.com/MikeSWang/Triumvirate/",
     },
-    packages=find_packages(),
-    install_requires=requirements,
     python_requires='>=3.6',
+    install_requires=requirements,
+    packages=find_packages(),
     cmdclass={'build_ext': build_ext},
-    ext_modules=cythonize(ext_modules, language_level='3')
+    ext_modules=cythonize(modules, language_level='3')
 )
