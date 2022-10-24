@@ -1,9 +1,18 @@
+"""Declaration of :cpp:class:`trv::ParticleCatalogue` and its
+data-loading method.
+
+"""
 from libcpp.vector cimport vector
 
 
 cdef extern from "include/particles.hpp":
     cppclass CppParticleCatalogue "trv::ParticleCatalogue":
         CppParticleCatalogue()
+
+        # TODO: Check `const` keyword and destructor.
+        # int initialise_particles(int num)
+        # int finalise_particles()
+
         int load_particle_data(
             vector[double] x,
             vector[double] y,

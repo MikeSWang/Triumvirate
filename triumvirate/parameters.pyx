@@ -37,7 +37,7 @@ cdef class ParameterSet:
     Notes
     -----
     Use :func:`~triumvirate.parameters.show_paramset_template()` to
-    generate a template parameter file.
+    generate a template parameter file (with explanatory text).
 
     """
 
@@ -310,8 +310,8 @@ cdef class ParameterSet:
 
 
 def show_paramset_template(format):
-    """Show a parameter set template, either as text file contents or
-    as a dictionary.
+    """Show a parameter set template, either as a YAML file
+    (with explanatory text) or as a dictionary.
 
     Parameters
     ----------

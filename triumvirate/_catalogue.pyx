@@ -11,6 +11,8 @@ cimport numpy as np
 
 cdef class _ParticleCatalogue:
 
+    # TODO: Check `cdef` vs `def` and deallocation/destructor.
+
     def __cinit__(
         self,
         np.ndarray[double, ndim=1, mode='c'] x not None,
