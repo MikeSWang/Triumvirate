@@ -58,7 +58,7 @@ catalogue_type:
 # Type of measurement:
 # {'powspec', '2pcf', '2pcf-win', 'bispec', '3pcf', '3pcf-win', '3pcf-win-wa'}.
 # [mandatory]
-measurement_type:
+statistic_type:
 
 # Normalisation convention: {'particle' (default), 'mesh'}.
 norm_convention: particle

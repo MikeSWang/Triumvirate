@@ -22,54 +22,55 @@ class InvalidParameter(ValueError):
 
 
 cdef class ParameterSet:
-    """Program parameter set.
+    """Parameter set.
+
+    This reads parameters from a file, stores and prints out the extracted
+    parameters, and validates the parameters.
 
     Parameters
     ----------
-    param_file : str or :class:`pathlib.Path`
-        Parameter file path.
+    param_filepath : str or :class:`pathlib.Path`
+        Parameter file path.  This should point to a YAML file.
     logger : :class:`logging.Logger`, optional
         Program logger (default is `None`).
 
     Notes
     -----
-    `param_file` should be point to a YAML file.  See
-    :func:`~triumvirate.parameters.show_param_template()` to
-    generate an example file.
+    Use :func:`~triumvirate.parameters.show_paramset_template()` to
+    generate a template parameter file.
 
     """
 
-    def __cinit__(self, param_file, logger=None):
+    def __cinit__(self, param_filepath, logger=None):
 
         self.thisptr = new CppParameterSet()
 
         self._logger = logger
 
         self._source = abspath(param_file)
-        self._status = 'original'.encode('utf-8')
-        self._validity = 'unvalidated'.encode('utf-8')
+        self._original = True
+        self._validity = False
 
-        with open(param_file, 'r') as pfile:
-            self._params = yaml.load(pfile, Loader=yaml.Loader)
+        with open(param_filepath, 'r') as param_file:
+            self._params = yaml.load(param_file, Loader=yaml.Loader)
 
-        self._parse_attrs()
+        self._parse_params()  # validate
 
     @classmethod
     def from_dict(cls, param_dict, logger=None):
-        """Parameter set from a dictionary.
+        """Create p arameter set from a dictionary.
 
         Parameters
         ----------
         param_dict : dict
-            Parameter dictionary.
+            Parameter dictionary (nested).
         logger : :class:`logging.Logger`, optional
             Program logger (default is `None`).
 
         Notes
         -----
-        `param_dict` is a nested dictionary.  See
-        :func:`~triumvirate.parameters.show_param_template()` to
-        generate an example `param_dict`.
+        Use :func:`~triumvirate.parameters.show_paramset_template()` to
+        generate a template parameter dictionary.
 
         """
         self = object.__new__(cls)
@@ -77,21 +78,20 @@ cdef class ParameterSet:
         self._logger = logger
 
         self._source = 'dict'
-        self._status = 'original'.encode('utf-8')
-        self._validity = 'unvalidated'.encode('utf-8')
+        self._original = True
+        self._validity = False
 
         self._params = param_dict
 
-        self._parse_attrs()
+        self._parse_params()  # validate
 
     def __dealloc__(self):
         del self.thisptr
 
     def __str__(self):
         return "\n".join([
-            f"Source: {self._source}",
-            f"Status: {self._status}",
-            f"Params: {pformat(self._params, sort_dicts=False)}",
+            f"ParameterSet(source={self._source}, original={self._original})",
+            f"{pformat(self._params, sort_dicts=False)}",
         ])
 
     def __getitem__(self, key):
@@ -99,8 +99,8 @@ cdef class ParameterSet:
 
     def __setitem__(self, key, val):
         self._params.update({key: val})
-        self._status = 'modified'.encode('utf-8')
-        self._validity = 'unvalidated'.encode('utf-8')
+        self._original = False
+        self._validity = False
 
     def print_to_file(self, filepath=None):
         """Print out validated parameters to a YAML file.
@@ -118,122 +118,113 @@ cdef class ParameterSet:
                 "parameters_used{}".format(self._params['tags']['output'])
             )
 
-        with open(filepath, 'w') as out_file:
+        with open(filepath, 'w') as printout_file:
             yaml.dump(
-                self._params, out_file,
-                sort_keys=False, default_flow_style=False
+                self._params, printout_file,
+                sort_keys=False,
+                default_flow_style=False  # CAVEAT: discretionary
             )
 
         if self._logger:
             self._logger.info("Printed out parameters to %s.", filepath)
 
-    def _parse_attrs(self):
-        """Parse the parameter set into wrapped C++ parameter class.
+    def _parse_params(self):
+        """Parse the parameter set into the corresponding
+        C++ parameter class.
 
         """
         # ----------------------------------------------------------------
-        # I/O
+        # Parsing
         # ----------------------------------------------------------------
 
+        # -- I/O ---------------------------------------------------------
+
+        # Directories, files and tags default to empty if unset.
+        # Full path concatenation is handled by C++.
+
+        # Attribute string parameters.
         try:
             if self._params['directories']['catalogues'] is None:
-                self.thisptr.catalogue_dir = "".encode('utf-8')
+                self.thisptr.catalogue_dir = ""#.encode('utf-8')
             else:
                 self.thisptr.catalogue_dir = \
                     self._params['directories']['catalogues']
         except KeyError:
-            self.thisptr.catalogue_dir = "".encode('utf-8')
+            self.thisptr.catalogue_dir = ""#.encode('utf-8')
 
         try:
             if self._params['directories']['measurements'] is None:
-                self.thisptr.measurement_dir = "".encode('utf-8')
+                self.thisptr.measurement_dir = ""#.encode('utf-8')
             else:
                 self.thisptr.measurement_dir = \
                     self._params['directories']['measurements']
         except KeyError:
-            self.thisptr.measurement_dir = "".encode('utf-8')
+            self.thisptr.measurement_dir = ""#.encode('utf-8')
 
         try:
             if self._params['files']['data_catalogue'] is None:
-                self.thisptr.data_catalogue_file = "".encode('utf-8')
+                self.thisptr.data_catalogue_file = ""#.encode('utf-8')
             else:
                 self.thisptr.data_catalogue_file = \
                     self._params['files']['data_catalogue']
         except KeyError:
-            self.thisptr.data_catalogue_file = "".encode('utf-8')
+            self.thisptr.data_catalogue_file = ""#.encode('utf-8')
 
         try:
             if self._params['files']['rand_catalogue'] is None:
-                self.thisptr.rand_catalogue_file = "".encode('utf-8')
+                self.thisptr.rand_catalogue_file = ""#.encode('utf-8')
             else:
                 self.thisptr.rand_catalogue_file = \
                     self._params['files']['rand_catalogue']
         except KeyError:
-            self.thisptr.rand_catalogue_file = "".encode('utf-8')
+            self.thisptr.rand_catalogue_file = ""#.encode('utf-8')
 
         try:
             if self._params['tags']['output'] is None:
-                self.thisptr.output_tag = ''.encode('utf-8')
+                self.thisptr.output_tag = ''#.encode('utf-8')
             else:
                 self.thisptr.output_tag = self._params['tags']['output']
         except KeyError:
-            self.thisptr.output_tag = ''.encode('utf-8')
+            self.thisptr.output_tag = ''#.encode('utf-8')
 
-        # ----------------------------------------------------------------
-        # Mesh sampling
-        # ----------------------------------------------------------------
+        # -- Mesh sampling -----------------------------------------------
 
+        # Attribute numerical parameters.
+        if None in self._params['boxsize'].values():
+            raise InvalidParameter("`boxsize` parameters must be set.")
         self.thisptr.boxsize = [
             float(self._params['boxsize']['x']),
             float(self._params['boxsize']['y']),
             float(self._params['boxsize']['z']),
         ]
+        if None in self._params['ngrid'].values():
+            raise InvalidParameter("`ngrid` parameters must be set.")
         self.thisptr.ngrid = [
             self._params['ngrid']['x'],
             self._params['ngrid']['y'],
             self._params['ngrid']['z'],
         ]
 
-        # Derived parameters.
-        self.thisptr.volume = np.prod(list(self._params['boxsize'].values()))
-        self.thisptr.nmesh = np.prod(list(self._params['ngrid'].values()))
+        if self._params['padfactor'] is not None:
+            self.thisptr.padfactor = self._params['padfactor']
 
+        # Attribute string parameters.
         if self._params['alignment'] is not None:
             self.thisptr.alignment = self._params['alignment'].lower()
         if self._params['padscale'] is not None:
             self.thisptr.padscale = self._params['padscale'].lower()
-        if self._params['padfactor'] is not None:
-            self.thisptr.padfactor = self._params['padfactor']
-
         if self._params['assignment'] is not None:
             self.thisptr.assignment = self._params['assignment'].lower()
-        if self._params['interlace'] is not None:
+        if self._params['interlace'] is not None:  # possibly convert from bool
             self.thisptr.interlace = str(self._params['interlace']).lower()
 
-        # ----------------------------------------------------------------
-        # Measurement
-        # ----------------------------------------------------------------
+        # Attribute derived parameters.
+        self.thisptr.volume = np.prod(list(self._params['boxsize'].values()))
+        self.thisptr.nmesh = np.prod(list(self._params['ngrid'].values()))
 
-        if self._params['catalogue_type'] is not None:
-            self.thisptr.catalogue_type = \
-                self._params['catalogue_type'].lower()
-        else:
-            raise InvalidParameter("`catalogue_type` parameter must be set.")
-        if self._params['measurement_type'] is not None:
-            self.thisptr.measurement_type = \
-                self._params['measurement_type'].lower()
-        else:
-            raise InvalidParameter("`measurement_type` parameter must be set.")
+        # -- Measurement -------------------------------------------------
 
-        if self._params['norm_convention'] is not None:
-            self.thisptr.norm_convention = \
-                self._params['norm_convention'].lower()
-
-        if self._params['binning'] is not None:
-            self.thisptr.binning = self._params['binning'].lower()
-        if self._params['form'] is not None:
-            self.thisptr.form = self._params['form'].lower()
-
+        # Attribute numerical parameters.
         if self._params['degrees']['ell1'] is not None:
             self.thisptr.ell1 = self._params['degrees']['ell1']
         if self._params['degrees']['ell2'] is not None:
@@ -248,8 +239,11 @@ cdef class ParameterSet:
         if self._params['wa_orders']['j'] is not None:
             self.thisptr.j_wa = self._params['wa_orders']['j']
 
+        if None in self._params['range'].values():
+            raise InvalidParameter("`range` parameters must be set.")
         self.thisptr.bin_min = float(self._params['range'][0])
         self.thisptr.bin_max = float(self._params['range'][1])
+
         if self._params['num_bins'] is not None:
             self.thisptr.num_bins = self._params['num_bins']
         else:
@@ -257,12 +251,35 @@ cdef class ParameterSet:
         if self._params['idx_bin'] is not None:
             self.thisptr.idx_bin = self._params['idx_bin']
 
-        # ----------------------------------------------------------------
-        # Misc
-        # ----------------------------------------------------------------
+        # Attribute string parameters.
+        if self._params['catalogue_type'] is not None:
+            self.thisptr.catalogue_type = \
+                self._params['catalogue_type'].lower()
+        else:
+            raise InvalidParameter("`catalogue_type` parameter must be set.")
+        if self._params['statistic_type'] is not None:
+            self.thisptr.statistic_type = \
+                self._params['statistic_type'].lower()
+        else:
+            raise InvalidParameter("`statistic_type` parameter must be set.")
+
+        if self._params['norm_convention'] is not None:
+            self.thisptr.norm_convention = \
+                self._params['norm_convention'].lower()
+
+        if self._params['binning'] is not None:
+            self.thisptr.binning = self._params['binning'].lower()
+        if self._params['form'] is not None:
+            self.thisptr.form = self._params['form'].lower()
+
+        # -- Misc --------------------------------------------------------
 
         if self._params['verbose'] is not None:
             self.thisptr.verbose = self._params['verbose']
+
+        # ----------------------------------------------------------------
+        # Validation
+        # ----------------------------------------------------------------
 
         self._validate()
 
@@ -284,7 +301,7 @@ cdef class ParameterSet:
         self._params['space'] = self.thisptr.space
         self._params['interlace'] = self.thisptr.interlace
 
-        self._validity = 'validated'.encode('utf-8')
+        self._validity = True
 
         try:
             self._logger.info("... validated parameters.", cpp_state='end')
@@ -292,7 +309,7 @@ cdef class ParameterSet:
             pass
 
 
-def show_param_template(format):
+def show_paramset_template(format):
     """Show a parameter set template, either as text file contents or
     as a dictionary.
 

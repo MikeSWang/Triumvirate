@@ -395,7 +395,7 @@ int main(int argc, char* argv[]) {
   bool save = true;
 
   char save_filepath[1024];
-  if (params.measurement_type == "powspec") {
+  if (params.statistic_type == "powspec") {
     std::sprintf(
       save_filepath, "%s/pk%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
@@ -425,7 +425,7 @@ int main(int argc, char* argv[]) {
     trv::print_measurement_datatab_to_file(save_fileptr, params, meas_powspec);
     std::fclose(save_fileptr);
   } else
-  if (params.measurement_type == "2pcf") {
+  if (params.statistic_type == "2pcf") {
     std::sprintf(
       save_filepath, "%s/xi%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
@@ -455,7 +455,7 @@ int main(int argc, char* argv[]) {
     trv::print_measurement_datatab_to_file(save_fileptr, params, meas_2pcf);
     std::fclose(save_fileptr);
   } else
-  if (params.measurement_type == "2pcf-win") {
+  if (params.statistic_type == "2pcf-win") {
     std::sprintf(
       save_filepath, "%s/xiw%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
@@ -470,7 +470,7 @@ int main(int argc, char* argv[]) {
     trv::print_measurement_datatab_to_file(save_fileptr, params, meas_2pcf_win);
     std::fclose(save_fileptr);
   } else
-  if (params.measurement_type == "bispec") {
+  if (params.statistic_type == "bispec") {
     if (params.form == "full") {
       std::sprintf(
         save_filepath, "%s/bk%d%d%d_bin%02d%s",
@@ -512,7 +512,7 @@ int main(int argc, char* argv[]) {
     trv::print_measurement_datatab_to_file(save_fileptr, params, meas_bispec);
     std::fclose(save_fileptr);
   } else
-  if (params.measurement_type == "3pcf") {
+  if (params.statistic_type == "3pcf") {
     if (params.form == "full") {
       std::sprintf(
         save_filepath, "%s/zeta%d%d%d_bin%02d%s",
@@ -554,7 +554,7 @@ int main(int argc, char* argv[]) {
     trv::print_measurement_datatab_to_file(save_fileptr, params, meas_3pcf);
     std::fclose(save_fileptr);
   } else
-  if (params.measurement_type == "3pcf-win") {
+  if (params.statistic_type == "3pcf-win") {
     if (params.form == "full") {
       std::sprintf(
         save_filepath, "%s/zetaw%d%d%d_bin%02d%s",
@@ -582,7 +582,7 @@ int main(int argc, char* argv[]) {
     trv::print_measurement_datatab_to_file(save_fileptr, params, meas_3pcf_win);
     std::fclose(save_fileptr);
   } else
-  if (params.measurement_type == "3pcf-win-wa") {
+  if (params.statistic_type == "3pcf-win-wa") {
     if (params.form == "full") {
       std::sprintf(
         save_filepath, "%s/zetaw%d%d%d_wa%d%d_bin%02d%s",

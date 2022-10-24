@@ -1,22 +1,7 @@
-# Copyright (C) [GPLv3 Licence]
-#
-# This file is part of the Triumvirate program. See the COPYRIGHT
-# and LICENCE files at the top-level directory of this distribution
-# for details of copyright and licensing.
-#
-# This program is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <https:#www.gnu.org/licenses/>.
+"""Declaration of :cpp:class:`trv::ParameterSet` and
+its members and methods.
 
+"""
 from libcpp.string cimport string
 
 
@@ -53,7 +38,7 @@ cdef extern from "include/parameters.hpp":
         # -- Measurement -------------------------------------------------
 
         string catalogue_type
-        string measurement_type
+        string statistic_type
 
         string norm_convention
 
@@ -72,6 +57,7 @@ cdef extern from "include/parameters.hpp":
 
         double bin_min
         double bin_max
+
         int num_bins
         int idx_bin
 
@@ -85,10 +71,13 @@ cdef extern from "include/parameters.hpp":
 
         int validate()
 
+        # int print_to_file(char* out_parameter_filepath);
+        # int print_to_file();
+
 
 cdef class ParameterSet:
     cdef CppParameterSet* thisptr
+    cdef object _logger
     cdef string _source
     cdef string _status
     cdef dict _params
-    cdef object _logger

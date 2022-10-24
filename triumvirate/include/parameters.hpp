@@ -100,7 +100,7 @@ class ParameterSet {
   /// Measurement specification.
   std::string catalogue_type;    ///< catalogue type:
                                  ///< {"survey", "random", "sim"}
-  std::string measurement_type;  ///< measurement_type:
+  std::string statistic_type;  ///< statistic type:
                                  ///< {"powspec", "2pcf", "2pcf-win",
                                  ///<  "bispec", "3pcf", "3pcf-win",
                                  ///<  "3pcf-win-wa"}
