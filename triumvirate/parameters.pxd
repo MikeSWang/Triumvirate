@@ -2,11 +2,12 @@
 its members and methods.
 
 """
+from libcpp cimport bool as bool_t
 from libcpp.string cimport string
 
 
 cdef extern from "include/parameters.hpp":
-    cppclass CppParameterSet "trv::ParameterSet":
+    cdef cppclass CppParameterSet "trv::ParameterSet":
         # ----------------------------------------------------------------
         # Members
         # ----------------------------------------------------------------
@@ -71,13 +72,14 @@ cdef extern from "include/parameters.hpp":
 
         int validate()
 
-        # int print_to_file(char* out_parameter_filepath);
-        # int print_to_file();
+        # int print_to_file(char* out_parameter_filepath)
+        # int print_to_file()
 
 
 cdef class ParameterSet:
     cdef CppParameterSet* thisptr
     cdef object _logger
     cdef string _source
-    cdef string _status
+    cdef bool_t _original
+    cdef bool_t _validity
     cdef dict _params

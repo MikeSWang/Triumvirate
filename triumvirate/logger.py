@@ -72,14 +72,18 @@ class _CppLogAdapter(logging.LoggerAdapter):
             if cpp_state.lower() == 'end':
                 return "(C++ end) %s" % msg, kwargs
 
-        if cpp_state:
+        if cpp_state:  # merely indicating in CPP state, no extra text
             return "(C++) %s" % msg, kwargs
         return "%s" % msg, kwargs
 
 
 # Modify `warnings.formatwarning`.
 def _format_warning(message, category, filename, lineno, line=None):
+    """Modify formatter for warning messages in logged record.
 
+    See :func:`warnings.formatwarning` for implementation details.
+
+    """
     msg = warnings.WarningMessage(
         message, category, filename, lineno, None, line
     )
@@ -106,9 +110,15 @@ def _format_warning(message, category, filename, lineno, line=None):
     return msg_txt
 
 
-def setup_logger():
-    """Set up and return a customised logger with elapsed time and
-    C++ state indication.
+
+def setup_logger(log_level=logging.INFO):
+    """Set up and return a customised logger with elapsed time,
+    C++ state indication and formatted warning messages.
+
+    Parameters
+    ----------
+    log_level : int, optional
+        Logging devel (default is `logging.INFO`).
 
     Returns
     -------
@@ -133,7 +143,7 @@ def setup_logger():
         logger_.handlers.clear()
     logger_.addHandler(handler)
 
-    logger_.setLevel(logging.INFO)
+    logger_.setLevel(log_level)
 
     # Adapt logger for C++ code indication.
     logger = _CppLogAdapter(logger_, {'cpp_state': False})
