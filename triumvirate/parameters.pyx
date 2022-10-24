@@ -1,4 +1,3 @@
-# cython: c_string_type=unicode, c_string_encoding=utf8
 """
 Parameter Set (:mod:`~triumvirate.parameters`)
 ===========================================================================
@@ -12,6 +11,8 @@ from pprint import pformat
 
 import numpy as np
 import yaml
+
+from parameters cimport CppParameterSet
 
 
 class InvalidParameter(ValueError):
@@ -47,7 +48,7 @@ cdef class ParameterSet:
 
         self._logger = logger
 
-        self._source = abspath(param_file)
+        self._source = abspath(param_filepath).encode('utf-8')
         self._original = True
         self._validity = False
 
@@ -77,7 +78,7 @@ cdef class ParameterSet:
 
         self._logger = logger
 
-        self._source = 'dict'
+        self._source = 'dict'.encode('utf-8')
         self._original = True
         self._validity = False
 
@@ -145,47 +146,47 @@ cdef class ParameterSet:
         # Attribute string parameters.
         try:
             if self._params['directories']['catalogues'] is None:
-                self.thisptr.catalogue_dir = ""#.encode('utf-8')
+                self.thisptr.catalogue_dir = "".encode('utf-8')
             else:
                 self.thisptr.catalogue_dir = \
                     self._params['directories']['catalogues']
         except KeyError:
-            self.thisptr.catalogue_dir = ""#.encode('utf-8')
+            self.thisptr.catalogue_dir = "".encode('utf-8')
 
         try:
             if self._params['directories']['measurements'] is None:
-                self.thisptr.measurement_dir = ""#.encode('utf-8')
+                self.thisptr.measurement_dir = "".encode('utf-8')
             else:
                 self.thisptr.measurement_dir = \
                     self._params['directories']['measurements']
         except KeyError:
-            self.thisptr.measurement_dir = ""#.encode('utf-8')
+            self.thisptr.measurement_dir = "".encode('utf-8')
 
         try:
             if self._params['files']['data_catalogue'] is None:
-                self.thisptr.data_catalogue_file = ""#.encode('utf-8')
+                self.thisptr.data_catalogue_file = "".encode('utf-8')
             else:
                 self.thisptr.data_catalogue_file = \
                     self._params['files']['data_catalogue']
         except KeyError:
-            self.thisptr.data_catalogue_file = ""#.encode('utf-8')
+            self.thisptr.data_catalogue_file = "".encode('utf-8')
 
         try:
             if self._params['files']['rand_catalogue'] is None:
-                self.thisptr.rand_catalogue_file = ""#.encode('utf-8')
+                self.thisptr.rand_catalogue_file = "".encode('utf-8')
             else:
                 self.thisptr.rand_catalogue_file = \
                     self._params['files']['rand_catalogue']
         except KeyError:
-            self.thisptr.rand_catalogue_file = ""#.encode('utf-8')
+            self.thisptr.rand_catalogue_file = "".encode('utf-8')
 
         try:
             if self._params['tags']['output'] is None:
-                self.thisptr.output_tag = ''#.encode('utf-8')
+                self.thisptr.output_tag = ''.encode('utf-8')
             else:
                 self.thisptr.output_tag = self._params['tags']['output']
         except KeyError:
-            self.thisptr.output_tag = ''#.encode('utf-8')
+            self.thisptr.output_tag = ''.encode('utf-8')
 
         # -- Mesh sampling -----------------------------------------------
 
@@ -330,7 +331,7 @@ def show_paramset_template(format):
         If `format` is neither 'yaml' nor 'dict'.
 
     """
-    pkg_root_dir = Path(__file__).resolve()
+    pkg_root_dir = Path(__file__).parent
     tml_filepath = pkg_root_dir/"resources"/"params_example.yml"
 
     if format.lower() == 'yaml':
