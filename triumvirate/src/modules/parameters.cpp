@@ -57,7 +57,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   char interlace_[16];
 
   char catalogue_type_[16];
-  char measurement_type_[16];
+  char statistic_type_[16];
   char norm_convention_[16];
   char binning_[16];
   char form_[16];
@@ -140,7 +140,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
     /// Measurement ------------------------------------------------------
 
     scan_par_str("catalogue_type", "%s %s %s", catalogue_type_);
-    scan_par_str("measurement_type", "%s %s %s", measurement_type_);
+    scan_par_str("statistic_type", "%s %s %s", statistic_type_);
     scan_par_str("norm_convention", "%s %s %s", norm_convention_);
     scan_par_str("binning", "%s %s %s", binning_);
     scan_par_str("form", "%s %s %s", form_);
@@ -207,7 +207,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   /// Attribution
   /// --------------------------------------------------------------------
 
-  /// Attribute scalar parameters (directly extracted above).
+  /// Attribute numerical parameters (directly extracted above).
 
   /// Attribute string parameters.
   this->catalogue_dir = catalogue_dir_;
@@ -223,7 +223,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   this->interlace = interlace_;
 
   this->catalogue_type = catalogue_type_;
-  this->measurement_type = measurement_type_;
+  this->statistic_type = statistic_type_;
   this->norm_convention = norm_convention_;
   this->binning = binning_;
   this->form = form_;
@@ -270,7 +270,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   debug_par_str("interlace", this->interlace);
 
   debug_par_str("catalogue_type", this->catalogue_type);
-  debug_par_str("measurement_type", this->measurement_type);
+  debug_par_str("statistic_type", this->statistic_type);
   debug_par_str("norm_convention", this->norm_convention);
   debug_par_str("binning", this->binning);
   debug_par_str("form", this->form);
@@ -408,32 +408,32 @@ int ParameterSet::validate() {
     }
   }
 
-  if (this->measurement_type == "powspec") {
+  if (this->statistic_type == "powspec") {
     this->npoint = "2pt"; this->space = "fourier";  // derivation
   } else
   if (
-    this->measurement_type == "2pcf" || this->measurement_type == "2pcf-win"
+    this->statistic_type == "2pcf" || this->statistic_type == "2pcf-win"
   ) {
     this->npoint = "2pt"; this->space = "config";  // derivation
   } else
-  if (this->measurement_type == "bispec") {
+  if (this->statistic_type == "bispec") {
     this->npoint = "3pt"; this->space = "fourier";  // derivation
   } else
   if (
-    this->measurement_type == "3pcf"
-    || this->measurement_type == "3pcf-win"
-    || this->measurement_type == "3pcf-win-wa"
+    this->statistic_type == "3pcf"
+    || this->statistic_type == "3pcf-win"
+    || this->statistic_type == "3pcf-win-wa"
   ) {
     this->npoint = "3pt"; this->space = "config";  // derivation
   } else {
     if (trvs::currTask == 0) {
       trvs::logger.error(
-        "Measurement type is not recognised: `measurement_type` = '%s'.",
-        this->measurement_type.c_str()
+        "Statistic type is not recognised: `statistic_type` = '%s'.",
+        this->statistic_type.c_str()
       );
       throw trvs::InvalidParameter(
-        "Measurement type is not recognised: `measurement_type` = '%s'.\n",
-        this->measurement_type.c_str()
+        "Statistic type is not recognised: `statistic_type` = '%s'.\n",
+        this->statistic_type.c_str()
       );
     }
   }
@@ -699,7 +699,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
   print_par_str("interlace = %s\n", this->interlace);
 
   print_par_str("catalogue_type = %s\n", this->catalogue_type);
-  print_par_str("measurement_type = %s\n", this->measurement_type);
+  print_par_str("statistic_type = %s\n", this->statistic_type);
 
   print_par_str("norm_convention = %s\n", this->norm_convention);
 
