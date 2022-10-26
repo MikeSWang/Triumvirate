@@ -12,6 +12,13 @@ from astropy.table import Table
 
 from triumvirate._catalogue import _ParticleCatalogue
 
+try:
+    from nbodykit.base.catalog import CatalogSource
+    from nbodykit.source.catalog import CSVCatalog
+    _nbkt_imported = True
+except Exception:
+    _nbkt_imported = False
+
 
 class MissingField(ValueError):
     """Value error raised when a mandatory field is missing/empty in
@@ -27,24 +34,25 @@ class ParticleCatalogue:
 
     Notes
     -----
-    There are two types of weights: systematic weights 'ws' and
-    clustering weights 'wc'.
+    There are two types of weights: systematic weights 'ws'
+    (e.g. completeness weights) and clustering weights 'wc'
+    (e.g. Feldman--Kaiser--Peacock weights).
 
     Parameters
     ----------
     x, y, z : 1-d array of float
-        Cartesian coordinates of particles.  Lengths of `x`, `y` and `z`
-        must agree.
+        Cartesian coordinates of particles.  :param:`x`, :param:`y` and
+        :param:`z` must have the same length.
     nz : (1-d array of) float, optional
-        Redshift-dependent mean number density (defaults is `None`).
-        If an array, its length must be the same as those of `x`, `y`
-        and `z`.
+        Redshift-dependent mean number density of
+        (defaults is :keyword:`None`).  If an array, it must be of
+        the same length as :param:`x`, :param:`y` and :param:`z`.
     ws, wc : (1-d array of) float, optional
         Systematic weights and clustering weights of particles (defaults
-        are 1).  If an array, its length must be the same as those of
-        `x`, `y` and `z`.
+        are 1.).  If an array, it must be of the same length as
+        :param:`x`, :param:`y` and :param:`z`.
     logger : :class:`logging.Logger`, optional
-        Program logger (default is `None`).
+        Program logger (default is :keyword:`None`).
 
     Attributes
     ----------
@@ -60,15 +68,23 @@ class ParticleCatalogue:
     def __init__(self, x, y, z, nz=None, ws=1., wc=1., logger=None):
 
         self._logger = logger
+        self._source = 'extdata'
 
         # Initialise particle data.
+        if _nbkt_imported:
+            self._pdata = CatalogSource(comm=None)
+            self._arch = 'nbodykit'
+        else:
+            self._pdata = Table()
+            self._arch = 'astropy'
+
         if nz is None:
             warnings.warn(
-                "Catalogue 'nz' field is set to `None`, "
+                "Catalogue 'nz' field is None and thus set to zero, "
                 "which may raise errors in some computations."
             )
+            nz = 0.
 
-        self._pdata = Table()
         self._pdata['x'] = x
         self._pdata['y'] = y
         self._pdata['z'] = z
@@ -80,7 +96,7 @@ class ParticleCatalogue:
         self._calc_bounds(init=True)
 
         self.ntotal = len(self._pdata)
-        self.wtotal = np.sum(self._pdata['ws'])
+        self.wtotal = self._compute(self._pdata['ws'].sum())
 
         if self._logger:
             self._logger.info(
@@ -90,8 +106,9 @@ class ParticleCatalogue:
             )
 
     @classmethod
-    def read_from_file(cls, filepath, format='ascii.no_header', names=None,
-                       name_mapping=None, table_kwargs=None, logger=None):
+    def read_from_file(cls, filepath, reader='astropy', names=None,
+                       format='ascii.no_header', table_kwargs=None,
+                       name_mapping=None, logger=None):
         """Read particle data from file.
 
         Notes
@@ -100,68 +117,107 @@ class ParticleCatalogue:
         these columns are initialised with the default values in
         :meth:`~triumvirate.catalogue.__init__`.
 
-        For supported file data formats, see
-        `<https://docs.astropy.org/en/stable/io/ascii/index.html#supported-formats>`_.
-
         Parameters
         ----------
         filepath : str or :class:`pathlib.Path`
             Catalogue file path.
+        reader : {'astropy', 'nbodykit'}, optional
+            If 'astropy' (default), :class:`astropy.table.Table`
+            is used for reading in the catalogue file; else if 'nbodykit',
+            :class:`nbodykit.source.catalog` is used (if available).
+        names : sequence of str, optional
+            Catalogue file field names.  Cannot be :keyword:`None`
+            (default) if :param:`reader` is 'nbodykit'.
+            If :keyword:`None`, the header in the file is used to
+            infer the names.
         format : str, optional
             File format specifier (default is 'ascii.no_header', with any
-            header included as comment lines).
-        names : sequence of str, optional
-            Catalogue file field names.  If `None` (default), the header
-            row in the file is used to provide the names.
+            header included as comment lines).  Used only when
+            :param:`reader` is 'astropy'.  See
+            `<https://docs.astropy.org/en/stable/io/ascii/
+            index.html#supported-formats>`_ for supported file formats.
         name_mapping : dict of {str: str}, optional
             Mapping between any of the default column names 'x', 'y', 'z',
             'nz', 'ws' and 'wc' (keys) and the corresponding field names
-            (values) in `names` (default is `None`).
+            (values) in :param:`names` (default is :keyword:`None`).
+            Used only when :param:`reader` is 'astropy'.
         table_kwargs : dict, optional
             Keyword arguments to be passed to
-            :meth:`astropy.table.Table.read` (default is `None`).
+            :meth:`astropy.table.Table.read` (default is :keyword:`None`).
+            Used only when :param:`reader` is 'astropy'.
         logger : :class:`logging.Logger`, optional
-            Program logger (default is `None`).
+            Program logger (default is :keyword:`None`).
 
         """
         self = object.__new__(cls)
 
         self._logger = logger
-        self._source = str(filepath)  # non-existent in `__init__`
+        self._source = 'extfile:' + str(filepath)
+
+        if reader.lower() == 'nbodykit':
+            if _nbkt_imported:
+                self._arch = 'nbodykit'
+            else:
+                warnings.warn(
+                    "'astropy' is used for catalogue I/O as "
+                    "'nbodykit' is unavailable",
+                    category=warnings.RuntimeWarning
+                )
+                self._arch = 'astropy'
+        elif reader.lower() == 'astropy':
+            self._arch = 'astropy'
+        else:
+            raise ValueError(
+                f"Unsupported catalogue file reader: {reader}. "
+                "Possible options: {'astropy', 'nbodykit'}."
+            )
 
         # Initialise particle data.
-        if table_kwargs is None:
-            table_kwargs = {}
+        if self._arch == 'nbodykit':
+            self._pdata = CSVCatalog(str(filepath), names)
 
-        self._pdata = Table.read(
-            filepath, format=format, names=names, **table_kwargs
-        )
+        if self._arch == 'astropy':
+            if table_kwargs is None:
+                table_kwargs = {}
+
+            self._pdata = Table.read(
+                filepath, format=format, names=names, **table_kwargs
+            )
+
+            if name_mapping:
+                for name_, name_alt_ in name_mapping.items():
+                    self._pdata.rename_column(name_alt_, name_)
 
         # Validate particle data columns.
-        if name_mapping is not None:
-            for name_, name_alt in name_mapping.items():
-                self._pdata.rename_column(name_alt, name_)
+        if self._arch == 'nbodykit':
+            colnames = self._pdata.columns
+        if self._arch == 'astropy':
+            colnames = self._pdata.colnames
 
-        for name_axis in ['x', 'y', 'z']:
-            if name_axis not in self._pdata.colnames:
-                raise MissingField(f"Mandatory field {name_axis} is missing.")
+        for axis_name in ['x', 'y', 'z']:
+            if axis_name not in colnames:
+                raise MissingField(f"Mandatory field {axis_name} is missing.")
 
-        if 'nz' not in self._pdata.colnames:
-            self._pdata['nz'] = None
+        if 'nz' not in colnames:
+            self._pdata['nz'] = 0.
             warnings.warn(
-                "Catalogue 'nz' field is set to `None`, "
+                "Catalogue 'nz' field is not provided and thus set to zero, "
                 "which may raise errors in some computations."
             )
 
         for name_wgt in ['ws', 'wc']:
-            if name_wgt not in self._pdata.colnames:
+            if name_wgt not in colnames:
+                warnings.warn(
+                    f"Catalogue '{name_wgt}' field is not provided, "
+                    "so is set to unity."
+                )
                 self._pdata[name_wgt] = 1.
 
         # Compute catalogue properties.
         self._calc_bounds(init=True)
 
         self.ntotal = len(self._pdata)
-        self.wtotal = np.sum(self._pdata['ws'])
+        self.wtotal = self._compute(self._pdata['ws'].sum())
 
         if self._logger:
             self._logger.info(
@@ -181,19 +237,26 @@ class ParticleCatalogue:
             )
 
     def __getitem__(self, key):
-        if isinstance(key, (int, slice)):
-            return self._pdata[key]
-        return [self._pdata[key_] for key_ in key]
+        """Return data entry.
+
+        Parameters
+        ----------
+        key : (list of) str, int, slice
+            Data entry key.
+
+        Returns
+        -------
+        :class:`numpy.ndarray`
+            Data entry.
+
+        """
+        return self._compute(self._pdata[key])
 
     def __setitem__(self, key, value):
-        if isinstance(key, (int, str, slice)):
+        if isinstance(key, str):
             self._pdata[key] = value
         else:
-            for key_ in key:
-                if isinstance(key_, (int, str)):
-                    self._pdata[key_] = value
-                else:
-                    raise ValueError('Cannot interpret item key.')
+            raise ValueError('Cannot set values for non-string-type key.')
 
     def __len__(self):
         return len(self._pdata)
@@ -210,12 +273,14 @@ class ParticleCatalogue:
         Returns
         -------
         los : (N, 3) :class:`numpy.ndarray`
-            Normalised lines of sight.
+            Normalised line-of-sight vectors.
 
         """
         los_norm = np.sqrt(
             self._pdata['x']**2 + self._pdata['y']**2 + self._pdata['z']**2
         )
+
+        los_norm[los_norm == 0.] = 1.
 
         los = np.transpose([
             self._pdata['x'] / los_norm,
@@ -223,103 +288,124 @@ class ParticleCatalogue:
             self._pdata['z'] / los_norm
         ])
 
-        return los
+        return self._compute(los)
+
+    def compute_mean_density(self, volume=None, boxsize=None):
+        """Compute the mean density over a volume.
+
+        This sets the 'nz' column to :attr:`ntotal` divided by
+        :param:`volume` or cubic (product of) :param:`boxsize`, and is
+        typically used for calculating the homogeneous background number
+        density in a simulation box.
+
+        Parameters
+        ----------
+        volume : double, optional
+            Volume over which the mean density is calculated.
+        boxsize : ((3,) array of) double, optional
+            Box size (in each dimension) over which the mean density
+            is calculated.  Used only when :param:`volume`
+            is :keyword:`None`.
+
+        """
+        if np.isscalar(boxsize):
+            boxsize = [boxsize, boxsize, boxsize]
+
+        volume = volume if volume else np.product(boxsize)
+
+        self._pdata['nz'] = self.ntotal / volume
 
     def centre(self, boxsize, catalogue_ref=None):
         """Centre a (pair of) catalogue(s) in a box.
 
         Parameters
         ----------
-        boxsize : (3,) array of float
-            Box size in each dimension.
+        boxsize : ((3,) array of) float
+            Box size (in each dimension).
         catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, optional
-            Reference catalogue used for box alignment, to be put in the
-            same box.  If `None` (default), the current catalogue itself
-            is used as the reference catalogue.
+            Reference catalogue used for box alignment, also to be centred
+            in the same box.  If :keyword:`None` (default), the current
+            catalogue itself is used as the reference catalogue.
 
         Notes
         -----
         The reference catalogue is typically the random-source catalogue
-        (if provided).  Padding is applied at the box corner used as the
-        new coordinate origin.
+        (if provided).  The box corner closest to the minimal particle
+        extents is used as the new coordinate origin.
 
         """
+        if np.isscalar(boxsize):
+            boxsize = [boxsize, boxsize, boxsize]
+
         if catalogue_ref is None:
-            origin = [
-                np.mean(self.bounds[axis]) - boxsize[iaxis] / 2.
-                for iaxis, axis in enumerate(['x', 'y', 'z'])
-            ]
+            catalogue_ref = self
 
-            self.offset_coords(origin)
-        else:
-            origin = np.array([
-                np.mean(catalogue_ref.bounds[axis]) - boxsize[iaxis]/2.
-                for iaxis, axis in enumerate(['x', 'y', 'z'])
-            ])
+        origin = np.array([
+            np.mean(catalogue_ref.bounds[axis]) - boxsize[iaxis]/2.
+            for iaxis, axis in enumerate(['x', 'y', 'z'])
+        ])
 
-            self.offset_coords(origin)
+        self.offset_coords(origin)
+        if catalogue_ref is not None:
             catalogue_ref.offset_coords(origin)
 
     def pad(self, boxsize, ngrid=None, boxsize_pad=None, ngrid_pad=None,
             catalogue_ref=None):
         """Pad a (pair of) catalogue(s) in a box.
 
-        The minima of the particle coordinates in each dimension are
-        shifted away from the origin of the box depending on the amount
-        of padding, which can be set either as a multiple of the grid
-        sizes (i.e. number of grids) or a multipole of the box sizes
-        (i.e. a percentage).
+        The minimum particle extents in each dimension are shifted away
+        from the origin of the box depending on the amount of padding,
+        which can be set as a multiple of either the grid sizes or the box sizes (i.e. number of grids or fraction of boxsizes).
 
         Parameters
         ----------
         boxsize : (3,) array of float
             Box size in each dimension.
         ngrid : (3,) array of int
-            Grid number in each dimension (default is `None`).
-        boxsize_pad : (sequence of) float, optional
-            Box size padding factor.  If `None` (default), then
-            `ngrid_pad` should be set; otherwise, `ngrid_pad` must
-            be `None`.
-        ngrid_pad : (sequence of) float, optional
-            Grid padding factor.  If `None` (default), then `boxsize_pad`
-            should be set; otherwise, `boxsize_pad` must be `None`.
+            Grid number in each dimension (default is :keyword:`None`).
+            Must be provided if :param:`ngrid_pad` is set.
+        boxsize_pad : ((3,) array of) float, optional
+            Box size padding factor.  If not :keyword:`None` (default),
+            then :param:`ngrid_pad` must be :keyword:`None`.
+        ngrid_pad : ((3,) array of) float, optional
+            Grid padding factor.  If not :keyword:`None` (default), then
+            :param:`boxsize_pad` must be :keyword:`None`.
         catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, optional
-            Reference catalogue used for box alignment, to be put in the
-            same box.  If `None` (default), the current catalogue itself
-            is used as the reference catalogue.
+            Reference catalogue used for box alignment, also to be put in
+            the same box.  If :keyword:`None` (default), the current
+            catalogue itself is used as the reference catalogue.
 
         Raises
         ------
         ValueError
-            If `boxsize_pad` and `ngrid_pad` are both set to not `None`.
+            If :param:`boxsize_pad` and :param:`ngrid_pad` are both set
+            to not :keyword:`None`.
 
         Notes
         -----
         The reference catalogue is typically the random-source catalogue
-        (if provided).  Padding is applied at the box corner used as the
-        new coordinate origin.
+        (if provided).  Padding is applied at the box corner closest to
+        the minimal particle extents, which is used as the new origin.
 
         """
         if boxsize_pad is None and ngrid_pad is None:
             warnings.warn(
-                "`boxsize_pad` and `ngrid_pad` are both `None`. "
+                "`boxsize_pad` and `ngrid_pad` are both None. "
                 "No padding is applied to the catalogue."
             )
             return
         if boxsize_pad is not None and ngrid_pad is not None:
             raise ValueError(
                 "Conflicting padding as `boxsize_pad` and `ngrid_pad` "
-                "are both set (not `None`)."
+                "are both set (not None)."
             )
 
         if catalogue_ref is None:
-            origin = np.array([
-                self.bounds[axis][0] for axis in ['x', 'y', 'z']
-            ])
-        else:
-            origin = np.array([
-                catalogue_ref.bounds[axis][0] for axis in ['x', 'y', 'z']
-            ])
+            catalogue_ref = self
+
+        origin = np.array([
+            catalogue_ref.bounds[axis][0] for axis in ['x', 'y', 'z']
+        ])
 
         if boxsize_pad:
             origin -= np.multiply(boxsize_pad, boxsize)
@@ -335,10 +421,13 @@ class ParticleCatalogue:
 
         Parameters
         ----------
-        boxsize : (3,) array of float
-            Box size in each dimension.
+        boxsize : ((3,) array of) float
+            Box size (in each dimension).
 
         """
+        if np.isscalar(boxsize):
+            boxsize = [boxsize, boxsize, boxsize]
+
         for iaxis, axis in enumerate(['x', 'y', 'z']):
             self._pdata[axis] %= boxsize[iaxis]
 
@@ -364,14 +453,15 @@ class ParticleCatalogue:
         Parameters
         ----------
         init : bool, optional
-            If `True` (default is `False`), particles positions are
-            original and have not been offset previously.
+            If :keyword:`True` (default is :keyword:`False`), particle
+            positions are original and have not been offset previously.
 
         """
         self.bounds = {}
         for axis in ['x', 'y', 'z']:
             self.bounds[axis] = (
-                np.min(self._pdata[axis]), np.max(self._pdata[axis])
+                self._compute(self._pdata[axis].min()),
+                self._compute(self._pdata[axis].max())
             )
 
         if self._logger:
@@ -386,62 +476,39 @@ class ParticleCatalogue:
                     self.bounds, self
                 )
 
-    def _calc_powspec_normalisation_from_particles(self, alpha=1.):
-        """Calculate particle-based power spectrum normalisation.
-
-        Parameters
-        ----------
-        alpha : float, optional
-            Alpha contrast (default is 1.).
+    def _convert_to_cpp_catalogue(self):
+        """Convert to a C++-wrapped catalogue.
 
         Returns
         -------
-        float
-            Power spectrum normalisation factor.
+        :class:`~triumvirate._catalogue._ParticleCatalogue`
+            C++-wrapped catalogue.
 
         """
-        if None in self._pdata['nz']:
-            raise MissingField(
-                "Cannot calculate power spectrum normalisation "
-                "because of missing 'nz' value(s) in catalogue ({})."
-                .format(self)
-            )
+        x = self._compute(self._pdata['x'])
+        y = self._compute(self._pdata['y'])
+        z = self._compute(self._pdata['z'])
+        nz = self._compute(self._pdata['nz'])
+        ws = self._compute(self._pdata['ws'])
+        wc = self._compute(self._pdata['wc'])
 
-        return 1. / alpha / np.sum(
-            self._pdata['nz'] * self._pdata['ws'] * self._pdata['wc']**2
-        )
+        return _ParticleCatalogue(x, y, z, nz, ws, wc)
 
-    def _calc_powspec_shotnoise_from_particles(self, alpha=1.):
-        """Calculate (unnormalised) particle-based power spectrum
-        shot noise.
+    def _compute(self, quant):
+        """Return a quantity in standard form (i.e. apply
+        :meth:`dask.array.Array.compute` to any Dask array).
 
         Parameters
         ----------
-        alpha : float, optional
-            Alpha contrast (default is 1.).
+        quant
+            Quantity.
 
         Returns
         -------
-        float
-            Shot noise power.
+        The same quantity is a non-Dask-array form.
 
         """
-        if None in self._pdata['nz']:
-            raise MissingField(
-                "Cannot calculate power spectrum shot noise "
-                "because of missing 'nz' value(s) in catalogue ({})."
-                .format(self)
-            )
-
-        return alpha**2 * np.sum(self._pdata['ws']**2 * self._pdata['wc']**2)
-
-
-def _prepare_catalogue(catalogue):
-    return _ParticleCatalogue(
-        catalogue._pdata['x'],
-        catalogue._pdata['y'],
-        catalogue._pdata['z'],
-        np.nan_to_num(np.array(catalogue._pdata['nz'], dtype=float)),
-        catalogue._pdata['ws'],
-        catalogue._pdata['wc']
-    )
+        try:
+            return quant.compute()
+        except AttributeError:
+            return quant
