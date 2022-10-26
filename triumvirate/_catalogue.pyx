@@ -13,13 +13,15 @@ from triumvirate._catalogue cimport CppParticleCatalogue
 
 cdef class _ParticleCatalogue:
 
-    def __cinit__(self,
-                 np.ndarray[double, ndim=1, mode='c'] x not None,
-                 np.ndarray[double, ndim=1, mode='c'] y not None,
-                 np.ndarray[double, ndim=1, mode='c'] z not None,
-                 np.ndarray[double, ndim=1, mode='c'] nz not None,
-                 np.ndarray[double, ndim=1, mode='c'] ws not None,
-                 np.ndarray[double, ndim=1, mode='c'] wc not None):
+    def __cinit__(
+        self,
+        np.ndarray[double, ndim=1, mode='c'] x not None,
+        np.ndarray[double, ndim=1, mode='c'] y not None,
+        np.ndarray[double, ndim=1, mode='c'] z not None,
+        np.ndarray[double, ndim=1, mode='c'] nz not None,
+        np.ndarray[double, ndim=1, mode='c'] ws not None,
+        np.ndarray[double, ndim=1, mode='c'] wc not None
+    ):
 
         self.thisptr = new CppParticleCatalogue()
 
