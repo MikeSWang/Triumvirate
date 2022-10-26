@@ -9,17 +9,13 @@ cdef extern from "include/particles.hpp":
     cppclass CppParticleCatalogue "trv::ParticleCatalogue":
         CppParticleCatalogue()
 
-        # TODO: Check `const` keyword and destructor.
-        # int initialise_particles(int num)
+        # int initialise_particles(const int num)
         # int finalise_particles()
 
         int load_particle_data(
-            vector[double] x,
-            vector[double] y,
-            vector[double] z,
+            vector[double] x, vector[double] y, vector[double] z,
             vector[double] nz,
-            vector[double] ws,
-            vector[double] wc
+            vector[double] ws, vector[double] wc
         )
 
 

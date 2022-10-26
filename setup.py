@@ -101,14 +101,18 @@ modules = [
         include_dirs=includes,
         define_macros=macros,
     ),
-    # Extension(
-    #     f'{pkgdir}._catalogue',
-    #     sources=[f"{pkgdir}/_catalogue.pyx",]+self_modulesrc,
-    #     language=language,
-    #     extra_compile_args=options,
-    #     include_dirs=includes,
-    #     define_macros=macros,
-    # ),
+    Extension(
+        f'{pkgdir}._catalogue',
+        sources=[
+            f"{pkgdir}/_catalogue.pyx",
+            f"{self_modulesrc}/particles.cpp",
+            f"{self_modulesrc}/monitor.cpp",
+        ],
+        language=language,
+        extra_compile_args=options,
+        include_dirs=includes,
+        define_macros=macros,
+    ),
     # Extension(
     #     f'{pkgdir}._twopt',
     #     sources=[f"{pkgdir}/_twopt.pyx",]+self_modulesrc,

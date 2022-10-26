@@ -12,7 +12,7 @@ from pprint import pformat
 import numpy as np
 import yaml
 
-from parameters cimport CppParameterSet
+from triumvirate.parameters cimport CppParameterSet
 
 
 class InvalidParameter(ValueError):
@@ -33,7 +33,7 @@ cdef class ParameterSet:
     param_filepath : str or :class:`pathlib.Path`
         Parameter file path.  This should point to a YAML file.
     logger : :class:`logging.Logger`, optional
-        Program logger (default is `None`).
+        Program logger (default is :keyword:`None`).
 
     Notes
     -----
@@ -59,14 +59,14 @@ cdef class ParameterSet:
 
     @classmethod
     def from_dict(cls, param_dict, logger=None):
-        """Create p arameter set from a dictionary.
+        """Create parameter set from a dictionary.
 
         Parameters
         ----------
         param_dict : dict
             Parameter dictionary (nested).
         logger : :class:`logging.Logger`, optional
-            Program logger (default is `None`).
+            Program logger (default is :keyword:`None`).
 
         Notes
         -----
@@ -109,8 +109,8 @@ cdef class ParameterSet:
         Parameters
         ----------
         filepath : str or :class:`pathlib.Path`, optional
-            Printout file path.  If `None` (default), parameters are
-            printed out to a default file in measurement directory.
+            Printout file path.  If :keyword:`None` (default), parameters
+            are printed out to a default file in measurement directory.
 
         """
         if filepath is None:
@@ -328,7 +328,7 @@ def show_paramset_template(format):
     Raises
     ------
     ValueError
-        If `format` is neither 'yaml' nor 'dict'.
+        If :param:`format` is neither 'yaml' nor 'dict'.
 
     """
     pkg_root_dir = Path(__file__).parent
