@@ -14,8 +14,7 @@ cdef extern from "include/particles.hpp":
 
         int load_particle_data(
             vector[double] x, vector[double] y, vector[double] z,
-            vector[double] nz,
-            vector[double] ws, vector[double] wc
+            vector[double] nz, vector[double] ws, vector[double] wc
         )
 
 
