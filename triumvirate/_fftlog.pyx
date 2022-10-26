@@ -34,7 +34,6 @@ def sj_transform(
         np.ndarray[double, ndim=1, mode='c'] x not None,
         np.ndarray[double, ndim=1, mode='c'] fx not None
     ):
-
     cdef np.ndarray[double, ndim=1, mode='c'] y = np.zeros(N)
     cdef np.ndarray[double, ndim=1, mode='c'] gy = np.zeros(N)
 
@@ -48,7 +47,6 @@ def sj_transform_symm_biased(
         np.ndarray[double, ndim=1, mode='c'] x not None,
         np.ndarray[double, ndim=1, mode='c'] fx not None
     ):
-
     cdef np.ndarray[double, ndim=1, mode='c'] y = np.zeros(N)
     cdef np.ndarray[double, ndim=1, mode='c'] gy = np.zeros(N)
 
@@ -62,7 +60,6 @@ def trans_powspec_to_corrfunc_multipole(
         np.ndarray[double, ndim=1, mode='c'] k not None,
         np.ndarray[double, ndim=1, mode='c'] pk not None
     ):
-
     cdef np.ndarray[double, ndim=1, mode='c'] r = np.zeros(N)
     cdef np.ndarray[double, ndim=1, mode='c'] xi = np.zeros(N)
 
@@ -78,7 +75,6 @@ def trans_corrfunc_to_powspec_multipole(
         np.ndarray[double, ndim=1, mode='c'] r not None,
         np.ndarray[double, ndim=1, mode='c'] xi not None
     ):
-
     cdef np.ndarray[double, ndim=1, mode='c'] k = np.zeros(N)
     cdef np.ndarray[double, ndim=1, mode='c'] pk = np.zeros(N)
 

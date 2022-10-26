@@ -6,7 +6,7 @@ from libcpp.vector cimport vector
 
 
 cdef extern from "include/particles.hpp":
-    cppclass CppParticleCatalogue "trv::ParticleCatalogue":
+    cdef cppclass CppParticleCatalogue "trv::ParticleCatalogue":
         CppParticleCatalogue()
 
         # int initialise_particles(const int num)
