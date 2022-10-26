@@ -285,31 +285,6 @@ void print_measurement_datatab_to_file(
 
 void print_measurement_datatab_to_file(
   std::FILE* fileptr,
-  trv::ParameterSet& params, trv::PowspecWindowMeasurements& meas_powspec_win
-) {
-  /// Print data table columns.
-  std::fprintf(
-    fileptr,
-    "%s [0] k_cen, [1] k_eff, [2] nmodes, [3] Re{pk%d}, [4] Im{pk%d}\n",
-    comment_delimiter,
-    params.ELL, params.ELL
-  );
-
-  /// Print data table.
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
-    std::fprintf(
-      fileptr,
-      "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
-      meas_powspec_win.kbin[ibin],
-      meas_powspec_win.keff[ibin],
-      meas_powspec_win.nmodes[ibin],
-      meas_powspec_win.pk[ibin].real(), meas_powspec_win.pk[ibin].imag()
-    );
-  }
-}
-
-void print_measurement_datatab_to_file(
-  std::FILE* fileptr,
   trv::ParameterSet& params, trv::TwoPCFWindowMeasurements& meas_2pcf_win
 ) {
   /// Print data table columns.

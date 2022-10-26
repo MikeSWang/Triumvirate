@@ -153,18 +153,6 @@ struct TwoPCFMeasurements {
 };
 
 /**
- * @brief Power spectrum window measurements.
- *
- */
-struct PowspecWindowMeasurements {
-  std::vector<double> kbin;  ///< central wavenumber in bins
-  std::vector<double> keff;  ///< effective wavenumber in bins
-  std::vector<int> nmodes;   ///< number of wavevectors in bins
-  std::vector< std::complex<double> > pk;  ///< power spectrum
-                                           ///< window measurements
-};
-
-/**
  * @brief Two-point correlation function window measurements.
  *
  */
