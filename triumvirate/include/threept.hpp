@@ -46,7 +46,6 @@
 #include "maths.hpp"
 #include "particles.hpp"
 #include "dataobjs.hpp"
-#include "io.hpp"
 #include "field.hpp"
 #include "twopt.hpp"
 
