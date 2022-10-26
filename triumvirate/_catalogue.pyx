@@ -8,7 +8,7 @@ Parse Python catalogue objects into C++ catalogue objects.
 import numpy as np
 cimport numpy as np
 
-from triumvirate._catalogue cimport CppParticleCatalogue
+from _catalogue cimport CppParticleCatalogue
 
 
 cdef class _ParticleCatalogue:

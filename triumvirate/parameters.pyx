@@ -12,7 +12,7 @@ from pprint import pformat
 import numpy as np
 import yaml
 
-from triumvirate.parameters cimport CppParameterSet
+from parameters cimport CppParameterSet
 
 
 class InvalidParameter(ValueError):
