@@ -137,21 +137,6 @@ void print_measurement_datatab_to_file(
  *
  * @param fileptr File to print to.
  * @param params Parameter set.
- * @param meas_powspec_win Power spectrum window measurements.
- *
- * @overload
- */
-void print_measurement_datatab_to_file(
-  std::FILE* fileptr,
-  trv::ParameterSet& params, trv::PowspecWindowMeasurements& meas_powspec_win
-);
-
-/**
- * @brief Print measurements to a file including the normalisation
- *        factors and data table columns.
- *
- * @param fileptr File to print to.
- * @param params Parameter set.
  * @param meas_2pcf_win Two-point correlation function window measurements.
  *
  * @overload
