@@ -96,7 +96,18 @@ modules = [
             f"{self_modulesrc}/parameters.cpp",
             f"{self_modulesrc}/monitor.cpp",
         ],
-        language=language,
+        extra_compile_args=options,
+        include_dirs=includes,
+        define_macros=macros,
+    ),
+    Extension(
+        f'{pkgdir}.dataobjs',
+        sources=[
+            f"{pkgdir}/dataobjs.pyx",
+            f"{self_modulesrc}/dataobjs.cpp",
+            f"{self_modulesrc}/parameters.cpp",
+            f"{self_modulesrc}/monitor.cpp",
+        ],
         extra_compile_args=options,
         include_dirs=includes,
         define_macros=macros,
@@ -108,7 +119,6 @@ modules = [
             f"{self_modulesrc}/particles.cpp",
             f"{self_modulesrc}/monitor.cpp",
         ],
-        language=language,
         extra_compile_args=options,
         include_dirs=includes,
         define_macros=macros,
@@ -125,7 +135,6 @@ modules = [
             f"{self_modulesrc}/particles.cpp",
             f"{self_modulesrc}/field.cpp",
         ],
-        language=language,
         extra_compile_args=options,
         include_dirs=includes,
         libraries=libraries,
@@ -144,7 +153,6 @@ modules = [
             f"{self_modulesrc}/field.cpp",
             f"{self_modulesrc}/twopt.cpp",
         ],
-        language=language,
         extra_compile_args=options,
         include_dirs=includes,
         libraries=libraries,
@@ -159,7 +167,6 @@ modules = [
             f"{self_modulesrc}/maths.cpp",
             f"{self_modulesrc}/arrayops.cpp",
         ],
-        language=language,
         extra_compile_args=options,
         include_dirs=includes,
         libraries=libraries,
@@ -193,5 +200,9 @@ setup(
     install_requires=requirements,
     packages=find_packages(),
     cmdclass={'build_ext': build_ext},
-    ext_modules=cythonize(modules, language_level='3')
+    ext_modules=cythonize(
+        modules,
+        language=language,
+        language_level='3'
+    )
 )
