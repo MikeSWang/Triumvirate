@@ -42,11 +42,10 @@
 #include <cstdio>
 
 #include "monitor.hpp"
-#include "parameters.hpp"
 #include "maths.hpp"
-#include "particles.hpp"
+#include "parameters.hpp"
 #include "dataobjs.hpp"
-#include "io.hpp"
+#include "particles.hpp"
 #include "field.hpp"
 
 namespace trv {
