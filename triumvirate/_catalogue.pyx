@@ -5,7 +5,6 @@ Catalogue Parser (:mod:`~triumvirate._catalogue`)
 Parse Python catalogue objects into C++ catalogue objects.
 
 """
-import numpy as np
 cimport numpy as np
 
 from _catalogue cimport CppParticleCatalogue

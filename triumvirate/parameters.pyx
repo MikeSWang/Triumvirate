@@ -15,6 +15,39 @@ import yaml
 from parameters cimport CppParameterSet
 
 
+_EMPTY_PARAM_DICT = {
+    'directories': {
+        'catalogues': None,
+        'measurements': None,
+    },
+    'files': {
+        'data_catalogue': None,
+        'rand_catalogue': None,
+    },
+    'tags': {
+        'output': None,
+    },
+    'boxsize': {'x': None, 'y': None, 'z': None},
+    'ngrid': {'x': None, 'y': None, 'z': None},
+    'alignment': None,
+    'padscale': None,
+    'padfactor': None,
+    'assignment': None,
+    'interlace': None,
+    'catalogue_type': None,
+    'statistic_type': None,
+    'norm_convention': None,
+    'binning': None,
+    'form': None,
+    'degrees': {'ell1': None, 'ell2': None, 'ELL': None},
+    'wa_orders': {'i': None, 'j': None},
+    'range': [None, None],
+    'num_bins': None,
+    'idx_bin': None,
+    'verbose': None,
+}
+
+
 class InvalidParameter(ValueError):
     """:exc:`ValueError` raised when a program parameter is invalid.
 
@@ -30,10 +63,22 @@ cdef class ParameterSet:
 
     Parameters
     ----------
-    param_filepath : str or :class:`pathlib.Path`
+    param_filepath : str or :class:`pathlib.Path`, optional
         Parameter file path.  This should point to a YAML file.
+        If :keyword:`None` (default), :param:`param_dict` should be
+        provided; otherwise :param:`param_dict` should be :keyword:`None`.
+    param_dict : dict, optional
+        Parameter dictionary (nested).  If :keyword:`None` (default),
+        :param:`param_filepath` should be provided; otherwise
+        :param:`param_filepath` should be :keyword:`None`.
     logger : :class:`logging.Logger`, optional
         Program logger (default is :keyword:`None`).
+
+    Raises
+    ------
+    ValueError
+        If neither or both of :param:`param_filepath` and
+        :param:`param_dict` is/are :keyword:`None`.
 
     Notes
     -----
@@ -42,47 +87,30 @@ cdef class ParameterSet:
 
     """
 
-    def __cinit__(self, param_filepath, logger=None):
+    def __cinit__(self, param_filepath=None, param_dict=None, logger=None):
 
         self.thisptr = new CppParameterSet()
 
         self._logger = logger
 
-        self._source = abspath(param_filepath).encode('utf-8')
+        if (param_filepath is not None and param_dict is not None) \
+                or (param_filepath is None and param_dict is None):
+            raise ValueError(
+                "One and only one of `param_filepath` and `param_dict` "
+                "should be set."
+            )
+
+        self._params = {}
+        if param_filepath is not None:
+            self._source = abspath(param_filepath)
+            with open(param_filepath, 'r') as param_file:
+                self._params = yaml.load(param_file, Loader=yaml.Loader)
+        if param_dict is not None:
+            self._source = 'dict'
+            self._params = param_dict
+
         self._original = True
         self._validity = False
-
-        with open(param_filepath, 'r') as param_file:
-            self._params = yaml.load(param_file, Loader=yaml.Loader)
-
-        self._parse_params()  # validate
-
-    @classmethod
-    def from_dict(cls, param_dict, logger=None):
-        """Create parameter set from a dictionary.
-
-        Parameters
-        ----------
-        param_dict : dict
-            Parameter dictionary (nested).
-        logger : :class:`logging.Logger`, optional
-            Program logger (default is :keyword:`None`).
-
-        Notes
-        -----
-        Use :func:`~triumvirate.parameters.show_paramset_template()` to
-        generate a template parameter dictionary.
-
-        """
-        self = object.__new__(cls)
-
-        self._logger = logger
-
-        self._source = 'dict'.encode('utf-8')
-        self._original = True
-        self._validity = False
-
-        self._params = param_dict
 
         self._parse_params()  # validate
 
@@ -211,13 +239,17 @@ cdef class ParameterSet:
 
         # Attribute string parameters.
         if self._params['alignment'] is not None:
-            self.thisptr.alignment = self._params['alignment'].lower()
+            self.thisptr.alignment = \
+                self._params['alignment'].lower().encode('utf-8')
         if self._params['padscale'] is not None:
-            self.thisptr.padscale = self._params['padscale'].lower()
+            self.thisptr.padscale = \
+                self._params['padscale'].lower().encode('utf-8')
         if self._params['assignment'] is not None:
-            self.thisptr.assignment = self._params['assignment'].lower()
+            self.thisptr.assignment = \
+                self._params['assignment'].lower().encode('utf-8')
         if self._params['interlace'] is not None:  # possibly convert from bool
-            self.thisptr.interlace = str(self._params['interlace']).lower()
+            self.thisptr.interlace = \
+                str(self._params['interlace']).lower().encode('utf-8')
 
         # Attribute derived parameters.
         self.thisptr.volume = np.prod(list(self._params['boxsize'].values()))
@@ -240,7 +272,7 @@ cdef class ParameterSet:
         if self._params['wa_orders']['j'] is not None:
             self.thisptr.j_wa = self._params['wa_orders']['j']
 
-        if None in self._params['range'].values():
+        if None in self._params['range']:
             raise InvalidParameter("`range` parameters must be set.")
         self.thisptr.bin_min = float(self._params['range'][0])
         self.thisptr.bin_max = float(self._params['range'][1])
@@ -255,23 +287,25 @@ cdef class ParameterSet:
         # Attribute string parameters.
         if self._params['catalogue_type'] is not None:
             self.thisptr.catalogue_type = \
-                self._params['catalogue_type'].lower()
+                self._params['catalogue_type'].lower().encode('utf-8')
         else:
             raise InvalidParameter("`catalogue_type` parameter must be set.")
         if self._params['statistic_type'] is not None:
             self.thisptr.statistic_type = \
-                self._params['statistic_type'].lower()
+                self._params['statistic_type'].lower().encode('utf-8')
         else:
             raise InvalidParameter("`statistic_type` parameter must be set.")
 
         if self._params['norm_convention'] is not None:
             self.thisptr.norm_convention = \
-                self._params['norm_convention'].lower()
+                self._params['norm_convention'].lower().encode('utf-8')
 
         if self._params['binning'] is not None:
-            self.thisptr.binning = self._params['binning'].lower()
+            self.thisptr.binning = \
+                self._params['binning'].lower().encode('utf-8')
         if self._params['form'] is not None:
-            self.thisptr.form = self._params['form'].lower()
+            self.thisptr.form = \
+                self._params['form'].lower().encode('utf-8')
 
         # -- Misc --------------------------------------------------------
 
@@ -298,9 +332,9 @@ cdef class ParameterSet:
 
         # Fetch validated parameters that have been derived or transmuted.
         # Transmuted I/O paths are not fetched.
-        self._params['npoint'] = self.thisptr.npoint
-        self._params['space'] = self.thisptr.space
-        self._params['interlace'] = self.thisptr.interlace
+        self._params['npoint'] = self.thisptr.npoint.decode('utf-8')
+        self._params['space'] = self.thisptr.space.decode('utf-8')
+        self._params['interlace'] = self.thisptr.interlace.decode('utf-8')
 
         self._validity = True
 
@@ -313,6 +347,9 @@ cdef class ParameterSet:
 def show_paramset_template(format):
     """Show a parameter set template, either as a YAML file
     (with explanatory text) or as a dictionary.
+
+    The returned template parameters are not validated as some mandatory
+    values are unset.
 
     Parameters
     ----------
@@ -331,12 +368,11 @@ def show_paramset_template(format):
         If :param:`format` is neither 'yaml' nor 'dict'.
 
     """
-    pkg_root_dir = Path(__file__).parent
-    tml_filepath = pkg_root_dir/"resources"/"params_example.yml"
-
     if format.lower() == 'yaml':
+        pkg_root_dir = Path(__file__).parent
+        tml_filepath = pkg_root_dir/"resources"/"params_example.yml"
         template = Path(tml_filepath).read_text()
     elif format.lower() == 'dict':
-        template = ParameterSet(tml_filepath)._params
+        template = _EMPTY_PARAM_DICT
 
     return template
