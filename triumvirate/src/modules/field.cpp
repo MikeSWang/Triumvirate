@@ -1132,14 +1132,6 @@ double MeshField::calc_grid_based_powlaw_norm(
 FieldStats::FieldStats(trv::ParameterSet& params){
   this->params = params;
 
-  this->nmodes.resize(this->params.num_bins);
-  this->npairs.resize(this->params.num_bins);
-  this->k.resize(this->params.num_bins);
-  this->r.resize(this->params.num_bins);
-  this->sn.resize(this->params.num_bins);
-  this->pk.resize(this->params.num_bins);
-  this->xi.resize(this->params.num_bins);
-
   this->reset_stats();
 
   /// Calculate grid sizes in configuration space.
@@ -1168,6 +1160,16 @@ void FieldStats::reset_stats() {
   std::fill(this->sn.begin(), this->sn.end(), 0.);
   std::fill(this->pk.begin(), this->pk.end(), 0.);
   std::fill(this->xi.begin(), this->xi.end(), 0.);
+}
+
+void FieldStats::resize_stats(int num_bins){
+  this->nmodes.resize(num_bins);
+  this->npairs.resize(num_bins);
+  this->k.resize(num_bins);
+  this->r.resize(num_bins);
+  this->sn.resize(num_bins);
+  this->pk.resize(num_bins);
+  this->xi.resize(num_bins);
 }
 
 
@@ -1215,6 +1217,8 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
   MeshField& field_a, MeshField& field_b, std::complex<double> shotnoise_amp,
   int ell, int m, trv::Binning& kbinning
 ) {
+  this->resize_stats(kbinning.num_bins);
+
   /// Check mesh fields compatibility and reuse methods of the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
     trvs::logger.error(
@@ -1310,7 +1314,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
   }
 
   /// Perform binning.
-  for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     double k_lower = kbinning.bin_edges[ibin];
     double k_upper = kbinning.bin_edges[ibin + 1];
     for (int i = 0; i < n_sample; i++) {
@@ -1339,6 +1343,8 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   MeshField& field_a, MeshField& field_b, std::complex<double> shotnoise_amp,
   int ell, int m, trv::Binning& rbinning
 ) {
+  this->resize_stats(rbinning.num_bins);
+
   /// Check mesh fields compatibility and reuse properties and methods of
   /// the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
@@ -1473,7 +1479,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   }
 
   /// Perform binning.
-  for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     double r_lower = rbinning.bin_edges[ibin];
     double r_upper = rbinning.bin_edges[ibin + 1];
     for (int i = 0; i < n_sample; i++) {
@@ -1503,6 +1509,8 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   std::complex<double> shotnoise_amp,
   trv::Binning& rbinning
 ) {
+  this->resize_stats(rbinning.num_bins);
+
   /// Check mesh fields compatibility and reuse properties and methods of
   /// the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
@@ -1634,7 +1642,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   }
 
   /// Perform binning.
-  for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     double r_lower = rbinning.bin_edges[ibin];
     double r_upper = rbinning.bin_edges[ibin + 1];
     for (int i = 0; i < n_sample; i++) {
@@ -1659,7 +1667,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   double norm_factors = 1 / this->vol_cell
     * std::pow(-1, this->params.ell1 + this->params.ell2);
 
-  for (int ibin = 0; ibin < this->params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     if (this->npairs[ibin] != 0) {
       this->xi[ibin] *= norm_factors / this->npairs[ibin];
     }
