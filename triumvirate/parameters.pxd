@@ -78,8 +78,8 @@ cdef extern from "include/parameters.hpp":
 
 cdef class ParameterSet:
     cdef CppParameterSet* thisptr
-    cdef object _logger
-    cdef string _source
-    cdef bool_t _original
-    cdef bool_t _validity
-    cdef dict _params
+    cdef public object _logger
+    cdef public str _source
+    cdef public bool_t _original
+    cdef public bool_t _validity
+    cdef public dict _params

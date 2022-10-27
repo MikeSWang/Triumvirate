@@ -92,6 +92,13 @@ class Binning {
    *                                      "custom" but not implemented.
    * @throws trv::sys::InvalidParameter When @p scheme is not one of the
    *                                    options above.
+   *
+   * @note If @p scheme is "lin" or "log", the bin edges are set linearly
+   *       or log-linearly (i.e. exponentially) in the bin range.  If
+   *       @p scheme is "linpad", "logpad", 5 linear bins are set from
+   *       zero (leftmost edge) with width 1.e-3 ("fourier") or 10.
+   *       ("config") with the remaining binning range divided linearly
+   *       or log-linearly.
    */
   void set_bins(std::string scheme, std::string space);
 
