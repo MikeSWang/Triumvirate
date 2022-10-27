@@ -202,12 +202,12 @@ trv::BispecMeasurements compute_bispec(
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   /// Set up output.
-  int* nmodes_save = new int[params.num_bins];
-  double* k1_save = new double[params.num_bins];
-  double* k2_save = new double[params.num_bins];
-  std::complex<double>* bk_save = new std::complex<double>[params.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[params.num_bins];
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  int* nmodes_save = new int[kbinning.num_bins];
+  double* k1_save = new double[kbinning.num_bins];
+  double* k2_save = new double[kbinning.num_bins];
+  std::complex<double>* bk_save = new std::complex<double>[kbinning.num_bins];
+  std::complex<double>* sn_save = new std::complex<double>[kbinning.num_bins];
+  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     nmodes_save[ibin] = 0;
     k1_save[ibin] = 0.;
     k2_save[ibin] = 0.;
@@ -315,13 +315,13 @@ trv::BispecMeasurements compute_bispec(
             dn_00, ylm_k_a, k_lower, k_upper, k_eff_a_, nmodes_a_
           );
 
-          for (int ibin = 0; ibin < params.num_bins; ibin++) {
+          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
             // nmodes1_save[ibin] = nmodes_a_ inferred from *_b_
             k1_save[ibin] = k_eff_a_;
           }
         }
 
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
           double k_cen = kbinning.bin_centres[ibin];
           double k_lower = kbinning.bin_edges[ibin];
           double k_upper = kbinning.bin_edges[ibin + 1];
@@ -386,7 +386,7 @@ trv::BispecMeasurements compute_bispec(
           /// When l₁ = l₂ = 0, the Wigner 3-j symbol enforces L = 0
           /// and the pre-factors involving degrees and orders become 1.
           std::complex<double> S_ijk = coupling * Sbar_LM;  // S|{i = j = k}
-          for (int ibin = 0; ibin < params.num_bins; ibin++) {
+          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
             sn_save[ibin] += S_ijk;
           }
         }
@@ -398,14 +398,14 @@ trv::BispecMeasurements compute_bispec(
             dn_00_for_sn, N_LM, Sbar_LM, params.ell1, m1_, kbinning
           );
           if (params.form == "diag") {
-            for (int ibin = 0; ibin < params.num_bins; ibin++) {
+            for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
               sn_save[ibin] += coupling * (
                 stats_sn.pk[ibin] - stats_sn.sn[ibin]
               );
             }
           } else
           if (params.form == "full") {
-            for (int ibin = 0; ibin < params.num_bins; ibin++) {
+            for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
               sn_save[ibin] += coupling * (
                 stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
               );
@@ -419,13 +419,13 @@ trv::BispecMeasurements compute_bispec(
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_00_for_sn, N_LM, Sbar_LM, params.ell2, m2_, kbinning
           );
-          for (int ibin = 0; ibin < params.num_bins; ibin++) {
+          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
             sn_save[ibin] += coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
           }
         }
 
   			FieldStats stats_sn(params);
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
           double k_a = k1_save[ibin];
           double k_b = k2_save[ibin];
 
@@ -463,7 +463,7 @@ trv::BispecMeasurements compute_bispec(
   /// --------------------------------------------------------------------
 
   trv::BispecMeasurements bispec_out;
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     if (params.form == "diag") {
       bispec_out.k1bin.push_back(kbinning.bin_centres[ibin]);
     } else
@@ -515,12 +515,12 @@ trv::ThreePCFMeasurements compute_3pcf(
   double parity = std::pow(-1, params.ell1 + params.ell2);
 
   /// Set up output.
-  int* npairs_save = new int[params.num_bins];
-  double* r1_save = new double[params.num_bins];
-  double* r2_save = new double[params.num_bins];
-  std::complex<double>* zeta_save = new std::complex<double>[params.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[params.num_bins];
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  int* npairs_save = new int[rbinning.num_bins];
+  double* r1_save = new double[rbinning.num_bins];
+  double* r2_save = new double[rbinning.num_bins];
+  std::complex<double>* zeta_save = new std::complex<double>[rbinning.num_bins];
+  std::complex<double>* sn_save = new std::complex<double>[rbinning.num_bins];
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     npairs_save[ibin] = 0;
     r1_save[ibin] = 0.;
     r2_save[ibin] = 0.;
@@ -621,7 +621,7 @@ trv::ThreePCFMeasurements compute_3pcf(
           dn_LM_for_sn, N_00, ylm_r_a, ylm_r_b, Sbar_LM, rbinning
         );
 
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
           if (params.form == "diag") {
             sn_save[ibin] += coupling * stats_sn.xi[ibin];
           } else
@@ -638,17 +638,17 @@ trv::ThreePCFMeasurements compute_3pcf(
 
         /// Only record the binned coordinates and counts once.
         if (M_ == 0 && m1_ == 0 && m2_ == 0) {
-          for (int ibin = 0; ibin < params.num_bins; ibin++) {
+          for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
             npairs_save[ibin] = stats_sn.npairs[ibin];
             r2_save[ibin] = stats_sn.r[ibin];
           }
           if (params.form == "diag") {
-            for (int ibin = 0; ibin < params.num_bins; ibin++) {
+            for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
               r1_save[ibin] = stats_sn.r[ibin];
             }
           } else
           if (params.form == "full") {
-            for (int ibin = 0; ibin < params.num_bins; ibin++) {
+            for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
               r1_save[ibin] = stats_sn.r[params.idx_bin];
             }
           }
@@ -678,7 +678,7 @@ trv::ThreePCFMeasurements compute_3pcf(
           );
         }
 
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
           double r_b = r2_save[ibin];
 
           F_lm_b.inv_fourier_transform_sjl_ylm_wgtd_field(
@@ -729,7 +729,7 @@ trv::ThreePCFMeasurements compute_3pcf(
   /// --------------------------------------------------------------------
 
   trv::ThreePCFMeasurements threepcf_out;
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     if (params.form == "diag") {
       threepcf_out.r1bin.push_back(rbinning.bin_centres[ibin]);
     } else
@@ -779,12 +779,12 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   /// Set up output.
-  int* nmodes_save = new int[params.num_bins];
-  double* k1_save = new double[params.num_bins];
-  double* k2_save = new double[params.num_bins];
-  std::complex<double>* bk_save = new std::complex<double>[params.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[params.num_bins];
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  int* nmodes_save = new int[kbinning.num_bins];
+  double* k1_save = new double[kbinning.num_bins];
+  double* k2_save = new double[kbinning.num_bins];
+  std::complex<double>* bk_save = new std::complex<double>[kbinning.num_bins];
+  std::complex<double>* sn_save = new std::complex<double>[kbinning.num_bins];
+  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     nmodes_save[ibin] = 0;
     k1_save[ibin] = 0.;
     k2_save[ibin] = 0.;
@@ -879,13 +879,13 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           dn_00, ylm_k_a, k_lower, k_upper, k_eff_a_, nmodes_a_
         );
 
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
           // nmodes1_save[ibin] = nmodes_a_ inferred from *_b_
           k1_save[ibin] = k_eff_a_;
         }
       }
 
-      for (int ibin = 0; ibin < params.num_bins; ibin++) {
+      for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
         double k_cen = kbinning.bin_centres[ibin];
         double k_lower = kbinning.bin_edges[ibin];
         double k_upper = kbinning.bin_edges[ibin + 1];
@@ -935,7 +935,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
       if (params.ell1 == 0 && params.ell2 == 0) {
         std::complex<double> S_ijk = coupling * Sbar_LM;  // S|{i = j = k}
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
           sn_save[ibin] += coupling * S_ijk;
         }
       }
@@ -947,12 +947,12 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           dn_00_for_sn, N_L0, Sbar_LM, params.ell1, m1_, kbinning
         );
         if (params.form == "diag") {
-          for (int ibin = 0; ibin < params.num_bins; ibin++) {
+          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
             sn_save[ibin] += coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
           }
         } else
         if (params.form == "full") {
-          for (int ibin = 0; ibin < params.num_bins; ibin++) {
+          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
             sn_save[ibin] += coupling * (
               stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
             );
@@ -966,13 +966,13 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
           dn_00_for_sn, N_L0, Sbar_LM, params.ell2, m2_, kbinning
         );
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
           sn_save[ibin] += coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
         }
       }
 
       FieldStats stats_sn(params);
-      for (int ibin = 0; ibin < params.num_bins; ibin++) {
+      for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
         double k_a = k1_save[ibin];
         double k_b = k2_save[ibin];
 
@@ -1009,7 +1009,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   /// --------------------------------------------------------------------
 
   trv::BispecMeasurements bispec_out;
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     if (params.form == "diag") {
       bispec_out.k1bin.push_back(kbinning.bin_centres[ibin]);
     } else
@@ -1060,12 +1060,12 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   double parity = std::pow(-1, params.ell1 + params.ell2);
 
   /// Set up output.
-  int* npairs_save = new int[params.num_bins];
-  double* r1_save = new double[params.num_bins];
-  double* r2_save = new double[params.num_bins];
-  std::complex<double>* zeta_save = new std::complex<double>[params.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[params.num_bins];
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  int* npairs_save = new int[rbinning.num_bins];
+  double* r1_save = new double[rbinning.num_bins];
+  double* r2_save = new double[rbinning.num_bins];
+  std::complex<double>* zeta_save = new std::complex<double>[rbinning.num_bins];
+  std::complex<double>* sn_save = new std::complex<double>[rbinning.num_bins];
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     npairs_save[ibin] = 0;
     r1_save[ibin] = 0.;
     r2_save[ibin] = 0.;
@@ -1146,7 +1146,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         dn_L0_for_sn, N_00, ylm_r_a, ylm_r_b, Sbar_L0, rbinning
       );
 
-      for (int ibin = 0; ibin < params.num_bins; ibin++) {
+      for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
         if (params.form == "diag") {
           sn_save[ibin] += coupling * stats_sn.xi[ibin];
         } else
@@ -1163,17 +1163,17 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
 
       /// Only record the binned coordinates and counts once.
       if (m1_ == 0 && m2_ == 0) {
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
           npairs_save[ibin] = stats_sn.npairs[ibin];
           r2_save[ibin] = stats_sn.r[ibin];
         }
         if (params.form == "diag") {
-          for (int ibin = 0; ibin < params.num_bins; ibin++) {
+          for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
             r1_save[ibin] = stats_sn.r[ibin];
           }
         } else
         if (params.form == "full") {
-          for (int ibin = 0; ibin < params.num_bins; ibin++) {
+          for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
             r1_save[ibin] = stats_sn.r[params.idx_bin];
           }
         }
@@ -1200,7 +1200,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         );
       }
 
-      for (int ibin = 0; ibin < params.num_bins; ibin++) {
+      for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
         double r_b = r2_save[ibin];
 
         F_lm_b.inv_fourier_transform_sjl_ylm_wgtd_field(
@@ -1250,7 +1250,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   /// --------------------------------------------------------------------
 
   trv::ThreePCFMeasurements threepcf_out;
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     if (params.form == "diag") {
       threepcf_out.r1bin.push_back(rbinning.bin_centres[ibin]);
     } else
@@ -1303,12 +1303,12 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   double parity = std::pow(-1, params.ell1 + params.ell2);
 
   /// Set up output.
-  int* npairs_save = new int[params.num_bins];
-  double* r1_save = new double[params.num_bins];
-  double* r2_save = new double[params.num_bins];
-  std::complex<double>* zeta_save = new std::complex<double>[params.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[params.num_bins];
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  int* npairs_save = new int[rbinning.num_bins];
+  double* r1_save = new double[rbinning.num_bins];
+  double* r2_save = new double[rbinning.num_bins];
+  std::complex<double>* zeta_save = new std::complex<double>[rbinning.num_bins];
+  std::complex<double>* sn_save = new std::complex<double>[rbinning.num_bins];
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     npairs_save[ibin] = 0;
     r1_save[ibin] = 0.;
     r2_save[ibin] = 0.;
@@ -1404,7 +1404,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           n_LM_for_sn, N_00, ylm_r_a, ylm_r_b, Sbar_LM, rbinning
         );
 
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
           if (params.form == "diag") {
             sn_save[ibin] += coupling * stats_sn.xi[ibin];
           } else if (params.form == "full") {
@@ -1420,17 +1420,17 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
 
         /// Only record the binned coordinates and counts once.
         if (M_ == 0 && m1_ == 0 && m2_ == 0) {
-          for (int ibin = 0; ibin < params.num_bins; ibin++) {
+          for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
             npairs_save[ibin] = stats_sn.npairs[ibin];
             r2_save[ibin] = stats_sn.r[ibin];
           }
           if (params.form == "diag") {
-            for (int ibin = 0; ibin < params.num_bins; ibin++) {
+            for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
               r1_save[ibin] = stats_sn.r[ibin];
             }
           } else
           if (params.form == "full") {
-            for (int ibin = 0; ibin < params.num_bins; ibin++) {
+            for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
               r1_save[ibin] = stats_sn.r[params.idx_bin];
             }
           }
@@ -1464,7 +1464,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           );
         }
 
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
           double r_b = r2_save[ibin];
 
           F_lm_b.inv_fourier_transform_sjl_ylm_wgtd_field(
@@ -1515,7 +1515,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   /// --------------------------------------------------------------------
 
   trv::ThreePCFWindowMeasurements threepcfwin_out;
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     if (params.form == "diag") {
       threepcfwin_out.r1bin.push_back(rbinning.bin_centres[ibin]);
     } else
@@ -1564,12 +1564,12 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   /// Set up output.
-  int* nmodes_save = new int[params.num_bins];
-  double* k1_save = new double[params.num_bins];
-  double* k2_save = new double[params.num_bins];
-  std::complex<double>* bk_save = new std::complex<double>[params.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[params.num_bins];
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  int* nmodes_save = new int[kbinning.num_bins];
+  double* k1_save = new double[kbinning.num_bins];
+  double* k2_save = new double[kbinning.num_bins];
+  std::complex<double>* bk_save = new std::complex<double>[kbinning.num_bins];
+  std::complex<double>* sn_save = new std::complex<double>[kbinning.num_bins];
+  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     nmodes_save[ibin] = 0;
     k1_save[ibin] = 0.;
     k2_save[ibin] = 0.;
@@ -1699,13 +1699,13 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             dn_LM_a, ylm_k_a, k_lower, k_upper, k_eff_a_, nmodes_a_
           );
 
-          for (int ibin = 0; ibin < params.num_bins; ibin++) {
+          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
             // nmodes1_save[ibin] = nmodes_a_ inferred from *_b_
             k1_save[ibin] = k_eff_a_;
           }
         }
 
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
           double k_cen = kbinning.bin_centres[ibin];
           double k_lower = kbinning.bin_edges[ibin];
           double k_upper = kbinning.bin_edges[ibin + 1];
@@ -1822,7 +1822,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           /// When l₁ = l₂ = 0, the Wigner 3-j symbol enforces L = 0
           /// and the pre-factors involving degrees and orders become 1.
           std::complex<double> S_ijk = coupling * Sbar_LM;  // S|{i = j = k}
-          for (int ibin = 0; ibin < params.num_bins; ibin++) {
+          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
             sn_save[ibin] += S_ijk;
           }
         }
@@ -1834,13 +1834,13 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             dn_LM_a_for_sn, N_LM_a, Sbar_LM, params.ell1, m1_, kbinning
           );
           if (params.form == "diag") {
-            for (int ibin = 0; ibin < params.num_bins; ibin++) {
+            for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
               sn_save[ibin] += coupling * (
                 stats_sn.pk[ibin] - stats_sn.sn[ibin]
               );
             }
           } else if (params.form == "full") {
-            for (int ibin = 0; ibin < params.num_bins; ibin++) {
+            for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
               sn_save[ibin] += coupling * (
                 stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
               );
@@ -1855,13 +1855,13 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             dn_LM_b_for_sn, N_LM_b, Sbar_LM,
             params.ell2, m2_, kbinning
           );
-          for (int ibin = 0; ibin < params.num_bins; ibin++) {
+          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
             sn_save[ibin] += coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
           }
         }
 
   			FieldStats stats_sn(params);
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
           double k_a = k1_save[ibin];
           double k_b = k2_save[ibin];
 
@@ -1899,7 +1899,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   /// --------------------------------------------------------------------
 
   trv::BispecMeasurements bispec_out;
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     if (params.form == "diag") {
       bispec_out.k1bin.push_back(kbinning.bin_centres[ibin]);
     } else

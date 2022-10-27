@@ -699,6 +699,13 @@ class FieldStats {
    */
   bool if_fields_compatible(MeshField& field_a, MeshField& field_b);
 
+  /**
+   * @brief Resize binned two-point statistics.
+   *
+   * @param num_bins Number of bins.
+   */
+  void resize_stats(int num_bins);
+
   /// --------------------------------------------------------------------
   /// Sampling corrections
   /// --------------------------------------------------------------------

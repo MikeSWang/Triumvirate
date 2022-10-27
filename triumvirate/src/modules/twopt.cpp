@@ -199,11 +199,11 @@ trv::PowspecMeasurements compute_powspec(
   int ell1 = params.ELL;
 
   /// Set up output.
-  int* nmodes_save = new int[params.num_bins];
-  double* k_save = new double[params.num_bins];
-  std::complex<double>* pk_save = new std::complex<double>[params.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[params.num_bins];
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  int* nmodes_save = new int[kbinning.num_bins];
+  double* k_save = new double[kbinning.num_bins];
+  std::complex<double>* pk_save = new std::complex<double>[kbinning.num_bins];
+  std::complex<double>* sn_save = new std::complex<double>[kbinning.num_bins];
+  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     nmodes_save[ibin] = 0;
     k_save[ibin] = 0.;
     pk_save[ibin] = 0.;
@@ -242,13 +242,13 @@ trv::PowspecMeasurements compute_powspec(
         dn_LM, dn_00, sn_amp, ell1, m1, kbinning
       );
 
-      for (int ibin = 0; ibin < params.num_bins; ibin++) {
+      for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
         pk_save[ibin] += coupling * stats_2pt.pk[ibin];
         sn_save[ibin] += coupling * stats_2pt.sn[ibin];
       }
 
       if (M_ == 0 && m1 == 0) {
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
           nmodes_save[ibin] = stats_2pt.nmodes[ibin];
           k_save[ibin] = stats_2pt.k[ibin];
         }
@@ -265,7 +265,7 @@ trv::PowspecMeasurements compute_powspec(
   /// --------------------------------------------------------------------
 
   trv::PowspecMeasurements powspec_out;
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     powspec_out.kbin.push_back(kbinning.bin_centres[ibin]);
     powspec_out.keff.push_back(k_save[ibin]);
     powspec_out.nmodes.push_back(nmodes_save[ibin]);
@@ -306,10 +306,10 @@ trv::TwoPCFMeasurements compute_corrfunc(
   int ell1 = params.ELL;
 
   /// Set up output.
-  int* npairs_save = new int[params.num_bins];
-  double* r_save = new double[params.num_bins];
-  std::complex<double>* xi_save = new std::complex<double>[params.num_bins];
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  int* npairs_save = new int[rbinning.num_bins];
+  double* r_save = new double[rbinning.num_bins];
+  std::complex<double>* xi_save = new std::complex<double>[rbinning.num_bins];
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     npairs_save[ibin] = 0;
     r_save[ibin] = 0.;
     xi_save[ibin] = 0.;
@@ -347,12 +347,12 @@ trv::TwoPCFMeasurements compute_corrfunc(
         dn_LM, dn_00, sn_amp, ell1, m1, rbinning
       );
 
-      for (int ibin = 0; ibin < params.num_bins; ibin++) {
+      for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
         xi_save[ibin] += coupling * stats_2pt.xi[ibin];
       }
 
       if (M_ == 0 && m1 == 0) {
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
           npairs_save[ibin] = stats_2pt.npairs[ibin];
           r_save[ibin] = stats_2pt.r[ibin];
         }
@@ -371,7 +371,7 @@ trv::TwoPCFMeasurements compute_corrfunc(
   /// --------------------------------------------------------------------
 
   trv::TwoPCFMeasurements corrfunc_out;
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     corrfunc_out.rbin.push_back(rbinning.bin_centres[ibin]);
     corrfunc_out.reff.push_back(r_save[ibin]);
     corrfunc_out.npairs.push_back(npairs_save[ibin]);
@@ -406,11 +406,11 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
   /// Set-up
   /// --------------------------------------------------------------------
 
-  int* nmodes_save = new int[params.num_bins];
-  double* k_save = new double[params.num_bins];
-  std::complex<double>* pk_save = new std::complex<double>[params.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[params.num_bins];
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  int* nmodes_save = new int[kbinning.num_bins];
+  double* k_save = new double[kbinning.num_bins];
+  std::complex<double>* pk_save = new std::complex<double>[kbinning.num_bins];
+  std::complex<double>* sn_save = new std::complex<double>[kbinning.num_bins];
+  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     nmodes_save[ibin] = 0;
     k_save[ibin] = 0.;
     pk_save[ibin] = 0.;
@@ -444,7 +444,7 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
     dn, dn, sn_amp, params.ELL, 0, kbinning
   );
 
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     nmodes_save[ibin] = stats_2pt.nmodes[ibin];
     k_save[ibin] = stats_2pt.k[ibin];
     pk_save[ibin] += double(2*params.ELL + 1) * stats_2pt.pk[ibin];
@@ -457,7 +457,7 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
 
   /// Fill in output struct.
   trv::PowspecMeasurements powspec_out;
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     powspec_out.kbin.push_back(kbinning.bin_centres[ibin]);
     powspec_out.keff.push_back(k_save[ibin]);
     powspec_out.nmodes.push_back(nmodes_save[ibin]);
@@ -495,10 +495,10 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
   /// Set-up
   /// --------------------------------------------------------------------
 
-  int* npairs_save = new int[params.num_bins];
-  double* r_save = new double[params.num_bins];
-  std::complex<double>* xi_save = new std::complex<double>[params.num_bins];
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  int* npairs_save = new int[rbinning.num_bins];
+  double* r_save = new double[rbinning.num_bins];
+  std::complex<double>* xi_save = new std::complex<double>[rbinning.num_bins];
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     npairs_save[ibin] = 0;
     r_save[ibin] = 0.;
     xi_save[ibin] = 0.;
@@ -531,7 +531,7 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
     dn, dn, sn_amp, params.ELL, 0, rbinning
   );
 
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     npairs_save[ibin] = stats_2pt.npairs[ibin];
     r_save[ibin] = stats_2pt.r[ibin];
     xi_save[ibin] += double(2*params.ELL + 1) * stats_2pt.xi[ibin];
@@ -543,7 +543,7 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
 
   /// Fill in output struct.
   trv::TwoPCFMeasurements corrfunc_out;
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     corrfunc_out.rbin.push_back(rbinning.bin_centres[ibin]);
     corrfunc_out.reff.push_back(r_save[ibin]);
     corrfunc_out.npairs.push_back(npairs_save[ibin]);
@@ -583,10 +583,10 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
   int ell1 = params.ELL;
 
   /// Set up output.
-  int* npairs_save = new int[params.num_bins];
-  double* r_save = new double[params.num_bins];
-  std::complex<double>* xi_save = new std::complex<double>[params.num_bins];
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  int* npairs_save = new int[rbinning.num_bins];
+  double* r_save = new double[rbinning.num_bins];
+  std::complex<double>* xi_save = new std::complex<double>[rbinning.num_bins];
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     npairs_save[ibin] = 0;
     r_save[ibin] = 0.;
     xi_save[ibin] = 0.;
@@ -622,12 +622,12 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
         dn_LM, dn_00, sn_amp, ell1, m1, rbinning
       );
 
-      for (int ibin = 0; ibin < params.num_bins; ibin++) {
+      for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
         xi_save[ibin] += coupling * stats_2pt.xi[ibin];
       }
 
       if (M_ == 0 && m1 == 0) {
-        for (int ibin = 0; ibin < params.num_bins; ibin++) {
+        for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
           npairs_save[ibin] = stats_2pt.npairs[ibin];
           r_save[ibin] = stats_2pt.r[ibin];
         }
@@ -647,7 +647,7 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
   /// --------------------------------------------------------------------
 
   trv::TwoPCFWindowMeasurements corrfunc_win_out;
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     corrfunc_win_out.rbin.push_back(rbinning.bin_centres[ibin]);
     corrfunc_win_out.reff.push_back(r_save[ibin]);
     corrfunc_win_out.npairs.push_back(npairs_save[ibin]);
