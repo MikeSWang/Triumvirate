@@ -15,7 +15,8 @@ import yaml
 from parameters cimport CppParameterSet
 
 
-_EMPTY_PARAM_DICT = {
+# NOTE: Nested entries must not have a non-None default value.
+_DEFAULT_PARAM_DICT = {
     'directories': {
         'catalogues': None,
         'measurements': None,
@@ -29,22 +30,22 @@ _EMPTY_PARAM_DICT = {
     },
     'boxsize': {'x': None, 'y': None, 'z': None},
     'ngrid': {'x': None, 'y': None, 'z': None},
-    'alignment': None,
-    'padscale': None,
+    'alignment': 'centre',
+    'padscale': 'box',
     'padfactor': None,
-    'assignment': None,
-    'interlace': None,
+    'assignment': 'tsc',
+    'interlace': False,
     'catalogue_type': None,
     'statistic_type': None,
-    'norm_convention': None,
-    'binning': None,
-    'form': None,
+    'norm_convention': 'particle',
+    'binning': 'lin',
+    'form': 'diag',
     'degrees': {'ell1': None, 'ell2': None, 'ELL': None},
     'wa_orders': {'i': None, 'j': None},
     'range': [None, None],
     'num_bins': None,
     'idx_bin': None,
-    'verbose': None,
+    'verbose': 20,
 }
 
 
@@ -82,7 +83,7 @@ cdef class ParameterSet:
 
     Notes
     -----
-    Use :func:`~triumvirate.parameters.show_paramset_template()` to
+    Use :func:`~triumvirate.parameters.fetch_paramset_template()` to
     generate a template parameter file (with explanatory text).
 
     """
@@ -130,6 +131,33 @@ cdef class ParameterSet:
         self._params.update({key: val})
         self._original = False
         self._validity = False
+
+    def items(self):
+        """Return the set of entries like a :class:`dict`.
+
+        Returns
+        -------
+        :class:`dict_items`
+            Parameters as dictionary items.
+
+        """
+        return self._params.items()
+
+    def get(self, key):
+        """Return a possibly non-existent entry like a :class:`dict`.
+
+        Parameters
+        ----------
+        key : str
+            Parameter name, possibly non-existent.
+
+        Returns
+        -------
+        object
+            Parameter value, :keyword:`None` if non-existent.
+
+        """
+        return self._params.get(key)
 
     def print_to_file(self, filepath=None):
         """Print out validated parameters to a YAML file.
@@ -344,8 +372,8 @@ cdef class ParameterSet:
             pass
 
 
-def show_paramset_template(format):
-    """Show a parameter set template, either as a YAML file
+def fetch_paramset_template(format, ret_defaults=False, params_sampling=None):
+    """Fetch a parameter set template, either as a YAML file
     (with explanatory text) or as a dictionary.
 
     The returned template parameters are not validated as some mandatory
@@ -353,14 +381,21 @@ def show_paramset_template(format):
 
     Parameters
     ----------
-    format : {'yaml', 'dict'}
-        Template format, either file contents ('yaml')
+    format : {'text', 'dict'}
+        Template format, either file contents ('text')
         or dictionary ('dict').
+    ret_defaults : bool, optional
+        If :keyword:`True` (default is :keyword:`False`), return a list
+        of non-:keyword:`None` default parameters in the template.
+        Only used when :param:`format` is 'dict'.
 
     Returns
     -------
     template : str or dict
-        Parameter set template.
+        Parameter set template as text or a dictionary.
+    defaults : dict
+        Parameter set default entries.  Only returned when :param:`format`
+        is 'dict' and :param:`ret_defaults` is :keyword:`True`.
 
     Raises
     ------
@@ -368,11 +403,205 @@ def show_paramset_template(format):
         If :param:`format` is neither 'yaml' nor 'dict'.
 
     """
-    if format.lower() == 'yaml':
-        pkg_root_dir = Path(__file__).parent
-        tml_filepath = pkg_root_dir/"resources"/"params_example.yml"
-        template = Path(tml_filepath).read_text()
-    elif format.lower() == 'dict':
-        template = _EMPTY_PARAM_DICT
+    pkg_root_dir = Path(__file__).parent
+    tml_filepath = pkg_root_dir/"resources"/"params_example.yml"
 
-    return template
+    text_template = Path(tml_filepath).read_text()
+    dict_template = yaml.load(text_template, loader=yaml.Loader)
+
+    if not ret_defaults:
+        if format.lower() == 'text':
+            return text_template
+        if format.lower() == 'dict':
+            return dict_template
+
+    defaults = {}
+    for key, val in dict_template.items():
+        if isinstance(val, (tuple, list, set, dict)):
+            continue
+        if val is not None:
+            defaults.update({key: val})
+
+    if format.lower() == 'text':
+        return text_template, defaults
+    if format.lower() == 'dict':
+        return dict_template, defaults
+
+    raise ValueError("`format` must be either 'text' or 'dict'.")
+
+
+def _modify_sampling_parameters(paramset, params_sampling=None,
+                                params_default=None, ret_defaults=False):
+    """Modify sampling parameters in a parameter set.
+
+    Parameters
+    ----------
+    paramset : dict-like
+        Parameter set to be updated.
+    params_sampling : dict, optional
+        Dictionary containing a subset of the following entries
+        for sampling parameters:
+            * 'boxalign': {'centre', 'pad'};
+            * 'boxsize': [float, float, float];
+            * 'ngrid': [int, int, int];
+            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+            * 'interlace': bool;
+        and one and only one of the following when 'boxalign' is 'pad':
+            * 'boxpad': float;
+            * 'gridpad': float.
+        This will override corresponding parameters in the template.
+        If :keyword:`None` (default), no modification happens and
+        the original :param:`paramset` is returned.
+    params_default : dict, optional
+        If not :keyword:`None` (default), this is a sub-dictionary of
+        :param:`paramset` and any of its entries unmodified by
+        :param:`params_sampling` will be registered as default values.
+    ret_defaults : bool, optional
+        If :keyword:`True` (default is :keyword:`False`), return a list
+        of non-:keyword:`None` default parameters which have not been
+        modified.  Only used if :param:`params_default` is
+        not :keyword:`None`.
+
+    Returns
+    -------
+    paramset : dict-like
+        Modified parameter set.
+    params_default : dict, optional
+        Only returned when :param:`ret_defaults` is :keyword:`True` and
+        there are unmodified default parameters from
+        :param:`params_default`.
+
+    Raises
+    ------
+    ValueError
+        When :param:`params_default` is not a sub-dictionary of
+        :param:`paramset`.
+
+    """
+    if params_sampling is None:
+        return paramset
+
+    if params_default is not None:
+        if not (params_default.items() <= paramset.items()):
+            raise ValueError(
+                "`params_default` should be a subdictionary of `paramset`."
+            )
+
+    if 'boxalign' in params_sampling.keys():
+        paramset['alignment'] = params_sampling['boxalign']
+        if params_default: params_default.pop('alignment')
+
+    if paramset.get('alignment') == 'pad':
+        if 'boxpad' in params_sampling.keys() \
+                and 'gridpad' in params_sampling.keys():
+            raise ValueError(
+                "Cannot set both 'boxpad` and 'gridpad' in `params_sampling`."
+            )
+    if 'boxpad' in params_sampling.keys():
+        paramset['padscale'] = 'box'
+        paramset['padfactor'] = params_sampling['boxpad']
+        if params_default:
+            params_default.pop('padscale')
+            params_default.pop('padfactor')
+    if 'gridpad' in params_sampling.keys():
+        paramset['padscale'] = 'grid'
+        paramset['padfactor'] = params_sampling['gridpad']
+        if params_default:
+            params_default.pop('padscale')
+            params_default.pop('padfactor')
+
+    if 'boxsize' in params_sampling.keys():
+        paramset['boxsize'] = dict(zip(
+            ['x', 'y', 'z'], params_sampling['boxsize']
+        ))
+        if params_default: params_default.pop('boxsize')
+    if 'ngrid' in params_sampling.keys():
+        paramset['ngrid'] = dict(zip(
+            ['x', 'y', 'z'], params_sampling['ngrid']
+        ))
+        if params_default: params_default.pop('ngrid')
+    if 'assignment' in params_sampling.keys():
+        paramset['assignment'] = params_sampling['assignment']
+        if params_default: params_default.pop('assignment')
+    if 'interlace' in params_sampling.keys():
+        paramset['interlace'] = params_sampling['interlace']
+        if params_default: params_default.pop('interlace')
+
+    if ret_defaults:
+        return paramset, params_default
+    return paramset
+
+
+def _modify_measurement_parameters(paramset, params_measure=None,
+                                   params_default=None, ret_defaults=False):
+    """Modify measurement parameters in a parameter set.
+
+    Parameters
+    ----------
+    paramset : dict-like
+        Parameter dictionary to be updated.
+    params_measure : dict, optional
+        Dictionary containing a subset of the following entries
+        for measurement parameters:
+            * 'ell1', 'ell2', 'ELL': int;
+            * 'i_wa', 'j_wa': int;
+            * 'idx_bin': int;
+            * 'form': {'diag', 'full'}.
+        This will override corresponding parameters in the template.
+        If :keyword:`None` (default), no modification happens and
+        the original :param:`paramset` is returned.
+    params_default : dict, optional
+        If not :keyword:`None` (default), this is a sub-dictionary of
+        :param:`paramset` and any of its entries unmodified by
+        :param:`params_measure` will be registered as default values.
+    ret_defaults : bool, optional
+        If :keyword:`True` (default is :keyword:`False`), return a list
+        of non-:keyword:`None` default parameters which have not been
+        modified.  Only used if :param:`params_default` is
+        not :keyword:`None`.
+
+    Returns
+    -------
+    paramset : dict-like
+        Modified parameter dictionary.
+    params_default : dict, optional
+        Only returned when :param:`ret_defaults` is :keyword:`True` and
+        there are unmodified default parameters from
+        :param:`params_default`.
+
+    Raises
+    ------
+    ValueError
+        When :param:`params_default` is not a subdictionary of
+        :param:`paramset`.
+
+    """
+    if params_measure is None:
+        return paramset
+
+    if params_default is not None:
+        if not (params_default.items() <= paramset.items()):
+            raise ValueError(
+                "`params_default` should be a subdictionary of `paramset`."
+            )
+
+    for deg_label in ['ell1', 'ell2', 'ELL']:
+        if deg_label in params_measure.keys():
+            paramset['degrees'][deg_label] = params_measure[deg_label]
+
+    for waorder_label in ['i_wa', 'j_wa']:
+        if waorder_label in params_measure.keys():
+            paramset['wa_orders'][waorder_label.rstrip('_wa')] = \
+                params_measure[waorder_label]
+
+    if 'form' in params_measure.keys():
+        paramset['form'] = params_measure['form']
+        if params_default: params_default.pop('form')
+
+    if 'idx_bin' in params_measure.keys():
+        paramset['idx_bin'] = params_measure['idx_bin']
+        if params_default: params_default.pop('idx_bin')
+
+    if ret_defaults:
+        return paramset, params_default
+    return paramset
