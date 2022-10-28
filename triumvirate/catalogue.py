@@ -361,7 +361,7 @@ class ParticleCatalogue:
         ----------
         boxsize : (3,) array of float
             Box size in each dimension.
-        ngrid : (3,) array of int
+        ngrid : (3,) array of int, optional
             Grid number in each dimension (default is :keyword:`None`).
             Must be provided if :param:`ngrid_pad` is set.
         boxsize_pad : ((3,) array of) float, optional
