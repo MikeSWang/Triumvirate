@@ -186,7 +186,7 @@ trv::PowspecMeasurements compute_powspec(
 ) {
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "Measuring power spectrum from paired survey-type catalogues..."
+      "Computing power spectrum from paired survey-type catalogues..."
     );
   }
 
@@ -277,7 +277,7 @@ trv::PowspecMeasurements compute_powspec(
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "... measured power spectrum from paired survey-type catalogues."
+      "... computed power spectrum from paired survey-type catalogues."
     );
   }
 
@@ -292,8 +292,8 @@ trv::TwoPCFMeasurements compute_corrfunc(
 ) {
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "Measuring two-point correlation function "
-      "from paired survey-type catalogues..."
+      "Computing two-point correlation function from "
+      "paired survey-type catalogues..."
     );
   }
 
@@ -382,7 +382,7 @@ trv::TwoPCFMeasurements compute_corrfunc(
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "... measured two-point correlation function "
+      "... computed two-point correlation function "
       "from paired survey-type catalogues."
     );
   }
@@ -397,7 +397,7 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
 ) {
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "Measuring power spectrum from a periodic-box simulation-type catalogue "
+      "Computing power spectrum from a periodic-box simulation-type catalogue "
       "in the global plane-parallel approximation."
     );
   }
@@ -469,8 +469,8 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "... measured power spectrum from "
-      "a periodic-box simulation-type catalogue "
+      "... computed power spectrum "
+      "from a periodic-box simulation-type catalogue "
       "in the global plane-parallel approximation."
     );
   }
@@ -485,8 +485,8 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
 ) {
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "Measuring two-point correlation function "
-      "a periodic-box simulation-type catalogue "
+      "Computing two-point correlation function "
+      "from a periodic-box simulation-type catalogue "
       "in the global plane-parallel approximation."
     );
   }
@@ -554,8 +554,8 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "... measured two-point correlation function "
-      "a periodic-box simulation-type catalogue "
+      "... computed two-point correlation function "
+      "from a periodic-box simulation-type catalogue "
       "in the global plane-parallel approximation."
     );
   }
@@ -570,7 +570,7 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
 ) {
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "Measuring two-point correlation function window "
+      "Computing two-point correlation function window "
       "from a random catalogue..."
     );
   }
@@ -658,7 +658,7 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "... measured two-point correlation function window "
+      "... computed two-point correlation function window "
       "from a random catalogue."
     );
   }
