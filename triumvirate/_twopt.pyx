@@ -14,6 +14,7 @@ cimport numpy as np
 from triumvirate._catalogue cimport CppParticleCatalogue, _ParticleCatalogue
 from triumvirate.dataobjs cimport (
     Binning, CppBinning,
+    LineOfSight,
     PowspecMeasurements, TwoPCFMeasurements, TwoPCFWindowMeasurements
 )
 from triumvirate.parameters cimport CppParameterSet, ParameterSet

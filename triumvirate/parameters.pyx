@@ -205,7 +205,7 @@ cdef class ParameterSet:
                 self.thisptr.catalogue_dir = "".encode('utf-8')
             else:
                 self.thisptr.catalogue_dir = \
-                    self._params['directories']['catalogues']
+                    self._params['directories']['catalogues'].encode('utf-8')
         except KeyError:
             self.thisptr.catalogue_dir = "".encode('utf-8')
 
@@ -214,7 +214,7 @@ cdef class ParameterSet:
                 self.thisptr.measurement_dir = "".encode('utf-8')
             else:
                 self.thisptr.measurement_dir = \
-                    self._params['directories']['measurements']
+                    self._params['directories']['measurements'].encode('utf-8')
         except KeyError:
             self.thisptr.measurement_dir = "".encode('utf-8')
 
@@ -223,7 +223,7 @@ cdef class ParameterSet:
                 self.thisptr.data_catalogue_file = "".encode('utf-8')
             else:
                 self.thisptr.data_catalogue_file = \
-                    self._params['files']['data_catalogue']
+                    self._params['files']['data_catalogue'].encode('utf-8')
         except KeyError:
             self.thisptr.data_catalogue_file = "".encode('utf-8')
 
@@ -232,7 +232,7 @@ cdef class ParameterSet:
                 self.thisptr.rand_catalogue_file = "".encode('utf-8')
             else:
                 self.thisptr.rand_catalogue_file = \
-                    self._params['files']['rand_catalogue']
+                    self._params['files']['rand_catalogue'].encode('utf-8')
         except KeyError:
             self.thisptr.rand_catalogue_file = "".encode('utf-8')
 
@@ -240,7 +240,8 @@ cdef class ParameterSet:
             if self._params['tags']['output'] is None:
                 self.thisptr.output_tag = ''.encode('utf-8')
             else:
-                self.thisptr.output_tag = self._params['tags']['output']
+                self.thisptr.output_tag = \
+                    self._params['tags']['output'].encode('utf-8')
         except KeyError:
             self.thisptr.output_tag = ''.encode('utf-8')
 
