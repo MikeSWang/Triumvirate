@@ -186,7 +186,7 @@ trv::BispecMeasurements compute_bispec(
 ) {
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "Measuring bispectrum from paired survey-type catalogues..."
+      "Computing bispectrum from paired survey-type catalogues..."
     );
   }
 
@@ -483,7 +483,7 @@ trv::BispecMeasurements compute_bispec(
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "... measured bispectrum from paired survey-type catalogues."
+      "... computed bispectrum from paired survey-type catalogues."
     );
   }
 
@@ -498,7 +498,7 @@ trv::ThreePCFMeasurements compute_3pcf(
 ) {
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "Measuring three-point correlation function "
+      "Computing three-point correlation function "
       "from paired survey-type catalogues..."
     );
   }
@@ -749,7 +749,7 @@ trv::ThreePCFMeasurements compute_3pcf(
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "... measured 3-point correlation function "
+      "... computed 3-point correlation function "
       "from paired survey-type catalogues."
     );
   }
@@ -764,7 +764,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 ) {
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "Measuring bispectrum from a periodic-box simulation-type catalogue "
+      "Computing bispectrum from a periodic-box simulation-type catalogue "
       "in the global plane-parallel approximation."
     );
   }
@@ -1029,7 +1029,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "... measured bispectrum from a periodic-box simulation-type catalogue "
+      "... computed bispectrum from a periodic-box simulation-type catalogue "
       "in the global plane-parallel approximation."
     );
   }
@@ -1044,8 +1044,8 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
 ) {
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "Measuring three-point correlation function from "
-      "a periodic-box simulation-type catalogue "
+      "Computing three-point correlation function "
+      "from a periodic-box simulation-type catalogue "
       "in the global plane-parallel approximation."
     );
   }
@@ -1270,8 +1270,8 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "... measured 3-point correlation function from "
-      "a periodic-box simulation-type catalogue "
+      "... computed 3-point correlation function "
+      "from a periodic-box simulation-type catalogue "
       "in the global plane-parallel approximation."
     );
   }
@@ -1287,7 +1287,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   std::string msg_tag = wide_angle ? "wide-angle corrections " : "";
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "Measuring three-point correlation function window %s"
+      "Computing three-point correlation function window %s"
       "from random catalogue.",
       msg_tag.c_str()
     );
@@ -1546,7 +1546,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 ) {
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "Measuring bispectrum from paired survey-type catalogues "
+      "Computing bispectrum from paired survey-type catalogues "
       "for line-of-sight choice %d...",
       los_choice
     );
@@ -1919,7 +1919,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "... measured bispectrum from paired survey-type catalogues "
+      "... computed bispectrum from paired survey-type catalogues "
       "for line-of-sight choice %d.",
       los_choice
     );
