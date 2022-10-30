@@ -6,17 +6,17 @@
 # The paths can be either absolute or relative to the working directory.
 # If unset, the working directory is used as the default.
 directories:
-  catalogues: tests/test_input/catalogues
-  measurements: tests/test_output/measurements
+  catalogues: triumvirate/tests/test_input/catalogues
+  measurements: triumvirate/tests/test_output/measurements
 
 # Filenames (with extensions) for input/output sources.
 files:
-  data_catalogue: test_catalogue_data.dat
-  rand_catalogue: test_catalogue_rand.dat
+  data_catalogue:
+  rand_catalogue:
 
 # Tags to be substituted into input/output paths.
 tags:
-  output: _test
+  output: _pytest
 
 
 # -- Sampling -----------------------------------------------------------------
