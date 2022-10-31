@@ -211,40 +211,46 @@ int main(int argc, char* argv[]) {
     trv::sys::logger.stat("[B.2] Computing lines of sight...");
   }
 
-  trv::LineOfSight* los_data =
-    new trv::LineOfSight[catalogue_data.ntotal];  ///> data-source LoS
-  trv::sys::gbytesMem += trv::sys::size_in_gb<float>(3 * catalogue_data.ntotal);
-  for (int pid = 0; pid < catalogue_data.ntotal; pid++) {
-    double los_mag = trv::maths::get_vec3d_magnitude(catalogue_data[pid].pos);
+  trv::LineOfSight* los_data;
+  if (flag_data == "true") {
+    los_data = new trv::LineOfSight[catalogue_data.ntotal];  ///> data-source
+                                                             ///> LoS
+    trv::sys::gbytesMem += trv::sys::size_in_gb<float>(3 * catalogue_data.ntotal);
+    for (int pid = 0; pid < catalogue_data.ntotal; pid++) {
+      double los_mag = trv::maths::get_vec3d_magnitude(catalogue_data[pid].pos);
 
-    if (los_mag == 0.) {
-      trv::sys::logger.warn(
-        "A data-catalogue particle coincides with the origin."
-      );
-      los_mag = 1.;
+      if (los_mag == 0.) {
+        trv::sys::logger.warn(
+          "A data-catalogue particle coincides with the origin."
+        );
+        los_mag = 1.;
+      }
+
+      los_data[pid].pos[0] = catalogue_data[pid].pos[0] / los_mag;
+      los_data[pid].pos[1] = catalogue_data[pid].pos[1] / los_mag;
+      los_data[pid].pos[2] = catalogue_data[pid].pos[2] / los_mag;
     }
-
-    los_data[pid].pos[0] = catalogue_data[pid].pos[0] / los_mag;
-    los_data[pid].pos[1] = catalogue_data[pid].pos[1] / los_mag;
-    los_data[pid].pos[2] = catalogue_data[pid].pos[2] / los_mag;
   }
 
-  trv::LineOfSight* los_rand =
-    new trv::LineOfSight[catalogue_rand.ntotal];  ///> random-source LoS
-  trv::sys::gbytesMem += trv::sys::size_in_gb<float>(3 * catalogue_rand.ntotal);
-  for (int pid = 0; pid < catalogue_rand.ntotal; pid++) {
-    double los_mag = trv::maths::get_vec3d_magnitude(catalogue_rand[pid].pos);
+  trv::LineOfSight* los_rand;
+  if (flag_rand == "true") {
+    los_rand = new trv::LineOfSight[catalogue_rand.ntotal];  ///> random-source
+                                                             ///> LoS
+    trv::sys::gbytesMem += trv::sys::size_in_gb<float>(3 * catalogue_rand.ntotal);
+    for (int pid = 0; pid < catalogue_rand.ntotal; pid++) {
+      double los_mag = trv::maths::get_vec3d_magnitude(catalogue_rand[pid].pos);
 
-    if (los_mag == 0.) {
-      trv::sys::logger.warn(
-        "A random-catalogue particle coincides with the origin."
-      );
-      los_mag = 1.;
+      if (los_mag == 0.) {
+        trv::sys::logger.warn(
+          "A random-catalogue particle coincides with the origin."
+        );
+        los_mag = 1.;
+      }
+
+      los_rand[pid].pos[0] = catalogue_rand[pid].pos[0] / los_mag;
+      los_rand[pid].pos[1] = catalogue_rand[pid].pos[1] / los_mag;
+      los_rand[pid].pos[2] = catalogue_rand[pid].pos[2] / los_mag;
     }
-
-    los_rand[pid].pos[0] = catalogue_rand[pid].pos[0] / los_mag;
-    los_rand[pid].pos[1] = catalogue_rand[pid].pos[1] / los_mag;
-    los_rand[pid].pos[2] = catalogue_rand[pid].pos[2] / los_mag;
   }
 
 
@@ -626,8 +632,12 @@ int main(int argc, char* argv[]) {
   catalogue_data.finalise_particles();
   catalogue_rand.finalise_particles();
 
-  delete[] los_data; los_data = nullptr;
-  delete[] los_rand; los_rand = nullptr;
+  if (flag_data == "true") {
+    delete[] los_data; los_data = nullptr;
+  }
+  if (flag_rand == "true") {
+    delete[] los_rand; los_rand = nullptr;
+  }
   trv::sys::gbytesMem -= trv::sys::size_in_gb<float>(
     3 * (catalogue_data.ntotal + catalogue_rand.ntotal)
   );

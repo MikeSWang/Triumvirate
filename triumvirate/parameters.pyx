@@ -301,7 +301,7 @@ cdef class ParameterSet:
         if self._params['wa_orders']['j'] is not None:
             self.thisptr.j_wa = self._params['wa_orders']['j']
 
-        if None in self._params['range']:
+        if self._params['range'] is None or None in self._params['range']:
             raise InvalidParameter("`range` parameters must be set.")
         self.thisptr.bin_min = float(self._params['range'][0])
         self.thisptr.bin_max = float(self._params['range'][1])
