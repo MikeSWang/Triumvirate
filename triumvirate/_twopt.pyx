@@ -11,7 +11,7 @@ from libc.stdlib cimport malloc
 import numpy as np
 cimport numpy as np
 
-from triumvirate._catalogue cimport CppParticleCatalogue, _ParticleCatalogue
+from triumvirate._particles cimport CppParticleCatalogue, _ParticleCatalogue
 from triumvirate.dataobjs cimport (
     Binning, CppBinning,
     LineOfSight,

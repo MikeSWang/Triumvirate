@@ -10,7 +10,7 @@ import warnings
 import numpy as np
 from astropy.table import Table
 
-from triumvirate._catalogue import _ParticleCatalogue
+from triumvirate._particles import _ParticleCatalogue
 
 try:
     from nbodykit.base.catalog import CatalogSource
@@ -481,7 +481,7 @@ class ParticleCatalogue:
 
         Returns
         -------
-        :class:`~triumvirate._catalogue._ParticleCatalogue`
+        :class:`~triumvirate._particles._ParticleCatalogue`
             C++-wrapped catalogue.
 
         """
