@@ -1,13 +1,13 @@
 """
-Catalogue Parser (:mod:`~triumvirate._catalogue`)
+Catalogue Parser (:mod:`~triumvirate._particles`)
 ===========================================================================
 
-Parse Python catalogue objects into C++ catalogue objects.
+Parse Python catalogue objects into C++ particle catalogues.
 
 """
 cimport numpy as np
 
-from _catalogue cimport CppParticleCatalogue
+from _particles cimport CppParticleCatalogue
 
 
 cdef class _ParticleCatalogue:

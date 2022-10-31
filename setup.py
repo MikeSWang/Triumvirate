@@ -115,9 +115,9 @@ modules = [
         define_macros=macros,
     ),
     Extension(
-        f'{pkgdir}._catalogue',
+        f'{pkgdir}._particles',
         sources=[
-            f"{pkgdir}/_catalogue.pyx",
+            f"{pkgdir}/_particles.pyx",
             f"{self_modulesrc}/particles.cpp",
             f"{self_modulesrc}/monitor.cpp",
         ],
