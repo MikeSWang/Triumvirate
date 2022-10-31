@@ -24,11 +24,11 @@ cdef extern from "include/dataobjs.hpp":
         vector[double] bin_centres
         vector[double] bin_widths
 
-        CppBinning(double coord_min, double coord_max, int nbin)
+        CppBinning(double coord_min, double coord_max, int nbin) except +
         # CppBinning(CppParameterSet& params)
 
-        void set_bins(string scheme, string space)
-        void set_bins()
+        void set_bins(string scheme, string space) except +
+        void set_bins() except +
 
 
     # --------------------------------------------------------------------
