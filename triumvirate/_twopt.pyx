@@ -36,7 +36,7 @@ cdef extern from "include/twopt.hpp":
         "trv::calc_powspec_normalisation_from_particles" (
             CppParticleCatalogue& catalogue,
             double alpha
-        )
+        ) except +
 
 
     # --------------------------------------------------------------------

@@ -37,7 +37,7 @@ cdef extern from "include/threept.hpp":
         "trv::calc_bispec_normalisation_from_particles" (
             CppParticleCatalogue& catalogue,
             double alpha
-        )
+        ) except +
 
 
     # --------------------------------------------------------------------
