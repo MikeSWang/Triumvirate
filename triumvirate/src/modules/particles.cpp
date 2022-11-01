@@ -328,9 +328,7 @@ void ParticleCatalogue::calc_wtotal() {
 void ParticleCatalogue::calc_pos_min_and_max() {
   if (this->pdata == nullptr) {
     if (trvs::currTask == 0) {
-      std::printf("%s\n", this->source.c_str());
       trvs::logger.error("Particle data are uninitialised.");
-      std::printf("Here too!\n");
       throw trvs::InvalidData("Particle data are uninitialised.\n");
     }
   }
