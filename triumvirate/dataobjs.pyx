@@ -5,6 +5,8 @@ Data Objects (:mod:`~triumvirate.dataobjs`)
 Define data objects.
 
 """
+# import numpy as np
+
 from dataobjs cimport CppBinning
 
 
@@ -114,3 +116,34 @@ cdef class Binning:
         self.bin_edges = self.thisptr.bin_edges
         self.bin_centres = self.thisptr.bin_centres
         self.bin_widths = self.thisptr.bin_widths
+
+    # @property
+    # def bin_edges(self):
+    #     """Return :attr:`bin_edges`.
+    #
+    #     """
+    #     return self.bin_edges
+
+    # @bin_edges.setter
+    # def bin_edges(self, bin_edges):
+    #     """Set customised :attr:`bin_edges`.
+    #
+    #     :attr:`bin_centres` and :attr:`bin_widths` are also set
+    #     for internal consistency.
+    #
+    #     Parameters
+    #     ----------
+    #     bin_edges : array of float
+    #         Bin edges of length (:attr:`num_bins` + 1).
+    #
+    #     """
+    #     bin_centres = np.add(bin_edges[:-1], bin_edges[1:]) / 2.
+    #     bin_widths = np.subtract(bin_edges[1:], bin_edges[:-1])
+    #
+    #     self.bin_edges = bin_edges
+    #     self.bin_centres = bin_centres
+    #     self.bin_widths = bin_widths
+    #
+    #     self.thisptr.bin_edges = self.bin_edges
+    #     self.thisptr.bin_centres = self.bin_centres
+    #     self.thisptr.bin_widths = self.bin_widths
