@@ -6,6 +6,7 @@ Measuring two-point correlator statistics from catalogues.
 
 """
 import warnings
+from pathlib import Path
 
 import numpy as np
 
@@ -99,6 +100,163 @@ def _amalgamate_parameters(paramset=None, params_sampling=None, degree=None):
     return paramset
 
 
+def _get_measurement_filename(paramset):
+    """Get output measurement filename.
+
+    Parameters
+    ----------
+    paramset : :class:`~triumvirate.parameters.ParameterSet`
+        Parameter set.
+
+    Returns
+    -------
+    str
+        Output measurement filename.
+
+    Raises
+    ------
+    ValueError
+        When :param:`paramset` indicates the measurements are not
+        two-point statistics.
+
+    """
+    multipole = paramset['degrees']['ELL']
+
+    output_tag = paramset['tags']['output']
+    if output_tag is None:
+        output_tag = ""
+
+    if paramset['statistic_type'] == 'powspec':
+        return "pk{:d}{}".format(multipole, output_tag)
+    if paramset['statistic_type'] == '2pcf':
+        return "xi{:d}{}".format(multipole, output_tag)
+    if paramset['statistic_type'] == '2pcf-win':
+        return "xiw{:d}{}".format(multipole, output_tag)
+
+    raise ValueError(
+        "`paramset` 'statistic_type' does not correspond to a "
+        "recognised two-point statistic."
+    )
+
+
+def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
+    """Print two-point statistic measurement header including
+    sampling parameters, normalisation factors and data table columns.
+
+    Parameters
+    ----------
+    paramset : :class:`~triumvirate.parameters.ParameterSet`
+        Parameter set.
+    norm_factor, norm_factor_alt : double
+        Normalisation factor used and the alternative.
+
+    Returns
+    -------
+    text_header : str
+        Measurement information as a header string.
+
+    Raises
+    ------
+    ValueError
+        When :param:`paramset` indicates the measurements are not
+        two-point statistics.
+
+    """
+    if paramset['norm_convention'] == 'particle':
+        norm_convention = 'particle'
+        norm_convention_alt = 'mesh'
+    if paramset['norm_convention'] == 'mesh':
+        norm_convention = 'mesh'
+        norm_convention_alt = 'particle'
+
+    if paramset['npoint'] != '2pt':
+        raise ValueError(
+            "Measurement header being printed is for two-point statistics."
+        )
+    if paramset['space'] == 'fourier':
+        datatab_colnames = [
+            "k_cen", "k_eff", "nmodes",
+            "Re{{pk{:d}_raw}}".format(paramset['degrees']['ELL']),
+            "Im{{pk{:d}_raw}}".format(paramset['degrees']['ELL']),
+            "Re{{pk{:d}_shot}}".format(paramset['degrees']['ELL']),
+            "Im{{pk{:d}_shot}}".format(paramset['degrees']['ELL'])
+        ]
+    if paramset['space'] == 'config':
+        datatab_colnames = [
+            "r_cen", "r_eff", "npairs",
+            "Re{{xi{:d}}}".format(paramset['degrees']['ELL']),
+            "Im{{xi{:d}}}".format(paramset['degrees']['ELL'])
+        ]
+
+    text_lines = [
+        "Box size: ({:.3f}, {:.3f}, {:.3f})".format(
+            *[paramset['boxsize'][axis] for axis in ['x', 'y', 'z']]
+        ),
+        "Mesh number: ({:d}, {:d}, {:d})".format(
+            *[paramset['ngrid'][axis] for axis in ['x', 'y', 'z']]
+        ),
+        "Box alignment: {}".format(paramset['alignment']),
+        "Mesh assignment and interlacing: {}, {}".format(
+            paramset['alignment'], paramset['interlace']
+        ),
+        "Normalisation factor: "
+        "{:9e} ({}-based, used), {:9e} ({}-based, alternative)"
+            .format(
+                norm_factor, norm_convention,
+                norm_factor_alt, norm_convention_alt
+            ),
+        ", ".join([
+            "[{:d}] {}".format(colidx, colname)
+            for colidx, colname in enumerate(datatab_colnames)
+        ])
+    ]
+
+    text_header = "\n".join(text_lines)
+
+    return text_header
+
+
+def _assemble_measurement_datatab(measurements, paramset):
+    """Assemble measurement data table.
+
+    Parameters
+    ----------
+    measurements : dict
+        Measurement results.
+    paramset : :class:`~triumvirate.parameters.ParameterSet`
+        Parameter set.
+
+    Returns
+    -------
+    datatab : :class:`numpy.ndarray`
+        Column-major measurement data table.
+
+    Raises
+    ------
+    ValueError
+        When :param:`paramset` indicates the measurements are not
+        two-point statistics.
+
+    """
+    if paramset['npoint'] != '2pt':
+        raise ValueError(
+            "Measurement header being printed is for two-point statistics."
+        )
+    if paramset['space'] == 'fourier':
+        datatab = np.transpose([
+            measurements['kbin'], measurements['keff'], measurements['nmodes'],
+            measurements['pk_raw'].real, measurements['pk_raw'].imag,
+            measurements['pk_shot'].real, measurements['pk_shot'].imag,
+        ])
+    if paramset['space'] == 'config':
+        datatab = np.transpose([
+            measurements['rbin'], measurements['reff'], measurements['npairs'],
+            measurements['xi'].real, measurements['xi'].imag,
+        ])
+
+    return datatab
+
+
 # ========================================================================
 # Survey statistics
 # ========================================================================
@@ -108,7 +266,7 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
                                    los_data=None, los_rand=None,
                                    paramset=None, params_sampling=None,
                                    degree=None, binning=None,
-                                   logger=None):
+                                   save=False, logger=None):
     """Compute two-point statistics from survey-like data and random
     catalogues in the local plane-parallel approximation.
 
@@ -149,6 +307,9 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If :keyword:`None` (default),
         this is constructed from parameters.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -284,6 +445,35 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
     if logger:
         logger.info("... measured clustering statistics.", cpp_state='end')
 
+    if save:
+        header = "\n".join([
+            catalogue_data.write_attrs_as_header(catalogue_ref=catalogue_rand),
+            _print_measurement_header(paramset, norm_factor, norm_factor_alt),
+        ])
+        if save.lower() == '.txt':
+            datatab = _assemble_measurement_datatab(results, paramset)
+            ofilename = _get_measurement_filename(paramset)
+            ofilepath = (
+                Path(paramset['directories']['measurements'])/ofilename
+            ).with_suffix('.txt')
+            np.savetxt(
+                ofilepath, datatab, fmt='%.9e', header=header, delimiter='\t'
+            )
+        elif save.lower().endswith('npy'):
+            results.update({'header': header})
+            ofilename = _get_measurement_filename(paramset)
+            ofilepath = (
+                Path(paramset['directories']['measurements'])/ofilename
+            ).with_suffix('.npz')
+            np.savez(ofilepath, **results)
+        else:
+            raise ValueError(
+                f"Unrecognised save format for measurements: {save}."
+            )
+
+        if logger:
+            logger.info("Measurements saved to %s.", ofilepath)
+
     return results
 
 
@@ -291,7 +481,7 @@ def compute_powspec(catalogue_data, catalogue_rand,
                     los_data=None, los_rand=None,
                     degree=None, binning=None, sampling_params=None,
                     paramset=None,
-                    logger=None):
+                    save=False, logger=None):
     """Compute power spectrum from survey-like data and random catalogues
     in the local plane-parallel approximation.
 
@@ -331,6 +521,9 @@ def compute_powspec(catalogue_data, catalogue_rand,
         Full parameter set (default is :keyword:`None`).  This is used
         in lieu of :param:`degree`, :param:`binning` or
         :param:`sampling_params`.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -359,7 +552,7 @@ def compute_powspec(catalogue_data, catalogue_rand,
         los_data=los_data, los_rand=los_rand,
         paramset=paramset, params_sampling=sampling_params,
         degree=degree, binning=binning,
-        logger=logger
+        save=save, logger=logger
     )
 
     # if logger:
@@ -375,7 +568,7 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
                      los_data=None, los_rand=None,
                      degree=None, binning=None, sampling_params=None,
                      paramset=None,
-                     logger=None):
+                     save=False, logger=None):
     """Compute correlation function from survey-like data and random
     catalogues in the local plane-parallel approximation.
 
@@ -415,6 +608,9 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
         Full parameter set (default is :keyword:`None`).  This is used
         in lieu of :param:`degree`, :param:`binning` or
         :param:`sampling_params`.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -444,7 +640,7 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
         los_data=los_data, los_rand=los_rand,
         paramset=paramset, params_sampling=sampling_params,
         degree=degree, binning=binning,
-        logger=logger
+        save=save, logger=logger
     )
 
     # if logger:
@@ -464,7 +660,7 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
 def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
                                 paramset=None, params_sampling=None,
                                 degree=None, binning=None,
-                                logger=None):
+                                save=False, logger=None):
     """Compute two-point statistics from a simulation-box catalogue
     in the global plane-parallel approximation.
 
@@ -495,6 +691,9 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If :keyword:`None` (default),
         this is constructed from parameters.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -605,13 +804,42 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
     if logger:
         logger.info("... measured clustering statistics.", cpp_state='end')
 
+    if save:
+        header = "\n".join([
+            catalogue_data.write_attrs_as_header(),
+            _print_measurement_header(paramset, norm_factor, norm_factor_alt),
+        ])
+        if save.lower() == '.txt':
+            datatab = _assemble_measurement_datatab(results, paramset)
+            ofilename = _get_measurement_filename(paramset)
+            ofilepath = (
+                Path(paramset['directories']['measurements'])/ofilename
+            ).with_suffix('.txt')
+            np.savetxt(
+                ofilepath, datatab, fmt='%.9e', header=header, delimiter='\t'
+            )
+        elif save.lower().endswith('npy'):
+            results.update({'header': header})
+            ofilename = _get_measurement_filename(paramset)
+            ofilepath = (
+                Path(paramset['directories']['measurements'])/ofilename
+            ).with_suffix('.npz')
+            np.savez(ofilepath, **results)
+        else:
+            raise ValueError(
+                f"Unrecognised save format for measurements: {save}."
+            )
+
+        if logger:
+            logger.info("Measurements saved to %s.", ofilepath)
+
     return results
 
 
 def compute_powspec_in_gpp_box(catalogue_data,
                                degree=None, binning=None, sampling_params=None,
                                paramset=None,
-                               logger=None):
+                               save=False, logger=None):
     """Compute power spectrum from a simulation-box catalogue
     in the global plane-parallel approximation.
 
@@ -641,6 +869,9 @@ def compute_powspec_in_gpp_box(catalogue_data,
         Full parameter set (default is :keyword:`None`).  This is used
         in lieu of :param:`degree`, :param:`binning` or
         :param:`sampling_params`.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -668,7 +899,7 @@ def compute_powspec_in_gpp_box(catalogue_data,
         _compute_powspec_in_gpp_box, catalogue_data,
         paramset=paramset, params_sampling=sampling_params,
         degree=degree, binning=binning,
-        logger=logger
+        save=save, logger=logger
     )
 
     # if logger:
@@ -684,7 +915,7 @@ def compute_powspec_in_gpp_box(catalogue_data,
 def compute_corrfunc_in_gpp_box(catalogue_data,
                                 degree=None, binning=None, sampling_params=None,
                                 paramset=None,
-                                logger=None):
+                                save=False, logger=None):
     """Compute correlation function from a simulation-box catalogue
     in the global plane-parallel approximation.
 
@@ -714,6 +945,9 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
         Full parameter set (default is :keyword:`None`).  This is used
         in lieu of :param:`degree`, :param:`binning` or
         :param:`sampling_params`.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -742,7 +976,7 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
         _compute_corrfunc_in_gpp_box, catalogue_data,
         paramset=paramset, params_sampling=sampling_params,
         degree=degree, binning=binning,
-        logger=logger
+        save=save, logger=logger
     )
 
     # if logger:
@@ -763,7 +997,7 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
 def compute_corrfunc_window(catalogue_rand, los_rand=None,
                             degree=None, binning=None, sampling_params=None,
                             paramset=None,
-                            logger=None):
+                            save=False, logger=None):
     """Compute correlation function window from a random catalogue.
 
     Parameters
@@ -796,6 +1030,9 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
         Full parameter set (default is :keyword:`None`).  This is used
         in lieu of :param:`degree`, :param:`binning` or
         :param:`sampling_params`.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -899,5 +1136,34 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
         logger.info(
             "... measured window function statistics.", cpp_state='end'
         )
+
+    if save:
+        header = "\n".join([
+            catalogue_rand.write_attrs_as_header(),
+            _print_measurement_header(paramset, norm_factor, norm_factor_alt),
+        ])
+        if save.lower() == '.txt':
+            datatab = _assemble_measurement_datatab(results, paramset)
+            ofilename = _get_measurement_filename(paramset)
+            ofilepath = (
+                Path(paramset['directories']['measurements'])/ofilename
+            ).with_suffix('.txt')
+            np.savetxt(
+                ofilepath, datatab, fmt='%.9e', header=header, delimiter='\t'
+            )
+        elif save.lower().endswith('npy'):
+            results.update({'header': header})
+            ofilename = _get_measurement_filename(paramset)
+            ofilepath = (
+                Path(paramset['directories']['measurements'])/ofilename
+            ).with_suffix('.npz')
+            np.savez(ofilepath, **results)
+        else:
+            raise ValueError(
+                f"Unrecognised save format for measurements: {save}."
+            )
+
+        if logger:
+            logger.info("Measurements saved to %s.", ofilepath)
 
     return results
