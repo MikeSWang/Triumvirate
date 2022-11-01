@@ -516,3 +516,59 @@ class ParticleCatalogue:
             return quant.compute()
         except AttributeError:
             return quant
+
+    def write_attrs_as_header(self, catalogue_ref=None):
+        """Write catalogue attributes as a header.
+
+        Parameters
+        ----------
+        catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, optional
+            Reference catalogue (default is :keyword:`None`) whose
+            attributes are also written out.  This is typically the
+            random-source catalogue.
+
+        Returns
+        -------
+        text_header : string
+            Catalogue attributes as a header string.
+
+        """
+        if catalogue_ref is None:
+            text_lines = [
+                "Catalogue source: {}"
+                    .format(self._source),
+                "Catalogue size: {:d} particles of total weight {:.3f}"
+                    .format(self.ntotal, self.wtotal),
+                "Catalogue particle extents: "
+                "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"
+                    .format(
+                        *self.bounds['x'], *self.bounds['y'], *self.bounds['z']
+                    ),
+            ]
+        else:
+            text_lines = [
+                "Data catalogue source: {}"
+                    .format(self._source),
+                "Data catalogue size: {:d} particles of total weight {:.3f}"
+                    .format(self.ntotal, self.wtotal),
+                "Data-source particle extents: "
+                "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"
+                    .format(
+                        *self.bounds['x'], *self.bounds['y'], *self.bounds['z']
+                    ),
+                "Random catalogue source: {}"
+                    .format(catalogue_ref._source),
+                "Random catalogue size: {:d} particles of total weight {:.3f}"
+                    .format(self.ntotal, self.wtotal),
+                "Random-source particle extents: "
+                "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"
+                    .format(
+                        *catalogue_ref.bounds['x'],
+                        *catalogue_ref.bounds['y'],
+                        *catalogue_ref.bounds['z']
+                    ),
+            ]
+
+        text_header = "\n".join(text_lines)
+
+        return text_header

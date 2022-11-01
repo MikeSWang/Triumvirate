@@ -68,7 +68,7 @@ bool if_filepath_is_set(std::string pathstr) {
 void print_measurement_header_to_file(
   std::FILE* fileptr, trv::ParameterSet& params,
   trv::ParticleCatalogue& catalogue_data, trv::ParticleCatalogue& catalogue_rand,
-  double norm, double norm_alt
+  double norm_factor, double norm_factor_alt
 ) {
   std::fprintf(
     fileptr,
@@ -140,7 +140,7 @@ void print_measurement_header_to_file(
       "%s Normalisation factor: "
       "%.9e (particle-based, used), %.9e (mesh-based, alternative)\n",
       comment_delimiter,
-      norm, norm_alt
+      norm_factor, norm_factor_alt
     );
   } else
   if (params.norm_convention == "mesh") {
@@ -149,7 +149,7 @@ void print_measurement_header_to_file(
       "%s Normalisation factor: "
       "%.9e (mesh-based, used), %.9e (particle-based, alternative)\n",
       comment_delimiter,
-      norm, norm_alt
+      norm_factor, norm_factor_alt
     );
   }
 }
@@ -157,7 +157,7 @@ void print_measurement_header_to_file(
 void print_measurement_header_to_file(
   std::FILE* fileptr,
   trv::ParameterSet& params, trv::ParticleCatalogue& catalogue,
-  double norm, double norm_alt
+  double norm_factor, double norm_factor_alt
 ) {
   std::fprintf(
     fileptr,
@@ -210,7 +210,7 @@ void print_measurement_header_to_file(
       "%s Normalisation factor: "
       "%.9e (particle-based, used), %.9e (mesh-based, alternative)\n",
       comment_delimiter,
-      norm, norm_alt
+      norm_factor, norm_factor_alt
     );
   } else
   if (params.norm_convention == "mesh") {
@@ -219,7 +219,7 @@ void print_measurement_header_to_file(
       "%s Normalisation factor: "
       "%.9e (mesh-based, used), %.9e (particle-based, alternative)\n",
       comment_delimiter,
-      norm, norm_alt
+      norm_factor, norm_factor_alt
     );
   }
 }

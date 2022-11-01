@@ -6,6 +6,7 @@ Measuring three-point correlator statistics from catalogues.
 
 """
 import warnings
+from pathlib import Path
 
 import numpy as np
 
@@ -131,6 +132,174 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
     return paramset
 
 
+def _get_measurement_filename(paramset):
+    """Get output measurement filename.
+
+    Parameters
+    ----------
+    paramset : :class:`~triumvirate.parameters.ParameterSet`
+        Parameter set.
+
+    Returns
+    -------
+    str
+        Output measurement filename.
+
+    Raises
+    ------
+    ValueError
+        When :param:`paramset` indicates the measurements are not
+        three-point statistics.
+
+    """
+    multipole = "{ell1}{ell2}{ELL}".format(**paramset['degrees'])
+
+    if paramset['form'] == 'diag':
+        binform = "_diag"
+    if paramset['form'] == 'full':
+        binform = "_bin{:02d}".format(paramset['idx_bin'])
+
+    output_tag = paramset['tags']['output']
+    if output_tag is None:
+        output_tag = ""
+
+    if paramset['statistic_type'] == 'bispec':
+        return "bk{}{}{}".format(multipole, binform, output_tag)
+    if paramset['statistic_type'] == '3pcf':
+        return "zeta{}{}{}".format(multipole, binform, output_tag)
+    if paramset['statistic_type'] == '3pcf-win':
+        return "zetaw{}{}{}".format(multipole, binform, output_tag)
+    if paramset['statistic_type'] == '3pcf-win-wa':
+        wa_tag = "_wa{i}{j}".format(**paramset['wa_orders'])
+        return "zetaw{}{}{}{}".format(multipole, binform, wa_tag, output_tag)
+
+    raise ValueError(
+        "`paramset` 'statistic_type' does not correspond to a "
+        "recognised three-point statistic."
+    )
+
+
+def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
+    """Print three-point statistic measurement header including
+    sampling parameters, normalisation factors and data table columns.
+
+    Parameters
+    ----------
+    paramset : :class:`~triumvirate.parameters.ParameterSet`
+        Parameter set.
+    norm_factor, norm_factor_alt : double
+        Normalisation factor used and the alternative.
+
+    Returns
+    -------
+    text_header : str
+        Measurement information as a header string.
+
+    """
+    if paramset['norm_convention'] == 'particle':
+        norm_convention = 'particle'
+        norm_convention_alt = 'mesh'
+    if paramset['norm_convention'] == 'mesh':
+        norm_convention = 'mesh'
+        norm_convention_alt = 'particle'
+
+    if paramset['npoint'] != '3pt':
+        raise ValueError(
+            "Measurement header being printed is for three-point statistics."
+        )
+
+    multipole = "{ell1}{ell2}{ELL}".format(**paramset['degrees'])
+    if paramset['space'] == 'fourier':
+        datatab_colnames = [
+            "k1_cen", "k1_eff", "k2_cen", "k2_eff", "nmodes",
+            "Re{{bk{}_raw}}".format(multipole),
+            "Im{{bk{}_raw}}".format(multipole),
+            "Re{{bk{}_shot}}".format(multipole),
+            "Im{{bk{}_shot}}".format(multipole)
+        ]
+    if paramset['space'] == 'config':
+        datatab_colnames = [
+            "r1_cen", "r1_eff", "r2_cen", "r2_eff", "npairs",
+            "Re{{zeta{}_raw}}".format(multipole),
+            "Im{{zeta{}_raw}}".format(multipole),
+            "Re{{zeta{}_shot}}".format(multipole),
+            "Im{{zeta{}_shot}}".format(multipole)
+        ]
+
+    text_lines = [
+        "Box size: ({:.3f}, {:.3f}, {:.3f})".format(
+            *[paramset['boxsize'][axis] for axis in ['x', 'y', 'z']]
+        ),
+        "Mesh number: ({:d}, {:d}, {:d})".format(
+            *[paramset['ngrid'][axis] for axis in ['x', 'y', 'z']]
+        ),
+        "Box alignment: {}".format(paramset['alignment']),
+        "Mesh assignment and interlacing: {}, {}".format(
+            paramset['alignment'], paramset['interlace']
+        ),
+        "Normalisation factor: "
+        "{:9e} ({}-based, used), {:9e} ({}-based, alternative)"
+            .format(
+                norm_factor, norm_convention,
+                norm_factor_alt, norm_convention_alt
+            ),
+        ", ".join([
+            "[{:d}] {}".format(colidx, colname)
+            for colidx, colname in enumerate(datatab_colnames)
+        ])
+    ]
+
+    text_header = "\n".join(text_lines)
+
+    return text_header
+
+
+def _assemble_measurement_datatab(measurements, paramset):
+    """Assemble measurement data table.
+
+    Parameters
+    ----------
+    measurements : dict
+        Measurement results.
+    paramset : :class:`~triumvirate.parameters.ParameterSet`
+        Parameter set.
+
+    Returns
+    -------
+    datatab : :class:`numpy.ndarray`
+        Column-major measurement data table.
+
+    Raises
+    ------
+    ValueError
+        When :param:`paramset` indicates the measurements are not
+        three-point statistics.
+
+    """
+    if paramset['npoint'] != '3pt':
+        raise ValueError(
+            "Measurement header being printed is for three-point statistics."
+        )
+    if paramset['space'] == 'fourier':
+        datatab = np.transpose([
+            measurements['k1bin'], measurements['k1eff'],
+            measurements['k2bin'], measurements['k2eff'],
+            measurements['nmodes'],
+            measurements['bk_raw'].real, measurements['bk_raw'].imag,
+            measurements['bk_shot'].real, measurements['bk_shot'].imag,
+        ])
+    if paramset['space'] == 'config':
+        datatab = np.transpose([
+            measurements['r1bin'], measurements['r1eff'],
+            measurements['r2bin'], measurements['r2eff'],
+            measurements['npairs'],
+            measurements['zeta_raw'].real, measurements['zeta_raw'].imag,
+            measurements['zeta_shot'].real, measurements['zeta_shot'].imag,
+        ])
+
+    return datatab
+
+
 # ========================================================================
 # Survey statistics
 # ========================================================================
@@ -141,7 +310,7 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
                                    paramset=None, params_sampling=None,
                                    degrees=None, binning=None,
                                    form=None, idx_bin=None,
-                                   logger=None):
+                                   save=False, logger=None):
     """Compute three-point statistics from survey-like data and random
     catalogues in the local plane-parallel approximation.
 
@@ -191,6 +360,9 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         Fixed bin index for the first coordinate dimension when binning
         `form` is 'full'.  If not :keyword:`None` (default), this will
         override `paramset['idx_bin']`.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -327,6 +499,35 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
     if logger:
         logger.info("... measured clustering statistics.", cpp_state='end')
 
+    if save:
+        header = "\n".join([
+            catalogue_data.write_attrs_as_header(catalogue_ref=catalogue_rand),
+            _print_measurement_header(paramset, norm_factor, norm_factor_alt),
+        ])
+        if save.lower() == '.txt':
+            datatab = _assemble_measurement_datatab(results, paramset)
+            ofilename = _get_measurement_filename(paramset)
+            ofilepath = (
+                Path(paramset['directories']['measurements'])/ofilename
+            ).with_suffix('.txt')
+            np.savetxt(
+                ofilepath, datatab, fmt='%.9e', header=header, delimiter='\t'
+            )
+        elif save.lower().endswith('npy'):
+            results.update({'header': header})
+            ofilename = _get_measurement_filename(paramset)
+            ofilepath = (
+                Path(paramset['directories']['measurements'])/ofilename
+            ).with_suffix('.npz')
+            np.savez(ofilepath, **results)
+        else:
+            raise ValueError(
+                f"Unrecognised save format for measurements: {save}."
+            )
+
+        if logger:
+            logger.info("Measurements saved to %s.", ofilepath)
+
     return results
 
 
@@ -335,7 +536,7 @@ def compute_bispec(catalogue_data, catalogue_rand,
                    degrees=None, binning=None, form=None, idx_bin=None,
                    sampling_params=None,
                    paramset=None,
-                   logger=None):
+                   save=False, logger=None):
     """Compute bispectrum from survey-like data and random catalogues
     in the local plane-parallel approximation.
 
@@ -383,6 +584,9 @@ def compute_bispec(catalogue_data, catalogue_rand,
         Full parameter set (default is :keyword:`None`).  This is used
         in lieu of :param:`degree`, :param:`binning`, :param:`form`,
         :param:`idx_bin` or :param:`sampling_params`.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -411,7 +615,7 @@ def compute_bispec(catalogue_data, catalogue_rand,
         los_data=los_data, los_rand=los_rand,
         paramset=paramset, params_sampling=sampling_params,
         degrees=degrees, binning=binning, form=form, idx_bin=idx_bin,
-        logger=logger
+        save=save, logger=logger
     )
 
     # if logger:
@@ -428,7 +632,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
                  degrees=None, binning=None, form=None, idx_bin=None,
                  sampling_params=None,
                  paramset=None,
-                 logger=None):
+                 save=False, logger=None):
     """Compute three-point correlation function from survey-like
     data and random catalogues in the local plane-parallel approximation.
 
@@ -476,6 +680,9 @@ def compute_3pcf(catalogue_data, catalogue_rand,
         Full parameter set (default is :keyword:`None`).  This is used
         in lieu of :param:`degree`, :param:`binning`, :param:`form`,
         :param:`idx_bin` or :param:`sampling_params`.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -505,7 +712,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
         los_data=los_data, los_rand=los_rand,
         paramset=paramset, params_sampling=sampling_params,
         degrees=degrees, binning=binning, form=form, idx_bin=idx_bin,
-        logger=logger
+        save=save, logger=logger
     )
 
     # if logger:
@@ -523,7 +730,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #                                   form=None, idx_bin=None,
 #                                   sampling_params=None,
 #                                   paramset=None,
-#                                   logger=None):
+#                                   save=False, logger=None):
 #     """Compute bispectrum from data and random catalogues.
 
 #     Parameters
@@ -572,6 +779,9 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         Full parameter set (default is :keyword:`None`).  This is used
 #         in lieu of :param:`degree`, :param:`binning`, :param:`form`,
 #         :param:`idx_bin` or :param:`sampling_params`.
+#     save : {'.txt', '.npz', False}, optional
+#         If not :keyword:`False` (default), save the measurements
+#         as a '.txt' file or in '.npz' format.
 #     logger : :class:`logging.Logger`, optional
 #         Logger (default is :keyword:`None`).
 
@@ -709,6 +919,35 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #     if logger:
 #         logger.info("... measured clustering statistics.", cpp_state='end')
 
+#     if save:
+#         header = "\n".join([
+#             catalogue_data.write_attrs_as_header(catalogue_ref=catalogue_rand),
+#             _print_measurement_header(paramset, norm_factor, norm_factor_alt),
+#         ])
+#         if save.lower() == '.txt':
+#             datatab = _assemble_measurement_datatab(results, paramset)
+#             ofilename = _get_measurement_filename(paramset)
+#             ofilepath = (
+#                 Path(paramset['directories']['measurements'])/ofilename
+#             ).with_suffix('.txt')
+#             np.savetxt(
+#                 ofilepath, datatab, fmt='%.9e', header=header, delimiter='\t'
+#             )
+#         elif save.lower().endswith('npy'):
+#             results.update({'header': header})
+#             ofilename = _get_measurement_filename(paramset)
+#             ofilepath = (
+#                 Path(paramset['directories']['measurements'])/ofilename
+#             ).with_suffix('.npz')
+#             np.savez(ofilepath, **results)
+#         else:
+#             raise ValueError(
+#                 f"Unrecognised save format for measurements: {save}."
+#             )
+
+#         if logger:
+#             logger.info("Measurements saved to %s.", ofilepath)
+
 #     return results
 
 
@@ -720,14 +959,14 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
                                 paramset=None, params_sampling=None,
                                 degrees=None, binning=None,
                                 form=None, idx_bin=None,
-                                logger=None):
-    """Compute two-point statistics from a simulation-box catalogue
+                                save=False, logger=None):
+    """Compute three-point statistics from a simulation-box catalogue
     in the global plane-parallel approximation.
 
     Parameters
     ----------
-    twopt_algofunc : callable
-        Two-point statistic algorithmic function.
+    threept_algofunc : callable
+        Three-point statistic algorithmic function.
     catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
         Data-source catalogue.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
@@ -760,6 +999,9 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         Fixed bin index for the first coordinate dimension when binning
         `form` is 'full'.  If not :keyword:`None` (default), this will
         override `paramset['idx_bin']`.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -871,6 +1113,35 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
     if logger:
         logger.info("... measured clustering statistics.", cpp_state='end')
 
+    if save:
+        header = "\n".join([
+            catalogue_data.write_attrs_as_header(),
+            _print_measurement_header(paramset, norm_factor, norm_factor_alt),
+        ])
+        if save.lower() == '.txt':
+            datatab = _assemble_measurement_datatab(results, paramset)
+            ofilename = _get_measurement_filename(paramset)
+            ofilepath = (
+                Path(paramset['directories']['measurements'])/ofilename
+            ).with_suffix('.txt')
+            np.savetxt(
+                ofilepath, datatab, fmt='%.9e', header=header, delimiter='\t'
+            )
+        elif save.lower().endswith('npy'):
+            results.update({'header': header})
+            ofilename = _get_measurement_filename(paramset)
+            ofilepath = (
+                Path(paramset['directories']['measurements'])/ofilename
+            ).with_suffix('.npz')
+            np.savez(ofilepath, **results)
+        else:
+            raise ValueError(
+                f"Unrecognised save format for measurements: {save}."
+            )
+
+        if logger:
+            logger.info("Measurements saved to %s.", ofilepath)
+
     return results
 
 
@@ -879,7 +1150,7 @@ def compute_bispec_in_gpp_box(catalogue_data,
                               form=None, idx_bin=None,
                               sampling_params=None,
                               paramset=None,
-                              logger=None):
+                              save=False, logger=None):
     """Compute bispectrum from a simulation-box catalogue
     in the global plane-parallel approximation.
 
@@ -917,6 +1188,9 @@ def compute_bispec_in_gpp_box(catalogue_data,
         Full parameter set (default is :keyword:`None`).  This is used
         in lieu of :param:`degree`, :param:`binning`, :param:`form`,
         :param:`idx_bin` or :param:`sampling_params`.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -945,7 +1219,7 @@ def compute_bispec_in_gpp_box(catalogue_data,
         catalogue_data,
         paramset=paramset, params_sampling=sampling_params,
         degrees=degrees, binning=binning, form=form, idx_bin=idx_bin,
-        logger=logger
+        save=save, logger=logger
     )
 
     # if logger:
@@ -963,7 +1237,7 @@ def compute_3pcf_in_gpp_box(catalogue_data,
                             form=None, idx_bin=None,
                             sampling_params=None,
                             paramset=None,
-                            logger=None):
+                            save=False, logger=None):
     """Compute three-point correlation function from a simulation-box
     catalogue in the global plane-parallel approximation.
 
@@ -1001,6 +1275,9 @@ def compute_3pcf_in_gpp_box(catalogue_data,
         Full parameter set (default is :keyword:`None`).  This is used
         in lieu of :param:`degree`, :param:`binning`, :param:`form`,
         :param:`idx_bin` or :param:`sampling_params`.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -1030,7 +1307,7 @@ def compute_3pcf_in_gpp_box(catalogue_data,
         catalogue_data,
         paramset=paramset, params_sampling=sampling_params,
         degrees=degrees, binning=binning, form=form, idx_bin=idx_bin,
-        logger=logger
+        save=save, logger=logger
     )
 
     # if logger:
@@ -1053,7 +1330,7 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
                         binning=None, form=None, idx_bin=None,
                         sampling_params=None,
                         paramset=None,
-                        logger=None):
+                        save=False, logger=None):
     """Compute three-point correlation function window
     from a random catalogue.
 
@@ -1099,6 +1376,9 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         Full parameter set (default is :keyword:`None`).  This is used
         in lieu of :param:`degree`, :param:`binning`, :param:`form`,
         :param:`idx_bin` or :param:`sampling_params`.
+    save : {'.txt', '.npz', False}, optional
+        If not :keyword:`False` (default), save the measurements
+        as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
         Logger (default is :keyword:`None`).
 
@@ -1209,5 +1489,34 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         logger.info(
             "... measured window function statistics.", cpp_state='end'
         )
+
+    if save:
+        header = "\n".join([
+            catalogue_rand.write_attrs_as_header(),
+            _print_measurement_header(paramset, norm_factor, norm_factor_alt),
+        ])
+        if save.lower() == '.txt':
+            datatab = _assemble_measurement_datatab(results, paramset)
+            ofilename = _get_measurement_filename(paramset)
+            ofilepath = (
+                Path(paramset['directories']['measurements'])/ofilename
+            ).with_suffix('.txt')
+            np.savetxt(
+                ofilepath, datatab, fmt='%.9e', header=header, delimiter='\t'
+            )
+        elif save.lower().endswith('npy'):
+            results.update({'header': header})
+            ofilename = _get_measurement_filename(paramset)
+            ofilepath = (
+                Path(paramset['directories']['measurements'])/ofilename
+            ).with_suffix('.npz')
+            np.savez(ofilepath, **results)
+        else:
+            raise ValueError(
+                f"Unrecognised save format for measurements: {save}."
+            )
+
+        if logger:
+            logger.info("Measurements saved to %s.", ofilepath)
 
     return results

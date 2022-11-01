@@ -318,7 +318,7 @@ def _compute_3pcf_window(
 #         los_data_cpp[pid].pos[0] = los_x
 #         los_data_cpp[pid].pos[1] = los_y
 #         los_data_cpp[pid].pos[2] = los_z
-#
+
 #     cdef LineOfSight* los_rand_cpp = <LineOfSight*>malloc(
 #         len(los_rand) * sizeof(LineOfSight)
 #     )
@@ -326,7 +326,7 @@ def _compute_3pcf_window(
 #         los_rand_cpp[pid].pos[0] = los_x
 #         los_rand_cpp[pid].pos[1] = los_y
 #         los_rand_cpp[pid].pos[2] = los_z
-#
+
 #     # Run algorithm.
 #     cdef BispecMeasurements results
 #     results = compute_bispec_for_los_choice_cpp(
@@ -335,7 +335,7 @@ def _compute_3pcf_window(
 #         deref(params.thisptr), deref(kbinning.thisptr),
 #         norm_factor
 #     )
-#
+
 #     return {
 #         'k1bin': np.array(results.k1bin),
 #         'k2bin': np.array(results.k2bin),
