@@ -5,12 +5,10 @@ Two-Point Correlator Measurements (:mod:`~triumvirate.twopt`)
 Measuring two-point correlator statistics from catalogues.
 
 """
-import sys
+import warnings
 
 import numpy as np
 
-from .catalogue import _prepare_catalogue
-from triumvirate.parameters import InvalidParameter
 from triumvirate._twopt import (
     _calc_powspec_normalisation_from_mesh,
     _calc_powspec_normalisation_from_particles,
@@ -19,63 +17,182 @@ from triumvirate._twopt import (
     _compute_corrfunc_window,
     _compute_powspec,
     _compute_powspec_in_gpp_box,
-    # _compute_powspec_window,
+)
+from triumvirate.dataobjs import Binning
+from triumvirate.parameters import (
+    _modify_measurement_parameters,
+    _modify_sampling_parameters,
+    fetch_paramset_template,
+    ParameterSet,
 )
 
-#: Print out alternative normalisation factor if `True` (default is `False`).
-PRINT_NORMALT = False
 
-
-def compute_powspec(catalogue_data, catalogue_rand, params,
-                    los_data=None, los_rand=None,
-                    box_align='centre', boxsize_pad=None, ngrid_pad=None,
-                    save=False, logger=None):
-    """Compute power spectrum from data and random catalogues.
+def _amalgamate_parameters(paramset=None, params_sampling=None, degree=None):
+    """Amalgamate a parameter set with overriding sampling parameters
+    and the measured multipole degree.
 
     Parameters
     ----------
+    paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
+        Full parameter set.  If :keyword:`None` (default), the other
+        parameters must be provided.
+    params_sampling : dict, optional
+        Dictionary containing a subset of the following entries
+        for sampling parameters:
+            * 'boxalign': {'centre', 'pad'};
+            * 'boxsize': [float, float, float];
+            * 'ngrid': [int, int, int];
+            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+            * 'interlace': bool;
+        and one and only one of the following when 'boxalign' is 'pad':
+            * 'boxpad': float;
+            * 'gridpad': float.
+        This will override corresponding entries in :param:`paramset`.
+    degree : int, optional
+        Multipole degree.  If not :keyword:`None` (default), this will
+        override `paramset['degrees']['ELL']`.
+
+    Returns
+    -------
+    paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
+        Amalgamated full parameter set.
+
+    Raises
+    ------
+    ValueError
+        When :param:`paramset` is :keyword:`None` while either
+        :param:`params_sampling` or :param:`degree`
+        is also :keyword:`None`.
+
+    """
+    if paramset is None and params_sampling is None:
+        raise ValueError(
+            "Either `paramset` or `params_sampling` must be provided."
+        )
+    if paramset is None and degree is None:
+        raise ValueError("Either `paramset` or `degree` must be provided.")
+
+    if paramset is None:
+        paramset, defaults = fetch_paramset_template('dict', ret_defaults=True)
+    else:
+        # paramset = paramset
+        defaults = None
+
+    if params_sampling is not None:
+        paramset, defaults = _modify_sampling_parameters(
+            paramset, params_sampling,
+            params_default=defaults, ret_defaults=True
+        )
+
+    if degree is not None:
+        params_measure = {'ELL': degree}
+        paramset, defaults = _modify_measurement_parameters(
+            paramset, params_measure,
+            params_default=defaults, ret_defaults=True
+        )
+
+    if defaults:
+        warnings.warn(
+            f"The following default parameter values are used: {defaults}."
+        )
+
+    return paramset
+
+
+# ========================================================================
+# Survey statistics
+# ========================================================================
+
+def _compute_2pt_stats_survey_like(twopt_algofunc,
+                                   catalogue_data, catalogue_rand,
+                                   los_data=None, los_rand=None,
+                                   paramset=None, params_sampling=None,
+                                   degree=None, binning=None,
+                                   logger=None):
+    """Compute two-point statistics from survey-like data and random
+    catalogues in the local plane-parallel approximation.
+
+    Parameters
+    ----------
+    twopt_algofunc : callable
+        Two-point statistic algorithmic function.
     catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
         Data-source catalogue.
     catalogue_rand : :class:`~triumvirate.catalogue.ParticleCatalogue`
         Random-source catalogue.
-    params : :class:`~triumvirate.parameters.ParameterSet`
-        Measurement parameters.
     los_data : (N, 3) array of float, optional
         Specified lines of sight for the data-source catalogue.
-        If `None` (default), this is automatically computed using
+        If :keyword:`None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
     los_rand : (N, 3) array of float, optional
         Specified lines of sight for the random-source catalogue.
-        If `None` (default), this is automatically computed using
+        If :keyword:`None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
-    box_align : {'centre', 'pad', False}, optional
-        Alignment of the catalogue(s) inside the box.  The random-source
-        catalogue is used as the reference to 'centre' (default) or
-        'pad' both catalogues.  If `False` (default), no alignment is
-        performed.
-    boxsize_pad : (array of) float, optional
-        Proportion of the box size as padding away from the origin corner
-        of the box.  If not `None` (default), `ngrid_pad` must not be set
-        and should remain `None` (see
-        :meth:`triumvirate.catalogue.ParticleCatalogue.pad`).
-    ngrid_pad : (array of) float, optional
-        Number of grids as padding away from the origin corner of the box.
-        If not `None` (default), `boxsize_pad` must not be set and should
-        remain `None` (see
-        :meth:`triumvirate.catalogue.ParticleCatalogue.pad`).
-    save : bool, optional
-        If `True` (default is `False`), measurement results are
-        automatically saved to an output file specified from `params`.
+    paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
+        Full parameter set.  If :keyword:`None` (default), :param:`degree`,
+        :param:`binning` and :param:`params_sampling` must be provided.
+    params_sampling : dict, optional
+        Dictionary containing a subset of the following entries
+        for sampling parameters:
+            * 'boxalign': {'centre', 'pad'};
+            * 'boxsize': [float, float, float];
+            * 'ngrid': [int, int, int];
+            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+            * 'interlace': bool;
+        and one and only one of the following when 'boxalign' is 'pad':
+            * 'boxpad': float;
+            * 'gridpad': float.
+        This will override corresponding entries in :param:`paramset`.
+    degree : int, optional
+        Multipole degree.  If not :keyword:`None` (default), this will
+        override `paramset['degrees']['ELL']`.
+    binning : :class:`~triumvirate.dataobjs.Binning`, optional
+        Binning for the measurements.  If :keyword:`None` (default),
+        this is constructed from parameters.
     logger : :class:`logging.Logger`, optional
-        Logger (default is `None`).
+        Logger (default is :keyword:`None`).
 
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
         Measurement results.
 
+    Raises
+    ------
+    ValueError
+        When :param:`paramset` is :keyword:`None` while
+        :param:`params_sampling`, :param:`degree` or :param:`binning`
+        is also :keyword:`None`.
+
     """
-    # Prepare catalogues.
+    # --------------------------------------------------------------------
+    # Initialisation
+    # --------------------------------------------------------------------
+
+    # -- Parameters ------------------------------------------------------
+
+    paramset = _amalgamate_parameters(
+        paramset=paramset, params_sampling=params_sampling, degree=degree
+    )
+
+    if isinstance(paramset, dict):  # likely redundant but safe
+        paramset = ParameterSet(param_dict=paramset, logger=logger)
+
+    if logger:
+        logger.info("Parameter set have been initialised.")
+
+    # -- Data ------------------------------------------------------------
+
+    # Set up binning.
+    if binning is None:
+        binning = Binning.from_parameter_set(paramset)
+
+    binning.set_bins()
+
+    if logger:
+        logger.info("Binning has been initialised.")
+
+    # Set up lines of sight.
     if los_data is None:
         los_data = catalogue_data.compute_los()
     if los_rand is None:
@@ -84,590 +201,703 @@ def compute_powspec(catalogue_data, catalogue_rand, params,
     los_data = np.ascontiguousarray(los_data)
     los_rand = np.ascontiguousarray(los_rand)
 
-    if box_align.lower() == 'centre':
+    if logger:
+        logger.info("Lines of sight have been initialised.")
+
+    # Set up box alignment.
+    if paramset['alignment'] == 'centre':
         catalogue_data.centre(
-            [params['boxsize'][axis] for axis in ['x', 'y', 'z']],
+            [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']],
             catalogue_ref=catalogue_rand
         )
-    elif box_align.lower() == 'pad':
-        kwargs = {'boxsize_pad': boxsize_pad, 'ngrid_pad': ngrid_pad}
+    if paramset['alignment'] == 'pad':
+        if paramset['padscale'] == 'box':
+            kwargs = {'boxsize_pad': paramset['padfactor']}
+        if paramset['padscale'] == 'grid':
+            kwargs = {
+                'ngrid': [paramset['ngrid'][axis] for axis in ['x', 'y', 'z']],
+                'ngrid_pad': paramset['padfactor']
+            }
         catalogue_data.pad(
-            [params['boxsize'][axis] for axis in ['x', 'y', 'z']],
-            ngrid=[params['ngrid'][axis] for axis in ['x', 'y', 'z']],
-            catalogue_ref=catalogue_rand,
-            **kwargs
+            [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']],
+            catalogue_ref=catalogue_rand, **kwargs
         )
-    else:
-        raise ValueError("`box_alignment` must be 'centre' or 'pad'.")
 
-    particles_data = _prepare_catalogue(catalogue_data)
-    particles_rand = _prepare_catalogue(catalogue_rand)
+    if logger:
+        logger.info("Catalogues have been aligned.")
 
-    # Compute auxiliary quantities.
-    kbin = np.ascontiguousarray(
-        np.linspace(*params['range'], num=params['dim'])
-    )
+    # --------------------------------------------------------------------
+    # Measurements
+    # --------------------------------------------------------------------
 
+    # Prepare catalogues.
+    if logger:
+        logger.info(
+            "Preparing catalogue for clustering algorithm...", cpp_state='start'
+        )
+
+    particles_data = catalogue_data._convert_to_cpp_catalogue()
+    particles_rand = catalogue_rand._convert_to_cpp_catalogue()
+
+    if logger:
+        logger.info(
+            "... prepared catalogue for clustering algorithm.",
+            cpp_state='end'
+        )
+
+    # Set up constants.
     alpha = catalogue_data.wtotal / catalogue_rand.wtotal
-
-    try:
-        logger.info("Calculating normalisation...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
-
-    _norm_alt = 0.
-    if params['norm_convention'] == 'mesh':
-        norm = _calc_powspec_normalisation_from_mesh(
-            particles_rand, params, alpha
-        )
-        if PRINT_NORMALT:
-            _norm_alt = _calc_powspec_normalisation_from_particles(
-                particles_rand, alpha
-            )
-    elif params['norm_convention'] == 'particle':
-        norm = _calc_powspec_normalisation_from_particles(particles_rand, alpha)
-        if PRINT_NORMALT:
-            _norm_alt = _calc_powspec_normalisation_from_mesh(
-                particles_rand, params, alpha
-            )
-    else:
-        raise InvalidParameter("Invalid `norm_convention` parameter.")
-
-    try:
-        logger.info("... calculated normalisation.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    sys.stdout.flush()
 
     if logger:
         logger.info("Alpha contrast: %.6e.", alpha)
-        logger.info("Normalisation constant: %.6e.", norm)
 
-    # Perform measurement.
-    try:
-        logger.info("Making measurements...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
-
-    results = _compute_powspec(
-        particles_data, particles_rand, los_data, los_rand,
-        params, kbin, alpha, norm, _norm_alt, save
-    )
-
-    try:
-        logger.info("... made measurements.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    sys.stdout.flush()
-
-    return results
-
-
-def compute_corrfunc(catalogue_data, catalogue_rand, params,
-                     los_data=None, los_rand=None,
-                     box_align='centre', boxsize_pad=None, ngrid_pad=None,
-                     save=False, logger=None):
-    """Compute correlation function from data and random catalogues.
-
-    Parameters
-    ----------
-    catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
-        Data-source catalogue.
-    catalogue_rand : :class:`~triumvirate.catalogue.ParticleCatalogue`
-        Random-source catalogue.
-    params : :class:`~triumvirate.parameters.ParameterSet`
-        Measurement parameters.
-    los_data : (N, 3) array of float, optional
-        Specified lines of sight for the data-source catalogue.
-        If `None` (default), this is automatically computed using
-        :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
-    los_rand : (N, 3) array of float, optional
-        Specified lines of sight for the random-source catalogue.
-        If `None` (default), this is automatically computed using
-        :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
-    box_align : {'centre', 'pad', False}, optional
-        Alignment of the catalogue(s) inside the box.  The random-source
-        catalogue is used as the reference to 'centre' (default) or
-        'pad' both catalogues.  If `False` (default), no alignment is
-        performed.
-    boxsize_pad : (array of) float, optional
-        Proportion of the box size as padding away from the origin corner
-        of the box.  If not `None` (default), `ngrid_pad` must not be set
-        and should remain `None` (see
-        :meth:`triumvirate.catalogue.ParticleCatalogue.pad`).
-    ngrid_pad : (array of) float, optional
-        Number of grids as padding away from the origin corner of the box.
-        If not `None` (default), `boxsize_pad` must not be set and should
-        remain `None` (see
-        :meth:`triumvirate.catalogue.ParticleCatalogue.pad`).
-    save : bool, optional
-        If `True` (default is `False`), measurement results are
-        automatically saved to an output file specified from `params`.
-    logger : :class:`logging.Logger`, optional
-        Logger (default is `None`).
-
-    Returns
-    -------
-    results : dict of {str: :class:`numpy.ndarray`}
-        Measurement results.
-
-    """
-    # Prepare catalogues.
-    if los_data is None:
-        los_data = catalogue_data.compute_los()
-    if los_rand is None:
-        los_rand = catalogue_rand.compute_los()
-
-    los_data = np.ascontiguousarray(los_data)
-    los_rand = np.ascontiguousarray(los_rand)
-
-    if box_align.lower() == 'centre':
-        catalogue_data.centre(
-            [params['boxsize'][axis] for axis in ['x', 'y', 'z']],
-            catalogue_ref=catalogue_rand
-        )
-    elif box_align.lower() == 'pad':
-        kwargs = {'boxsize_pad': boxsize_pad, 'ngrid_pad': ngrid_pad}
-        catalogue_data.pad(
-            [params['boxsize'][axis] for axis in ['x', 'y', 'z']],
-            ngrid=[params['ngrid'][axis] for axis in ['x', 'y', 'z']],
-            catalogue_ref=catalogue_rand,
-            **kwargs
-        )
-    else:
-        raise ValueError("`box_alignment` must be 'centre' or 'pad'.")
-
-    particles_data = _prepare_catalogue(catalogue_data)
-    particles_rand = _prepare_catalogue(catalogue_rand)
-
-    # Compute auxiliary quantities.
-    rbin = np.ascontiguousarray(
-        np.linspace(*params['range'], num=params['dim'])
-    )
-
-    alpha = catalogue_data.wtotal / catalogue_rand.wtotal
-
-    try:
-        logger.info("Calculating normalisation...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
-
-    _norm_alt = 0.
-    if params['norm_convention'] == 'mesh':
-        norm = _calc_powspec_normalisation_from_mesh(
-            particles_rand, params, alpha
-        )
-        _norm_alt = _calc_powspec_normalisation_from_particles(
+    if paramset['norm_convention'] == 'particle':
+        norm_factor = _calc_powspec_normalisation_from_particles(
             particles_rand, alpha
         )
-    elif params['norm_convention'] == 'particle':
-        norm = _calc_powspec_normalisation_from_particles(particles_rand, alpha)
-        _norm_alt = _calc_powspec_normalisation_from_mesh(
-            particles_rand, params, alpha
+        norm_factor_alt = _calc_powspec_normalisation_from_mesh(
+            particles_rand, paramset, alpha
         )
-    else:
-        raise InvalidParameter("Invalid `norm_convention` parameter.")
-
-    try:
-        logger.info("... calculated normalisation.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    sys.stdout.flush()
+    if paramset['norm_convention'] == 'mesh':
+        norm_factor = _calc_powspec_normalisation_from_mesh(
+            particles_rand, paramset, alpha
+        )
+        norm_factor_alt = _calc_powspec_normalisation_from_particles(
+            particles_rand, alpha
+        )
 
     if logger:
-        logger.info("Alpha contrast: %.6e.", alpha)
-        logger.info("Normalisation constant: %.6e.", norm)
+        logger.info(
+            "Normalisation factors: %.6e (used), %.6e (alternative).",
+            norm_factor, norm_factor_alt
+        )
 
     # Perform measurement.
-    try:
-        logger.info("Making measurements...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
+    if logger:
+        logger.info("Measuring clustering statistics...", cpp_state='start')
 
-    results = _compute_corrfunc(
+    results = twopt_algofunc(
         particles_data, particles_rand, los_data, los_rand,
-        params, rbin, alpha, norm, _norm_alt, save
+        paramset, binning, norm_factor
     )
 
-    try:
-        logger.info("... made measurements.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    sys.stdout.flush()
+    if logger:
+        logger.info("... measured clustering statistics.", cpp_state='end')
 
     return results
 
 
-def compute_powspec_in_gpp_box(catalogue_data, params, save=False, logger=None):
-    """Compute power spectrum in a box.
+def compute_powspec(catalogue_data, catalogue_rand,
+                    los_data=None, los_rand=None,
+                    degree=None, binning=None, sampling_params=None,
+                    paramset=None,
+                    logger=None):
+    """Compute power spectrum from survey-like data and random catalogues
+    in the local plane-parallel approximation.
 
     Parameters
     ----------
     catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
         Data-source catalogue.
-    params : :class:`~triumvirate.parameters.ParameterSet`
-        Measurement parameters.
-    save : bool, optional
-        If `True` (default is `False`), measurement results are
-        automatically saved to an output file specified from `params`.
+    catalogue_rand : :class:`~triumvirate.catalogue.ParticleCatalogue`
+        Random-source catalogue.
+    los_data : (N, 3) array of float, optional
+        Specified lines of sight for the data-source catalogue.
+        If :keyword:`None` (default), this is automatically computed using
+        :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
+    los_rand : (N, 3) array of float, optional
+        Specified lines of sight for the random-source catalogue.
+        If :keyword:`None` (default), this is automatically computed using
+        :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
+    degree : int, optional
+        Multipole degree.  If not :keyword:`None` (default), this will
+        override `paramset['degrees']['ELL']`.
+    binning : :class:`~triumvirate.dataobjs.Binning`, optional
+        Binning for the measurements.  If :keyword:`None` (default),
+        this is constructed from parameters.
+    sampling_params : dict, optional
+        Dictionary containing a subset of the following entries
+        for sampling parameters:
+            * 'boxalign': {'centre', 'pad'};
+            * 'boxsize': [float, float, float];
+            * 'ngrid': [int, int, int];
+            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+            * 'interlace': bool;
+        and one and only one of the following when 'boxalign' is 'pad':
+            * 'boxpad': float;
+            * 'gridpad': float.
+        This will override corresponding entries in :param:`paramset`.
+    paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
+        Full parameter set (default is :keyword:`None`).  This is used
+        in lieu of :param:`degree`, :param:`binning` or
+        :param:`sampling_params`.
     logger : :class:`logging.Logger`, optional
-        Logger (default is `None`).
+        Logger (default is :keyword:`None`).
 
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
         Measurement results.
 
+    Raises
+    ------
+    ValueError
+        When :param:`paramset` is :keyword:`None` but :param:`degree`,
+        :param:`binning` or :param:`sampling_params` is
+        also :keyword:`None`.
+
     """
-    # Prepare catalogues.
-    catalogue_data.periodise(
-        [params['boxsize'][axis] for axis in ['x', 'y', 'z']]
+    # if logger:
+    #     logger.info(
+    #         "Measuring power spectrum from paired survey-type catalogues...",
+    #         cpp_state='start'
+    #     )
+
+    results = _compute_2pt_stats_survey_like(
+        _compute_powspec,
+        catalogue_data, catalogue_rand,
+        los_data=los_data, los_rand=los_rand,
+        paramset=paramset, params_sampling=sampling_params,
+        degree=degree, binning=binning,
+        logger=logger
     )
 
-    particles_data = _prepare_catalogue(catalogue_data)
-
-    # Compute auxiliary quantities.
-    kbin = np.ascontiguousarray(
-        np.linspace(*params['range'], num=params['dim'])
-    )
-
-    try:
-        logger.info("Calculating normalisation...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
-
-    _norm_alt = 0.
-    if params['norm_convention'] == 'mesh':
-        norm = _calc_powspec_normalisation_from_mesh(
-            particles_data, params, alpha=1.
-        )
-        if PRINT_NORMALT:
-            _norm_alt = _calc_powspec_normalisation_from_particles(
-                particles_data, alpha=1.
-            )
-    elif params['norm_convention'] == 'particle':
-        norm = _calc_powspec_normalisation_from_particles(
-            particles_data, alpha=1.
-        )
-        if PRINT_NORMALT:
-            _norm_alt = _calc_powspec_normalisation_from_mesh(
-                particles_data, params, alpha=1.
-            )
-    else:
-        raise InvalidParameter("Invalid `norm_convention` parameter.")
-
-    try:
-        logger.info("... calculated normalisation.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    sys.stdout.flush()
-
-    if logger:
-        logger.info("Normalisation constant: %.6e.", norm)
-
-    # Perform measurement.
-    try:
-        logger.info("Making measurements...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
-
-    results = _compute_powspec_in_gpp_box(
-        particles_data, params, kbin, norm, _norm_alt, save
-    )
-
-    try:
-        logger.info("... made measurements.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    sys.stdout.flush()
+    # if logger:
+    #     logger.info(
+    #         "... measured power spectrum from paired survey-type catalogues.",
+    #         cpp_state='end'
+    #     )
 
     return results
 
 
-def compute_corrfunc_in_gpp_box(catalogue_data, params, save=False, logger=None):
-    """Compute correlation function in a box.
+def compute_corrfunc(catalogue_data, catalogue_rand,
+                     los_data=None, los_rand=None,
+                     degree=None, binning=None, sampling_params=None,
+                     paramset=None,
+                     logger=None):
+    """Compute correlation function from survey-like data and random
+    catalogues in the local plane-parallel approximation.
 
     Parameters
     ----------
     catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
         Data-source catalogue.
-    params : :class:`~triumvirate.parameters.ParameterSet`
-        Measurement parameters.
-    save : bool, optional
-        If `True` (default is `False`), measurement results are
-        automatically saved to an output file specified from `params`.
+    catalogue_rand : :class:`~triumvirate.catalogue.ParticleCatalogue`
+        Random-source catalogue.
+    los_data : (N, 3) array of float, optional
+        Specified lines of sight for the data-source catalogue.
+        If `None` (default), this is automatically computed using
+        :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
+    los_rand : (N, 3) array of float, optional
+        Specified lines of sight for the random-source catalogue.
+        If `None` (default), this is automatically computed using
+        :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
+    degree : int, optional
+        Multipole degree.  If not :keyword:`None` (default), this will
+        override `paramset['degrees']['ELL']`.
+    binning : :class:`~triumvirate.dataobjs.Binning`, optional
+        Binning for the measurements.  If :keyword:`None` (default),
+        this is constructed from parameters.
+    sampling_params : dict, optional
+        Dictionary containing a subset of the following entries
+        for sampling parameters:
+            * 'boxalign': {'centre', 'pad'};
+            * 'boxsize': [float, float, float];
+            * 'ngrid': [int, int, int];
+            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+            * 'interlace': bool;
+        and one and only one of the following when 'boxalign' is 'pad':
+            * 'boxpad': float;
+            * 'gridpad': float.
+        This will override corresponding entries in :param:`paramset`.
+    paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
+        Full parameter set (default is :keyword:`None`).  This is used
+        in lieu of :param:`degree`, :param:`binning` or
+        :param:`sampling_params`.
     logger : :class:`logging.Logger`, optional
-        Logger (default is `None`).
+        Logger (default is :keyword:`None`).
 
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
         Measurement results.
 
+    Raises
+    ------
+    ValueError
+        When :param:`paramset` is :keyword:`None` but :param:`degree`,
+        :param:`binning` or :param:`sampling_params` is
+        also :keyword:`None`.
+
     """
-    # Prepare catalogues.
-    catalogue_data.periodise(
-        [params['boxsize'][axis] for axis in ['x', 'y', 'z']]
+    # if logger:
+    #     logger.info(
+    #         "Measuring two-point correlation function "
+    #         "from paired survey-type catalogues...",
+    #         cpp_state='start'
+    #     )
+
+    results = _compute_2pt_stats_survey_like(
+        _compute_corrfunc,
+        catalogue_data, catalogue_rand,
+        los_data=los_data, los_rand=los_rand,
+        paramset=paramset, params_sampling=sampling_params,
+        degree=degree, binning=binning,
+        logger=logger
     )
 
-    particles_data = _prepare_catalogue(catalogue_data)
-
-    # Compute auxiliary quantities.
-    rbin = np.ascontiguousarray(
-        np.linspace(*params['range'], num=params['dim'])
-    )
-
-    try:
-        logger.info("Calculating normalisation...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
-
-    _norm_alt = 0.
-    if params['norm_convention'] == 'mesh':
-        norm = _calc_powspec_normalisation_from_mesh(
-            particles_data, params, alpha=1.
-        )
-        if PRINT_NORMALT:
-            _norm_alt = _calc_powspec_normalisation_from_particles(
-                particles_data, alpha=1.
-            )
-    elif params['norm_convention'] == 'particle':
-        norm = _calc_powspec_normalisation_from_particles(
-            particles_data, alpha=1.
-        )
-        if PRINT_NORMALT:
-            _norm_alt = _calc_powspec_normalisation_from_mesh(
-                particles_data, params, alpha=1.
-            )
-    else:
-        raise InvalidParameter("Invalid `norm_convention` parameter.")
-
-    try:
-        logger.info("... calculated normalisation.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    sys.stdout.flush()
-
-    if logger:
-        logger.info("Normalisation constant: %.6e.", norm)
-
-    # Perform measurement.
-    try:
-        logger.info("Making measurements...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
-
-    results = _compute_corrfunc_in_gpp_box(
-        particles_data, params, rbin, norm, _norm_alt, save
-    )
-
-    try:
-        logger.info("... made measurements.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    sys.stdout.flush()
+    # if logger:
+    #     logger.info(
+    #         "... measured two-point correlation function "
+    #         "from paired survey-type catalogues.",
+    #         cpp_state='end'
+    #     )
 
     return results
 
-# def compute_powspec_window(catalogue_rand, params, los_rand=None,
-#                            save=False, logger=None):
-#     """Compute power spectrum window from a random catalogue.
-#
-#     Parameters
-#     ----------
-#     catalogue_rand : :class:`~triumvirate.catalogue.ParticleCatalogue`
-#         Random-source catalogue.
-#     params : :class:`~triumvirate.parameters.ParameterSet`
-#         Measurement parameters.
-#     los_rand : (N, 3) array of float, optional
-#         Specified lines of sight for the random-source catalogue.
-#         If `None` (default), this is automatically computed using
-#         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
-#     save : bool, optional
-#         If `True` (default is `False`), measurement results are
-#         automatically saved to an output file specified from `params`.
-#     logger : :class:`logging.Logger`, optional
-#         Logger (default is `None`).
-#
-#     Returns
-#     -------
-#     results : dict of {str: :class:`numpy.ndarray`}
-#         Measurement results.
-#
-#     """
-#     # Prepare catalogues.
-#     if los_rand is None:
-#         los_rand = catalogue_rand.compute_los()
-#     los_rand = np.ascontiguousarray(los_rand)
-#
-#     catalogue_rand.centre(
-#         [params['boxsize'][axis] for axis in ['x', 'y', 'z']]
-#     )
-#
-#     particles_rand = _prepare_catalogue(catalogue_rand)
-#
-#     # Compute auxiliary quantities.
-#     kbin = np.ascontiguousarray(
-#         np.linspace(*params['range'], num=params['dim'])
-#     )
-#
-#     try:
-#         logger.info("Calculating normalisation...", cpp_state='start')
-#     except (AttributeError, TypeError):
-#         pass
-#
-#     _norm_alt = 0.
-#     if params['norm_convention'] == 'mesh':
-#         norm = _calc_powspec_normalisation_from_mesh(
-#             particles_rand, params, alpha=1.
-#         )
-#         if PRINT_NORMALT:
-#             _norm_alt = _calc_powspec_normalisation_from_particles(
-#                 particles_rand, alpha=1.
-#             )
-#     elif params['norm_convention'] == 'particle':
-#         norm = _calc_powspec_normalisation_from_particles(
-#             particles_rand, alpha=1.
-#         )
-#         if PRINT_NORMALT:
-#             _norm_alt = _calc_powspec_normalisation_from_mesh(
-#                 particles_rand, params, alpha=1.
-#             )
-#     else:
-#         raise InvalidParameter("Invalid `norm_convention` parameter.")
-#
-#     try:
-#         logger.info("... calculated normalisation.", cpp_state='end')
-#     except (AttributeError, TypeError):
-#         pass
-#
-#     sys.stdout.flush()
-#
-#     if logger:
-#         logger.info("Normalisation constant: %.6e.", norm)
-#
-#     # Perform measurement.
-#     try:
-#         logger.info("Making measurements...", cpp_state='start')
-#     except (AttributeError, TypeError):
-#         pass
-#
-#     results = _compute_powspec_window(
-#         particles_rand, los_rand,
-#         params, kbin, alpha=1., norm=norm, norm_alt=_norm_alt, save=save
-#     )
-#
-#     try:
-#         logger.info("... made measurements.", cpp_state='end')
-#     except (AttributeError, TypeError):
-#         pass
-#
-#     sys.stdout.flush()
-#
-#     return results
+
+# ========================================================================
+# Simulation statistics
+# ========================================================================
+
+def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
+                                paramset=None, params_sampling=None,
+                                degree=None, binning=None,
+                                logger=None):
+    """Compute two-point statistics from a simulation-box catalogue
+    in the global plane-parallel approximation.
+
+    Parameters
+    ----------
+    twopt_algofunc : callable
+        Two-point statistic algorithmic function.
+    catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
+        Data-source catalogue.
+    paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
+        Full parameter set.  If :keyword:`None` (default), :param:`degree`,
+        :param:`binning` and :param:`sampling_params` must be provided.
+    params_sampling : dict, optional
+        Dictionary containing a subset of the following entries
+        for sampling parameters:
+            * 'boxalign': {'centre', 'pad'};
+            * 'boxsize': [float, float, float];
+            * 'ngrid': [int, int, int];
+            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+            * 'interlace': bool;
+        and one and only one of the following when 'boxalign' is 'pad':
+            * 'boxpad': float;
+            * 'gridpad': float.
+        This will override corresponding entries in :param:`paramset`.
+    degree : int, optional
+        Multipole degree.  If not :keyword:`None` (default), this will
+        override `paramset['degrees']['ELL']`.
+    binning : :class:`~triumvirate.dataobjs.Binning`, optional
+        Binning for the measurements.  If :keyword:`None` (default),
+        this is constructed from parameters.
+    logger : :class:`logging.Logger`, optional
+        Logger (default is :keyword:`None`).
+
+    Returns
+    -------
+    results : dict of {str: :class:`numpy.ndarray`}
+        Measurement results.
+
+    Raises
+    ------
+    ValueError
+        When :param:`paramset` is :keyword:`None` while
+        :param:`params_sampling`, :param:`degree` or :param:`binning`
+        is also :keyword:`None`.
+
+    """
+    # --------------------------------------------------------------------
+    # Initialisation
+    # --------------------------------------------------------------------
+
+    # -- Parameters ------------------------------------------------------
+
+    paramset = _amalgamate_parameters(
+        paramset=paramset, params_sampling=params_sampling, degree=degree
+    )
+
+    if isinstance(paramset, dict):  # likely redundant but safe
+        paramset = ParameterSet(param_dict=paramset, logger=logger)
+
+    if logger:
+        logger.info("Parameter set have been initialised.")
+
+    # -- Data ------------------------------------------------------------
+
+    # Set up binning.
+    if binning is None:
+        binning = Binning.from_parameter_set(paramset)
+
+    binning.set_bins()
+
+    if logger:
+        logger.info("Binning has been initialised.")
+
+    # Set up box alignment.
+    catalogue_data.periodise(
+        [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']]
+    )
+
+    if logger:
+        logger.info("Catalogue box has been periodised.")
+
+    # --------------------------------------------------------------------
+    # Measurements
+    # --------------------------------------------------------------------
+
+    # Prepare catalogues.
+    if not catalogue_data['nz'].any():
+        catalogue_data.compute_mean_density(
+            boxsize=list(paramset['boxsize'].values())
+        )
+        if logger:
+            logger.info(
+                "Inserted missing 'nz' field "
+                "based on particle count and boxsize."
+            )
+
+    if logger:
+        logger.info(
+            "Preparing catalogue for clustering algorithm...", cpp_state='start'
+        )
+
+    particles_data = catalogue_data._convert_to_cpp_catalogue()
+
+    if logger:
+        logger.info(
+            "... prepared catalogue for clustering algorithm.",
+            cpp_state='end'
+        )
+
+    # Set up constants.
+    if paramset['norm_convention'] == 'particle':
+        norm_factor = _calc_powspec_normalisation_from_particles(
+            particles_data, alpha=1.
+        )
+        norm_factor_alt = _calc_powspec_normalisation_from_mesh(
+            particles_data, paramset, alpha=1.
+        )
+    if paramset['norm_convention'] == 'mesh':
+        norm_factor = _calc_powspec_normalisation_from_mesh(
+            particles_data, paramset, alpha=1.
+        )
+        norm_factor_alt = _calc_powspec_normalisation_from_particles(
+            particles_data, alpha=1.
+        )
+
+    if logger:
+        logger.info(
+            "Normalisation factors: %.6e (used), %.6e (alternative).",
+            norm_factor, norm_factor_alt
+        )
+
+    # Perform measurement.
+    if logger:
+        logger.info("Measuring clustering statistics...", cpp_state='start')
+
+    results = twopt_algofunc(particles_data, paramset, binning, norm_factor)
+
+    if logger:
+        logger.info("... measured clustering statistics.", cpp_state='end')
+
+    return results
 
 
-def compute_corrfunc_window(catalogue_rand, params, los_rand=None,
-                            save=False, logger=None):
+def compute_powspec_in_gpp_box(catalogue_data,
+                               degree=None, binning=None, sampling_params=None,
+                               paramset=None,
+                               logger=None):
+    """Compute power spectrum from a simulation-box catalogue
+    in the global plane-parallel approximation.
+
+    Parameters
+    ----------
+    catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
+        Data-source catalogue.
+    degree : int, optional
+        Multipole degree.  If not :keyword:`None` (default), this will
+        override `paramset['degrees']['ELL']`.
+    binning : :class:`~triumvirate.dataobjs.Binning`, optional
+        Binning for the measurements.  If :keyword:`None` (default),
+        this is constructed from parameters.
+    sampling_params : dict, optional
+        Dictionary containing a subset of the following entries
+        for sampling parameters:
+            * 'boxalign': {'centre', 'pad'};
+            * 'boxsize': [float, float, float];
+            * 'ngrid': [int, int, int];
+            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+            * 'interlace': bool;
+        and one and only one of the following when 'boxalign' is 'pad':
+            * 'boxpad': float;
+            * 'gridpad': float.
+        This will override corresponding entries in :param:`paramset`.
+    paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
+        Full parameter set (default is :keyword:`None`).  This is used
+        in lieu of :param:`degree`, :param:`binning` or
+        :param:`sampling_params`.
+    logger : :class:`logging.Logger`, optional
+        Logger (default is :keyword:`None`).
+
+    Returns
+    -------
+    results : dict of {str: :class:`numpy.ndarray`}
+        Measurement results.
+
+    Raises
+    ------
+    ValueError
+        When :param:`paramset` is :keyword:`None` but :param:`degree`,
+        :param:`binning` or :param:`sampling_params` is
+        also :keyword:`None`.
+
+    """
+    # if logger:
+    #     logger.info(
+    #         "Measuring power spectrum from a simulation-box catalogue "
+    #         "in the global plane-parallel approximation...",
+    #         cpp_state='start'
+    #     )
+
+    results = _compute_2pt_stats_sim_like(
+        _compute_powspec_in_gpp_box, catalogue_data,
+        paramset=paramset, params_sampling=sampling_params,
+        degree=degree, binning=binning,
+        logger=logger
+    )
+
+    # if logger:
+    #     logger.info(
+    #         "... measured power spectrum from a simulation-box catalogue "
+    #         "in the global plane-parallel approximation.",
+    #         cpp_state='end'
+    #     )
+
+    return results
+
+
+def compute_corrfunc_in_gpp_box(catalogue_data,
+                                degree=None, binning=None, sampling_params=None,
+                                paramset=None,
+                                logger=None):
+    """Compute correlation function from a simulation-box catalogue
+    in the global plane-parallel approximation.
+
+    Parameters
+    ----------
+    catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
+        Data-source catalogue.
+    degree : int, optional
+        Multipole degree.  If not :keyword:`None` (default), this will
+        override `paramset['degrees']['ELL']`.
+    binning : :class:`~triumvirate.dataobjs.Binning`, optional
+        Binning for the measurements.  If :keyword:`None` (default),
+        this is constructed from parameters.
+    sampling_params : dict, optional
+        Dictionary containing a subset of the following entries
+        for sampling parameters:
+            * 'boxalign': {'centre', 'pad'};
+            * 'boxsize': [float, float, float];
+            * 'ngrid': [int, int, int];
+            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+            * 'interlace': bool;
+        and one and only one of the following when 'boxalign' is 'pad':
+            * 'boxpad': float;
+            * 'gridpad': float.
+        This will override corresponding entries in :param:`paramset`.
+    paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
+        Full parameter set (default is :keyword:`None`).  This is used
+        in lieu of :param:`degree`, :param:`binning` or
+        :param:`sampling_params`.
+    logger : :class:`logging.Logger`, optional
+        Logger (default is :keyword:`None`).
+
+    Returns
+    -------
+    results : dict of {str: :class:`numpy.ndarray`}
+        Measurement results.
+
+    Raises
+    ------
+    ValueError
+        When :param:`paramset` is :keyword:`None` but :param:`degree`,
+        :param:`binning` or :param:`sampling_params` is
+        also :keyword:`None`.
+
+    """
+    # if logger:
+    #     logger.info(
+    #         "Measuring two-point correlation function "
+    #         "from a simulation-box catalogue "
+    #         "in the global plane-parallel approximation...",
+    #         cpp_state='start'
+    #     )
+
+    results = _compute_2pt_stats_sim_like(
+        _compute_corrfunc_in_gpp_box, catalogue_data,
+        paramset=paramset, params_sampling=sampling_params,
+        degree=degree, binning=binning,
+        logger=logger
+    )
+
+    # if logger:
+    #     logger.info(
+    #         "... measured two-point correlation function "
+    #         "from a simulation-box catalogue "
+    #         "in the global plane-parallel approximation.",
+    #         cpp_state='end'
+    #     )
+
+    return results
+
+
+# ========================================================================
+# Window statistics
+# ========================================================================
+
+def compute_corrfunc_window(catalogue_rand, los_rand=None,
+                            degree=None, binning=None, sampling_params=None,
+                            paramset=None,
+                            logger=None):
     """Compute correlation function window from a random catalogue.
 
     Parameters
     ----------
     catalogue_rand : :class:`~triumvirate.catalogue.ParticleCatalogue`
         Random-source catalogue.
-    params : :class:`~triumvirate.parameters.ParameterSet`
-        Measurement parameters.
     los_rand : (N, 3) array of float, optional
         Specified lines of sight for the random-source catalogue.
         If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
-    save : bool, optional
-        If `True` (default is `False`), measurement results are
-        automatically saved to an output file specified from `params`.
+    degree : int, optional
+        Multipole degree.  If not :keyword:`None` (default), this will
+        override `paramset['degrees']['ELL']`.
+    binning : :class:`~triumvirate.dataobjs.Binning`, optional
+        Binning for the measurements.  If :keyword:`None` (default),
+        this is constructed from parameters.
+    sampling_params : dict, optional
+        Dictionary containing a subset of the following entries
+        for sampling parameters:
+            * 'boxalign': {'centre', 'pad'};
+            * 'boxsize': [float, float, float];
+            * 'ngrid': [int, int, int];
+            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+            * 'interlace': bool;
+        and one and only one of the following when 'boxalign' is 'pad':
+            * 'boxpad': float;
+            * 'gridpad': float.
+        This will override corresponding entries in :param:`paramset`.
+    paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
+        Full parameter set (default is :keyword:`None`).  This is used
+        in lieu of :param:`degree`, :param:`binning` or
+        :param:`sampling_params`.
     logger : :class:`logging.Logger`, optional
-        Logger (default is `None`).
+        Logger (default is :keyword:`None`).
 
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
         Measurement results.
 
+    Raises
+    ------
+    ValueError
+        When :param:`paramset` is :keyword:`None` but :param:`degree`,
+        :param:`binning` or :param:`sampling_params` is
+        also :keyword:`None`.
+
     """
-    # Prepare catalogues.
+    # --------------------------------------------------------------------
+    # Initialisation
+    # --------------------------------------------------------------------
+
+    # -- Parameters ------------------------------------------------------
+
+    paramset = _amalgamate_parameters(
+        paramset=paramset, params_sampling=sampling_params, degree=degree
+    )
+
+    if isinstance(paramset, dict):  # likely redundant but safe
+        paramset = ParameterSet(param_dict=paramset, logger=logger)
+
+    if logger:
+        logger.info("Parameter set have been initialised.")
+
+    # -- Data ------------------------------------------------------------
+
+    # Set up binning.
+    if binning is None:
+        binning = Binning.from_parameter_set(paramset)
+
+    binning.set_bins()
+
+    if logger:
+        logger.info("Binning has been initialised.")
+
+    # Set up lines of sight.
     if los_rand is None:
         los_rand = catalogue_rand.compute_los()
     los_rand = np.ascontiguousarray(los_rand)
 
+    if logger:
+        logger.info("Lines of sight have been initialised.")
+
+    # Set up box alignment.
     catalogue_rand.centre(
-        [params['boxsize'][axis] for axis in ['x', 'y', 'z']]
+        [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']]
     )
-
-    particles_rand = _prepare_catalogue(catalogue_rand)
-
-    # Compute auxiliary quantities.
-    rbin = np.ascontiguousarray(
-        np.linspace(*params['range'], num=params['dim'])
-    )
-
-    try:
-        logger.info("Calculating normalisation...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
-
-    _norm_alt = 0.
-    if params['norm_convention'] == 'mesh':
-        norm = _calc_powspec_normalisation_from_mesh(
-            particles_rand, params, alpha=1.
-        )
-        if PRINT_NORMALT:
-            _norm_alt = _calc_powspec_normalisation_from_particles(
-                particles_rand, alpha=1.
-            )
-    elif params['norm_convention'] == 'particle':
-        norm = _calc_powspec_normalisation_from_particles(
-            particles_rand, alpha=1.
-        )
-        if PRINT_NORMALT:
-            _norm_alt = _calc_powspec_normalisation_from_mesh(
-                particles_rand, params, alpha=1.
-            )
-    else:
-        raise InvalidParameter("Invalid `norm_convention` parameter.")
-
-    try:
-        logger.info("... calculated normalisation.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    sys.stdout.flush()
 
     if logger:
-        logger.info("Normalisation constant: %.6e.", norm)
+        logger.info("Catalogues have been aligned.")
+
+    # --------------------------------------------------------------------
+    # Measurements
+    # --------------------------------------------------------------------
+
+    # Prepare catalogues.
+    particles_rand = catalogue_rand._convert_to_cpp_catalogue()
+
+    # Set up constants.
+    if paramset['norm_convention'] == 'particle':
+        norm_factor = _calc_powspec_normalisation_from_particles(
+            particles_rand, alpha=1.
+        )
+        norm_factor_alt = _calc_powspec_normalisation_from_mesh(
+            particles_rand, paramset, alpha=1.
+        )
+    if paramset['norm_convention'] == 'mesh':
+        norm_factor = _calc_powspec_normalisation_from_mesh(
+            particles_rand, paramset, alpha=1.
+        )
+        norm_factor_alt = _calc_powspec_normalisation_from_particles(
+            particles_rand, alpha=1.
+        )
+
+    if logger:
+        logger.info(
+            "Normalisation factors: %.6e (used), %.6e (alternative).",
+            norm_factor, norm_factor_alt
+        )
 
     # Perform measurement.
-    try:
-        logger.info("Making measurements...", cpp_state='start')
-    except (AttributeError, TypeError):
-        pass
+    if logger:
+        logger.info(
+            "Measuring window function statistics...", cpp_state='start'
+        )
 
     results = _compute_corrfunc_window(
-        particles_rand, los_rand,
-        params, rbin, alpha=1., norm=norm, norm_alt=_norm_alt, save=save
+        particles_rand, los_rand, paramset, binning,
+        alpha=1., norm_factor=norm_factor
     )
 
-    try:
-        logger.info("... made measurements.", cpp_state='end')
-    except (AttributeError, TypeError):
-        pass
-
-    sys.stdout.flush()
+    if logger:
+        logger.info(
+            "... measured window function statistics.", cpp_state='end'
+        )
 
     return results
