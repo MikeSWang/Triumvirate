@@ -338,10 +338,12 @@ class ParticleCatalogue:
             boxsize = [boxsize, boxsize, boxsize]
 
         if catalogue_ref is None:
-            catalogue_ref = self
+            catalogue_ref_ = self
+        else:
+            catalogue_ref_ = catalogue_ref
 
         origin = np.array([
-            np.mean(catalogue_ref.bounds[axis]) - boxsize[iaxis]/2.
+            np.mean(catalogue_ref_.bounds[axis]) - boxsize[iaxis]/2.
             for iaxis, axis in enumerate(['x', 'y', 'z'])
         ])
 
@@ -401,10 +403,12 @@ class ParticleCatalogue:
             )
 
         if catalogue_ref is None:
-            catalogue_ref = self
+            catalogue_ref_ = self
+        else:
+            catalogue_ref_ = catalogue_ref
 
         origin = np.array([
-            catalogue_ref.bounds[axis][0] for axis in ['x', 'y', 'z']
+            catalogue_ref_.bounds[axis][0] for axis in ['x', 'y', 'z']
         ])
 
         if boxsize_pad:
