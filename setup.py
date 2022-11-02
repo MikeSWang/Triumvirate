@@ -82,7 +82,7 @@ except FileNotFoundError:
     ext_includes = []
 finally:
     ext_includes = [incl_ for incl_ in ext_includes if pkgdir not in incl_]
-    ext_libraries = ['gsl',]  # 'fftw3_omp',
+    ext_libraries = ['gsl',]  # 'fftw3', 'fftw3_omp',
 
 includes = [self_include,] + [npy_include,] + ext_includes
 libraries = ext_libraries
