@@ -230,10 +230,10 @@ def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
         "Box size: ({:.3f}, {:.3f}, {:.3f})".format(
             *[paramset['boxsize'][axis] for axis in ['x', 'y', 'z']]
         ),
+        "Box alignment: {}".format(paramset['alignment']),
         "Mesh number: ({:d}, {:d}, {:d})".format(
             *[paramset['ngrid'][axis] for axis in ['x', 'y', 'z']]
         ),
-        "Box alignment: {}".format(paramset['alignment']),
         "Mesh assignment and interlacing: {}, {}".format(
             paramset['alignment'], paramset['interlace']
         ),
