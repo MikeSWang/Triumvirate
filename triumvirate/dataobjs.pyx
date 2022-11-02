@@ -139,11 +139,11 @@ cdef class Binning:
     #     """
     #     bin_centres = np.add(bin_edges[:-1], bin_edges[1:]) / 2.
     #     bin_widths = np.subtract(bin_edges[1:], bin_edges[:-1])
-    #
+
     #     self.bin_edges = bin_edges
     #     self.bin_centres = bin_centres
     #     self.bin_widths = bin_widths
-    #
+
     #     self.thisptr.bin_edges = self.bin_edges
     #     self.thisptr.bin_centres = self.bin_centres
     #     self.thisptr.bin_widths = self.bin_widths

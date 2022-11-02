@@ -172,7 +172,8 @@ def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
 
     if paramset['npoint'] != '2pt':
         raise ValueError(
-            "Measurement header being printed is for two-point statistics."
+        "`paramset` 'statistic_type' does not correspond to a "
+        "recognised two-point statistic."
         )
     if paramset['space'] == 'fourier':
         datatab_colnames = [
@@ -288,8 +289,8 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
-        Full parameter set.  If `None` (default), `degree`, `binning` and
-        `params_sampling` must be provided.
+        Full parameter set.  If `None` (default), `degree`, `binning`
+        and `params_sampling` must be provided.
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -309,7 +310,7 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
-        constructed from parameters.
+        constructed from `paramset`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format.
@@ -506,7 +507,7 @@ def compute_powspec(catalogue_data, catalogue_rand,
         `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
-        constructed from parameters.
+        constructed from `paramset`.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -522,8 +523,8 @@ def compute_powspec(catalogue_data, catalogue_rand,
 
         This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
-        Full parameter set (default is `None`).  This is used
-        in lieu of `degree`, `binning` or `sampling_params`.
+        Full parameter set (default is `None`).  This is used in lieu of
+        `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format.
@@ -593,7 +594,7 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
         `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
-        constructed from parameters.
+        constructed from `paramset`.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -673,8 +674,8 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
     catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
         Data-source catalogue.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
-        Full parameter set.  If `None` (default), `degree`, `binning` and
-        `sampling_params` must be provided.
+        Full parameter set.  If `None` (default), `degree`, `binning`
+        and `sampling_params` must be provided.
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -694,7 +695,7 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
         `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
-        constructed from parameters.
+        constructed from `paramset`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements
         as a '.txt' file or in '.npz' format.
@@ -855,7 +856,7 @@ def compute_powspec_in_gpp_box(catalogue_data,
         `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
-        constructed from parameters.
+        constructed from `paramset`.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -931,7 +932,7 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
         `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
-        constructed from parameters.
+        constructed from `paramset`.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -1016,7 +1017,7 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
         `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
-        constructed from parameters.
+        constructed from `paramset`.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
