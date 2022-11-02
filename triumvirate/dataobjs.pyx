@@ -86,17 +86,17 @@ cdef class Binning:
         Parameters
         ----------
         scheme : {'lin', 'log', 'linpad', 'logpad'}, optional
-            Binning scheme.  If :keyword:`None` (default), :attr:`scheme`
-            is used which must not also be :keyword:`None`.
+            Binning scheme.  If `None` (default), :attr:`scheme` is used
+            which must not also be `None`.
         space : {'config', 'fourier'}, optional
-            Coordinate space.  If :keyword:`None` (default), :attr:`space`
-            is used which must not also be :keyword:`None`.
+            Coordinate space.  If `None` (default), :attr:`space` is used
+            which must not also be `None`.
 
         Raises
         ------
         ValueError
-            If :param:`scheme` (or :param:`space`) is :keyword:`None`
-            when :attr:`scheme` (or :attr:`space`) is also :keyword:`None`.
+            If `scheme` (or `space`) is `None` when :attr:`scheme`
+            (or :attr:`space`) is also `None`.
 
         """
         scheme = scheme if scheme else self.scheme

@@ -66,20 +66,20 @@ cdef class ParameterSet:
     ----------
     param_filepath : str or :class:`pathlib.Path`, optional
         Parameter file path.  This should point to a YAML file.
-        If :keyword:`None` (default), :param:`param_dict` should be
-        provided; otherwise :param:`param_dict` should be :keyword:`None`.
+        If `None` (default), `param_dict` should be provided; otherwise
+        `param_dict` should be `None`.
     param_dict : dict, optional
-        Parameter dictionary (nested).  If :keyword:`None` (default),
-        :param:`param_filepath` should be provided; otherwise
-        :param:`param_filepath` should be :keyword:`None`.
+        Parameter dictionary (nested).  If `None` (default),
+        `param_filepath` should be provided; otherwise
+        `param_filepath` should be `None`.
     logger : :class:`logging.Logger`, optional
-        Program logger (default is :keyword:`None`).
+        Program logger (default is `None`).
 
     Raises
     ------
     ValueError
-        If neither or both of :param:`param_filepath` and
-        :param:`param_dict` is/are :keyword:`None`.
+        If neither or both of `param_filepath` and `param_dict`
+        is/are `None`.
 
     Notes
     -----
@@ -154,7 +154,7 @@ cdef class ParameterSet:
         Returns
         -------
         object
-            Parameter value, :keyword:`None` if non-existent.
+            Parameter value, `None` if non-existent.
 
         """
         return self._params.get(key)
@@ -165,8 +165,8 @@ cdef class ParameterSet:
         Parameters
         ----------
         filepath : str or :class:`pathlib.Path`, optional
-            Printout file path.  If :keyword:`None` (default), parameters
-            are printed out to a default file in measurement directory.
+            Printout file path.  If `None` (default), parameters are
+            printed out to a default file in measurement directory.
 
         """
         if filepath is None:
@@ -386,22 +386,22 @@ def fetch_paramset_template(format, ret_defaults=False, params_sampling=None):
         Template format, either file contents ('text')
         or dictionary ('dict').
     ret_defaults : bool, optional
-        If :keyword:`True` (default is :keyword:`False`), return a list
-        of non-:keyword:`None` default parameters in the template.
-        Only used when :param:`format` is 'dict'.
+        If `True` (default is `False`), return a list of non-`None`
+        default parameters in the template.  Only used when `format`
+        is 'dict'.
 
     Returns
     -------
     template : str or dict
         Parameter set template as text or a dictionary.
     defaults : dict
-        Parameter set default entries.  Only returned when :param:`format`
-        is 'dict' and :param:`ret_defaults` is :keyword:`True`.
+        Parameter set default entries.  Only returned when `format` is
+        'dict' and `ret_defaults` is `True`.
 
     Raises
     ------
     ValueError
-        If :param:`format` is neither 'yaml' nor 'dict'.
+        If `format` is neither 'yaml' nor 'dict'.
 
     """
     pkg_root_dir = Path(__file__).parent
@@ -451,32 +451,29 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
             * 'boxpad': float;
             * 'gridpad': float.
         This will override corresponding parameters in the template.
-        If :keyword:`None` (default), no modification happens and
-        the original :param:`paramset` is returned.
+        If `None` (default), no modification happens and the original
+        `paramset` is returned.
     params_default : dict, optional
-        If not :keyword:`None` (default), this is a sub-dictionary of
-        :param:`paramset` and any of its entries unmodified by
-        :param:`params_sampling` will be registered as default values.
+        If not `None` (default), this is a sub-dictionary of `paramset`
+        and any of its entries unmodified by `params_sampling` will be
+        registered as default values.
     ret_defaults : bool, optional
-        If :keyword:`True` (default is :keyword:`False`), return a list
-        of non-:keyword:`None` default parameters which have not been
-        modified.  Only used if :param:`params_default` is
-        not :keyword:`None`.
+        If `True` (default is `False`), return a list of non-`None`
+        default parameters which have not been modified.  Only used if
+        `params_default` is not `None`.
 
     Returns
     -------
     paramset : dict-like
         Modified parameter set.
     params_default : dict, optional
-        Only returned when :param:`ret_defaults` is :keyword:`True` and
-        there are unmodified default parameters from
-        :param:`params_default`.
+        Only returned when `ret_defaults` is `True` and there are
+        unmodified default parameters from  `params_default`.
 
     Raises
     ------
     ValueError
-        When :param:`params_default` is not a sub-dictionary of
-        :param:`paramset`.
+        When `params_default` is not a sub-dictionary of `paramset`.
 
     """
     if params_sampling is None:
@@ -549,32 +546,29 @@ def _modify_measurement_parameters(paramset, params_measure=None,
             * 'idx_bin': int;
             * 'form': {'diag', 'full'}.
         This will override corresponding parameters in the template.
-        If :keyword:`None` (default), no modification happens and
-        the original :param:`paramset` is returned.
+        If `None` (default), no modification happens and the original
+        `paramset` is returned.
     params_default : dict, optional
-        If not :keyword:`None` (default), this is a sub-dictionary of
-        :param:`paramset` and any of its entries unmodified by
-        :param:`params_measure` will be registered as default values.
+        If not `None` (default), this is a sub-dictionary of `paramset`
+        and any of its entries unmodified by `params_measure` will be
+        registered as default values.
     ret_defaults : bool, optional
-        If :keyword:`True` (default is :keyword:`False`), return a list
-        of non-:keyword:`None` default parameters which have not been
-        modified.  Only used if :param:`params_default` is
-        not :keyword:`None`.
+        If `True` (default is `False`), return a list of non-`None`
+        default parameters which have not been modified.  Only used if
+        `params_default` is not `None`.
 
     Returns
     -------
     paramset : dict-like
         Modified parameter dictionary.
     params_default : dict, optional
-        Only returned when :param:`ret_defaults` is :keyword:`True` and
-        there are unmodified default parameters from
-        :param:`params_default`.
+        Only returned when `ret_defaults` is `True` and there are
+        unmodified default parameters from `params_default`.
 
     Raises
     ------
     ValueError
-        When :param:`params_default` is not a subdictionary of
-        :param:`paramset`.
+        When `params_default` is not a subdictionary of `paramset`.
 
     """
     if params_measure is None:
