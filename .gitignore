@@ -52,7 +52,7 @@ triumvirate/tests/test_input/catalogues/**
 triumvirate/*.cpp
 
 # Directory (temporary):
-winconv/
+fftlog2d/
 
 # Exceptions
 # File: build/.ignore
