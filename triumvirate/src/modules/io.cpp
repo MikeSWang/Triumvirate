@@ -82,6 +82,15 @@ void print_measurement_header_to_file(
   );
   std::fprintf(
     fileptr,
+    "%s Data-source particle extents: "
+    "([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
+    comment_delimiter,
+    catalogue_data.pos_min[0], catalogue_data.pos_max[0],
+    catalogue_data.pos_min[1], catalogue_data.pos_max[1],
+    catalogue_data.pos_min[2], catalogue_data.pos_max[2]
+  );
+  std::fprintf(
+    fileptr,
     "%s Random catalogue source: %s\n",
     comment_delimiter, catalogue_rand.source.c_str()
   );
@@ -89,28 +98,6 @@ void print_measurement_header_to_file(
     fileptr,
     "%s Random catalogue size: %d particles of total weight %.3f\n",
     comment_delimiter, catalogue_rand.ntotal, catalogue_rand.wtotal
-  );
-
-  std::fprintf(
-    fileptr,
-    "%s Box size: (%.3f, %.3f, %.3f)\n",
-    comment_delimiter,
-    params.boxsize[0], params.boxsize[1], params.boxsize[2]
-  );
-  std::fprintf(
-    fileptr,
-    "%s Mesh number: (%d, %d, %d)\n",
-    comment_delimiter,
-    params.ngrid[0], params.ngrid[1], params.ngrid[2]
-  );
-  std::fprintf(
-    fileptr,
-    "%s Data-source particle extents: "
-    "([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
-    comment_delimiter,
-    catalogue_data.pos_min[0], catalogue_data.pos_max[0],
-    catalogue_data.pos_min[1], catalogue_data.pos_max[1],
-    catalogue_data.pos_min[2], catalogue_data.pos_max[2]
   );
   std::fprintf(
     fileptr,
@@ -121,11 +108,24 @@ void print_measurement_header_to_file(
     catalogue_rand.pos_min[1], catalogue_rand.pos_max[1],
     catalogue_rand.pos_min[2], catalogue_rand.pos_max[2]
   );
+
+  std::fprintf(
+    fileptr,
+    "%s Box size: (%.3f, %.3f, %.3f)\n",
+    comment_delimiter,
+    params.boxsize[0], params.boxsize[1], params.boxsize[2]
+  );
   std::fprintf(
     fileptr,
     "%s Box alignment: %s,\n",
     comment_delimiter,
     params.alignment.c_str()
+  );
+  std::fprintf(
+    fileptr,
+    "%s Mesh number: (%d, %d, %d)\n",
+    comment_delimiter,
+    params.ngrid[0], params.ngrid[1], params.ngrid[2]
   );
   std::fprintf(
     fileptr,
@@ -169,6 +169,15 @@ void print_measurement_header_to_file(
     "%s Catalogue size: %d particles of total weight %.3f\n",
     comment_delimiter, catalogue.ntotal, catalogue.wtotal
   );
+  std::fprintf(
+    fileptr,
+    "%s Catalogue particle extents: "
+    "([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
+    comment_delimiter,
+    catalogue.pos_min[0], catalogue.pos_max[0],
+    catalogue.pos_min[1], catalogue.pos_max[1],
+    catalogue.pos_min[2], catalogue.pos_max[2]
+  );
 
   std::fprintf(
     fileptr,
@@ -178,24 +187,15 @@ void print_measurement_header_to_file(
   );
   std::fprintf(
     fileptr,
-    "%s Mesh number: (%d, %d, %d)\n",
-    comment_delimiter,
-    params.ngrid[0], params.ngrid[1], params.ngrid[2]
-  );
-  std::fprintf(
-    fileptr,
-    "%s Particle extents: "
-    "([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
-    comment_delimiter,
-    catalogue.pos_min[0], catalogue.pos_max[0],
-    catalogue.pos_min[1], catalogue.pos_max[1],
-    catalogue.pos_min[2], catalogue.pos_max[2]
-  );
-  std::fprintf(
-    fileptr,
     "%s Box alignment: %s,\n",
     comment_delimiter,
     params.alignment.c_str()
+  );
+  std::fprintf(
+    fileptr,
+    "%s Mesh number: (%d, %d, %d)\n",
+    comment_delimiter,
+    params.ngrid[0], params.ngrid[1], params.ngrid[2]
   );
   std::fprintf(
     fileptr,
