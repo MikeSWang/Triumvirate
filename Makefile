@@ -32,8 +32,8 @@ CLIBS =
 
 SYSTYPE := $(if ${NERSC_HOST}, cluster, local)
 
-# CC: compilers, {g++,}
-# CFLAGS: compilation flags, {-DTRV_USE_LEGACY_CODE, -DDBG_MODE, -DDBG_PARS, -DDBG_NOAC,}
+# CC: compilers, e.g. {g++, ...}
+# CFLAGS: compilation flags.
 ifeq ($(strip ${SYSTYPE}), local)
 
 CC = g++
@@ -66,6 +66,17 @@ INCLUDES += -I${FFTW_DIR}/include
 LIBS += -L${FFTW_DIR}/lib
 
 endif
+
+
+# -- Version-specific configurations --------------------------------
+
+# Add optimisation options, e.g. {-fopenmp (-lfftw3_omp), -DTRV_USE_OMP}.
+CFLAGS += -fopenmp -DTRV_USE_OMP
+LIBS += -lfftw3_omp
+
+# Add debugging options, e.g.
+# {-DDBG_MODE, -DDBG_PARS, -DDBG_NOAC, -DTRV_USE_LEGACY_CODE}.
+# CFLAGS +=
 
 
 # ========================================================================
