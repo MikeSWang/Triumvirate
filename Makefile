@@ -71,8 +71,8 @@ endif
 # -- Version-specific configurations --------------------------------
 
 # Add optimisation options, e.g. {-fopenmp (-lfftw3_omp), -DTRV_USE_OMP}.
-CFLAGS += -fopenmp -DTRV_USE_OMP
-LIBS += -lfftw3_omp
+# CFLAGS += -fopenmp -DTRV_USE_OMP
+# LIBS += -lfftw3_omp
 
 # Add debugging options, e.g.
 # {-DDBG_MODE, -DDBG_PARS, -DDBG_NOAC, -DTRV_USE_LEGACY_CODE}.
@@ -117,7 +117,9 @@ ${PROGNAME}: ${DIR_SRC}/${PROGNAME}.cpp
 
 test_fftlog: ${DIR_TESTS}/test_fftlog.cpp \
 						 ${DIR_SRCMODULES}/fftlog.cpp \
-						 ${DIR_SRCMODULES}/monitor.cpp ${DIR_SRCMODULES}/maths.cpp ${DIR_SRCMODULES}/arrayops.cpp
+						 ${DIR_SRCMODULES}/monitor.cpp \
+						 ${DIR_SRCMODULES}/maths.cpp \
+						 ${DIR_SRCMODULES}/arrayops.cpp
 	$(CC) $(CFLAGS) -o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) $^ $(INCLUDES) $(LIBS) $(CLIBS)
 
 
