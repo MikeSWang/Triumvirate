@@ -280,7 +280,7 @@ def extrap2d_bipad(a, n_ext, n_ext_col=None, a_const=0., a_const_col=None):
 def transform_bispec_to_3pcf(ell1, ell2, bk_in, k_in, r_out,
                              n_fftlog, n_extrap=None, extrap=None):
     """Transform bispectrum samples to three-point correlation function
-    (3PCF) samples using 1-d FFTLog.
+    (3PCF) samples using double 1-d FFTLog operations.
 
     Parameters
     ----------
@@ -296,11 +296,11 @@ def transform_bispec_to_3pcf(ell1, ell2, bk_in, k_in, r_out,
         FFTLog sample number.
     n_extrap : int, optional
         Extrapolation sample number (one-sided) (default is `None`).
-    extrap : {'lin', 'loglin', '0-pad'}, optional
+    extrap : {'lin', 'loglin', 'zero'}, optional
         If not `None` (default), set one of the following options:
             * 'lin' -- input bispectrum is extrapolated linearly;
             * 'loglin' -- input bispectrum is extrapolated log-linearly;
-            * '0-pad' -- input bispectrum is zero padded.
+            * 'zero' -- input bispectrum is zero padded.
 
         In each case, `n_extrap` must be set, and the input wavenumbers
         `k_in` are extrapolated log-linearly.
@@ -332,7 +332,7 @@ def transform_bispec_to_3pcf(ell1, ell2, bk_in, k_in, r_out,
             bk_sample = extrap2d_bilin(bk_in, n_extrap)
         elif extrap == 'loglin':
             bk_sample = extrap2d_logbilin(bk_in, n_extrap)
-        elif extrap == '0-pad':
+        elif extrap == 'zero':
             bk_sample = extrap2d_bipad(bk_in, n_extrap)
         else:
             raise ValueError(f"Unknown option for `extrap`: {extrap}.")
@@ -406,7 +406,7 @@ def transform_bispec_to_3pcf(ell1, ell2, bk_in, k_in, r_out,
 def transform_3pcf_to_bispec(ell1, ell2, zeta_in, r_in, k_out,
                              n_fftlog, n_extrap=None, extrap=None):
     """Transform three-point correlation function (3PCF) samples to
-    bispectrum samples using 1-d FFTLog.
+    bispectrum samples using double 1-d FFTLog operations.
 
     Parameters
     ----------
@@ -422,11 +422,11 @@ def transform_3pcf_to_bispec(ell1, ell2, zeta_in, r_in, k_out,
         FFTLog sample number.
     n_extrap : int, optional
         Extrapolation sample number (one-sided) (default is `None`).
-    extrap : {'lin', 'loglin', '0-pad'}, optional
+    extrap : {'lin', 'loglin', 'zero'}, optional
         If not `None` (default), set one of the following options:
             * 'lin' -- input 3PCF is extrapolated linearly;
             * 'loglin' -- input 3PCF is extrapolated log-linearly;
-            * '0-pad' -- input 3PCF is zero padded.
+            * 'zero' -- input 3PCF is zero padded.
 
         In each case, `n_extrap` must be set, and the input separations
         `r_in` are extrapolated log-linearly.
@@ -458,7 +458,7 @@ def transform_3pcf_to_bispec(ell1, ell2, zeta_in, r_in, k_out,
             zeta_sample = extrap2d_bilin(zeta_in, n_extrap)
         elif extrap == 'loglin':
             zeta_sample = extrap2d_logbilin(zeta_in, n_extrap)
-        elif extrap == '0-pad':
+        elif extrap == 'zero':
             zeta_sample = extrap2d_bipad(zeta_in, n_extrap)
         else:
             raise ValueError(f"Unknown option for `extrap`: {extrap}.")

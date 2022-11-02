@@ -447,9 +447,11 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
             * 'ngrid': [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
+
         and one and only one of the following when 'boxalign' is 'pad':
             * 'boxpad': float;
             * 'gridpad': float.
+
         This will override corresponding parameters in the template.
         If `None` (default), no modification happens and the original
         `paramset` is returned.
@@ -545,6 +547,7 @@ def _modify_measurement_parameters(paramset, params_measure=None,
             * 'i_wa', 'j_wa': int;
             * 'idx_bin': int;
             * 'form': {'diag', 'full'}.
+
         This will override corresponding parameters in the template.
         If `None` (default), no modification happens and the original
         `paramset` is returned.

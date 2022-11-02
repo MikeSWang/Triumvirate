@@ -355,7 +355,8 @@ class ParticleCatalogue:
 
         The minimum particle extents in each dimension are shifted away
         from the origin of the box depending on the amount of padding,
-        which can be set as a multiple of either the grid sizes or the box sizes (i.e. number of grids or fraction of boxsizes).
+        which can be set as a multiple of either the grid sizes or
+        the box sizes (i.e. number of grids or fraction of boxsizes).
 
         Parameters
         ----------
@@ -506,7 +507,7 @@ class ParticleCatalogue:
 
         Returns
         -------
-        The same quantity is a non-Dask-array form.
+        The same quantity in a non-Dask-array form.
 
         """
         try:
