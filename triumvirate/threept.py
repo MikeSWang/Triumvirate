@@ -235,7 +235,7 @@ def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
             *[paramset['ngrid'][axis] for axis in ['x', 'y', 'z']]
         ),
         "Mesh assignment and interlacing: {}, {}".format(
-            paramset['alignment'], paramset['interlace']
+            paramset['assignment'], paramset['interlace']
         ),
         "Normalisation factor: "
         "{:9e} ({}-based, used), {:9e} ({}-based, alternative)"
