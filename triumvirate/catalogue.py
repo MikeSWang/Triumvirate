@@ -41,18 +41,18 @@ class ParticleCatalogue:
     Parameters
     ----------
     x, y, z : 1-d array of float
-        Cartesian coordinates of particles.  :param:`x`, :param:`y` and
-        :param:`z` must have the same length.
+        Cartesian coordinates of particles.  `x`, `y` and `z` must have
+        the same length.
     nz : (1-d array of) float, optional
         Redshift-dependent mean number density of
-        (defaults is :keyword:`None`).  If an array, it must be of
-        the same length as :param:`x`, :param:`y` and :param:`z`.
+        (defaults is `None`).  If an array, it must be of the same length
+        as `x`, `y` and `z`.
     ws, wc : (1-d array of) float, optional
         Systematic weights and clustering weights of particles (defaults
         are 1.).  If an array, it must be of the same length as
-        :param:`x`, :param:`y` and :param:`z`.
+        `x`, `y` and `z`.
     logger : :class:`logging.Logger`, optional
-        Program logger (default is :keyword:`None`).
+        Program logger (default is `None`).
 
     Attributes
     ----------
@@ -126,27 +126,26 @@ class ParticleCatalogue:
             is used for reading in the catalogue file; else if 'nbodykit',
             :class:`nbodykit.source.catalog` is used (if available).
         names : sequence of str, optional
-            Catalogue file field names.  Cannot be :keyword:`None`
-            (default) if :param:`reader` is 'nbodykit'.
-            If :keyword:`None`, the header in the file is used to
-            infer the names.
+            Catalogue file field names.  Cannot be `None` (default)
+            if `reader` is 'nbodykit'.  If `None`, the header in the file
+            is used to infer the names.
         format : str, optional
             File format specifier (default is 'ascii.no_header', with any
-            header included as comment lines).  Used only when
-            :param:`reader` is 'astropy'.  See
+            header included as comment lines).  Used only when `reader`
+            is 'astropy'.  See
             `<https://docs.astropy.org/en/stable/io/ascii/
             index.html#supported-formats>`_ for supported file formats.
         name_mapping : dict of {str: str}, optional
             Mapping between any of the default column names 'x', 'y', 'z',
             'nz', 'ws' and 'wc' (keys) and the corresponding field names
-            (values) in :param:`names` (default is :keyword:`None`).
-            Used only when :param:`reader` is 'astropy'.
+            (values) in `names` (default is `None`). Used only
+            when `reader` is 'astropy'.
         table_kwargs : dict, optional
             Keyword arguments to be passed to
-            :meth:`astropy.table.Table.read` (default is :keyword:`None`).
-            Used only when :param:`reader` is 'astropy'.
+            :meth:`astropy.table.Table.read` (default is `None`).
+            Used only when `reader` is 'astropy'.
         logger : :class:`logging.Logger`, optional
-            Program logger (default is :keyword:`None`).
+            Program logger (default is `None`).
 
         """
         self = object.__new__(cls)
@@ -294,9 +293,9 @@ class ParticleCatalogue:
         """Compute the mean density over a volume.
 
         This sets the 'nz' column to :attr:`ntotal` divided by
-        :param:`volume` or cubic (product of) :param:`boxsize`, and is
-        typically used for calculating the homogeneous background number
-        density in a simulation box.
+        `volume` or cubic (product of) `boxsize`, and is typically used
+        for calculating the homogeneous background number density
+        in a simulation box.
 
         Parameters
         ----------
@@ -304,8 +303,7 @@ class ParticleCatalogue:
             Volume over which the mean density is calculated.
         boxsize : ((3,) array of) double, optional
             Box size (in each dimension) over which the mean density
-            is calculated.  Used only when :param:`volume`
-            is :keyword:`None`.
+            is calculated.  Used only when `volume` is `None`.
 
         """
         if np.isscalar(boxsize):
@@ -324,8 +322,8 @@ class ParticleCatalogue:
             Box size (in each dimension).
         catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, optional
             Reference catalogue used for box alignment, also to be centred
-            in the same box.  If :keyword:`None` (default), the current
-            catalogue itself is used as the reference catalogue.
+            in the same box.  If `None` (default), the current catalogue
+            itself is used as the reference catalogue.
 
         Notes
         -----
@@ -364,24 +362,23 @@ class ParticleCatalogue:
         boxsize : (3,) array of float
             Box size in each dimension.
         ngrid : (3,) array of int, optional
-            Grid number in each dimension (default is :keyword:`None`).
-            Must be provided if :param:`ngrid_pad` is set.
+            Grid number in each dimension (default is `None`).
+            Must be provided if `ngrid_pad` is set.
         boxsize_pad : ((3,) array of) float, optional
-            Box size padding factor.  If not :keyword:`None` (default),
-            then :param:`ngrid_pad` must be :keyword:`None`.
+            Box size padding factor.  If not `None` (default), then
+            `ngrid_pad` must be `None`.
         ngrid_pad : ((3,) array of) float, optional
-            Grid padding factor.  If not :keyword:`None` (default), then
-            :param:`boxsize_pad` must be :keyword:`None`.
+            Grid padding factor.  If not `None` (default), then
+            `boxsize_pad` must be `None`.
         catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, optional
             Reference catalogue used for box alignment, also to be put in
-            the same box.  If :keyword:`None` (default), the current
-            catalogue itself is used as the reference catalogue.
+            the same box.  If `None` (default), the current catalogue
+            itself is used as the reference catalogue.
 
         Raises
         ------
         ValueError
-            If :param:`boxsize_pad` and :param:`ngrid_pad` are both set
-            to not :keyword:`None`.
+            If `boxsize_pad` and `ngrid_pad` are both set to not `None`.
 
         Notes
         -----
@@ -457,8 +454,8 @@ class ParticleCatalogue:
         Parameters
         ----------
         init : bool, optional
-            If :keyword:`True` (default is :keyword:`False`), particle
-            positions are original and have not been offset previously.
+            If `True` (default is `False`), particle positions are
+            original and have not been offset previously.
 
         """
         self.bounds = {}
@@ -523,8 +520,8 @@ class ParticleCatalogue:
         Parameters
         ----------
         catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, optional
-            Reference catalogue (default is :keyword:`None`) whose
-            attributes are also written out.  This is typically the
+            Reference catalogue (default is `None`) whose attributes are
+            also written out.  This is typically the
             random-source catalogue.
 
         Returns

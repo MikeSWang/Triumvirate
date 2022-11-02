@@ -35,8 +35,8 @@ def _amalgamate_parameters(paramset=None, params_sampling=None, degree=None):
     Parameters
     ----------
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
-        Full parameter set.  If :keyword:`None` (default), the other
-        parameters must be provided.
+        Full parameter set.  If `None` (default), the other parameters
+        must be provided.
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -45,13 +45,15 @@ def _amalgamate_parameters(paramset=None, params_sampling=None, degree=None):
             * 'ngrid': [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
+
         and one and only one of the following when 'boxalign' is 'pad':
             * 'boxpad': float;
             * 'gridpad': float.
-        This will override corresponding entries in :param:`paramset`.
+
+        This will override corresponding entries in `paramset`.
     degree : int, optional
-        Multipole degree.  If not :keyword:`None` (default), this will
-        override `paramset['degrees']['ELL']`.
+        Multipole degree.  If not `None` (default), this will override
+        `paramset['degrees']['ELL']`.
 
     Returns
     -------
@@ -61,9 +63,8 @@ def _amalgamate_parameters(paramset=None, params_sampling=None, degree=None):
     Raises
     ------
     ValueError
-        When :param:`paramset` is :keyword:`None` while either
-        :param:`params_sampling` or :param:`degree`
-        is also :keyword:`None`.
+        When `paramset` is `None` while either `params_sampling` or
+        `degree` is also `None`.
 
     """
     if paramset is None and params_sampling is None:
@@ -116,7 +117,7 @@ def _get_measurement_filename(paramset):
     Raises
     ------
     ValueError
-        When :param:`paramset` indicates the measurements are not
+        When `paramset` indicates the measurements are not
         two-point statistics.
 
     """
@@ -158,7 +159,7 @@ def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
     Raises
     ------
     ValueError
-        When :param:`paramset` indicates the measurements are not
+        When `paramset` indicates the measurements are not
         two-point statistics.
 
     """
@@ -234,7 +235,7 @@ def _assemble_measurement_datatab(measurements, paramset):
     Raises
     ------
     ValueError
-        When :param:`paramset` indicates the measurements are not
+        When `paramset` indicates the measurements are not
         two-point statistics.
 
     """
@@ -280,15 +281,15 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         Random-source catalogue.
     los_data : (N, 3) array of float, optional
         Specified lines of sight for the data-source catalogue.
-        If :keyword:`None` (default), this is automatically computed using
+        If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
     los_rand : (N, 3) array of float, optional
         Specified lines of sight for the random-source catalogue.
-        If :keyword:`None` (default), this is automatically computed using
+        If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
-        Full parameter set.  If :keyword:`None` (default), :param:`degree`,
-        :param:`binning` and :param:`params_sampling` must be provided.
+        Full parameter set.  If `None` (default), `degree`, `binning` and
+        `params_sampling` must be provided.
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -297,21 +298,23 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
             * 'ngrid': [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
+
         and one and only one of the following when 'boxalign' is 'pad':
             * 'boxpad': float;
             * 'gridpad': float.
-        This will override corresponding entries in :param:`paramset`.
+
+        This will override corresponding entries in `paramset`.
     degree : int, optional
-        Multipole degree.  If not :keyword:`None` (default), this will
-        override `paramset['degrees']['ELL']`.
+        Multipole degree.  If not `None` (default), this will override
+        `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
-        Binning for the measurements.  If :keyword:`None` (default),
-        this is constructed from parameters.
+        Binning for the measurements.  If `None` (default), this is
+        constructed from parameters.
     save : {'.txt', '.npz', False}, optional
-        If not :keyword:`False` (default), save the measurements
-        as a '.txt' file or in '.npz' format.
+        If not `False` (default), save the measurements as a '.txt' file
+        or in '.npz' format.
     logger : :class:`logging.Logger`, optional
-        Logger (default is :keyword:`None`).
+        Logger (default is `None`).
 
     Returns
     -------
@@ -321,9 +324,8 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
     Raises
     ------
     ValueError
-        When :param:`paramset` is :keyword:`None` while
-        :param:`params_sampling`, :param:`degree` or :param:`binning`
-        is also :keyword:`None`.
+        When `paramset` is `None` while `params_sampling`, `degree` or
+        `binning` is also `None`.
 
     """
     # --------------------------------------------------------------------
@@ -493,18 +495,18 @@ def compute_powspec(catalogue_data, catalogue_rand,
         Random-source catalogue.
     los_data : (N, 3) array of float, optional
         Specified lines of sight for the data-source catalogue.
-        If :keyword:`None` (default), this is automatically computed using
+        If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
     los_rand : (N, 3) array of float, optional
         Specified lines of sight for the random-source catalogue.
-        If :keyword:`None` (default), this is automatically computed using
+        If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
     degree : int, optional
-        Multipole degree.  If not :keyword:`None` (default), this will
-        override `paramset['degrees']['ELL']`.
+        Multipole degree.  If not `None` (default), this will override
+        `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
-        Binning for the measurements.  If :keyword:`None` (default),
-        this is constructed from parameters.
+        Binning for the measurements.  If `None` (default), this is
+        constructed from parameters.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -513,19 +515,20 @@ def compute_powspec(catalogue_data, catalogue_rand,
             * 'ngrid': [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
+
         and one and only one of the following when 'boxalign' is 'pad':
             * 'boxpad': float;
             * 'gridpad': float.
-        This will override corresponding entries in :param:`paramset`.
+
+        This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
-        Full parameter set (default is :keyword:`None`).  This is used
-        in lieu of :param:`degree`, :param:`binning` or
-        :param:`sampling_params`.
+        Full parameter set (default is `None`).  This is used
+        in lieu of `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
-        If not :keyword:`False` (default), save the measurements
-        as a '.txt' file or in '.npz' format.
+        If not `False` (default), save the measurements as a '.txt' file
+        or in '.npz' format.
     logger : :class:`logging.Logger`, optional
-        Logger (default is :keyword:`None`).
+        Logger (default is `None`).
 
     Returns
     -------
@@ -535,9 +538,8 @@ def compute_powspec(catalogue_data, catalogue_rand,
     Raises
     ------
     ValueError
-        When :param:`paramset` is :keyword:`None` but :param:`degree`,
-        :param:`binning` or :param:`sampling_params` is
-        also :keyword:`None`.
+        When `paramset` is `None` but `degree`, `binning` or
+        `sampling_params` is also `None`.
 
     """
     # if logger:
@@ -587,11 +589,11 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
         If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
     degree : int, optional
-        Multipole degree.  If not :keyword:`None` (default), this will
-        override `paramset['degrees']['ELL']`.
+        Multipole degree.  If not `None` (default), this will override
+        `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
-        Binning for the measurements.  If :keyword:`None` (default),
-        this is constructed from parameters.
+        Binning for the measurements.  If `None` (default), this is
+        constructed from parameters.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -600,19 +602,20 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
             * 'ngrid': [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
+
         and one and only one of the following when 'boxalign' is 'pad':
             * 'boxpad': float;
             * 'gridpad': float.
-        This will override corresponding entries in :param:`paramset`.
+
+        This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
-        Full parameter set (default is :keyword:`None`).  This is used
-        in lieu of :param:`degree`, :param:`binning` or
-        :param:`sampling_params`.
+        Full parameter set (default is `None`).  This is used
+        in lieu of `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
-        If not :keyword:`False` (default), save the measurements
-        as a '.txt' file or in '.npz' format.
+        If not `False` (default), save the measurements as a '.txt' file
+        or in '.npz' format.
     logger : :class:`logging.Logger`, optional
-        Logger (default is :keyword:`None`).
+        Logger (default is `None`).
 
     Returns
     -------
@@ -622,9 +625,8 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
     Raises
     ------
     ValueError
-        When :param:`paramset` is :keyword:`None` but :param:`degree`,
-        :param:`binning` or :param:`sampling_params` is
-        also :keyword:`None`.
+        When `paramset` is `None` but `degree`, `binning` or
+        `sampling_params` is also `None`.
 
     """
     # if logger:
@@ -671,8 +673,8 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
     catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
         Data-source catalogue.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
-        Full parameter set.  If :keyword:`None` (default), :param:`degree`,
-        :param:`binning` and :param:`sampling_params` must be provided.
+        Full parameter set.  If `None` (default), `degree`, `binning` and
+        `sampling_params` must be provided.
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -681,21 +683,23 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
             * 'ngrid': [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
+
         and one and only one of the following when 'boxalign' is 'pad':
             * 'boxpad': float;
             * 'gridpad': float.
-        This will override corresponding entries in :param:`paramset`.
+
+        This will override corresponding entries in `paramset`.
     degree : int, optional
-        Multipole degree.  If not :keyword:`None` (default), this will
-        override `paramset['degrees']['ELL']`.
+        Multipole degree.  If not `None` (default), this will override
+        `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
-        Binning for the measurements.  If :keyword:`None` (default),
-        this is constructed from parameters.
+        Binning for the measurements.  If `None` (default), this is
+        constructed from parameters.
     save : {'.txt', '.npz', False}, optional
-        If not :keyword:`False` (default), save the measurements
+        If not `False` (default), save the measurements
         as a '.txt' file or in '.npz' format.
     logger : :class:`logging.Logger`, optional
-        Logger (default is :keyword:`None`).
+        Logger (default is `None`).
 
     Returns
     -------
@@ -705,9 +709,8 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
     Raises
     ------
     ValueError
-        When :param:`paramset` is :keyword:`None` while
-        :param:`params_sampling`, :param:`degree` or :param:`binning`
-        is also :keyword:`None`.
+        When `paramset` is `None` while `params_sampling`, `degree` or
+        `binning` is also `None`.
 
     """
     # --------------------------------------------------------------------
@@ -848,11 +851,11 @@ def compute_powspec_in_gpp_box(catalogue_data,
     catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
         Data-source catalogue.
     degree : int, optional
-        Multipole degree.  If not :keyword:`None` (default), this will
-        override `paramset['degrees']['ELL']`.
+        Multipole degree.  If not `None` (default), this will override
+        `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
-        Binning for the measurements.  If :keyword:`None` (default),
-        this is constructed from parameters.
+        Binning for the measurements.  If `None` (default), this is
+        constructed from parameters.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -861,19 +864,20 @@ def compute_powspec_in_gpp_box(catalogue_data,
             * 'ngrid': [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
+
         and one and only one of the following when 'boxalign' is 'pad':
             * 'boxpad': float;
             * 'gridpad': float.
-        This will override corresponding entries in :param:`paramset`.
+
+        This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
-        Full parameter set (default is :keyword:`None`).  This is used
-        in lieu of :param:`degree`, :param:`binning` or
-        :param:`sampling_params`.
+        Full parameter set (default is `None`).  This is used
+        in lieu of `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
-        If not :keyword:`False` (default), save the measurements
-        as a '.txt' file or in '.npz' format.
+        If not `False` (default), save the measurements as a '.txt' file
+        or in '.npz' format.
     logger : :class:`logging.Logger`, optional
-        Logger (default is :keyword:`None`).
+        Logger (default is `None`).
 
     Returns
     -------
@@ -883,9 +887,8 @@ def compute_powspec_in_gpp_box(catalogue_data,
     Raises
     ------
     ValueError
-        When :param:`paramset` is :keyword:`None` but :param:`degree`,
-        :param:`binning` or :param:`sampling_params` is
-        also :keyword:`None`.
+        When `paramset` is `None` but `degree`, `binning` or
+        `sampling_params` is also `None`.
 
     """
     # if logger:
@@ -924,11 +927,11 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
     catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
         Data-source catalogue.
     degree : int, optional
-        Multipole degree.  If not :keyword:`None` (default), this will
-        override `paramset['degrees']['ELL']`.
+        Multipole degree.  If not `None` (default), this will override
+        `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
-        Binning for the measurements.  If :keyword:`None` (default),
-        this is constructed from parameters.
+        Binning for the measurements.  If `None` (default), this is
+        constructed from parameters.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -937,19 +940,20 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
             * 'ngrid': [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
+
         and one and only one of the following when 'boxalign' is 'pad':
             * 'boxpad': float;
             * 'gridpad': float.
-        This will override corresponding entries in :param:`paramset`.
+
+        This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
-        Full parameter set (default is :keyword:`None`).  This is used
-        in lieu of :param:`degree`, :param:`binning` or
-        :param:`sampling_params`.
+        Full parameter set (default is `None`).  This is used
+        in lieu of `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
-        If not :keyword:`False` (default), save the measurements
-        as a '.txt' file or in '.npz' format.
+        If not `False` (default), save the measurements as a '.txt' file
+        or in '.npz' format.
     logger : :class:`logging.Logger`, optional
-        Logger (default is :keyword:`None`).
+        Logger (default is `None`).
 
     Returns
     -------
@@ -959,9 +963,8 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
     Raises
     ------
     ValueError
-        When :param:`paramset` is :keyword:`None` but :param:`degree`,
-        :param:`binning` or :param:`sampling_params` is
-        also :keyword:`None`.
+        When `paramset` is `None` but `degree`, `binning` or
+        `sampling_params` is also `None`.
 
     """
     # if logger:
@@ -1009,11 +1012,11 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
         If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
     degree : int, optional
-        Multipole degree.  If not :keyword:`None` (default), this will
-        override `paramset['degrees']['ELL']`.
+        Multipole degree.  If not `None` (default), this will override
+        `paramset['degrees']['ELL']`.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
-        Binning for the measurements.  If :keyword:`None` (default),
-        this is constructed from parameters.
+        Binning for the measurements.  If `None` (default), this is
+        constructed from parameters.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -1022,19 +1025,20 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
             * 'ngrid': [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
+
         and one and only one of the following when 'boxalign' is 'pad':
             * 'boxpad': float;
             * 'gridpad': float.
-        This will override corresponding entries in :param:`paramset`.
+
+        This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
-        Full parameter set (default is :keyword:`None`).  This is used
-        in lieu of :param:`degree`, :param:`binning` or
-        :param:`sampling_params`.
+        Full parameter set (default is `None`).  This is used
+        in lieu of `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
-        If not :keyword:`False` (default), save the measurements
-        as a '.txt' file or in '.npz' format.
+        If not `False` (default), save the measurements as a '.txt' file
+        or in '.npz' format.
     logger : :class:`logging.Logger`, optional
-        Logger (default is :keyword:`None`).
+        Logger (default is `None`).
 
     Returns
     -------
@@ -1044,9 +1048,8 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
     Raises
     ------
     ValueError
-        When :param:`paramset` is :keyword:`None` but :param:`degree`,
-        :param:`binning` or :param:`sampling_params` is
-        also :keyword:`None`.
+        When `paramset` is `None` but `degree`, `binning` or
+        `sampling_params` is also `None`.
 
     """
     # --------------------------------------------------------------------

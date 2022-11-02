@@ -8,7 +8,7 @@ so look out for any updates!
 .. toctree::
     :maxdepth: 1
 
-    tutorials/measure_pk_bk.ipynb
+    tutorials/QuickStart.ipynb
 
 
 For now, |examples|_ contains some
