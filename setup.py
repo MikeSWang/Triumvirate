@@ -48,7 +48,7 @@ language = 'c++'
 os.environ['CC'] = 'g++'
 
 # Modify compilation options.
-options = ['-std=c++11']
+options = ['-std=c++11',]  # '-fopenmp',
 
 # Suppress irrelevant compiler warnings.
 config_vars = get_config_vars()
@@ -63,6 +63,7 @@ for key, val in config_vars.items():
 self_include = f"{pkgdir}/include"
 self_modulesrc = f"{pkgdir}/src/modules"
 self_macros = [
+    # ('TRV_USE_OMP', None),
     # ('TRV_USE_LEGACY_CODE', None),
     # ('DBG_MODE', None),
     # ('DBG_PARS', None),
@@ -81,7 +82,7 @@ except FileNotFoundError:
     ext_includes = []
 finally:
     ext_includes = [incl_ for incl_ in ext_includes if pkgdir not in incl_]
-    ext_libraries = ['gsl',]
+    ext_libraries = ['gsl',]  # 'fftw3_omp',
 
 includes = [self_include,] + [npy_include,] + ext_includes
 libraries = ext_libraries
