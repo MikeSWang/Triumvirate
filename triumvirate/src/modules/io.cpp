@@ -117,7 +117,7 @@ void print_measurement_header_to_file(
   );
   std::fprintf(
     fileptr,
-    "%s Box alignment: %s,\n",
+    "%s Box alignment: %s\n",
     comment_delimiter,
     params.alignment.c_str()
   );
@@ -187,7 +187,7 @@ void print_measurement_header_to_file(
   );
   std::fprintf(
     fileptr,
-    "%s Box alignment: %s,\n",
+    "%s Box alignment: %s\n",
     comment_delimiter,
     params.alignment.c_str()
   );
