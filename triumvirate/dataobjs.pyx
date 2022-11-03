@@ -7,7 +7,7 @@ Define data objects.
 """
 # import numpy as np
 
-from dataobjs cimport CppBinning
+from .dataobjs cimport CppBinning
 
 
 cdef class Binning:

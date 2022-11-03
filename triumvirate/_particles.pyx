@@ -7,7 +7,7 @@ Parse Python catalogue objects into C++ particle catalogues.
 """
 cimport numpy as np
 
-from _particles cimport CppParticleCatalogue
+from ._particles cimport CppParticleCatalogue
 
 
 cdef class _ParticleCatalogue:

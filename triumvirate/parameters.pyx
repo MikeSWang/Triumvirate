@@ -12,7 +12,7 @@ from pprint import pformat
 import numpy as np
 import yaml
 
-from parameters cimport CppParameterSet
+from .parameters cimport CppParameterSet
 
 
 # NOTE: Nested entries must not have a non-None default value.
