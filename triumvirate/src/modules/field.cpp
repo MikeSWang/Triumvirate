@@ -831,10 +831,9 @@ void MeshField::fourier_transform() {
   }
 
   /// Perform FFT.
-#ifdef TRV_USE_OMP
-  fftw_init_threads();
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
   fftw_plan transform = fftw_plan_dft_3d(
     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
     this->field, this->field,
@@ -851,10 +850,9 @@ void MeshField::fourier_transform() {
       this->field_s[gid][1] *= this->vol_cell;
     }
 
-#ifdef TRV_USE_OMP
-  fftw_init_threads();
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
     fftw_plan transform_s = fftw_plan_dft_3d(
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
       this->field_s, this->field_s,
@@ -912,10 +910,9 @@ void MeshField::inv_fourier_transform() {
   }
 
   /// Perform inverse FFT.
-#ifdef TRV_USE_OMP
-  fftw_init_threads();
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
   fftw_plan inv_transform = fftw_plan_dft_3d(
     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
     this->field, this->field,
@@ -1030,10 +1027,9 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   }
 
   /// Perform inverse FFT.
-#ifdef TRV_USE_OMP
-  fftw_init_threads();
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
   fftw_plan inv_transform = fftw_plan_dft_3d(
     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
     this->field, this->field,
@@ -1091,10 +1087,9 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
   }
 
   /// Perform inverse FFT.
-#ifdef TRV_USE_OMP
-  fftw_init_threads();
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
   fftw_plan inv_transform = fftw_plan_dft_3d(
     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
     this->field, this->field,
@@ -1442,10 +1437,9 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   }
 
   /// Inverse Fourier transform.
-#ifdef TRV_USE_OMP
-  fftw_init_threads();
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
   fftw_plan inv_transform = fftw_plan_dft_3d(
     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
     twopt_3d, twopt_3d,
@@ -1612,10 +1606,9 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   }
 
   /// Inverse Fourier transform.
-#ifdef TRV_USE_OMP
-  fftw_init_threads();
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
   fftw_plan inv_transform = fftw_plan_dft_3d(
     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
     twopt_3d, twopt_3d,
@@ -1788,10 +1781,9 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   }
 
   /// Inverse Fourier transform.
-#ifdef TRV_USE_OMP
-  fftw_init_threads();
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
   fftw_plan inv_transform = fftw_plan_dft_3d(
     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
     twopt_3d, twopt_3d,

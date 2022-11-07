@@ -74,6 +74,10 @@ double calc_powspec_normalisation_from_particles(
   }
 
   double norm = 0.;  // I₂
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:norm)
+#endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles.ntotal; pid++) {
     norm += particles[pid].ws
       * particles[pid].nz * std::pow(particles[pid].wc, 2);
@@ -113,6 +117,10 @@ double calc_powspec_shotnoise_from_particles(
   }
 
   double shotnoise = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:shotnoise)
+#endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles.ntotal; pid++) {
     shotnoise +=
       std::pow(particles[pid].ws, 2) * std::pow(particles[pid].wc, 2);
@@ -126,7 +134,11 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_powspec(
   LineOfSight* los_data, LineOfSight* los_rand,
   double alpha, int ell, int m
 ) {
-  std::complex<double> sn_data = 0.;
+  double sn_data_real, sn_data_imag;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:sn_data_real,sn_data_imag)
+#endif
   for (int pid = 0; pid < particles_data.ntotal; pid++) {
     double los_[3] = {
       los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
@@ -135,10 +147,21 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_powspec(
     std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
       calc_reduced_spherical_harmonic(ell, m, los_);
 
-    sn_data += ylm * std::pow(particles_data[pid].w, 2);
+    std::complex<double> sn_part = ylm * std::pow(particles_data[pid].w, 2);
+    double sn_part_real = sn_part.real();
+    double sn_part_imag = sn_part.imag();
+
+    sn_data_real += sn_part_real;
+    sn_data_imag += sn_part_imag;
   }
 
-  std::complex<double> sn_rand = 0.;
+  std::complex<double> sn_data(sn_data_real, sn_data_imag);
+
+  double sn_rand_real, sn_rand_imag;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:sn_rand_real,sn_rand_imag)
+#endif
   for (int pid = 0; pid < particles_rand.ntotal; pid++) {
     double los_[3] = {
       los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
@@ -147,8 +170,15 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_powspec(
     std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
       calc_reduced_spherical_harmonic(ell, m, los_);
 
-    sn_rand += ylm * std::pow(particles_rand[pid].w, 2);
+    std::complex<double> sn_part = ylm * std::pow(particles_rand[pid].w, 2);
+    double sn_part_real = sn_part.real();
+    double sn_part_imag = sn_part.imag();
+
+    sn_rand_real += sn_part_real;
+    sn_rand_imag += sn_part_imag;
   }
+
+  std::complex<double> sn_rand(sn_rand_real, sn_rand_imag);
 
   return sn_data + std::pow(alpha, 2) * sn_rand;
 }
@@ -157,15 +187,26 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_powspec(
   ParticleCatalogue& particles, LineOfSight* los,
   double alpha, int ell, int m
 ) {
-  std::complex<double> sn = 0.;
+  double sn_real, sn_imag;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:sn_real,sn_imag)
+#endif
   for (int pid = 0; pid < particles.ntotal; pid++) {
     double los_[3] = {los[pid].pos[0], los[pid].pos[1], los[pid].pos[2]};
 
     std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
       calc_reduced_spherical_harmonic(ell, m, los_);
 
-    sn += ylm * std::pow(particles[pid].w, 2);
+    std::complex<double> sn_part = ylm * std::pow(particles[pid].w, 2);
+    double sn_part_real = sn_part.real();
+    double sn_part_imag = sn_part.imag();
+
+    sn_real += sn_part_real;
+    sn_imag += sn_part_imag;
   }
+
+  std::complex<double> sn(sn_real, sn_imag);
 
   return std::pow(alpha, 2) * sn;
 }
@@ -214,6 +255,10 @@ trv::PowspecMeasurements compute_powspec(
   /// Measurement
   /// --------------------------------------------------------------------
 
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_init_threads();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
   MeshField dn_00(params);  // δn_00(k)
   dn_00.compute_ylm_wgtd_field(
     catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
@@ -259,6 +304,12 @@ trv::PowspecMeasurements compute_powspec(
       trvs::logger.stat("Power spectrum term at order M = %d computed.", M_);
     }
   }
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_cleanup_threads();
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+  fftw_cleanup();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   /// --------------------------------------------------------------------
   /// Results
@@ -319,6 +370,10 @@ trv::TwoPCFMeasurements compute_corrfunc(
   /// Measurement
   /// --------------------------------------------------------------------
 
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_init_threads();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
   MeshField dn_00(params);  // δn_00(k)
   dn_00.compute_ylm_wgtd_field(
     catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
@@ -365,6 +420,12 @@ trv::TwoPCFMeasurements compute_corrfunc(
       );
     }
   }
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_cleanup_threads();
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+  fftw_cleanup();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   /// --------------------------------------------------------------------
   /// Results
@@ -430,6 +491,10 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
   /// Measurement
   /// --------------------------------------------------------------------
 
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_init_threads();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
   /// Compute power spectrum.
   MeshField dn(params);  // δn(k)
   dn.compute_unweighted_field_fluctuations_insitu(catalogue_data);
@@ -450,6 +515,12 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
     pk_save[ibin] += double(2*params.ELL + 1) * stats_2pt.pk[ibin];
     sn_save[ibin] += double(2*params.ELL + 1) * stats_2pt.sn[ibin];
   }
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_cleanup_threads();
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+  fftw_cleanup();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   /// --------------------------------------------------------------------
   /// Results
@@ -517,6 +588,10 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
   /// Measurement
   /// --------------------------------------------------------------------
 
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_init_threads();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
   /// Compute 2PCF.
   MeshField dn(params);  // δn(k)
   dn.compute_unweighted_field_fluctuations_insitu(catalogue_data);
@@ -536,6 +611,12 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
     r_save[ibin] = stats_2pt.r[ibin];
     xi_save[ibin] += double(2*params.ELL + 1) * stats_2pt.xi[ibin];
   }
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_cleanup_threads();
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+  fftw_cleanup();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   /// --------------------------------------------------------------------
   /// Results
@@ -596,6 +677,10 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
   /// Measurement
   /// --------------------------------------------------------------------
 
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_init_threads();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
   MeshField dn_00(params);
   dn_00.compute_ylm_wgtd_field(catalogue_rand, los_rand, alpha, 0, 0);
   dn_00.fourier_transform();  // δn_00(k)
@@ -641,6 +726,12 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
       );
     }
   }
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_cleanup_threads();
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+  fftw_cleanup();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   /// --------------------------------------------------------------------
   /// Results

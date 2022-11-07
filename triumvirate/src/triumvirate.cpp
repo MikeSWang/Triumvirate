@@ -216,6 +216,10 @@ int main(int argc, char* argv[]) {
     los_data = new trv::LineOfSight[catalogue_data.ntotal];  ///> data-source
                                                              ///> LoS
     trv::sys::gbytesMem += trv::sys::size_in_gb<float>(3 * catalogue_data.ntotal);
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for
+#endif  // TRV_USE_OMP
     for (int pid = 0; pid < catalogue_data.ntotal; pid++) {
       double los_mag = trv::maths::get_vec3d_magnitude(catalogue_data[pid].pos);
 
@@ -237,6 +241,10 @@ int main(int argc, char* argv[]) {
     los_rand = new trv::LineOfSight[catalogue_rand.ntotal];  ///> random-source
                                                              ///> LoS
     trv::sys::gbytesMem += trv::sys::size_in_gb<float>(3 * catalogue_rand.ntotal);
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for
+#endif  // TRV_USE_OMP
     for (int pid = 0; pid < catalogue_rand.ntotal; pid++) {
       double los_mag = trv::maths::get_vec3d_magnitude(catalogue_rand[pid].pos);
 
