@@ -48,7 +48,10 @@ language = 'c++'
 os.environ['CC'] = 'g++'
 
 # Modify compilation options.
-options = ['-std=c++11',]  # '-fopenmp',
+options = ['-std=c++11',]
+
+if int(os.environ.get('PY_USEOMP', 0)):
+    options.append('-fopenmp')
 
 # Suppress irrelevant compiler warnings.
 config_vars = get_config_vars()
@@ -59,33 +62,37 @@ for key, val in config_vars.items():
 
 # -- Extensions ---------------------------------------------------------------
 
-# Set include, library and source paths.
-self_include = f"{pkgdir}/include"
+# Set source, include and library paths.
 self_modulesrc = f"{pkgdir}/src/modules"
+
+self_include = f"{pkgdir}/include"
+npy_include = numpy.get_include()
+
+ext_includes = os.environ.get('PY_INCLUDES', '').replace("-I", "").split()
+ext_includes = [incl_ for incl_ in ext_includes if pkgdir not in incl_]
+
+ext_libraries = ['gsl', 'gslcblas', 'fftw3', 'fftw3_omp',]
+
+includes = [self_include,] + [npy_include,] + ext_includes
+libraries = ext_libraries
+
+# Set macros.
 self_macros = [
-    # ('TRV_USE_OMP', None),
     # ('TRV_USE_LEGACY_CODE', None),
     # ('DBG_MODE', None),
-    # ('DBG_PARS', None),
     # ('DBG_NOAC', None),
 ]
 
-npy_include = numpy.get_include()
+if int(os.environ.get('PY_USEOMP', 0)):
+    self_macros.append(('TRV_USE_OMP', None))
+if int(os.environ.get('PY_DBGPARS', 0)):
+    self_macros.append(('DBG_MODE', None))
+    self_macros.append(('DBG_PARS', None))
+
 npy_macros = [
     ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
 ]
 
-try:
-    with open("includes.txt", 'r') as f:
-        ext_includes = f.readline().replace("-I", "").split()
-except FileNotFoundError:
-    ext_includes = []
-finally:
-    ext_includes = [incl_ for incl_ in ext_includes if pkgdir not in incl_]
-    ext_libraries = ['gsl',]  # 'fftw3', 'fftw3_omp',
-
-includes = [self_include,] + [npy_include,] + ext_includes
-libraries = ext_libraries
 macros = self_macros + npy_macros
 
 # Define extension modules.
@@ -180,6 +187,9 @@ modules = [
         define_macros=macros,
     ),
 ]
+
+
+# -- Set-up --------------------------------------------------------------
 
 setup(
     name=PKG_NAME.capitalize(),
