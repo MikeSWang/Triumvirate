@@ -6,7 +6,7 @@ Declaration and wrapping of two-point statistic algorithms.
 
 """
 from cython.operator cimport dereference as deref
-from libc.stdlib cimport malloc
+from libc.stdlib cimport free, malloc
 
 import numpy as np
 cimport numpy as np
@@ -143,6 +143,8 @@ def _compute_powspec(
         norm_factor
     )
 
+    free(los_data_cpp); free(los_rand_cpp)
+
     return {
         'kbin': np.array(results.kbin),
         'keff': np.array(results.keff),
@@ -186,6 +188,8 @@ def _compute_corrfunc(
         deref(params.thisptr), deref(rbinning.thisptr),
         norm_factor
     )
+
+    free(los_data_cpp); free(los_rand_cpp)
 
     return {
         'rbin': np.array(results.rbin),
@@ -262,6 +266,8 @@ def _compute_corrfunc_window(
         deref(params.thisptr), deref(rbinning.thisptr),
         alpha, norm_factor
     )
+
+    free(los_rand_cpp)
 
     return {
         'rbin': np.array(results.rbin),

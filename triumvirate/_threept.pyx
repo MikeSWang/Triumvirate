@@ -6,7 +6,7 @@ Declaration and wrapping of three-point statistic algorithms.
 
 """
 from cython.operator cimport dereference as deref
-from libc.stdlib cimport malloc
+from libc.stdlib cimport free, malloc
 from libcpp cimport bool as bool_t
 
 import numpy as np
@@ -157,6 +157,8 @@ def _compute_bispec(
         norm_factor
     )
 
+    free(los_data_cpp); free(los_rand_cpp)
+
     return {
         'k1bin': np.array(results.k1bin),
         'k2bin': np.array(results.k2bin),
@@ -202,6 +204,8 @@ def _compute_3pcf(
         deref(params.thisptr), deref(rbinning.thisptr),
         norm_factor
     )
+
+    free(los_data_cpp); free(los_rand_cpp)
 
     return {
         'r1bin': np.array(results.r1bin),
@@ -289,6 +293,8 @@ def _compute_3pcf_window(
         wide_angle
     )
 
+    free(los_rand_cpp)
+
     return {
         'r1bin': np.array(results.r1bin),
         'r2bin': np.array(results.r2bin),
@@ -335,6 +341,8 @@ def _compute_3pcf_window(
 #         deref(params.thisptr), deref(kbinning.thisptr),
 #         norm_factor
 #     )
+
+#     free(los_data_cpp); free(los_rand_cpp)
 
 #     return {
 #         'k1bin': np.array(results.k1bin),
