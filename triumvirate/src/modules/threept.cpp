@@ -131,7 +131,7 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
   double sn_data_real, sn_data_imag;
 
 #ifdef TRV_USE_OMP
-#pragma omp parallel for reduction(+:sn_data_real,sn_data_imag)
+#pragma omp parallel for reduction(+:sn_data_real, sn_data_imag)
 #endif
   for (int pid = 0; pid < particles_data.ntotal; pid++) {
     double los_[3] = {
@@ -154,7 +154,7 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
   double sn_rand_real, sn_rand_imag;
 
 #ifdef TRV_USE_OMP
-#pragma omp parallel for reduction(+:sn_rand_real,sn_rand_imag)
+#pragma omp parallel for reduction(+:sn_rand_real, sn_rand_imag)
 #endif
   for (int pid = 0; pid < particles_rand.ntotal; pid++) {
     double los_[3] = {
@@ -184,7 +184,7 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
   double sn_real, sn_imag;
 
 #ifdef TRV_USE_OMP
-#pragma omp parallel for reduction(+:sn_real,sn_imag)
+#pragma omp parallel for reduction(+:sn_real, sn_imag)
 #endif
   for (int pid = 0; pid < particles.ntotal; pid++) {
     double los_[3] = {los[pid].pos[0], los[pid].pos[1], los[pid].pos[2]};

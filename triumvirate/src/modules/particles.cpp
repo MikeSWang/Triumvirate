@@ -348,14 +348,15 @@ void ParticleCatalogue::calc_pos_min_and_max() {
   }
 
   /// Update minimum and maximum values partice by particle.
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(min:pos_min) reduction(max:pos_max)
+#endif  // TRV_USE_OMP
   for (int pid = 0; pid < this->ntotal; pid++) {
     for (int iaxis = 0; iaxis < 3; iaxis++) {
-      if (pos_min[iaxis] > this->pdata[pid].pos[iaxis]) {
-        pos_min[iaxis] = this->pdata[pid].pos[iaxis];
-      }
-      if (pos_max[iaxis] < this->pdata[pid].pos[iaxis]) {
-        pos_max[iaxis] = this->pdata[pid].pos[iaxis];
-      }
+      pos_min[iaxis] = (pos_min[iaxis] < this->pdata[pid].pos[iaxis]) ?
+        pos_min[iaxis] : this->pdata[pid].pos[iaxis];
+      pos_max[iaxis] = (pos_max[iaxis] > this->pdata[pid].pos[iaxis]) ?
+        pos_max[iaxis] : this->pdata[pid].pos[iaxis];
     }
   }
 
