@@ -253,7 +253,6 @@ int main(int argc, char* argv[]) {
     }
   }
 
-
   if (trv::sys::currTask == 0) {
     trv::sys::logger.stat("[B.2] ... computed lines of sight.");
   }
