@@ -35,7 +35,7 @@ namespace trv {
 /// **********************************************************************
 
 ParticleCatalogue::ParticleCatalogue () {
-  /// Set default values (likely redundant).
+  /// Set default values (likely redundant but safe).
   this->pdata = nullptr;
   this->ntotal = 0;
   this->wtotal = 0.;
@@ -425,7 +425,7 @@ void ParticleCatalogue::centre_in_box(
   ParticleCatalogue& catalogue,
   const double boxsize[3]
 ) {
-  catalogue.calc_pos_min_and_max();  // likely redundant, but safe
+  catalogue.calc_pos_min_and_max();  // likely redundant but safe
 
   double xmid = (catalogue.pos_min[0] + catalogue.pos_max[0]) / 2.;
   double ymid = (catalogue.pos_min[1] + catalogue.pos_max[1]) / 2.;
@@ -442,7 +442,7 @@ void ParticleCatalogue::centre_in_box(
   ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
   const double boxsize[3]
 ) {
-  catalogue_ref.calc_pos_min_and_max();  // likely redundant, but safe
+  catalogue_ref.calc_pos_min_and_max();  // likely redundant but safe
 
   double xmid = (catalogue_ref.pos_min[0] + catalogue_ref.pos_max[0]) / 2.;
   double ymid = (catalogue_ref.pos_min[1] + catalogue_ref.pos_max[1]) / 2.;
@@ -460,7 +460,7 @@ void ParticleCatalogue::pad_in_box(
   ParticleCatalogue& catalogue,
   const double boxsize[3], const double boxsize_pad[3]
 ) {
-  catalogue.calc_pos_min_and_max();  // likely redundant, but safe
+  catalogue.calc_pos_min_and_max();  // likely redundant but safe
 
   double dvec[3] = {
     catalogue.pos_min[0] - boxsize_pad[0] * boxsize[0],
@@ -475,7 +475,7 @@ void ParticleCatalogue::pad_in_box(
     ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
     const double boxsize[3], const double boxsize_pad[3]
 ) {
-  catalogue_ref.calc_pos_min_and_max();  // likely redundant, but safe
+  catalogue_ref.calc_pos_min_and_max();  // likely redundant but safe
 
   double dvec[3] = {
     catalogue_ref.pos_min[0] - boxsize_pad[0] * boxsize[0],
@@ -491,7 +491,7 @@ void ParticleCatalogue::pad_grids(
   ParticleCatalogue& catalogue,
   const double boxsize[3], const int ngrid[3], const double ngrid_pad[3]
 ) {
-  catalogue.calc_pos_min_and_max();  // likely redundant, but safe
+  catalogue.calc_pos_min_and_max();  // likely redundant but safe
 
   double dvec[3] = {
     catalogue.pos_min[0], catalogue.pos_min[1], catalogue.pos_min[2]
@@ -508,7 +508,7 @@ void ParticleCatalogue::pad_grids(
     ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
     const double boxsize[3], const int ngrid[3], const double ngrid_pad[3]
 ) {
-  catalogue_ref.calc_pos_min_and_max();  // likely redundant, but safe
+  catalogue_ref.calc_pos_min_and_max();  // likely redundant but safe
 
   double dvec[3] = {
     catalogue_ref.pos_min[0] - ngrid_pad[0] * boxsize[0] / double(ngrid[0]),

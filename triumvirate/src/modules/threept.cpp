@@ -128,7 +128,7 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
   LineOfSight* los_data, LineOfSight* los_rand,
   double alpha, int ell, int m
 ) {
-  double sn_data_real, sn_data_imag;
+  double sn_data_real = 0., sn_data_imag = 0.;
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:sn_data_real, sn_data_imag)
@@ -151,7 +151,7 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
 
   std::complex<double> sn_data(sn_data_real, sn_data_imag);
 
-  double sn_rand_real, sn_rand_imag;
+  double sn_rand_real = 0., sn_rand_imag = 0.;
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:sn_rand_real, sn_rand_imag)
@@ -181,7 +181,7 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
   ParticleCatalogue& particles, LineOfSight* los,
   double alpha, int ell, int m
 ) {
-  double sn_real, sn_imag;
+  double sn_real = 0., sn_imag = 0.;
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:sn_real, sn_imag)
