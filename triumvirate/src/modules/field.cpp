@@ -935,12 +935,12 @@ void MeshField::apply_wide_angle_pow_law_kernel() {
   /// CAVEAT: Discretionary choice.
   const double eps_r = 1.e-5;
 
-  double rv[3];
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
         long long idx_grid = this->get_grid_index(i, j, k);
 
+        double rv[3];
         this->get_grid_pos_vector(i, j, k, rv);
 
         double r_ = trvm::get_vec3d_magnitude(rv);
@@ -960,12 +960,12 @@ void MeshField::apply_wide_angle_pow_law_kernel() {
 }
 
 void MeshField::apply_assignment_compensation() {
-  double kv[3];
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
         long long idx_grid = this->get_grid_index(i, j, k);
 
+        double kv[3];
         this->get_grid_wavevector(i, j, k, kv);
 
         double win = this->calc_assignment_window_in_fourier(kv);
@@ -995,12 +995,12 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   nmodes = 0;
 
   /// Perform wavevector mode binning in the band.
-  double kv[3];
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
         long long idx_grid = this->get_grid_index(i, j, k);
 
+        double kv[3];
         this->get_grid_wavevector(i, j, k, kv);
 
         double k_ = trvm::get_vec3d_magnitude(kv);
@@ -1062,12 +1062,12 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
 
   /// Compute the field weighted by the spherical Bessel function and
   /// reduced spherical harmonics.
-  double kv[3];
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
         long long idx_grid = this->get_grid_index(i, j, k);
 
+        double kv[3];
         this->get_grid_wavevector(i, j, k, kv);
 
         double k_ = trvm::get_vec3d_magnitude(kv);
@@ -1275,13 +1275,13 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
 
   this->reset_stats();
 
-  double kv[3];
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
         double local_start;
         long long idx_grid = ret_grid_index(i, j, k);
 
+        double kv[3];
         ret_grid_wavevector(i, j, k, kv);
 
         double k_ = trvm::get_vec3d_magnitude(kv);
@@ -1397,12 +1397,12 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   }
 
   /// Compute shot noise--subtracted mode powers on mesh grids.
-  double kv[3];
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
         long long idx_grid = ret_grid_index(i, j, k);
 
+        double kv[3];
         ret_grid_wavevector(i, j, k, kv);
 
         std::complex<double> fa(field_a[idx_grid][0], field_a[idx_grid][1]);
@@ -1471,12 +1471,12 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
 
   this->reset_stats();
 
-  double rv[3];
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
         long long idx_grid = ret_grid_index(i, j, k);
 
+        double rv[3];
         ret_grid_pos_vector(i, j, k, rv);
 
         double r_ = trvm::get_vec3d_magnitude(rv);
@@ -1567,12 +1567,12 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   }
 
   /// Compute meshed statistics.
-  double kv[3];
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
         long long idx_grid = ret_grid_index(i, j, k);
 
+        double kv[3];
         ret_grid_wavevector(i, j, k, kv);
 
         std::complex<double> fa(field_a[idx_grid][0], field_a[idx_grid][1]);
@@ -1641,12 +1641,12 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
 
   this->reset_stats();
 
-  double rv[3];
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
         long long idx_grid = ret_grid_index(i, j, k);
 
+        double rv[3];
         ret_grid_pos_vector(i, j, k, rv);
 
         double r_ = trvm::get_vec3d_magnitude(rv);
@@ -1743,12 +1743,12 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   }
 
   /// Compute meshed statistics.
-  double kv[3];
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
         long long idx_grid = ret_grid_index(i, j, k);
 
+        double kv[3];
         ret_grid_wavevector(i, j, k, kv);
 
         std::complex<double> fa(field_a[idx_grid][0], field_a[idx_grid][1]);
@@ -1804,12 +1804,12 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   /// Weight by spherical Bessel functions and harmonics before summing
   /// over the configuration-space grids.
   std::complex<double> S_ij_k = 0.;
-  double rv[3];
   for (int i = 0; i < params.ngrid[0]; i++) {
     for (int j = 0; j < params.ngrid[1]; j++) {
       for (int k = 0; k < params.ngrid[2]; k++) {
         long long idx_grid = ret_grid_index(i, j, k);
 
+        double rv[3];
         ret_grid_pos_vector(i, j, k, rv);
 
         double r_ = trvm::get_vec3d_magnitude(rv);
