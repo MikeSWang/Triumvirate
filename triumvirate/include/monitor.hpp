@@ -38,6 +38,15 @@
 #include <stdexcept>
 #include <string>
 
+/// Declares OMP macros.
+#ifdef TRV_USE_OMP
+#include <omp.h>
+#define OMP_ATOMIC _Pragma("omp atomic")
+#else   // TRV_USE_OMP
+#define OMP_ATOMIC
+#endif  // TRV_USE_OMP
+
+/// Enter debugging mode.
 #ifdef DBG_MODE
 #include <iostream>
 #endif  // DBG_MODE
