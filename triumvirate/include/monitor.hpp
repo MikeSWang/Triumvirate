@@ -42,8 +42,10 @@
 #ifdef TRV_USE_OMP
 #include <omp.h>
 #define OMP_ATOMIC _Pragma("omp atomic")
+#define OMP_CRITICAL _Pragma("omp critical")
 #else   // TRV_USE_OMP
 #define OMP_ATOMIC
+#define OMP_CRITICAL
 #endif  // TRV_USE_OMP
 
 /// Enter debugging mode.

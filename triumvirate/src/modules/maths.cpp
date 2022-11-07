@@ -238,7 +238,6 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_sp
   };
 
   /// Assign a wavevector to each grid cell.
-  double kvec[3];
   for (int i = 0; i < ngrid[0]; i++) {
     for (int j = 0; j < ngrid[1]; j++) {
       for (int k = 0; k < ngrid[2]; k++) {
@@ -252,6 +251,7 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_sp
         /// This conforms to the (absurd) FFT array-ordering convention
         /// that negative wavenumbers/frequencies come after zero and
         /// positive wavenumbers/frequencies.
+        double kvec[3];
         kvec[0] = (i < ngrid[0]/2) ? i * dk[0] : (i - ngrid[0]) * dk[0];
         kvec[1] = (j < ngrid[1]/2) ? j * dk[1] : (j - ngrid[1]) * dk[1];
         kvec[2] = (k < ngrid[2]/2) ? k * dk[2] : (k - ngrid[2]) * dk[2];
@@ -290,7 +290,6 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_spa
   };
 
   /// Assign a position vector to each grid cell.
-  double rvec[3];
   for (int i = 0; i < ngrid[0]; i++) {
     for (int j = 0; j < ngrid[1]; j++) {
       for (int k = 0; k < ngrid[2]; k++) {
@@ -304,6 +303,7 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_spa
         /// This conforms to the (absurd) FFT array-ordering convention
         /// that negative wavenumbers/frequencies come after zero and
         /// positive wavenumbers/frequencies.
+        double rvec[3];
         rvec[0] = (i < ngrid[0]/2) ? (i * dr[0]) : (i - ngrid[0]) * dr[0];
         rvec[1] = (j < ngrid[1]/2) ? (j * dr[1]) : (j - ngrid[1]) * dr[1];
         rvec[2] = (k < ngrid[2]/2) ? (k * dr[2]) : (k - ngrid[2]) * dr[2];
