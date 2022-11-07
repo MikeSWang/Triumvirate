@@ -35,7 +35,7 @@ namespace trv {
 /// **********************************************************************
 
 ParticleCatalogue::ParticleCatalogue () {
-  /// Set default values (likely redundant but safe).
+  /// Set default values (likely redundant).
   this->pdata = nullptr;
   this->ntotal = 0;
   this->wtotal = 0.;
