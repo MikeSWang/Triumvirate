@@ -765,7 +765,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing bispectrum from a periodic-box simulation-type catalogue "
-      "in the global plane-parallel approximation."
+      "in the global plane-parallel approximation..."
     );
   }
 
@@ -992,10 +992,10 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         );
       }
 
-      delete[] ylm_r_a; ylm_r_a = nullptr;
-      delete[] ylm_r_b; ylm_r_b = nullptr;
       delete[] ylm_k_a; ylm_k_a = nullptr;
       delete[] ylm_k_b; ylm_k_b = nullptr;
+      delete[] ylm_r_a; ylm_r_a = nullptr;
+      delete[] ylm_r_b; ylm_r_b = nullptr;
       trvs::gbytesMem -=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
     }
@@ -1046,7 +1046,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
     trvs::logger.stat(
       "Computing three-point correlation function "
       "from a periodic-box simulation-type catalogue "
-      "in the global plane-parallel approximation."
+      "in the global plane-parallel approximation..."
     );
   }
 
@@ -1288,7 +1288,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing three-point correlation function window %s"
-      "from random catalogue.",
+      "from random catalogue...",
       msg_tag.c_str()
     );
   }
