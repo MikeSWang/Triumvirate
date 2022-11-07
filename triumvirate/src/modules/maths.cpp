@@ -238,6 +238,9 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_sp
   };
 
   /// Assign a wavevector to each grid cell.
+#ifdef TRV_USE_OMP
+#pragma omp parallel for collapse(3)
+#endif  // TRV_USE_OMP
   for (int i = 0; i < ngrid[0]; i++) {
     for (int j = 0; j < ngrid[1]; j++) {
       for (int k = 0; k < ngrid[2]; k++) {
@@ -290,6 +293,9 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_spa
   };
 
   /// Assign a position vector to each grid cell.
+#ifdef TRV_USE_OMP
+#pragma omp parallel for collapse(3)
+#endif  // TRV_USE_OMP
   for (int i = 0; i < ngrid[0]; i++) {
     for (int j = 0; j < ngrid[1]; j++) {
       for (int k = 0; k < ngrid[2]; k++) {
@@ -331,6 +337,10 @@ SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
 
   double* x = new double[nsample];
   double* j_ell = new double[nsample];
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for
+#endif  // TRV_USE_OMP
   for (int i = 0; i < nsample; i++) {
     x[i] = xmin + dx * i;
     j_ell[i] = gsl_sf_bessel_jl(ell, x[i]);

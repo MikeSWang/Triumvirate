@@ -91,6 +91,10 @@ double calc_bispec_normalisation_from_particles(
   }
 
   double norm = 0.;  // I₃
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:norm)
+#endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles.ntotal; pid++) {
     norm += particles[pid].ws
       * std::pow(particles[pid].nz, 2) * std::pow(particles[pid].wc, 3);
@@ -124,7 +128,11 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
   LineOfSight* los_data, LineOfSight* los_rand,
   double alpha, int ell, int m
 ) {
-  std::complex<double> sn_data = 0.;
+  double sn_data_real, sn_data_imag;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:sn_data_real,sn_data_imag)
+#endif
   for (int pid = 0; pid < particles_data.ntotal; pid++) {
     double los_[3] = {
       los_data[pid].pos[0], los_data[pid].pos[1], los_data[pid].pos[2]
@@ -133,10 +141,21 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
     std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
       calc_reduced_spherical_harmonic(ell, m, los_);
 
-    sn_data += ylm * std::pow(particles_data[pid].w, 3);
+    std::complex<double> sn_part = ylm * std::pow(particles_data[pid].w, 3);
+    double sn_part_real = sn_part.real();
+    double sn_part_imag = sn_part.imag();
+
+    sn_data_real += sn_part_real;
+    sn_data_imag += sn_part_imag;
   }
 
-  std::complex<double> sn_rand = 0.;
+  std::complex<double> sn_data(sn_data_real, sn_data_imag);
+
+  double sn_rand_real, sn_rand_imag;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:sn_rand_real,sn_rand_imag)
+#endif
   for (int pid = 0; pid < particles_rand.ntotal; pid++) {
     double los_[3] = {
       los_rand[pid].pos[0], los_rand[pid].pos[1], los_rand[pid].pos[2]
@@ -145,8 +164,15 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
     std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
       calc_reduced_spherical_harmonic(ell, m, los_);
 
-    sn_rand += ylm * std::pow(particles_rand[pid].w, 3);
+    std::complex<double> sn_part = ylm * std::pow(particles_rand[pid].w, 3);
+    double sn_part_real = sn_part.real();
+    double sn_part_imag = sn_part.imag();
+
+    sn_rand_real += sn_part_real;
+    sn_rand_imag += sn_part_imag;
   }
+
+  std::complex<double> sn_rand(sn_rand_real, sn_rand_imag);
 
   return sn_data + std::pow(alpha, 3) * sn_rand;
 }
@@ -155,15 +181,26 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
   ParticleCatalogue& particles, LineOfSight* los,
   double alpha, int ell, int m
 ) {
-  std::complex<double> sn = 0.;
+  double sn_real, sn_imag;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:sn_real,sn_imag)
+#endif
   for (int pid = 0; pid < particles.ntotal; pid++) {
     double los_[3] = {los[pid].pos[0], los[pid].pos[1], los[pid].pos[2]};
 
     std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
       calc_reduced_spherical_harmonic(ell, m, los_);
 
-    sn += ylm * std::pow(particles[pid].w, 3);
+    std::complex<double> sn_part = ylm * std::pow(particles[pid].w, 3);
+    double sn_part_real = sn_part.real();
+    double sn_part_imag = sn_part.imag();
+
+    sn_real += sn_part_real;
+    sn_imag += sn_part_imag;
   }
+
+  std::complex<double> sn(sn_real, sn_imag);
 
   return std::pow(alpha, 3) * sn;
 }
@@ -218,6 +255,10 @@ trv::BispecMeasurements compute_bispec(
   /// --------------------------------------------------------------------
   /// Measurement
   /// --------------------------------------------------------------------
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_init_threads();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   /// Compute common field quantities.
   MeshField dn_00(params);  // δn_00(k)
@@ -458,6 +499,12 @@ trv::BispecMeasurements compute_bispec(
   dn_00.finalise_density_field();  // ~dn_00 (likely redundant but safe)
   N_00.finalise_density_field();  // ~N_00 (likely redundant but safe)
 
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_cleanup_threads();
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+  fftw_cleanup();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
   /// --------------------------------------------------------------------
   /// Results
   /// --------------------------------------------------------------------
@@ -531,6 +578,10 @@ trv::ThreePCFMeasurements compute_3pcf(
   /// --------------------------------------------------------------------
   /// Measurement
   /// --------------------------------------------------------------------
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_init_threads();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   /// Compute common field quantities.
   MeshField dn_00(params);  // δn_00(k)
@@ -724,6 +775,12 @@ trv::ThreePCFMeasurements compute_3pcf(
   dn_00.finalise_density_field();  // ~dn_00 (likely redundant but safe)
   N_00.finalise_density_field();  // ~N_00 (likely redundant but safe)
 
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_cleanup_threads();
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+  fftw_cleanup();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
   /// --------------------------------------------------------------------
   /// Results
   /// --------------------------------------------------------------------
@@ -795,6 +852,10 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   /// --------------------------------------------------------------------
   /// Measurement
   /// --------------------------------------------------------------------
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_init_threads();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   /// Compute common field quantities.
   MeshField dn_00(params);  // δn_00(k)
@@ -1004,6 +1065,12 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   dn_00.finalise_density_field();  // ~dn_00 (likely redundant but safe)
   N_L0.finalise_density_field();  // ~N_L0 (likely redundant but safe)
 
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_cleanup_threads();
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+  fftw_cleanup();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
   /// --------------------------------------------------------------------
   /// Results
   /// --------------------------------------------------------------------
@@ -1076,6 +1143,10 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   /// --------------------------------------------------------------------
   /// Measurement
   /// --------------------------------------------------------------------
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_init_threads();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   /// Compute common field quantities.
   MeshField dn_00(params);  // δn_00(k)
@@ -1245,6 +1316,12 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   dn_00.finalise_density_field();  // ~dn_00 (likely redundant but safe)
   N_00.finalise_density_field();  // ~N_00 (likely redundant but safe)
 
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_cleanup_threads();
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+  fftw_cleanup();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
   /// --------------------------------------------------------------------
   /// Results
   /// --------------------------------------------------------------------
@@ -1319,6 +1396,10 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   /// --------------------------------------------------------------------
   /// Measurement
   /// --------------------------------------------------------------------
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_init_threads();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   /// Compute common field quantities.
   MeshField n_00(params);  // n_00(k)
@@ -1510,6 +1591,12 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   n_00.finalise_density_field();  // ~n_00 (likely redundant but safe)
   N_00.finalise_density_field();  // ~N_00 (likely redundant but safe)
 
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_cleanup_threads();
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+  fftw_cleanup();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
   /// --------------------------------------------------------------------
   /// Results
   /// --------------------------------------------------------------------
@@ -1580,6 +1667,10 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   /// --------------------------------------------------------------------
   /// Measurement
   /// --------------------------------------------------------------------
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_init_threads();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   /// Compute common field quantities.
   MeshField dn_00(params);  // δn_00(r)
@@ -1893,6 +1984,12 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
   dn_00.finalise_density_field();  // ~dn_00 (likely redundant but safe)
   N_00.finalise_density_field();  // ~N_00 (likely redundant but safe)
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_cleanup_threads();
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+  fftw_cleanup();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   /// --------------------------------------------------------------------
   /// Results

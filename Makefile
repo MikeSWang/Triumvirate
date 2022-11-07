@@ -87,7 +87,7 @@ endif
 ifdef useomp
 ifeq ($(strip ${useomp}), $(filter $(strip ${useomp}), true 1))
 
-CFLAGS += -fopenmp -DTRV_USE_OMP
+CFLAGS += -fopenmp -DTRV_USE_OMP -DTRV_USE_FFTWOMP
 LIBS += -lfftw3_omp
 
 PY_USEOMP = 1
