@@ -563,7 +563,7 @@ class ParticleCatalogue:
                 "Random catalogue source: {}"
                     .format(catalogue_ref._source),
                 "Random catalogue size: {:d} particles of total weight {:.3f}"
-                    .format(self.ntotal, self.wtotal),
+                    .format(catalogue_ref.ntotal, catalogue_ref.wtotal),
                 "Random-source particle extents: "
                 "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"
                     .format(
