@@ -53,6 +53,11 @@ options = ['-std=c++11',]
 if int(os.environ.get('PY_USEOMP', 0)):
     options.append('-fopenmp')
 
+links = []
+
+if int(os.environ.get('PY_USEOMP', 0)):
+    links.append('-fopenmp')
+
 # Suppress irrelevant compiler warnings.
 config_vars = get_config_vars()
 for key, val in config_vars.items():
@@ -107,6 +112,7 @@ modules = [
         ],
         language=language,
         extra_compile_args=options,
+        extra_link_args=links,
         include_dirs=includes,
         define_macros=macros,
     ),
@@ -120,6 +126,7 @@ modules = [
         ],
         language=language,
         extra_compile_args=options,
+        extra_link_args=links,
         include_dirs=includes,
         define_macros=macros,
     ),
@@ -132,6 +139,7 @@ modules = [
         ],
         language=language,
         extra_compile_args=options,
+        extra_link_args=links,
         include_dirs=includes,
         define_macros=macros,
     ),
@@ -149,6 +157,7 @@ modules = [
         ],
         language=language,
         extra_compile_args=options,
+        extra_link_args=links,
         include_dirs=includes,
         libraries=libraries,
         define_macros=macros,
@@ -168,6 +177,7 @@ modules = [
         ],
         language=language,
         extra_compile_args=options,
+        extra_link_args=links,
         include_dirs=includes,
         libraries=libraries,
         define_macros=macros,
@@ -183,6 +193,7 @@ modules = [
         ],
         language=language,
         extra_compile_args=options,
+        extra_link_args=links,
         include_dirs=includes,
         libraries=libraries,
         define_macros=macros,

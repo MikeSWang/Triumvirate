@@ -103,7 +103,10 @@ def setitem_nested_dict(dictionary, keychain, value):
         raise ParentKeyError(str(err))
 
     try:
-        base_dict[key_child] = type(base_dict[key_child])(value)
+        if isinstance(base_dict[key_child], list):
+            base_dict[key_child] = eval(value)
+        else:
+            base_dict[key_child] = type(base_dict[key_child])(value)
     except KeyError as err:
         base_dict[key_child] = value
         raise ChildKeyError(str(err))

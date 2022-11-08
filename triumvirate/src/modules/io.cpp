@@ -239,9 +239,9 @@ void print_measurement_datatab_to_file(
     "%s "
     "[0] k_cen, [1] k_eff, [2] nmodes, "
     "[3] Re{pk%d_raw}, [4] Im{pk%d_raw}, "
-    "[5] Re{pk_shot}, [6] Im{pk_shot}\n",
+    "[5] Re{pk%d_shot}, [6] Im{pk%d_shot}\n",
     comment_delimiter,
-    params.ELL, params.ELL
+    params.ELL, params.ELL, params.ELL, params.ELL
   );
 
   /// Print data table.
