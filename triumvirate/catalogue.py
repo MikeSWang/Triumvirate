@@ -469,13 +469,19 @@ class ParticleCatalogue:
         if self._logger:
             if init:
                 self._logger.info(
-                    "Original extents of particle coordinates: %s (%s).",
-                    self.bounds, self
+                    "Original extents of particle coordinates: "
+                    "{'x': (%.3f, %.3f), 'y': (%.3f, %.3f), 'z': (%.3f, %.3f)} "
+                    "(%s).",
+                    *self.bounds['x'], *self.bounds['y'], *self.bounds['z'],
+                    self
                 )
             else:
                 self._logger.info(
-                    "Offset extents of particle coordinates: %s (%s).",
-                    self.bounds, self
+                    "Offset extents of particle coordinates: "
+                    "{'x': (%.3f, %.3f), 'y': (%.3f, %.3f), 'z': (%.3f, %.3f)} "
+                    "(%s).",
+                    *self.bounds['x'], *self.bounds['y'], *self.bounds['z'],
+                    self
                 )
 
     def _convert_to_cpp_catalogue(self):
