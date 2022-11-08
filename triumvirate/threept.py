@@ -251,7 +251,7 @@ def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
             paramset['assignment'], paramset['interlace']
         ),
         "Normalisation factor: "
-        "{:9e} ({}-based, used), {:9e} ({}-based, alternative)"
+        "{:.9e} ({}-based, used), {:.9e} ({}-based, alternative)"
             .format(
                 norm_factor, norm_convention,
                 norm_factor_alt, norm_convention_alt
