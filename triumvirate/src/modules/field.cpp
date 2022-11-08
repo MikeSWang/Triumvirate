@@ -1077,7 +1077,7 @@ void MeshField::apply_assignment_compensation() {
 /// ----------------------------------------------------------------------
 
 void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
-  MeshField& field_fourier, std::complex<double>* ylm,
+  MeshField& field_fourier, std::vector< std::complex<double> >& ylm,
   double k_lower, double k_upper,
   double& k_eff, int& nmodes
 ) {
@@ -1153,7 +1153,8 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
 
 void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
     MeshField& field_fourier,
-    std::complex<double>* ylm, trvm::SphericalBesselCalculator& sjl,
+    std::vector< std::complex<double> >& ylm,
+    trvm::SphericalBesselCalculator& sjl,
     double r
 ) {
   /// Reset field values to zero.
@@ -1684,7 +1685,8 @@ OMP_ATOMIC
 
 void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   MeshField& field_a, MeshField& field_b,
-  std::complex<double>* ylm_a, std::complex<double>* ylm_b,
+  std::vector< std::complex<double> >& ylm_a,
+  std::vector< std::complex<double> >& ylm_b,
   std::complex<double> shotnoise_amp,
   trv::Binning& rbinning
 ) {
@@ -1884,7 +1886,8 @@ OMP_ATOMIC
 
 std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   MeshField& field_a, MeshField& field_b,
-  std::complex<double>* ylm_a, std::complex<double>* ylm_b,
+  std::vector< std::complex<double> >& ylm_a,
+  std::vector< std::complex<double> >& ylm_b,
   trvm::SphericalBesselCalculator& sj_a, trvm::SphericalBesselCalculator& sj_b,
   std::complex<double> shotnoise_amp,
   double k_a, double k_b

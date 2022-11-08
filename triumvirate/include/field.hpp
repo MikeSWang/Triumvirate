@@ -339,7 +339,7 @@ class MeshField {
    * @param[out] nmodes Number of wavevector modes in band.
    */
   void inv_fourier_transform_ylm_wgtd_field_band_limited(
-    MeshField& field_fourier, std::complex<double>* ylm,
+    MeshField& field_fourier, std::vector< std::complex<double> >& ylm,
     double k_band, double dk_band,
     double& k_eff, int& nmodes
   );
@@ -366,7 +366,8 @@ class MeshField {
    */
   void inv_fourier_transform_sjl_ylm_wgtd_field(
     MeshField& field_fourier,
-    std::complex<double>* ylm, trvm::SphericalBesselCalculator& sjl,
+    std::vector< std::complex<double> >& ylm,
+    trvm::SphericalBesselCalculator& sjl,
     double r
   );
 
@@ -630,7 +631,8 @@ class FieldStats {
    */
   void compute_uncoupled_shotnoise_for_3pcf(
     MeshField& field_a, MeshField& field_b,
-    std::complex<double>* ylm_a, std::complex<double>* ylm_b,
+    std::vector< std::complex<double> >& ylm_a,
+    std::vector< std::complex<double> >& ylm_b,
     std::complex<double> shotnoise_amp,
     trv::Binning& rbinning
   );
@@ -673,7 +675,8 @@ class FieldStats {
    */
   std::complex<double> compute_uncoupled_shotnoise_for_bispec_per_bin(
     MeshField& field_a, MeshField& field_b,
-    std::complex<double>* ylm_a, std::complex<double>* ylm_b,
+    std::vector< std::complex<double> >& ylm_a,
+    std::vector< std::complex<double> >& ylm_b,
     trvm::SphericalBesselCalculator& sj1, trvm::SphericalBesselCalculator& sj2,
     std::complex<double> shotnoise_amp,
     double k_a, double k_b

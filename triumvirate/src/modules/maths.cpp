@@ -216,22 +216,8 @@ std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmoni
 void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
   const int ell, const int m,
   const double boxsize[3], const int ngrid[3],
-  std::complex<double>* ylm_out
+  std::vector< std::complex<double> >& ylm_out
 ) {
-  /// Throw an exception when the output variable is provided.
-  if (ylm_out == nullptr) {
-    if (trvs::currTask == 0) {
-      trvs::logger.error(
-        "Cannot store computed spherical harmonics. "
-        "Output array is not provided."
-      );
-      throw trvs::InvalidData(
-        "Cannot store computed spherical harmonics. "
-        "Output array is not provided.\n"
-      );
-    }
-  }
-
   /// Determine the fundamental wavenumber in each dimension.
   double dk[3] = {
     2.*M_PI / boxsize[0], 2.*M_PI / boxsize[1], 2.*M_PI / boxsize[2]
@@ -269,22 +255,8 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_sp
 void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
   const int ell, const int m,
   const double boxsize[3], const int ngrid[3],
-  std::complex<double>* ylm_out
+  std::vector< std::complex<double> >& ylm_out
 ) {
-  /// Throw an exception when the output variable is provided.
-  if (ylm_out == nullptr) {
-    if (trvs::currTask == 0) {
-      trvs::logger.error(
-        "Cannot store computed spherical harmonics. "
-        "Output array is not provided."
-      );
-      throw trvs::InvalidData(
-        "Cannot store computed spherical harmonics. "
-        "Output array is not provided.\n"
-      );
-    }
-  }
-
   /// Determine the grid cell size in each dimension.
   double dr[3] = {
     boxsize[0] / double(ngrid[0]),

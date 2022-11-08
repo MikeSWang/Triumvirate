@@ -356,7 +356,7 @@ void print_measurement_datatab_to_file(
   std::fprintf(
     fileptr,
     "%s "
-    "[0] r1_cen, [1] r1_eff, [2] r2_cen, [3] r2_eff, [4] nmodes, "
+    "[0] r1_cen, [1] r1_eff, [2] r2_cen, [3] r2_eff, [4] npairs, "
     "[5] Re{zeta%s_raw}, [6] Im{zeta%s_raw}, "
     "[7] Re{zeta%s_shot}, [8] Im{zeta%s_shot}\n",
     comment_delimiter,
@@ -388,7 +388,7 @@ void print_measurement_datatab_to_file(
   std::fprintf(
     fileptr,
     "%s "
-    "[0] r1_cen, [1] r1_eff, [2] r2_cen, [3] r2_eff, [4] nmodes, "
+    "[0] r1_cen, [1] r1_eff, [2] r2_cen, [3] r2_eff, [4] npairs, "
     "[5] Re{zeta%s_raw}, [6] Im{zeta%s_raw}, "
     "[7] Re{zeta%s_shot}, [8] Im{zeta%s_shot}\n",
     comment_delimiter,

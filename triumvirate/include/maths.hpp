@@ -214,7 +214,7 @@ class SphericalHarmonicCalculator {
   static void store_reduced_spherical_harmonic_in_fourier_space(
     const int ell, const int m,
     const double boxsize[3], const int ngrid[3],
-    std::complex<double>* ylm_out
+    std::vector< std::complex<double> >& ylm_out
   );
 
   /**
@@ -232,7 +232,7 @@ class SphericalHarmonicCalculator {
   static void store_reduced_spherical_harmonic_in_config_space(
     const int ell, const int m,
     const double boxsize[3], const int ngrid[3],
-    std::complex<double>* ylm_out
+    std::vector< std::complex<double> >& ylm_out
   );
 };
 
