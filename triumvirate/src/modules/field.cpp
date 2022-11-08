@@ -1374,17 +1374,24 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
 
   int nmodes_sample[n_sample];
   double k_sample[n_sample];
+  double pk_sample_real[n_sample], pk_sample_imag[n_sample];
+  double sn_sample_real[n_sample], sn_sample_imag[n_sample];
   std::complex<double> pk_sample[n_sample];
   std::complex<double> sn_sample[n_sample];
   for (int i = 0; i < n_sample; i++) {
     nmodes_sample[i] = 0;
     k_sample[i] = 0.;
-    pk_sample[i] = 0.;
-    sn_sample[i] = 0.;
+    pk_sample_real[i] = 0.;
+    pk_sample_imag[i] = 0.;
+    sn_sample_real[i] = 0.;
+    sn_sample_imag[i] = 0.;
   }
 
   this->reset_stats();
 
+#ifdef TRV_USE_OMP
+#pragma omp parallel for collapse(3)
+#endif  // TRV_USE_OMP
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
@@ -1433,14 +1440,32 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
           pk_mode *= ylm;
           sn_mode *= ylm;
 
+          double pk_mode_real = pk_mode.real();
+          double pk_mode_imag = pk_mode.imag();
+          double sn_mode_real = sn_mode.real();
+          double sn_mode_imag = sn_mode.imag();
+
           /// Add contribution.
+OMP_ATOMIC
           nmodes_sample[idx_k]++;
+OMP_ATOMIC
           k_sample[idx_k] += k_;
-          pk_sample[idx_k] += pk_mode;
-          sn_sample[idx_k] += sn_mode;
+OMP_ATOMIC
+          pk_sample_real[idx_k] += pk_mode_real;
+OMP_ATOMIC
+          pk_sample_imag[idx_k] += pk_mode_imag;
+OMP_ATOMIC
+          sn_sample_real[idx_k] += sn_mode_real;
+OMP_ATOMIC
+          sn_sample_imag[idx_k] += sn_mode_imag;
         }
       }
     }
+  }
+
+  for (int i = 0; i < n_sample; i++) {
+    pk_sample[i] = pk_sample_real[i] + trvm::M_I * pk_sample_imag[i];
+    sn_sample[i] = sn_sample_real[i] + trvm::M_I * sn_sample_imag[i];
   }
 
   /// Perform binning.
@@ -1575,15 +1600,20 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
 
   int npairs_sample[n_sample];
   double r_sample[n_sample];
+  double xi_sample_real[n_sample], xi_sample_imag[n_sample];
   std::complex<double> xi_sample[n_sample];
   for (int i = 0; i < n_sample; i++) {
     npairs_sample[i] = 0;
     r_sample[i] = 0.;
-    xi_sample[i] = 0.;
+    xi_sample_real[i] = 0.;
+    xi_sample_imag[i] = 0.;
   }
 
   this->reset_stats();
 
+#ifdef TRV_USE_OMP
+#pragma omp parallel for collapse(3)
+#endif  // TRV_USE_OMP
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
@@ -1606,13 +1636,25 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
 
           xi_pair *= ylm;
 
+          double xi_pair_real = xi_pair.real();
+          double xi_pair_imag = xi_pair.imag();
+
           /// Add contribution.
+OMP_ATOMIC
           npairs_sample[idx_r]++;
+OMP_ATOMIC
           r_sample[idx_r] += r_;
-          xi_sample[idx_r] += xi_pair;
+OMP_ATOMIC
+          xi_sample_real[idx_r] += xi_pair_real;
+OMP_ATOMIC
+          xi_sample_imag[idx_r] += xi_pair_imag;
         }
       }
     }
+  }
+
+  for (int i = 0; i < n_sample; i++) {
+    xi_sample[i] = xi_sample_real[i] + trvm::M_I * xi_sample_imag[i];
   }
 
   /// Perform binning.
@@ -1751,15 +1793,20 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
 
   int npairs_sample[n_sample];
   double r_sample[n_sample];
+  double xi_sample_real[n_sample], xi_sample_imag[n_sample];
   std::complex<double> xi_sample[n_sample];
   for (int i = 0; i < n_sample; i++) {
     npairs_sample[i] = 0;
     r_sample[i] = 0.;
-    xi_sample[i] = 0.;
+    xi_sample_real[i] = 0.;
+    xi_sample_imag[i] = 0.;
   }
 
   this->reset_stats();
 
+#ifdef TRV_USE_OMP
+#pragma omp parallel for collapse(3)
+#endif  // TRV_USE_OMP
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
@@ -1779,13 +1826,25 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
           /// Weight by reduced spherical harmonics.
           xi_pair *= ylm_a[idx_grid] * ylm_b[idx_grid];
 
+          double xi_pair_real = xi_pair.real();
+          double xi_pair_imag = xi_pair.imag();
+
           /// Add contribution.
+OMP_ATOMIC
           npairs_sample[idx_r]++;
+OMP_ATOMIC
           r_sample[idx_r] += r_;
-          xi_sample[idx_r] += xi_pair;
+OMP_ATOMIC
+          xi_sample_real[idx_r] += xi_pair_real;
+OMP_ATOMIC
+          xi_sample_imag[idx_r] += xi_pair_imag;
         }
       }
     }
+  }
+
+  for (int i = 0; i < n_sample; i++) {
+    xi_sample[i] = xi_sample_real[i] + trvm::M_I * xi_sample_imag[i];
   }
 
   /// Perform binning.
@@ -1928,10 +1987,14 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
 
   /// Weight by spherical Bessel functions and harmonics before summing
   /// over the configuration-space grids.
-  std::complex<double> S_ij_k = 0.;
-  for (int i = 0; i < params.ngrid[0]; i++) {
-    for (int j = 0; j < params.ngrid[1]; j++) {
-      for (int k = 0; k < params.ngrid[2]; k++) {
+  double S_ij_k_real = 0., S_ij_k_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for collapse(3) reduction(+:S_ij_k_real, S_ij_k_imag)
+#endif  // TRV_USE_OMP
+  for (int i = 0; i < this->params.ngrid[0]; i++) {
+    for (int j = 0; j < this->params.ngrid[1]; j++) {
+      for (int k = 0; k < this->params.ngrid[2]; k++) {
         long long idx_grid = ret_grid_index(i, j, k);
 
         double rv[3];
@@ -1946,10 +2009,18 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
           twopt_3d[idx_grid][0], twopt_3d[idx_grid][1]
         );
 
-        S_ij_k += ja * jb * ylm_a[idx_grid] * ylm_b[idx_grid] * S_ij_k_3d;
+        S_ij_k_3d *= ja * jb * ylm_a[idx_grid] * ylm_b[idx_grid];
+
+        double S_ij_k_3d_real = S_ij_k_3d.real();
+        double S_ij_k_3d_imag = S_ij_k_3d.imag();
+
+        S_ij_k_real += S_ij_k_3d_real;
+        S_ij_k_imag += S_ij_k_3d_imag;
       }
     }
   }
+
+  std::complex<double> S_ij_k(S_ij_k_real, S_ij_k_imag);
 
   S_ij_k *= this->vol_cell;
 

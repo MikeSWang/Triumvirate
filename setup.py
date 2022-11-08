@@ -85,6 +85,7 @@ self_macros = [
 
 if int(os.environ.get('PY_USEOMP', 0)):
     self_macros.append(('TRV_USE_OMP', None))
+    self_macros.append(('TRV_USE_FFTWOMP', None))
 if int(os.environ.get('PY_DBGPARS', 0)):
     self_macros.append(('DBG_MODE', None))
     self_macros.append(('DBG_PARS', None))
