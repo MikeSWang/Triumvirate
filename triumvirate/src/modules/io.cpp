@@ -248,7 +248,7 @@ void print_measurement_datatab_to_file(
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
     std::fprintf(
       fileptr,
-      "%.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
+      "%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
       meas_powspec.kbin[ibin],
       meas_powspec.keff[ibin],
       meas_powspec.nmodes[ibin],
@@ -274,7 +274,7 @@ void print_measurement_datatab_to_file(
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
     std::fprintf(
       fileptr,
-      "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
+      "%.9e\t%.9e\t%10d\t% .9e\t% .9e\n",
       meas_2pcf.rbin[ibin],
       meas_2pcf.reff[ibin],
       meas_2pcf.npairs[ibin],
@@ -299,7 +299,7 @@ void print_measurement_datatab_to_file(
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
     std::fprintf(
       fileptr,
-      "%.9e \t %.9e \t %d \t %.9e \t %.9e\n",
+      "%.9e\t%.9e\t%10d\t% .9e\t% .9e\n",
       meas_2pcf_win.rbin[ibin],
       meas_2pcf_win.reff[ibin],
       meas_2pcf_win.npairs[ibin],
@@ -335,7 +335,7 @@ void print_measurement_datatab_to_file(
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
     std::fprintf(
       fileptr,
-      "%.9e \t %.9e \t %.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
+      "%.9e\t%.9e\t%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
       meas_bispec.k1bin[ibin], meas_bispec.k1eff[ibin],
       meas_bispec.k2bin[ibin], meas_bispec.k2eff[ibin],
       meas_bispec.nmodes[ibin],
@@ -367,7 +367,7 @@ void print_measurement_datatab_to_file(
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
     std::fprintf(
       fileptr,
-      "%.9e \t %.9e \t %.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
+      "%.9e\t%.9e\t%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
       meas_3pcf.r1bin[ibin], meas_3pcf.r1eff[ibin],
       meas_3pcf.r2bin[ibin], meas_3pcf.r2eff[ibin],
       meas_3pcf.npairs[ibin],
@@ -399,7 +399,7 @@ void print_measurement_datatab_to_file(
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
     std::fprintf(
       fileptr,
-      "%.9e \t %.9e \t %.9e \t %.9e \t %d \t %.9e \t %.9e \t %.9e \t %.9e\n",
+      "%.9e\t%.9e\t%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
       meas_3pcf_win.r1bin[ibin], meas_3pcf_win.r1eff[ibin],
       meas_3pcf_win.r2bin[ibin], meas_3pcf_win.r2eff[ibin],
       meas_3pcf_win.npairs[ibin],

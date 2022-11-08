@@ -1048,7 +1048,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
       if (trvs::currTask == 0) {
         trvs::logger.stat(
-          "Bispectrum term at orders (m1, m2, 0) = (%d, %d, 0) computed.",
+          "Bispectrum term at orders (m1, m2, M) = (%d, %d, 0) computed.",
           m1_, m2_
         );
       }
@@ -1299,7 +1299,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       if (trvs::currTask == 0) {
         trvs::logger.stat(
           "Three-point correlation function term at orders "
-          "(m1, m2, 0) = (%d, %d, 0) computed.",
+          "(m1, m2, M) = (%d, %d, 0) computed.",
           m1_, m2_
         );
       }
@@ -1310,6 +1310,14 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       delete[] ylm_k_b; ylm_k_b = nullptr;
       trvs::gbytesMem -=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+
+      if (trvs::currTask == 0) {
+        trvs::logger.stat(
+          "Three-point correlation function term at orders "
+          "(m1, m2, M) = (%d, %d, 0) computed (again).",
+          m1_, m2_
+        );
+      }
     }
   }
 

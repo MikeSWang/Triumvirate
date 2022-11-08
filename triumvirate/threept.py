@@ -515,12 +515,15 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         ])
         if save.lower() == '.txt':
             datatab = _assemble_measurement_datatab(results, paramset)
+            datafmt = '\t'.join(
+                ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
+            )
             ofilename = _get_measurement_filename(paramset)
             ofilepath = (
                 Path(paramset['directories']['measurements'])/ofilename
             ).with_suffix('.txt')
             np.savetxt(
-                ofilepath, datatab, fmt='%.9e', header=header, delimiter='\t'
+                ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
         elif save.lower().endswith('npy'):
             results.update({'header': header})
@@ -917,12 +920,15 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         ])
 #         if save.lower() == '.txt':
 #             datatab = _assemble_measurement_datatab(results, paramset)
+#             datafmt = '\t'.join(
+#                 ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
+#             )
 #             ofilename = _get_measurement_filename(paramset)
 #             ofilepath = (
 #                 Path(paramset['directories']['measurements'])/ofilename
 #             ).with_suffix('.txt')
 #             np.savetxt(
-#                 ofilepath, datatab, fmt='%.9e', header=header, delimiter='\t'
+#                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
 #             )
 #         elif save.lower().endswith('npy'):
 #             results.update({'header': header})
@@ -1106,12 +1112,15 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         ])
         if save.lower() == '.txt':
             datatab = _assemble_measurement_datatab(results, paramset)
+            datafmt = '\t'.join(
+                ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
+            )
             ofilename = _get_measurement_filename(paramset)
             ofilepath = (
                 Path(paramset['directories']['measurements'])/ofilename
             ).with_suffix('.txt')
             np.savetxt(
-                ofilepath, datatab, fmt='%.9e', header=header, delimiter='\t'
+                ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
         elif save.lower().endswith('npy'):
             results.update({'header': header})
@@ -1465,12 +1474,15 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         ])
         if save.lower() == '.txt':
             datatab = _assemble_measurement_datatab(results, paramset)
+            datafmt = '\t'.join(
+                ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
+            )
             ofilename = _get_measurement_filename(paramset)
             ofilepath = (
                 Path(paramset['directories']['measurements'])/ofilename
             ).with_suffix('.txt')
             np.savetxt(
-                ofilepath, datatab, fmt='%.9e', header=header, delimiter='\t'
+                ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
         elif save.lower().endswith('npy'):
             results.update({'header': header})
