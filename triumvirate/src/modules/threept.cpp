@@ -298,10 +298,10 @@ trv::BispecMeasurements compute_bispec(
       if (flag_vanishing == "true") {continue;}
 
       /// Initialise reduced-spherical-harmonic weights on mesh grids.
-      std::complex<double>* ylm_k_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_k_b = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_r_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_r_b = new std::complex<double>[params.nmesh];
+      std::vector< std::complex<double> > ylm_k_a(params.nmesh);
+      std::vector< std::complex<double> > ylm_k_b(params.nmesh);
+      std::vector< std::complex<double> > ylm_r_a(params.nmesh);
+      std::vector< std::complex<double> > ylm_r_b(params.nmesh);
       trvs::gbytesMem +=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
 
@@ -487,10 +487,6 @@ trv::BispecMeasurements compute_bispec(
         }
       }
 
-      delete[] ylm_k_a; ylm_k_a = nullptr;
-      delete[] ylm_k_b; ylm_k_b = nullptr;
-      delete[] ylm_r_a; ylm_r_a = nullptr;
-      delete[] ylm_r_b; ylm_r_b = nullptr;
       trvs::gbytesMem -=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
     }
@@ -619,10 +615,10 @@ trv::ThreePCFMeasurements compute_3pcf(
       if (flag_vanishing == "true") {continue;}
 
       /// Initialise reduced-spherical-harmonic weights on mesh grids.
-      std::complex<double>* ylm_r_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_r_b = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_k_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_k_b = new std::complex<double>[params.nmesh];
+      std::vector< std::complex<double> > ylm_r_a(params.nmesh);
+      std::vector< std::complex<double> > ylm_r_b(params.nmesh);
+      std::vector< std::complex<double> > ylm_k_a(params.nmesh);
+      std::vector< std::complex<double> > ylm_k_b(params.nmesh);
       trvs::gbytesMem +=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
 
@@ -763,10 +759,6 @@ trv::ThreePCFMeasurements compute_3pcf(
         }
       }
 
-      delete[] ylm_r_a; ylm_r_a = nullptr;
-      delete[] ylm_r_b; ylm_r_b = nullptr;
-      delete[] ylm_k_a; ylm_k_a = nullptr;
-      delete[] ylm_k_b; ylm_k_b = nullptr;
       trvs::gbytesMem -=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
     }
@@ -893,10 +885,10 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
 
       /// Initialise/reset spherical harmonic mesh grids.
-      std::complex<double>* ylm_k_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_k_b = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_r_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_r_b = new std::complex<double>[params.nmesh];
+      std::vector< std::complex<double> > ylm_k_a(params.nmesh);
+      std::vector< std::complex<double> > ylm_k_b(params.nmesh);
+      std::vector< std::complex<double> > ylm_r_a(params.nmesh);
+      std::vector< std::complex<double> > ylm_r_b(params.nmesh);
       trvs::gbytesMem +=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
 
@@ -1053,10 +1045,6 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         );
       }
 
-      delete[] ylm_k_a; ylm_k_a = nullptr;
-      delete[] ylm_k_b; ylm_k_b = nullptr;
-      delete[] ylm_r_a; ylm_r_a = nullptr;
-      delete[] ylm_r_b; ylm_r_b = nullptr;
       trvs::gbytesMem -=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
     }
@@ -1178,10 +1166,10 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
 
       /// Initialise/reset spherical harmonic mesh grids.
-      std::complex<double>* ylm_r_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_r_b = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_k_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_k_b = new std::complex<double>[params.nmesh];
+      std::vector< std::complex<double> > ylm_r_a(params.nmesh);
+      std::vector< std::complex<double> > ylm_r_b(params.nmesh);
+      std::vector< std::complex<double> > ylm_k_a(params.nmesh);
+      std::vector< std::complex<double> > ylm_k_b(params.nmesh);
       trvs::gbytesMem +=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
 
@@ -1304,10 +1292,6 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         );
       }
 
-      delete[] ylm_r_a; ylm_r_a = nullptr;
-      delete[] ylm_r_b; ylm_r_b = nullptr;
-      delete[] ylm_k_a; ylm_k_a = nullptr;
-      delete[] ylm_k_b; ylm_k_b = nullptr;
       trvs::gbytesMem -=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
     }
@@ -1433,10 +1417,10 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
       if (flag_vanishing == "true") {continue;}
 
       /// Initialise reduced-spherical-harmonic weights on mesh grids.
-      std::complex<double>* ylm_r_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_r_b = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_k_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_k_b = new std::complex<double>[params.nmesh];
+      std::vector< std::complex<double> > ylm_r_a(params.nmesh);
+      std::vector< std::complex<double> > ylm_r_b(params.nmesh);
+      std::vector< std::complex<double> > ylm_k_a(params.nmesh);
+      std::vector< std::complex<double> > ylm_k_b(params.nmesh);
       trvs::gbytesMem +=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
 
@@ -1579,10 +1563,6 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         }
       }
 
-      delete[] ylm_r_a; ylm_r_a = nullptr;
-      delete[] ylm_r_b; ylm_r_b = nullptr;
-      delete[] ylm_k_a; ylm_k_a = nullptr;
-      delete[] ylm_k_b; ylm_k_b = nullptr;
       trvs::gbytesMem -=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
     }
@@ -1706,10 +1686,10 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
       if (flag_vanishing == "true") {continue;}
 
       /// Initialise reduced-spherical-harmonic weights on mesh grids.
-      std::complex<double>* ylm_k_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_k_b = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_r_a = new std::complex<double>[params.nmesh];
-      std::complex<double>* ylm_r_b = new std::complex<double>[params.nmesh];
+      std::vector< std::complex<double> > ylm_k_a(params.nmesh);
+      std::vector< std::complex<double> > ylm_k_b(params.nmesh);
+      std::vector< std::complex<double> > ylm_r_a(params.nmesh);
+      std::vector< std::complex<double> > ylm_r_b(params.nmesh);
       trvs::gbytesMem +=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
 
