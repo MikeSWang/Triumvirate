@@ -270,7 +270,6 @@ trv::BispecMeasurements compute_bispec(
   MeshField& dn_00_for_sn = dn_00;  // δn_00(k) (for shot noise)
 
   double vol_cell = dn_00.vol_cell;
-  double dr[3] = {dn_00.dr[0], dn_00.dr[1], dn_00.dr[2]};
 
   MeshField N_00(params);  // N_00(k)
   N_00.compute_ylm_wgtd_quad_field(
@@ -364,7 +363,6 @@ trv::BispecMeasurements compute_bispec(
         }
 
         for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-          double k_cen = kbinning.bin_centres[ibin];
           double k_lower = kbinning.bin_edges[ibin];
           double k_upper = kbinning.bin_edges[ibin + 1];
 
@@ -860,7 +858,6 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   MeshField& dn_L0_for_sn = dn_00;  // δn_L0(k) (for shot noise)
 
   double vol_cell = dn_00.vol_cell;
-  double dr[3] = {dn_00.dr[0], dn_00.dr[1], dn_00.dr[2]};
 
   /// Under the global plane-parallel approximation, y_{LM} = δᴰ_{M0}
   /// (L-invariant) for the line-of-sight spherical harmonic.
@@ -942,7 +939,6 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       }
 
       for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-        double k_cen = kbinning.bin_centres[ibin];
         double k_lower = kbinning.bin_edges[ibin];
         double k_upper = kbinning.bin_edges[ibin + 1];
 

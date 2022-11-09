@@ -144,6 +144,8 @@ void Logger::log(LogLevel entry_level, const char* fmt_string, ...) {
   if (entry_level >= this->level_limit) {
     std::string log_type;
     switch (entry_level) {
+      case NSET:
+        log_type = "\b";
       case DBUG:
         log_type = "DBUG";
       case STAT:

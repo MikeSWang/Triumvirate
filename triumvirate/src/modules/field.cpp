@@ -207,11 +207,11 @@ void MeshField::assign_weighted_field_to_mesh_ngp(
   this->initialise_density_field();
 
   /// Assign particles to grid cells.
-  double loc_grid;       // grid index coordinate of the particle in each dim
-  int ijk[order][3];     // grid index coordinates of covered grid cells
-  double win[order][3];  // sampling window
-  long long idx_grid;    // flattened grid cell index
-  // double s;           // particle-to-grid distance (unused);
+  double loc_grid = 0.;    // grid index coordinate of the particle in each dim
+  int ijk[order][3];       // grid index coordinates of covered grid cells
+  double win[order][3];    // sampling window
+  long long idx_grid = 0;  // flattened grid cell index
+  // double s;             // particle-to-grid distance (unused);
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid)
@@ -298,11 +298,11 @@ void MeshField::assign_weighted_field_to_mesh_cic(
   this->initialise_density_field();
 
   /// Assign particles to grid cells.
-  double loc_grid;       // grid index coordinate of the particle in each dim
-  int ijk[order][3];     // grid index coordinates of covered grid cells
-  double win[order][3];  // sampling window
-  long long idx_grid;    // flattened grid cell index
-  double s;              // particle-to-grid distance;
+  double loc_grid = 0.;    // grid index coordinate of the particle in each dim
+  int ijk[order][3];       // grid index coordinates of covered grid cells
+  double win[order][3];    // sampling window
+  long long idx_grid = 0;  // flattened grid cell index
+  double s = 0.;           // particle-to-grid distance;
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid, s)
@@ -397,11 +397,11 @@ void MeshField::assign_weighted_field_to_mesh_tsc(
   this->initialise_density_field();
 
   /// Perform assignment.
-  double loc_grid;       // grid index coordinate of the particle in each dim
-  int ijk[order][3];     // grid index coordinates of covered grid cells
-  double win[order][3];  // sampling window
-  long long idx_grid;    // flattened grid cell index
-  double s;              // particle-to-grid distance;
+  double loc_grid = 0.;    // grid index coordinate of the particle in each dim
+  int ijk[order][3];       // grid index coordinates of covered grid cells
+  double win[order][3];    // sampling window
+  long long idx_grid = 0;  // flattened grid cell index
+  double s = 0.;           // particle-to-grid distance;
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid, s)
@@ -500,11 +500,11 @@ void MeshField::assign_weighted_field_to_mesh_pcs(
   this->initialise_density_field();
 
   /// Perform assignment.
-  double loc_grid;       // grid index coordinate of the particle in each dim
-  int ijk[order][3];     // grid index coordinates of covered grid cells
-  double win[order][3];  // sampling window
-  long long idx_grid;    // flattened grid cell index
-  double s;              // particle-to-grid distance;
+  double loc_grid = 0.;    // grid index coordinate of the particle in each dim
+  int ijk[order][3];       // grid index coordinates of covered grid cells
+  double win[order][3];    // sampling window
+  long long idx_grid = 0;  // flattened grid cell index
+  double s = 0.;           // particle-to-grid distance;
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid, s)
@@ -1438,7 +1438,6 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
-        double local_start;
         long long idx_grid = ret_grid_index(i, j, k);
 
         double kv[3];

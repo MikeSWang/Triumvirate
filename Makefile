@@ -82,6 +82,8 @@ endif
 
 # -- Compilation-specific configurations ---------------------------------
 
+export PY_INCLUDES=${INCLUDES}
+
 # Enable OpenMP by setting `useomp=true` or `useomp=1`, which adds
 # `-fopenmp -DTRV_USE_OMP` and `-lfftw3_omp`.
 ifdef useomp
@@ -90,7 +92,7 @@ ifeq ($(strip ${useomp}), $(filter $(strip ${useomp}), true 1))
 CFLAGS += -fopenmp -DTRV_USE_OMP -DTRV_USE_FFTWOMP
 LIBS += -lfftw3_omp
 
-PY_USEOMP = 1
+export PY_USEOMP=1
 
 endif
 endif
@@ -101,7 +103,7 @@ ifeq ($(strip ${dbgpars}), $(filter $(strip ${dbgpars}), true 1))
 
 CFLAGS += -DDBG_MODE -DDBG_PARS
 
-PY_DBGPARS = 1
+export PY_DBGPARS=1
 
 endif
 endif
@@ -128,9 +130,6 @@ install: cppinstall pyinstall
 cppinstall: ${PROGNAME}
 
 pyinstall:
-	export PY_INCLUDES="${INCLUDES}"
-	export PY_USEOMP
-	export PY_DBGPARS
 	pip install --user -e .
 
 
