@@ -7,16 +7,16 @@
 # If unset, the working directory is used as the default.
 directories:
   catalogues: triumvirate/tests/test_input/catalogues
-  measurements: triumvirate/tests/test_output/measurements
+  measurements: triumvirate/tests/test_output/<sub-directory>
 
 # Filenames (with extensions) for input/output sources.
 files:
-  data_catalogue:
-  rand_catalogue:
+  data_catalogue: <data_catalogue_file>
+  rand_catalogue: <rand_catalogue_file>
 
 # Tags to be substituted into input/output paths.
 tags:
-  output: _pytest
+  output: <output_tag>
 
 
 # -- Sampling -----------------------------------------------------------------
@@ -53,12 +53,12 @@ interlace: off
 # -- Measurements -------------------------------------------------------------
 
 # Type of catalogue: {'survey', 'random', 'sim'}. [mandatory]
-catalogue_type:
+catalogue_type: <catalogue_type>
 
 # Type of measurement:
 # {'powspec', '2pcf', '2pcf-win', 'bispec', '3pcf', '3pcf-win', '3pcf-win-wa'}.
 # [mandatory]
-statistic_type:
+statistic_type: <statistic_type>
 
 # Normalisation convention: {'particle' (default), 'mesh'}.
 norm_convention: particle
@@ -84,7 +84,7 @@ wa_orders:
 # (i.e. range of measurement scales) as a list.
 # The binning coordinate is either wavenumbers (in h/Mpc) in Fourier space,
 # or separations (in Mpc/h) in configuration space. [mandatory]
-range:
+range: [<bin_min>, <bin_max>]
 
 # Number of measurement bins (i.e. data vector dimension).
 # Must be >=2, or >=7 if padding is used in binning. [mandatory]
