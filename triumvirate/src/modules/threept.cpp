@@ -304,6 +304,7 @@ trv::BispecMeasurements compute_bispec(
       std::vector< std::complex<double> > ylm_r_b(params.nmesh);
       trvs::gbytesMem +=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+      trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_fourier_space(
@@ -621,6 +622,7 @@ trv::ThreePCFMeasurements compute_3pcf(
       std::vector< std::complex<double> > ylm_k_b(params.nmesh);
       trvs::gbytesMem +=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+      trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_config_space(
@@ -891,6 +893,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       std::vector< std::complex<double> > ylm_r_b(params.nmesh);
       trvs::gbytesMem +=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+      trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_fourier_space(
@@ -1172,6 +1175,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       std::vector< std::complex<double> > ylm_k_b(params.nmesh);
       trvs::gbytesMem +=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+      trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_config_space(
@@ -1423,6 +1427,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
       std::vector< std::complex<double> > ylm_k_b(params.nmesh);
       trvs::gbytesMem +=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+      trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_config_space(
@@ -1692,6 +1697,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
       std::vector< std::complex<double> > ylm_r_b(params.nmesh);
       trvs::gbytesMem +=
         trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+      trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_fourier_space(

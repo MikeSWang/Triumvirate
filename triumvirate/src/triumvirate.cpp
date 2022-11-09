@@ -215,7 +215,9 @@ int main(int argc, char* argv[]) {
   if (flag_data == "true") {
     los_data = new trv::LineOfSight[catalogue_data.ntotal];  ///> data-source
                                                              ///> LoS
-    trv::sys::gbytesMem += trv::sys::size_in_gb<float>(3 * catalogue_data.ntotal);
+    trv::sys::gbytesMem +=
+      trv::sys::size_in_gb<struct trv::LineOfSight>(catalogue_data.ntotal);
+    trv::sys::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -240,7 +242,9 @@ int main(int argc, char* argv[]) {
   if (flag_rand == "true") {
     los_rand = new trv::LineOfSight[catalogue_rand.ntotal];  ///> random-source
                                                              ///> LoS
-    trv::sys::gbytesMem += trv::sys::size_in_gb<float>(3 * catalogue_rand.ntotal);
+    trv::sys::gbytesMem +=
+      trv::sys::size_in_gb<struct trv::LineOfSight>(catalogue_rand.ntotal);
+    trv::sys::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -645,14 +649,20 @@ int main(int argc, char* argv[]) {
   if (flag_rand == "true") {
     delete[] los_rand; los_rand = nullptr;
   }
-  trv::sys::gbytesMem -= trv::sys::size_in_gb<float>(
-    3 * (catalogue_data.ntotal + catalogue_rand.ntotal)
+  trv::sys::gbytesMem -= trv::sys::size_in_gb<struct trv::LineOfSight>(
+    (catalogue_data.ntotal + catalogue_rand.ntotal)
   );
 
+  if (trv::sys::currTask == 0) {
+    trv::sys::logger.stat(
+      "Maximum memory usage estimate: %.1f gigabytes.",
+      trv::sys::gbytesMaxMem
+    );
+  }
   if (trv::sys::gbytesMem > 0.) {
     if (trv::sys::currTask == 0) {
       trv::sys::logger.warn(
-        "Uncleared dynamically allocated memory: %.0f gigabytes.",
+        "Uncleared dynamically allocated memory: %.1f gigabytes.",
         trv::sys::gbytesMem
       );
     }
