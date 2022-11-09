@@ -36,11 +36,18 @@ namespace sys {
 int currTask = 0;
 
 double gbytesMem = 0.;
+double gbytesMaxMem = 0.;
 
 auto clockStart = std::chrono::steady_clock::now();  ///< program
                                                      ///< starting time
 
 Logger logger(NSET);
+
+
+void update_maxmem() {
+  trv::sys::gbytesMaxMem = (trv::sys::gbytesMem > trv::sys::gbytesMaxMem) ?
+    trv::sys::gbytesMem : trv::sys::gbytesMaxMem;
+}
 
 std::string show_current_datetime() {
   /// Get current time.

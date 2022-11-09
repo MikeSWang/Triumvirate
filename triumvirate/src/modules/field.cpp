@@ -51,11 +51,13 @@ MeshField::MeshField(trv::ParameterSet& params) {
   this->field = fftw_alloc_complex(this->params.nmesh);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+  trv::sys::update_maxmem();
 
   if (this->params.interlace == "true") {
     this->field_s = fftw_alloc_complex(this->params.nmesh);
 
     trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+    trv::sys::update_maxmem();
   }
 
   this->initialise_density_field();  // likely redundant but safe
@@ -643,6 +645,9 @@ void MeshField::compute_unweighted_field(ParticleCatalogue& particles) {
 
   unit_weight = fftw_alloc_complex(particles.ntotal);
 
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
+  trv::sys::update_maxmem();
+
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -654,6 +659,8 @@ void MeshField::compute_unweighted_field(ParticleCatalogue& particles) {
   this->assign_weighted_field_to_mesh(particles, unit_weight);
 
   fftw_free(unit_weight); unit_weight = nullptr;
+
+  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 }
 
 void MeshField::compute_unweighted_field_fluctuations_insitu(
@@ -683,6 +690,9 @@ void MeshField::compute_ylm_wgtd_field(
   /// Compute the weighted data-source field.
   weight_kern = fftw_alloc_complex(particles_data.ntotal);
 
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
+  trv::sys::update_maxmem();
+
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -702,8 +712,13 @@ void MeshField::compute_ylm_wgtd_field(
 
   fftw_free(weight_kern); weight_kern = nullptr;
 
+  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
+
   /// Compute the weighted random-source field.
   weight_kern = fftw_alloc_complex(particles_rand.ntotal);
+
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
+  trv::sys::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -724,6 +739,8 @@ void MeshField::compute_ylm_wgtd_field(
   field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
   fftw_free(weight_kern); weight_kern = nullptr;
+
+  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
 
   /// Subtract to compute fluctuations, i.e. δn_LM.
 #ifdef TRV_USE_OMP
@@ -754,6 +771,9 @@ void MeshField::compute_ylm_wgtd_field(
   /// Compute the weighted field.
   weight_kern = fftw_alloc_complex(particles.ntotal);
 
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
+  trv::sys::update_maxmem();
+
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -770,6 +790,8 @@ void MeshField::compute_ylm_wgtd_field(
   this->assign_weighted_field_to_mesh(particles, weight_kern);
 
   fftw_free(weight_kern); weight_kern = nullptr;
+
+  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 
   /// Apply the normalising alpha contrast.
 #ifdef TRV_USE_OMP
@@ -792,6 +814,9 @@ void MeshField::compute_ylm_wgtd_quad_field(
   /// Compute the quadratic weighted data-source field.
   weight_kern = fftw_alloc_complex(particles_data.ntotal);
 
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
+  trv::sys::update_maxmem();
+
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -813,8 +838,13 @@ void MeshField::compute_ylm_wgtd_quad_field(
 
   fftw_free(weight_kern); weight_kern = nullptr;
 
+  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
+
   /// Compute the quadratic weighted random-source field.
   weight_kern = fftw_alloc_complex(particles_rand.ntotal);
+
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
+  trv::sys::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -837,6 +867,8 @@ void MeshField::compute_ylm_wgtd_quad_field(
   field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
   fftw_free(weight_kern); weight_kern = nullptr;
+
+  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
 
   /// Add to compute quadratic fluctuations, i.e. N_LM.
 #ifdef TRV_USE_OMP
@@ -867,6 +899,9 @@ void MeshField::compute_ylm_wgtd_quad_field(
   /// Compute the quadratic weighted field.
   weight_kern = fftw_alloc_complex(particles.ntotal);
 
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
+  trv::sys::update_maxmem();
+
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -885,6 +920,8 @@ void MeshField::compute_ylm_wgtd_quad_field(
   this->assign_weighted_field_to_mesh(particles, weight_kern);
 
   fftw_free(weight_kern); weight_kern = nullptr;
+
+  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 
   /// Apply mean-density matching normalisation (i.e. alpha contrast)
   /// to compute N_LM.
@@ -1220,6 +1257,9 @@ double MeshField::calc_grid_based_powlaw_norm(
 
   weight = fftw_alloc_complex(particles.ntotal);
 
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
+  trv::sys::update_maxmem();
+
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -1232,6 +1272,8 @@ double MeshField::calc_grid_based_powlaw_norm(
   this->assign_weighted_field_to_mesh(particles, weight);
 
   fftw_free(weight); weight = nullptr;
+
+  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 
   /// Compute normalisation volume integral, where ∫d³x ↔ dV Σᵢ,
   /// dV =: `vol_cell`.
@@ -1528,6 +1570,9 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   /// Fourier transform).
   fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
 
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+  trv::sys::update_maxmem();
+
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -1680,7 +1725,9 @@ OMP_ATOMIC
     }
   }
 
-  delete[] twopt_3d;
+  fftw_free(twopt_3d); twopt_3d = nullptr;
+
+  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
 }
 
 void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
@@ -1718,6 +1765,9 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   /// Set up 3-d two-point statistics mesh grids (before inverse
   /// Fourier transform).
   fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
+
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+  trv::sys::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -1881,7 +1931,9 @@ OMP_ATOMIC
     }
   }
 
-  delete[] twopt_3d;
+  fftw_free(twopt_3d); twopt_3d = nullptr;
+
+  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
 }
 
 std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
@@ -1918,6 +1970,9 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   /// Set up 3-d two-point statistics mesh grids (before inverse
   /// Fourier transform).
   fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
+
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+  trv::sys::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -2026,6 +2081,10 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   std::complex<double> S_ij_k(S_ij_k_real, S_ij_k_imag);
 
   S_ij_k *= this->vol_cell;
+
+  fftw_free(twopt_3d); twopt_3d = nullptr;
+
+  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
 
   return S_ij_k;
 }

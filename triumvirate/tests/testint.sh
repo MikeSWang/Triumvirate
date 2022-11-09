@@ -38,7 +38,8 @@ if ${flag_recompile}; then
 fi
 
 # Change template scripts.
-sed -i "s/test_params.yml/test_params_temp.yml/g" sandbox/tests/testint.py
+cp triumvirate/tests/testint.py triumvirate/tests/testint_temp.py
+sed -i "s/test_params.yml/test_params_temp.yml/g" triumvirate/tests/testint_temp.py
 
 
 # ========================================================================
@@ -157,7 +158,7 @@ test_case () {
     -p directories.measurements ${testdir_output} \
     -p num_bins 20
 
-  python3 sandbox/tests/testint.py
+  python3 triumvirate/tests/testint_temp.py
 
   rm ${test_paramfile_yml_temp}
 }
@@ -180,4 +181,4 @@ test_case random config 3pt
 # Clean-up
 # ========================================================================
 
-sed -i 's/test_params_temp.yml/test_params.yml/g' sandbox/tests/test_intg.py
+rm triumvirate/tests/testint_temp.py

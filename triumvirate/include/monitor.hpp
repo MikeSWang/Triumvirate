@@ -63,7 +63,8 @@ namespace sys {
 /// RFE: Sort out MPI implementation.
 extern int currTask;  ///< current task
 
-extern double gbytesMem;  ///< memory usage in gibibytes
+extern double gbytesMem;     ///< current memory usage in gibibytes
+extern double gbytesMaxMem;  ///< maximum memory usage in gibibytes
 
 /**
  * @brief Return size in gibibytes.
@@ -76,6 +77,12 @@ double size_in_gb(int num) {
   const double BYTES_PER_GBYTES = 1073741824.;  // 1024³ bytes per gibibyte
   return double(num) * sizeof(T) / BYTES_PER_GBYTES;
 }
+
+/**
+ * @brief Update the maximum memory usage estimate.
+ *
+ */
+void update_maxmem();
 
 /**
  * @brief Return the current date-time string in
