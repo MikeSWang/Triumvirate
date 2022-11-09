@@ -121,12 +121,12 @@ int ParticleCatalogue::load_catalogue_file(
 
   /// CAVEAT: Default -1 index as a flag for unfound column names.
   std::vector<int> name_indices(names_ordered.size(), -1);
-  for (int iname = 0; iname < names_ordered.size(); iname++) {
+  for (int iname = 0; iname < int(names_ordered.size()); iname++) {
     std::ptrdiff_t col_idx = std::distance(
       colnames.begin(),
       std::find(colnames.begin(), colnames.end(), names_ordered[iname])
     );
-    if (0 <= col_idx && col_idx < colnames.size()) {
+    if (0 <= col_idx && col_idx < int(colnames.size())) {
       name_indices[iname] = col_idx;
     }
   }
@@ -177,7 +177,7 @@ int ParticleCatalogue::load_catalogue_file(
   this->initialise_particles(num_lines);
 
   /// Set particle data.
-  double nz_box_default;
+  double nz_box_default = 0.;
   if (volume > 0.) {
     nz_box_default = this->ntotal / volume;
   }
@@ -257,11 +257,11 @@ int ParticleCatalogue::load_particle_data(
   /// Check data array sizes.
   int ntotal = x.size();
   if (!(
-    ntotal == y.size()
-    && ntotal == z.size()
-    && ntotal == nz.size()
-    && ntotal == ws.size()
-    && ntotal == wc.size()
+    ntotal == int(y.size())
+    && ntotal == int(z.size())
+    && ntotal == int(nz.size())
+    && ntotal == int(ws.size())
+    && ntotal == int(wc.size())
   )) {
     if (trvs::currTask == 0) {
       trvs::logger.error(
