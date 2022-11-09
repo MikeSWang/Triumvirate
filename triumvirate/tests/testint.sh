@@ -38,7 +38,7 @@ if ${flag_recompile}; then
 fi
 
 # Change template scripts.
-sed -i "s/test_params.yml/test_params_temp.yml/g" sandbox/tests/test_intg.py
+sed -i "s/test_params.yml/test_params_temp.yml/g" sandbox/tests/testint.py
 
 
 # ========================================================================
@@ -56,11 +56,11 @@ test_case () {
   echo
 
   # Set I/O.
-  local test_paramfile_ini="testdir_input/params/test_params.ini"
-  local test_paramfile_yml="testdir_input/params/test_params.yml"
+  local test_paramfile_ini="${testdir_input}/params/test_params.ini"
+  local test_paramfile_yml="${testdir_input}/params/test_params.yml"
 
-  local test_paramfile_ini_temp="testdir_input/params/test_params_temp.ini"
-  local test_paramfile_yml_temp="testdir_input/params/test_params_temp.yml"
+  local test_paramfile_ini_temp="${testdir_input}/params/test_params_temp.ini"
+  local test_paramfile_yml_temp="${testdir_input}/params/test_params_temp.yml"
 
   if [[ $catalogue_type == 'sim' ]]; then
     local data_catalogue_file="test_catalogue_sim.dat"
@@ -139,7 +139,7 @@ test_case () {
     -p statistic_type ${statistic} \
     -p bin_min ${bin_min} \
     -p bin_max ${bin_max} \
-    -p measurement_dir "testdir_output" \
+    -p measurement_dir ${testdir_output} \
     -p num_bins 20
 
   build/triumvirate ${test_paramfile_ini_temp}
@@ -154,10 +154,10 @@ test_case () {
     -p catalogue_type ${catalogue_type} \
     -p statistic_type ${statistic} \
     -p range "${range}" \
-    -p directories.measurements "testdir_output" \
+    -p directories.measurements ${testdir_output} \
     -p num_bins 20
 
-  python3 sandbox/tests/test_intg.py
+  python3 sandbox/tests/testint.py
 
   rm ${test_paramfile_yml_temp}
 }
