@@ -401,10 +401,10 @@ void MeshField::assign_weighted_field_to_mesh_tsc(
   long long idx_grid;    // flattened grid cell index
   double s;              // particle-to-grid distance;
 
-  for (int pid = 0; pid < particles.ntotal; pid++) {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid, s)
 #endif  // TRV_USE_OMP
+  for (int pid = 0; pid < particles.ntotal; pid++) {
     for (int iaxis = 0; iaxis < 3; iaxis++) {
       loc_grid = this->params.ngrid[iaxis]
         * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
@@ -504,10 +504,10 @@ void MeshField::assign_weighted_field_to_mesh_pcs(
   long long idx_grid;    // flattened grid cell index
   double s;              // particle-to-grid distance;
 
-  for (int pid = 0; pid < particles.ntotal; pid++) {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid, s)
 #endif  // TRV_USE_OMP
+  for (int pid = 0; pid < particles.ntotal; pid++) {
     for (int iaxis = 0; iaxis < 3; iaxis++) {
       loc_grid = this->params.ngrid[iaxis]
         * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
