@@ -112,7 +112,7 @@ endif
 ifdef uselogo
 ifeq ($(strip ${uselogo}), $(filter $(strip ${uselogo}), true 1))
 
-CFLAGS += DTRV_USE_LOGO
+CFLAGS += -DTRV_USE_LOGO
 
 endif
 endif
