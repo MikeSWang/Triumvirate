@@ -42,7 +42,9 @@
  *
  */
 int main(int argc, char* argv[]) {
-  // trv::sys::display_prog_notice();
+#ifdef TRV_USE_LOGO
+  trv::sys::display_prog_notice();
+#endif  // TRV_USE_LOGO
 
   if (trv::sys::currTask == 0) {
     std::printf("%s\n", std::string(80, '>').c_str());
@@ -654,7 +656,7 @@ int main(int argc, char* argv[]) {
   );
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat(
+    trv::sys::logger.info(
       "Maximum memory usage estimate: %.1f gigabytes.",
       trv::sys::gbytesMaxMem
     );

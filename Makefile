@@ -108,6 +108,15 @@ export PY_DBGPARS=1
 endif
 endif
 
+# Enable visual enhancements.
+ifdef uselogo
+ifeq ($(strip ${uselogo}), $(filter $(strip ${uselogo}), true 1))
+
+CFLAGS += DTRV_USE_LOGO
+
+endif
+endif
+
 # Add other options (for developers only), e.g.
 # {-DTRV_USE_LEGACY_CODE, -DDBG_MODE, -DDBG_NOAC, ...}.
 # >>>>>>>>>>
