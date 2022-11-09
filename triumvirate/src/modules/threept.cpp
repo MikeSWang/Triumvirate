@@ -1346,6 +1346,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   double alpha, double norm_factor, bool wide_angle
 ) {
   std::string msg_tag = wide_angle ? "wide-angle corrections " : "";
+
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing three-point correlation function window %s"
@@ -1600,6 +1601,14 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
 
   delete[] npairs_save; delete[] r1_save; delete[] r2_save;
   delete[] zeta_save; delete[] sn_save;
+
+  if (trvs::currTask == 0) {
+    trvs::logger.stat(
+      "... computed three-point correlation function window %s"
+      "from random catalogue.",
+      msg_tag.c_str()
+    );
+  }
 
   return threepcfwin_out;
 }
