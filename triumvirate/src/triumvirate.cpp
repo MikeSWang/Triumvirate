@@ -657,7 +657,7 @@ int main(int argc, char* argv[]) {
 
   if (trv::sys::currTask == 0) {
     trv::sys::logger.info(
-      "Maximum memory usage estimate: %.1f gigabytes.",
+      "Minimal estimate of peak memory usage: %.1f gigabytes.",
       trv::sys::gbytesMaxMem
     );
   }
