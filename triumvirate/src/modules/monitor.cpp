@@ -320,7 +320,7 @@ void display_prog_notice() {
     "  //      \\                                                         \n"
     " //________\\    (C) 2022 Mike S Wang & Naonori Sugiyama [GPLv3]     \n"
     "                                                                     \n"
-    "  •••  Three-Point Clustering Correlators in LSS Analyses  •••       \n"
+    "  •••  Three-Point Clustering Correlators in LSS Analyses  •••     \n\n"
   );
 }
 
