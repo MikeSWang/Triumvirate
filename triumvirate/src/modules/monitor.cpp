@@ -314,13 +314,13 @@ const char* InvalidData::what() const noexcept {return this->err_mesg.c_str();}
 
 void display_prog_notice() {
   std::printf(
-    "                                                                   \n"
-    "     //\\       Triumvirate (C) 2022 [GPLv3]                       \n"
-    "    //  \\                                                         \n"
-    "   //    \\     Three-Point Clustering Correlators in LSS Analyses \n"
-    "  //      \\                                                       \n"
-    " //________\\   Authors: Mike S Wang, Naonori Sugiyama             \n"
-    "                                                                   \n"
+    "     //\\        ___  __                      __       ___  ___      \n"
+    "    //  \\        |  |__) | |  | |\\/| \\  / | |__)  /\\   |  |__    \n"
+    "   //    \\       |  |  \\ | \\__/ |  |  \\/  | |  \\ /~~\\  |  |___ \n"
+    "  //      \\                                                         \n"
+    " //________\\    (C) 2022 Mike S Wang & Naonori Sugiyama [GPLv3]     \n"
+    "                                                                     \n"
+    "  •••  Three-Point Clustering Correlators in LSS Analyses  •••       \n"
   );
 }
 
