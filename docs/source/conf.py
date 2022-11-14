@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, os.path.abspath('../../'))
 
 
-# -- Project information -----------------------------------------------------
+# -- Project information -------------------------------------------------
 
 project = 'Triumvirate'
 copyright = ' 2022, Mike S Wang & Naonori Sugiyama'
@@ -16,7 +16,7 @@ author = 'Mike S Wang, Naonori Sugiyama'
 release = 'dev0.0'
 
 
-# -- General configuration ---------------------------------------------------
+# -- General configuration -----------------------------------------------
 
 exclude_patterns = ['setup', 'config', 'tests', 'examples']
 
@@ -42,7 +42,7 @@ source_suffix = ['.rst', '.txt', '.md']
 templates_path = ['_templates']
 
 
-# -- Options for HTML output -------------------------------------------------
+# -- Options for HTML output ---------------------------------------------
 
 html_favicon = '_static/Triumvirate.ico'
 
@@ -66,7 +66,7 @@ html_theme_options = {
 }
 
 
-# -- Extension configuration -------------------------------------------------
+# -- Extension configuration ---------------------------------------------
 
 autodoc_member_order = 'bysource'
 autosummary_generate = True

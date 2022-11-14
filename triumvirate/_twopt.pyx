@@ -1,6 +1,6 @@
 """
 Two-Point Correlator Algorithms (:mod:`~triumvirate._twopt`)
-===========================================================================
+==========================================================================
 
 Declaration and wrapping of two-point statistic algorithms.
 

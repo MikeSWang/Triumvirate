@@ -39,7 +39,7 @@ else:
     branch = 'stable'
 
 
-# -- Compilation --------------------------------------------------------------
+# -- Compilation ---------------------------------------------------------
 
 # Specify language.
 language = 'c++'
@@ -62,7 +62,7 @@ for key, val in config_vars.items():
         config_vars[key] = val.replace('-Wstrict-prototypes', '')
 
 
-# -- Extensions ---------------------------------------------------------------
+# -- Extensions ----------------------------------------------------------
 
 # Set source, include and library paths.
 self_modulesrc = f"{pkgdir}/src/modules"

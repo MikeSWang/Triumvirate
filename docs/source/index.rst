@@ -1,8 +1,8 @@
 .. title:: Triumvirate Documentation
 
-========================================================================
+==========================================================================
 **Three-Point Clustering Correlators in Large-Scale Structure Analysis**
-========================================================================
+==========================================================================
 
 .. image:: https://img.shields.io/badge/arXiv-yymm.nnnnn-important
     :target: https://arxiv.org/abs/yymm.nnnnn

@@ -50,7 +50,7 @@ assignment: tsc
 interlace: off
 
 
-# -- Measurements -------------------------------------------------------------
+# -- Measurements --------------------------------------------------------
 
 # Type of catalogue: {'survey', 'random', 'sim'}. [mandatory]
 catalogue_type:

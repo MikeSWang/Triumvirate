@@ -1,6 +1,6 @@
 """
 Catalogue Parser (:mod:`~triumvirate._particles`)
-===========================================================================
+==========================================================================
 
 Parse Python catalogue objects into C++ particle catalogues.
 
