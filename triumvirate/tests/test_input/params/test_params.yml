@@ -1,6 +1,6 @@
 ---
 
-# -- I/O ----------------------------------------------------------------------
+# -- I/O -----------------------------------------------------------------
 
 # Directories for input/output.
 # The paths can be either absolute or relative to the working directory.
@@ -19,7 +19,7 @@ tags:
   output: <output_tag>
 
 
-# -- Sampling -----------------------------------------------------------------
+# -- Sampling ------------------------------------------------------------
 
 # Box size in each dimension (in Mpc/h). [mandatory]
 boxsize:
@@ -50,7 +50,7 @@ assignment: cic
 interlace: off
 
 
-# -- Measurements -------------------------------------------------------------
+# -- Measurements --------------------------------------------------------
 
 # Type of catalogue: {'survey', 'random', 'sim'}. [mandatory]
 catalogue_type: <catalogue_type>

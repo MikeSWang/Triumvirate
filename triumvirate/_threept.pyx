@@ -1,6 +1,6 @@
 """
 Three-Point Correlator Algorithms (:mod:`~triumvirate._threept`)
-===========================================================================
+==========================================================================
 
 Declaration and wrapping of three-point statistic algorithms.
 
