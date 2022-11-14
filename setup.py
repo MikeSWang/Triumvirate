@@ -80,6 +80,7 @@ libraries = ext_libraries
 
 # Set macros.
 self_macros = [
+    ('TRV_EXTCALL', None),
     # ('TRV_USE_LEGACY_CODE', None),
     # ('DBG_MODE', None),
     # ('DBG_NOAC', None),

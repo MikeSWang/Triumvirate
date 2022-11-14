@@ -26,6 +26,12 @@
 
 #include "monitor.hpp"
 
+#ifdef TRV_EXTCALL
+#define SHOW_CPPSTATE "C++"
+#else  // !TRV_EXTCALL
+#define SHOW_CPPSTATE "\b"
+#endif  // TRV_EXTCALL
+
 namespace trv {
 namespace sys {
 
@@ -42,7 +48,6 @@ auto clockStart = std::chrono::steady_clock::now();  ///< program
                                                      ///< starting time
 
 Logger logger(NSET);
-
 
 void update_maxmem() {
   trv::sys::gbytesMaxMem = (trv::sys::gbytesMem > trv::sys::gbytesMaxMem) ?
@@ -135,8 +140,9 @@ void Logger::emit(
   std::vsprintf(log_mesg_buf, fmt_string, args);
 
   std::printf(
-    "[%s %s] %s\n",
-    trv::sys::show_timestamp().c_str(), log_type.c_str(), log_mesg_buf
+    "[%s %s %s] %s\n",
+    trv::sys::show_timestamp().c_str(), log_type.c_str(), SHOW_CPPSTATE,
+    log_mesg_buf
   );
 }
 

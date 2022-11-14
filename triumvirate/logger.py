@@ -37,7 +37,8 @@ class _ElapsedLogFormatter(logging.Formatter):
         h, remainder_time = divmod(elapsed_time, 3600)
         m, s = divmod(remainder_time, 60)
 
-        record.elapsed = "(+{}:{:02d}:{:02d})".format(int(h), int(m), int(s))
+        record.elapsed = \
+            "(+{:02d}:{:02d}:{:02d})".format(int(h), int(m), int(s))
 
         return logging.Formatter.format(self, record)
 
@@ -68,12 +69,12 @@ class _CppLogAdapter(logging.LoggerAdapter):
 
         if isinstance(cpp_state, str):
             if cpp_state.lower() == 'start':
-                return "(C++ start) %s" % msg, kwargs
+                return "%s (entering C++)" % msg, kwargs
             if cpp_state.lower() == 'end':
-                return "(C++ end) %s" % msg, kwargs
+                return "%s (exited C++)" % msg, kwargs
 
         if cpp_state:  # merely indicating in CPP state, no extra text
-            return "(C++) %s" % msg, kwargs
+            return "%s (in C++)" % msg, kwargs
         return "%s" % msg, kwargs
 
 
@@ -128,7 +129,7 @@ def setup_logger(log_level=logging.INFO):
     """
     # Set formatter.
     formatter = _ElapsedLogFormatter(
-        fmt='[%(asctime)s %(elapsed)s %(levelname)s] %(message)s',
+        fmt='[%(asctime)s %(elapsed)s %(levelname).4s] %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
