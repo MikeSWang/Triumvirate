@@ -170,9 +170,9 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
 );
 
 
-/// ***************************************************************************
+/// **********************************************************************
 /// Full statistics
-/// ***************************************************************************
+/// **********************************************************************
 
 /// STYLE: Standard naming convention is not always followed for
 /// intermediary quantities in the functions below.
