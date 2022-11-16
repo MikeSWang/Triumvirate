@@ -351,8 +351,6 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
     if binning is None:
         binning = Binning.from_parameter_set(paramset)
 
-    binning.set_bins()
-
     if logger:
         logger.info("Binning has been initialised.")
 
@@ -739,8 +737,6 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
     if binning is None:
         binning = Binning.from_parameter_set(paramset)
 
-    binning.set_bins()
-
     if logger:
         logger.info("Binning has been initialised.")
 
@@ -1080,8 +1076,6 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
     # Set up binning.
     if binning is None:
         binning = Binning.from_parameter_set(paramset)
-
-    binning.set_bins()
 
     if logger:
         logger.info("Binning has been initialised.")

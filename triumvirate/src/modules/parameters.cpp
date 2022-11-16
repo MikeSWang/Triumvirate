@@ -600,7 +600,7 @@ int ParameterSet::validate() {
 
   /// Check for parameter conflicts.
   if (this->binning == "linpad" || this->binning == "logpad") {
-    /// SEE: See @ref trv::Binning::set_bins().
+    /// SEE: See @ref trv::Binning.
     int nbin_pad = 5;
 
     if (this->num_bins < nbin_pad + 2) {
