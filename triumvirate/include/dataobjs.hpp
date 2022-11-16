@@ -55,8 +55,8 @@ namespace trv {
  */
 class Binning {
  public:
-  std::string scheme;               ///< binning scheme
   std::string space;                ///< coordinate space
+  std::string scheme;               ///< binning scheme
   double bin_min;                   ///< lowest bin edge
   double bin_max;                   ///< highest bin edge
   int num_bins;                     ///< number of bins
@@ -67,12 +67,11 @@ class Binning {
   /**
    * @brief Construct binnng from bin specification.
    *
-   * @param coord_min Minimum coordinate in binning range.
-   * @param coord_max Maximum coordinate in binning range.
-   * @param nbin Number of bins.
-   * @throws trv::sys::InvalidParameter When @p coord_min is negative.
+   * @param space Coordinate space, one of {"fourier", "config"}.
+   * @param scheme Binning scheme, one of
+   *               {"lin", "log", "linpad", "logpad"}.
    */
-  Binning(double coord_min, double coord_max, int nbin);
+  Binning(std::string space, std::string scheme);
 
   /**
    * @brief Construct binning from a parameter set.
@@ -86,13 +85,11 @@ class Binning {
   /**
    * @brief Set bins.
    *
-   * @param scheme Binning scheme, one of
-   *               {"lin", "log", "linpad", "logpad", "custom"}.
-   * @param space Coordinate space, one of {"fourier", "config"}.
-   * @throws trv::sys::UnimplementedError When @p scheme is set to
-   *                                      "custom" but not implemented.
-   * @throws trv::sys::InvalidParameter When @p scheme is not one of the
-   *                                    options above.
+   * @param coord_min Minimum coordinate in binning range.
+   * @param coord_max Maximum coordinate in binning range.
+   * @param nbin Number of bins.
+   * @throws trv::sys::InvalidParameter When @p coord_min is negative.
+   * @throws trv::sys::InvalidParameter When @p nbin is non-positive.
    *
    * @note If @p scheme is "lin" or "log", the bin edges are set linearly
    *       or log-linearly (i.e. exponentially) in the bin range.  If
@@ -101,23 +98,57 @@ class Binning {
    *       ("config") with the remaining binning range divided linearly
    *       or log-linearly.
    */
-  void set_bins(std::string scheme, std::string space);
+  void set_bins(double coord_min, double coord_max, int nbin);
 
   /**
    * @brief Set bins.
    *
-   * The binning scheme is inferred from @ref trv::ParameterSet.binning
+   * The bin properties are inferred from @ref trv::ParameterSet
    * when initialised with @ref trv::Binning::Binning(trv::ParameterSet&).
    *
    * @overload
    */
   void set_bins();
 
+  /**
+   * @brief Construct binning from a mesh grid.
+   *
+   * The bin width is given by the grid resolution in configuration
+   * space or the fundamental wavenumber in Fourier space. The bin
+   * minimum is zero and the bin maximum is half the boxsize in
+   * configuration space or the Nyquist wavenumber in Fourier space.
+   *
+   * @param boxsize_max (Maximum) box size.
+   * @param ngrid_min (Minimum) grid number.
+   *
+   * @note @ref trv::Binning.scheme is reset to "lin".
+   *
+   * @overload
+   */
+  void set_bins(double boxsize_max, int ngrid_min);
+
+  /**
+   * @brief Set bins from custom bin edges.
+   *
+   * @param bin_edges Custom bin edges (in ascending order).
+   *
+   * @overload
+   */
+  void set_bins(std::vector<double> bin_edges);
+
  private:
   /// CAVEAT: Discretionary choices.
   int nbin_pad = 5;                ///< number of padded bins
   float dbin_pad_fourier = 1.e-3;  ///< bin padding in Fourier space
   float dbin_pad_config = 10.;     ///< bin padding in configuration space
+
+  /**
+   * @brief Compute bin edges, centres and widths.
+   *
+   * @throws trv::sys::InvalidParameter When @p scheme is not one of the
+   *                                    allowed options.
+   */
+  void compute_binning();
 };
 
 

@@ -32,21 +32,17 @@ namespace trv {
 /// Binning schemes
 /// **********************************************************************
 
-Binning::Binning(double coord_min, double coord_max, int nbin) {
-  if (coord_min < 0.) {
-    throw trv::sys::InvalidParameter("Binning range must be non-negative.");
-  }
-
-  this->bin_min = coord_min;
-  this->bin_max = coord_max;
-  this->num_bins = nbin;
+Binning::Binning(std::string space, std::string scheme) {
+  this->space = space;
+  this->scheme = scheme;
 }
 
 Binning::Binning(trv::ParameterSet& params) : Binning::Binning(
-  params.bin_min, params.bin_max, params.num_bins
+  params.space, params.binning
 ) {
-  this->scheme = params.binning;
-  this->space = params.space;
+  this->bin_min = params.bin_min;
+  this->bin_max = params.bin_max;
+  this->num_bins = params.num_bins;
 
   /// Change default padding to grid scale.
   this->dbin_pad_config = (1 + 5.e-3)
@@ -57,27 +53,71 @@ Binning::Binning(trv::ParameterSet& params) : Binning::Binning(
     / *std::max_element(params.boxsize, params.boxsize + 3);
 }
 
-void Binning::set_bins(std::string scheme, std::string space) {
+void Binning::set_bins(double coord_min, double coord_max, int nbin) {
+  if (coord_min < 0.) {
+    throw trv::sys::InvalidParameter("Binning range must be non-negative.");
+  }
+  if (nbin <= 0) {
+    throw trv::sys::InvalidParameter("Number of bins must be positive.");
+  }
+
+  this->bin_min = coord_min;
+  this->bin_max = coord_max;
+  this->num_bins = nbin;
+
+  this->compute_binning();
+}
+
+void Binning::set_bins() {this->compute_binning();}
+
+void Binning::set_bins(double boxsize_max, int ngrid_min) {
+  this->scheme = "lin";
+
+  this->bin_min = 0.;
+
+  double bin_width;
+  if (this->space == "config") {
+    bin_width = boxsize_max / double(ngrid_min);
+    this->bin_max = boxsize_max / 2.;
+  } else
+  if (this->space == "fourier") {
+    bin_width = 2*M_PI / boxsize_max;
+    this->bin_max = M_PI * double(ngrid_min) / boxsize_max;
+  }
+  this->bin_max += bin_width / 2.;
+
+  this->num_bins = ngrid_min / 2;
+
+  this->compute_binning();
+}
+
+void Binning::set_bins(std::vector<double> bin_edges) {
+  this->bin_min = bin_edges.front();
+  this->bin_max = bin_edges.back();
+  this->num_bins = bin_edges.size();
+
+  this->bin_edges = bin_edges;
+
+  for (int ibin = 0; ibin < this->num_bins; ibin++) {
+    double centre = (this->bin_edges[ibin] + this->bin_edges[ibin + 1]) / 2.;
+    double width = this->bin_edges[ibin + 1] - this->bin_edges[ibin];
+
+    this->bin_centres.push_back(centre);
+    this->bin_widths.push_back(width);
+  }
+}
+
+void Binning::compute_binning() {
   /// Set up padding parameters.
   double dbin_pad;
-  if (space == "fourier") {
+  if (this->space == "fourier") {
     dbin_pad = this->dbin_pad_fourier;
   } else
-  if (space == "config") {
+  if (this->space == "config") {
     dbin_pad = this->dbin_pad_config;
   }
 
   /// Implement binning scheme.
-  /// --------------------------------------------------------------------
-  /// Customised binning
-  /// --------------------------------------------------------------------
-  if (scheme == "custom") {
-    /// Insert customised binning code here.
-    throw trv::sys::UnimplementedError(
-      "Customed binning not implemented. "
-      "Implement your own binning scheme here (\"dataobjs.cpp\")."
-    );
-  } else
   /// --------------------------------------------------------------------
   /// Linear binning
   /// --------------------------------------------------------------------
@@ -181,14 +221,11 @@ void Binning::set_bins(std::string scheme, std::string space) {
   }
 }
 
-void Binning::set_bins() {Binning::set_bins(this->scheme, this->space);}
-
 
 /// **********************************************************************
 /// Line of sight
 /// **********************************************************************
 
-/// No definition.
 
 /// **********************************************************************
 /// Clustering statistics

@@ -15,25 +15,25 @@ cdef class Binning:
 
     Parameters
     ----------
-    bin_min, bin_max : float
-        Minimum and maximum of the bin range.
-    num_bins : int
-        Number of bins.
-    scheme : str, optional
-        Binning scheme, {'lin', 'log', 'linpad', 'logpad'}.
-    space : str, optional
-        Coordinate space, {'config', 'fourier'}.
+    space : {'config', 'fourier'}
+        Coordinate space.
+    scheme : {'lin', 'log', 'linpad', 'logpad'}
+        Binning scheme.
+    bin_min, bin_max : float, optional
+        Minimum and maximum of the bin range (defaults are `None`).
+    num_bins : int, optional
+        Number of bins (default is `None`).
 
     Attributes
     ----------
-    bin_min, bin_max : float
+    space : {'config', 'fourier'}
+        Coordinate space.
+    scheme : {'lin', 'log', 'linpad', 'logpad'}
+        Binning scheme.
+    bin_min, bin_max : float or None
         Minimum and maximum of the bin range.
-    num_bins : int
+    num_bins : int or None
         Number of bins.
-    scheme : str or None
-        Binning scheme, {'lin', 'log', 'linpad', 'logpad'}.
-    space : str or None
-        Coordinate space, {'config', 'fourier'}.
     bin_edges : (:attr:`num_bins` + 1,) list of float
         Bin edges.
     bin_centres : (:attr:`num_bins`,) list of float
@@ -45,21 +45,38 @@ cdef class Binning:
     -----
     The bin setting method supports linear ('lin') and
     log-linear/exponential ('log') binning, with possible linear padding
-    from zero using 5 bins of width 1.e-3 ('fourier' space) or 10.
-    ('config' space) ('linpad' or 'logpad').
+    from zero for the first 5 bins ('linpad' or 'logpad').  The padding
+    is either 1.e-3 ('fourier' space) and 10. ('config' space), or
+    determined by the mesh grid resolution if set using mesh grid sizes.
 
     """
 
-    def __cinit__(self, bin_min, bin_max, num_bins, scheme=None, space=None):
+    def __cinit__(self, space, scheme,
+                  bin_min=None, bin_max=None, num_bins=None):
 
-        self.thisptr = new CppBinning(bin_min, bin_max, num_bins)
-
-        self.bin_min = bin_min
-        self.bin_max = bin_max
-        self.num_bins = num_bins
+        self.thisptr = new CppBinning(
+            space.encode('utf-8'), scheme.encode('utf-8')
+        )
 
         self.scheme = scheme
         self.space = space
+
+        _settable = True
+        if bin_min is not None:
+            self.bin_min = bin_min
+        else:
+            _settable = False
+        if bin_max is not None:
+            self.bin_max = bin_max
+        else:
+            _settable = False
+        if num_bins is not None:
+            self.num_bins = num_bins
+        else:
+            _settable = False
+
+        if _settable:
+            self.set_bins(self.bin_min, self.bin_max, self.num_bins)
 
     @classmethod
     def from_parameter_set(cls, parameter_set):
@@ -74,44 +91,52 @@ cdef class Binning:
 
         """
         self = cls(
-            *parameter_set['range'], parameter_set['num_bins'],
-            scheme=parameter_set['binning'], space=parameter_set['space']
+            parameter_set['space'], parameter_set['binning'],
+            bin_min=parameter_set['range'][0],
+            bin_max=parameter_set['range'][-1],
+            num_bins=parameter_set['num_bins']
         )
 
         return self
 
-    def set_bins(self, scheme=None, space=None):
+    def set_bins(self, bin_min, bin_max, num_bins):
         """Set bin quantities including bin edges, centres and widths.
 
         Parameters
         ----------
-        scheme : {'lin', 'log', 'linpad', 'logpad'}, optional
-            Binning scheme.  If `None` (default), :attr:`scheme` is used
-            which must not also be `None`.
-        space : {'config', 'fourier'}, optional
-            Coordinate space.  If `None` (default), :attr:`space` is used
-            which must not also be `None`.
-
-        Raises
-        ------
-        ValueError
-            If `scheme` (or `space`) is `None` when :attr:`scheme`
-            (or :attr:`space`) is also `None`.
+        bin_min, bin_max : float
+            Minimum and maximum of the bin range.
+        num_bins : int
+            Number of bins.
 
         """
-        scheme = scheme if scheme else self.scheme
-        space = space if space else self.space
+        self.thisptr.set_bins(bin_min, bin_max, num_bins)
 
-        if scheme is None:
-            raise ValueError(
-              "`scheme` cannot be None as the corresponding attribute is unset."
-            )
-        if space is None:
-            raise ValueError(
-              "`space` cannot be None as the corresponding attribute is unset."
-            )
+        self.bin_edges = self.thisptr.bin_edges
+        self.bin_centres = self.thisptr.bin_centres
+        self.bin_widths = self.thisptr.bin_widths
 
-        self.thisptr.set_bins(scheme.encode('utf-8'), space.encode('utf-8'))
+    def set_grid_based_bins(self, boxsize, ngrid):
+        """Set linear binning based on a mesh grid.
+
+        The binning scheme is overriden to 'lin'.  The bin width is
+        given by the grid resolution in configuration space or the
+        fundamental wavenumber in Fourier space.  The bin minimum is zero
+        and the bin maximum is half the boxsize in configuration space or
+        the Nyquist wavenumber in Fourier space.
+
+        Parameters
+        ----------
+        boxsize : (array of) float
+            Mesh box size (maximum).
+        ngrid : (array of) int
+            Mesh grid number (minimum).
+
+        """
+        boxsize = np.asarray(boxsize).max()
+        ngrid = np.asarray(ngrid).min()
+
+        self.thisptr.set_bins(boxsize, ngrid)
 
         self.bin_edges = self.thisptr.bin_edges
         self.bin_centres = self.thisptr.bin_centres

@@ -411,8 +411,6 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
     if binning is None:
         binning = Binning.from_parameter_set(paramset)
 
-    binning.set_bins()
-
     if logger:
         logger.info("Binning has been initialised.")
 
@@ -815,8 +813,6 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #     if binning is None:
 #         binning = Binning.from_parameter_set(paramset)
 
-#     binning.set_bins()
-
 #     if logger:
 #         logger.info("Binning has been initialised.")
 
@@ -1032,8 +1028,6 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
     # Set up binning.
     if binning is None:
         binning = Binning.from_parameter_set(paramset)
-
-    binning.set_bins()
 
     if logger:
         logger.info("Binning has been initialised.")
@@ -1399,8 +1393,6 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
     # Set up binning.
     if binning is None:
         binning = Binning.from_parameter_set(paramset)
-
-    binning.set_bins()
 
     if logger:
         logger.info("Binning has been initialised.")

@@ -6,8 +6,6 @@ from libcpp.vector cimport vector
 
 cimport numpy as np
 
-# from parameters cimport CppParameterSet
-
 
 cdef extern from "include/dataobjs.hpp":
     # --------------------------------------------------------------------
@@ -15,8 +13,8 @@ cdef extern from "include/dataobjs.hpp":
     # --------------------------------------------------------------------
 
     cdef cppclass CppBinning "trv::Binning":
-        string scheme
         string space
+        string scheme
         double bin_min
         double bin_max
         int num_bins
@@ -24,11 +22,10 @@ cdef extern from "include/dataobjs.hpp":
         vector[double] bin_centres
         vector[double] bin_widths
 
-        CppBinning(double coord_min, double coord_max, int nbin) except +
-        # CppBinning(CppParameterSet& params)
+        CppBinning(string space, string scheme) except +
 
-        void set_bins(string scheme, string space) except +
-        void set_bins() except +
+        void set_bins(double bin_min, double bin_max, int nbins)
+        void set_bins(double boxsize_max, int ngrid_min)
 
 
     # --------------------------------------------------------------------
@@ -96,8 +93,8 @@ cdef extern from "include/dataobjs.hpp":
 
 cdef class Binning:
     cdef CppBinning* thisptr
-    cdef public str scheme
     cdef public str space
+    cdef public str scheme
     cdef public double bin_min
     cdef public double bin_max
     cdef public int num_bins
