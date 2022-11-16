@@ -20,14 +20,15 @@ except (ImportError, ModuleNotFoundError):
 @pytest.mark.parametrize(
     "ell1,ell2,ELL,n_fftlog,n_extrap,extrap,case",
     [
-        (0, 0, 0, 1024, 32, 'loglin', ''),
+        (0, 0, 0, 2048, None, None, ''),
     ]
 )
 def test_transforms(ell1, ell2, ELL, n_fftlog, n_extrap, extrap, case):
 
     # Load test data.
     bk_data = np.load(
-        f"triumvirate/tests/test_input/test_bk{ell1}{ell2}{ELL}{case}.npy",
+        "triumvirate/tests/test_input/clustats/"
+        f"test_bk{ell1}{ell2}{ELL}{case}.npy",
         allow_pickle=True
     ).item()
 
@@ -43,13 +44,16 @@ def test_transforms(ell1, ell2, ELL, n_fftlog, n_extrap, extrap, case):
     # Perform transformation.
     zeta_data = hankel.transform_bispec_to_3pcf(
         ell1, ell2,
-        bk_data['bk'], bk_data['k'], r_out,
-        n_fftlog, n_extrap=n_extrap, extrap=extrap
+        bk_data['k'], bk_data['bk'],
+        r_out,
+        n_fftlog,
+        n_extrap=n_extrap, extrap=extrap
     )
 
     bk_data_reverse = hankel.transform_3pcf_to_bispec(
         ell1, ell2,
-        zeta_data['zeta_fftlog'], zeta_data['r_fftlog'], k_out,
+        zeta_data['r_fftlog'], zeta_data['zeta_fftlog'],
+        k_out,
         n_fftlog
     )
 
@@ -90,5 +94,5 @@ def test_transforms(ell1, ell2, ELL, n_fftlog, n_extrap, extrap, case):
         fmt='%.9e'
     )
 
-    assert np.allclose(bk_out, bk_in, rtol=0.001), \
+    assert np.allclose(bk_out, bk_in, rtol=0.005), \
         "Inverse Hankel transform does not recover input bispectrum!"

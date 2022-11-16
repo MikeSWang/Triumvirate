@@ -47,19 +47,24 @@ Binning::Binning(trv::ParameterSet& params) : Binning::Binning(
 ) {
   this->scheme = params.binning;
   this->space = params.space;
+
+  /// Change default padding to grid scale.
+  this->dbin_pad_config = (1 + 5.e-3)
+    * *std::max_element(params.boxsize, params.boxsize + 3)
+    / *std::min_element(params.ngrid, params.ngrid + 3);
+  this->dbin_pad_fourier = (1 + 5.e-3)
+    * (2 * M_PI)
+    / *std::max_element(params.boxsize, params.boxsize + 3);
 }
 
 void Binning::set_bins(std::string scheme, std::string space) {
   /// Set up padding parameters.
-  /// CAVEAT: Discretionary choices.
-  const int nbin_pad = 5;
-
   double dbin_pad;
   if (space == "fourier") {
-    dbin_pad = 1.e-3;
+    dbin_pad = this->dbin_pad_fourier;
   } else
   if (space == "config") {
-    dbin_pad = 10.;
+    dbin_pad = this->dbin_pad_config;
   }
 
   /// Implement binning scheme.
@@ -117,7 +122,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
   /// Padded linear binning
   /// --------------------------------------------------------------------
   if (scheme == "linpad") {
-    for (int ibin = 0; ibin < nbin_pad; ibin++) {
+    for (int ibin = 0; ibin < this->nbin_pad; ibin++) {
       double edge_left = dbin_pad * ibin;
       double centre = edge_left + dbin_pad / 2.;
 
@@ -126,13 +131,13 @@ void Binning::set_bins(std::string scheme, std::string space) {
       this->bin_widths.push_back(dbin_pad);
     }
 
-    double bin_min = dbin_pad * nbin_pad;
+    double bin_min = dbin_pad * this->nbin_pad;
 
     double dbin = (this->bin_max - bin_min)
-      / double(this->num_bins - nbin_pad);
+      / double(this->num_bins - this->nbin_pad);
 
-    for (int ibin = nbin_pad; ibin < this->num_bins; ibin++) {
-      double edge_left = bin_min + dbin * (ibin - nbin_pad);
+    for (int ibin = this->nbin_pad; ibin < this->num_bins; ibin++) {
+      double edge_left = bin_min + dbin * (ibin - this->nbin_pad);
       double centre = edge_left + dbin / 2.;
 
       this->bin_edges.push_back(edge_left);
@@ -145,7 +150,7 @@ void Binning::set_bins(std::string scheme, std::string space) {
   /// Padded logarithmic binning
   /// --------------------------------------------------------------------
   if (scheme == "logpad") {
-    for (int ibin = 0; ibin < nbin_pad; ibin++) {
+    for (int ibin = 0; ibin < this->nbin_pad; ibin++) {
       double edge_left = dbin_pad * ibin;
       double centre = edge_left + dbin_pad / 2.;
 
@@ -154,14 +159,16 @@ void Binning::set_bins(std::string scheme, std::string space) {
       this->bin_widths.push_back(dbin_pad);
     }
 
-    double bin_min = dbin_pad * nbin_pad;
+    double bin_min = dbin_pad * this->nbin_pad;
 
     double dlnbin = (std::log(this->bin_max) - std::log(bin_min))
-      / double(this->num_bins - nbin_pad);
+      / double(this->num_bins - this->nbin_pad);
 
-    for (int ibin = nbin_pad; ibin < this->num_bins; ibin++) {
-      double edge_left = bin_min * std::exp(dlnbin * (ibin - nbin_pad));
-      double edge_right = bin_min * std::exp(dlnbin * (ibin - nbin_pad + 1));
+    for (int ibin = this->nbin_pad; ibin < this->num_bins; ibin++) {
+      double edge_left =
+        bin_min * std::exp(dlnbin * (ibin - this->nbin_pad));
+      double edge_right =
+        bin_min * std::exp(dlnbin * (ibin - this->nbin_pad + 1));
       double centre = (edge_left + edge_right) / 2.;
 
       this->bin_edges.push_back(edge_left);
