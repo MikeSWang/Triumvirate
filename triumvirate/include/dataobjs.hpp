@@ -32,6 +32,7 @@
 #ifndef TRIUMVIRATE_INCLUDE_DATAOBJS_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_DATAOBJS_HPP_INCLUDED_
 
+#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <vector>
@@ -111,6 +112,12 @@ class Binning {
    * @overload
    */
   void set_bins();
+
+ private:
+  /// CAVEAT: Discretionary choices.
+  int nbin_pad = 5;                ///< number of padded bins
+  float dbin_pad_fourier = 1.e-3;  ///< bin padding in Fourier space
+  float dbin_pad_config = 10.;     ///< bin padding in configuration space
 };
 
 
