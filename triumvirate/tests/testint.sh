@@ -143,9 +143,8 @@ test_case () {
     -p measurement_dir ${testdir_output} \
     -p num_bins 20
 
-  build/triumvirate ${test_paramfile_ini_temp}
-
-  rm ${test_paramfile_ini_temp}
+  (sleep 2 && rm ${test_paramfile_ini_temp}) \
+    & build/triumvirate ${test_paramfile_ini_temp};
 
   python3 application/gen_param_file.py ${test_paramfile_yml} -y \
     -o ${test_paramfile_yml_temp} \
@@ -158,9 +157,8 @@ test_case () {
     -p directories.measurements ${testdir_output} \
     -p num_bins 20
 
-  python3 triumvirate/tests/testint_temp.py
-
-  rm ${test_paramfile_yml_temp}
+  (sleep 2 && rm ${test_paramfile_yml_temp}) \
+    & python3 triumvirate/tests/testint_temp.py;
 }
 
 test_case sim fourier 2pt
