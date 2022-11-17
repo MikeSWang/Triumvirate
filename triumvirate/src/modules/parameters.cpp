@@ -66,24 +66,30 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   /// Extraction
   /// --------------------------------------------------------------------
   std::string line_str;
-  char dummy_str[1024];
+  char dummy_str[1024], dummy_equal[1024];
   while (std::getline(fin, line_str)) {
     /// Check if the line is a parameter assignment.
+    if (line_str.find("%") == 0) {
+      continue;
+    }  // skip comment lines
     if (
       std::sscanf(
-        line_str.data(), "%s %s %s", dummy_str, dummy_str, dummy_str
+        line_str.data(), "%s %s %s", dummy_str, dummy_equal, dummy_str
       ) != 3
     ) {
       continue;
-    }
+    }  // skip non-relation lines
+    if (std::strcmp(dummy_equal, "=") != 0) {
+      continue;
+    }  // skip non-assignment lines
 
     /// Define convenience function for scanning string parameters.
-    auto scan_par_str = [line_str, dummy_str](
+    auto scan_par_str = [line_str, dummy_str, dummy_equal](
       const char* par_name, const char* fmt, const char* par_value
     ) {
       if (line_str.find(par_name) != std::string::npos) {
         std::sscanf(
-          line_str.data(), fmt, dummy_str, dummy_str, par_value
+          line_str.data(), fmt, dummy_str, dummy_equal, par_value
         );
       }
     };
@@ -101,28 +107,34 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
 
     if (line_str.find("boxsize_x") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %lg", dummy_str, dummy_str, &boxsize_x
+        line_str.data(), "%s %s %lg", dummy_str, dummy_equal, &boxsize_x
       );
     }
     if (line_str.find("boxsize_y") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %lg", dummy_str, dummy_str, &boxsize_y
+        line_str.data(), "%s %s %lg", dummy_str, dummy_equal, &boxsize_y
       );
     }
     if (line_str.find("boxsize_z") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %lg", dummy_str, dummy_str, &boxsize_z
+        line_str.data(), "%s %s %lg", dummy_str, dummy_equal, &boxsize_z
       );
     }
 
     if (line_str.find("ngrid_x") != std::string::npos) {
-      std::sscanf(line_str.data(), "%s %s %d", dummy_str, dummy_str, &ngrid_x);
+      std::sscanf(
+        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &ngrid_x
+      );
     }
     if (line_str.find("ngrid_y") != std::string::npos) {
-      std::sscanf(line_str.data(), "%s %s %d", dummy_str, dummy_str, &ngrid_y);
+      std::sscanf(
+        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &ngrid_y
+      );
     }
     if (line_str.find("ngrid_z") != std::string::npos) {
-      std::sscanf(line_str.data(), "%s %s %d", dummy_str, dummy_str, &ngrid_z);
+      std::sscanf(
+        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &ngrid_z
+      );
     }
 
     scan_par_str("alignment", "%s %s %s", alignment_);
@@ -130,7 +142,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
 
     if (line_str.find("padfactor") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %lg", dummy_str, dummy_str, &this->padfactor
+        line_str.data(), "%s %s %lg", dummy_str, dummy_equal, &this->padfactor
       );
     }
 
@@ -147,50 +159,50 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
 
     if (line_str.find("ell1") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_str, &this->ell1
+        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->ell1
       );
     }
     if (line_str.find("ell2") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_str, &this->ell2
+        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->ell2
       );
     }
     if (line_str.find("ELL") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_str, &this->ELL
+        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->ELL
       );
     }
 
     if (line_str.find("i_wa") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_str, &this->i_wa
+        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->i_wa
       );
     }
     if (line_str.find("j_wa") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_str, &this->j_wa
+        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->j_wa
       );
     }
 
     if (line_str.find("bin_min") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %lg", dummy_str, dummy_str, &this->bin_min
+        line_str.data(), "%s %s %lg", dummy_str, dummy_equal, &this->bin_min
       );
     }
     if (line_str.find("bin_max") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %lg", dummy_str, dummy_str, &this->bin_max
+        line_str.data(), "%s %s %lg", dummy_str, dummy_equal, &this->bin_max
       );
     }
 
     if (line_str.find("num_bins") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_str, &this->num_bins
+        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->num_bins
       );
     }
     if (line_str.find("idx_bin") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_str, &this->idx_bin
+        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->idx_bin
       );
     }
   }
@@ -199,7 +211,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
 
   if (line_str.find("verbose") != std::string::npos) {
     std::sscanf(
-      line_str.data(), "%s %s %d", dummy_str, dummy_str, &this->verbose
+      line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->verbose
     );
   }
 
