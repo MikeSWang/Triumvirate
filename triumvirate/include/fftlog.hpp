@@ -39,7 +39,7 @@
 
 namespace trv {
 
-namespace utils {
+namespace maths {
 
 /**
  * @brief Calculate a low-ringing pivot value f@$ k r = k_c r_c f@$
@@ -160,6 +160,8 @@ void sj_transform_symm_biased(
   int ell, int i, int N, double* r, double* a, double* k, double* b
 );
 
+}  // namespace trv::maths
+
 /**
  * @brief Transform power spectrum to correlation function
  *        multipole samples.
@@ -189,8 +191,6 @@ void transform_powspec_to_corrfunc_multipole(
 void transform_corrfunc_to_powspec_multipole(
   int ell, int N, double* r, double* xi, double* k, double* pk
 );
-
-}  // namespace trv::utils
 
 }  // namespace trv
 

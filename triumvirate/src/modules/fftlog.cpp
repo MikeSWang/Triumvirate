@@ -30,7 +30,7 @@ namespace trvm = trv::maths;
 
 namespace trv {
 
-namespace utils {
+namespace maths {
 
 double calc_kr_pivot_lowring(
   double mu, double q, double L, int N, double kr_c
@@ -202,12 +202,14 @@ void sj_transform_symm_biased(
   }
 }
 
+}  // namespace trv::maths
+
 void transform_powspec_to_corrfunc_multipole(
   int ell, int N, double* k, double* pk, double* r, double* xi
 ) {
   int m = 2;
 
-  sj_transform(ell, m, N, k, pk, r, xi);
+  trvm::sj_transform(ell, m, N, k, pk, r, xi);
 }
 
 void transform_corrfunc_to_powspec_multipole(
@@ -215,7 +217,7 @@ void transform_corrfunc_to_powspec_multipole(
 ) {
   int m = 2;
 
-  sj_transform(ell, m, N, r, xi, k, pk);
+  trvm::sj_transform(ell, m, N, r, xi, k, pk);
 
   /// Factors of π are needed here the forward transform is used
   /// in the backend as the backward transform.
@@ -223,7 +225,5 @@ void transform_corrfunc_to_powspec_multipole(
     pk[j] *= 8 * M_PI * M_PI * M_PI;
   }
 }
-
-}  // namespace trv::utils
 
 }  // namespace trv
