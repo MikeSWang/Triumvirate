@@ -463,7 +463,7 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
-        elif save.lower().endswith('npy'):
+        elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
             ofilepath = (
@@ -824,7 +824,7 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
-        elif save.lower().endswith('npy'):
+        elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
             ofilepath = (
@@ -1158,7 +1158,7 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
-        elif save.lower().endswith('npy'):
+        elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
             ofilepath = (

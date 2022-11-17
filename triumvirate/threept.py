@@ -523,7 +523,7 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
-        elif save.lower().endswith('npy'):
+        elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
             ofilepath = (
@@ -926,7 +926,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #             np.savetxt(
 #                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
 #             )
-#         elif save.lower().endswith('npy'):
+#         elif save.lower().endswith('.npz'):
 #             results.update({'header': header})
 #             ofilename = _get_measurement_filename(paramset)
 #             ofilepath = (
@@ -1116,7 +1116,7 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
-        elif save.lower().endswith('npy'):
+        elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
             ofilepath = (
@@ -1476,7 +1476,7 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
-        elif save.lower().endswith('npy'):
+        elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
             ofilepath = (
