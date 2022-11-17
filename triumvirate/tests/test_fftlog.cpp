@@ -2,15 +2,15 @@
 
 #include "fftlog.hpp"
 
-int main(int argc, char const *argv[]) {
-  int ell = 0;
-  int m = 2;
+int main() {
+  const int ell = 0;
+  const int m = 2;
 
   /// Load test data.
   std::ifstream fin;
   std::string fline;
 
-  char test_fname[] = "triumvirate/tests/test_input/test_pk0.dat";
+  char test_fname[] = "triumvirate/tests/test_input/clustats/test_pk0.dat";
 
   fin.open(test_fname, std::ios::in);
   int lineno = 0;
@@ -23,9 +23,7 @@ int main(int argc, char const *argv[]) {
   fin.open(test_fname, std::ios::in);
   lineno = 0;
   while (std::getline(fin, fline)) {
-    sscanf(
-      fline.data(), "%lf %lf", &k[lineno], &pk[lineno]
-    );
+    sscanf(fline.data(), "%lf %lf", &k[lineno], &pk[lineno]);
     lineno++;
   }
   fin.close();
@@ -33,8 +31,8 @@ int main(int argc, char const *argv[]) {
   /// Perform transform.
   double r[Nk], xi[Nk];
 
-  trv::utils::sj_transform(ell, m, Nk, k, pk, r, xi);
-  // trv::utils::transform_powspec_to_corrfunc_multipole(ell, Nk, k, pk, r, xi);
+  trv::maths::sj_transform(ell, m, Nk, k, pk, r, xi);
+  // trv::transform_powspec_to_corrfunc_multipole(ell, Nk, k, pk, r, xi);
 
   /// Save test results.
   char test_fname_out[]= "triumvirate/tests/test_output/xi0.dat";
