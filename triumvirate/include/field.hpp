@@ -470,24 +470,13 @@ class MeshField {
   );
 
   /**
-   * @brief Calculate the interpolation window in Fourier space for
-   *        different assignment schemes.
+   * @brief Calculate the interpolation window at each mesh grid
+   *        in Fourier space for different assignment schemes.
    *
    * @param i, j, k Grid cell indices.
    * @returns Window value.
-   *
-   * @overload
    */
   double calc_assignment_window_in_fourier(int i, int j, int k);
-
-  /**
-   * @brief Calculate the interpolation window in Fourier space for
-   *        different assignment schemes.
-   *
-   * @param kvec Wavevector.
-   * @returns Window value.
-   */
-  double calc_assignment_window_in_fourier(double kvec[3]);
 };
 
 
@@ -714,27 +703,16 @@ class FieldStats {
   /// --------------------------------------------------------------------
 
   /**
-   * @brief Calculate the shot-noise scale-dependent aliasing function
-   *        f@$ C_1(\vec{k}) f@$.
+   * @brief Calculate the shot-noise aliasing scale-dependence function
+   *        f@$ C_1(\vec{k}) f@$ at each mesh grid.
    *
    * @note See eqs. (45) and (46) in Sugiyama et al. (2019)
    *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>]
    *       and Jing (2004)
    *       [<a href="https://arxiv.org/abs/astro-ph/0409240">astro-ph/0409240</a>].
    *
-   * @param kvec Wavevector.
-   * @returns Value of the aliasing function.
-   */
-  double calc_shotnoise_aliasing(double kvec[3]);
-
-  /**
-   * @brief Calculate the shot-noise aliasing scale-dependence function
-   *        f@$ C_1(\vec{k}) f@$.
-   *
    * @param i, j, k Grid indices.
    * @returns Value of the aliasing function.
-   *
-   * @overload
    */
   double calc_shotnoise_aliasing(int i, int j, int k);
 
