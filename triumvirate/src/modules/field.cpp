@@ -1141,8 +1141,8 @@ void MeshField::inv_fourier_transform() {
 /// ----------------------------------------------------------------------
 
 void MeshField::apply_wide_angle_pow_law_kernel() {
-  /// CAVEAT: Discretionary choice.
-  const double eps_r = 1.e-5;
+  /// CAVEAT: Discretionary choice such that eps_r / r = O(1.e-9).
+  const double eps_r = 1.e-6;
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for collapse(3)
@@ -1492,7 +1492,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
   };
 
   /// Perform fine binning.
-  /// CAVEAT: Discretionary choices.
+  /// CAVEAT: Discretionary choices such that 0.0 < k < 10.0.
   const int n_sample = 1e5;
   const double dk_sample = 1.e-4;
 
@@ -1717,8 +1717,8 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   fftw_destroy_plan(inv_transform);
 
   /// Perform fine binning.
-  /// CAVEAT: Discretionary choices.
-  const int n_sample = 1e5;
+  /// CAVEAT: Discretionary choices such that 0 < r < 100k.
+  const int n_sample = 2e5;
   const double dr_sample = 0.5;
 
   int npairs_sample[n_sample];
@@ -1913,8 +1913,8 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   fftw_destroy_plan(inv_transform);
 
   /// Perform fine binning.
-  /// CAVEAT: Discretionary choices.
-  const int n_sample = 1e5;
+  /// CAVEAT: Discretionary choices such that 0 < r < 100k.
+  const int n_sample = 2e5;
   const double dr_sample = 0.5;
 
   int npairs_sample[n_sample];

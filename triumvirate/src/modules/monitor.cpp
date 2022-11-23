@@ -247,10 +247,10 @@ void Logger::error(const char* fmt_string, ...) {
 /// Program exceptions
 /// **********************************************************************
 
-/// STYLE: Column limit exceeded here.
-UnimplementedError::UnimplementedError(const char* fmt_string, ...): std::logic_error(
+UnimplementedError::UnimplementedError(const char* fmt_string, ...):
+  std::logic_error(
     "Unimplemented error."  // mandatory default error message
-) {
+  ) {
   std::va_list args;
 
   char err_mesg_buf[4096];
@@ -266,7 +266,7 @@ const char* UnimplementedError::what() const noexcept {
 }
 
 IOError::IOError(const char* fmt_string, ...): std::runtime_error(
-    "I/O error."  // mandatory default error message
+  "I/O error."  // mandatory default error message
 ) {
   std::va_list args;
 
@@ -280,10 +280,10 @@ IOError::IOError(const char* fmt_string, ...): std::runtime_error(
 
 const char* IOError::what() const noexcept {return this->err_mesg.c_str();}
 
-/// STYLE: Column limit exceeded here.
-InvalidParameter::InvalidParameter(const char* fmt_string, ...): std::invalid_argument(
-  "Invalid parameter error."  // mandatory default error message
-) {
+InvalidParameter::InvalidParameter(const char* fmt_string, ...):
+  std::invalid_argument(
+    "Invalid parameter error."  // mandatory default error message
+  ) {
   std::va_list args;
 
   char err_mesg_buf[4096];

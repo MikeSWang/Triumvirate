@@ -1,8 +1,8 @@
 [NOTE] The following code tags are in use: {
-    'TODO',
-    'QUEST',
+    'TODO', 'QUEST',
     'RFE',
-    'SEE', 'CAVEAT', 'STYLE'
+    'CAVEAT', 'SEE',
+    'STYLE'
 }
 
 [NOTE] The following code tags are available for use: {

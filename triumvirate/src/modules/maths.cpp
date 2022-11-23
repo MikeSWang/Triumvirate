@@ -60,7 +60,7 @@ double get_vec3d_magnitude(double vec[3]) {
 /// **********************************************************************
 
 /// Lanzcos approximation parameters.
-/// CAVEAT: Discretionary choices.
+/// CAVEAT: Discretionary choices (for the Lanczos approximation series).
 const int nterm_lanczos = 9;  ///< number of terms in approximation series
 const double gconst_lanczos = 7.;  ///< Lanczos approximation constant
 const double pcoeff_lanczos[] = {
@@ -153,8 +153,8 @@ void get_lngamma_components(double x, double y, double& lnr, double& theta) {
 /// Spherical harmonics
 /// **********************************************************************
 
-/// CAVEAT: Discretionary choice.
-const double eps_coupling = 1.e-10;
+/// CAVEAT: Discretionary choice such that eps = 1.e-9.
+const double eps_coupling = 1.e-9;
 
 double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3) {
   return gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3);
@@ -164,9 +164,8 @@ double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3) {
 std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
   const int ell, const int m, double pos[3]
 ) {
-  /// Define zero precision.
-  /// CAVEAT: Discretionary choice.
-  const double eps = 1.e-15;
+  /// CAVEAT: Discretionary choice such that eps = 1.e-9.
+  const double eps = 1.e-9;
 
   /// Return unity in the trivial case.
   if (ell == 0 && m == 0) {return 1.;}
@@ -299,10 +298,10 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_spa
 
 SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
   /// Set up sampling range and number.
-  /// CAVEAT: Discretionary choices.
+  /// CAVEAT: Discretionary choices such that max(kr) > 4096π, Δ(kr) = 0.01.
   const double xmin = 0.;       ///< minimum of interpolation range
-  const double xmax = 10000.;   ///< maximum of interpolation range
-  const int nsample = 1000000;  ///< interpolation sample number
+  const double xmax = 15000.;   ///< maximum of interpolation range
+  const int nsample = 1500000;  ///< interpolation sample number
 
   /// Initialise and evaluate at sample points.
   double dx = (xmax - xmin) / (nsample - 1);
