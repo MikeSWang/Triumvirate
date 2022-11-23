@@ -282,9 +282,9 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_spa
         /// that negative wavenumbers/frequencies come after zero and
         /// positive wavenumbers/frequencies.
         double rvec[3];
-        rvec[0] = (i < ngrid[0]/2) ? (i * dr[0]) : (i - ngrid[0]) * dr[0];
-        rvec[1] = (j < ngrid[1]/2) ? (j * dr[1]) : (j - ngrid[1]) * dr[1];
-        rvec[2] = (k < ngrid[2]/2) ? (k * dr[2]) : (k - ngrid[2]) * dr[2];
+        rvec[0] = (i < ngrid[0]/2) ? i * dr[0] : (i - ngrid[0]) * dr[0];
+        rvec[1] = (j < ngrid[1]/2) ? j * dr[1] : (j - ngrid[1]) * dr[1];
+        rvec[2] = (k < ngrid[2]/2) ? k * dr[2] : (k - ngrid[2]) * dr[2];
 
         ylm_out[idx_grid] = calc_reduced_spherical_harmonic(ell, m, rvec);
       }
