@@ -204,35 +204,43 @@ void MeshField::assign_weighted_field_to_mesh_ngp(
   this->initialise_density_field();
 
   /// Assign particles to grid cells.
-  double loc_grid = 0.;    // grid index coordinate of the particle in each dim
-  int ijk[order][3];       // grid index coordinates of covered grid cells
-  double win[order][3];    // sampling window
-  long long idx_grid = 0;  // flattened grid cell index
-  // double s;             // particle-to-grid distance (unused);
-
 #ifdef TRV_USE_OMP
-#pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid)
+#pragma omp parallel for
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles.ntotal; pid++) {
-    for (int iaxis = 0; iaxis < 3; iaxis++) {
-      loc_grid = particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
-        * this->params.ngrid[iaxis];
+    int ijk[order][3];     // grid index coordinates of covered grid cells
+    double win[order][3];  // sampling window
+    long long gid = 0;     // flattened grid cell index
 
-      /// Set only 0th element as ``order == 1``.
-      ijk[0][iaxis] = int(loc_grid + 0.5);
+    for (int iaxis = 0; iaxis < 3; iaxis++) {
+      /// Carefully set covered sampling window grid indices.
+      double loc_grid = this->params.ngrid[iaxis] *
+        particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
+
+      int idx_grid = int(loc_grid);
+      if (loc_grid - idx_grid >= 0.5) {
+        idx_grid = (idx_grid == this->params.ngrid[iaxis] - 1)
+          ? 0 : idx_grid + 1;
+      }
+
+      ijk[0][iaxis] = idx_grid;
+
+      /// Set sampling window value (only 0th element as ``order == 1``).
       win[0][iaxis] = 1.;
     }
 
     for (int iloc = 0; iloc < order; iloc++) {
       for (int jloc = 0; jloc < order; jloc++) {
         for (int kloc = 0; kloc < order; kloc++) {
-          idx_grid = this->get_grid_index(
+          gid = this->get_grid_index(
             ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
           );
-          if (0 <= idx_grid && idx_grid < this->params.nmesh) {
-            this->field[idx_grid][0] += inv_vol_cell
+          if (0 <= gid && gid < this->params.nmesh) {
+OMP_ATOMIC
+            this->field[gid][0] += inv_vol_cell
               * weight[pid][0] * win[iloc][0] * win[jloc][1] * win[kloc][2];
-            this->field[idx_grid][1] += inv_vol_cell
+OMP_ATOMIC
+            this->field[gid][1] += inv_vol_cell
               * weight[pid][1] * win[iloc][0] * win[jloc][1] * win[kloc][2];
           }
         }
@@ -243,20 +251,29 @@ void MeshField::assign_weighted_field_to_mesh_ngp(
   /// Perform interlacing if needed.
   if (this->params.interlace == "true") {
 #ifdef TRV_USE_OMP
-#pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid)
+#pragma omp parallel for
 #endif  // TRV_USE_OMP
     for (int pid = 0; pid < particles.ntotal; pid++) {
+      int ijk[order][3];
+      double win[order][3];
+      long long gid = 0;
+
       for (int iaxis = 0; iaxis < 3; iaxis++) {
         /// Apply a half-grid shift and impose the periodic boundary condition.
-        loc_grid = particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
-          * this->params.ngrid[iaxis] + 0.5;
+        double loc_grid = this->params.ngrid[iaxis]
+          * particles[pid].pos[iaxis] / this->params.boxsize[iaxis] + 0.5;
 
         if (loc_grid > this->params.ngrid[iaxis]) {
           loc_grid -= this->params.ngrid[iaxis];
         }
 
-        /// Set only 0th element as `order == 1`.
-        ijk[0][iaxis] = int(loc_grid + 0.5);
+        int idx_grid = int(loc_grid);
+        if (loc_grid - idx_grid >= 0.5) {
+          idx_grid = (idx_grid == this->params.ngrid[iaxis] - 1)
+            ? 0 : idx_grid + 1;
+        }
+
+        ijk[0][iaxis] = idx_grid;
 
         win[0][iaxis] = 1.;
       }
@@ -264,13 +281,15 @@ void MeshField::assign_weighted_field_to_mesh_ngp(
       for (int iloc = 0; iloc < order; iloc++) {
         for (int jloc = 0; jloc < order; jloc++) {
           for (int kloc = 0; kloc < order; kloc++) {
-            idx_grid = this->get_grid_index(
+            gid = this->get_grid_index(
               ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
             );
-            if (0 <= idx_grid && idx_grid < this->params.nmesh) {
-              this->field_s[idx_grid][0] += inv_vol_cell
+            if (0 <= gid && gid < this->params.nmesh) {
+OMP_ATOMIC
+              this->field_s[gid][0] += inv_vol_cell
                 * weight[pid][0] * win[iloc][0] * win[jloc][1] * win[kloc][2];
-              this->field_s[idx_grid][1] += inv_vol_cell
+OMP_ATOMIC
+              this->field_s[gid][1] += inv_vol_cell
                 * weight[pid][1] * win[iloc][0] * win[jloc][1] * win[kloc][2];
             }
           }
@@ -295,24 +314,28 @@ void MeshField::assign_weighted_field_to_mesh_cic(
   this->initialise_density_field();
 
   /// Assign particles to grid cells.
-  double loc_grid = 0.;    // grid index coordinate of the particle in each dim
-  int ijk[order][3];       // grid index coordinates of covered grid cells
-  double win[order][3];    // sampling window
-  long long idx_grid = 0;  // flattened grid cell index
-  double s = 0.;           // particle-to-grid distance;
 
 #ifdef TRV_USE_OMP
-#pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid, s)
+#pragma omp parallel for
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles.ntotal; pid++) {
-    for (int iaxis = 0; iaxis < 3; iaxis++) {
-      loc_grid = this->params.ngrid[iaxis]
-        * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
-      s = loc_grid - int(loc_grid);
+    int ijk[order][3];     // grid index coordinates of covered grid cells
+    double win[order][3];  // sampling window
+    long long gid = 0;     // flattened grid cell index
 
-      /// Set up to 1st element as `order == 2`.
-      ijk[0][iaxis] = int(loc_grid);
-      ijk[1][iaxis] = int(loc_grid) + 1;
+    for (int iaxis = 0; iaxis < 3; iaxis++) {
+      /// Carefully set covered sampling window grid indices.
+      double loc_grid = this->params.ngrid[iaxis]
+        * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
+
+      int idx_grid = int(loc_grid);
+
+      ijk[0][iaxis] = idx_grid;
+      ijk[1][iaxis] = (idx_grid == this->params.ngrid[iaxis] - 1)
+        ? 0 : idx_grid + 1;
+
+      /// Set sampling window value (up to the 1st element as `order == 2`).
+      double s = loc_grid - idx_grid;  // particle-to-grid grid-index distance
 
       win[0][iaxis] = 1. - s;
       win[1][iaxis] = s;
@@ -321,13 +344,15 @@ void MeshField::assign_weighted_field_to_mesh_cic(
     for (int iloc = 0; iloc < order; iloc++) {
       for (int jloc = 0; jloc < order; jloc++) {
         for (int kloc = 0; kloc < order; kloc++) {
-          idx_grid = this->get_grid_index(
+          gid = this->get_grid_index(
             ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
           );
-          if (0 <= idx_grid && idx_grid < this->params.nmesh) {
-            this->field[idx_grid][0] += inv_vol_cell
+          if (0 <= gid && gid < this->params.nmesh) {
+OMP_ATOMIC
+            this->field[gid][0] += inv_vol_cell
               * weight[pid][0] * win[iloc][0] * win[jloc][1] * win[kloc][2];
-            this->field[idx_grid][1] += inv_vol_cell
+OMP_ATOMIC
+            this->field[gid][1] += inv_vol_cell
               * weight[pid][1] * win[iloc][0] * win[jloc][1] * win[kloc][2];
           }
         }
@@ -338,24 +363,29 @@ void MeshField::assign_weighted_field_to_mesh_cic(
   /// Perform interlacing if needed.
   if (this->params.interlace == "true") {
 #ifdef TRV_USE_OMP
-#pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid, s)
+#pragma omp parallel for
 #endif  // TRV_USE_OMP
     for (int pid = 0; pid < particles.ntotal; pid++) {
+      int ijk[order][3];
+      double win[order][3];
+      long long gid = 0;
+
       for (int iaxis = 0; iaxis < 3; iaxis++) {
         /// Apply a half-grid shift and impose the periodic boundary condition.
-        loc_grid = particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
-          * this->params.ngrid[iaxis] + 0.5;
+        double loc_grid = this->params.ngrid[iaxis]
+          * particles[pid].pos[iaxis] / this->params.boxsize[iaxis] + 0.5;
 
         if (loc_grid > this->params.ngrid[iaxis]) {
           loc_grid -= this->params.ngrid[iaxis];
         }
 
-        s = loc_grid - int(loc_grid);
+        int idx_grid = int(loc_grid);
 
-        /// Set up to 1st element as `order == 2`.
-        ijk[0][iaxis] = int(loc_grid);
-        ijk[1][iaxis] = int(loc_grid) + 1;
+        ijk[0][iaxis] = idx_grid;
+        ijk[1][iaxis] = (idx_grid == this->params.ngrid[iaxis] - 1)
+          ? 0 : idx_grid + 1;
 
+        double s = loc_grid - idx_grid;
         win[0][iaxis] = 1. - s;
         win[1][iaxis] = s;
       }
@@ -363,13 +393,15 @@ void MeshField::assign_weighted_field_to_mesh_cic(
       for (int iloc = 0; iloc < order; iloc++) {
         for (int jloc = 0; jloc < order; jloc++) {
           for (int kloc = 0; kloc < order; kloc++) {
-            idx_grid = this->get_grid_index(
+            gid = this->get_grid_index(
               ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
             );
-            if (0 <= idx_grid && idx_grid < this->params.nmesh) {
-              this->field_s[idx_grid][0] += inv_vol_cell
+            if (0 <= gid && gid < this->params.nmesh) {
+OMP_ATOMIC
+              this->field_s[gid][0] += inv_vol_cell
                 * weight[pid][0] * win[iloc][0] * win[jloc][1] * win[kloc][2];
-              this->field_s[idx_grid][1] += inv_vol_cell
+OMP_ATOMIC
+              this->field_s[gid][1] += inv_vol_cell
                 * weight[pid][1] * win[iloc][0] * win[jloc][1] * win[kloc][2];
             }
           }
@@ -394,41 +426,62 @@ void MeshField::assign_weighted_field_to_mesh_tsc(
   this->initialise_density_field();
 
   /// Perform assignment.
-  double loc_grid = 0.;    // grid index coordinate of the particle in each dim
-  int ijk[order][3];       // grid index coordinates of covered grid cells
-  double win[order][3];    // sampling window
-  long long idx_grid = 0;  // flattened grid cell index
-  double s = 0.;           // particle-to-grid distance;
-
 #ifdef TRV_USE_OMP
-#pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid, s)
+#pragma omp parallel for
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles.ntotal; pid++) {
+    int ijk[order][3];     // grid index coordinates of covered grid cells
+    double win[order][3];  // sampling window
+    long long gid = 0;     // flattened grid cell index
+
     for (int iaxis = 0; iaxis < 3; iaxis++) {
-      loc_grid = this->params.ngrid[iaxis]
+      /// Carefully set covered sampling window grid indices.
+      double loc_grid = this->params.ngrid[iaxis]
         * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
-      s = loc_grid - int(loc_grid + 0.5);
 
-      /// Set up to 2nd element as `order == 3`.
-      ijk[0][iaxis] = int(loc_grid + 0.5) - 1;
-      ijk[1][iaxis] = int(loc_grid + 0.5);
-      ijk[2][iaxis] = int(loc_grid + 0.5) + 1;
+      int idx_grid = int(loc_grid);
 
-      win[0][iaxis] = 1./2 * (1./2 - s) * (1./2 - s);
-      win[1][iaxis] = 3./4 - s * s;
-      win[2][iaxis] = 1./2 * (1./2 + s) * (1./2 + s);
+      if (loc_grid - idx_grid < 0.5) {
+        ijk[0][iaxis] = (idx_grid == 0)
+          ? this->params.ngrid[iaxis] - 1 : idx_grid - 1;
+        ijk[1][iaxis] = idx_grid;
+        ijk[2][iaxis] = (idx_grid == this->params.ngrid[iaxis] - 1)
+          ? 0 : idx_grid + 1;
+      } else {
+        ijk[0][iaxis] = idx_grid;
+        ijk[1][iaxis] = (idx_grid == this->params.ngrid[iaxis] - 1)
+          ? 0 : idx_grid + 1;
+        ijk[2][iaxis] = (ijk[1][iaxis] == this->params.ngrid[iaxis] - 1)
+          ? 0 : ijk[1][iaxis] + 1;
+      }
+
+      /// Set sampling window value (up to the 2nd element as `order == 3`).
+      double s = loc_grid - idx_grid;
+
+      if (s < 0.5) {
+        win[0][iaxis] = 1./2 * (1./2 - s) * (1./2 - s);
+        win[1][iaxis] = 3./4 - s * s;
+        win[2][iaxis] = 1./2 * (1./2 + s) * (1./2 + s);
+      } else {
+        s = 1 - s;
+        win[0][iaxis] = 1./2 * (1./2 + s) * (1./2 + s);
+        win[1][iaxis] = 3./4 - s * s;
+        win[2][iaxis] = 1./2 * (1./2 - s) * (1./2 - s);
+      }
     }
 
     for (int iloc = 0; iloc < order; iloc++) {
       for (int jloc = 0; jloc < order; jloc++) {
         for (int kloc = 0; kloc < order; kloc++) {
-          idx_grid = this->get_grid_index(
+          gid = this->get_grid_index(
             ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
           );
-          if (0 <= idx_grid && idx_grid < this->params.nmesh) {
-            this->field[idx_grid][0] += inv_vol_cell
+          if (0 <= gid && gid < this->params.nmesh) {
+OMP_ATOMIC
+            this->field[gid][0] += inv_vol_cell
               * weight[pid][0] * win[iloc][0] * win[jloc][1] * win[kloc][2];
-            this->field[idx_grid][1] += inv_vol_cell
+OMP_ATOMIC
+            this->field[gid][1] += inv_vol_cell
               * weight[pid][1] * win[iloc][0] * win[jloc][1] * win[kloc][2];
           }
         }
@@ -439,40 +492,64 @@ void MeshField::assign_weighted_field_to_mesh_tsc(
   /// Perform interlacing if needed.
   if (this->params.interlace == "true") {
 #ifdef TRV_USE_OMP
-#pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid, s)
+#pragma omp parallel for
 #endif  // TRV_USE_OMP
     for (int pid = 0; pid < particles.ntotal; pid++) {
+      int ijk[order][3];
+      double win[order][3];
+      long long gid = 0;
+
       for (int iaxis = 0; iaxis < 3; iaxis++) {
         /// Apply a half-grid shift and impose the periodic boundary condition.
-        loc_grid = particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
-          * this->params.ngrid[iaxis] + 0.5;
+        double loc_grid = this->params.ngrid[iaxis]
+          * particles[pid].pos[iaxis] / this->params.boxsize[iaxis] + 0.5;
 
         if (loc_grid > this->params.ngrid[iaxis]) {
           loc_grid -= this->params.ngrid[iaxis];
         }
 
-        s = loc_grid - int(loc_grid + 0.5);
+        int idx_grid = int(loc_grid);
 
-        /// Set up to 2nd element as `order == 3`.
-        ijk[0][iaxis] = int(loc_grid + 0.5) - 1;
-        ijk[1][iaxis] = int(loc_grid + 0.5);
-        ijk[2][iaxis] = int(loc_grid + 0.5) + 1;
+        if (loc_grid - idx_grid < 0.5) {
+          ijk[0][iaxis] = (idx_grid == 0)
+            ? this->params.ngrid[iaxis] - 1 : idx_grid - 1;
+          ijk[1][iaxis] = idx_grid;
+          ijk[2][iaxis] = (idx_grid == this->params.ngrid[iaxis] - 1)
+            ? 0 : idx_grid + 1;
+        } else {
+          ijk[0][iaxis] = idx_grid;
+          ijk[1][iaxis] = (idx_grid == this->params.ngrid[iaxis] - 1)
+            ? 0 : ijk[0][iaxis] + 1;
+          ijk[2][iaxis] = (idx_grid == this->params.ngrid[iaxis] - 1)
+            ? 0 : ijk[1][iaxis] + 1;
+        }
 
-        win[0][iaxis] = 1./2 * (1./2 - s) * (1./2 - s);
-        win[1][iaxis] = 3./4 - s * s;
-        win[2][iaxis] = 1./2 * (1./2 + s) * (1./2 + s);
+        double s = loc_grid - idx_grid;
+
+        if (s < 0.5) {
+          win[0][iaxis] = 1./2 * (1./2 - s) * (1./2 - s);
+          win[1][iaxis] = 3./4 - s * s;
+          win[2][iaxis] = 1./2 * (1./2 + s) * (1./2 + s);
+        } else {
+          s = 1 - s;
+          win[0][iaxis] = 1./2 * (1./2 + s) * (1./2 + s);
+          win[1][iaxis] = 3./4 - s * s;
+          win[2][iaxis] = 1./2 * (1./2 - s) * (1./2 - s);
+        }
       }
 
       for (int iloc = 0; iloc < order; iloc++) {
         for (int jloc = 0; jloc < order; jloc++) {
           for (int kloc = 0; kloc < order; kloc++) {
-            idx_grid = this->get_grid_index(
+            gid = this->get_grid_index(
               ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
             );
-            if (0 <= idx_grid && idx_grid < this->params.nmesh) {
-              this->field_s[idx_grid][0] += inv_vol_cell
+            if (0 <= gid && gid < this->params.nmesh) {
+OMP_ATOMIC
+              this->field_s[gid][0] += inv_vol_cell
                 * weight[pid][0] * win[iloc][0] * win[jloc][1] * win[kloc][2];
-              this->field_s[idx_grid][1] += inv_vol_cell
+OMP_ATOMIC
+              this->field_s[gid][1] += inv_vol_cell
                 * weight[pid][1] * win[iloc][0] * win[jloc][1] * win[kloc][2];
             }
           }
@@ -497,26 +574,31 @@ void MeshField::assign_weighted_field_to_mesh_pcs(
   this->initialise_density_field();
 
   /// Perform assignment.
-  double loc_grid = 0.;    // grid index coordinate of the particle in each dim
-  int ijk[order][3];       // grid index coordinates of covered grid cells
-  double win[order][3];    // sampling window
-  long long idx_grid = 0;  // flattened grid cell index
-  double s = 0.;           // particle-to-grid distance;
-
 #ifdef TRV_USE_OMP
-#pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid, s)
+#pragma omp parallel for
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles.ntotal; pid++) {
-    for (int iaxis = 0; iaxis < 3; iaxis++) {
-      loc_grid = this->params.ngrid[iaxis]
-        * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
-      s = loc_grid - int(loc_grid);
+    int ijk[order][3];     // grid index coordinates of covered grid cells
+    double win[order][3];  // sampling window
+    long long gid = 0;     // flattened grid cell index
 
-      /// Set up to 3rd element as `order == 4`.
-      ijk[0][iaxis] = int(loc_grid) - 1;
-      ijk[1][iaxis] = int(loc_grid);
-      ijk[2][iaxis] = int(loc_grid) + 1;
-      ijk[3][iaxis] = int(loc_grid) + 2;
+    for (int iaxis = 0; iaxis < 3; iaxis++) {
+      /// Carefully set covered sampling window grid indices.
+      double loc_grid = this->params.ngrid[iaxis]
+        * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
+
+      int idx_grid = int(loc_grid);
+
+      ijk[0][iaxis] = (idx_grid == 0)
+        ? this->params.ngrid[iaxis] - 1 : idx_grid - 1;
+      ijk[1][iaxis] = idx_grid;
+      ijk[2][iaxis] = (idx_grid == this->params.ngrid[iaxis] - 1)
+        ? 0 : idx_grid + 1;
+      ijk[3][iaxis] = (ijk[2][iaxis] == this->params.ngrid[iaxis] - 1)
+        ? 0 : ijk[2][iaxis] + 1;
+
+      /// Set sampling window value (up to the 2nd element as `order == 3`).
+      double s = loc_grid - idx_grid;
 
       win[0][iaxis] = 1./6 * (1. - s) * (1. - s) * (1. - s);
       win[1][iaxis] = 1./6 * (4. - 6. * s * s + 3. * s * s * s);
@@ -529,13 +611,15 @@ void MeshField::assign_weighted_field_to_mesh_pcs(
     for (int iloc = 0; iloc < order; iloc++) {
       for (int jloc = 0; jloc < order; jloc++) {
         for (int kloc = 0; kloc < order; kloc++) {
-          idx_grid = this->get_grid_index(
+          gid = this->get_grid_index(
             ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
           );
-          if (idx_grid >= 0 && idx_grid < this->params.nmesh) {
-            this->field[idx_grid][0] += inv_vol_cell
+          if (0 <= gid && gid < this->params.nmesh) {
+OMP_ATOMIC
+            this->field[gid][0] += inv_vol_cell
               * weight[pid][0] * win[iloc][0] * win[jloc][1] * win[kloc][2];
-            this->field[idx_grid][1] += inv_vol_cell
+OMP_ATOMIC
+            this->field[gid][1] += inv_vol_cell
               * weight[pid][1] * win[iloc][0] * win[jloc][1] * win[kloc][2];
           }
         }
@@ -546,25 +630,32 @@ void MeshField::assign_weighted_field_to_mesh_pcs(
   /// Perform interlacing if needed.
   if (this->params.interlace == "true") {
 #ifdef TRV_USE_OMP
-#pragma omp parallel for firstprivate(loc_grid, ijk, win, idx_grid, s)
+#pragma omp parallel for
 #endif  // TRV_USE_OMP
     for (int pid = 0; pid < particles.ntotal; pid++) {
+      int ijk[order][3];
+      double win[order][3];
+      long long gid = 0;
+
       for (int iaxis = 0; iaxis < 3; iaxis++) {
         /// Apply a half-grid shift and impose the periodic boundary condition.
-        loc_grid = particles[pid].pos[iaxis] / this->params.boxsize[iaxis]
-          * this->params.ngrid[iaxis] + 0.5;
+        double loc_grid = this->params.ngrid[iaxis]
+          * particles[pid].pos[iaxis] / this->params.boxsize[iaxis] + 0.5;
 
         if (loc_grid > this->params.ngrid[iaxis]) {
           loc_grid -= this->params.ngrid[iaxis];
         }
 
-        s = loc_grid - int(loc_grid);
+        int idx_grid = int(loc_grid);
 
-        /// Set up to 3rd element as `order == 4`.
-        ijk[0][iaxis] = int(loc_grid) - 1;
-        ijk[1][iaxis] = int(loc_grid);
-        ijk[2][iaxis] = int(loc_grid) + 1;
-        ijk[3][iaxis] = int(loc_grid) + 2;
+        ijk[0][iaxis] = (idx_grid == 0)
+          ? this->params.ngrid[iaxis] - 1 : idx_grid - 1;
+        ijk[1][iaxis] = idx_grid;
+        ijk[2][iaxis] = (idx_grid == this->params.ngrid[iaxis] - 1)
+          ? 0 : idx_grid + 1;
+        ijk[3][iaxis] = (ijk[2][iaxis] == this->params.ngrid[iaxis] - 1)
+          ? 0 : ijk[2][iaxis] + 1;
+        double s = loc_grid - idx_grid;
 
         win[0][iaxis] = 1./6 * (1. - s) * (1. - s) * (1. - s);
         win[1][iaxis] = 1./6 * (4. - 6. * s * s + 3. * s * s * s);
@@ -577,13 +668,15 @@ void MeshField::assign_weighted_field_to_mesh_pcs(
       for (int iloc = 0; iloc < order; iloc++) {
         for (int jloc = 0; jloc < order; jloc++) {
           for (int kloc = 0; kloc < order; kloc++) {
-            idx_grid = this->get_grid_index(
+            gid = this->get_grid_index(
               ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
             );
-            if (0 <= idx_grid && idx_grid < this->params.nmesh) {
-              this->field_s[idx_grid][0] += inv_vol_cell
+            if (0 <= gid && gid < this->params.nmesh) {
+OMP_ATOMIC
+              this->field_s[gid][0] += inv_vol_cell
                 * weight[pid][0] * win[iloc][0] * win[jloc][1] * win[kloc][2];
-              this->field_s[idx_grid][1] += inv_vol_cell
+OMP_ATOMIC
+              this->field_s[gid][1] += inv_vol_cell
                 * weight[pid][1] * win[iloc][0] * win[jloc][1] * win[kloc][2];
             }
           }
@@ -607,6 +700,10 @@ double MeshField::calc_assignment_window_in_fourier(int i, int j, int k) {
   if (this->params.assignment == "pcs") {
     order = 4;
   }
+
+  i = (i < this->params.ngrid[0]/2) ? i : i - this->params.ngrid[0];
+  j = (j < this->params.ngrid[1]/2) ? j : j - this->params.ngrid[1];
+  k = (k < this->params.ngrid[2]/2) ? k : k - this->params.ngrid[2];
 
   double u_x = M_PI * i / double(this->params.ngrid[0]);
   double u_y = M_PI * j / double(this->params.ngrid[1]);
@@ -983,13 +1080,13 @@ void MeshField::fourier_transform() {
           double m[3];
           m[0] = (i < this->params.ngrid[0]/2)
             ? double(i) / this->params.ngrid[0]
-            : (double(i) / this->params.ngrid[0] - 1);
+            : double(i) / this->params.ngrid[0] - 1;
           m[1] = (j < this->params.ngrid[1]/2)
             ? double(j) / this->params.ngrid[1]
-            : (double(j) / this->params.ngrid[1] - 1);
+            : double(j) / this->params.ngrid[1] - 1;
           m[2] = (k < this->params.ngrid[2]/2)
             ? double(k) / this->params.ngrid[2]
-            : (double(k) / this->params.ngrid[2] - 1);
+            : double(k) / this->params.ngrid[2] - 1;
 
           /// Multiply by the phase factor from the half-grid shift and
           /// add the shadow mesh field contribution.  Note the positive
@@ -1429,8 +1526,8 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
 
         double k_ = trvm::get_vec3d_magnitude(kv);
 
-        int idx_k = int(k_ / dk_sample + 0.5);
-        if (idx_k < n_sample) {
+        int idx_k = int(k_ / dk_sample);
+        if (0 <= idx_k && idx_k < n_sample) {
           std::complex<double> fa(field_a[idx_grid][0], field_a[idx_grid][1]);
           std::complex<double> fb(field_b[idx_grid][0], field_b[idx_grid][1]);
 
@@ -1650,8 +1747,8 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
 
         double r_ = trvm::get_vec3d_magnitude(rv);
 
-        int idx_r = int(r_ / dr_sample + 0.5);
-        if (idx_r < n_sample) {
+        int idx_r = int(r_ / dr_sample);
+        if (0 <= idx_r && idx_r < n_sample) {
           std::complex<double> xi_pair(
             twopt_3d[idx_grid][0], twopt_3d[idx_grid][1]
           );
@@ -1846,8 +1943,8 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
 
         double r_ = trvm::get_vec3d_magnitude(rv);
 
-        int idx_r = int(r_ / dr_sample + 0.5);
-        if (idx_r < n_sample) {
+        int idx_r = int(r_ / dr_sample);
+        if (0 <= idx_r && idx_r < n_sample) {
           std::complex<double> xi_pair(
             twopt_3d[idx_grid][0], twopt_3d[idx_grid][1]
           );
@@ -2069,6 +2166,10 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
 /// ----------------------------------------------------------------------
 
 double FieldStats::calc_shotnoise_aliasing(int i, int j, int k) {
+  i = (i < this->params.ngrid[0]/2) ? i : i - this->params.ngrid[0];
+  j = (j < this->params.ngrid[1]/2) ? j : j - this->params.ngrid[1];
+  k = (k < this->params.ngrid[2]/2) ? k : k - this->params.ngrid[2];
+
   if (this->params.assignment == "ngp") {
     return this->calc_shotnoise_aliasing_ngp(i, j, k);
   }
