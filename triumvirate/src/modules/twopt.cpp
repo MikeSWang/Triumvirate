@@ -26,7 +26,7 @@
 
 #include "twopt.hpp"
 
-/// CAVEAT: Discretionary choice.
+/// CAVEAT: Discretionary choice such that the eps_norm / norm = O(0.01%).
 const double eps_norm = 1.e-5;
 
 namespace trvs = trv::sys;
@@ -480,7 +480,7 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
 
   /// Check input normalisation matches expectation.
   double norm = catalogue_data.ntotal * catalogue_data.ntotal / params.volume;
-  if (std::fabs(1 - norm * norm_factor) < eps_norm) {
+  if (std::fabs(1 - norm * norm_factor) > eps_norm) {
     trvs::logger.warn(
       "Power spectrum normalisation input differs from "
       "expected value for an unweight field in a periodic box."
@@ -577,7 +577,7 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
 
   /// Check input normalisation matches expectation.
   double norm = catalogue_data.ntotal * catalogue_data.ntotal / params.volume;
-  if (std::fabs(1 - norm * norm_factor) < eps_norm) {
+  if (std::fabs(1 - norm * norm_factor) > eps_norm) {
     trvs::logger.warn(
       "Two-point correlation function normalisation input differs from "
       "expected value for an unweight field in a periodic box."

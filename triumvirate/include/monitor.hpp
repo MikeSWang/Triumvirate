@@ -60,7 +60,7 @@ namespace sys {
 /// Program tracking
 /// **********************************************************************
 
-/// RFE: Sort out MPI implementation.
+/// RFE: Implement MPI.
 extern int currTask;  ///< current task
 
 extern double gbytesMem;     ///< current memory usage in gibibytes
