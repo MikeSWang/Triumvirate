@@ -479,7 +479,8 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
   }  // likely redundant but safe
 
   /// Check input normalisation matches expectation.
-  double norm = catalogue_data.ntotal * catalogue_data.ntotal / params.volume;
+  double norm = double(catalogue_data.ntotal) * double(catalogue_data.ntotal)
+    / params.volume;
   if (std::fabs(1 - norm * norm_factor) > eps_norm) {
     trvs::logger.warn(
       "Power spectrum normalisation input differs from "
@@ -576,7 +577,8 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
   }  // likely redundant but safe
 
   /// Check input normalisation matches expectation.
-  double norm = catalogue_data.ntotal * catalogue_data.ntotal / params.volume;
+  double norm = double(catalogue_data.ntotal) * double(catalogue_data.ntotal)
+    / params.volume;
   if (std::fabs(1 - norm * norm_factor) > eps_norm) {
     trvs::logger.warn(
       "Two-point correlation function normalisation input differs from "
