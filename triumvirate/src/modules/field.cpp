@@ -1492,16 +1492,19 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
   };
 
   /// Perform fine binning.
+  /// NOTE: Dynamically allocate owing to size.
   /// CAVEAT: Discretionary choices such that 0.0 < k < 10.0.
   const int n_sample = 1e5;
   const double dk_sample = 1.e-4;
 
-  int nmodes_sample[n_sample];
-  double k_sample[n_sample];
-  double pk_sample_real[n_sample], pk_sample_imag[n_sample];
-  double sn_sample_real[n_sample], sn_sample_imag[n_sample];
-  std::complex<double> pk_sample[n_sample];
-  std::complex<double> sn_sample[n_sample];
+  int* nmodes_sample = new int[n_sample];
+  double* k_sample = new double[n_sample];
+  double* pk_sample_real = new double[n_sample];
+  double* pk_sample_imag = new double[n_sample];
+  double* sn_sample_real = new double[n_sample];
+  double* sn_sample_imag = new double[n_sample];
+  std::complex<double>* pk_sample = new std::complex<double>[n_sample];
+  std::complex<double>* sn_sample = new std::complex<double>[n_sample];
   for (int i = 0; i < n_sample; i++) {
     nmodes_sample[i] = 0;
     k_sample[i] = 0.;
@@ -1615,6 +1618,15 @@ OMP_ATOMIC
       this->sn[ibin] = 0.;
     }
   }
+
+  delete[] nmodes_sample;
+  delete[] k_sample;
+  delete[] pk_sample_real;
+  delete[] pk_sample_imag;
+  delete[] sn_sample_real;
+  delete[] sn_sample_imag;
+  delete[] pk_sample;
+  delete[] sn_sample;
 }
 
 void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
@@ -1717,14 +1729,16 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   fftw_destroy_plan(inv_transform);
 
   /// Perform fine binning.
+  /// NOTE: Dynamically allocate owing to size.
   /// CAVEAT: Discretionary choices such that 0 < r < 100k.
   const int n_sample = 1e5;
   const double dr_sample = 1.;
 
-  int npairs_sample[n_sample];
-  double r_sample[n_sample];
-  double xi_sample_real[n_sample], xi_sample_imag[n_sample];
-  std::complex<double> xi_sample[n_sample];
+  int* npairs_sample = new int[n_sample];
+  double* r_sample = new double[n_sample];
+  double* xi_sample_real = new double[n_sample];
+  double* xi_sample_imag = new double[n_sample];
+  std::complex<double>* xi_sample = new std::complex<double>[n_sample];
   for (int i = 0; i < n_sample; i++) {
     npairs_sample[i] = 0;
     r_sample[i] = 0.;
@@ -1805,6 +1819,12 @@ OMP_ATOMIC
   fftw_free(twopt_3d); twopt_3d = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+
+  delete[] npairs_sample;
+  delete[] r_sample;
+  delete[] xi_sample_real;
+  delete[] xi_sample_imag;
+  delete[] xi_sample;
 }
 
 void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
@@ -1913,14 +1933,16 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   fftw_destroy_plan(inv_transform);
 
   /// Perform fine binning.
+  /// NOTE: Dynamically allocate owing to size.
   /// CAVEAT: Discretionary choices such that 0 < r < 100k.
   const int n_sample = 1e5;
   const double dr_sample = 1.;
 
-  int npairs_sample[n_sample];
-  double r_sample[n_sample];
-  double xi_sample_real[n_sample], xi_sample_imag[n_sample];
-  std::complex<double> xi_sample[n_sample];
+  int* npairs_sample = new int[n_sample];
+  double* r_sample = new double[n_sample];
+  double* xi_sample_real = new double[n_sample];
+  double* xi_sample_imag = new double[n_sample];
+  std::complex<double>* xi_sample = new std::complex<double>[n_sample];
   for (int i = 0; i < n_sample; i++) {
     npairs_sample[i] = 0;
     r_sample[i] = 0.;
@@ -2008,6 +2030,12 @@ OMP_ATOMIC
   fftw_free(twopt_3d); twopt_3d = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+
+  delete[] npairs_sample;
+  delete[] r_sample;
+  delete[] xi_sample_real;
+  delete[] xi_sample_imag;
+  delete[] xi_sample;
 }
 
 std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(

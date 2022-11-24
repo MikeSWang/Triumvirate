@@ -172,13 +172,20 @@ test_fftlog: ${DIR_TESTS}/test_fftlog.cpp \
 # Clean
 # ========================================================================
 
+DIR_PROG := $(or ${DIR_PROG}, '.')
+DIR_BUILD := $(or ${DIR_BUILD}, '.')
+DIR_TESTS := $(or ${DIR_TESTS}, '.')
+DIR_TESTBUILD := $(or ${DIR_TESTBUILD}, '.')
+DIR_TESTOUT := $(or ${DIR_TESTOUT}, '.')
+
 clean:
-	rm -rf ${DIR_PROG}/*.cpp ${DIR_PROG}/*.o ${DIR_PROG}/*.so
-	rm -rf core ${DIR_BUILD}/*
+	rm -rf ${DIR_PROG}/*.cpp ${DIR_PROG}/*.o ${DIR_PROG}/*.so ${DIR_BUILD}/*
 	rm -rf *.egg-info
+	rm -rf core
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +
 
 cleantest:
-	rm -rf core ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/*
+	rm -rf ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/* ${DIR_TESTS}/*_temp*
+	rm -rf core
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
