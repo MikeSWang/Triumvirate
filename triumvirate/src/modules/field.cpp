@@ -1718,8 +1718,8 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
 
   /// Perform fine binning.
   /// CAVEAT: Discretionary choices such that 0 < r < 100k.
-  const int n_sample = 2e5;
-  const double dr_sample = 0.5;
+  const int n_sample = 1e5;
+  const double dr_sample = 1.;
 
   int npairs_sample[n_sample];
   double r_sample[n_sample];
@@ -1914,8 +1914,8 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
 
   /// Perform fine binning.
   /// CAVEAT: Discretionary choices such that 0 < r < 100k.
-  const int n_sample = 2e5;
-  const double dr_sample = 0.5;
+  const int n_sample = 1e5;
+  const double dr_sample = 1.;
 
   int npairs_sample[n_sample];
   double r_sample[n_sample];
