@@ -157,7 +157,7 @@ test_case () {
     -p directories.measurements ${testdir_output} \
     -p num_bins 20
 
-  (sleep 2 && rm ${test_paramfile_yml_temp}) \
+  (sleep 4 && rm ${test_paramfile_yml_temp}) \
     & python3 triumvirate/tests/testint_temp.py;
 }
 

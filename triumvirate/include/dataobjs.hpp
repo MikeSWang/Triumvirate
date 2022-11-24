@@ -139,8 +139,8 @@ class Binning {
  private:
   /// CAVEAT: Discretionary choices.
   int nbin_pad = 5;                ///< number of padded bins
-  float dbin_pad_fourier = 1.e-3;  ///< bin padding in Fourier space
-  float dbin_pad_config = 10.;     ///< bin padding in configuration space
+  double dbin_pad_fourier = 1.e-3;  ///< bin padding in Fourier space
+  double dbin_pad_config = 10.;     ///< bin padding in configuration space
 
   /**
    * @brief Compute bin edges, centres and widths.
