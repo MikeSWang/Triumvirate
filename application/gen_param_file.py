@@ -100,7 +100,7 @@ def setitem_nested_dict(dictionary, keychain, value):
     try:
         base_dict = reduce(getitem, key_parents, dictionary)
     except KeyError as err:
-        raise ParentKeyError(str(err))
+        raise ParentKeyError(getattr(err, 'message', str(err))) from err
 
     try:
         if isinstance(base_dict[key_child], list):
@@ -109,7 +109,7 @@ def setitem_nested_dict(dictionary, keychain, value):
             base_dict[key_child] = type(base_dict[key_child])(value)
     except KeyError as err:
         base_dict[key_child] = value
-        raise ChildKeyError(str(err))
+        raise ChildKeyError(getattr(err, 'message', str(err))) from err
 
     return dictionary
 
@@ -179,13 +179,13 @@ def gen_python_params(params_template, params_to_modify):
                 "Check the template for possible typos as "
                 "the following parameter could not be modified: {} "
                 "(missing key {})."
-                .format(pname, str(err).strip('"'))
-            )
+                .format(pname, getattr(err, 'message', str(err)).strip('"'))
+            ) from err
         except ChildKeyError as err:
             warnings.warn(
                 "The following parameter is added: {} (missing key {}). "
                 "Check the template for possible typos."
-                .format(pname, str(err).strip('"')),
+                .format(pname, getattr(err, 'message', str(err)).strip('"')),
                 category=RuntimeWarning
             )
 
