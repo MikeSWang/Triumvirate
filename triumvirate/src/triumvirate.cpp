@@ -213,7 +213,7 @@ int main(int argc, char* argv[]) {
     trv::sys::logger.stat("[B.2] Computing lines of sight...");
   }
 
-  trv::LineOfSight* los_data;
+  trv::LineOfSight* los_data = nullptr;
   if (flag_data == "true") {
     los_data = new trv::LineOfSight[catalogue_data.ntotal];  ///> data-source
                                                              ///> LoS
@@ -240,7 +240,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  trv::LineOfSight* los_rand;
+  trv::LineOfSight* los_rand = nullptr;
   if (flag_rand == "true") {
     los_rand = new trv::LineOfSight[catalogue_rand.ntotal];  ///> random-source
                                                              ///> LoS
@@ -362,7 +362,7 @@ int main(int argc, char* argv[]) {
   trv::ParticleCatalogue& catalogue_for_norm =
     (flag_rand == "true") ? catalogue_rand : catalogue_data;
   double alpha_for_norm = (flag_rand == "true") ? alpha : 1.;
-  double norm_factor, norm_factor_alt;  ///> normalisation factors
+  double norm_factor = 0., norm_factor_alt = 0.;  ///> normalisation factors
   if (params.norm_convention == "particle") {
     if (params.npoint == "2pt") {
       norm_factor = trv::calc_powspec_normalisation_from_particles(
@@ -411,15 +411,13 @@ int main(int argc, char* argv[]) {
   /// B.5 Clustering algorithms
   /// --------------------------------------------------------------------
 
-  bool save = true;
-
   char save_filepath[1024];
   if (params.statistic_type == "powspec") {
     std::sprintf(
       save_filepath, "%s/pk%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
-    std::FILE* save_fileptr;
+    std::FILE* save_fileptr = nullptr;
     trv::PowspecMeasurements meas_powspec;  ///> power spectrum
     if (params.catalogue_type == "survey") {
       meas_powspec = trv::compute_powspec(
@@ -449,7 +447,7 @@ int main(int argc, char* argv[]) {
       save_filepath, "%s/xi%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
-    std::FILE* save_fileptr;
+    std::FILE* save_fileptr = nullptr;
     trv::TwoPCFMeasurements meas_2pcf;  ///> two-point correlation function
     if (params.catalogue_type == "survey") {
       meas_2pcf = trv::compute_corrfunc(
@@ -506,7 +504,7 @@ int main(int argc, char* argv[]) {
         params.output_tag.c_str()
       );
     }
-    std::FILE* save_fileptr;
+    std::FILE* save_fileptr = nullptr;
     trv::BispecMeasurements meas_bispec;  ///> bispectrum
     if (params.catalogue_type == "survey") {
       meas_bispec = trv::compute_bispec(
@@ -548,7 +546,7 @@ int main(int argc, char* argv[]) {
         params.output_tag.c_str()
       );
     }
-    std::FILE* save_fileptr;
+    std::FILE* save_fileptr = nullptr;
     trv::ThreePCFMeasurements meas_3pcf;  ///> three-point correlation function
     if (params.catalogue_type == "survey") {
       meas_3pcf = trv::compute_3pcf(
@@ -645,10 +643,10 @@ int main(int argc, char* argv[]) {
   catalogue_data.finalise_particles();
   catalogue_rand.finalise_particles();
 
-  if (flag_data == "true") {
+  if (los_data != nullptr) {
     delete[] los_data; los_data = nullptr;
   }
-  if (flag_rand == "true") {
+  if (los_rand != nullptr) {
     delete[] los_rand; los_rand = nullptr;
   }
   trv::sys::gbytesMem -= trv::sys::size_in_gb<struct trv::LineOfSight>(

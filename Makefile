@@ -27,7 +27,9 @@ DIR_TESTOUT = ${DIR_TESTS}/test_output
 
 # -- Common configuration ------------------------------------------------
 
+CC = g++
 INCLUDES = -I${DIR_INCLUDE}
+CFLAGS = -O3 -Wall
 LIBS = -lgsl -lgslcblas -lfftw3
 CLIBS =
 
@@ -42,8 +44,7 @@ SYSTYPE := $(if ${NERSC_HOST}, cluster, local)
 ifeq ($(strip ${SYSTYPE}), local)
 
 # >>>>>>>>>>
-CC = g++
-CFLAGS =
+# (edit/insert here)
 # <<<<<<<<<<
 
 endif
@@ -52,8 +53,7 @@ endif
 ifeq ($(strip ${SYSTYPE}), cluster)
 
 # >>>>>>>>>>
-CC = g++
-CFLAGS =
+# (edit/insert here)
 # <<<<<<<<<<
 
 FFTW_DIR = ${FFTW_ROOT}
@@ -118,7 +118,7 @@ endif
 endif
 
 # Add other options (for developers only), e.g.
-# {-DTRV_USE_LEGACY_CODE, -DDBG_MODE, -DDBG_NOAC, ...}.
+# {-g, -DTRV_USE_LEGACY_CODE, -DDBG_MODE, -DDBG_NOAC, ...}.
 # >>>>>>>>>>
 CFLAGS +=
 # <<<<<<<<<<
@@ -139,7 +139,7 @@ install: cppinstall pyinstall
 cppinstall: ${PROGNAME}
 
 pyinstall:
-	pip install --user -e .
+	pip install --user --editable .
 
 
 # -- Testing build -------------------------------------------------------

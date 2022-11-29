@@ -1654,9 +1654,11 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
     field_a.get_grid_pos_vector(i, j, k, rvec);
   };
 
-  auto ret_grid_wavevector = [&field_a](int i, int j, int k, double kvec[3]) {
-    field_a.get_grid_wavevector(i, j, k, kvec);
-  };
+  // auto ret_grid_wavevector = [&field_a](
+  //   int i, int j, int k, double kvec[3]
+  // ) {
+  //   field_a.get_grid_wavevector(i, j, k, kvec);
+  // };
 
   /// Set up 3-d two-point statistics mesh grids (before inverse
   /// Fourier transform).
@@ -1855,9 +1857,11 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
     field_a.get_grid_pos_vector(i, j, k, rvec);
   };
 
-  auto ret_grid_wavevector = [&field_a](int i, int j, int k, double kvec[3]) {
-    field_a.get_grid_wavevector(i, j, k, kvec);
-  };
+  // auto ret_grid_wavevector = [&field_a](
+  //   int i, int j, int k, double kvec[3]
+  // ) {
+  //   field_a.get_grid_wavevector(i, j, k, kvec);
+  // };
 
   /// Set up 3-d two-point statistics mesh grids (before inverse
   /// Fourier transform).
@@ -2065,9 +2069,11 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
     field_a.get_grid_pos_vector(i, j, k, rvec);
   };
 
-  auto ret_grid_wavevector = [&field_a](int i, int j, int k, double kvec[3]) {
-    field_a.get_grid_wavevector(i, j, k, kvec);
-  };
+  // auto ret_grid_wavevector = [&field_a](
+  //   int i, int j, int k, double kvec[3]
+  // ) {
+  //   field_a.get_grid_wavevector(i, j, k, kvec);
+  // };
 
   /// Set up 3-d two-point statistics mesh grids (before inverse
   /// Fourier transform).

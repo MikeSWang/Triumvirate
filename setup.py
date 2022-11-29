@@ -65,9 +65,9 @@ for key, val in config_vars.items():
 # -- Extensions ----------------------------------------------------------
 
 # Set source, include and library paths.
-self_modulesrc = f"{pkgdir}/src/modules"
+self_modulesrc = os.path.join(pkgdir, "src/modules")
 
-self_include = f"{pkgdir}/include"
+self_include = os.path.join(pkgdir, "include")
 npy_include = numpy.get_include()
 
 ext_includes = os.environ.get('PY_INCLUDES', '').replace("-I", "").split()
@@ -104,9 +104,9 @@ modules = [
     Extension(
         f'{pkgdir}.parameters',
         sources=[
-            f"{pkgdir}/parameters.pyx",
-            f"{self_modulesrc}/parameters.cpp",
-            f"{self_modulesrc}/monitor.cpp",
+            os.path.join(pkgdir, "parameters.pyx"),
+            os.path.join(self_modulesrc, "parameters.cpp"),
+            os.path.join(self_modulesrc, "monitor.cpp"),
         ],
         language=language,
         extra_compile_args=options,
@@ -117,10 +117,10 @@ modules = [
     Extension(
         f'{pkgdir}.dataobjs',
         sources=[
-            f"{pkgdir}/dataobjs.pyx",
-            f"{self_modulesrc}/dataobjs.cpp",
-            f"{self_modulesrc}/parameters.cpp",
-            f"{self_modulesrc}/monitor.cpp",
+            os.path.join(pkgdir, "dataobjs.pyx"),
+            os.path.join(self_modulesrc, "dataobjs.cpp"),
+            os.path.join(self_modulesrc, "parameters.cpp"),
+            os.path.join(self_modulesrc, "monitor.cpp"),
         ],
         language=language,
         extra_compile_args=options,
@@ -131,9 +131,9 @@ modules = [
     Extension(
         f'{pkgdir}._particles',
         sources=[
-            f"{pkgdir}/_particles.pyx",
-            f"{self_modulesrc}/particles.cpp",
-            f"{self_modulesrc}/monitor.cpp",
+            os.path.join(pkgdir, "_particles.pyx"),
+            os.path.join(self_modulesrc, "particles.cpp"),
+            os.path.join(self_modulesrc, "monitor.cpp"),
         ],
         language=language,
         extra_compile_args=options,
@@ -144,14 +144,14 @@ modules = [
     Extension(
         f'{pkgdir}._twopt',
         sources=[
-            f"{pkgdir}/_twopt.pyx",
-            f"{self_modulesrc}/twopt.cpp",
-            f"{self_modulesrc}/monitor.cpp",
-            f"{self_modulesrc}/maths.cpp",
-            f"{self_modulesrc}/parameters.cpp",
-            f"{self_modulesrc}/dataobjs.cpp",
-            f"{self_modulesrc}/particles.cpp",
-            f"{self_modulesrc}/field.cpp",
+            os.path.join(pkgdir, "_twopt.pyx"),
+            os.path.join(self_modulesrc, "twopt.cpp"),
+            os.path.join(self_modulesrc, "monitor.cpp"),
+            os.path.join(self_modulesrc, "maths.cpp"),
+            os.path.join(self_modulesrc, "parameters.cpp"),
+            os.path.join(self_modulesrc, "dataobjs.cpp"),
+            os.path.join(self_modulesrc, "particles.cpp"),
+            os.path.join(self_modulesrc, "field.cpp"),
         ],
         language=language,
         extra_compile_args=options,
@@ -163,15 +163,15 @@ modules = [
     Extension(
         f'{pkgdir}._threept',
         sources=[
-            f"{pkgdir}/_threept.pyx",
-            f"{self_modulesrc}/threept.cpp",
-            f"{self_modulesrc}/monitor.cpp",
-            f"{self_modulesrc}/maths.cpp",
-            f"{self_modulesrc}/parameters.cpp",
-            f"{self_modulesrc}/dataobjs.cpp",
-            f"{self_modulesrc}/particles.cpp",
-            f"{self_modulesrc}/field.cpp",
-            f"{self_modulesrc}/twopt.cpp",
+            os.path.join(pkgdir, "_threept.pyx"),
+            os.path.join(self_modulesrc, "threept.cpp"),
+            os.path.join(self_modulesrc, "monitor.cpp"),
+            os.path.join(self_modulesrc, "maths.cpp"),
+            os.path.join(self_modulesrc, "parameters.cpp"),
+            os.path.join(self_modulesrc, "dataobjs.cpp"),
+            os.path.join(self_modulesrc, "particles.cpp"),
+            os.path.join(self_modulesrc, "field.cpp"),
+            os.path.join(self_modulesrc, "twopt.cpp"),
         ],
         language=language,
         extra_compile_args=options,
@@ -183,11 +183,11 @@ modules = [
     Extension(
         f'{pkgdir}._fftlog',
         sources=[
-            f"{pkgdir}/_fftlog.pyx",
-            f"{self_modulesrc}/fftlog.cpp",
-            f"{self_modulesrc}/monitor.cpp",
-            f"{self_modulesrc}/maths.cpp",
-            f"{self_modulesrc}/arrayops.cpp",
+            os.path.join(pkgdir, "_fftlog.pyx"),
+            os.path.join(self_modulesrc, "fftlog.cpp"),
+            os.path.join(self_modulesrc, "monitor.cpp"),
+            os.path.join(self_modulesrc, "maths.cpp"),
+            os.path.join(self_modulesrc, "arrayops.cpp"),
         ],
         language=language,
         extra_compile_args=options,
@@ -229,6 +229,6 @@ setup(
     cmdclass={'build_ext': build_ext},
     ext_modules=cythonize(
         modules,
-        language_level='3'
+        language_level='3',
     )
 )

@@ -47,7 +47,7 @@ bool if_filepath_is_set(std::string pathstr) {
 
   /// Check if the string contains non-whitespace characters.  If so,
   /// the path is set, otherwise not.
-  for (int ichar = 0; ichar < pathstr.length(); ichar++){
+  for (std::string::size_type ichar = 0; ichar < pathstr.length(); ichar++){
     if (!std::isspace(pathstr[ichar])) {return true;}
   }
 

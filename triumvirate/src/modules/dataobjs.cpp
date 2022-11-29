@@ -75,7 +75,7 @@ void Binning::set_bins(double boxsize_max, int ngrid_min) {
 
   this->bin_min = 0.;
 
-  double bin_width;
+  double bin_width = 0.;
   if (this->space == "config") {
     bin_width = boxsize_max / double(ngrid_min);
     this->bin_max = boxsize_max / 2.;
