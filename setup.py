@@ -26,7 +26,7 @@ with open("requirements.txt", 'r') as requirements_file:
 # Extract package information.
 pkgdir = PKG_NAME.lower()
 pkginfo = {}
-with open(convert_path(f"{pkgdir}/_pkginfo.py")) as pkginfo_file:
+with open(convert_path(os.path(pkgdir, "_pkginfo.py"))) as pkginfo_file:
     exec(pkginfo_file.read(), pkginfo)
 
 # Determine repository branch.
