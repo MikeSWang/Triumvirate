@@ -170,8 +170,8 @@ cdef class ParameterSet:
 
         """
         if filepath is None:
-            filepath = (
-                Path(self._params['directories']['measurements'])/
+            filepath = Path(
+                self._params['directories']['measurements'],
                 "parameters_used{}".format(self._params['tags']['output'])
             )
 

@@ -517,8 +517,8 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
                 ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
             )
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = (
-                Path(paramset['directories']['measurements'])/ofilename
+            ofilepath = Path(
+                paramset['directories']['measurements'], ofilename
             ).with_suffix('.txt')
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
@@ -526,8 +526,8 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = (
-                Path(paramset['directories']['measurements'])/ofilename
+            ofilepath = Path(
+                paramset['directories']['measurements'], ofilename
             ).with_suffix('.npz')
             np.savez(ofilepath, **results)
         else:
@@ -920,8 +920,8 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #                 ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
 #             )
 #             ofilename = _get_measurement_filename(paramset)
-#             ofilepath = (
-#                 Path(paramset['directories']['measurements'])/ofilename
+#             ofilepath = Path(
+#                 paramset['directories']['measurements'], ofilename
 #             ).with_suffix('.txt')
 #             np.savetxt(
 #                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
@@ -929,8 +929,8 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         elif save.lower().endswith('.npz'):
 #             results.update({'header': header})
 #             ofilename = _get_measurement_filename(paramset)
-#             ofilepath = (
-#                 Path(paramset['directories']['measurements'])/ofilename
+#             ofilepath = Path(
+#                 paramset['directories']['measurements'], ofilename
 #             ).with_suffix('.npz')
 #             np.savez(ofilepath, **results)
 #         else:
@@ -1110,8 +1110,8 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
                 ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
             )
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = (
-                Path(paramset['directories']['measurements'])/ofilename
+            ofilepath = Path(
+                paramset['directories']['measurements'], ofilename
             ).with_suffix('.txt')
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
@@ -1119,8 +1119,8 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = (
-                Path(paramset['directories']['measurements'])/ofilename
+            ofilepath = Path(
+                paramset['directories']['measurements'], ofilename
             ).with_suffix('.npz')
             np.savez(ofilepath, **results)
         else:
@@ -1470,8 +1470,8 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
                 ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
             )
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = (
-                Path(paramset['directories']['measurements'])/ofilename
+            ofilepath = Path(
+                paramset['directories']['measurements'], ofilename
             ).with_suffix('.txt')
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
@@ -1479,8 +1479,8 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = (
-                Path(paramset['directories']['measurements'])/ofilename
+            ofilepath = Path(
+                paramset['directories']['measurements'], ofilename
             ).with_suffix('.npz')
             np.savez(ofilepath, **results)
         else:
