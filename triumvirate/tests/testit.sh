@@ -38,8 +38,8 @@ if ${flag_recompile}; then
 fi
 
 # Change template scripts.
-cp triumvirate/tests/testint.py triumvirate/tests/testint_temp.py
-sed -i "s/test_params.yml/test_params_temp.yml/g" triumvirate/tests/testint_temp.py
+cp triumvirate/tests/testit.py triumvirate/tests/testit_temp.py
+sed -i "s/test_params.yml/test_params_temp.yml/g" triumvirate/tests/testit_temp.py
 
 
 # ========================================================================
@@ -158,7 +158,7 @@ test_case () {
     -p num_bins 20
 
   (sleep 4 && rm ${test_paramfile_yml_temp}) \
-    & python3 triumvirate/tests/testint_temp.py;
+    & python3 triumvirate/tests/testit_temp.py;
 }
 
 test_case sim fourier 2pt
@@ -179,4 +179,4 @@ test_case random config 3pt
 # Clean-up
 # ========================================================================
 
-rm triumvirate/tests/testint_temp.py
+rm triumvirate/tests/testit_temp.py
