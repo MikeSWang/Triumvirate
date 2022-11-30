@@ -139,12 +139,17 @@ install: cppinstall pyinstall
 cppinstall: ${PROGNAME}
 
 pyinstall:
+	@echo "Installing Triumvirate Python package."
 	pip install --user --editable .
 
 
 # -- Testing build -------------------------------------------------------
 
 test: cpptest pytest
+
+testit:
+	@echo "Performing integration tests. See ${DIR_TESTOUT}/$@.log for log."
+	@bash ${DIR_TESTS}/$@.sh > ${DIR_TESTOUT}/$@.log
 
 cpptest: test_fftlog
 
@@ -154,6 +159,7 @@ pytest:
 # -- Invididual build ----------------------------------------------------
 
 ${PROGNAME}: ${DIR_SRC}/${PROGNAME}.cpp
+	@echo "Building Triumvirate C++ program."
 	$(CC) $(CFLAGS) \
 	-o $(addprefix $(DIR_BUILD)/, $(notdir $@)) \
 	$< $(MODULESRC) $(INCLUDES) $(LIBS) $(CLIBS)
@@ -179,6 +185,7 @@ DIR_TESTBUILD := $(or ${DIR_TESTBUILD}, '.')
 DIR_TESTOUT := $(or ${DIR_TESTOUT}, '.')
 
 clean:
+	@echo "Cleaning up Triumvirate builds."
 	rm -rf ${DIR_PROG}/*.cpp ${DIR_PROG}/*.o ${DIR_PROG}/*.so ${DIR_BUILD}/*
 	rm -rf *.egg-info
 	rm -rf core
@@ -186,6 +193,7 @@ clean:
 	find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +
 
 cleantest:
+	@echo "Cleaning up Triumvirate tests."
 	rm -rf ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/* ${DIR_TESTS}/*_temp*
 	rm -rf core
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
