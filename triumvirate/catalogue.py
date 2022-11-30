@@ -151,7 +151,7 @@ class ParticleCatalogue:
         self = object.__new__(cls)
 
         self._logger = logger
-        self._source = 'extfile:' + str(filepath)
+        self._source = f'extfile:{filepath}'
 
         if reader.lower() == 'nbodykit':
             if _nbkt_imported:

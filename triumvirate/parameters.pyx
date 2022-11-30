@@ -5,7 +5,6 @@ Parameter Set (:mod:`~triumvirate.parameters`)
 Configure program parameter set.
 
 """
-from os.path import abspath
 from pathlib import Path
 from pprint import pformat
 
@@ -103,7 +102,7 @@ cdef class ParameterSet:
 
         self._params = {}
         if param_filepath is not None:
-            self._source = abspath(param_filepath)
+            self._source = str(Path(param_filepath).absolute())
             with open(param_filepath, 'r') as param_file:
                 self._params = yaml.load(param_file, Loader=yaml.Loader)
         if param_dict is not None:
@@ -407,7 +406,7 @@ def fetch_paramset_template(format, ret_defaults=False, params_sampling=None):
     pkg_root_dir = Path(__file__).parent
     tml_filepath = pkg_root_dir/"resources"/"params_example.yml"
 
-    text_template = Path(tml_filepath).read_text()
+    text_template = tml_filepath.read_text()
     dict_template = yaml.load(text_template, loader=yaml.Loader)
 
     if not ret_defaults:
