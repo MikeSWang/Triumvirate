@@ -547,12 +547,12 @@ int ParameterSet::validate() {
       trvs::logger.error(
         "Padding is enabled but the %s padding factor is too large "
         "for the box size: `padfactor` = '%lg'.",
-        this->padscale, this->padfactor
+        this->padscale.c_str(), this->padfactor
       );
       throw trvs::InvalidParameter(
         "Padding is enabled but the %s padding factor is too large "
         "for the box size: `padfactor` = '%lg'.\n",
-        this->padscale, this->padfactor
+        this->padscale.c_str(), this->padfactor
       );
     }
     if (this->padscale == "grid" && (
@@ -563,12 +563,12 @@ int ParameterSet::validate() {
       trvs::logger.error(
         "Padding is enabled but the %s padding factor is too large "
         "for the mesh grid numbers: `padfactor` = '%lg'.",
-        this->padscale, this->padfactor
+        this->padscale.c_str(), this->padfactor
       );
       throw trvs::InvalidParameter(
         "Padding is enabled but the %s padding factor is too large "
         "for the mesh grid numbers: `padfactor` = '%lg'.\n",
-        this->padscale, this->padfactor
+        this->padscale.c_str(), this->padfactor
       );
     }
   }
