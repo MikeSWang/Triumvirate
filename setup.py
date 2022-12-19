@@ -49,7 +49,7 @@ os.environ['CC'] = 'g++'
 
 # Modify compilation options.
 options = ['-std=c++11',]
-links = []
+links = os.environ.get('PY_LIBS', '').split()
 
 if int(os.environ.get('PY_USEOMP', 0)):
     options.append('-fopenmp')
