@@ -83,6 +83,7 @@ endif
 # -- Compilation-specific configurations ---------------------------------
 
 export PY_INCLUDES=${INCLUDES}
+export PY_LIBS=${LIBS}
 
 # Enable OpenMP by setting `useomp=true` or `useomp=1`, which adds
 # `-fopenmp -DTRV_USE_OMP` and `-lfftw3_omp`.
