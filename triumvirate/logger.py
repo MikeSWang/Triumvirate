@@ -111,7 +111,6 @@ def _format_warning(message, category, filename, lineno, line=None):
     return msg_txt
 
 
-
 def setup_logger(log_level=logging.INFO):
     """Set up and return a customised logger with elapsed time,
     C++ state indication and formatted warning messages.
