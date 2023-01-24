@@ -407,7 +407,7 @@ def fetch_paramset_template(format, ret_defaults=False, params_sampling=None):
     tml_filepath = pkg_root_dir/"resources"/"params_example.yml"
 
     text_template = tml_filepath.read_text()
-    dict_template = yaml.load(text_template, loader=yaml.Loader)
+    dict_template = yaml.load(text_template, Loader=yaml.Loader)
 
     if not ret_defaults:
         if format.lower() == 'text':
@@ -488,7 +488,7 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
 
     if 'boxalign' in params_sampling.keys():
         paramset['alignment'] = params_sampling['boxalign']
-        if params_default: params_default.pop('alignment')
+        if params_default: params_default.pop('alignment', None)
 
     if paramset.get('alignment') == 'pad':
         if 'boxpad' in params_sampling.keys() \
@@ -500,31 +500,31 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
         paramset['padscale'] = 'box'
         paramset['padfactor'] = params_sampling['boxpad']
         if params_default:
-            params_default.pop('padscale')
-            params_default.pop('padfactor')
+            params_default.pop('padscale', None)
+            params_default.pop('padfactor', None)
     if 'gridpad' in params_sampling.keys():
         paramset['padscale'] = 'grid'
         paramset['padfactor'] = params_sampling['gridpad']
         if params_default:
-            params_default.pop('padscale')
-            params_default.pop('padfactor')
+            params_default.pop('padscale', None)
+            params_default.pop('padfactor', None)
 
     if 'boxsize' in params_sampling.keys():
         paramset['boxsize'] = dict(zip(
             ['x', 'y', 'z'], params_sampling['boxsize']
         ))
-        if params_default: params_default.pop('boxsize')
+        if params_default: params_default.pop('boxsize', None)
     if 'ngrid' in params_sampling.keys():
         paramset['ngrid'] = dict(zip(
             ['x', 'y', 'z'], params_sampling['ngrid']
         ))
-        if params_default: params_default.pop('ngrid')
+        if params_default: params_default.pop('ngrid', None)
     if 'assignment' in params_sampling.keys():
         paramset['assignment'] = params_sampling['assignment']
-        if params_default: params_default.pop('assignment')
+        if params_default: params_default.pop('assignment', None)
     if 'interlace' in params_sampling.keys():
         paramset['interlace'] = params_sampling['interlace']
-        if params_default: params_default.pop('interlace')
+        if params_default: params_default.pop('interlace', None)
 
     if ret_defaults:
         return paramset, params_default
@@ -544,8 +544,10 @@ def _modify_measurement_parameters(paramset, params_measure=None,
         for measurement parameters:
             * 'ell1', 'ell2', 'ELL': int;
             * 'i_wa', 'j_wa': int;
-            * 'idx_bin': int;
-            * 'form': {'diag', 'full'}.
+            * 'bin_min', 'bin_max': float;
+            * 'num_bins': int;
+            * 'form': {'diag', 'full'};
+            * 'idx_bin': int.
 
         This will override corresponding parameters in the template.
         If `None` (default), no modification happens and the original
@@ -593,11 +595,19 @@ def _modify_measurement_parameters(paramset, params_measure=None,
 
     if 'form' in params_measure.keys():
         paramset['form'] = params_measure['form']
-        if params_default: params_default.pop('form')
+        if params_default: params_default.pop('form', None)
 
     if 'idx_bin' in params_measure.keys():
         paramset['idx_bin'] = params_measure['idx_bin']
-        if params_default: params_default.pop('idx_bin')
+        if params_default: params_default.pop('idx_bin', None)
+
+    if 'bin_min' in params_measure.keys():
+        paramset['range'][0] = params_measure['bin_min']
+    if 'bin_max' in params_measure.keys():
+        paramset['range'][1] = params_measure['bin_max']
+    if 'num_bins' in params_measure.keys():
+        paramset['num_bins'] = params_measure['num_bins']
+        if params_default: params_default.pop('num_bins', None)
 
     if ret_defaults:
         return paramset, params_default

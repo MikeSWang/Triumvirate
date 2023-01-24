@@ -28,9 +28,10 @@ from triumvirate.parameters import (
 )
 
 
-def _amalgamate_parameters(paramset=None, params_sampling=None, degree=None):
+def _amalgamate_parameters(paramset=None, params_sampling=None,
+                           degree=None, binning=None, **type_kwargs):
     """Amalgamate a parameter set with overriding sampling parameters
-    and the measured multipole degree.
+    and the measured multipole degree and coordinate binning.
 
     Parameters
     ----------
@@ -54,6 +55,10 @@ def _amalgamate_parameters(paramset=None, params_sampling=None, degree=None):
     degree : int, optional
         Multipole degree.  If not `None` (default), this will override
         `paramset['degrees']['ELL']`.
+    binning : :class:`~.triumvirate.dataobjs.Binning`, optional
+        Binning (default is `None`).
+    **type_kwargs
+        `catalogue_type` and `statistic_type` parameters to be enforced.
 
     Returns
     -------
@@ -63,8 +68,8 @@ def _amalgamate_parameters(paramset=None, params_sampling=None, degree=None):
     Raises
     ------
     ValueError
-        When `paramset` is `None` while either `params_sampling` or
-        `degree` is also `None`.
+        When `paramset` is `None` while `params_sampling`, `degree` or
+        `binning` is also `None`.
 
     """
     if paramset is None and params_sampling is None:
@@ -73,6 +78,8 @@ def _amalgamate_parameters(paramset=None, params_sampling=None, degree=None):
         )
     if paramset is None and degree is None:
         raise ValueError("Either `paramset` or `degree` must be provided.")
+    if paramset is None and binning is None:
+        raise ValueError("Either `paramset` or `binning` must be provided.")
 
     if paramset is None:
         paramset, defaults = fetch_paramset_template('dict', ret_defaults=True)
@@ -93,9 +100,23 @@ def _amalgamate_parameters(paramset=None, params_sampling=None, degree=None):
             params_default=defaults, ret_defaults=True
         )
 
+    if binning is not None:
+        params_measure = {
+            'bin_min': binning.bin_min,
+            'bin_max': binning.bin_max,
+            'num_bins': binning.num_bins,
+        }
+        paramset, defaults = _modify_measurement_parameters(
+            paramset, params_measure,
+            params_default=defaults, ret_defaults=True
+        )
+
+    paramset.update(type_kwargs)
+
     if defaults:
         warnings.warn(
-            f"The following default parameter values are used: {defaults}."
+            f"The following default parameter values are assumed: {defaults}. "
+            "Not all parameters are necessarily used."
         )
 
     return paramset
@@ -267,7 +288,7 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
                                    catalogue_data, catalogue_rand,
                                    los_data=None, los_rand=None,
                                    paramset=None, params_sampling=None,
-                                   degree=None, binning=None,
+                                   degree=None, binning=None, types=None,
                                    save=False, logger=None):
     """Compute two-point statistics from survey-like data and random
     catalogues in the local plane-parallel approximation.
@@ -311,6 +332,9 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
         constructed from `paramset`.
+    types : dict, optional
+        `catalogue_type` and `statistic_type` (default is `None`).
+        This should be set by the caller of this function.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format.
@@ -336,7 +360,8 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
     # -- Parameters ------------------------------------------------------
 
     paramset = _amalgamate_parameters(
-        paramset=paramset, params_sampling=params_sampling, degree=degree
+        paramset=paramset, params_sampling=params_sampling,
+        degree=degree, binning=binning, **types
     )
 
     if isinstance(paramset, dict):  # likely redundant but safe
@@ -556,6 +581,7 @@ def compute_powspec(catalogue_data, catalogue_rand,
         los_data=los_data, los_rand=los_rand,
         paramset=paramset, params_sampling=sampling_params,
         degree=degree, binning=binning,
+        types={'catalogue_type': 'survey', 'statistic_type': 'powspec'},
         save=save, logger=logger
     )
 
@@ -644,6 +670,7 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
         los_data=los_data, los_rand=los_rand,
         paramset=paramset, params_sampling=sampling_params,
         degree=degree, binning=binning,
+        types={'catalogue_type': 'survey', 'statistic_type': '2pcf'},
         save=save, logger=logger
     )
 
@@ -663,7 +690,7 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
 
 def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
                                 paramset=None, params_sampling=None,
-                                degree=None, binning=None,
+                                degree=None, binning=None, types=None,
                                 save=False, logger=None):
     """Compute two-point statistics from a simulation-box catalogue
     in the global plane-parallel approximation.
@@ -697,6 +724,9 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
         constructed from `paramset`.
+    types : dict, optional
+        `catalogue_type` and `statistic_type` (default is `None`).
+        This should be set by the caller of this function.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements
         as a '.txt' file or in '.npz' format.
@@ -722,7 +752,8 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
     # -- Parameters ------------------------------------------------------
 
     paramset = _amalgamate_parameters(
-        paramset=paramset, params_sampling=params_sampling, degree=degree
+        paramset=paramset, params_sampling=params_sampling,
+        degree=degree, binning=binning, **types
     )
 
     if isinstance(paramset, dict):  # likely redundant but safe
@@ -905,6 +936,7 @@ def compute_powspec_in_gpp_box(catalogue_data,
         _compute_powspec_in_gpp_box, catalogue_data,
         paramset=paramset, params_sampling=sampling_params,
         degree=degree, binning=binning,
+        types={'catalogue_type': 'sim', 'statistic_type': 'powspec'},
         save=save, logger=logger
     )
 
@@ -982,6 +1014,7 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
         _compute_corrfunc_in_gpp_box, catalogue_data,
         paramset=paramset, params_sampling=sampling_params,
         degree=degree, binning=binning,
+        types={'catalogue_type': 'sim', 'statistic_type': '2pcf'},
         save=save, logger=logger
     )
 
@@ -1062,7 +1095,9 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
     # -- Parameters ------------------------------------------------------
 
     paramset = _amalgamate_parameters(
-        paramset=paramset, params_sampling=sampling_params, degree=degree
+        paramset=paramset, params_sampling=sampling_params,
+        degree=degree, binning=binning,
+        catalogue_type='random', statistic_type='2pcf-win'
     )
 
     if isinstance(paramset, dict):  # likely redundant but safe

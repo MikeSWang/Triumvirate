@@ -84,7 +84,7 @@ wa_orders:
 # (i.e. range of measurement scales) as a list.
 # The binning coordinate is either wavenumbers (in h/Mpc) in Fourier space,
 # or separations (in Mpc/h) in configuration space. [mandatory]
-range:
+range: [~, ~]
 
 # Number of measurement bins (i.e. data vector dimension).
 # Must be >=2, or >=7 if padding is used in binning. [mandatory]
