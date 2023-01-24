@@ -30,8 +30,8 @@ from triumvirate.parameters import (
 
 
 def _amalgamate_parameters(paramset=None, params_sampling=None,
-                           degrees=None, wa_orders=None,
-                           form=None, idx_bin=None):
+                           degrees=None, wa_orders=None, binning=None,
+                           form=None, idx_bin=None, **type_kwargs):
     """Amalgamate a parameter set with overriding sampling parameters
     and measurement parameters.
 
@@ -62,6 +62,8 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         Wide-angle correction orders either as a tuple ('i_wa', 'j_wa') or
         as a string of length 2.  If not `None` (default), this will
         override `paramset['wa_orders']` entries.
+    binning : :class:`~.triumvirate.dataobjs.Binning`, optional
+        Binning (default is `None`).
     form : {'diag', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override `paramset['form']`.
@@ -69,6 +71,8 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         Fixed bin index for the first coordinate dimension when binning
         `form` is 'full'.  If not `None` (default), this will
         override `paramset['idx_bin']`.
+    **type_kwargs
+        `catalogue_type` and `statistic_type` parameters to be enforced.
 
     Returns
     -------
@@ -79,7 +83,7 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
     ------
     ValueError
         When `paramset` is `None` while `params_sampling`, `degrees`,
-        or `form` is also `None`, or while `form` is 'full' and
+        `binning` or `form` is also `None`, or while `form` is 'full' and
         `idx_bin` is `None`.
 
     """
@@ -87,9 +91,10 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         raise ValueError(
             "Either `paramset` or `params_sampling` must be provided."
         )
-    if paramset is None and None in [degrees, form]:
+    if paramset is None and None in [degrees, binning, form]:
         raise ValueError(
-            "`degrees` and `form` must be provided when `paramset` is None."
+            "`degrees`, `binning` and `form` must be provided "
+            "when `paramset` is None."
         )
     if paramset is None and form == 'full' and idx_bin is None:
         raise ValueError(
@@ -120,6 +125,16 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         params_measure.update({
             'i_wa': int(i_wa), 'j_wa': int(j_wa)
         })
+    if binning is not None:
+        params_measure = {
+            'bin_min': binning.bin_min,
+            'bin_max': binning.bin_max,
+            'num_bins': binning.num_bins,
+        }
+        paramset, defaults = _modify_measurement_parameters(
+            paramset, params_measure,
+            params_default=defaults, ret_defaults=True
+        )
     if form is not None:
         params_measure.update({'form': form})
     if idx_bin is not None:
@@ -130,9 +145,12 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         params_default=defaults, ret_defaults=True
     )
 
+    paramset.update(type_kwargs)
+
     if defaults:
         warnings.warn(
-            f"The following default parameter values are used: {defaults}."
+            f"The following default parameter values are assumed: {defaults}. "
+            "Not all parameters are necessarily used."
         )
 
     return paramset
@@ -323,7 +341,7 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
                                    los_data=None, los_rand=None,
                                    paramset=None, params_sampling=None,
                                    degrees=None, binning=None,
-                                   form=None, idx_bin=None,
+                                   form=None, idx_bin=None, types=None,
                                    save=False, logger=None):
     """Compute three-point statistics from survey-like data and random
     catalogues in the local plane-parallel approximation.
@@ -376,6 +394,9 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         Fixed bin index for the first coordinate dimension
         when binning `form` is 'full'.  If not `None` (default),
         this will override `paramset['idx_bin']`.
+    types : dict, optional
+        `catalogue_type` and `statistic_type` (default is `None`).
+        This should be set by the caller of this function.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format.
@@ -396,7 +417,7 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
 
     paramset = _amalgamate_parameters(
         paramset=paramset, params_sampling=params_sampling,
-        degrees=degrees, form=form, idx_bin=idx_bin
+        degrees=degrees, binning=binning, form=form, idx_bin=idx_bin, **types
     )
 
     if isinstance(paramset, dict):  # likely redundant but safe
@@ -619,6 +640,7 @@ def compute_bispec(catalogue_data, catalogue_rand,
         los_data=los_data, los_rand=los_rand,
         paramset=paramset, params_sampling=sampling_params,
         degrees=degrees, binning=binning, form=form, idx_bin=idx_bin,
+        types={'catalogue_type': 'survey', 'statistic_type': 'bispec'},
         save=save, logger=logger
     )
 
@@ -710,6 +732,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
         los_data=los_data, los_rand=los_rand,
         paramset=paramset, params_sampling=sampling_params,
         degrees=degrees, binning=binning, form=form, idx_bin=idx_bin,
+        types={'catalogue_type': 'survey', 'statistic_type': '3pcf'},
         save=save, logger=logger
     )
 
@@ -950,7 +973,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 
 def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
                                 paramset=None, params_sampling=None,
-                                degrees=None, binning=None,
+                                degrees=None, binning=None, types=None,
                                 form=None, idx_bin=None,
                                 save=False, logger=None):
     """Compute three-point statistics from a simulation-box catalogue
@@ -987,6 +1010,9 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
+    types : dict, optional
+        `catalogue_type` and `statistic_type` (default is `None`).
+        This should be set by the caller of this function.
     form : {'diag', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override `paramset['form']`.
@@ -1014,7 +1040,7 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
 
     paramset = _amalgamate_parameters(
         paramset=paramset, params_sampling=params_sampling,
-        degrees=degrees, form=form, idx_bin=idx_bin
+        degrees=degrees, binning=binning, form=form, idx_bin=idx_bin, **types
     )
 
     if isinstance(paramset, dict):  # likely redundant but safe
@@ -1202,6 +1228,7 @@ def compute_bispec_in_gpp_box(catalogue_data,
         catalogue_data,
         paramset=paramset, params_sampling=sampling_params,
         degrees=degrees, binning=binning, form=form, idx_bin=idx_bin,
+        types={'catalogue_type': 'sim', 'statistic_type': 'bispec'},
         save=save, logger=logger
     )
 
@@ -1284,6 +1311,7 @@ def compute_3pcf_in_gpp_box(catalogue_data,
         catalogue_data,
         paramset=paramset, params_sampling=sampling_params,
         degrees=degrees, binning=binning, form=form, idx_bin=idx_bin,
+        types={'catalogue_type': 'sim', 'statistic_type': '3pcf'},
         save=save, logger=logger
     )
 
@@ -1379,7 +1407,8 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
 
     paramset = _amalgamate_parameters(
         paramset=paramset, params_sampling=sampling_params,
-        degrees=degrees, wa_orders=wa_orders, form=form, idx_bin=idx_bin
+        degrees=degrees, wa_orders=wa_orders, form=form, idx_bin=idx_bin,
+        catalogue_type='random', statistic_type='3pcf-win'
     )
 
     if isinstance(paramset, dict):  # likely redundant but safe
