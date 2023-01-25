@@ -77,8 +77,14 @@ class ParticleCatalogue {
 
   /**
    * @brief Construct the particle catalogue with initial values.
+   *
+   * @param verbose Logging verbosity (default is -1, i.e. unused).
+   *
+   * @note @p verbose is optional and used to control logging level
+   *       without @c ParameterSet when this method is called by
+   *       an external program (e.g. Python).
    */
-  ParticleCatalogue();
+  ParticleCatalogue(int verbose=-1);
 
   /**
    * @brief Destruct the particle catalogue.
@@ -144,6 +150,7 @@ class ParticleCatalogue {
    *
    * @param x, y, z, nz, ws, wc Particle data by column.
    * @returns Exit status.
+   *
    */
   int load_particle_data(
     std::vector<double> x, std::vector<double> y, std::vector<double> z,
