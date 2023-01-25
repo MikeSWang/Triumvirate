@@ -221,6 +221,7 @@ trv::BispecMeasurements compute_bispec(
   trv::ParameterSet& params, trv::Binning& kbinning,
   double norm_factor
 ) {
+  trvs::logger.reset_level(params.verbose);
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing bispectrum from paired survey-type catalogues..."
@@ -538,6 +539,7 @@ trv::ThreePCFMeasurements compute_3pcf(
   trv::ParameterSet& params, trv::Binning& rbinning,
   double norm_factor
 ) {
+  trvs::logger.reset_level(params.verbose);
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing three-point correlation function "
@@ -811,6 +813,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   trv::ParameterSet& params, trv::Binning kbinning,
   double norm_factor
 ) {
+  trvs::logger.reset_level(params.verbose);
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing bispectrum from a periodic-box simulation-type catalogue "
@@ -1096,6 +1099,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   trv::ParameterSet& params, trv::Binning& rbinning,
   double norm_factor
 ) {
+  trvs::logger.reset_level(params.verbose);
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing three-point correlation function "
@@ -1347,6 +1351,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
 ) {
   std::string msg_tag = wide_angle ? "wide-angle corrections " : "";
 
+  trvs::logger.reset_level(params.verbose);
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing three-point correlation function window %s"
@@ -1621,6 +1626,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   trv::ParameterSet& params, trv::Binning& kbinning,
   double norm_factor
 ) {
+  trvs::logger.reset_level(params.verbose);
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing bispectrum from paired survey-type catalogues "
