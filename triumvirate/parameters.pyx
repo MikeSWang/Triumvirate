@@ -372,7 +372,7 @@ cdef class ParameterSet:
             pass
 
 
-def fetch_paramset_template(format, ret_defaults=False, params_sampling=None):
+def fetch_paramset_template(format, ret_defaults=False):
     """Fetch a parameter set template, either as a YAML file
     (with explanatory text) or as a dictionary.
 
@@ -597,10 +597,6 @@ def _modify_measurement_parameters(paramset, params_measure=None,
         paramset['form'] = params_measure['form']
         if params_default: params_default.pop('form', None)
 
-    if 'idx_bin' in params_measure.keys():
-        paramset['idx_bin'] = params_measure['idx_bin']
-        if params_default: params_default.pop('idx_bin', None)
-
     if 'bin_min' in params_measure.keys():
         paramset['range'][0] = params_measure['bin_min']
     if 'bin_max' in params_measure.keys():
@@ -608,6 +604,10 @@ def _modify_measurement_parameters(paramset, params_measure=None,
     if 'num_bins' in params_measure.keys():
         paramset['num_bins'] = params_measure['num_bins']
         if params_default: params_default.pop('num_bins', None)
+
+    if 'idx_bin' in params_measure.keys():
+        paramset['idx_bin'] = params_measure['idx_bin']
+        if params_default: params_default.pop('idx_bin', None)
 
     if ret_defaults:
         return paramset, params_default
