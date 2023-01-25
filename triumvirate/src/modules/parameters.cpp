@@ -314,6 +314,8 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
 }
 
 int ParameterSet::validate() {
+  trvs::logger.reset_level(this->verbose);
+
   /// Validate and derive string parameters.
   if (this->catalogue_dir != "") {
     this->catalogue_dir += "/";  // transmutation

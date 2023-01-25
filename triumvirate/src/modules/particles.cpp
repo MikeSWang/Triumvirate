@@ -34,7 +34,11 @@ namespace trv {
 /// Life cycle
 /// **********************************************************************
 
-ParticleCatalogue::ParticleCatalogue () {
+ParticleCatalogue::ParticleCatalogue(int verbose) {
+  if (verbose >= 0) {
+    trvs::logger.reset_level(verbose);
+  }
+
   /// Set default values (likely redundant but safe).
   this->pdata = nullptr;
   this->ntotal = 0;

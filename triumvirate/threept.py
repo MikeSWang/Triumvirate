@@ -479,8 +479,10 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
             "Preparing catalogue for clustering algorithm...", cpp_state='start'
         )
 
-    particles_data = catalogue_data._convert_to_cpp_catalogue()
-    particles_rand = catalogue_rand._convert_to_cpp_catalogue()
+    particles_data = \
+        catalogue_data._convert_to_cpp_catalogue(verbose=paramset['verbose'])
+    particles_rand = \
+        catalogue_rand._convert_to_cpp_catalogue(verbose=paramset['verbose'])
 
     if logger:
         logger.info(
@@ -884,8 +886,10 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #             cpp_state='start'
 #         )
 
-#     particles_data = catalogue_data._convert_to_cpp_catalogue()
-#     particles_rand = catalogue_rand._convert_to_cpp_catalogue()
+#     particles_data = \
+#         catalogue_data._convert_to_cpp_catalogue(verbose=paramset['verbose'])
+#     particles_rand = \
+#         catalogue_rand._convert_to_cpp_catalogue(verbose=paramset['verbose'])
 
 #     if logger:
 #         logger.info(
@@ -1086,7 +1090,8 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
             "Preparing catalogue for clustering algorithm...", cpp_state='start'
         )
 
-    particles_data = catalogue_data._convert_to_cpp_catalogue()
+    particles_data = \
+        catalogue_data._convert_to_cpp_catalogue(verbose=paramset['verbose'])
 
     if logger:
         logger.info(
@@ -1447,7 +1452,8 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
     # --------------------------------------------------------------------
 
     # Prepare catalogues.
-    particles_rand = catalogue_rand._convert_to_cpp_catalogue()
+    particles_rand = \
+        catalogue_rand._convert_to_cpp_catalogue(verbose=paramset['verbose'])
 
     # Set up constants.
     if paramset['norm_convention'] == 'particle':

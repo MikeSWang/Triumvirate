@@ -43,6 +43,8 @@ MeshField::MeshField(trv::ParameterSet& params) {
   /// Attach the full parameter set to @ref trv::MeshField.
   this->params = params;
 
+  trvs::logger.reset_level(params.verbose);
+
   /// Initialise the field (and its shadow field if interlacing is used)
   /// and increase allocated memory.
   this->field = fftw_alloc_complex(this->params.nmesh);

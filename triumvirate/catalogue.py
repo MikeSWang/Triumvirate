@@ -484,8 +484,14 @@ class ParticleCatalogue:
                     self
                 )
 
-    def _convert_to_cpp_catalogue(self):
+    def _convert_to_cpp_catalogue(self, verbose=-1):
         """Convert to a C++-wrapped catalogue.
+
+        Parameters
+        ----------
+        verbose : int, optional
+            Verbosity level to be passed to the backend C++ logger
+            (default is -1, i.e. unused).
 
         Returns
         -------
@@ -500,7 +506,7 @@ class ParticleCatalogue:
         ws = self._compute(self._pdata['ws'])
         wc = self._compute(self._pdata['wc'])
 
-        return _ParticleCatalogue(x, y, z, nz, ws, wc)
+        return _ParticleCatalogue(x, y, z, nz, ws, wc, verbose=verbose)
 
     def _compute(self, quant):
         """Return a quantity in standard form (i.e. apply

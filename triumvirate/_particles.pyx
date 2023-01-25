@@ -19,10 +19,11 @@ cdef class _ParticleCatalogue:
         np.ndarray[double, ndim=1, mode='c'] z not None,
         np.ndarray[double, ndim=1, mode='c'] nz not None,
         np.ndarray[double, ndim=1, mode='c'] ws not None,
-        np.ndarray[double, ndim=1, mode='c'] wc not None
+        np.ndarray[double, ndim=1, mode='c'] wc not None,
+        verbose=-1
     ):
 
-        self.thisptr = new CppParticleCatalogue()
+        self.thisptr = new CppParticleCatalogue(verbose)
 
         self.thisptr.load_particle_data(x, y, z, nz, ws, wc)
 
