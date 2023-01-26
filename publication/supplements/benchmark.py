@@ -106,6 +106,14 @@ def configure():
         '-n', '--niter', dest='niter', type=int,
         help="Benchmark parameter: number of iterations."
     )
+    cfg.add_argument(
+        '--output-tag', default='',
+        help="Output file tag for saved benchmarking results."
+    )
+    cfg.add_argument(
+        '--output-dir', default="",
+        help="Output directory to save benchmarking results to."
+    )
 
     return cfg.parse_args()
 
@@ -278,6 +286,9 @@ if __name__ == '__main__':
 
     # Export benchmark results.
     if results:
-        np.save("benchmark_results.npy", results, allow_pickle=True)
+        output_path = os.path.join(
+            cfg.output_dir, f"benchmark_results{cfg.output_tag}.npy"
+        )
+        np.save(output_path, results, allow_pickle=True)
     else:
         warnings.warn("No benchmarking runs.")
