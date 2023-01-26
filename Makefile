@@ -27,10 +27,19 @@ DIR_TESTOUT = ${DIR_TESTS}/test_output
 
 # -- Common configuration ------------------------------------------------
 
+ifeq ($(shell uname -s),Darwin)
+# Here we use LLVM compiler to load the Mac OpenMP
+ifndef HOMEBREW_PREFIX
+HOMEBREW_PREFIX = /usr/local
+endif
+CC = ${HOMEBREW_PREFIX}/opt/llvm/bin/clang++
+else
+# default (Linux) case
 CC = g++
+endif
 INCLUDES = -I${DIR_INCLUDE}
-CFLAGS = -O3 -Wall
-LIBS = -lgsl -lgslcblas -lfftw3
+CFLAGS = -O3 -Wall $(shell pkg-config --cflags gsl fftw3)
+LIBS = $(shell pkg-config --libs gsl fftw3)
 CLIBS =
 
 
