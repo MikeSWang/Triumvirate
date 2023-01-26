@@ -217,7 +217,7 @@ void Binning::compute_binning() {
     }
     this->bin_edges.push_back(this->bin_max);
   } else {
-    throw trv::sys::InvalidParameter("Invalid binning `scheme`: %s.", scheme);
+    throw trv::sys::InvalidParameter("Invalid binning `scheme`: %s.", scheme.c_str());
   }
 }
 
