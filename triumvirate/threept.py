@@ -126,15 +126,11 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
             'i_wa': int(i_wa), 'j_wa': int(j_wa)
         })
     if binning is not None:
-        params_measure = {
+        params_measure.update({
             'bin_min': binning.bin_min,
             'bin_max': binning.bin_max,
             'num_bins': binning.num_bins,
-        }
-        paramset, defaults = _modify_measurement_parameters(
-            paramset, params_measure,
-            params_default=defaults, ret_defaults=True
-        )
+        })
     if form is not None:
         params_measure.update({'form': form})
     if idx_bin is not None:
