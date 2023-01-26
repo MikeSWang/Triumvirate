@@ -11,6 +11,42 @@ from timeit import Timer
 
 import numpy as np
 
+from triumvirate.threept import (
+    compute_3pcf,
+    compute_3pcf_in_gpp_box,
+    compute_bispec,
+    compute_bispec_in_gpp_box,
+)
+from triumvirate.twopt import (
+    compute_corrfunc,
+    compute_corrfunc_in_gpp_box,
+    compute_powspec,
+    compute_powspec_in_gpp_box,
+)
+
+
+ALGOS = {
+    'bispec': {
+        'lpp': {
+            'fourier': compute_bispec,
+            'config': compute_3pcf,
+        },
+        'gpp': {
+            'fourier': compute_bispec_in_gpp_box,
+            'config': compute_3pcf_in_gpp_box,
+        }
+    },
+    'powspec': {
+        'lpp': {
+            'fourier': compute_powspec,
+            'config': compute_corrfunc,
+        },
+        'gpp': {
+            'fourier': compute_powspec_in_gpp_box,
+            'config': compute_corrfunc_in_gpp_box,
+        }
+    },
+}
 
 root_dir = Path(os.path.dirname(os.path.abspath(
     inspect.getframeinfo(inspect.currentframe()).filename
@@ -20,43 +56,61 @@ root_dir = Path(os.path.dirname(os.path.abspath(
 def configure():
     """Configure benchmarking."""
 
-    config = ArgumentParser(
+    cfg = ArgumentParser(
         description="Benchmark performance of `Triumvirate`."
     )
 
-    config.add_argument(
-        '-bl', dest='run_bispec_lpp', action='store_true',
+    cfg.add_argument(
+        '-blf', dest='run_bispec_lpp', action='store_true',
         help="Benchmark local plane-parallel bispectrum performance."
     )
-    config.add_argument(
-        '-bg', dest='run_bispec_gpp', action='store_true',
+    cfg.add_argument(
+        '-bgf', dest='run_bispec_gpp', action='store_true',
         help="Benchmark global plane-parallel bispectrum performance."
     )
-    config.add_argument(
-        '-pl', dest='run_powspec_lpp', action='store_true',
+    cfg.add_argument(
+        '-blc', dest='run_3pcf_lpp', action='store_true',
+        help="Benchmark local plane-parallel 3PCF performance."
+    )
+    cfg.add_argument(
+        '-bgc', dest='run_3pcf_gpp', action='store_true',
+        help="Benchmark global plane-parallel 3PCF performance."
+    )
+
+    cfg.add_argument(
+        '-plf', dest='run_powspec_lpp', action='store_true',
         help="Benchmark local plane-parallel power spectrum performance."
     )
-    config.add_argument(
-        '-pg', dest='run_powspec_gpp', action='store_true',
+    cfg.add_argument(
+        '-pgf', dest='run_powspec_gpp', action='store_true',
         help="Benchmark global plane-parallel power spectrum performance."
     )
-    config.add_argument(
-        '--aniso', action='store_true',
+    cfg.add_argument(
+        '-plc', dest='run_2pcf_lpp', action='store_true',
+        help="Benchmark local plane-parallel 2PCF performance."
+    )
+    cfg.add_argument(
+        '-pgc', dest='run_2pcf_gpp', action='store_true',
+        help="Benchmark global plane-parallel 2PCF performance."
+    )
+
+    cfg.add_argument(
+        '-a', '--aniso', action='store_true',
         help="Benchmark parameter: if used, compute the anisotropic quadrupole."
     )
-    config.add_argument(
+    cfg.add_argument(
         '-g', '--ngrid', dest='ngrid', type=int, nargs='+',
         help="Benchmark parameter: grid number per dimension."
     )
-    config.add_argument(
+    cfg.add_argument(
         '-n', '--niter', dest='niter', type=int,
         help="Benchmark parameter: number of iterations."
     )
 
-    return config.parse_args()
+    return cfg.parse_args()
 
 
-def setup_benchmarker(algo, case, multipole):
+def setup_benchmarker(algo, case, space, multipole):
     """Set up benchmarker.
 
     Parameters
@@ -67,6 +121,9 @@ def setup_benchmarker(algo, case, multipole):
     case : str, {'lpp', 'gpp'}
         Benchmarked case, either local plane-parallel ('lpp') or
         global plane-parallel ('gpp').
+    space : str, {'fourier', 'config'}
+        Coordinate space, either Fourier ('fourier') or
+        configuration ('config').
     multipole : (sequence of) int
         Multipole degree(s).
 
@@ -80,6 +137,8 @@ def setup_benchmarker(algo, case, multipole):
         raise ValueError(f"Unrecognised algorithm to be benchmarked: '{algo}'.")
     if case not in {'lpp', 'gpp'}:
         raise ValueError(f"Unrecognised case to be benchmarked: '{case}'.")
+    if space not in {'fourier', 'config'}:
+        raise ValueError(f"Unrecognised space to be benchmarked: '{space}'.")
 
     # Set catalogue paths.
     test_catalogue_dir = root_dir/"triumvirate"/"tests/test_input"/"catalogues"
@@ -97,9 +156,12 @@ def setup_benchmarker(algo, case, multipole):
     # Set parameter defaults.
     BOXSIZE = 1000.
     ASSIGNMENT = 'tsc'
-    KMIN = 0.005
-    KMAX = 0.205
+
     NBIN = 20
+    if space == 'fourier':
+        BIN_MIN, BIN_MAX = 0.005, 0.205
+    if space == 'config':
+        BIN_MIN, BIN_MAX = 5., 205.
 
     # Create parameter set.
     from triumvirate.parameters import (
@@ -121,7 +183,7 @@ def setup_benchmarker(algo, case, multipole):
     from triumvirate.dataobjs import Binning
 
     binning = Binning(
-        'fourier', 'lin', bin_min=KMIN, bin_max=KMAX, num_bins=NBIN
+        space, 'lin', bin_min=BIN_MIN, bin_max=BIN_MAX, num_bins=NBIN
     )
 
     # Load test catalogue(s).
@@ -141,67 +203,77 @@ def setup_benchmarker(algo, case, multipole):
 
     # Declare test function.
     if algo == 'bispec':
-        from triumvirate.threept import compute_bispec, compute_bispec_in_gpp_box
-        if case == 'lpp':
-            def run_triumvirate(ngrid):
-                compute_bispec(
-                    *test_catalogues, degrees=multipole, binning=binning,
-                    sampling_params={'ngrid': [ngrid,]*3},
-                    paramset=paramset
-                )
-        if case == 'gpp':
-            def run_triumvirate(ngrid):
-                compute_bispec_in_gpp_box(
-                    *test_catalogues, degrees=multipole, binning=binning,
-                    sampling_params={'ngrid': [ngrid,]*3},
-                    paramset=paramset
-                )
+        def run_triumvirate(ngrid):
+            ALGOS[algo][case][space](
+                *test_catalogues, degrees=multipole, binning=binning,
+                sampling_params={'ngrid': [ngrid,]*3},
+                paramset=paramset
+            )
     if algo == 'powspec':
-        from triumvirate.twopt import compute_powspec, compute_powspec_in_gpp_box
-        if case == 'lpp':
-            def run_triumvirate(ngrid):
-                compute_powspec(
-                    *test_catalogues, degree=multipole, binning=binning,
-                    sampling_params={'ngrid': [ngrid,]*3},
-                    paramset=paramset
-                )
-        if case == 'gpp':
-            def run_triumvirate(ngrid):
-                compute_powspec_in_gpp_box(
-                    *test_catalogues, degree=multipole, binning=binning,
-                    sampling_params={'ngrid': [ngrid,]*3},
-                    paramset=paramset
-                )
+        def run_triumvirate(ngrid):
+            ALGOS[algo][case][space](
+                *test_catalogues, degree=multipole, binning=binning,
+                sampling_params={'ngrid': [ngrid,]*3},
+                paramset=paramset
+            )
 
     return run_triumvirate
 
 
 if __name__ == '__main__':
 
-    config = configure()
+    cfg = configure()
 
     # Determine benchmarked cases.
     benchmarkers = {}
-    if config.run_bispec_lpp:
-        multipole = (0, 0, 0) if not config.aniso else (2, 0, 2)
-        benchmarkers['bispec_lpp'] = setup_benchmarker('bispec', 'lpp', multipole)
-    if config.run_bispec_gpp:
-        multipole = (0, 0, 0) if not config.aniso else (2, 0, 2)
-        benchmarkers['bispec_gpp'] = setup_benchmarker('bispec', 'gpp', multipole)
-    if config.run_powspec_lpp:
-        multipole = 0 if not config.aniso else 2
-        benchmarkers['powspec_lpp'] = setup_benchmarker('powspec', 'lpp', multipole)
-    if config.run_powspec_gpp:
-        multipole = 0 if not config.aniso else 2
-        benchmarkers['powspec_gpp'] = setup_benchmarker('powspec', 'gpp', multipole)
+    if cfg.run_bispec_lpp:
+        multipole = (0, 0, 0) if not cfg.aniso else (2, 0, 2)
+        benchmarkers['bispec_lpp'] = setup_benchmarker(
+            'bispec', 'lpp', 'fourier', multipole
+        )
+    if cfg.run_bispec_gpp:
+        multipole = (0, 0, 0) if not cfg.aniso else (2, 0, 2)
+        benchmarkers['bispec_lpp'] = setup_benchmarker(
+            'bispec', 'gpp', 'fourier', multipole
+        )
+    if cfg.run_3pcf_lpp:
+        multipole = (0, 0, 0) if not cfg.aniso else (2, 0, 2)
+        benchmarkers['3pcf_lpp'] = setup_benchmarker(
+            'bispec', 'lpp', 'config', multipole
+        )
+    if cfg.run_3pcf_gpp:
+        multipole = (0, 0, 0) if not cfg.aniso else (2, 0, 2)
+        benchmarkers['3pcf_gpp'] = setup_benchmarker(
+            'bispec', 'gpp', 'config', multipole
+        )
+    if cfg.run_powspec_lpp:
+        multipole = 0 if not cfg.aniso else 2
+        benchmarkers['powspec_lpp'] = setup_benchmarker(
+            'powspec', 'lpp', 'fourier', multipole
+        )
+    if cfg.run_powspec_gpp:
+        multipole = 0 if not cfg.aniso else 2
+        benchmarkers['powspec_gpp'] = setup_benchmarker(
+            'powspec', 'gpp', 'fourier', multipole
+        )
+    if cfg.run_2pcf_lpp:
+        multipole = 0 if not cfg.aniso else 2
+        benchmarkers['2pcf_lpp'] = setup_benchmarker(
+            'powspec', 'lpp', 'config', multipole
+        )
+    if cfg.run_2pcf_gpp:
+        multipole = 0 if not cfg.aniso else 2
+        benchmarkers['2pcf_gpp'] = setup_benchmarker(
+            'powspec', 'gpp', 'config', multipole
+        )
 
     # Perform benchmarking runs.
     results = {}
     for algo, func in benchmarkers.items():
         runtimes = {}
-        for ngrid in config.ngrid:
+        for ngrid in cfg.ngrid:
             timer = Timer(partial(func, ngrid))
-            runtimes[ngrid] = timer.repeat(repeat=config.niter, number=1)
+            runtimes[ngrid] = timer.repeat(repeat=cfg.niter, number=1)
         results[algo] = runtimes
 
     # Export benchmark results.
