@@ -72,7 +72,7 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         `form` is 'full'.  If not `None` (default), this will
         override `paramset['idx_bin']`.
     **type_kwargs
-        `catalogue_type` and `statistic_type` parameters to be enforced.
+        `catalogue_type` and `statistic_type` parameters to be filled in.
 
     Returns
     -------
@@ -145,7 +145,7 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
 
     if defaults:
         warnings.warn(
-            f"The following default parameter values are assumed: {defaults}. "
+            f"The following parameter default values are unchanged: {defaults}. "
             "Not all parameters are necessarily used."
         )
 
@@ -819,7 +819,8 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 
 #     paramset = _amalgamate_parameters(
 #         paramset=paramset, params_sampling=sampling_params,
-#         degrees=degrees, form=form, idx_bin=idx_bin
+#         degrees=degrees, binning=binning, form=form, idx_bin=idx_bin,
+#         catalogue_type='survey', statistic_type='bispec'
 #     )
 
 #     if isinstance(paramset, dict):  # likely redundant but safe
@@ -1408,7 +1409,8 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
 
     paramset = _amalgamate_parameters(
         paramset=paramset, params_sampling=sampling_params,
-        degrees=degrees, wa_orders=wa_orders, form=form, idx_bin=idx_bin,
+        degrees=degrees, wa_orders=wa_orders,
+        binning=binning, form=form, idx_bin=idx_bin,
         catalogue_type='random', statistic_type='3pcf-win'
     )
 

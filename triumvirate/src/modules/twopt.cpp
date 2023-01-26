@@ -226,6 +226,7 @@ trv::PowspecMeasurements compute_powspec(
   double norm_factor
 ) {
   trvs::logger.reset_level(params.verbose);
+
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing power spectrum from paired survey-type catalogues..."
@@ -343,6 +344,7 @@ trv::TwoPCFMeasurements compute_corrfunc(
   double norm_factor
 ) {
   trvs::logger.reset_level(params.verbose);
+
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing two-point correlation function from "
@@ -459,6 +461,7 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
   double norm_factor
 ) {
   trvs::logger.reset_level(params.verbose);
+
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing power spectrum from a periodic-box simulation-type catalogue "
@@ -559,6 +562,7 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
   double norm_factor
 ) {
   trvs::logger.reset_level(params.verbose);
+
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing two-point correlation function "
@@ -656,6 +660,7 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
   double alpha, double norm_factor
 ) {
   trvs::logger.reset_level(params.verbose);
+
   if (trvs::currTask == 0) {
     trvs::logger.stat(
       "Computing two-point correlation function window "

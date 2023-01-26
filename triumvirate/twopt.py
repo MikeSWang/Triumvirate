@@ -58,7 +58,7 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
     binning : :class:`~.triumvirate.dataobjs.Binning`, optional
         Binning (default is `None`).
     **type_kwargs
-        `catalogue_type` and `statistic_type` parameters to be enforced.
+        `catalogue_type` and `statistic_type` parameters to be filled in.
 
     Returns
     -------
@@ -112,7 +112,7 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
 
     if defaults:
         warnings.warn(
-            f"The following default parameter values are assumed: {defaults}. "
+            f"The following parameter default values are unchanged: {defaults}. "
             "Not all parameters are necessarily used."
         )
 
