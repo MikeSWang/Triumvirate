@@ -93,23 +93,20 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
             params_default=defaults, ret_defaults=True
         )
 
+    params_measure = {}
     if degree is not None:
-        params_measure = {'ELL': degree}
-        paramset, defaults = _modify_measurement_parameters(
-            paramset, params_measure,
-            params_default=defaults, ret_defaults=True
-        )
-
+        params_measure.update({'ELL': degree})
     if binning is not None:
-        params_measure = {
+        params_measure.update({
             'bin_min': binning.bin_min,
             'bin_max': binning.bin_max,
             'num_bins': binning.num_bins,
-        }
-        paramset, defaults = _modify_measurement_parameters(
-            paramset, params_measure,
-            params_default=defaults, ret_defaults=True
-        )
+        })
+
+    paramset, defaults = _modify_measurement_parameters(
+        paramset, params_measure,
+        params_default=defaults, ret_defaults=True
+    )
 
     paramset.update(type_kwargs)
 
