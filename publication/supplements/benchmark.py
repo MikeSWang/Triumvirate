@@ -293,7 +293,7 @@ if __name__ == '__main__':
         output_path = Path(
             cfg.output_dir, f"benchmark_results{cfg.output_tag}.npy"
         )
-        output_path.mkdir(parents=True, exist_ok=True)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
         np.save(output_path, results, allow_pickle=True)
     else:
         warnings.warn("No benchmarking runs.")
