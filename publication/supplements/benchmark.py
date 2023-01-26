@@ -241,7 +241,7 @@ if __name__ == '__main__':
         )
     if cfg.run_bispec_gpp:
         multipole = (0, 0, 0) if not cfg.aniso else (2, 0, 2)
-        benchmarkers['bispec_lpp'] = setup_benchmarker(
+        benchmarkers['bispec_gpp'] = setup_benchmarker(
             'bispec', 'gpp', 'fourier', multipole
         )
     if cfg.run_3pcf_lpp:
