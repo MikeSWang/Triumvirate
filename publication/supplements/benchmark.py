@@ -294,7 +294,7 @@ if __name__ == '__main__':
             runtimes[ngrid] = timer.repeat(repeat=cfg.niter, number=1)
 
             # Periodically export the results.
-            results[algo].update(runtimes)
+            results[algo] = runtimes
             if results:
                 np.save(output_path, results, allow_pickle=True)
 
