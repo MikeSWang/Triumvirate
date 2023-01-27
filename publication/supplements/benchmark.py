@@ -275,6 +275,12 @@ if __name__ == '__main__':
             'powspec', 'gpp', 'config', multipole
         )
 
+    # Set outputs.
+    output_path = Path(
+        cfg.output_dir, f"benchmark_results{cfg.output_tag}.npy"
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
     # Perform benchmarking runs.
     results = {}
     for algo, func in benchmarkers.items():
@@ -286,14 +292,11 @@ if __name__ == '__main__':
                 f"ngrid={ngrid}, niter={cfg.niter}"
             )
             runtimes[ngrid] = timer.repeat(repeat=cfg.niter, number=1)
-        results[algo] = runtimes
 
-    # Export benchmark results.
-    if results:
-        output_path = Path(
-            cfg.output_dir, f"benchmark_results{cfg.output_tag}.npy"
-        )
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        np.save(output_path, results, allow_pickle=True)
-    else:
+            # Periodically export the results.
+            results[algo].update(runtimes)
+            if results:
+                np.save(output_path, results, allow_pickle=True)
+
+    if not results:
         warnings.warn("No benchmarking runs.")
