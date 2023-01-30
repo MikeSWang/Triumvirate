@@ -435,7 +435,7 @@ trv::BispecMeasurements compute_bispec(
 
         if (params.ell2 == 0) {
           /// When l₂ = 0, the Wigner 3-j symbol enforces L = l₁.
-  			  FieldStats stats_sn(params);  // S|{i ≠ j = k}
+          FieldStats stats_sn(params);  // S|{i ≠ j = k}
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_00_for_sn, N_LM, Sbar_LM, params.ell1, m1_, kbinning
           );
@@ -457,7 +457,7 @@ trv::BispecMeasurements compute_bispec(
 
         if (params.ell1 == 0) {
           /// When l₁ = 0, the Wigner 3-j symbol enforces L = l₂.
-  			  FieldStats stats_sn(params);  // S|{j ≠ i = k}
+          FieldStats stats_sn(params);  // S|{j ≠ i = k}
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_00_for_sn, N_LM, Sbar_LM, params.ell2, m2_, kbinning
           );
@@ -466,7 +466,7 @@ trv::BispecMeasurements compute_bispec(
           }
         }
 
-  			FieldStats stats_sn(params);
+        FieldStats stats_sn(params);
         for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
           double k_a = k1_save[ibin];
           double k_b = k2_save[ibin];
@@ -1923,7 +1923,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
         if (params.ell2 == 0) {
           /// When l₂ = 0, the Wigner 3-j symbol enforces L = l₁.
-  			  FieldStats stats_sn(params);  // S|{i ≠ j = k}
+          FieldStats stats_sn(params);  // S|{i ≠ j = k}
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_LM_a_for_sn, N_LM_a, Sbar_LM, params.ell1, m1_, kbinning
           );
@@ -1944,7 +1944,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
         if (params.ell1 == 0) {
           /// When l₁ = 0, the Wigner 3-j symbol enforces L = l₂.
-  			  FieldStats stats_sn(params);  // S|{j ≠ i = k}
+            FieldStats stats_sn(params);  // S|{j ≠ i = k}
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_LM_b_for_sn, N_LM_b, Sbar_LM,
             params.ell2, m2_, kbinning
@@ -1954,7 +1954,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           }
         }
 
-  			FieldStats stats_sn(params);
+        FieldStats stats_sn(params);
         for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
           double k_a = k1_save[ibin];
           double k_b = k2_save[ibin];
