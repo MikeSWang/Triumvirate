@@ -1,4 +1,4 @@
-name: CI for Triumvirate
+name: CI
 
 on:
   push:
@@ -8,26 +8,24 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.8', '3.10']
+        os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.8
       - name: Install dependencies
         run: |
           sudo apt-get update -y
           sudo apt-get install -y libfftw3-dev
-          python -m pip install --upgrade pip wheel setuptools cython
-          pip install pytest
+          python -m pip install --upgrade pip wheel setuptools cython pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Build package
-        run: |
-          make clean; make install uselogo=1 useomp=1
+        run: make clean; make install useomp=true uselogo=true
