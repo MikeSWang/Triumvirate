@@ -6,16 +6,17 @@
 import os
 import sys
 
-
 sys.path.insert(0, os.path.abspath("../.."))
+
+from triumvirate._pkginfo import __version__ as version
 
 
 # -- Project information -------------------------------------------------
 
 project = 'Triumvirate'
-copyright = ' 2022, Mike S Wang & Naonori Sugiyama'
-author = 'Mike S Wang, Naonori Sugiyama'
-release = 'dev0.0'
+copyright = '2023'
+author = 'Mike S Wang & Naonori S Sugiyama'
+release = version
 
 
 # -- General configuration -----------------------------------------------
@@ -24,15 +25,14 @@ exclude_patterns = ['setup', 'config', 'tests', 'examples']
 
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
     'sphinx.ext.githubpages',
     'sphinx.ext.intersphinx',
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
     'sphinx.ext.todo',
-    # 'sphinx.ext.viewcode',  # NOTE: enable in public releases
-    'nbsphinx',
+    'sphinx.ext.viewcode',
+    'myst_nb',
 ]
 
 master_doc = 'index'
@@ -50,28 +50,23 @@ html_favicon = '_static/Triumvirate.ico'
 
 html_logo = '_static/Triumvirate.png'
 
-html_sidebars = {
-    '**': ['navigation.html', 'searchbox.html'],
-    'using/windows': ['windowssidebar.html', 'searchbox.html'],
-}
-
 html_static_path = ['_static']
 
-html_theme = 'alabaster'
+html_theme = 'sphinx_book_theme'
 
 html_theme_options = {
-    'fixed_sidebar' : True,
-    'github_repo': 'Triumvirate',
-    'github_user': 'MikeSWang',
-    'page_width': '1150px',
-    'sidebar_width': '250px',
+    'repository_url' : 'https://github.com/MikeSWang/Triumvirate',
+    'home_page_in_toc': True,
+    'logo_only': True,
+    'use_download_button': False,
+    'use_fullscreen_button': False,
+    'use_repository_button': True,
 }
 
 
 # -- Extension configuration ---------------------------------------------
 
 autodoc_member_order = 'bysource'
-autosummary_generate = True
 
 intersphinx_mapping = {
     'python': ("https://docs.python.org/3", None),
@@ -85,5 +80,7 @@ napoleon_include_special_with_doc = True
 napoleon_google_docstring = False
 napoleon_use_param = False
 napoleon_use_ivar = True
+
+nb_execution_mode = 'off'
 
 todo_include_todos = True

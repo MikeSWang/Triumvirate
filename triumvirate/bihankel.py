@@ -368,6 +368,7 @@ def transform_bispec_to_3pcf(ell1, ell2, k_in, bk_in, r_out,
         FFTLog sample number.
     extrap : {'lin', 'loglin', 'zero'}, optional
         If not `None` (default), set one of the following options:
+
             * 'lin' -- input bispectrum is extrapolated linearly;
             * 'loglin' -- input bispectrum is extrapolated log-linearly;
             * 'zero' -- input bispectrum is zero padded.
@@ -381,6 +382,7 @@ def transform_bispec_to_3pcf(ell1, ell2, k_in, bk_in, r_out,
     -------
     zeta_dict : dict
         Output 3PCF including its attributes:
+
             * 'r', 'zeta' -- post-transform separation and 3PCF samples;
             * 'r_fftlog', 'zeta_fftlog' -- FFTLog separation and
               3PCF samples;
@@ -499,6 +501,7 @@ def transform_3pcf_to_bispec(ell1, ell2, r_in, zeta_in, k_out,
         FFTLog sample number.
     extrap : {'lin', 'loglin', 'zero'}, optional
         If not `None` (default), set one of the following options:
+
             * 'lin' -- input 3PCF is extrapolated linearly;
             * 'loglin' -- input 3PCF is extrapolated log-linearly;
             * 'zero' -- input 3PCF is zero padded.
@@ -512,8 +515,9 @@ def transform_3pcf_to_bispec(ell1, ell2, r_in, zeta_in, k_out,
     -------
     bk_dict : dict
         Output bispectrum including its attributes:
-            * 'k', 'bk' -- post-transform wavenumber
-                           and bispectrum samples;
+
+            * 'k', 'bk' -- post-transform wavenumber and bispectrum
+            samples;
             * 'k_fftlog', 'bk_fftlog' -- FFTLog wavenumber and
               bispectrum samples;
             * 'k1_mesh', 'k2_mesh' -- post-transform wavenumber mesh grid;

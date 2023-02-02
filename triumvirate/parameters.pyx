@@ -441,6 +441,7 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -448,6 +449,7 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 
@@ -542,6 +544,7 @@ def _modify_measurement_parameters(paramset, params_measure=None,
     params_measure : dict, optional
         Dictionary containing a subset of the following entries
         for measurement parameters:
+
             * 'ell1', 'ell2', 'ELL': int;
             * 'i_wa', 'j_wa': int;
             * 'bin_min', 'bin_max': float;
