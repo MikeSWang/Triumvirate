@@ -41,6 +41,7 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -48,6 +49,7 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 
@@ -312,6 +314,7 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -319,6 +322,7 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 
@@ -536,6 +540,7 @@ def compute_powspec(catalogue_data, catalogue_rand,
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -543,6 +548,7 @@ def compute_powspec(catalogue_data, catalogue_rand,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 
@@ -624,6 +630,7 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -631,6 +638,7 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 
@@ -706,6 +714,7 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -713,6 +722,7 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 
@@ -893,6 +903,7 @@ def compute_powspec_in_gpp_box(catalogue_data,
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -900,6 +911,7 @@ def compute_powspec_in_gpp_box(catalogue_data,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 
@@ -970,6 +982,7 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -977,6 +990,7 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 
@@ -1056,6 +1070,7 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -1063,6 +1078,7 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 

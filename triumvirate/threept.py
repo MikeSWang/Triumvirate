@@ -600,6 +600,7 @@ def compute_bispec(catalogue_data, catalogue_rand,
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -607,6 +608,7 @@ def compute_bispec(catalogue_data, catalogue_rand,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 
@@ -691,6 +693,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -698,6 +701,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 
@@ -785,6 +789,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #     sampling_params : dict, optional
 #         Dictionary containing a subset of the following entries
 #         for sampling parameters:
+#
 #             * 'boxalign': {'centre', 'pad'};
 #             * 'boxsize': [float, float, float];
 #             * 'ngrid': [int, int, int];
@@ -792,6 +797,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #             * 'interlace': bool;
 #
 #         and one and only one of the following when 'boxalign' is 'pad':
+#
 #             * 'boxpad': float;
 #             * 'gridpad': float.
 #
@@ -993,6 +999,7 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -1000,6 +1007,7 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 
@@ -1192,6 +1200,7 @@ def compute_bispec_in_gpp_box(catalogue_data,
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -1199,6 +1208,7 @@ def compute_bispec_in_gpp_box(catalogue_data,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 
@@ -1274,6 +1284,7 @@ def compute_3pcf_in_gpp_box(catalogue_data,
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -1281,6 +1292,7 @@ def compute_3pcf_in_gpp_box(catalogue_data,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 
@@ -1370,6 +1382,7 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
+
             * 'boxalign': {'centre', 'pad'};
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
@@ -1377,6 +1390,7 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
             * 'interlace': bool;
 
         and one and only one of the following when 'boxalign' is 'pad':
+
             * 'boxpad': float;
             * 'gridpad': float.
 

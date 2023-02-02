@@ -1,14 +1,15 @@
 """
 ##########################################################################
-``Triumvirate`` | Two- & Three-Point Clustering Statistics
+``Triumvirate`` | Three-Point Clustering Measurements in LSS Analysis
 ##########################################################################
 
-``Triumvirate`` is a Python/C++ package that performs two- and three-point
-clustering statistic measurements in large-scale structure analysis.
+``Triumvirate`` is a Python/C++ package for measuring three-point (and
+two-point) clustering statistics in large-scale structure (LSS)
+cosmological analysis.
 
-.. topic:: Licence Statement
+.. topic:: GNU General Public License, version 3
 
-    Copyright (C) 2022, M S Wang
+    Copyright (C) 2023, MS Wang & NS Sugiyama
 
     This program is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the

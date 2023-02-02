@@ -1,17 +1,16 @@
 """Store package information as global special variables.
 
-Only string variables can be defined in this module.  No class or function
-definition or execution is allowed.
+Only string variables should be defined in this module.  No other
+definition or statement is allowed.
 
 """
-__author__ = "Mike S Wang, Naonori Sugiyama"
+__author__ = "Mike S Wang, Naonori S Sugiyama"
 __contact__ = "Mike S Wang"
-__copyright__ = "Copyright 2022, M S Wang & N Sugiyama"
-__date__ = "2022-03-01"
+__copyright__ = "Copyright 2023, MS Wang & NS Sugiyama"
+__date__ = "2023-03-01"
 __description__ = (
-    "Two- and three-point clustering statistics "
-    "in large-scale structure analysis."
+    "Three-point clustering measurements in large-scale structure analysis."
 )
 __email__ = "mikeshengbo.wang@ed.ac.uk"
 __license__ = "GPLv3"
-__version__ = "0.0a0"
+__version__ = "0.0.0"

@@ -53,7 +53,7 @@ class _WConvTerm(NamedTuple):
     For example, `term = _WConvTerm('000', 'ic', -1)`, with
     parameters/attributes/factors ``term.deg_Q = '000'``,
     ``term.deg_zeta = 'ic'` and ``term.coeff = -1``, corresponds to the
-    term :math:`- 1 \times Q_{000} \zeta_{\mathrm{ic}}`.
+    term :math:`- 1 \cdot Q_{000} \zeta_{\mathrm{ic}}`.
 
     Attributes
     ----------
@@ -131,7 +131,7 @@ class _WConvFormulae:
 
 
 def wconv_3pcf_diag(formulae, Q, zeta, r_common, r_Q=None, r_zeta=None):
-    """Convolve multipoles of the 3-point correlation function (3PCF) and
+    r"""Convolve multipoles of the 3-point correlation function (3PCF) and
     the window function in diagonal form using specified formulae.
 
     Parameters
@@ -159,8 +159,8 @@ def wconv_3pcf_diag(formulae, Q, zeta, r_common, r_Q=None, r_zeta=None):
         .. math::
 
             \tilde{\zeta}_{000} =
-                1 \times Q_{000} \zeta_{000}
-                + (-1) \times Q_{000} \zeta_{\mathrm{ic}}
+                1 \cdot Q_{000} \zeta_{000}
+                + (-1) \cdot Q_{000} \zeta_{\mathrm{ic}}
                 + \frac{1}{3} Q_{110} \zeta_{110} \,.
 
         If a named formula (e.g. 'sugiyama19') is passed, the window
@@ -230,7 +230,7 @@ def wconv_3pcf_diag(formulae, Q, zeta, r_common, r_Q=None, r_zeta=None):
 
 def wconv_3pcf(formulae, Q, zeta, r1_common, r2_common,
                r1_Q=None, r2_Q=None, r1_zeta=None, r2_zeta=None):
-    """Convolve multipoles of the 3-point correlation function (3PCF) and
+    r"""Convolve multipoles of the 3-point correlation function (3PCF) and
     the window function using specified formulae.
 
     Parameters
@@ -258,8 +258,8 @@ def wconv_3pcf(formulae, Q, zeta, r1_common, r2_common,
         .. math::
 
             \tilde{\zeta}_{000} =
-                1 \times Q_{000} \zeta_{000}
-                + (-1) \times Q_{000} \zeta_{\mathrm{ic}}
+                1 \cdot Q_{000} \zeta_{000}
+                + (-1) \cdot Q_{000} \zeta_{\mathrm{ic}}
                 + \frac{1}{3} Q_{110} \zeta_{110} \,.
 
         If a named formula (e.g. 'sugiyama19') is passed, the window
