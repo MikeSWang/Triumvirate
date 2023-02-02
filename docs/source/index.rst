@@ -1,7 +1,7 @@
 .. title:: Triumvirate Documentation
 
 ==========================================================================
-**Three-Point Clustering Correlators in Large-Scale Structure Analysis**
+**Triumvirate | Three-Point Clustering Measurements in LSS Analysis**
 ==========================================================================
 
 .. image:: https://img.shields.io/badge/arXiv-yymm.nnnnn-important
@@ -20,9 +20,9 @@
     :target: https://github.com/MikeSWang/Triumvirate/tree/main/LICENCE
     :alt: Licence
 
-|Triumvirate| is a Python/C++ software package for the measurement and
-model comparison of three-point clustering correlators in large-scale
-structure analysis.
+|Triumvirate| is a Python/C++ package for measuring three-point (and
+two-point) clustering statistics in large-scale structure (LSS)
+cosmological analysis.
 
 .. |Triumvirate| raw:: html
 
@@ -99,8 +99,6 @@ Licence
 
 |Triumvirate| is made freely available under the `GPL v3.0 licence
 <https://www.gnu.org/licenses/gpl-3.0.en.html>`_.
-
-Copyright 2021–22.
 
 .. toctree::
     :hidden:

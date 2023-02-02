@@ -320,7 +320,8 @@ class ParticleCatalogue:
         ----------
         boxsize : ((3,) array of) float
             Box size (in each dimension).
-        catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, optional
+        catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, \
+                        optional
             Reference catalogue used for box alignment, also to be centred
             in the same box.  If `None` (default), the current catalogue
             itself is used as the reference catalogue.
@@ -371,7 +372,8 @@ class ParticleCatalogue:
         ngrid_pad : ((3,) array of) float, optional
             Grid padding factor.  If not `None` (default), then
             `boxsize_pad` must be `None`.
-        catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, optional
+        catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, \
+                        optional
             Reference catalogue used for box alignment, also to be put in
             the same box.  If `None` (default), the current catalogue
             itself is used as the reference catalogue.
@@ -532,7 +534,8 @@ class ParticleCatalogue:
 
         Parameters
         ----------
-        catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, optional
+        catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, \
+                        optional
             Reference catalogue (default is `None`) whose attributes are
             also written out.  This is typically the
             random-source catalogue.

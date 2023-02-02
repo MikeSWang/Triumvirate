@@ -136,7 +136,8 @@ def wconv_3pcf_diag(formulae, Q, zeta, r_common, r_Q=None, r_zeta=None):
 
     Parameters
     ----------
-    formulae : dict of {str: sequence of tuples of (str, str, float)} or 'sugiyama+19'
+    formulae : dict of {str: sequence of tuples of (str, str, float)} \\
+               or 'sugiyama+19'
         Window convolution formulae encoded as a dictionary where for
         each convolved-multipole degree (the key), the value is
         a sequence of tuples each corresponding to a window convolution
@@ -235,7 +236,8 @@ def wconv_3pcf(formulae, Q, zeta, r1_common, r2_common,
 
     Parameters
     ----------
-    formulae : dict of {str: sequence of tuples of (str, str, float)} or 'sugiyama+19'
+    formulae : dict of {str: sequence of tuples of (str, str, float)} \\
+               or 'sugiyama+19'
         Window convolution formulae encoded as a dictionary where for
         each convolved-multipole degree (the key), the value is
         a sequence of tuples each corresponding to a window convolution
@@ -348,7 +350,8 @@ def wconv_bispec(formulae, Q, bk, k, k_out, r_common, r_Q=None,
 
     Parameters
     ----------
-    formulae : dict of {str: sequence of tuples of (str, str, float)} or 'sugiyama+19'
+    formulae : dict of {str: sequence of tuples of (str, str, float)} \
+               or 'sugiyama+19'
         See :func:`~winconv.wconv.wconv_3pcf`.
     Q : dict of {str: 2-d array of float}
         Configuration-space window function multipole samples

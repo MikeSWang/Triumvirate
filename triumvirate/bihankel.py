@@ -516,10 +516,10 @@ def transform_3pcf_to_bispec(ell1, ell2, r_in, zeta_in, k_out,
     bk_dict : dict
         Output bispectrum including its attributes:
 
-            * 'k', 'bk' -- post-transform wavenumber and bispectrum
+            * 'k', 'bk' -- post-transform wavenumber and bispectrum \
             samples;
-            * 'k_fftlog', 'bk_fftlog' -- FFTLog wavenumber and
-              bispectrum samples;
+            * 'k_fftlog', 'bk_fftlog' -- FFTLog wavenumber and bispectrum \
+            samples;
             * 'k1_mesh', 'k2_mesh' -- post-transform wavenumber mesh grid;
             * 'n_fftlog' -- FFTLog sample number;
             * 'ell1', 'ell2' -- multipole degrees.
