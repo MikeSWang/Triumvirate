@@ -9,3 +9,4 @@ API Reference
    triumvirate.threept
    triumvirate.twopt
    triumvirate.bihankel
+   triumvirate.winconv
