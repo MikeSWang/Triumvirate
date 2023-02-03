@@ -1,4 +1,4 @@
-"""Set-up for the Python package and Cythonised extension modules.
+"""Set up Triumvirate and its Cythonised extension modules.
 
 """
 import os
@@ -43,9 +43,6 @@ else:
 
 # Specify language.
 language = 'c++'
-
-# Set compiler.
-os.environ['CC'] = 'g++'
 
 # Modify compilation options.
 options = ['-std=c++11',]
