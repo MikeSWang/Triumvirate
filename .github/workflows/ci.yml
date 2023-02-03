@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
 
@@ -22,10 +23,16 @@ jobs:
         with:
           python-version: 3.8
       - name: Install dependencies
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y libfftw3-dev
-          python -m pip install --upgrade pip wheel setuptools cython pytest
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        uses: knicknic/os-specific-run@v1
+        with:
+          linux: |
+            sudo apt-get update -y
+            sudo apt-get install -y libfftw3-dev
+            python -m pip install --upgrade pip wheel setuptools cython pytest
+            if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          macos: |
+            brew install fftw
+            python -m pip install --upgrade pip wheel setuptools cython pytest
+            if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Build package
         run: make clean; make install useomp=true uselogo=true
