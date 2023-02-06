@@ -92,26 +92,20 @@ endif
 # ------------------------------------------------------------------------
 
 # OpenMP: enabled with `useomp=[true,1]`; disabled otherwise.
-USEOMP = 0
 ifdef useomp
 ifeq ($(strip ${useomp}), $(filter $(strip ${useomp}), true 1))
 
 CFLAGS += -fopenmp -DTRV_USE_OMP -DTRV_USE_FFTWOMP
 LDFLAGS += -lfftw3_omp
 
-USEOMP = 1
-
 endif
 endif
 
 # Parameter debugging: enabled with `dbgpars=[true,1]`; disabled otherwise.
-DBGPARS = 0
 ifdef dbgpars
 ifeq ($(strip ${dbgpars}), $(filter $(strip ${dbgpars}), true 1))
 
 CFLAGS += -DDBG_MODE -DDBG_PARS
-
-DBGPARS = 1
 
 endif
 endif
@@ -136,9 +130,8 @@ endif
 # Python: export CXX compilation options as environmental variables.
 export PY_CXX=${CXX}
 export PY_INCLUDES=${INCLUDES}
+export PY_CFLAGS=${CFLAGS}
 export PY_LDFLAGS=${LDFLAGS}
-export PY_USEOMP=${USEOMP}
-export PY_DBGPARS=${DBGPARS}
 
 
 # ========================================================================
