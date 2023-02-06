@@ -52,8 +52,8 @@ for key, val in config_vars.items():
         config_vars[key] = val.replace('-Wstrict-prototypes', '')
 
 # Enforce compiler choice.
-os.environ['CC'] = os.environ.get['PY_CXX']
-os.environ['CXX'] = os.environ.get['PY_CXX']
+os.environ['CC'] = os.environ.get('PY_CXX', 'g++')
+os.environ['CXX'] = os.environ.get('PY_CXX', 'g++')
 
 # Modify compilation options.
 options = ['-std=c++11',]

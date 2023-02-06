@@ -25,7 +25,7 @@ jobs:
       - name: Install C/C++ libraries
         uses: knicknic/os-specific-run@v1
         with:
-          linux: sudo apt-get install -y libgsl-dev libfftw3-dev
+          linux: sudo apt-get update; sudo apt-get install -y libgsl-dev libfftw3-dev
           macos: brew install gsl fftw
       - name: Install Python dependencies
         run: |
