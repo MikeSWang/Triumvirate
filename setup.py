@@ -64,12 +64,8 @@ os.environ['CC'] = os.environ.get('PY_CXX', cxx_default)
 os.environ['CXX'] = os.environ.get('PY_CXX', cxx_default)
 
 # Modify compilation options.
-options = ['-std=c++11',]
+options = os.environ.get('PY_CFLAGS', '').split() + ['-std=c++11',]
 links = os.environ.get('PY_LDFLAGS', '').split()
-
-if int(os.environ.get('PY_USEOMP', 0)):
-    options.append('-fopenmp')
-    links.append('-fopenmp')
 
 
 # -- Extensions ----------------------------------------------------------
@@ -96,13 +92,6 @@ self_macros = [
     # ('DBG_MODE', None),
     # ('DBG_NOAC', None),
 ]
-
-if int(os.environ.get('PY_USEOMP', 0)):
-    self_macros.append(('TRV_USE_OMP', None))
-    self_macros.append(('TRV_USE_FFTWOMP', None))
-if int(os.environ.get('PY_DBGPARS', 0)):
-    self_macros.append(('DBG_MODE', None))
-    self_macros.append(('DBG_PARS', None))
 
 npy_macros = [
     ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
