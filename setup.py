@@ -83,7 +83,7 @@ npy_include = numpy.get_include()
 ext_includes = os.environ.get('PY_INCLUDES', "").replace("-I", "").split()
 ext_includes = [incl_ for incl_ in ext_includes if pkgdir not in incl_]
 
-ext_libraries = ['gsl', 'gslcblas', 'lm', 'fftw3', 'fftw3_omp',]
+ext_libraries = ['gsl', 'gslcblas', 'm', 'fftw3', 'fftw3_omp',]
 
 includes = [self_include, npy_include,] + ext_includes
 libraries = ext_libraries
