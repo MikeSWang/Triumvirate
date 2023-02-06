@@ -14,6 +14,7 @@ import numpy
 
 PKG_NAME = 'Triumvirate'
 
+
 # -- Repository ----------------------------------------------------------
 
 # Extract instructions and package dependencies.
@@ -30,10 +31,10 @@ with open(convert_path(os.path.join(pkgdir, "_pkginfo.py"))) as pkginfo_file:
     exec(pkginfo_file.read(), pkginfo)
 
 # Determine repository branch.
-version_tag = pkginfo.get('__version__')
-if any([segment in version_tag for segment in ['a', 'b', 'rc']]):
+version = pkginfo.get('__version__')
+if any([segment in version for segment in ['a', 'b', 'rc']]):
     branch = 'main'
-elif 'dev' in version_tag:
+elif 'dev' in version:
     branch = 'dev'
 else:
     branch = 'stable'
@@ -44,6 +45,12 @@ else:
 # Specify language.
 language = 'c++'
 
+# Suppress irrelevant compiler warnings.
+config_vars = get_config_vars()
+for key, val in config_vars.items():
+    if isinstance(val, str):
+        config_vars[key] = val.replace('-Wstrict-prototypes', '')
+
 # Modify compilation options.
 options = ['-std=c++11',]
 links = os.environ.get('PY_LIBS', '').split()
@@ -51,12 +58,6 @@ links = os.environ.get('PY_LIBS', '').split()
 if int(os.environ.get('PY_USEOMP', 0)):
     options.append('-fopenmp')
     links.append('-fopenmp')
-
-# Suppress irrelevant compiler warnings.
-config_vars = get_config_vars()
-for key, val in config_vars.items():
-    if isinstance(val, str):
-        config_vars[key] = val.replace('-Wstrict-prototypes', '')
 
 
 # -- Extensions ----------------------------------------------------------
