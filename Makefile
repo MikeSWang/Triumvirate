@@ -4,131 +4,119 @@
 
 PROGNAME := triumvirate
 
-# -- Directories ---------------------------------------------------------
+# ------------------------------------------------------------------------
+# Directories
+# ------------------------------------------------------------------------
 
+# Repository root
 DIR_ROOT := $(shell pwd)
 
-# Repository directories.
-DIR_PROG = ${DIR_ROOT}/${PROGNAME}
-DIR_BUILD = ${DIR_ROOT}/build
+# Package and build directories
+DIR_PKG := ${DIR_ROOT}/${PROGNAME}
+DIR_BUILD := ${DIR_ROOT}/build
 
-# Package directories.
-DIR_INCLUDE = ${DIR_PROG}/include
-DIR_SRC = ${DIR_PROG}/src
-DIR_TESTS = ${DIR_PROG}/tests
+# Package subdirectories
+DIR_INCLUDE := ${DIR_PKG}/include
+DIR_SRC := ${DIR_PKG}/src
+DIR_TESTS := ${DIR_PKG}/tests
 
-# Module directories.
-DIR_SRCMODULES = ${DIR_SRC}/modules
+# Build object subdirectory
+DIR_BUILDOBJ := ${DIR_BUILD}/obj
 
-# Test directories.
-DIR_TESTBUILD = ${DIR_TESTS}/test_build
-DIR_TESTOUT = ${DIR_TESTS}/test_output
+# Module source subdirectory
+DIR_MODULESRC := ${DIR_SRC}/modules
+
+# Test subdirectories
+DIR_TESTBUILD := ${DIR_TESTS}/test_build
+DIR_TESTOUT := ${DIR_TESTS}/test_output
 
 
-# -- Common configuration ------------------------------------------------
+# ------------------------------------------------------------------------
+# OS-dependent Compilation
+# ------------------------------------------------------------------------
 
+# -- Compiler ------------------------------------------------------------
+
+# Linux: use GNU compiler. [modify]
 ifeq ($(shell uname -s), Linux)
 
-CC = g++
+CXX := g++
 
+# macOS: use LLVM compiler. [modify]
 else ifeq ($(shell uname -s), Darwin)
 
-# Use LLVM compiler for macOS (to load OpenMP).
-ifndef HOMEBREW_PREFIX
-HOMEBREW_PREFIX = /usr/local
-endif
+HOMEBREW_PREFIX ?= /usr/local
+CXX := ${HOMEBREW_PREFIX}/opt/llvm/bin/clang++
 
-CC = ${HOMEBREW_PREFIX}/opt/llvm/bin/clang++
-
+# Default: use GNU compiler. [modify]
 else
 
-# Default to the Linux case.
-CC = g++
+CXX := g++
 
 endif
 
-INCLUDES = -I${DIR_INCLUDE}
-CFLAGS = -O3 -Wall $(shell pkg-config --cflags gsl fftw3)
-LIBS = $(shell pkg-config --libs gsl fftw3)
-CLIBS =
+
+# -- Options -------------------------------------------------------------
+
+INCLUDES := -I${DIR_INCLUDE}
+CFLAGS := -O3 -Wall $(shell pkg-config --cflags gsl fftw3)
+LDFLAGS := $(shell pkg-config --libs gsl fftw3)
 
 
-# -- System-specific configuration ---------------------------------------
+# ------------------------------------------------------------------------
+# Environment-specific Settings
+# ------------------------------------------------------------------------
 
-# This sub-section is specific to NERSC clusters.
-
-SYSTYPE := $(if ${NERSC_HOST}, cluster, local)
-
-# Non-NERSC systems.
-ifeq ($(strip ${SYSTYPE}), local)
-
-# >>>>>>>>>>
-# (edit/insert here)
-# <<<<<<<<<<
-
-endif
-
-# NERSC system.
-ifeq ($(strip ${SYSTYPE}), cluster)
-
-# >>>>>>>>>>
-# (edit/insert here)
-# <<<<<<<<<<
+# NERSC computer cluster: an example environment. [adapt]
+ifdef NERSC_HOST
 
 FFTW_DIR = ${FFTW_ROOT}
 
-endif
-
-
-# -- Library-specific configuration --------------------------------------
-
-# GSL library.
+# GSL library
 ifdef GSL_DIR
-
 INCLUDES += -I${GSL_DIR}/include
-LIBS += -L${GSL_DIR}/lib
-
+LDFLAGS += -L${GSL_DIR}/lib
 endif
 
-# FFTW library.
+# FFTW library
 ifdef FFTW_DIR
-
 INCLUDES += -I${FFTW_DIR}/include
-LIBS += -L${FFTW_DIR}/lib
+LDFLAGS += -L${FFTW_DIR}/lib
+endif
 
 endif
 
 
-# -- Compilation-specific configurations ---------------------------------
+# ------------------------------------------------------------------------
+# Customisation
+# ------------------------------------------------------------------------
 
-export PY_INCLUDES=${INCLUDES}
-export PY_LIBS=${LIBS}
-
-# Enable OpenMP by setting `useomp=true` or `useomp=1`, which adds
-# `-fopenmp -DTRV_USE_OMP` and `-lfftw3_omp`.
+# OpenMP: enabled with `useomp=[true,1]`; disabled otherwise.
+USEOMP = 0
 ifdef useomp
 ifeq ($(strip ${useomp}), $(filter $(strip ${useomp}), true 1))
 
 CFLAGS += -fopenmp -DTRV_USE_OMP -DTRV_USE_FFTWOMP
-LIBS += -lfftw3_omp
+LDFLAGS += -lfftw3_omp
 
-export PY_USEOMP=1
+USEOMP = 1
 
 endif
 endif
 
-# Enable parameter debugging by setting `dbgpars=true` or `dbgpars=1`.
+# Parameter debugging: enabled with `dbgpars=[true,1]`; disabled otherwise.
+DBGPARS = 0
 ifdef dbgpars
 ifeq ($(strip ${dbgpars}), $(filter $(strip ${dbgpars}), true 1))
 
 CFLAGS += -DDBG_MODE -DDBG_PARS
 
-export PY_DBGPARS=1
+DBGPARS = 1
 
 endif
 endif
 
-# Enable visual enhancements.
+# Visual enhancements: enabled with `uselogo=[true,1]`; disabled otherwise.
 ifdef uselogo
 ifeq ($(strip ${uselogo}), $(filter $(strip ${uselogo}), true 1))
 
@@ -137,11 +125,19 @@ CFLAGS += -DTRV_USE_LOGO
 endif
 endif
 
-# Add other options (for developers only), e.g.
-# {-g, -DTRV_USE_LEGACY_CODE, -DDBG_MODE, -DDBG_NOAC, ...}.
-# >>>>>>>>>>
-CFLAGS +=
-# <<<<<<<<<<
+# Other options: e.g. {-g, -DTRV_USE_LEGACY_CODE, -DDBG_MODE, -DDBG_NOAC, ...}.
+# >>> insert <<<
+
+
+# ------------------------------------------------------------------------
+# Language-specific Settings
+# ------------------------------------------------------------------------
+
+# Python: export CXX compilation options as environmental variables.
+export PY_INCLUDES=${INCLUDES}
+export PY_LDFLAGS=${LDFLAGS}
+export PY_USEOMP=${USEOMP}
+export PY_DBGPARS=${DBGPARS}
 
 
 # ========================================================================
@@ -150,70 +146,78 @@ CFLAGS +=
 
 .PHONY: ${PROGNAME}
 
-MODULESRC = $(wildcard ${DIR_SRCMODULES}/*.cpp)
+PROGSRC := ${DIR_SRC}/${PROGNAME}.cpp
+MODULESRC := $(wildcard ${DIR_MODULESRC}/*.cpp)
+PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}.o
+MODULEOBJ := $(patsubst ${DIR_MODULESRC}/%.cpp,${DIR_BUILDOBJ}/%.o,${MODULESRC})
 
-# -- Installation build --------------------------------------------------
+# ------------------------------------------------------------------------
+# Installation
+# ------------------------------------------------------------------------
 
 install: cppinstall pyinstall
 
 cppinstall: ${PROGNAME}
 
 pyinstall:
-	@echo "Installing Triumvirate Python package."
+	@echo "Installing Triumvirate Python package..."
 	pip install --user --editable .
 
 
-# -- Testing build -------------------------------------------------------
+# ------------------------------------------------------------------------
+# Testing
+# ------------------------------------------------------------------------
 
-test: cpptest pytest
+unittest: cpptest pytest
 
-testit:
-	@echo "Performing integration tests. See ${DIR_TESTOUT}/$@.log for log."
-	@bash ${DIR_TESTS}/$@.sh > ${DIR_TESTOUT}/$@.log
-
-cpptest: test_fftlog
+cpptest:
 
 pytest:
 
+testit:
+	@echo "Performing integration tests... (see ${DIR_TESTOUT}/$@.log)"
+	@bash ${DIR_TESTS}/$@.sh > ${DIR_TESTOUT}/$@.log
 
-# -- Invididual build ----------------------------------------------------
 
-${PROGNAME}: ${DIR_SRC}/${PROGNAME}.cpp
+# ------------------------------------------------------------------------
+# Components
+# ------------------------------------------------------------------------
+
+${PROGNAME}: ${PROGOBJ} ${MODULEOBJ}
 	@echo "Building Triumvirate C++ program."
-	$(CC) $(CFLAGS) \
-	-o $(addprefix $(DIR_BUILD)/, $(notdir $@)) \
-	$< $(MODULESRC) $(INCLUDES) $(LIBS) $(CLIBS)
+	$(CXX) $(CFLAGS) -o $(addprefix $(DIR_BUILD)/, $(notdir $@)) $^ $(LDFLAGS)
 
-test_fftlog: ${DIR_TESTS}/test_fftlog.cpp \
-						 ${DIR_SRCMODULES}/fftlog.cpp \
-						 ${DIR_SRCMODULES}/monitor.cpp \
-						 ${DIR_SRCMODULES}/maths.cpp \
-						 ${DIR_SRCMODULES}/arrayops.cpp
-	$(CC) $(CFLAGS) \
-	-o $(addprefix $(DIR_TESTBUILD)/, $(notdir $@)) \
-	$^ $(INCLUDES) $(LIBS) $(CLIBS)
+${PROGOBJ}: ${PROGSRC}
+	if [ ! -d build/obj ]; then mkdir -p build/obj; fi
+	$(CXX) $(CFLAGS) -o $@ -c $< $(INCLUDES)
+
+${MODULEOBJ}: ${DIR_BUILDOBJ}/%.o: ${DIR_MODULESRC}/%.cpp
+	if [ ! -d build/obj ]; then mkdir -p build/obj; fi
+	$(CXX) $(CFLAGS) -o $@ -c $< $(INCLUDES)
 
 
 # ========================================================================
 # Clean
 # ========================================================================
 
-DIR_PROG := $(or ${DIR_PROG}, '.')
+# Ensure deletion safety by limiting the top directory.
+DIR_PKG := $(or ${DIR_PKG}, '.')
 DIR_BUILD := $(or ${DIR_BUILD}, '.')
 DIR_TESTS := $(or ${DIR_TESTS}, '.')
 DIR_TESTBUILD := $(or ${DIR_TESTBUILD}, '.')
 DIR_TESTOUT := $(or ${DIR_TESTOUT}, '.')
 
 clean:
-	@echo "Cleaning up Triumvirate builds."
-	rm -rf ${DIR_PROG}/*.cpp ${DIR_PROG}/*.o ${DIR_PROG}/*.so ${DIR_BUILD}/*
+	@echo "Cleaning up Triumvirate builds..."
 	rm -rf *.egg-info
 	rm -rf core
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +
+	find ${DIR_PKG} -maxdepth 1 -name "*.cpp" -or -name "*.so" -exec rm -rf {} +
+	find ${DIR_BUILD} -mindepth 1 ! -name ".gitignore" -exec rm -rf {} +
 
 cleantest:
-	@echo "Cleaning up Triumvirate tests."
+	@echo "Cleaning up Triumvirate tests..."
 	rm -rf ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/* ${DIR_TESTS}/*_temp*
 	rm -rf core
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +

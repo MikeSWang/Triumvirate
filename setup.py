@@ -53,7 +53,7 @@ for key, val in config_vars.items():
 
 # Modify compilation options.
 options = ['-std=c++11',]
-links = os.environ.get('PY_LIBS', '').split()
+links = os.environ.get('PY_LDFLAGS', '').split()
 
 if int(os.environ.get('PY_USEOMP', 0)):
     options.append('-fopenmp')
