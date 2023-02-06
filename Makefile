@@ -134,6 +134,7 @@ endif
 # ------------------------------------------------------------------------
 
 # Python: export CXX compilation options as environmental variables.
+export PY_CXX=${CXX}
 export PY_INCLUDES=${INCLUDES}
 export PY_LDFLAGS=${LDFLAGS}
 export PY_USEOMP=${USEOMP}

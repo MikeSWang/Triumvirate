@@ -1693,7 +1693,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
           shotnoise_amp * this->calc_shotnoise_aliasing(i, j, k);
 
         /// Apply grid corrections.
-        double win_pk, win_sn = 1.;
+        double win_pk = 1., win_sn = 1.;
         if (this->params.interlace == "true") {
           win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
             field_b.calc_assignment_window_in_fourier(i, j, k);
