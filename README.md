@@ -11,9 +11,9 @@ https://img.shields.io/github/v/release/MikeSWang/Triumvirate?label=release
 [![Documentation status](
 https://readthedocs.org/projects/triumvirate/badge/?version=latest
 )](https://triumvirate.readthedocs.io/en/latest)
-[![Build status](
-https://travis-ci.com/MikeSWang/Triumvirate.svg?branch=main
-)](https://travis-ci.com/MikeSWang/Triumvirate)
+![Build status](
+https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml/badge.svg?branch=main
+)
 [![Licence](
 https://img.shields.io/badge/licence-GPLv3-informational
 )](https://github.com/MikeSWang/Triumvirate/tree/main/LICENCE)
