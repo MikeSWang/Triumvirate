@@ -51,6 +51,10 @@ for key, val in config_vars.items():
     if isinstance(val, str):
         config_vars[key] = val.replace('-Wstrict-prototypes', '')
 
+# Enforce compiler choice.
+os.environ['CC'] = os.environ.get['PY_CXX']
+os.environ['CXX'] = os.environ.get['PY_CXX']
+
 # Modify compilation options.
 options = ['-std=c++11',]
 links = os.environ.get('PY_LDFLAGS', '').split()
