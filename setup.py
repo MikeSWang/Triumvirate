@@ -2,6 +2,7 @@
 
 """
 import os
+import platform
 from distutils.sysconfig import get_config_vars
 from distutils.util import convert_path
 from setuptools import find_packages, setup
@@ -52,8 +53,14 @@ for key, val in config_vars.items():
         config_vars[key] = val.replace('-Wstrict-prototypes', '')
 
 # Enforce compiler choice.
-os.environ['CC'] = os.environ.get('PY_CXX', 'g++')
-os.environ['CXX'] = os.environ.get('PY_CXX', 'g++')
+if platform.system() == 'Linux':
+    cxx_default = 'g++'
+elif platform.system() == 'Darwin':
+    cxx_default = 'clang++'
+else:
+    cxx_default = 'g++'
+
+os.environ['CXX'] = os.environ.get('PY_CXX', cxx_default)
 
 # Modify compilation options.
 options = ['-std=c++11',]
@@ -69,15 +76,16 @@ if int(os.environ.get('PY_USEOMP', 0)):
 # Set source, include and library paths.
 self_modulesrc = os.path.join(pkgdir, "src/modules")
 
-self_include = os.path.join(pkgdir, "include")
 npy_include = numpy.get_include()
 
-ext_includes = os.environ.get('PY_INCLUDES', '').replace("-I", "").split()
+ext_includes = os.environ.get(
+    'PY_INCLUDES', os.path.join(pkgdir, "include")
+).replace("-I", "").split()
 ext_includes = [incl_ for incl_ in ext_includes if pkgdir not in incl_]
 
-ext_libraries = ['gsl', 'gslcblas', 'fftw3', 'fftw3_omp',]
+ext_libraries = ['gsl', 'gslcblas', 'lm', 'fftw3', 'fftw3_omp',]
 
-includes = [self_include,] + [npy_include,] + ext_includes
+includes = [npy_include,] + ext_includes
 libraries = ext_libraries
 
 # Set macros.
