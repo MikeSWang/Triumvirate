@@ -2,21 +2,21 @@
 
 # Three-Point Clustering Correlators in Large-Scale Structure Analysis
 
-[![arXiv eprint](
-https://img.shields.io/badge/arXiv-yymm.nnnnn-important
-)](https://arxiv.org/abs/yymm.nnnnn)
-[![GitHub release (latest by date)](
-https://img.shields.io/github/v/release/MikeSWang/Triumvirate?label=release
-)](https://github.com/MikeSWang/Triumvirate/releases/latest)
-[![Documentation status](
+[![CI](
+https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml/badge.svg?branch=main
+)](https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml)
+[![Docs](
 https://readthedocs.org/projects/triumvirate/badge/?version=latest
 )](https://triumvirate.readthedocs.io/en/latest)
-![Build status](
-https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml/badge.svg?branch=main
-)
+[![Release](
+https://img.shields.io/github/v/release/MikeSWang/Triumvirate?label=release
+)](https://github.com/MikeSWang/Triumvirate/releases/latest)
 [![Licence](
 https://img.shields.io/badge/licence-GPLv3-informational
 )](https://github.com/MikeSWang/Triumvirate/tree/main/LICENCE)
+[![ePrint](
+https://img.shields.io/badge/arXiv-yymm.nnnnn-important
+)](https://arxiv.org/abs/yymm.nnnnn)
 
 Triumvirate is a Python/C++ software package for the measurement and model
 comparison of three-point clustering correlators in large-scale
