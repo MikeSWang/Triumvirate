@@ -178,7 +178,7 @@ testit:
 # ------------------------------------------------------------------------
 
 ${PROGNAME}: ${PROGOBJ} ${MODULEOBJ}
-	@echo "Building Triumvirate C++ program."
+	@echo "Building Triumvirate C++ program..."
 	$(CXX) $(CFLAGS) -o $(addprefix $(DIR_BUILD)/, $(notdir $@)) $^ $(LDFLAGS)
 
 ${PROGOBJ}: ${PROGSRC}
