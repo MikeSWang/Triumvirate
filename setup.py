@@ -60,6 +60,7 @@ elif platform.system() == 'Darwin':
 else:
     cxx_default = 'g++'
 
+os.environ['CC'] = os.environ.get('PY_CXX', cxx_default)
 os.environ['CXX'] = os.environ.get('PY_CXX', cxx_default)
 
 # Modify compilation options.
