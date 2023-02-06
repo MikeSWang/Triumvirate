@@ -46,7 +46,7 @@ else:
 # Specify language.
 language = 'c++'
 
-# Suppress irrelevant compiler warnings.
+# Suppress irrelevant compilation warnings.
 config_vars = get_config_vars()
 for key, val in config_vars.items():
     if isinstance(val, str):
@@ -209,7 +209,7 @@ setup(
     author_email=pkginfo.get('__email__'),
     description=pkginfo.get('__description__'),
     long_description=readme,
-    long_description_content_type="text/markdown",
+    long_description_content_type='text/markdown',
     classifiers=[
         "Operating System :: OS Independent",
         "Programming Language :: C++",
@@ -220,8 +220,8 @@ setup(
         "Topic :: Scientific/Engineering :: Physics",
     ],
     project_urls={
-        "Documentation": "https://mikeswang.github.io/Triumvirate",
-        "Source": "https://github.com/MikeSWang/Triumvirate/",
+        'Documentation': "https://mikeswang.github.io/Triumvirate",
+        'Source': "https://github.com/MikeSWang/Triumvirate",
     },
     python_requires='>=3.6',
     install_requires=requirements,
