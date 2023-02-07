@@ -5,7 +5,7 @@ import os
 import platform
 from distutils.sysconfig import get_config_vars
 from distutils.util import convert_path
-from setuptools import find_packages, setup
+from setuptools import setup
 
 from Cython.Build import cythonize
 from Cython.Distutils import build_ext, Extension
@@ -18,21 +18,15 @@ PKG_NAME = 'Triumvirate'
 
 # -- Repository ----------------------------------------------------------
 
-# Extract instructions and package dependencies.
-with open("README.md", 'r') as freadme:
-    readme = freadme.read()
-
-with open("requirements.txt", 'r') as requirements_file:
-    requirements = [pkg.strip() for pkg in requirements_file]
+pkg_dir = pkg_name = PKG_NAME.lower()
 
 # Extract package information.
-pkgdir = PKG_NAME.lower()
-pkginfo = {}
-with open(convert_path(os.path.join(pkgdir, "_pkginfo.py"))) as pkginfo_file:
-    exec(pkginfo_file.read(), pkginfo)
+pkg_info = {}
+with open(convert_path(os.path.join(pkg_dir, "__init__.py"))) as pkg_pyfile:
+    exec(pkg_pyfile.read(), pkg_info)
 
 # Determine repository branch.
-version = pkginfo.get('__version__')
+version = pkg_info.get('__version__')
 if any([segment in version for segment in ['a', 'b', 'rc']]):
     branch = 'main'
 elif 'dev' in version:
@@ -64,29 +58,78 @@ os.environ['CC'] = os.environ.get('PY_CXX', cxx_default)
 os.environ['CXX'] = os.environ.get('PY_CXX', cxx_default)
 
 # Modify compilation options.
-options = os.environ.get('PY_CFLAGS', '').split() + ['-std=c++11',]
-links = os.environ.get('PY_LDFLAGS', '').split()
+cflags = os.environ.get('PY_CFLAGS', '').split() + ['-std=c++11',]
+ldflags = [
+    lib for lib in os.environ.get('PY_LDFLAGS', '').split()
+    if not lib.startswith('-l')
+]
 
 
 # -- Extensions ----------------------------------------------------------
 
-# Set source, include and library paths.
-self_modulesrc = os.path.join(pkgdir, "src/modules")
+def return_extension(module_name, extra_cpp_sources, **ext_kwargs):
+    """Return an extension from given source files and options.
 
-self_include = os.path.join(pkgdir, "include")
+    Parameters
+    ----------
+    module_name : str
+        Module name as in the built extension module
+        ``<pkg_name>.<module_name>``. This sets the .pyx source file to
+        ``<pkg_dir>/<module_name>.pyx`` and the .cpp source file to
+        ``<pkg_dir>/src/modules/<module_name>.cpp``.
+    extra_cpp_sources : list of str
+        Additional .cpp source files under ``<pkg_dir>/src/modules``.
+    **ext_kwargs
+        Options to pass to :class:`Cython.Distutils.Extension`.
+
+    Returns
+    -------
+    :class:`Cython.Distutils.Extension`
+        Cython extension.
+
+    """
+    ext_module_kwargs = {
+        'include_dirs': includes,
+        'extra_compile_args': cflags,
+        'extra_link_args': ldflags,
+        'define_macros': macros,
+    }
+
+    if ext_kwargs:
+        ext_module_kwargs.update(ext_kwargs)
+
+    sources = [
+        os.path.join(pkg_dir, f"{module_name}.pyx"),
+        os.path.join(pkg_src, f"{module_name.lstrip('_')}.cpp"),
+    ]
+    for cpp_source in extra_cpp_sources:
+        sources.append(os.path.join(pkg_src, cpp_source))
+
+    return Extension(
+        f'{pkg_name}.{module_name}',
+        sources=sources, language=language, **ext_module_kwargs
+    )
+
+
+# Set source, include and library paths.
+pkg_src = os.path.join(pkg_dir, "src/modules")
+
+pkg_include = os.path.join(pkg_dir, "include")
 
 npy_include = numpy.get_include()
 
-ext_includes = os.environ.get('PY_INCLUDES', "").replace("-I", "").split()
-ext_includes = [incl_ for incl_ in ext_includes if pkgdir not in incl_]
+ext_includes = [
+    incl for incl in os.environ.get('PY_INCLUDES', "").replace("-I", "").split()
+    if pkg_dir not in incl
+]
 
 ext_libraries = ['gsl', 'gslcblas', 'm', 'fftw3', 'fftw3_omp',]
 
-includes = [self_include, npy_include,] + ext_includes
+includes = [pkg_include, npy_include,] + ext_includes
 libraries = ext_libraries
 
 # Set macros.
-self_macros = [
+pkg_macros = [
     ('TRV_EXTCALL', None),
     # ('TRV_USE_LEGACY_CODE', None),
     # ('DBG_MODE', None),
@@ -97,138 +140,64 @@ npy_macros = [
     ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
 ]
 
-macros = self_macros + npy_macros
+macros = pkg_macros + npy_macros
 
 # Define extension modules.
-modules = [
-    Extension(
-        f'{pkgdir}.parameters',
-        sources=[
-            os.path.join(pkgdir, "parameters.pyx"),
-            os.path.join(self_modulesrc, "parameters.cpp"),
-            os.path.join(self_modulesrc, "monitor.cpp"),
+module_config = {
+    'parameters': {'extra_cpp_sources': ["monitor.cpp",]},
+    'dataobjs': {'extra_cpp_sources': ["monitor.cpp", "parameters.cpp",]},
+    '_particles': {'extra_cpp_sources': ["monitor.cpp",]},
+    '_twopt': {
+        'extra_cpp_sources': [
+            "monitor.cpp",
+            "maths.cpp",
+            "parameters.cpp",
+            "dataobjs.cpp",
+            "particles.cpp",
+            "field.cpp",
         ],
-        language=language,
-        extra_compile_args=options,
-        extra_link_args=links,
-        include_dirs=includes,
-        define_macros=macros,
-    ),
-    Extension(
-        f'{pkgdir}.dataobjs',
-        sources=[
-            os.path.join(pkgdir, "dataobjs.pyx"),
-            os.path.join(self_modulesrc, "dataobjs.cpp"),
-            os.path.join(self_modulesrc, "parameters.cpp"),
-            os.path.join(self_modulesrc, "monitor.cpp"),
+        'libraries': libraries,
+    },
+    '_threept': {
+        'extra_cpp_sources': [
+            "monitor.cpp",
+            "maths.cpp",
+            "parameters.cpp",
+            "dataobjs.cpp",
+            "particles.cpp",
+            "field.cpp",
+            "twopt.cpp",
         ],
-        language=language,
-        extra_compile_args=options,
-        extra_link_args=links,
-        include_dirs=includes,
-        define_macros=macros,
-    ),
-    Extension(
-        f'{pkgdir}._particles',
-        sources=[
-            os.path.join(pkgdir, "_particles.pyx"),
-            os.path.join(self_modulesrc, "particles.cpp"),
-            os.path.join(self_modulesrc, "monitor.cpp"),
-        ],
-        language=language,
-        extra_compile_args=options,
-        extra_link_args=links,
-        include_dirs=includes,
-        define_macros=macros,
-    ),
-    Extension(
-        f'{pkgdir}._twopt',
-        sources=[
-            os.path.join(pkgdir, "_twopt.pyx"),
-            os.path.join(self_modulesrc, "twopt.cpp"),
-            os.path.join(self_modulesrc, "monitor.cpp"),
-            os.path.join(self_modulesrc, "maths.cpp"),
-            os.path.join(self_modulesrc, "parameters.cpp"),
-            os.path.join(self_modulesrc, "dataobjs.cpp"),
-            os.path.join(self_modulesrc, "particles.cpp"),
-            os.path.join(self_modulesrc, "field.cpp"),
-        ],
-        language=language,
-        extra_compile_args=options,
-        extra_link_args=links,
-        include_dirs=includes,
-        libraries=libraries,
-        define_macros=macros,
-    ),
-    Extension(
-        f'{pkgdir}._threept',
-        sources=[
-            os.path.join(pkgdir, "_threept.pyx"),
-            os.path.join(self_modulesrc, "threept.cpp"),
-            os.path.join(self_modulesrc, "monitor.cpp"),
-            os.path.join(self_modulesrc, "maths.cpp"),
-            os.path.join(self_modulesrc, "parameters.cpp"),
-            os.path.join(self_modulesrc, "dataobjs.cpp"),
-            os.path.join(self_modulesrc, "particles.cpp"),
-            os.path.join(self_modulesrc, "field.cpp"),
-            os.path.join(self_modulesrc, "twopt.cpp"),
-        ],
-        language=language,
-        extra_compile_args=options,
-        extra_link_args=links,
-        include_dirs=includes,
-        libraries=libraries,
-        define_macros=macros,
-    ),
-    Extension(
-        f'{pkgdir}._fftlog',
-        sources=[
-            os.path.join(pkgdir, "_fftlog.pyx"),
-            os.path.join(self_modulesrc, "fftlog.cpp"),
-            os.path.join(self_modulesrc, "monitor.cpp"),
-            os.path.join(self_modulesrc, "maths.cpp"),
-            os.path.join(self_modulesrc, "arrayops.cpp"),
-        ],
-        language=language,
-        extra_compile_args=options,
-        extra_link_args=links,
-        include_dirs=includes,
-        libraries=libraries,
-        define_macros=macros,
-    ),
+        'libraries': libraries,
+    },
+    '_fftlog': {
+        'extra_cpp_sources': ["monitor.cpp", "maths.cpp", "arrayops.cpp",],
+        'libraries': libraries,
+    },
+}
+
+cython_directives = {
+   'language_level': '3',
+   'c_string_encoding': 'utf-8',
+}
+
+cython_modules = [
+    return_extension(key, **val)
+    for key, val in module_config.items()
 ]
 
 
 # -- Set-up --------------------------------------------------------------
 
-setup(
-    name=PKG_NAME.capitalize(),
-    version=pkginfo.get('__version__'),
-    license=pkginfo.get('__license__'),
-    author=pkginfo.get('__author__'),
-    author_email=pkginfo.get('__email__'),
-    description=pkginfo.get('__description__'),
-    long_description=readme,
-    long_description_content_type='text/markdown',
-    classifiers=[
-        "Operating System :: OS Independent",
-        "Programming Language :: C++",
-        "Programming Language :: Cython",
-        "Programming Language :: Python",
-        "Topic :: Scientific/Engineering :: Astronomy",
-        "Topic :: Scientific/Engineering :: Information Analysis",
-        "Topic :: Scientific/Engineering :: Physics",
-    ],
-    project_urls={
-        'Documentation': "https://mikeswang.github.io/Triumvirate",
-        'Source': "https://github.com/MikeSWang/Triumvirate",
-    },
-    python_requires='>=3.6',
-    install_requires=requirements,
-    packages=find_packages(),
-    cmdclass={'build_ext': build_ext},
-    ext_modules=cythonize(
-        modules,
-        language_level='3',
+if __name__ == '__main__':
+    setup(
+        license=pkg_info.get('__license__'),
+        author=pkg_info.get('__author__'),
+        maintainer=pkg_info.get('__maintainer__'),
+        maintainer_email=pkg_info.get('__maintainer_email__'),
+        description=pkg_info.get('__description__'),
+        cmdclass={'build_ext': build_ext},
+        ext_modules=cythonize(
+            cython_modules, compiler_directives=cython_directives
+        )
     )
-)
