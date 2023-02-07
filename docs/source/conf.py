@@ -8,7 +8,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
 
-from triumvirate._pkginfo import __version__ as version
+from triumvirate import __version__ as version
 
 
 # -- Project information -------------------------------------------------
