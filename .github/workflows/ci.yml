@@ -31,7 +31,6 @@ jobs:
           linux: sudo apt-get update; sudo apt-get install -y libgsl-dev libfftw3-dev
           macos: brew install gsl fftw
       - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools cython pytest numpy
+        run: python -m pip install --upgrade pip setuptools cython pytest numpy
       - name: Build and install
         run: make clean; make install useomp=true uselogo=true
