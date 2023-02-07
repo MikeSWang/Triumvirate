@@ -154,8 +154,8 @@ install: cppinstall pyinstall
 cppinstall: ${PROGNAME}
 
 pyinstall:
-	@echo "Installing Triumvirate Python package..."
-	pip install --user --editable .
+	@echo "Installing Triumvirate Python package (in development mode)..."
+	python -m pip install --verbose --user --editable .
 
 
 # ------------------------------------------------------------------------
@@ -207,8 +207,8 @@ clean:
 	rm -rf core
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +
-	find ${DIR_PKG} -maxdepth 1 -name "*.cpp" -or -name "*.so" -exec rm -rf {} +
-	find ${DIR_BUILD} -mindepth 1 ! -name ".gitignore" -exec rm -rf {} +
+	find ${DIR_PKG} -maxdepth 1 \( -name "*.cpp" -or -name "*.so" \) -exec rm {} +
+	find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".gitignore" -exec rm -r {} +
 
 cleantest:
 	@echo "Cleaning up Triumvirate tests..."
