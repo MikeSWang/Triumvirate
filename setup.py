@@ -3,9 +3,8 @@
 """
 import os
 import platform
-from distutils.sysconfig import get_config_vars
-from distutils.util import convert_path
 from setuptools import setup
+from sysconfig import get_config_vars
 
 from Cython.Build import cythonize
 from Cython.Distutils import build_ext, Extension
@@ -22,7 +21,7 @@ pkg_dir = pkg_name = PKG_NAME.lower()
 
 # Extract package information.
 pkg_info = {}
-with open(convert_path(os.path.join(pkg_dir, "__init__.py"))) as pkg_pyfile:
+with open(os.path.join(pkg_dir, "__init__.py")) as pkg_pyfile:
     exec(pkg_pyfile.read(), pkg_info)
 
 # Determine repository branch.
@@ -192,10 +191,6 @@ cython_modules = [
 if __name__ == '__main__':
     setup(
         license=pkg_info.get('__license__'),
-        author=pkg_info.get('__author__'),
-        maintainer=pkg_info.get('__maintainer__'),
-        maintainer_email=pkg_info.get('__maintainer_email__'),
-        description=pkg_info.get('__description__'),
         cmdclass={'build_ext': build_ext},
         ext_modules=cythonize(
             cython_modules, compiler_directives=cython_directives
