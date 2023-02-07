@@ -7,6 +7,9 @@ on:
       - dev
     paths:
       - triumvirate/**
+      - pyproject.toml
+      - setup.*
+      - Makefile
       - .github/workflows/ci.yml
 
 jobs:
