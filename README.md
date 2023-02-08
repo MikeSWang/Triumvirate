@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/Triumvirate.png" alt=Triumvirate-Logo width=50%>
+<img src="https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/Triumvirate.png" alt=Triumvirate-Logo width=67%>
 </p>
 
 # Three-Point Clustering Measurements in LSS
@@ -42,9 +42,11 @@ Instructions for installation can be found in the
 
 ### C++ program
 
-The C++ program can be custom-built using `make`. Please refer to the
+The C++ program can be customised and compiled using `make`. Please refer to the
 [documentation](https://triumvirate.readthedocs.io/en/stable/install.html)
 for detailed instructions.
+
+> **NOTE**: Building the C++ library will be supported in the future.
 
 ### Development mode
 
