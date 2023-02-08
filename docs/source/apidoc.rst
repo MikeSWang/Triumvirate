@@ -2,11 +2,11 @@ API Reference
 =============
 
 .. toctree::
+    :maxdepth: 1
 
-   triumvirate.parameters
-   triumvirate.logger
-   triumvirate.catalogue
-   triumvirate.threept
-   triumvirate.twopt
-   triumvirate.bihankel
-   triumvirate.winconv
+    apidoc/triumvirate.logger
+    apidoc/triumvirate.parameters
+    apidoc/triumvirate.dataobjs
+    apidoc/triumvirate.catalogue
+    apidoc/triumvirate.threept
+    apidoc/triumvirate.twopt
