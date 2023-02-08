@@ -1,80 +1,97 @@
-![Triumvirate](https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/Triumvirate.png)
+<img src="https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/Triumvirate.png" alt=Triumvirate-Logo width=33%>
 
-# Three-Point Clustering Correlators in Large-Scale Structure Analysis
+# `Triumvirate`: Three-Point Clustering Measurements in LSS Analysis
 
-[![CI](
-https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml/badge.svg?branch=main
-)](https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml)
+[![Build](
+https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml/badge.svg?branch=main
+)](https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml)
+[![Tests](
+https://github.com/MikeSWang/Triumvirate/actions/workflows/tests.yml/badge.svg?branch=main
+)](https://github.com/MikeSWang/Triumvirate/actions/workflows/tests.yml)
 [![Docs](
 https://readthedocs.org/projects/triumvirate/badge/?version=latest
 )](https://triumvirate.readthedocs.io/en/latest)
 [![Release](
-https://img.shields.io/github/v/release/MikeSWang/Triumvirate?label=release
+https://img.shields.io/github/v/release/MikeSWang/Triumvirate?label=release&style=flat-square
 )](https://github.com/MikeSWang/Triumvirate/releases/latest)
 [![Licence](
-https://img.shields.io/badge/licence-GPLv3-informational
+https://img.shields.io/badge/licence-GPLv3-informational?style=flat-square
 )](https://github.com/MikeSWang/Triumvirate/tree/main/LICENCE)
-[![ePrint](
-https://img.shields.io/badge/arXiv-yymm.nnnnn-important
-)](https://arxiv.org/abs/yymm.nnnnn)
 
-Triumvirate is a Python/C++ software package for the measurement and model
-comparison of three-point clustering correlators in large-scale
-structure analysis.
-
-
-## Pre-release guide
-
-> **Note:** If you can see this text, please note that the repository is
-  currently in pre-release mode, with specific instructions detailed in
-  this section overriding any other instructions found elsewhere.
-
-After `git clone`-ing this repository, at the root of its directory
-run the following commands to install the code:
-```
-make clean
-make install
-```
-If you wish to use the Python (or C++) package only, replace `make all`
-with `make pyinstall` (or `make cppinstall`).  Depending on your
-machine environment, certain parts of the [``Makefile``](
-https://github.com/MikeSWang/Triumvirate/tree/main/Makefile)
-may need replacing (e.g. the C++ compiler and compilation flags).
-
-See Python scripts/notebooks in
-[``examples/``](https://github.com/MikeSWang/Triumvirate/tree/main/examples)
-for simple examples of how to perform basic tasks.  For the latest API
-documentation, you may need to build it yourself using ``sphinx-autodoc``.
-
-> **TODO:** Add instructions for generating API docs here.
-
-Please note that both testing and documentation are incomplete and there
-may be unknown bugs.  Any feedback is welcome, and more importantly,
-if you would like to contribute to testing and documentation please get
-in touch.
-
-
-## Installation
+`Triumvirate` is a Python/C++ software package for measuring three-point (and
+two-point) clustering statistics in large-scale structure (LSS) cosmological
+analysis.
 
 
 ## Documentation
 
-Comprehensive documentation can be found at
+Comprehensive documentation including both API and tutorials can be found at
 [mikeswang.github.io/Triumvirate](https://mikeswang.github.io/Triumvirate).
-Tutorials and scripts demonstrating basic usage can also be found in
-[``examples/``](https://github.com/MikeSWang/Triumvirate/tree/main/examples).
+
+
+## Installation
+
+### Python releases
+
+Python releases are distributed through [PyPI](https://pypi.org/project/Triumvirate/)
+and, in the future, through [conda-forge](https://anaconda.org/conda-forge).
+Instructions for installation can be found in the
+[documentation](https://triumvirate.readthedocs.io/en/latest/install.html).
+
+### C++ program
+
+The C++ program can be customised and built using `make`. Please refer to the
+[documentation](https://triumvirate.readthedocs.io/en/latest/install.html)
+for detailed instructions.
+
+### Development mode
+
+Both the Python package and the C++ program can be built in development
+mode with `make`. After `git clone`-ing this repository, run the following
+commands at the root of the directory
+```
+make clean
+make install
+```
+to install both, or replace `install` with `pyinstall`/`cppinstall` for
+Python/C++ only. To enable OpenMP, append `useomp=true` or `useomp=1`
+to the end of the second line.
+
+Depending on the environment, you may wish to modify [`Makefile`](
+https://github.com/MikeSWang/Triumvirate/tree/main/Makefile) as appropriate.
 
 
 ## Attribution
 
-The underlying C++ code was originally developed by Naonori Sugiyama.
-Please refer to/cite Sugiyama et al. (2019) [[doi:10.1093/mnras/sty3249](
-https://doi.org/10.1093/mnras/sty3249)] accordingly.
+[![JOSS](
+https://joss.theoj.org/papers/?/status.svg
+)](https://joss.theoj.org/papers/?)
+[![arXiv](
+https://img.shields.io/badge/arXiv-yymm.%3F-important?style=flat-square
+)](https://arxiv.org/abs/?.?)
+[![MNRAS](
+https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-blue?style=flat-square
+)](https://doi.org/10.1093/mnras/sty3249)
+[![MNRAS](
+https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-blue?style=flat-square
+)](https://doi.org/10.1093/mnras/stx2333)
+
+To acknowledge the use of `Triumvirate` in your published research, please
+cite the publications linked above which contain the relevant information
+in the BibTeX format.
+
+
+## Acknowledgement
+
+Key underlying numerical algorithms were originally developed by
+Naonori S Sugiyama, and are available in [`hitomi`](https://github.com/naonori/hitomi).
 
 
 ## Licence
 
-Triumvirate is made freely available under the [GPL v3.0 licence](
-https://www.gnu.org/licenses/gpl-3.0.en.html).
+`Triumvirate` is made freely available under the [GPL v3.0 licence](
+https://www.gnu.org/licenses/gpl-3.0.en.html). Please see [`LICENCE`](
+https://github.com/MikeSWang/Triumvirate/tree/main/Makefile) for full
+terms and conditions.
 
-Copyright 2021–22.
+&copy; 2023 MS Wang & NS Sugiyama

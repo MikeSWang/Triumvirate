@@ -7,7 +7,7 @@ build-backend = 'setuptools.build_meta'
 # authors = [{name = 'Mike S Wang'}, {name = 'Naonori S Sugiyama'}]
 # maintainers = [{name = 'Mike S Wang', email = "mikeshengbo.wang@ed.ac.uk"}]
 # license = {file = "LICENCE"}
-# requires-python = '>=3.8'
+# requires-python = '>=3.4'
 # dependencies = [
 #     'numpy',
 #     'astropy',
