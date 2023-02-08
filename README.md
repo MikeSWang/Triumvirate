@@ -1,6 +1,6 @@
-<div style="text-align:center">
-<img src="https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/Triumvirate.png" alt=Triumvirate-Logo width=50% />
-</div>
+<p align="center">
+<img src="https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/Triumvirate.png" alt=Triumvirate-Logo width=50%>
+</p>
 
 # Three-Point Clustering Measurements in LSS Analysis
 
@@ -8,8 +8,8 @@
 https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml/badge.svg?branch=main
 )](https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml)
 [![Tests](
-https://github.com/MikeSWang/Triumvirate/actions/workflows/tests.yml/badge.svg?branch=main
-)](https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml)
+https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml/badge.svg?branch=main
+)](https://github.com/MikeSWang/Triumvirate/actions/workflows/tests.yml)
 [![Docs](
 https://readthedocs.org/projects/triumvirate/badge/?version=latest
 )](https://triumvirate.readthedocs.io/en/latest)
@@ -66,8 +66,8 @@ https://github.com/MikeSWang/Triumvirate/tree/main/Makefile) as appropriate.
 ## Attribution
 
 [![JOSS](
-https://joss.theoj.org/papers/?/status.svg
-)](https://joss.theoj.org/papers/?)
+https://img.shields.io/badge/JOSS-doi-green
+)](https://joss.theoj.org/papers/?/status.svg)
 [![arXiv](
 https://img.shields.io/badge/arXiv-yymm.%3F-important
 )](https://arxiv.org/abs/?.?)
