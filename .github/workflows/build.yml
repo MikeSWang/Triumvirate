@@ -29,7 +29,7 @@ jobs:
       - name: Set up Python 3
         uses: actions/setup-python@v4
         with:
-          python-version: 3.6
+          python-version: 3.8
 
       - name: Install C/C++ libraries
         uses: knicknic/os-specific-run@v1.0.3
