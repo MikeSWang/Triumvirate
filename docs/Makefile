@@ -20,11 +20,12 @@ help:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 clean:
-	find build/ -type f\
+	find build/ -mindepth 1 -maxdepth 1 \
 	  -not -name ".gitignore"\
 	  -exec rm -rf {} +
 	find source/ -type f\
 	  -not -name "index.rst"\
+	  -not -name "installation.rst"\
 	  -not -name "tutorials.rst"\
 	  -not -name "apidoc.rst"\
 	  -iname "*.rst"\
