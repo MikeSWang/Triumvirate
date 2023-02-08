@@ -50,10 +50,10 @@ html_favicon = '_static/Triumvirate.ico'
 
 html_logo = '_static/Triumvirate.png'
 
-html_static_path = ['_static']
+html_static_path = ['', '_static/']
 
+# Uncomment for 'sphinx_book_theme'.
 html_theme = 'sphinx_book_theme'
-
 html_theme_options = {
     'repository_url' : 'https://github.com/MikeSWang/Triumvirate',
     'home_page_in_toc': True,
@@ -62,6 +62,10 @@ html_theme_options = {
     'use_fullscreen_button': False,
     'use_repository_button': True,
 }
+
+# # Uncomment for 'furo'.
+# html_theme = 'furo'
+# html_title = 'Triumvirate Documentation'  # u'\u200c'
 
 
 # -- Extension configuration ---------------------------------------------

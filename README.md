@@ -28,22 +28,24 @@ analysis.
 ## Documentation
 
 Comprehensive documentation including installation instructions, tutorials
-and API can be found at [triumvirate.readthedocs.io](https://triumvirate.readthedocs.io).
+and API can be found at [triumvirate.readthedocs.io](
+https://triumvirate.readthedocs.io).
 
 
 ## Installation
 
 ### Python package
 
-Python releases are distributed through [PyPI](https://pypi.org/project/Triumvirate)
-and [conda-forge](https://anaconda.org/conda-forge/triumvirate).
-Instructions for installation can be found in the
-[documentation](https://triumvirate.readthedocs.io/en/stable/install.html).
+Python releases are distributed through [PyPI](
+https://pypi.org/project/Triumvirate) and [conda-forge](
+https://anaconda.org/conda-forge/triumvirate). Instructions for installation
+can be found in the [documentation](
+https://triumvirate.readthedocs.io/en/stable/installation.html).
 
 ### C++ program
 
 The C++ program can be customised and compiled using `make`. Please refer to the
-[documentation](https://triumvirate.readthedocs.io/en/stable/install.html)
+[documentation](https://triumvirate.readthedocs.io/en/stable/installation.html)
 for detailed instructions.
 
 > **NOTE**: Building the C++ library (instead of executable binaries)
@@ -89,7 +91,8 @@ in the BibTeX format.
 ## Acknowledgement
 
 Key underlying numerical algorithms were originally developed by
-Naonori S Sugiyama, and are available in [`hitomi`](https://github.com/naonori/hitomi).
+Naonori S Sugiyama, and are available in [`hitomi`](
+  https://github.com/naonori/hitomi).
 
 
 ## Contributing
