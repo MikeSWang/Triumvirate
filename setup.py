@@ -4,7 +4,6 @@
 import os
 import platform
 from setuptools import setup
-from sysconfig import get_config_vars
 
 from Cython.Build import cythonize
 from Cython.Distutils import build_ext, Extension
@@ -19,19 +18,19 @@ PKG_NAME = 'Triumvirate'
 
 pkg_dir = pkg_name = PKG_NAME.lower()
 
-# Extract package information.
-pkg_info = {}
-with open(os.path.join(pkg_dir, "__init__.py")) as pkg_pyfile:
-    exec(pkg_pyfile.read(), pkg_info)
+# # Extract package information.
+# pkg_info = {}
+# with open(os.path.join(pkg_dir, "__init__.py")) as pkg_pyfile:
+#     exec(pkg_pyfile.read(), pkg_info)
 
-# Determine repository branch.
-version = pkg_info.get('__version__')
-if any([segment in version for segment in ['a', 'b', 'rc']]):
-    branch = 'main'
-elif 'dev' in version:
-    branch = 'dev'
-else:
-    branch = 'stable'
+# # Determine repository branch.
+# version = pkg_info.get('__version__')
+# if any([segment in version for segment in ['a', 'b', 'rc']]):
+#     branch = 'main'
+# elif 'dev' in version:
+#     branch = 'dev'
+# else:
+#     branch = 'stable'
 
 
 # -- Compilation ---------------------------------------------------------
@@ -39,22 +38,16 @@ else:
 # Specify language.
 language = 'c++'
 
-# Suppress irrelevant compilation warnings.
-config_vars = get_config_vars()
-for key, val in config_vars.items():
-    if isinstance(val, str):
-        config_vars[key] = val.replace('-Wstrict-prototypes', '')
-
 # Enforce compiler choice.
 if platform.system() == 'Linux':
-    cxx_default = 'g++'
+    compiler = 'g++'
 elif platform.system() == 'Darwin':
-    cxx_default = 'clang++'
+    compiler = 'clang++'
 else:
-    cxx_default = 'g++'
+    compiler = 'g++'
 
-os.environ['CC'] = os.environ.get('PY_CXX', cxx_default)
-os.environ['CXX'] = os.environ.get('PY_CXX', cxx_default)
+os.environ['CC'] = os.environ.get('PY_CXX', compiler)
+os.environ['CXX'] = os.environ.get('PY_CXX', compiler)
 
 # Modify compilation options.
 cflags = os.environ.get('PY_CFLAGS', '').split() + ['-std=c++11',]
@@ -65,6 +58,24 @@ ldflags = [
 
 
 # -- Extensions ----------------------------------------------------------
+
+class BuildExt(build_ext):
+    """Modify :class:`Cython.Distutils.build_ext`.
+
+    """
+    def build_extensions(self):
+        """Override the compiler and compilation options.
+
+        """
+        # self.compiler.set_executable('compiler_cxx', compiler)
+        # self.compiler.set_executable('compiler_so', compiler)
+        # self.compiler.set_executable('linker_so', compiler)
+
+        if '-Wstrict-prototypes' in self.compiler.compiler_so:
+            self.compiler.compiler_so.remove('-Wstrict-prototypes')
+
+        super().build_extensions()
+
 
 def return_extension(module_name, extra_cpp_sources, **ext_kwargs):
     """Return an extension from given source files and options.
@@ -190,8 +201,8 @@ cython_modules = [
 
 if __name__ == '__main__':
     setup(
-        license=pkg_info.get('__license__'),
-        cmdclass={'build_ext': build_ext},
+        # license=pkg_info.get('__license__'),
+        cmdclass={'build_ext': BuildExt},
         ext_modules=cythonize(
             cython_modules, compiler_directives=cython_directives
         )
