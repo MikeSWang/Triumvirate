@@ -65,7 +65,7 @@ Python/C++ build only. To enable OpenMP, append `useomp=true` or `useomp=1`
 to the end of the second line.
 
 Depending on the environment, you may wish to modify [`Makefile`](
-https://github.com/MikeSWang/Triumvirate/tree/main/Makefile) as appropriate.
+https://github.com/MikeSWang/Triumvirate/blob/main/Makefile) as appropriate.
 
 
 ## Attribution
@@ -92,22 +92,28 @@ in the BibTeX format.
 
 Key underlying numerical algorithms were originally developed by
 Naonori S Sugiyama, and are available in [`hitomi`](
-  https://github.com/naonori/hitomi).
+https://github.com/naonori/hitomi).
 
 
 ## Contributing
 
 User feedback and contributions are highly valued and very welcome. Please
 refer to [`CONTRIBUTING.md`](
-https://github.com/MikeSWang/Triumvirate/tree/main/CONTRIBUTING.md) for
+https://github.com/MikeSWang/Triumvirate/blob/main/CONTRIBUTING.md) for
 guidelines.
+
+
+## Releases
+
+Changes in recent releases are listed in [`CHANGELOG.md`](
+https://github.com/MikeSWang/Triumvirate/blob/main/CHANGELOG.md)
 
 
 ## Licence
 
 `Triumvirate` is made freely available under the [GPL-3.0 licence](
 https://www.gnu.org/licenses/gpl-3.0.en.html). Please see [`LICENCE`](
-https://github.com/MikeSWang/Triumvirate/tree/main/Makefile) for full
+https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE) for full
 terms and conditions.
 
 &copy; 2023 MS Wang & NS Sugiyama
