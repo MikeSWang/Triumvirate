@@ -2,51 +2,51 @@
 requires = ['setuptools', 'wheel', 'Cython', 'oldest-supported-numpy']
 build-backend = 'setuptools.build_meta'
 
-[project]
-name = 'Triumvirate'
-authors = [{name = 'Mike S Wang'}, {name = 'Naonori S Sugiyama'}]
-maintainers = [{name = 'Mike S Wang', email = "mikeshengbo.wang@ed.ac.uk"}]
-license = {file = "LICENCE"}
-requires-python = '>=3.8'
-dependencies = [
-    'numpy',
-    'astropy',
-]
-description = "Three-point clustering measurements in large-scale structure analysis."
-classifiers = [
-    "Operating System :: POSIX :: Linux",
-    "Operating System :: MacOS",
-    "Programming Language :: C++",
-    "Programming Language :: Cython",
-    "Programming Language :: Python",
-    "Topic :: Scientific/Engineering :: Astronomy",
-    "Topic :: Scientific/Engineering :: Information Analysis",
-    "Topic :: Scientific/Engineering :: Physics",
-]
-dynamic = [
-  'version',
-  'readme',
-]
+# [project]
+# name = 'Triumvirate'
+# authors = [{name = 'Mike S Wang'}, {name = 'Naonori S Sugiyama'}]
+# maintainers = [{name = 'Mike S Wang', email = "mikeshengbo.wang@ed.ac.uk"}]
+# license = {file = "LICENCE"}
+# requires-python = '>=3.8'
+# dependencies = [
+#     'numpy',
+#     'astropy',
+# ]
+# description = "Three-point clustering measurements in large-scale structure analysis."
+# classifiers = [
+#     "Operating System :: POSIX :: Linux",
+#     "Operating System :: MacOS",
+#     "Programming Language :: C++",
+#     "Programming Language :: Cython",
+#     "Programming Language :: Python",
+#     "Topic :: Scientific/Engineering :: Astronomy",
+#     "Topic :: Scientific/Engineering :: Information Analysis",
+#     "Topic :: Scientific/Engineering :: Physics",
+# ]
+# dynamic = [
+#   'version',
+#   'readme',
+# ]
 
-[project.optional-dependencies]
-nbk = ['nbodykit']
+# [project.optional-dependencies]
+# nbk = ['nbodykit']
 
-[project.urls]
-documentation = "https://mikeswang.github.io/Triumvirate"
-repository = "https://github.com/MikeSWang/Triumvirate"
+# [project.urls]
+# documentation = "https://mikeswang.github.io/Triumvirate"
+# repository = "https://github.com/MikeSWang/Triumvirate"
 
-[tool.setuptools.dynamic]
-version = {attr = 'triumvirate.__version__'}
-readme = {file = ["README.md", "CHANGELOG.md"]}
+# [tool.setuptools.dynamic]
+# version = {attr = 'triumvirate.__version__'}
+# readme = {file = ["README.md", "CHANGELOG.md"]}
 
-[tool.setuptools.packages.find]
-exclude = [
-    'triumvirate.include*',
-    'triumvirate.src*',
-    'triumvirate.resources*',
-    'triumvirate.tests*',
-]
-namespaces = false
+# [tool.setuptools.packages.find]
+# exclude = [
+#     'triumvirate.include*',
+#     'triumvirate.src*',
+#     'triumvirate.resources*',
+#     'triumvirate.tests*',
+# ]
+# namespaces = false
 
-[tool.setuptools.package-data]
-'triumvirate.resources' = ["*.ini", "*.yml"]
+# [tool.setuptools.package-data]
+# 'triumvirate.resources' = ["*.ini", "*.yml"]
