@@ -106,7 +106,7 @@ guidelines.
 ## Releases
 
 Changes in recent releases are listed in [`CHANGELOG.md`](
-https://github.com/MikeSWang/Triumvirate/blob/main/CHANGELOG.md)
+https://github.com/MikeSWang/Triumvirate/blob/main/CHANGELOG.md).
 
 
 ## Licence
