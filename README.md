@@ -92,6 +92,14 @@ Key underlying numerical algorithms were originally developed by
 Naonori S Sugiyama, and are available in [`hitomi`](https://github.com/naonori/hitomi).
 
 
+## Contributing
+
+User feedback and contributions are highly valued and very welcome. Please
+refer to [`CONTRIBUTING.md`](
+https://github.com/MikeSWang/Triumvirate/tree/main/CONTRIBUTING.md) for
+guidelines.
+
+
 ## Licence
 
 `Triumvirate` is made freely available under the [GPL-3.0 licence](
