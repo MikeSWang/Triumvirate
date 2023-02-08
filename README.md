@@ -1,21 +1,23 @@
-<img src="https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/Triumvirate.png" alt=Triumvirate-Logo width=33%>
+<div style="text-align:center">
+<img src="https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/Triumvirate.png" alt=Triumvirate-Logo width=50% />
+</div>
 
-# `Triumvirate`: Three-Point Clustering Measurements in LSS Analysis
+# Three-Point Clustering Measurements in LSS Analysis
 
 [![Build](
 https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml/badge.svg?branch=main
 )](https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml)
 [![Tests](
 https://github.com/MikeSWang/Triumvirate/actions/workflows/tests.yml/badge.svg?branch=main
-)](https://github.com/MikeSWang/Triumvirate/actions/workflows/tests.yml)
+)](https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml)
 [![Docs](
 https://readthedocs.org/projects/triumvirate/badge/?version=latest
 )](https://triumvirate.readthedocs.io/en/latest)
 [![Release](
-https://img.shields.io/github/v/release/MikeSWang/Triumvirate?label=release&style=flat-square
+https://img.shields.io/github/v/release/MikeSWang/Triumvirate?label=release
 )](https://github.com/MikeSWang/Triumvirate/releases/latest)
 [![Licence](
-https://img.shields.io/badge/licence-GPLv3-informational?style=flat-square
+https://img.shields.io/badge/licence-GPLv3-informational
 )](https://github.com/MikeSWang/Triumvirate/tree/main/LICENCE)
 
 `Triumvirate` is a Python/C++ software package for measuring three-point (and
@@ -67,13 +69,13 @@ https://github.com/MikeSWang/Triumvirate/tree/main/Makefile) as appropriate.
 https://joss.theoj.org/papers/?/status.svg
 )](https://joss.theoj.org/papers/?)
 [![arXiv](
-https://img.shields.io/badge/arXiv-yymm.%3F-important?style=flat-square
+https://img.shields.io/badge/arXiv-yymm.%3F-important
 )](https://arxiv.org/abs/?.?)
 [![MNRAS](
-https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-blue?style=flat-square
+https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-blue
 )](https://doi.org/10.1093/mnras/sty3249)
 [![MNRAS](
-https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-blue?style=flat-square
+https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-blue
 )](https://doi.org/10.1093/mnras/stx2333)
 
 To acknowledge the use of `Triumvirate` in your published research, please
