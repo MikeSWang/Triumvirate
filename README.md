@@ -28,7 +28,7 @@ analysis.
 ## Documentation
 
 Comprehensive documentation including installation instructions, tutorials
-and API can be found at [https://triumvirate.readthedocs.io](https://triumvirate.readthedocs.io).
+and API can be found at [triumvirate.readthedocs.io](https://triumvirate.readthedocs.io).
 
 
 ## Installation
@@ -46,7 +46,8 @@ The C++ program can be customised and compiled using `make`. Please refer to the
 [documentation](https://triumvirate.readthedocs.io/en/stable/install.html)
 for detailed instructions.
 
-> **NOTE**: Building the C++ library will be supported in the future.
+> **NOTE**: Building the C++ library (instead of executable binaries)
+            will be supported in the future.
 
 ### Development mode
 
