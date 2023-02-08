@@ -29,5 +29,5 @@ cosmological analysis.
 # definition or statement is allowed.
 __copyright__ = "Copyright 2023, MS Wang & NS Sugiyama"
 __date__ = "2023-03-01"
-__license__ = "GPLv3"
+__license__ = "GPL-3.0"
 __version__ = "0.0rc1"
