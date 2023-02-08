@@ -56,6 +56,12 @@ ldflags = [
     if not lib.startswith('-l')
 ]
 
+py_trvomp = os.environ.get('PY_TRVOMP')  # reserved env. var. for ``setup.py``
+if py_trvomp is not None and py_trvomp.lower() in ['', '1', 'true']:
+    for flag in ['-fopenmp', '-DTRV_USE_OMP', '-DTRV_USE_FFTWOMP']:
+        if flag not in cflags:
+            cflags.extend(flag)
+
 
 # -- Extensions ----------------------------------------------------------
 
