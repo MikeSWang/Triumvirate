@@ -243,7 +243,7 @@ int ParticleCatalogue::load_catalogue_file(
   /// Catalogue properties
   /// --------------------------------------------------------------------
 
-  /// Calculate systematic weight sum.
+  /// Calculate sample weight sum.
   this->calc_wtotal();
 
   /// Calculate the extents of particles.
@@ -295,7 +295,7 @@ int ParticleCatalogue::load_particle_data(
     this->pdata[pid].w = ws[pid] * wc[pid];
   }
 
-  /// Calculate systematic weight sum.
+  /// Calculate sample weight sum.
   this->calc_wtotal();
 
   /// Calculate the extents of particles.
@@ -331,7 +331,7 @@ void ParticleCatalogue::calc_wtotal() {
   if (trvs::currTask == 0) {
     trvs::logger.info(
       "Catalogue loaded: %d particles with "
-      "total systematic weights %.3f (source=%s).",
+      "total sample weights %.3f (source=%s).",
       this->ntotal, this->wtotal, this->source.c_str()
     );
   }

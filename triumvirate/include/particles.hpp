@@ -60,13 +60,13 @@ class ParticleCatalogue {
   struct ParticleData {
     double pos[3];  ///< particle position vector
     double nz;      ///< redshift-dependent expected number density
-    double ws;      ///< particle systematic weight
+    double ws;      ///< particle sample weight
     double wc;      ///< particle clustering weight
     double w;       ///< particle overall weight
   }* pdata;         ///< particle data container
 
   int ntotal;     ///< total number of particles
-  double wtotal;  ///< total systematic weight of particles
+  double wtotal;  ///< total sample weight of particles
 
   double pos_min[3];  ///< minimum values of particle positions
   double pos_max[3];  ///< maximum values of particle positions
@@ -161,7 +161,7 @@ class ParticleCatalogue {
   /// --------------------------------------------------------------------
 
   /**
-   * @brief Calculate total systematic weight of particles.
+   * @brief Calculate total sample weight of particles.
    *
    * @note This method merely sets @ref trv::ParticleCatalogue::wtotal.
    */

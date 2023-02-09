@@ -34,9 +34,14 @@ class ParticleCatalogue:
 
     Notes
     -----
-    There are two types of weights: systematic weights 'ws'
+    There are two types of weights: sample weights 'ws'
     (e.g. completeness weights) and clustering weights 'wc'
     (e.g. Feldman--Kaiser--Peacock weights).
+
+    .. attention::
+
+        Note the naming convention above: in particular, 'wc' is not
+        the completeness weight (which is a component of 'ws' instead).
 
     Parameters
     ----------
@@ -48,7 +53,7 @@ class ParticleCatalogue:
         (defaults is `None`).  If an array, it must be of the same length
         as `x`, `y` and `z`.
     ws, wc : (1-d array of) float, optional
-        Systematic weights and clustering weights of particles (defaults
+        Sample weights and clustering weights of particles (defaults
         are 1.).  If an array, it must be of the same length as
         `x`, `y` and `z`.
     logger : :class:`logging.Logger`, optional
@@ -61,7 +66,7 @@ class ParticleCatalogue:
     ntotal : int
         Total particle number.
     wtotal : float
-        Total systematic weight.
+        Total sample weight.
 
     """
 
@@ -101,7 +106,7 @@ class ParticleCatalogue:
         if self._logger:
             self._logger.info(
                 "Catalogue initialised: %d particles with "
-                "total systematic weights %.3f (%s).",
+                "total sample weights %.3f (%s).",
                 self.ntotal, self.wtotal, self
             )
 
@@ -124,7 +129,8 @@ class ParticleCatalogue:
         reader : {'astropy', 'nbodykit'}, optional
             If 'astropy' (default), :class:`astropy.table.Table`
             is used for reading in the catalogue file; else if 'nbodykit',
-            :class:`nbodykit.source.catalog` is used (if available).
+            :class:`nbodykit.source.catalog` is used (if ``nbodykit``
+            is installed).
         names : sequence of str, optional
             Catalogue file field names.  Cannot be `None` (default)
             if `reader` is 'nbodykit'.  If `None`, the header in the file
@@ -221,7 +227,7 @@ class ParticleCatalogue:
         if self._logger:
             self._logger.info(
                 "Catalogue loaded: %d particles with "
-                "total systematic weights %.3f (%s).",
+                "total sample weights %.3f (%s).",
                 self.ntotal, self.wtotal, self
             )
 

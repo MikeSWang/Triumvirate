@@ -195,6 +195,7 @@ module_config = {
 cython_directives = {
    'language_level': '3',
    'c_string_encoding': 'utf-8',
+   'embedsignature': True,
 }
 
 cython_modules = [
