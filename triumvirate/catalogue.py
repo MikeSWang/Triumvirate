@@ -139,7 +139,7 @@ class ParticleCatalogue:
             File format specifier (default is 'ascii.no_header', with any
             header included as comment lines).  Used only when `reader`
             is 'astropy'.  See
-            `<https://docs.astropy.org/en/stable/io/ascii/
+            `<https://docs.astropy.org/en/latest/io/ascii/
             index.html#supported-formats>`_ for supported file formats.
         name_mapping : dict of {str: str}, optional
             Mapping between any of the default column names 'x', 'y', 'z',
