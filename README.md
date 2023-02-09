@@ -49,8 +49,7 @@ The C++ program can be customised and compiled to a binary executable using
 https://triumvirate.readthedocs.io/en/stable/installation.html#c-program)
 for detailed instructions.
 
-> **NOTE**: Building the C++ library (instead of executable binaries)
-            will be supported in the future.
+> **NOTE**: In the future, the C++ code will also be released as a library.
 
 ### Development mode
 
