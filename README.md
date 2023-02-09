@@ -11,8 +11,8 @@ https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml/badge.svg?b
 https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml/badge.svg?branch=main
 )](https://github.com/MikeSWang/Triumvirate/actions/workflows/tests.yml)
 [![Docs](
-https://readthedocs.org/projects/triumvirate/badge/?version=stable
-)](https://triumvirate.readthedocs.io/en/stable)
+https://readthedocs.org/projects/triumvirate/badge/?version=latest
+)](https://triumvirate.readthedocs.io/en/latest/)
 [![Release](
 https://img.shields.io/github/v/release/MikeSWang/Triumvirate?label=release
 )](https://github.com/MikeSWang/Triumvirate/releases/latest)
@@ -32,7 +32,7 @@ and API can be found at [triumvirate.readthedocs.io](
 https://triumvirate.readthedocs.io).
 
 The scientific context is explained on the [Background](
-https://triumvirate.readthedocs.io/en/stable/background.html) page
+https://triumvirate.readthedocs.io/en/latest/background.html) page
 in the documentation.
 
 
@@ -44,14 +44,14 @@ in the documentation.
 https://pypi.org/project/Triumvirate) and [conda-forge](
 https://anaconda.org/conda-forge/triumvirate). Instructions for installation
 can be found on the [Installation](
-https://triumvirate.readthedocs.io/en/stable/installation.html#python-package)
+https://triumvirate.readthedocs.io/en/latest/installation.html#python-package)
 page in the documentation.
 
 ### C++ program
 
 ``Triumvirate`` as a 'black-box' C++ program is built as a binary executable
 using `make`. Instructions for compilation can be found on the [Installation](
-https://triumvirate.readthedocs.io/en/stable/installation.html#c-program)
+https://triumvirate.readthedocs.io/en/latest/installation.html#c-program)
 page in the documentation.
 
 > **NOTE**: In the future, the C++ code will also be released as a library.
