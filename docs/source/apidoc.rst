@@ -8,12 +8,12 @@ Python package
 .. toctree::
     :titlesonly:
 
-    apidoc/triumvirate.logger
-    apidoc/triumvirate.parameters
-    apidoc/triumvirate.dataobjs
-    apidoc/triumvirate.catalogue
-    apidoc/triumvirate.threept
-    apidoc/triumvirate.twopt
+    apidoc_py/triumvirate.logger
+    apidoc_py/triumvirate.parameters
+    apidoc_py/triumvirate.dataobjs
+    apidoc_py/triumvirate.catalogue
+    apidoc_py/triumvirate.threept
+    apidoc_py/triumvirate.twopt
 
 
 C++ library
