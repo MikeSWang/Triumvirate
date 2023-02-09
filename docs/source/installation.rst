@@ -31,27 +31,26 @@ Alternatively, you may use `pip`, ideally in a virtual environment
 C++ program
 ===========
 
-The C++ program can be customised and compiled to a binary executable using
-`make`.
+|Triumvirate| as a 'black-box' C++ program is built as a binary executable
+using `make`.
 
 You need to first obtain the source code by cloning into the GitHub repository
-and change to the branch corresponding to the version needed [1]_:
+and change to the repository directory:
 
 .. code:: console
 
-    $ git clone git@github.com:MikeSWang/Triumvirate.git
+    $ git clone git@github.com:MikeSWang/Triumvirate.git --branch stable
     $ cd Triumvirate
-    $ git checkout <version-branch>
 
-Then to compile [2]_, run:
+Then to compile, run:
 
 .. code:: console
 
     $ make clean
-    $ make cppinstall
+    $ make cppinstall [useomp=[true|1]]
 
 To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to
-the end of the second line above.
+the end of the second line as shown above.
 
 By default, the binary executable is compiled to ``build/triumvirate`` in
 the repository directory.
@@ -60,19 +59,33 @@ the repository directory.
 
     In the future, the C++ code will also be released as a library.
 
-.. [1] The latest release is on the ``main`` branch.
-
-.. [2] The default ``Makefile`` (located in the repository root diretory)
-       suits most use cases, but you may modify it as appropriate for your need.
-
 
 Development mode
 ================
 
-The Python package can be set up (with optional OpenMP parallelisation) in
-development mode using `make` as above for C++, with the replacement of
-``cppinstall`` with ``pyinstall``. The C++ program can be compiled
-simultaneously if ``cppinstall``/``pyinstall`` is replaced with ``install``.
+Both the Python package and the C++ program can be set up in development
+mode with `make`. As in `C++ program`_ above, first ``git clone`` this
+repository and ``git checkout`` the branch/release you would like to edit
+
+.. code:: console
+
+    $ git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
+    $ cd Triumvirate
+
+then at the repository directory root run
+
+.. code:: console
+
+    $ make clean
+    $ make [py|cpp]install [useomp=[true|1]]
+
+where ``install`` builds both and ``pyinstall``/``cppinstall`` is for
+Python/C++ build only. Again, to enable OpenMP parallelisation, append
+``useomp=true`` or ``useomp=1`` to the end of the second line as shown above.
+
+The latest release is on the ``main`` branch. The default ``Makefile``
+(located at the repository diretory root) suits most use cases, but you may
+modify it as appropriate for your need.
 
 
 .. |Triumvirate| raw:: html
