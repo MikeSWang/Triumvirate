@@ -31,7 +31,7 @@ following functionalities:
 * both modules mentioned above can measure the configuration-space window
   function multipoles, which are used to convolve theoretical models derived
   in Fourier space through the Hankel transform, as in e.g. eqs. (58) & (63)
-  of :cite:p:`Sugiyama:2019` and eq. (56) of :cite:t:`Sugiyama:2018`.
+  of :cite:t:`Sugiyama:2019` and eq. (56) of :cite:t:`Sugiyama:2018`.
 
 .. bibliography::
     :style: plain

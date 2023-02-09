@@ -58,8 +58,8 @@ class InvalidParameter(ValueError):
 cdef class ParameterSet:
     """Parameter set.
 
-    This reads parameters from a file, stores and prints out the extracted
-    parameters, and validates the parameters.
+    This reads parameters from a file or a :class:`dict`, stores and
+    prints out the extracted parameters, and validates the parameters.
 
     Parameters
     ----------

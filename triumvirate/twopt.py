@@ -56,7 +56,7 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         This will override corresponding entries in `paramset`.
     degree : int, optional
         Multipole degree.  If not `None` (default), this will override
-        `paramset['degrees']['ELL']`.
+        ``paramset['degrees']['ELL']``.
     binning : :class:`~.triumvirate.dataobjs.Binning`, optional
         Binning (default is `None`).
     **type_kwargs
@@ -329,7 +329,7 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         This will override corresponding entries in `paramset`.
     degree : int, optional
         Multipole degree.  If not `None` (default), this will override
-        `paramset['degrees']['ELL']`.
+        ``paramset['degrees']['ELL']``.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
         constructed from `paramset`.
@@ -533,7 +533,7 @@ def compute_powspec(catalogue_data, catalogue_rand,
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
     degree : int, optional
         Multipole degree.  If not `None` (default), this will override
-        `paramset['degrees']['ELL']`.
+        ``paramset['degrees']['ELL']``.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
         constructed from `paramset`.
@@ -623,7 +623,7 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
     degree : int, optional
         Multipole degree.  If not `None` (default), this will override
-        `paramset['degrees']['ELL']`.
+        ``paramset['degrees']['ELL']``.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
         constructed from `paramset`.
@@ -729,7 +729,7 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
         This will override corresponding entries in `paramset`.
     degree : int, optional
         Multipole degree.  If not `None` (default), this will override
-        `paramset['degrees']['ELL']`.
+        ``paramset['degrees']['ELL']``.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
         constructed from `paramset`.
@@ -896,7 +896,7 @@ def compute_powspec_in_gpp_box(catalogue_data,
         Data-source catalogue.
     degree : int, optional
         Multipole degree.  If not `None` (default), this will override
-        `paramset['degrees']['ELL']`.
+        ``paramset['degrees']['ELL']``.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
         constructed from `paramset`.
@@ -975,7 +975,7 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
         Data-source catalogue.
     degree : int, optional
         Multipole degree.  If not `None` (default), this will override
-        `paramset['degrees']['ELL']`.
+        ``paramset['degrees']['ELL']``.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
         constructed from `paramset`.
@@ -1063,7 +1063,7 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
     degree : int, optional
         Multipole degree.  If not `None` (default), this will override
-        `paramset['degrees']['ELL']`.
+        ``paramset['degrees']['ELL']``.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default), this is
         constructed from `paramset`.

@@ -107,10 +107,11 @@ bibtex_reference_style = 'author_year'
 
 intersphinx_mapping = {
     'python': ("https://docs.python.org/3", None),
+    'cython': ("https://cython.readthedocs.io/en/stable/", None),
     'pytest': ("https://docs.pytest.org/en/latest/", None),
     'numpy': ("https://numpy.org/doc/stable/", None),
-    'scipy': ("https://docs.scipy.org/doc/scipy/", None),
-    'matplotlib': ("https://matplotlib.org/stable/", None),
+    'astropy': ("https://docs.astropy.org/en/latest/", None),
+    'nbodykit': ("https://nbodykit.readthedocs.io/en/latest/", None),
 }
 
 napoleon_include_special_with_doc = True

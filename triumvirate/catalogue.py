@@ -34,14 +34,14 @@ class ParticleCatalogue:
 
     Notes
     -----
-    There are two types of weights: sample weights 'ws'
-    (e.g. completeness weights) and clustering weights 'wc'
+    There are two types of weights: sample weights ``ws``
+    (e.g. completeness weights) and clustering weights ``wc``
     (e.g. Feldman--Kaiser--Peacock weights).
 
     .. attention::
 
-        Note the naming convention above: in particular, 'wc' is not
-        the completeness weight (which is a component of 'ws' instead).
+        Note the naming convention above: in particular, ``wc`` is not
+        the completeness weight (which is a component of ``ws`` instead).
 
     Parameters
     ----------
@@ -129,7 +129,7 @@ class ParticleCatalogue:
         reader : {'astropy', 'nbodykit'}, optional
             If 'astropy' (default), :class:`astropy.table.Table`
             is used for reading in the catalogue file; else if 'nbodykit',
-            :class:`nbodykit.source.catalog` is used (if ``nbodykit``
+            :mod:`nbodykit.source.catalog` is used (if ``nbodykit``
             is installed).
         names : sequence of str, optional
             Catalogue file field names.  Cannot be `None` (default)
@@ -148,7 +148,7 @@ class ParticleCatalogue:
             when `reader` is 'astropy'.
         table_kwargs : dict, optional
             Keyword arguments to be passed to
-            :meth:`astropy.table.Table.read` (default is `None`).
+            :attr:`astropy.table.Table.read` (default is `None`).
             Used only when `reader` is 'astropy'.
         logger : :class:`logging.Logger`, optional
             Program logger (default is `None`).
@@ -548,7 +548,7 @@ class ParticleCatalogue:
 
         Returns
         -------
-        text_header : string
+        text_header : str
             Catalogue attributes as a header string.
 
         """

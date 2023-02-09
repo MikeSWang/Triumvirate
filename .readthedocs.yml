@@ -1,0 +1,10 @@
+name: triumvirate-docs
+
+type: sphinx
+
+conda:
+    file: docs/.environment.yml
+
+python:
+    version: 3.8
+    setup_py_install: true

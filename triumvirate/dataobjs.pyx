@@ -34,12 +34,12 @@ cdef class Binning:
         Minimum and maximum of the bin range.
     num_bins : int or None
         Number of bins.
-    bin_edges : (:attr:`num_bins` + 1,) list of float
-        Bin edges.
-    bin_centres : (:attr:`num_bins`,) list of float
-        Bin centres.
-    bin_widths : (:attr:`num_bins`,) list of float
-        Bin widths.
+    bin_edges : list of float
+        Bin edges of length (:attr:`num_bins` + 1).
+    bin_centres : list of float
+        Bin centres of length :attr:`num_bins`.
+    bin_widths : list of float
+        Bin widths of length :attr:`num_bins`.
 
     Notes
     -----

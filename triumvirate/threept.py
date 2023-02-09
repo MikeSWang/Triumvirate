@@ -57,20 +57,20 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
     degrees : tuple of int or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override `paramset['degrees']` entries.
+        override ``paramset['degrees']`` entries.
     wa_orders : tuple of int or str of length 2, optional
         Wide-angle correction orders either as a tuple ('i_wa', 'j_wa') or
         as a string of length 2.  If not `None` (default), this will
-        override `paramset['wa_orders']` entries.
+        override ``paramset['wa_orders']`` entries.
     binning : :class:`~.triumvirate.dataobjs.Binning`, optional
         Binning (default is `None`).
     form : {'diag', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
-        this will override `paramset['form']`.
+        this will override ``paramset['form']``.
     idx_bin : int, optional
         Fixed bin index for the first coordinate dimension when binning
         `form` is 'full'.  If not `None` (default), this will
-        override `paramset['idx_bin']`.
+        override ``paramset['idx_bin']``.
     **type_kwargs
         `catalogue_type` and `statistic_type` parameters to be filled in.
 
@@ -379,17 +379,17 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
     degrees : tuple of int or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override `paramset['degrees']` entries.
+        override ``paramset['degrees']`` entries.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
     form : {'diag', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
-        this will override `paramset['form']`.
+        this will override ``paramset['form']``.
     idx_bin : int, optional
         Fixed bin index for the first coordinate dimension
         when binning `form` is 'full'.  If not `None` (default),
-        this will override `paramset['idx_bin']`.
+        this will override ``paramset['idx_bin']``.
     types : dict, optional
         `catalogue_type` and `statistic_type` (default is `None`).
         This should be set by the caller of this function.
@@ -586,17 +586,17 @@ def compute_bispec(catalogue_data, catalogue_rand,
     degrees : tuple of int or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override `paramset['degrees']` entries.
+        override ``paramset['degrees']`` entries.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
     form : {'diag', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
-        this will override `paramset['form']`.
+        this will override ``paramset['form']``.
     idx_bin : int, optional
         Fixed bin index for the first coordinate dimension
         when binning `form` is 'full'.  If not `None` (default),
-        this will override `paramset['idx_bin']`.
+        this will override ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -679,17 +679,17 @@ def compute_3pcf(catalogue_data, catalogue_rand,
     degrees : tuple of int or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override `paramset['degrees']` entries.
+        override ``paramset['degrees']`` entries.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
     form : {'diag', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
-        this will override `paramset['form']`.
+        this will override ``paramset['form']``.
     idx_bin : int, optional
         Fixed bin index for the first coordinate dimension
         when binning `form` is 'full'.  If not `None` (default),
-        this will override `paramset['idx_bin']`.
+        this will override ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -775,17 +775,17 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #     degrees : tuple of int or str of length 3, optional
 #         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
 #         as a string of length 3.  If not `None` (default), this will
-#         override `paramset['degrees']` entries.
+#         override ``paramset['degrees']`` entries.
 #     binning : :class:`~triumvirate.dataobjs.Binning`, optional
 #         Binning for the measurements.  If `None` (default),
 #         this is constructed from `paramset`.
 #     form : {'diag', 'full'}, optional
 #         Binning form of the measurements.  If not `None` (default),
-#         this will override `paramset['form']`.
+#         this will override ``paramset['form']``.
 #     idx_bin : int, optional
 #         Fixed bin index for the first coordinate dimension
 #         when binning `form` is 'full'.  If not `None` (default),
-#         this will override `paramset['idx_bin']`.
+#         this will override ``paramset['idx_bin']``.
 #     sampling_params : dict, optional
 #         Dictionary containing a subset of the following entries
 #         for sampling parameters:
@@ -1015,7 +1015,7 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
     degrees : tuple of int or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override `paramset['degrees']` entries.
+        override ``paramset['degrees']`` entries.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
@@ -1024,11 +1024,11 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         This should be set by the caller of this function.
     form : {'diag', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
-        this will override `paramset['form']`.
+        this will override ``paramset['form']``.
     idx_bin : int, optional
         Fixed bin index for the first coordinate dimension
         when binning `form` is 'full'.  If not `None` (default),
-        this will override `paramset['idx_bin']`.
+        this will override ``paramset['idx_bin']``.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format.
@@ -1186,17 +1186,17 @@ def compute_bispec_in_gpp_box(catalogue_data,
     degrees : tuple of int or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override `paramset['degrees']` entries.
+        override ``paramset['degrees']`` entries.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
     form : {'diag', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
-        this will override `paramset['form']`.
+        this will override ``paramset['form']``.
     idx_bin : int, optional
         Fixed bin index for the first coordinate dimension
         when binning `form` is 'full'.  If not `None` (default),
-        this will override `paramset['idx_bin']`.
+        this will override ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -1270,17 +1270,17 @@ def compute_3pcf_in_gpp_box(catalogue_data,
     degrees : tuple of int or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override `paramset['degrees']` entries.
+        override ``paramset['degrees']`` entries.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
     form : {'diag', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
-        this will override `paramset['form']`.
+        this will override ``paramset['form']``.
     idx_bin : int, optional
         Fixed bin index for the first coordinate dimension
         when binning `form` is 'full'.  If not `None` (default),
-        this will override `paramset['idx_bin']`.
+        this will override ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
@@ -1364,21 +1364,21 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
     degrees : tuple of int or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override `paramset['degrees']` entries.
+        override ``paramset['degrees']`` entries.
     wa_orders : tuple of int or str of length 2, optional
         Wide-angle correction orders either as a tuple ('i_wa', 'j_wa') or
         as a string of length 2.  If not `None` (default), this will
-        override `paramset['wa_orders']` entries.
+        override ``paramset['wa_orders']`` entries.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
     form : {'diag', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
-        this will override `paramset['form']`.
+        this will override ``paramset['form']``.
     idx_bin : int, optional
         Fixed bin index for the first coordinate dimension
         when binning `form` is 'full'.  If not `None` (default),
-        this will override `paramset['idx_bin']`.
+        this will override ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters:
