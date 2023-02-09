@@ -62,10 +62,12 @@ fftlog2d/
 !build/.ignore
 
 # File: docs/source/index.rst
+# File: docs/source/background.rst
 # File: docs/source/installation.rst
 # File: docs/source/apidoc.rst
 # File: docs/source/tutorials.rst
 !docs/source/index.rst
+!docs/source/background.rst
 !docs/source/installation.rst
 !docs/source/apidoc.rst
 !docs/source/tutorials.rst

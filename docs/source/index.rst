@@ -1,12 +1,18 @@
 .. title:: Triumvirate Documentation
 
+.. figure:: _static/Triumvirate.png
+    :align: center
+    :width: 67 %
+
 ==========================================================================
-**Three-Point Clustering Measurements in LSS Analysis**
+**Three-Point Clustering Measurements in LSS**
 ==========================================================================
 
 |Triumvirate| is a Python/C++ package for measuring three-point (and
 two-point) clustering statistics in large-scale structure (LSS)
-cosmological analysis.
+cosmological analyses.
+
+The scientific context is explained in :doc:`background`.
 
 Installation instructions can be found in :doc:`installation`. To get
 started quickly, read :doc:`tutorials`. For full API, please refer to
@@ -80,6 +86,7 @@ Licence
 .. toctree::
     :hidden:
 
+    background
     installation
     tutorials
     apidoc

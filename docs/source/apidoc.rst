@@ -2,6 +2,9 @@
 API Reference
 =============
 
+Python package
+==============
+
 .. toctree::
     :maxdepth: 1
 
@@ -11,3 +14,7 @@ API Reference
     apidoc/triumvirate.catalogue
     apidoc/triumvirate.threept
     apidoc/triumvirate.twopt
+
+
+C++ library
+===========

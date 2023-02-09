@@ -22,7 +22,7 @@ https://img.shields.io/badge/licence-GPL--3.0-informational
 
 ``Triumvirate`` is a Python/C++ software package for measuring three-point (and
 two-point) clustering statistics in large-scale structure (LSS) cosmological
-analysis.
+analyses.
 
 
 ## Documentation
@@ -30,6 +30,10 @@ analysis.
 Comprehensive documentation including installation instructions, tutorials
 and API can be found at [triumvirate.readthedocs.io](
 https://triumvirate.readthedocs.io).
+
+The scientific context is explained on the [Background](
+https://triumvirate.readthedocs.io/en/stable/background.html) page
+in the documentation.
 
 
 ## Installation
@@ -39,33 +43,39 @@ https://triumvirate.readthedocs.io).
 ``Triumvirate`` as a Python package is distributed through [PyPI](
 https://pypi.org/project/Triumvirate) and [conda-forge](
 https://anaconda.org/conda-forge/triumvirate). Instructions for installation
-can be found in the [documentation](
-https://triumvirate.readthedocs.io/en/stable/installation.html#python-package).
+can be found on the [Installation](
+https://triumvirate.readthedocs.io/en/stable/installation.html#python-package)
+page in the documentation.
 
 ### C++ program
 
-The C++ program can be customised and compiled to a binary executable using
-`make`. Please refer to the [documentation](
+``Triumvirate`` as a 'black-box' C++ program is built as a binary executable
+using `make`. Instructions for compilation can be found on the [Installation](
 https://triumvirate.readthedocs.io/en/stable/installation.html#c-program)
-for detailed instructions.
+page in the documentation.
 
 > **NOTE**: In the future, the C++ code will also be released as a library.
 
 ### Development mode
 
-Both the Python package and the C++ program can be built in development
-mode with `make`. `git clone` this repository and `git checkout` the branch
-you would like to edit, then at the repository root directory run
+Both the Python package and the C++ program can be set up in development
+mode with `make`. First `git clone` this repository and `git checkout` the
+branch/release you would like to edit
+```
+git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
+cd Triumvirate
+```
+then at the repository directory root run
 ```
 make clean
-make install
+make [py|cpp]install [useomp=[true|1]]
 ```
-to install both, or replace ``install`` with ``pyinstall``/``cppinstall`` for
-Python/C++ build only. To enable OpenMP parallelisation, append ``useomp=true``
-or ``useomp=1`` to the end of the second line above.
+where ``install`` builds both and ``pyinstall``/``cppinstall`` is for
+Python/C++ build only. To enable OpenMP parallelisation, append
+``useomp=true`` or ``useomp=1`` to the end of the second line as shown above.
 
 The latest release is on the ``main`` branch. The default ``Makefile``
-(located in the repository root diretory) suits most use cases, but you may
+(located at the repository diretory root) suits most use cases, but you may
 modify it as appropriate for your need.
 
 
@@ -99,14 +109,14 @@ https://github.com/naonori/hitomi).
 ## Contributing
 
 User feedback and contributions are highly valued and very welcome. Please
-refer to [``CONTRIBUTING.md``](
-https://github.com/MikeSWang/Triumvirate/blob/main/CONTRIBUTING.md) for
-guidelines.
+refer to the contribution guidelines in [``CONTRIBUTING.md``](
+https://github.com/MikeSWang/Triumvirate/blob/main/CONTRIBUTING.md).
 
 
 ## Releases
 
-Changes in recent releases are listed in [``CHANGELOG.md``](
+Changes in recent releases are listed in the change log in
+[``CHANGELOG.md``](
 https://github.com/MikeSWang/Triumvirate/blob/main/CHANGELOG.md).
 
 
