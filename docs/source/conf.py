@@ -79,7 +79,15 @@ html_logo = '_static/Triumvirate.png'
 
 html_static_path = ['', '_static/']
 
+html_title = 'Documentation Home'  # u'\u200c'
+
+# # Uncomment for 'furo'.
+# html_theme = 'furo'
+
 # Uncomment for 'sphinx_book_theme'.
+html_context = {
+   'default_mode': 'dark',
+}
 html_theme = 'sphinx_book_theme'
 html_theme_options = {
     'repository_url' : 'https://github.com/MikeSWang/Triumvirate',
@@ -89,10 +97,6 @@ html_theme_options = {
     'use_fullscreen_button': False,
     'use_repository_button': True,
 }
-
-# # Uncomment for 'furo'.
-# html_theme = 'furo'
-# html_title = 'Triumvirate Documentation'  # u'\u200c'
 
 
 # -- Extension configuration ---------------------------------------------
