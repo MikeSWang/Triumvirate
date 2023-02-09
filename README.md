@@ -40,12 +40,13 @@ Python releases are distributed through [PyPI](
 https://pypi.org/project/Triumvirate) and [conda-forge](
 https://anaconda.org/conda-forge/triumvirate). Instructions for installation
 can be found in the [documentation](
-https://triumvirate.readthedocs.io/en/stable/installation.html).
+https://triumvirate.readthedocs.io/en/stable/installation.html#python-package).
 
 ### C++ program
 
 The C++ program can be customised and compiled using `make`. Please refer to the
-[documentation](https://triumvirate.readthedocs.io/en/stable/installation.html)
+[documentation](
+https://triumvirate.readthedocs.io/en/stable/installation.html#c-program)
 for detailed instructions.
 
 > **NOTE**: Building the C++ library (instead of executable binaries)
@@ -61,8 +62,8 @@ make clean
 make install
 ```
 to install both, or replace ``install`` with ``pyinstall``/``cppinstall`` for
-Python/C++ build only. To enable OpenMP, append ``useomp=true`` or ``useomp=1``
-to the end of the second line.
+Python/C++ build only. To enable OpenMP parallelisation, append ``useomp=true``
+or ``useomp=1`` to the end of the second line.
 
 Depending on the environment, you may wish to modify [``Makefile``](
 https://github.com/MikeSWang/Triumvirate/blob/main/Makefile) as appropriate.
