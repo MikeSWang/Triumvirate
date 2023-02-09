@@ -5,8 +5,8 @@ build:
   tools:
     python: '3.8'
   apt_packages:
-    - gsl
-    - fftw-dev
+    - libgsl-dev
+    - libfftw3-dev
 
 sphinx:
    configuration: docs/source/conf.py
