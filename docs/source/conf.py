@@ -3,20 +3,47 @@
 # For a full list of options, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import inspect
 import os
 import sys
+from configparser import ConfigParser
+from datetime import datetime
+from importlib import import_module
+from pathlib import Path
+
 
 sys.path.insert(0, os.path.abspath("../.."))
-
-from triumvirate import __version__ as version
 
 
 # -- Project information -------------------------------------------------
 
-project = 'Triumvirate'
-copyright = '2023'
-author = 'Mike S Wang & Naonori S Sugiyama'
-release = version
+# Parse ``setup.cfg``.
+setup_cfg_parser = ConfigParser()
+setup_cfg_path = Path(
+    inspect.getframeinfo(inspect.currentframe()).filename
+).parent.parent.parent/"setup.cfg"
+
+setup_cfg_parser.read(setup_cfg_path)
+setup_cfg = dict(setup_cfg_parser.items('metadata'))
+
+# Extract information from package.
+pkg_name = setup_cfg.get('name').lower()
+pkg_author = setup_cfg.get('author')
+
+import_module(pkg_name)
+pkg = sys.modules[pkg_name]
+
+pkf_version = pkg.__version__
+pkg_date = pkg.__date__.split('-').pop(0)
+
+# Set fields.
+project = pkg_name
+author = pkg_author
+release = pkf_version
+if datetime.now().year == int(pkg_date):
+    copyright = pkg_date
+else:
+    copyright = u'{0}\u2013{1}'.format(pkg_date, datetime.now().year)
 
 
 # -- General configuration -----------------------------------------------
@@ -76,8 +103,8 @@ intersphinx_mapping = {
     'python': ("https://docs.python.org/3", None),
     'pytest': ("https://docs.pytest.org/en/latest/", None),
     'numpy': ("https://numpy.org/doc/stable/", None),
-    'scipy': ("https://docs.scipy.org/doc/scipy/reference", None),
-    'matplotlib': ("https://matplotlib.org", None),
+    'scipy': ("https://docs.scipy.org/doc/scipy/", None),
+    'matplotlib': ("https://matplotlib.org/stable/", None),
 }
 
 napoleon_include_special_with_doc = True

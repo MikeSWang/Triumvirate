@@ -30,7 +30,7 @@ request.
 If ``Triumvirate`` has been updated while you are editing your forked copy,
 please merge the updated ``main`` branch first before completing your edits.
 
-Please ensure your edits conform to [PEP-8](
+Please ensure your edits conform to [PEP 8](
 https://www.python.org/dev/peps/pep-0008/) standards as closely as possible,
 and always include doc-strings (ideally in the [``numpydoc``](
 https://numpydoc.readthedocs.io/en/latest/format.html) format) and unit tests
