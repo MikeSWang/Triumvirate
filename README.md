@@ -20,7 +20,7 @@ https://img.shields.io/github/v/release/MikeSWang/Triumvirate?label=release
 https://img.shields.io/badge/licence-GPL--3.0-informational
 )](https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE)
 
-`Triumvirate` is a Python/C++ software package for measuring three-point (and
+``Triumvirate`` is a Python/C++ software package for measuring three-point (and
 two-point) clustering statistics in large-scale structure (LSS) cosmological
 analysis.
 
@@ -60,11 +60,11 @@ commands at the root of the directory
 make clean
 make install
 ```
-to install both, or replace `install` with `pyinstall`/`cppinstall` for
-Python/C++ build only. To enable OpenMP, append `useomp=true` or `useomp=1`
+to install both, or replace ``install`` with ``pyinstall``/``cppinstall`` for
+Python/C++ build only. To enable OpenMP, append ``useomp=true`` or ``useomp=1``
 to the end of the second line.
 
-Depending on the environment, you may wish to modify [`Makefile`](
+Depending on the environment, you may wish to modify [``Makefile``](
 https://github.com/MikeSWang/Triumvirate/blob/main/Makefile) as appropriate.
 
 
@@ -83,7 +83,7 @@ https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-blue
 https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-blue
 )](https://doi.org/10.1093/mnras/stx2333)
 
-To acknowledge the use of `Triumvirate` in your published research, please
+To acknowledge the use of ``Triumvirate`` in your published research, please
 cite the publications linked above which contain the relevant information
 in the BibTeX format.
 
@@ -91,28 +91,28 @@ in the BibTeX format.
 ## Acknowledgement
 
 Key underlying numerical algorithms were originally developed by
-Naonori S Sugiyama, and are available in [`hitomi`](
+Naonori S Sugiyama, and are available in [``hitomi``](
 https://github.com/naonori/hitomi).
 
 
 ## Contributing
 
 User feedback and contributions are highly valued and very welcome. Please
-refer to [`CONTRIBUTING.md`](
+refer to [``CONTRIBUTING.md``](
 https://github.com/MikeSWang/Triumvirate/blob/main/CONTRIBUTING.md) for
 guidelines.
 
 
 ## Releases
 
-Changes in recent releases are listed in [`CHANGELOG.md`](
+Changes in recent releases are listed in [``CHANGELOG.md``](
 https://github.com/MikeSWang/Triumvirate/blob/main/CHANGELOG.md).
 
 
 ## Licence
 
-`Triumvirate` is made freely available under the [GPL-3.0 licence](
-https://www.gnu.org/licenses/gpl-3.0.en.html). Please see [`LICENCE`](
+``Triumvirate`` is made freely available under the [GPL-3.0 licence](
+https://www.gnu.org/licenses/gpl-3.0.en.html). Please see [``LICENCE``](
 https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE) for full
 terms and conditions.
 
