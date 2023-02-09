@@ -9,7 +9,7 @@ build:
     - libfftw3-dev
   jobs:
     post_install:
-      - python -c "from triumvirate.dataobjs import Binning"
+      - python -m pip install --verbose --editable .
 
 sphinx:
    configuration: docs/source/conf.py
