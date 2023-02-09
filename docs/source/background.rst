@@ -14,12 +14,12 @@ models.
 For the TripoSH decomposition mentioned above, |Triumvirate| offers the
 following functionalities:
 
-* :mod:`~triumvirate.threept` measures three-point clustering statistics,
+* :mod:`triumvirate.threept` measures three-point clustering statistics,
   namely multipoles of the bispectrum in Fourier space and of the three-point
   correlation function (3PCF) in configuration space, as in eqs. (41) & (48)
   of :cite:t:`Sugiyama:2019`;
 
-* :mod:`~triumvirate.twopt` measures two-point clustering statistics, namely
+* :mod:`triumvirate.twopt` measures two-point clustering statistics, namely
   multipoles of the power spectrum and two-point correlation function (2PCF),
   as in eqs. (40) & (49) of :cite:t:`Sugiyama:2018`;
 
