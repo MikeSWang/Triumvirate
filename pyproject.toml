@@ -12,7 +12,7 @@ build-backend = 'setuptools.build_meta'
 #     'numpy',
 #     'astropy',
 # ]
-# description = "Three-point clustering measurements in large-scale structure analysis."
+# description = "Three-point clustering measurements in large-scale structure analyses."
 # classifiers = [
 #     "Operating System :: POSIX :: Linux",
 #     "Operating System :: MacOS",
