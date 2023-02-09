@@ -7,6 +7,9 @@ build:
   apt_packages:
     - libgsl-dev
     - libfftw3-dev
+  jobs:
+    pre_build:
+      - python -c "from triumvirate.dataobjs import Binning"
 
 sphinx:
    configuration: docs/source/conf.py
