@@ -102,7 +102,7 @@ in the BibTeX format.
 ## Acknowledgement
 
 Key underlying numerical algorithms were originally developed by
-Naonori S Sugiyama, and are available in [``hitomi``](
+Naonori S Sugiyama, and are available in the GitHub repository [``hitomi``](
 https://github.com/naonori/hitomi).
 
 

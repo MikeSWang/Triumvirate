@@ -45,7 +45,7 @@ Acknowledgement
 ===============
 
 Key underlying numerical algorithms were originally developed by
-Naonori S Sugiyama, and are available in |hitomi|_.
+Naonori S Sugiyama, and are available in the GitHub repository |hitomi|_.
 
 
 Contributing

@@ -1,0 +1,18 @@
+name: triumvirate-docs
+
+channels:
+    - defaults
+    - astropy
+
+dependencies:
+    - python=3.8
+    - cython
+    - pip
+    - sphinx
+    - numpy
+    - astropy
+    - pip:
+        - numpydoc
+        - sphinxcontrib-bibtex
+        - sphinx-book-theme
+        - myst-nb

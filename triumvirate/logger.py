@@ -61,7 +61,7 @@ class _CppLogAdapter(logging.LoggerAdapter):
         Returns
         -------
         str
-            Adapted log message with C++ state indication.
+            Adapted log message with C++ runtime indication.
 
         """
         # Extract passed state variable or resort to default from `extra`.
@@ -113,7 +113,7 @@ def _format_warning(message, category, filename, lineno, line=None):
 
 def setup_logger(log_level=logging.INFO):
     """Set up and return a customised logger with elapsed time,
-    C++ state indication and formatted warning messages.
+    C++ runtime indication and formatted warning messages.
 
     Parameters
     ----------
