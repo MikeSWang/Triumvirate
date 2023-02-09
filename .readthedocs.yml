@@ -1,10 +1,12 @@
-name: triumvirate-docs
+version: 2
 
-type: sphinx
+build:
+  os: ubuntu-20.04
+  tools:
+    python: '3.8'
+  apt_packages:
+    - gsl
+    - fftw-dev
 
-conda:
-    file: docs/.environment.yml
-
-python:
-    version: 3.8
-    setup_py_install: true
+sphinx:
+   configuration: docs/source/conf.py
