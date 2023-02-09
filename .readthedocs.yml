@@ -10,3 +10,6 @@ build:
 
 sphinx:
    configuration: docs/source/conf.py
+
+python:
+  system_packages: true
