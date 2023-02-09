@@ -21,6 +21,6 @@ help:
 
 clean:
 	find build/ -mindepth 1 -maxdepth 1 -not -name ".gitignore" -exec rm -rf {} +
-	if [ -d source/apidoc ]; then \
-	  find source/apidoc -type f -iname "*.rst" -exec rm -rf {} +; \
+	if [ -d source/apidoc_py ]; then \
+	  find source/apidoc_py -type f -iname "*.rst" -exec rm -rf {} +; \
 	fi
