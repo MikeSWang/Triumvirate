@@ -8,7 +8,7 @@ build:
     - libgsl-dev
     - libfftw3-dev
   jobs:
-    pre_build:
+    post_install:
       - python -c "from triumvirate.dataobjs import Binning"
 
 sphinx:
