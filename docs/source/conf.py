@@ -59,6 +59,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
+    'sphinxcontrib.bibtex',
     'myst_nb',
 ]
 
@@ -100,6 +101,9 @@ html_theme_options = {
 # -- Extension configuration ---------------------------------------------
 
 autodoc_member_order = 'bysource'
+
+bibtex_bibfiles = ['_static/refs.bib']
+bibtex_reference_style = 'author_year'
 
 intersphinx_mapping = {
     'python': ("https://docs.python.org/3", None),
