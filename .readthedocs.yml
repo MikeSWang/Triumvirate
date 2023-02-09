@@ -11,4 +11,6 @@ sphinx:
    configuration: docs/source/conf.py
 
 python:
+  install:
+    - requirements: docs/dependencies.txt
   system_packages: true
