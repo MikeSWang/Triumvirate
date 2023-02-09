@@ -90,6 +90,7 @@ html_theme_options = {
     'repository_url' : 'https://github.com/MikeSWang/Triumvirate',
     'home_page_in_toc': True,
     'logo_only': True,
+    'toc_title': 'On this page',
     'use_download_button': False,
     'use_fullscreen_button': False,
     'use_repository_button': True,
