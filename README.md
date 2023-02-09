@@ -36,7 +36,7 @@ https://triumvirate.readthedocs.io).
 
 ### Python package
 
-Python releases are distributed through [PyPI](
+``Triumvirate`` as a Python package is distributed through [PyPI](
 https://pypi.org/project/Triumvirate) and [conda-forge](
 https://anaconda.org/conda-forge/triumvirate). Instructions for installation
 can be found in the [documentation](
@@ -44,8 +44,8 @@ https://triumvirate.readthedocs.io/en/stable/installation.html#python-package).
 
 ### C++ program
 
-The C++ program can be customised and compiled using `make`. Please refer to the
-[documentation](
+The C++ program can be customised and compiled to a binary executable using
+`make`. Please refer to the [documentation](
 https://triumvirate.readthedocs.io/en/stable/installation.html#c-program)
 for detailed instructions.
 
@@ -55,18 +55,19 @@ for detailed instructions.
 ### Development mode
 
 Both the Python package and the C++ program can be built in development
-mode with `make`. After `git clone`-ing this repository, run the following
-commands at the root of the directory
+mode with `make`. `git clone` this repository and `git checkout` the branch
+you would like to edit, then at the repository root directory run
 ```
 make clean
 make install
 ```
 to install both, or replace ``install`` with ``pyinstall``/``cppinstall`` for
 Python/C++ build only. To enable OpenMP parallelisation, append ``useomp=true``
-or ``useomp=1`` to the end of the second line.
+or ``useomp=1`` to the end of the second line above.
 
-Depending on the environment, you may wish to modify [``Makefile``](
-https://github.com/MikeSWang/Triumvirate/blob/main/Makefile) as appropriate.
+The latest release is on the ``main`` branch. The default ``Makefile``
+(located in the repository root diretory) suits most use cases, but you may
+modify it as appropriate for your need.
 
 
 ## Attribution
