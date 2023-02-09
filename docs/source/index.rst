@@ -9,8 +9,8 @@ two-point) clustering statistics in large-scale structure (LSS)
 cosmological analysis.
 
 Installation instructions can be found in :doc:`installation`. To get
-started quickly, please refer to :doc:`tutorials`. For full API, please
-refer to :doc:`apidoc`.
+started quickly, read :doc:`tutorials`. For full API, please refer to
+:doc:`apidoc`.
 
 
 Attribution
@@ -28,7 +28,6 @@ Attribution
 .. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-blue
     :target: https://doi.org/10.1093/mnras/stx2333
     :alt: MNRAS
-
 
 |br| To acknowledge the use of |Triumvirate| in your published research, please
 cite the publications linked above which contain the relevant information
