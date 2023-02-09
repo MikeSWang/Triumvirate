@@ -1,12 +1,12 @@
-=============
+*************
 API Reference
-=============
+*************
 
 Python package
 ==============
 
 .. toctree::
-    :maxdepth: 1
+    :titlesonly:
 
     apidoc/triumvirate.logger
     apidoc/triumvirate.parameters
