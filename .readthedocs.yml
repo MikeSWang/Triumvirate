@@ -8,8 +8,8 @@ build:
     - libgsl-dev
     - libfftw3-dev
   jobs:
-    post_install:
-      - python -m pip install --verbose --editable .
+    pre_build:
+      - bash docs/gendocs.sh
 
 sphinx:
    configuration: docs/source/conf.py
