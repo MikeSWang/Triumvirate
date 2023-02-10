@@ -8,13 +8,13 @@
 https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/build.yml?branch=main&logo=GitHub%20Actions&style=flat-square
 )](https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml)
 [![Tests](
-https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/tests.yml?branch=main&logo=GitHub%20Actions&style=flat-square
+https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/lint.yml?branch=main&logo=GitHub%20Actions&style=flat-square
 )](https://github.com/MikeSWang/Triumvirate/actions/workflows/tests.yml)
 [![Docs](
 https://img.shields.io/readthedocs/triumvirate/latest?logo=Read%20the%20Docs&style=flat-square
 )](https://triumvirate.readthedocs.io/en/latest/)
 [![Release](
-https://img.shields.io/github/v/release/MikeSWang/Triumvirate?style=flat-square
+https://img.shields.io/github/v/release/MikeSWang/Triumvirate?logo=Git&style=flat-square
 )](https://github.com/MikeSWang/Triumvirate/releases/latest)
 
 ``Triumvirate`` is a Python/C++ software package for measuring three-point (and
