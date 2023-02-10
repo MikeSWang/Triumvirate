@@ -50,7 +50,7 @@ os.environ['CC'] = os.environ.get('PY_CXX', compiler)
 os.environ['CXX'] = os.environ.get('PY_CXX', compiler)
 
 # Modify compilation options.
-cflags = os.environ.get('PY_CFLAGS', '').split() + ['-std=c++11',]
+cflags = os.environ.get('PY_CFLAGS', '').split()
 ldflags = [
     lib for lib in os.environ.get('PY_LDFLAGS', '').split()
     if not lib.startswith('-l')
@@ -135,13 +135,14 @@ pkg_include = os.path.join(pkg_dir, "include")
 npy_include = numpy.get_include()
 
 ext_includes = [
-    incl for incl in os.environ.get('PY_INCLUDES', "").replace("-I", "").split()
+    incl for incl
+    in os.environ.get('PY_INCLUDES', "").replace("-I", "").split()
     if pkg_dir not in incl
 ]
 
-ext_libraries = ['gsl', 'gslcblas', 'm', 'fftw3', 'fftw3_omp',]
+ext_libraries = ['gsl', 'gslcblas', 'm', 'fftw3', 'fftw3_omp',]  # noqa: E231
 
-includes = [pkg_include, npy_include,] + ext_includes
+includes = [pkg_include, npy_include,] + ext_includes  # noqa: E231
 libraries = ext_libraries
 
 # Set macros.
@@ -160,9 +161,11 @@ macros = pkg_macros + npy_macros
 
 # Define extension modules.
 module_config = {
-    'parameters': {'extra_cpp_sources': ["monitor.cpp",]},
-    'dataobjs': {'extra_cpp_sources': ["monitor.cpp", "parameters.cpp",]},
-    '_particles': {'extra_cpp_sources': ["monitor.cpp",]},
+    'parameters': {'extra_cpp_sources': ["monitor.cpp",]},  # noqa: E231
+    'dataobjs': {
+        'extra_cpp_sources': ["monitor.cpp", "parameters.cpp",]  # noqa: E231
+    },
+    '_particles': {'extra_cpp_sources': ["monitor.cpp",]},  # noqa: E231
     '_twopt': {
         'extra_cpp_sources': [
             "monitor.cpp",
@@ -187,7 +190,9 @@ module_config = {
         'libraries': libraries,
     },
     '_fftlog': {
-        'extra_cpp_sources': ["monitor.cpp", "maths.cpp", "arrayops.cpp",],
+        'extra_cpp_sources': [
+            "monitor.cpp", "maths.cpp", "arrayops.cpp",  # noqa: E231
+        ],
         'libraries': libraries,
     },
 }

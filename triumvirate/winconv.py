@@ -48,7 +48,7 @@ _FORMULAE_SUGIYAMA19 = {
 
 
 class _WConvTerm(NamedTuple):
-    """Window convolution term as a tuple of its three factors.
+    r"""Window convolution term as a tuple of its three factors.
 
     For example, `term = _WConvTerm('000', 'ic', -1)`, with
     parameters/attributes/factors ``term.deg_Q = '000'``,
@@ -340,7 +340,7 @@ def wconv_3pcf(formulae, Q, zeta, r1_common, r2_common,
 
 def wconv_bispec(formulae, Q, bk, k, k_out, r_common, r_Q=None,
                  transform_kwargs=None):
-    """Convolve multipoles of the bispectrum and the window function
+    r"""Convolve multipoles of the bispectrum and the window function
     via configuration space using specified formulae.
 
     Notes

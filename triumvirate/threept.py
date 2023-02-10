@@ -145,7 +145,8 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
 
     if defaults:
         warnings.warn(
-            f"The following parameter default values are unchanged: {defaults}. "
+            "The following parameter default values "
+            f"are unchanged: {defaults}. "
             "Not all parameters are necessarily used."
         )
 
@@ -231,8 +232,8 @@ def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
 
     if paramset['npoint'] != '3pt':
         raise ValueError(
-        "`paramset` 'statistic_type' does not correspond to a "
-        "recognised three-point statistic."
+            "`paramset` 'statistic_type' does not correspond to a "
+            "recognised three-point statistic."
         )
 
     multipole = "{ell1}{ell2}{ELL}".format(**paramset['degrees'])
@@ -255,21 +256,20 @@ def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
 
     text_lines = [
         "Box size: ({:.3f}, {:.3f}, {:.3f})".format(
-            *[paramset['boxsize'][axis] for axis in ['x', 'y', 'z']]
+            *[paramset['boxsize'][ax] for ax in ['x', 'y', 'z']]
         ),
         "Box alignment: {}".format(paramset['alignment']),
         "Mesh number: ({:d}, {:d}, {:d})".format(
-            *[paramset['ngrid'][axis] for axis in ['x', 'y', 'z']]
+            *[paramset['ngrid'][ax] for ax in ['x', 'y', 'z']]
         ),
         "Mesh assignment and interlacing: {}, {}".format(
             paramset['assignment'], paramset['interlace']
         ),
         "Normalisation factor: "
-        "{:.9e} ({}-based, used), {:.9e} ({}-based, alternative)"
-            .format(
-                norm_factor, norm_convention,
-                norm_factor_alt, norm_convention_alt
-            ),
+        "{:.9e} ({}-based, used), {:.9e} ({}-based, alternative)".format(
+            norm_factor, norm_convention,
+            norm_factor_alt, norm_convention_alt
+        ),
         ", ".join([
             "[{:d}] {}".format(colidx, colname)
             for colidx, colname in enumerate(datatab_colnames)
@@ -305,8 +305,8 @@ def _assemble_measurement_datatab(measurements, paramset):
     """
     if paramset['npoint'] != '3pt':
         raise ValueError(
-        "`paramset` 'statistic_type' does not correspond to a "
-        "recognised three-point statistic."
+            "`paramset` 'statistic_type' does not correspond to a "
+            "recognised three-point statistic."
         )
     if paramset['space'] == 'fourier':
         datatab = np.transpose([
@@ -446,7 +446,7 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
     # Set up box alignment.
     if paramset['alignment'] == 'centre':
         catalogue_data.centre(
-            [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']],
+            [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']],
             catalogue_ref=catalogue_rand
         )
     if paramset['alignment'] == 'pad':
@@ -454,11 +454,11 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
             kwargs = {'boxsize_pad': paramset['padfactor']}
         if paramset['padscale'] == 'grid':
             kwargs = {
-                'ngrid': [paramset['ngrid'][axis] for axis in ['x', 'y', 'z']],
+                'ngrid': [paramset['ngrid'][ax] for ax in ['x', 'y', 'z']],
                 'ngrid_pad': paramset['padfactor']
             }
         catalogue_data.pad(
-            [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']],
+            [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']],
             catalogue_ref=catalogue_rand, **kwargs
         )
 
@@ -472,7 +472,8 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
     # Prepare catalogues.
     if logger:
         logger.info(
-            "Preparing catalogue for clustering algorithm...", cpp_state='start'
+            "Preparing catalogue for clustering algorithm...",
+            cpp_state='start'
         )
 
     particles_data = \
@@ -859,7 +860,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #     # Set up box alignment.
 #     if paramset['alignment'] == 'centre':
 #         catalogue_data.centre(
-#             [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']],
+#             [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']],
 #             catalogue_ref=catalogue_rand
 #         )
 #     if paramset['alignment'] == 'pad':
@@ -867,11 +868,11 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #             kwargs = {'boxsize_pad': paramset['padfactor']}
 #         if paramset['padscale'] == 'grid':
 #             kwargs = {
-#                 'ngrid': [paramset['ngrid'][axis] for axis in ['x', 'y', 'z']],
+#                 'ngrid': [paramset['ngrid'][ax] for ax in ['x', 'y', 'z']],
 #                 'ngrid_pad': paramset['padfactor']
 #             }
 #         catalogue_data.pad(
-#             [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']],
+#             [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']],
 #             catalogue_ref=catalogue_rand, **kwargs
 #         )
 
@@ -941,8 +942,8 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 
 #     if save:
 #         header = "\n".join([
-#             catalogue_data.write_attrs_as_header(catalogue_ref=catalogue_rand),
-#             _print_measurement_header(paramset, norm_factor, norm_factor_alt),
+#             catalogue_data.write_attrs_as_header(catalogue_ref=catalogue_rand),  # noqa: E501
+#             _print_measurement_header(paramset, norm_factor, norm_factor_alt),  # noqa: E501
 #         ])
 #         if save.lower() == '.txt':
 #             datatab = _assemble_measurement_datatab(results, paramset)
@@ -954,7 +955,8 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #                 paramset['directories']['measurements'], ofilename
 #             ).with_suffix('.txt')
 #             np.savetxt(
-#                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
+#                 ofilepath, datatab,
+#                 fmt=datafmt, header=header, delimiter='\t'
 #             )
 #         elif save.lower().endswith('.npz'):
 #             results.update({'header': header})
@@ -1069,7 +1071,7 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
 
     # Set up box alignment.
     catalogue_data.periodise(
-        [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']]
+        [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']]
     )
 
     if logger:
@@ -1092,7 +1094,8 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
 
     if logger:
         logger.info(
-            "Preparing catalogue for clustering algorithm...", cpp_state='start'
+            "Preparing catalogue for clustering algorithm...",
+            cpp_state='start'
         )
 
     particles_data = \
@@ -1453,7 +1456,7 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
 
     # Set up box alignment.
     catalogue_rand.centre(
-        [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']]
+        [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']]
     )
 
     if logger:

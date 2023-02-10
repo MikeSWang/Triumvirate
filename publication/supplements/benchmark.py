@@ -96,7 +96,8 @@ def configure():
 
     cfg.add_argument(
         '-a', '--aniso', action='store_true',
-        help="Benchmark parameter: if used, compute the anisotropic quadrupole."
+        help="Benchmark parameter: "
+             "if used, compute the anisotropic quadrupole."
     )
     cfg.add_argument(
         '-g', '--ngrid', dest='ngrid', type=int, nargs='+',
@@ -142,7 +143,9 @@ def setup_benchmarker(algo, case, space, multipole):
 
     """
     if algo not in {'bispec', 'powspec'}:
-        raise ValueError(f"Unrecognised algorithm to be benchmarked: '{algo}'.")
+        raise ValueError(
+            f"Unrecognised algorithm to be benchmarked: '{algo}'."
+        )
     if case not in {'lpp', 'gpp'}:
         raise ValueError(f"Unrecognised case to be benchmarked: '{case}'.")
     if space not in {'fourier', 'config'}:
@@ -154,11 +157,17 @@ def setup_benchmarker(algo, case, space, multipole):
     test_catalogue_paths = []
     test_catalogue_fields = None
     if case == 'lpp':
-        test_catalogue_paths.append(test_catalogue_dir/"test_catalogue_data.dat")
-        test_catalogue_paths.append(test_catalogue_dir/"test_catalogue_rand.dat")
+        test_catalogue_paths.append(
+            test_catalogue_dir/"test_catalogue_data.dat"
+        )
+        test_catalogue_paths.append(
+            test_catalogue_dir/"test_catalogue_rand.dat"
+        )
         test_catalogue_fields = ['x', 'y', 'z', 'nz', 'ws']
     if case == 'gpp':
-        test_catalogue_paths.append(test_catalogue_dir/"test_catalogue_sim.dat")
+        test_catalogue_paths.append(
+            test_catalogue_dir/"test_catalogue_sim.dat"
+        )
         test_catalogue_fields = ['x', 'y', 'z', 'ws']
 
     # Set parameter defaults.
@@ -180,7 +189,7 @@ def setup_benchmarker(algo, case, space, multipole):
     paramset = _modify_sampling_parameters(
         fetch_paramset_template('dict'),
         params_sampling={
-            'boxsize': [BOXSIZE,] * 3,
+            'boxsize': [BOXSIZE,] * 3,  # noqa: E231
             'assignment': ASSIGNMENT,
         }
     )
@@ -214,14 +223,14 @@ def setup_benchmarker(algo, case, space, multipole):
         def run_triumvirate(ngrid):
             ALGOS[algo][case][space](
                 *test_catalogues, degrees=multipole, binning=binning,
-                sampling_params={'ngrid': [ngrid,]*3},
+                sampling_params={'ngrid': [ngrid,]*3},  # noqa: E231
                 paramset=paramset
             )
-    if algo == 'powspec':
+    elif algo == 'powspec':
         def run_triumvirate(ngrid):
             ALGOS[algo][case][space](
                 *test_catalogues, degree=multipole, binning=binning,
-                sampling_params={'ngrid': [ngrid,]*3},
+                sampling_params={'ngrid': [ngrid,]*3},  # noqa: E231
                 paramset=paramset
             )
 

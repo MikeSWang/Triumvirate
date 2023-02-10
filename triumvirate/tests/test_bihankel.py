@@ -4,7 +4,7 @@ import pytest
 try:
     import triumvirate.bihankel as hankel
 except (ImportError, ModuleNotFoundError):
-    import os, sys
+    import os, sys  # noqa: E401
 
     # Add to Python search path.
     sys.path.insert(0, os.path.join(

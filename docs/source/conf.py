@@ -88,7 +88,7 @@ html_title = 'Documentation Home'  # u'\u200c'
 # Uncomment for 'sphinx_book_theme'.
 html_theme = 'sphinx_book_theme'
 html_theme_options = {
-    'repository_url' : 'https://github.com/MikeSWang/Triumvirate',
+    'repository_url': 'https://github.com/MikeSWang/Triumvirate',
     'home_page_in_toc': True,
     'logo_only': True,
     'toc_title': 'On this page',
@@ -108,6 +108,7 @@ bibtex_reference_style = 'author_year'
 intersphinx_mapping = {
     'python': ("https://docs.python.org/3", None),
     'numpy': ("https://numpy.org/doc/stable/", None),
+    'scipy': ("https://docs.scipy.org/doc/scipy", None),
     'astropy': ("https://docs.astropy.org/en/latest/", None),
     'nbodykit': ("https://nbodykit.readthedocs.io/en/latest/", None),
 }

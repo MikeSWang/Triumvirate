@@ -478,16 +478,20 @@ class ParticleCatalogue:
             if init:
                 self._logger.info(
                     "Original extents of particle coordinates: "
-                    "{'x': (%.3f, %.3f), 'y': (%.3f, %.3f), 'z': (%.3f, %.3f)} "
-                    "(%s).",
+                    "{'x': (%.3f, %.3f),"
+                    " 'y': (%.3f, %.3f),"
+                    " 'z': (%.3f, %.3f)}"
+                    " (%s).",
                     *self.bounds['x'], *self.bounds['y'], *self.bounds['z'],
                     self
                 )
             else:
                 self._logger.info(
                     "Offset extents of particle coordinates: "
-                    "{'x': (%.3f, %.3f), 'y': (%.3f, %.3f), 'z': (%.3f, %.3f)} "
-                    "(%s).",
+                    "{'x': (%.3f, %.3f),"
+                    " 'y': (%.3f, %.3f),"
+                    " 'z': (%.3f, %.3f)}"
+                    " (%s).",
                     *self.bounds['x'], *self.bounds['y'], *self.bounds['z'],
                     self
                 )
@@ -555,7 +559,7 @@ class ParticleCatalogue:
         if catalogue_ref is None:
             text_lines = [
                 "Catalogue source: {}"
-                    .format(self._source),
+                    .format(self._source),  # noqa: E131
                 "Catalogue size: {:d} particles of total weight {:.3f}"
                     .format(self.ntotal, self.wtotal),
                 "Catalogue particle extents: "
@@ -567,7 +571,7 @@ class ParticleCatalogue:
         else:
             text_lines = [
                 "Data catalogue source: {}"
-                    .format(self._source),
+                    .format(self._source),  # noqa: E131
                 "Data catalogue size: {:d} particles of total weight {:.3f}"
                     .format(self.ntotal, self.wtotal),
                 "Data-source particle extents: "
@@ -576,12 +580,14 @@ class ParticleCatalogue:
                         *self.bounds['x'], *self.bounds['y'], *self.bounds['z']
                     ),
                 "Random catalogue source: {}"
-                    .format(catalogue_ref._source),
+                    .format(catalogue_ref._source),  # noqa: E131
                 "Random catalogue size: {:d} particles of total weight {:.3f}"
-                    .format(catalogue_ref.ntotal, catalogue_ref.wtotal),
+                    .format(  # noqa: E131
+                        catalogue_ref.ntotal, catalogue_ref.wtotal
+                    ),
                 "Random-source particle extents: "
                 "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"
-                    .format(
+                    .format(  # noqa: E131
                         *catalogue_ref.bounds['x'],
                         *catalogue_ref.bounds['y'],
                         *catalogue_ref.bounds['z']
