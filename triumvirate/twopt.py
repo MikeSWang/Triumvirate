@@ -2,7 +2,7 @@
 Two-Point Clustering Statistics (:mod:`~triumvirate.twopt`)
 ==========================================================================
 
-Measuring two-point clustering statistics from catalogues.
+Measure two-point clustering statistics from catalogues.
 
 Local plane-parallel estimators
 -------------------------------

@@ -7,6 +7,7 @@ Configure program parameter set.
 .. autosummary::
     InvalidParameter
     ParameterSet
+    fetch_paramset_template
 
 """
 from pathlib import Path
