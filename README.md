@@ -85,7 +85,7 @@ modify it as appropriate for your need.
 https://img.shields.io/badge/JOSS-doi-brightgreen
 )](https://joss.theoj.org/papers/?/status.svg)
 [![arXiv](
-https://img.shields.io/badge/arXiv-yymm.%3F-important
+https://img.shields.io/badge/arXiv-yymm.%3F-b31b1b
 )](https://arxiv.org/abs/?.?)
 [![MNRAS](
 https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-blue
