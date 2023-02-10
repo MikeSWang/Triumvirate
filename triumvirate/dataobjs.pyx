@@ -127,9 +127,9 @@ cdef class Binning:
 
         Parameters
         ----------
-        boxsize : (array of) float
+        boxsize : float or sequence of [float, float, float]
             Mesh box size (maximum).
-        ngrid : (array of) int
+        ngrid : int or sequence of [int, int, int]
             Mesh grid number (minimum).
 
         """
@@ -145,12 +145,12 @@ cdef class Binning:
     def set_custom_bins(self, bin_edges):
         """Set custom bins using bin edges.
 
-        :attr:`bin_centres` and :attr:`bin_widths` are also set
-        for internal consistency.
+        :attr:`bin_centres` and :attr:`bin_widths` are also automatically
+        set for internal consistency.
 
         Parameters
         ----------
-        bin_edges : array of float
+        bin_edges : 1-d array of float
             Bin edges of length (:attr:`num_bins` + 1).
 
         """

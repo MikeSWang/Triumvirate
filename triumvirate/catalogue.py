@@ -61,7 +61,7 @@ class ParticleCatalogue:
 
     Attributes
     ----------
-    bounds : dict of {str: tuple}
+    bounds : dict of {str: tuple of (float, float)}
         Particle coordinate bounds.
     ntotal : int
         Total particle number.
@@ -246,7 +246,7 @@ class ParticleCatalogue:
 
         Parameters
         ----------
-        key : (list of) str, int, slice
+        key : (list of) str, (list of) int or slice
             Data entry key.
 
         Returns
@@ -307,7 +307,7 @@ class ParticleCatalogue:
         ----------
         volume : double, optional
             Volume over which the mean density is calculated.
-        boxsize : ((3,) array of) double, optional
+        boxsize : float or sequence of [float, float, float], optional
             Box size (in each dimension) over which the mean density
             is calculated.  Used only when `volume` is `None`.
 
@@ -324,7 +324,7 @@ class ParticleCatalogue:
 
         Parameters
         ----------
-        boxsize : ((3,) array of) float
+        boxsize : float or sequence of [float, float, float]
             Box size (in each dimension).
         catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, \
                         optional
@@ -367,15 +367,15 @@ class ParticleCatalogue:
 
         Parameters
         ----------
-        boxsize : (3,) array of float
+        boxsize : float or sequence of [float, float, float]
             Box size in each dimension.
-        ngrid : (3,) array of int, optional
+        ngrid : int or sequence of [int, int, int], optional
             Grid number in each dimension (default is `None`).
             Must be provided if `ngrid_pad` is set.
-        boxsize_pad : ((3,) array of) float, optional
+        boxsize_pad : float or sequence of [float, float, float], optional
             Box size padding factor.  If not `None` (default), then
             `ngrid_pad` must be `None`.
-        ngrid_pad : ((3,) array of) float, optional
+        ngrid_pad : float or sequence of [float, float, float], optional
             Grid padding factor.  If not `None` (default), then
             `boxsize_pad` must be `None`.
         catalogue_ref : :class:`~triumvirate.catalogue.ParticleCatalogue`, \
@@ -431,7 +431,7 @@ class ParticleCatalogue:
 
         Parameters
         ----------
-        boxsize : ((3,) array of) float
+        boxsize : float or sequence of [float, float, float]
             Box size (in each dimension).
 
         """
@@ -448,7 +448,7 @@ class ParticleCatalogue:
 
         Parameters
         ----------
-        origin : (3,) array of float
+        origin : float or sequence of [float, float, float]
             Coordinates of the new origin.
 
         """

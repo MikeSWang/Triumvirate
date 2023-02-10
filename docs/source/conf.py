@@ -52,6 +52,7 @@ exclude_patterns = ['setup', 'config', 'tests', 'examples']
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
     'sphinx.ext.githubpages',
     'sphinx.ext.intersphinx',
@@ -101,6 +102,8 @@ html_theme_options = {
 # -- Extension configuration ---------------------------------------------
 
 autodoc_member_order = 'bysource'
+
+autosummary_generate = True
 
 bibtex_bibfiles = ['_static/refs.bib']
 bibtex_reference_style = 'author_year'

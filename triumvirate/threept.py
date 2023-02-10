@@ -44,8 +44,8 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         Dictionary containing a subset of the following entries
         for sampling parameters:
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -54,14 +54,16 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
             * 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
-    degrees : tuple of int or str of length 3, optional
+    degrees : tuple of (int, int, int) or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override ``paramset['degrees']`` entries.
-    wa_orders : tuple of int or str of length 2, optional
+        override ``paramset['degrees']`` entries.  If a string, multipole
+        degrees are assumed to be single-digit integers.
+    wa_orders : tuple of (int, int) or str of length 2, optional
         Wide-angle correction orders either as a tuple ('i_wa', 'j_wa') or
         as a string of length 2.  If not `None` (default), this will
-        override ``paramset['wa_orders']`` entries.
+        override ``paramset['wa_orders']`` entries.  If a string,
+        multipole degrees are assumed to be single-digit integers.
     binning : :class:`~.triumvirate.dataobjs.Binning`, optional
         Binning (default is `None`).
     form : {'diag', 'full'}, optional
@@ -208,7 +210,7 @@ def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
     ----------
     paramset : :class:`~triumvirate.parameters.ParameterSet`
         Parameter set.
-    norm_factor, norm_factor_alt : double
+    norm_factor, norm_factor_alt : float
         Normalisation factor used and the alternative.
 
     Returns
@@ -366,8 +368,8 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         Dictionary containing a subset of the following entries
         for sampling parameters:
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -376,10 +378,11 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
             * 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
-    degrees : tuple of int or str of length 3, optional
+    degrees : tuple of (int, int, int) or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override ``paramset['degrees']`` entries.
+        override ``paramset['degrees']`` entries.  If a string, multipole
+        degrees are assumed to be single-digit integers.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
@@ -584,10 +587,11 @@ def compute_bispec(catalogue_data, catalogue_rand,
         Specified lines of sight for the random-source catalogue.
         If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
-    degrees : tuple of int or str of length 3, optional
+    degrees : tuple of (int, int, int) or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override ``paramset['degrees']`` entries.
+        override ``paramset['degrees']`` entries.  If a string, multipole
+        degrees are assumed to be single-digit integers.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
@@ -603,8 +607,8 @@ def compute_bispec(catalogue_data, catalogue_rand,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -677,10 +681,11 @@ def compute_3pcf(catalogue_data, catalogue_rand,
         Specified lines of sight for the random-source catalogue.
         If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
-    degrees : tuple of int or str of length 3, optional
+    degrees : tuple of (int, int, int) or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override ``paramset['degrees']`` entries.
+        override ``paramset['degrees']`` entries.  If a string, multipole
+        degrees are assumed to be single-digit integers.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
@@ -696,8 +701,8 @@ def compute_3pcf(catalogue_data, catalogue_rand,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -773,10 +778,11 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         Specified lines of sight for the random-source catalogue.
 #         If `None` (default), this is automatically computed using
 #         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
-#     degrees : tuple of int or str of length 3, optional
+#     degrees : tuple of (int, int, int) or str of length 3, optional
 #         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
 #         as a string of length 3.  If not `None` (default), this will
-#         override ``paramset['degrees']`` entries.
+#         override ``paramset['degrees']`` entries.  If a string, multipole
+#         degrees are assumed to be single-digit integers.
 #     binning : :class:`~triumvirate.dataobjs.Binning`, optional
 #         Binning for the measurements.  If `None` (default),
 #         this is constructed from `paramset`.
@@ -792,8 +798,8 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         for sampling parameters:
 #
 #             * 'boxalign': {'centre', 'pad'};
-#             * 'boxsize': [float, float, float];
-#             * 'ngrid': [int, int, int];
+#             * 'boxsize': sequence of [float, float, float];
+#             * 'ngrid': sequence of [int, int, int];
 #             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
 #             * 'interlace': bool;
 #
@@ -1003,8 +1009,8 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -1014,10 +1020,11 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
             * 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
-    degrees : tuple of int or str of length 3, optional
+    degrees : tuple of (int, int, int) or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override ``paramset['degrees']`` entries.
+        override ``paramset['degrees']`` entries.  If a string, multipole
+        degrees are assumed to be single-digit integers.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
@@ -1186,10 +1193,11 @@ def compute_bispec_in_gpp_box(catalogue_data,
     ----------
     catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
         Data-source catalogue.
-    degrees : tuple of int or str of length 3, optional
+    degrees : tuple of (int, int, int) or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override ``paramset['degrees']`` entries.
+        override ``paramset['degrees']`` entries.  If a string, multipole
+        degrees are assumed to be single-digit integers.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
@@ -1205,8 +1213,8 @@ def compute_bispec_in_gpp_box(catalogue_data,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -1270,10 +1278,11 @@ def compute_3pcf_in_gpp_box(catalogue_data,
     ----------
     catalogue_data : :class:`~triumvirate.catalogue.ParticleCatalogue`
         Data-source catalogue.
-    degrees : tuple of int or str of length 3, optional
+    degrees : tuple of (int, int, int) or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override ``paramset['degrees']`` entries.
+        override ``paramset['degrees']`` entries.  If a string, multipole
+        degrees are assumed to be single-digit integers.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
@@ -1289,8 +1298,8 @@ def compute_3pcf_in_gpp_box(catalogue_data,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -1364,14 +1373,16 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         Specified lines of sight for the random-source catalogue.
         If `None` (default), this is automatically computed using
         :meth:`~triumvirate.catalogue.ParticleCatalogue.compute_los`.
-    degrees : tuple of int or str of length 3, optional
+    degrees : tuple of (int, int, int) or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
-        override ``paramset['degrees']`` entries.
-    wa_orders : tuple of int or str of length 2, optional
+        override ``paramset['degrees']`` entries.  If a string, multipole
+        degrees are assumed to be single-digit integers.
+    wa_orders : tuple of (int, int) or str of length 2, optional
         Wide-angle correction orders either as a tuple ('i_wa', 'j_wa') or
         as a string of length 2.  If not `None` (default), this will
-        override ``paramset['wa_orders']`` entries.
+        override ``paramset['wa_orders']`` entries.  If a string,
+        multipole degrees are assumed to be single-digit integers.
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
@@ -1387,8 +1398,8 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
