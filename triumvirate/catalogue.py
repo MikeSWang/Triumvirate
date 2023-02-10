@@ -32,17 +32,6 @@ class ParticleCatalogue:
     """Catalogue holding particle coordinates, weights and
     redshift-dependent mean number densities.
 
-    Notes
-    -----
-    There are two types of weights: sample weights ``ws``
-    (e.g. completeness weights) and clustering weights ``wc``
-    (e.g. Feldman--Kaiser--Peacock weights).
-
-    .. attention::
-
-        Note the naming convention above: in particular, ``wc`` is not
-        the completeness weight (which is a component of ``ws`` instead).
-
     Parameters
     ----------
     x, y, z : 1-d array of float
@@ -67,6 +56,17 @@ class ParticleCatalogue:
         Total particle number.
     wtotal : float
         Total sample weight.
+
+    Notes
+    -----
+    There are two types of weights: sample weights ``ws``
+    (e.g. completeness weights) and clustering weights ``wc``
+    (e.g. Feldman--Kaiser--Peacock weights).
+
+    .. attention::
+
+        Note the naming convention above: in particular, ``wc`` is not
+        the completeness weight (which is a component of ``ws`` instead).
 
     """
 
@@ -116,12 +116,6 @@ class ParticleCatalogue:
                        name_mapping=None, logger=None):
         """Read particle data from file.
 
-        Notes
-        -----
-        If any of 'nz', 'ws' and 'wc' columns are not provided,
-        these columns are initialised with the default values in
-        :meth:`~triumvirate.catalogue.__init__`.
-
         Parameters
         ----------
         filepath : str or :class:`pathlib.Path`
@@ -152,6 +146,12 @@ class ParticleCatalogue:
             Used only when `reader` is 'astropy'.
         logger : :class:`logging.Logger`, optional
             Program logger (default is `None`).
+
+        Notes
+        -----
+        If any of 'nz', 'ws' and 'wc' columns are not provided,
+        these columns are initialised with the default values in
+        :meth:`~triumvirate.catalogue.ParticleCatalogue.__init__`.
 
         """
         self = object.__new__(cls)
