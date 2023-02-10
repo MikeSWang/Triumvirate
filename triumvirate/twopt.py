@@ -43,8 +43,8 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -316,8 +316,8 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -543,8 +543,8 @@ def compute_powspec(catalogue_data, catalogue_rand,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -633,8 +633,8 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -717,8 +717,8 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -907,8 +907,8 @@ def compute_powspec_in_gpp_box(catalogue_data,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -987,8 +987,8 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -1075,8 +1075,8 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
         for sampling parameters:
 
             * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
+            * 'boxsize': sequence of [float, float, float];
+            * 'ngrid': sequence of [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
