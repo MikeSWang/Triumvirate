@@ -8,7 +8,7 @@ on:
       - .github/workflows/lint.yml
 
 jobs:
-  lint:
+  pylint:
     runs-on: ubuntu-latest
 
     steps:
