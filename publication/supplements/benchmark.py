@@ -1,4 +1,4 @@
-"""Benchmark performance of `triumvirate`.
+"""Benchmark performance of ``triumvirate``.
 
 """
 import inspect

@@ -50,9 +50,9 @@ _FORMULAE_SUGIYAMA19 = {
 class _WConvTerm(NamedTuple):
     r"""Window convolution term as a tuple of its three factors.
 
-    For example, `term = _WConvTerm('000', 'ic', -1)`, with
+    For example, ``term = _WConvTerm('000', 'ic', -1)``, with
     parameters/attributes/factors ``term.deg_Q = '000'``,
-    ``term.deg_zeta = 'ic'` and ``term.coeff = -1``, corresponds to the
+    ``term.deg_zeta = 'ic'`` and ``term.coeff = -1``, corresponds to the
     term :math:`- 1 \cdot Q_{000} \zeta_{\mathrm{ic}}`.
 
     Attributes
@@ -136,14 +136,13 @@ def wconv_3pcf_diag(formulae, Q, zeta, r_common, r_Q=None, r_zeta=None):
 
     Parameters
     ----------
-    formulae : dict of {str: sequence of tuples of (str, str, float)} \\
-               or 'sugiyama+19'
+    formulae : dict of {str: sequence of (str, str, float)} or 'sugiyama+19'
         Window convolution formulae encoded as a dictionary where for
         each convolved-multipole degree (the key), the value is
         a sequence of tuples each corresponding to a window convolution
         term including the numerical coefficient.
 
-        Example:
+        For example,
 
         .. code-block::
 
@@ -165,8 +164,8 @@ def wconv_3pcf_diag(formulae, Q, zeta, r_common, r_Q=None, r_zeta=None):
                 + \frac{1}{3} Q_{110} \zeta_{110} \,.
 
         If a named formula (e.g. 'sugiyama19') is passed, the window
-        convolution formula follows that prescription (e.g. Sugiyama
-        et al. 2019 [`arXiv:1803.02132 <Sugiyama+19>`_]).
+        convolution formula follows that prescription
+        (e.g. :cite:t:`Sugiyama:2019`).
 
     Q : dict of {str: 2-d array of float}
         Window function multipole samples (each key is a multipole).
@@ -236,14 +235,13 @@ def wconv_3pcf(formulae, Q, zeta, r1_common, r2_common,
 
     Parameters
     ----------
-    formulae : dict of {str: sequence of tuples of (str, str, float)} \\
-               or 'sugiyama+19'
+    formulae : dict of {str: sequence of (str, str, float)} or 'sugiyama+19'
         Window convolution formulae encoded as a dictionary where for
         each convolved-multipole degree (the key), the value is
         a sequence of tuples each corresponding to a window convolution
         term including the numerical coefficient.
 
-        Example:
+        For example,
 
         .. code-block::
 
@@ -265,8 +263,8 @@ def wconv_3pcf(formulae, Q, zeta, r1_common, r2_common,
                 + \frac{1}{3} Q_{110} \zeta_{110} \,.
 
         If a named formula (e.g. 'sugiyama19') is passed, the window
-        convolution formula follows that prescription (e.g. Sugiyama
-        et al. 2019 [`arXiv:1803.02132 <Sugiyama+19>`_]).
+        convolution formula follows that prescription
+        (e.g. :cite:t:`Sugiyama:2019`).
 
     Q : dict of {str: 2-d array of float}
         Window function multipole samples (each key is a multipole).
@@ -288,9 +286,7 @@ def wconv_3pcf(formulae, Q, zeta, r1_common, r2_common,
     Returns
     -------
     zeta_wconv : dict of {str: :class:`numpy.ndarray`}
-        Window-convolved 3PCF samples.
-
-    .. _Sugiyama+19: https://arxiv.org/abs/1803.02132
+        Window-convolved 3PCF samples
 
     """
     # Fetch named formulae as a dictionary.
@@ -350,9 +346,8 @@ def wconv_bispec(formulae, Q, bk, k, k_out, r_common, r_Q=None,
 
     Parameters
     ----------
-    formulae : dict of {str: sequence of tuples of (str, str, float)} \
-               or 'sugiyama+19'
-        See :func:`~winconv.wconv.wconv_3pcf`.
+    formulae : dict of {str: sequence of (str, str, float)} or 'sugiyama+19'
+        See :func:`~triumvirate.winconv.wconv_3pcf`.
     Q : dict of {str: 2-d array of float}
         Configuration-space window function multipole samples
         (each key is a multipole).
@@ -372,8 +367,8 @@ def wconv_bispec(formulae, Q, bk, k, k_out, r_common, r_Q=None,
         `r_common` is assumed instead.
     transform_kwargs : dict, optional
         Keyword arguments to be passed to
-        :class:`triumvirate.bihankel.transform_bispec_to_3pcf` and
-        :class:`triumvirate.bihankel.transform_3pcf_to_bispec` for
+        :class:`~triumvirate.bihankel.transform_bispec_to_3pcf` and
+        :class:`~triumvirate.bihankel.transform_3pcf_to_bispec` for
         transforming to/from configuration space.  If `None` (default),
         the FFTLog sample number is set to 1024 and no extrapolation
         is performed.
