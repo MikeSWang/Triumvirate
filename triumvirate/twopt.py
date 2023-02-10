@@ -1,8 +1,8 @@
 """
-Two-Point Correlator Measurements (:mod:`~triumvirate.twopt`)
+Two-Point Clustering Statistics (:mod:`~triumvirate.twopt`)
 ==========================================================================
 
-Measuring two-point correlator statistics from catalogues.
+Measuring two-point clustering statistics from catalogues.
 
 """
 import warnings

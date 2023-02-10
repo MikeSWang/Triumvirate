@@ -2,7 +2,7 @@
 Two-Point Correlator Algorithms (:mod:`~triumvirate._twopt`)
 ==========================================================================
 
-Declaration and wrapping of two-point statistic algorithms.
+Declaration and wrapping of two-point correlator algorithms.
 
 """
 from cython.operator cimport dereference as deref
@@ -40,7 +40,7 @@ cdef extern from "include/twopt.hpp":
 
 
     # --------------------------------------------------------------------
-    # Full statistics
+    # Full correlator
     # --------------------------------------------------------------------
 
     PowspecMeasurements compute_powspec_cpp "trv::compute_powspec" (
