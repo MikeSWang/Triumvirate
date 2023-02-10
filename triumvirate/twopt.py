@@ -12,7 +12,7 @@ Local plane-parallel estimators
     compute_corrfunc
 
 Global plane-parallel estimators
--------------------------------
+--------------------------------
 
 .. autosummary::
     compute_powspec_in_gpp_box

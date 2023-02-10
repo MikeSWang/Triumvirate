@@ -12,7 +12,7 @@ Local plane-parallel estimators
     compute_3pcf
 
 Global plane-parallel estimators
--------------------------------
+--------------------------------
 
 .. autosummary::
     compute_bispec_in_gpp_box
