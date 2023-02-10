@@ -1,3 +1,4 @@
-sphinxcontrib-bibtex
 sphinx_book_theme
 myst_nb
+sphinxcontrib-bibtex
+sphinx-copybutton
