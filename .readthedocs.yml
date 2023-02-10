@@ -9,6 +9,7 @@ build:
     - libfftw3-dev
   jobs:
     pre_build:
+      - make pyinstall useomp=true
       - bash docs/gendocs.sh
 
 sphinx:
