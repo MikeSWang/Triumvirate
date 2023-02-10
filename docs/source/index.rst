@@ -74,7 +74,7 @@ Licence
     :target: https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE
     :alt: GPL-3.0 Licence
 
-|Triumvirate| is made freely available under the `GPL-3.0 licence
+|br| |Triumvirate| is made freely available under the `GPL-3.0 licence
 <https://www.gnu.org/licenses/gpl-3.0.en.html>`_.
 
 

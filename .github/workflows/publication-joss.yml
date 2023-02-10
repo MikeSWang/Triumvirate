@@ -10,18 +10,19 @@ on:
 
 jobs:
   compile-joss:
-
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Build draft PDF
         uses: openjournals/openjournals-draft-action@master
         with:
           journal: joss
           # Input path to the draft file 'paper.md' within the repo.
           paper-path: publication/joss/paper.md
+
       - name: Upload draft PDF
         uses: actions/upload-artifact@v1
         with:
