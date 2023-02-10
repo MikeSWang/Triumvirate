@@ -17,7 +17,7 @@ cosmological analyses.
     * The scientific context is explained in :doc:`background`.
     * Installation instructions can be found in :doc:`installation`.
     * To get started quickly, read :doc:`tutorials`.
-    * For full API, please refer to :doc:`apidoc`.
+    * For full API, please refer to :doc:`apiref`.
 
 
 Attribution
@@ -90,4 +90,4 @@ Licence
     background
     installation
     tutorials
-    apidoc
+    apiref
