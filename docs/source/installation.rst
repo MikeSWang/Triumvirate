@@ -5,7 +5,7 @@ Installation
 Python package
 ==============
 
-.. image:: https://img.shields.io/pypi/v/Triumvirate?color=informational&logo=PyPI&style=flat-square
+.. image:: https://img.shields.io/pypi/v/Triumvirate?logo=PyPI&style=flat-square&color=informational
     :target: https://pypi.org/project/Triumvirate
     :alt: PyPI
 .. image:: https://img.shields.io/conda/vn/conda-forge/triumvirate?logo=conda-forge&style=flat-square

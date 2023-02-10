@@ -29,10 +29,10 @@ Attribution
 .. image:: https://img.shields.io/badge/arXiv-yymm.%3F-b31b1b?style=flat-square
     :target: https://arxiv.org/abs/?.?
     :alt: arXiv
-.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-blue?style=flat-square
+.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-informational?style=flat-square
     :target: https://doi.org/10.1093/mnras/sty3249
     :alt: MNRAS
-.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-blue?style=flat-square
+.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-informational?style=flat-square
     :target: https://doi.org/10.1093/mnras/stx2333
     :alt: MNRAS
 
@@ -46,7 +46,7 @@ Acknowledgement
 
 This project has received funding from the European Research Council (ERC)
 under the European Union's Horizon 2020 research and innovation programme
-(grant agreement 853291).
+(grant agreement `853291 <https://doi.org/10.3030/853291>`_).
 
 Key underlying numerical algorithms were originally developed by
 Naonori S Sugiyama, and are available in the GitHub repository |hitomi|_.
@@ -70,7 +70,7 @@ Changes in recent releases are listed in the `change log
 Licence
 =======
 
-.. image:: https://img.shields.io/github/license/MikeSWang/Triumvirate?color=informational&style=flat-square
+.. image:: https://img.shields.io/github/license/MikeSWang/Triumvirate?style=flat-square&color=informational
     :target: https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE
     :alt: GPL-3.0 Licence
 

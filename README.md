@@ -8,7 +8,7 @@
 https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/build.yml?branch=main&logo=GitHub%20Actions&style=flat-square
 )](https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml)
 [![Tests](
-https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/lint.yml?branch=main&logo=GitHub%20Actions&style=flat-square
+https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/tests.yml?branch=main&logo=GitHub%20Actions&style=flat-square&label=tests
 )](https://github.com/MikeSWang/Triumvirate/actions/workflows/tests.yml)
 [![Docs](
 https://img.shields.io/readthedocs/triumvirate/latest?logo=Read%20the%20Docs&style=flat-square
@@ -38,7 +38,7 @@ be found at [triumvirate.readthedocs.io](https://triumvirate.readthedocs.io).
 ### Python package
 
 [![PyPI](
-https://img.shields.io/pypi/v/Triumvirate?color=informational&logo=PyPI&style=flat-square
+https://img.shields.io/pypi/v/Triumvirate?logo=PyPI&style=flat-square&color=informational
 )](https://pypi.org/project/Triumvirate)
 [![conda](
 https://img.shields.io/conda/vn/conda-forge/triumvirate?logo=conda-forge&style=flat-square
@@ -92,10 +92,10 @@ https://img.shields.io/badge/JOSS-doi-brightgreen
 https://img.shields.io/badge/arXiv-yymm.%3F-b31b1b?style=flat-square
 )](https://arxiv.org/abs/?.?)
 [![MNRAS](
-https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-blue?style=flat-square
+https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-informational?style=flat-square
 )](https://doi.org/10.1093/mnras/sty3249)
 [![MNRAS](
-https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-blue?style=flat-square
+https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-informational?style=flat-square
 )](https://doi.org/10.1093/mnras/stx2333)
 
 To acknowledge the use of ``Triumvirate`` in your published research, please
@@ -107,7 +107,7 @@ in the BibTeX format.
 
 This project has received funding from the European Research Council (ERC)
 under the European Union's Horizon 2020 research and innovation programme
-(grant agreement 853291).
+(grant agreement [853291](https://doi.org/10.3030/853291)).
 
 Key underlying numerical algorithms were originally developed by
 Naonori S Sugiyama, and are available in the GitHub repository [``hitomi``](
@@ -128,7 +128,7 @@ Changes in recent releases are listed in the [change log](CHANGELOG.md).
 ## Licence
 
 [![Licence](
-https://img.shields.io/github/license/MikeSWang/Triumvirate?color=informational&style=flat-square
+https://img.shields.io/github/license/MikeSWang/Triumvirate?style=flat-square&color=informational
 )](https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE)
 
 ``Triumvirate`` is made freely available under the [GPL-3.0 licence](
