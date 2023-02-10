@@ -2,7 +2,7 @@
 Three-Point Clustering Statistics (:mod:`~triumvirate.threept`)
 ==========================================================================
 
-Measuring three-point clustering statistics from catalogues.
+Measure three-point clustering statistics from catalogues.
 
 Local plane-parallel estimators
 -------------------------------
