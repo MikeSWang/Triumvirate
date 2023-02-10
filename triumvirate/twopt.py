@@ -4,6 +4,26 @@ Two-Point Clustering Statistics (:mod:`~triumvirate.twopt`)
 
 Measuring two-point clustering statistics from catalogues.
 
+Local plane-parallel estimators
+-------------------------------
+
+.. autosummary::
+    compute_powspec
+    compute_corrfunc
+
+Global plane-parallel estimators
+-------------------------------
+
+.. autosummary::
+    compute_powspec_in_gpp_box
+    compute_corrfunc_in_gpp_box
+
+Window function estimator
+-------------------------
+
+.. autosummary::
+    compute_corrfunc_window
+
 """
 import warnings
 from pathlib import Path

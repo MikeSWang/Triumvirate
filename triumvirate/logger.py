@@ -4,6 +4,9 @@ Program Logger (:mod:`~triumvirate.logger`)
 
 Configure the program logger.
 
+.. autosummary::
+    setup_logger
+
 """
 import logging
 import sys

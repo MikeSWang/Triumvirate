@@ -4,6 +4,33 @@ Double Hankel Transforms (:mod:`~triumvirate.bihankel`)
 
 Perform Hankel-related double transforms using the FFTLog algorithm.
 
+Array operations
+----------------
+
+.. autosummary::
+    ShapeError
+
+1-d arrays:
+
+.. autosummary::
+    extrap_lin
+    extrap_loglin
+    extrap_pad
+
+2-d arrays:
+
+.. autosummary:
+    extrap2d_bilin
+    extrap2d_biloglin
+    extrap2d_bipad
+
+Transforms
+----------
+
+.. autosummary::
+    transform_bispec_to_3pcf
+    transform_3pcf_to_bispec
+
 """
 import numpy as np
 from scipy import interpolate
@@ -145,7 +172,7 @@ def extrap_loglin(a, n_ext):
     return a_out
 
 
-def extrap_padding(a, n_ext, a_const=0.):
+def extrap_pad(a, n_ext, a_const=0.):
     """Extrapolate a 1-d array by constant padding.
 
     Parameters

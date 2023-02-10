@@ -4,6 +4,26 @@ Three-Point Clustering Statistics (:mod:`~triumvirate.threept`)
 
 Measuring three-point clustering statistics from catalogues.
 
+Local plane-parallel estimators
+-------------------------------
+
+.. autosummary::
+    compute_bispec
+    compute_3pcf
+
+Global plane-parallel estimators
+-------------------------------
+
+.. autosummary::
+    compute_bispec_in_gpp_box
+    compute_3pcf_in_gpp_box
+
+Window function estimator
+-------------------------
+
+.. autosummary::
+    compute_3pcf_window
+
 """
 import warnings
 from pathlib import Path

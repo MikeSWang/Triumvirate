@@ -4,6 +4,10 @@ Catalogue (:mod:`~triumvirate.catalogue`)
 
 Handle catalogue I/O and processing.
 
+.. autosummary::
+    MissingField
+    ParticleCatalogue
+
 """
 import warnings
 

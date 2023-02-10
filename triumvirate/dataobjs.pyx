@@ -4,6 +4,9 @@ Data Objects (:mod:`~triumvirate.dataobjs`)
 
 Define data objects.
 
+.. autosummary::
+    Binning
+
 """
 import numpy as np
 
