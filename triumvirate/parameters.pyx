@@ -80,10 +80,10 @@ cdef class ParameterSet:
         If neither or both of `param_filepath` and `param_dict`
         is/are `None`.
 
-    Notes
-    -----
-    Use :func:`~triumvirate.parameters.fetch_paramset_template()` to
-    generate a template parameter file (with explanatory text).
+    .. tip::
+
+        Use :func:`~triumvirate.parameters.fetch_paramset_template()` to
+        generate a template parameter file (with explanatory text).
 
     """
 
