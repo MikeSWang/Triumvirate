@@ -76,7 +76,9 @@ def _check_2d_array(a):
     # if (
     #     not np.all([np.all(a_row[:-1] <= a_row[1:]) for a_row in a])
     # ) or (
-    #     not np.all([np.all(a_col[:-1] <= a_col[1:]) for a_col in a.transpose()])
+    #     not np.all([
+    #         np.all(a_col[:-1] <= a_col[1:]) for a_col in a.transpose()
+    #     ])
     # ):
     #     raise ValueError("Input array is not an increasing sequence.")
 
@@ -297,7 +299,8 @@ def extrap2d_logbilin(a, ncol_ext, nrow_ext=None):
     return a_out
 
 
-def extrap2d_bipad(a, ncol_ext, nrow_ext=None, a_const_col=0., a_const_row=None):
+def extrap2d_bipad(a, ncol_ext, nrow_ext=None,
+                   a_const_col=0., a_const_row=None):
     """Extrapolate a 2-d array by constant padding.
 
     Parameters
@@ -346,7 +349,7 @@ def extrap2d_bipad(a, ncol_ext, nrow_ext=None, a_const_col=0., a_const_row=None)
 
 def transform_bispec_to_3pcf(ell1, ell2, k_in, bk_in, r_out,
                              n_fftlog, extrap=None, n_extrap=None):
-    """Transform bispectrum samples to three-point correlation function
+    r"""Transform bispectrum samples to three-point correlation function
     (3PCF) samples using double 1-d FFTLog operations.
 
     Notes
@@ -479,7 +482,7 @@ def transform_bispec_to_3pcf(ell1, ell2, k_in, bk_in, r_out,
 
 def transform_3pcf_to_bispec(ell1, ell2, r_in, zeta_in, k_out,
                              n_fftlog, extrap=None, n_extrap=None):
-    """Transform three-point correlation function (3PCF) samples to
+    r"""Transform three-point correlation function (3PCF) samples to
     bispectrum samples using double 1-d FFTLog operations.
 
     Notes

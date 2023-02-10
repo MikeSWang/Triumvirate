@@ -114,7 +114,8 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
 
     if defaults:
         warnings.warn(
-            f"The following parameter default values are unchanged: {defaults}. "
+            "The following parameter default values "
+            f"are unchanged: {defaults}. "
             "Not all parameters are necessarily used."
         )
 
@@ -192,8 +193,8 @@ def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
 
     if paramset['npoint'] != '2pt':
         raise ValueError(
-        "`paramset` 'statistic_type' does not correspond to a "
-        "recognised two-point statistic."
+            "`paramset` 'statistic_type' does not correspond to a "
+            "recognised two-point statistic."
         )
     if paramset['space'] == 'fourier':
         datatab_colnames = [
@@ -212,21 +213,20 @@ def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
 
     text_lines = [
         "Box size: ({:.3f}, {:.3f}, {:.3f})".format(
-            *[paramset['boxsize'][axis] for axis in ['x', 'y', 'z']]
+            *[paramset['boxsize'][ax] for ax in ['x', 'y', 'z']]
         ),
         "Box alignment: {}".format(paramset['alignment']),
         "Mesh number: ({:d}, {:d}, {:d})".format(
-            *[paramset['ngrid'][axis] for axis in ['x', 'y', 'z']]
+            *[paramset['ngrid'][ax] for ax in ['x', 'y', 'z']]
         ),
         "Mesh assignment and interlacing: {}, {}".format(
             paramset['assignment'], paramset['interlace']
         ),
         "Normalisation factor: "
-        "{:.9e} ({}-based, used), {:.9e} ({}-based, alternative)"
-            .format(
-                norm_factor, norm_convention,
-                norm_factor_alt, norm_convention_alt
-            ),
+        "{:.9e} ({}-based, used), {:.9e} ({}-based, alternative)".format(
+            norm_factor, norm_convention,
+            norm_factor_alt, norm_convention_alt
+        ),
         ", ".join([
             "[{:d}] {}".format(colidx, colname)
             for colidx, colname in enumerate(datatab_colnames)
@@ -395,7 +395,7 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
     # Set up box alignment.
     if paramset['alignment'] == 'centre':
         catalogue_data.centre(
-            [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']],
+            [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']],
             catalogue_ref=catalogue_rand
         )
     if paramset['alignment'] == 'pad':
@@ -403,11 +403,11 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
             kwargs = {'boxsize_pad': paramset['padfactor']}
         if paramset['padscale'] == 'grid':
             kwargs = {
-                'ngrid': [paramset['ngrid'][axis] for axis in ['x', 'y', 'z']],
+                'ngrid': [paramset['ngrid'][ax] for ax in ['x', 'y', 'z']],
                 'ngrid_pad': paramset['padfactor']
             }
         catalogue_data.pad(
-            [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']],
+            [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']],
             catalogue_ref=catalogue_rand, **kwargs
         )
 
@@ -421,7 +421,8 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
     # Prepare catalogues.
     if logger:
         logger.info(
-            "Preparing catalogue for clustering algorithm...", cpp_state='start'
+            "Preparing catalogue for clustering algorithm...",
+            cpp_state='start'
         )
 
     particles_data = \
@@ -592,7 +593,7 @@ def compute_powspec(catalogue_data, catalogue_rand,
 
     # if logger:
     #     logger.info(
-    #         "... measured power spectrum from paired survey-type catalogues.",
+    #         "... measured power spectrum from paired survey-type catalogues.",  # noqa: E501
     #         cpp_state='end'
     #     )
 
@@ -782,7 +783,7 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
 
     # Set up box alignment.
     catalogue_data.periodise(
-        [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']]
+        [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']]
     )
 
     if logger:
@@ -805,7 +806,8 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
 
     if logger:
         logger.info(
-            "Preparing catalogue for clustering algorithm...", cpp_state='start'
+            "Preparing catalogue for clustering algorithm...",
+            cpp_state='start'
         )
 
     particles_data =  \
@@ -963,7 +965,8 @@ def compute_powspec_in_gpp_box(catalogue_data,
 
 
 def compute_corrfunc_in_gpp_box(catalogue_data,
-                                degree=None, binning=None, sampling_params=None,
+                                degree=None, binning=None,
+                                sampling_params=None,
                                 paramset=None,
                                 save=False, logger=None):
     """Compute correlation function from a simulation-box catalogue
@@ -1141,7 +1144,7 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
 
     # Set up box alignment.
     catalogue_rand.centre(
-        [paramset['boxsize'][axis] for axis in ['x', 'y', 'z']]
+        [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']]
     )
 
     if logger:

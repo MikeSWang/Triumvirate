@@ -44,7 +44,8 @@ if __name__ == '__main__':
             names=['x', 'y', 'z', 'nz', 'ws'],
             logger=logger
         )
-    if pars['catalogue_type'] == 'survey' or pars['catalogue_type'] == 'random':
+    if pars['catalogue_type'] == 'survey' \
+            or pars['catalogue_type'] == 'random':
         cat_rand = ParticleCatalogue.read_from_file(
             "{}/{}".format(
                 pars['directories']['catalogues'],
@@ -55,53 +56,63 @@ if __name__ == '__main__':
         )
 
     # Run test case.
-    if (pars['catalogue_type'], pars['statistic_type']) == ('sim', 'powspec'):
+    if (pars['catalogue_type'], pars['statistic_type']) \
+            == ('sim', 'powspec'):
         measurements = compute_powspec_in_gpp_box(
             cat_data, paramset=pars, save='.txt', logger=logger
         )
         exit(0)
-    if (pars['catalogue_type'], pars['statistic_type']) == ('sim', '2pcf'):
+    if (pars['catalogue_type'], pars['statistic_type']) \
+            == ('sim', '2pcf'):
         measurements = compute_corrfunc_in_gpp_box(
             cat_data, paramset=pars, save='.txt', logger=logger
         )
         exit(0)
-    if (pars['catalogue_type'], pars['statistic_type']) == ('sim', 'bispec'):
+    if (pars['catalogue_type'], pars['statistic_type']) \
+            == ('sim', 'bispec'):
         measurements = compute_bispec_in_gpp_box(
             cat_data, paramset=pars, save='.txt', logger=logger
         )
         exit(0)
-    if (pars['catalogue_type'], pars['statistic_type']) == ('sim', '3pcf'):
+    if (pars['catalogue_type'], pars['statistic_type']) \
+            == ('sim', '3pcf'):
         measurements = compute_3pcf_in_gpp_box(
             cat_data, paramset=pars, save='.txt', logger=logger
         )
         exit(0)
 
-    if (pars['catalogue_type'], pars['statistic_type']) == ('survey', 'powspec'):
+    if (pars['catalogue_type'], pars['statistic_type']) \
+            == ('survey', 'powspec'):
         measurements = compute_powspec(
             cat_data, cat_rand, paramset=pars, save='.txt', logger=logger
         )
         exit(0)
-    if (pars['catalogue_type'], pars['statistic_type']) == ('survey', '2pcf'):
+    if (pars['catalogue_type'], pars['statistic_type']) \
+            == ('survey', '2pcf'):
         measurements = compute_corrfunc(
             cat_data, cat_rand, paramset=pars, save='.txt', logger=logger
         )
         exit(0)
-    if (pars['catalogue_type'], pars['statistic_type']) == ('survey', 'bispec'):
+    if (pars['catalogue_type'], pars['statistic_type']) \
+            == ('survey', 'bispec'):
         measurements = compute_bispec(
             cat_data, cat_rand, paramset=pars, save='.txt', logger=logger
         )
-    if (pars['catalogue_type'], pars['statistic_type']) == ('survey', '3pcf'):
+    if (pars['catalogue_type'], pars['statistic_type']) \
+            == ('survey', '3pcf'):
         measurements = compute_3pcf(
             cat_data, cat_rand, paramset=pars, save='.txt', logger=logger
         )
         exit(0)
 
-    if (pars['catalogue_type'], pars['statistic_type']) == ('random', '2pcf-win'):
+    if (pars['catalogue_type'], pars['statistic_type']) \
+            == ('random', '2pcf-win'):
         measurements = compute_corrfunc_window(
             cat_rand, paramset=pars, save='.txt', logger=logger
         )
         exit(0)
-    if (pars['catalogue_type'], pars['statistic_type']) == ('random', '3pcf-win'):
+    if (pars['catalogue_type'], pars['statistic_type']) \
+            == ('random', '3pcf-win'):
         measurements = compute_3pcf_window(
             cat_rand, paramset=pars, save='.txt', logger=logger
         )

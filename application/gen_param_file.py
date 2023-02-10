@@ -68,7 +68,8 @@ def configure():
 
     config = parser.parse_args()
 
-    if (config.cpp and config.python) or (not config.cpp and not config.python):
+    if (config.cpp and config.python) \
+            or (not config.cpp and not config.python):
         raise ValueError(
             "One and only one of '-i' (or '--cpp') and '-y' (or '--python') "
             "flags must be set."
@@ -134,7 +135,8 @@ def gen_cpp_params(params_template, params_to_modify):
     params = params_template.copy()
     for lineno, line in enumerate(params_template):
         pname_line = line.split('%')[0].split('=')[0].strip()
-        if not pname_line: continue  # skip comment lines
+        if not pname_line:
+            continue  # skip comment lines
         for pidx, (pname, pval) in enumerate(params_to_modify):
             if pname_line == pname:
                 params[lineno] = f"{pname} = {pval}\n"
