@@ -60,8 +60,9 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.bibtex',
     'myst_nb',
+    'sphinxcontrib.bibtex',
+    'sphinx_copybutton',
 ]
 
 master_doc = 'index'
