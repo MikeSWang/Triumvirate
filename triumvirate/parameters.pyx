@@ -4,6 +4,10 @@ Parameter Set (:mod:`~triumvirate.parameters`)
 
 Configure program parameter set.
 
+.. autosummary::
+    InvalidParameter
+    ParameterSet
+
 """
 from pathlib import Path
 from pprint import pformat
