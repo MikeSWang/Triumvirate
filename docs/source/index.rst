@@ -26,7 +26,7 @@ Attribution
 .. image:: https://img.shields.io/badge/JOSS-doi-brightgreen
     :target: https://joss.theoj.org/papers/?/status.svg
     :alt: JOSS
-.. image:: https://img.shields.io/badge/arXiv-yymm.%3F-important
+.. image:: https://img.shields.io/badge/arXiv-yymm.%3F-b31b1b
     :target: https://arxiv.org/abs/?.?
     :alt: arXiv
 .. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-blue

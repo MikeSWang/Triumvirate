@@ -7,10 +7,10 @@ build:
   apt_packages:
     - libgsl-dev
     - libfftw3-dev
-  jobs:
-    pre_build:
-      - python -m pip install --verbose --editable .
-      - bash docs/gendocs.sh
+#   jobs:
+#     pre_build:
+#       - python -m pip install --verbose --editable .
+#       - bash docs/gendocs.sh
 
 sphinx:
    configuration: docs/source/conf.py
