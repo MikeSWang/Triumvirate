@@ -1,8 +1,8 @@
 """
-Three-Point Correlator Measurements (:mod:`~triumvirate.threept`)
+Three-Point Clustering Statistics (:mod:`~triumvirate.threept`)
 ==========================================================================
 
-Measuring three-point correlator statistics from catalogues.
+Measuring three-point clustering statistics from catalogues.
 
 """
 import warnings

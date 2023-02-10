@@ -21,7 +21,7 @@
  * @file twopt.hpp
  * @authors Mike S Wang (https://github.com/MikeSWang)
  *          Naonori Sugiyama (https://github.com/naonori)
- * @brief Two-point correlator computations.
+ * @brief Two-point statistic computations.
  *
  * This module provides the computation of two-point statistics including:
  * - power spectrum normalisation (mesh- or particle-based);

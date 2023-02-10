@@ -2,7 +2,7 @@
 Three-Point Correlator Algorithms (:mod:`~triumvirate._threept`)
 ==========================================================================
 
-Declaration and wrapping of three-point statistic algorithms.
+Declaration and wrapping of three-point correlator algorithms.
 
 """
 from cython.operator cimport dereference as deref
@@ -41,7 +41,7 @@ cdef extern from "include/threept.hpp":
 
 
     # --------------------------------------------------------------------
-    # Full statistics
+    # Full correlator
     # --------------------------------------------------------------------
 
     BispecMeasurements compute_bispec_cpp "trv::compute_bispec" (

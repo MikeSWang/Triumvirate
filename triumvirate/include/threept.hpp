@@ -21,7 +21,7 @@
  * @file threept.hpp
  * @authors Mike S Wang (https://github.com/MikeSWang)
  *          Naonori Sugiyama (https://github.com/naonori)
- * @brief Three-point correlator computations.
+ * @brief Three-point statistic computations.
  *
  * This module provides the computation of three-point
  * statistics including:

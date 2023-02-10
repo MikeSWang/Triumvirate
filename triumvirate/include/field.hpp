@@ -377,7 +377,7 @@ class MeshField {
 
   /**
    * Calculate the normalisation factor f@$ 1/I_N f@$ for <i>N</i>-point
-   * (for two-point correlators), where
+   * (for two-point statistics), where
    * f@[
    *   I_N = \int\mathrm{d}^3\,\vec{x} w(\vec{x})^N \bar{n}(\vec{x})^N \,.
    * f@]
