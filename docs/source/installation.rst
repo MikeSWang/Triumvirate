@@ -5,7 +5,14 @@ Installation
 Python package
 ==============
 
-|Triumvirate| as a Python package is distributed through `PyPI
+.. image:: https://img.shields.io/pypi/v/Triumvirate?color=informational&logo=PyPI&style=flat-square
+    :target: https://pypi.org/project/Triumvirate
+    :alt: PyPI
+.. image:: https://img.shields.io/conda/vn/conda-forge/triumvirate?logo=conda-forge&style=flat-square
+    :target: https://anaconda.org/conda-forge/triumvirate
+    :alt: conda
+
+|br| |Triumvirate| as a Python package is distributed through `PyPI
 <https://pypi.org/project/Triumvirate>`_ and `conda-forge
 <https://anaconda.org/conda-forge/triumvirate>`_.
 
@@ -42,7 +49,7 @@ and change to the repository directory:
 
 .. code:: console
 
-    $ git clone git@github.com:MikeSWang/Triumvirate.git --branch stable
+    $ git clone git@github.com:MikeSWang/Triumvirate.git [--branch <branch-or-release>]
     $ cd Triumvirate
 
 Then to compile, run:
@@ -94,3 +101,8 @@ modify it as appropriate for your need.
 .. |Triumvirate| raw:: html
 
     <span style="font-variant: small-caps">Triumvirate</span>
+
+
+.. |br| raw:: html
+
+    <br/>

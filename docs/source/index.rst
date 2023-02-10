@@ -26,23 +26,27 @@ Attribution
 .. image:: https://img.shields.io/badge/JOSS-doi-brightgreen
     :target: https://joss.theoj.org/papers/?/status.svg
     :alt: JOSS
-.. image:: https://img.shields.io/badge/arXiv-yymm.%3F-b31b1b
+.. image:: https://img.shields.io/badge/arXiv-yymm.%3F-b31b1b?style=flat-square
     :target: https://arxiv.org/abs/?.?
     :alt: arXiv
-.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-blue
+.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-blue?style=flat-square
     :target: https://doi.org/10.1093/mnras/sty3249
     :alt: MNRAS
-.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-blue
+.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-blue?style=flat-square
     :target: https://doi.org/10.1093/mnras/stx2333
     :alt: MNRAS
 
 |br| To acknowledge the use of |Triumvirate| in your published research, please
-cite the publications :cite:p:`Sugiyama:2018,Sugiyama:2019` linked above which contain the relevant information
-in the BibTeX format.
+cite the publications :cite:p:`Sugiyama:2018,Sugiyama:2019` linked above which
+contain the relevant information in the BibTeX format.
 
 
 Acknowledgement
 ===============
+
+This project has received funding from the European Research Council (ERC)
+under the European Union's Horizon 2020 research and innovation programme
+(grant agreement 853291).
 
 Key underlying numerical algorithms were originally developed by
 Naonori S Sugiyama, and are available in the GitHub repository |hitomi|_.
@@ -65,6 +69,10 @@ Changes in recent releases are listed in the `change log
 
 Licence
 =======
+
+.. image:: https://img.shields.io/github/license/MikeSWang/Triumvirate?color=informational&style=flat-square
+    :target: https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE
+    :alt: GPL-3.0 Licence
 
 |Triumvirate| is made freely available under the `GPL-3.0 licence
 <https://www.gnu.org/licenses/gpl-3.0.en.html>`_.
