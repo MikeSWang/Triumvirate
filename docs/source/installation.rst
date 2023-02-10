@@ -9,7 +9,7 @@ Python package
 <https://pypi.org/project/Triumvirate>`_ and `conda-forge
 <https://anaconda.org/conda-forge/triumvirate>`_.
 
-By default, we recommend you install using `conda`:
+We recommend you install using `conda`:
 
 .. code:: console
 
@@ -26,6 +26,9 @@ Alternatively, you may use `pip`, ideally in a virtual environment
 .. attention::
 
     Please note the capitalisation of the package name in the commands above.
+
+By default, the installed package from public distributions is built with
+OpenMP enabled.
 
 
 C++ program
