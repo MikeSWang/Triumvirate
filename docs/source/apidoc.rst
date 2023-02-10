@@ -8,7 +8,7 @@ Python package
 .. toctree::
     :titlesonly:
 
-    apidoc_py/triumvirate.logger
+    Logger <apidoc_py/triumvirate.logger>
     apidoc_py/triumvirate.parameters
     apidoc_py/triumvirate.dataobjs
     apidoc_py/triumvirate.catalogue
