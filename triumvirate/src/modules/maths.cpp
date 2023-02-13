@@ -35,7 +35,6 @@ namespace maths {
 // Complex numbers
 // ***********************************************************************
 
-
 const std::complex<double> M_I(0., 1.);  ///< imaginary unit
 
 std::complex<double> eval_complex_in_polar(double r, double theta) {
@@ -64,6 +63,8 @@ double get_vec3d_magnitude(double vec[3]) {
 // CAVEAT: Discretionary choices (for the Lanczos approximation series).
 const int nterm_lanczos = 9;  ///< number of terms in approximation series
 const double gconst_lanczos = 7.;  ///< Lanczos approximation constant
+/// Lanczos approximation coefficients for @ref trv::maths::gconst_lanczos
+/// and @ref trv::maths::nterm_lanczos
 const double pcoeff_lanczos[] = {
       0.99999999999980993227684700473478,
     676.520368121885098567009190444019,
@@ -74,10 +75,7 @@ const double pcoeff_lanczos[] = {
      -0.13857109526572011689554707,
       9.984369578019570859563e-6,
       1.50563273514931155834e-7,
-};  ///< Lanczos approximation coefficients
-    ///< for @ref trv::maths::gconst_lanczos &
-    ///< @ref trv::maths::nterm_lanczos
-    // varying number of significant figures
+};  // varying number of significant figures
 
 std::complex<double> eval_lanczos_approx_series(std::complex<double> z) {
   std::complex<double> series = pcoeff_lanczos[0];

@@ -46,10 +46,9 @@ int currTask = 0;
 double gbytesMem = 0.;
 double gbytesMaxMem = 0.;
 
-auto clockStart = std::chrono::steady_clock::now();  ///< program
-                                                     ///< starting time
+auto clockStart = std::chrono::steady_clock::now();  ///< program starting time
 
-Logger logger(NSET);  ///< default logger
+Logger logger(NSET);  ///< default logger at `NSET` logging level
 
 void update_maxmem() {
   trv::sys::gbytesMaxMem = (trv::sys::gbytesMem > trv::sys::gbytesMaxMem) ?
