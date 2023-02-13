@@ -138,7 +138,7 @@ class Binning {
 
  private:
   // CAVEAT: Discretionary choices.
-  int nbin_pad = 5;                ///< number of padded bins
+  int nbin_pad = 5;                 ///< number of padded bins
   double dbin_pad_fourier = 1.e-3;  ///< bin padding in Fourier space
   double dbin_pad_config = 10.;     ///< bin padding in configuration space
 
@@ -180,9 +180,10 @@ struct PowspecMeasurements {
   std::vector<double> kbin;  ///< central wavenumber in bins
   std::vector<double> keff;  ///< effective wavenumber in bins
   std::vector<int> nmodes;   ///< number of wavevectors in bins
-  std::vector< std::complex<double> > pk_raw;   ///< power spectrum
-                                                ///< raw measurements
-  std::vector< std::complex<double> > pk_shot;  ///< power spectrum shot noise
+  /// power spectrum raw measurements
+  std::vector< std::complex<double> > pk_raw;
+  /// power spectrum shot noise
+  std::vector< std::complex<double> > pk_shot;
 };
 
 /**
@@ -193,8 +194,8 @@ struct TwoPCFMeasurements {
   std::vector<double> rbin;  ///< central separation in bins
   std::vector<double> reff;  ///< effective separation in bins
   std::vector<int> npairs;   ///< number of separation vectors in bins
-  std::vector< std::complex<double> > xi;  ///< two-point correlation function
-                                           ///< measurements
+  /// two-point correlation function measurements
+  std::vector< std::complex<double> > xi;
 };
 
 /**
@@ -205,8 +206,8 @@ struct TwoPCFWindowMeasurements {
   std::vector<double> rbin;  ///< central separation in bins
   std::vector<double> reff;  ///< effective separation in bins
   std::vector<int> npairs;   ///< number of separation vectors in bins
-  std::vector< std::complex<double> > xi;  ///< two-point correlation function
-                                           ///< window measurements
+  /// two-point correlation function window measurements
+  std::vector< std::complex<double> > xi;
 };
 
 
@@ -224,9 +225,10 @@ struct BispecMeasurements {
   std::vector<double> k1eff;  ///< first effective wavenumber in bins
   std::vector<double> k2eff;  ///< second effective wavenumber in bins
   std::vector<int> nmodes;    ///< number of wavevectors in bins
-  std::vector< std::complex<double> > bk_raw;   ///< bispectrum
-                                                ///< raw measurements
-  std::vector< std::complex<double> > bk_shot;  ///< bispectrum shot noise
+  /// bispectrum raw measurements
+  std::vector< std::complex<double> > bk_raw;
+  /// bispectrum shot noise
+  std::vector< std::complex<double> > bk_shot;
 };
 
 /**
@@ -239,12 +241,10 @@ struct ThreePCFMeasurements {
   std::vector<double> r1eff;  ///< first effective separation in bins
   std::vector<double> r2eff;  ///< second effective separation in bins
   std::vector<int> npairs;    ///< number of separation vectors in bins
-  std::vector< std::complex<double> > zeta_raw;   ///< three-point
-                                                  ///< correlation function
-                                                  ///< raw measurements
-  std::vector< std::complex<double> > zeta_shot;  ///< three-point
-                                                  ///< correlation function
-                                                  ///< shot noise
+  /// three-point correlation function raw measurements
+  std::vector< std::complex<double> > zeta_raw;
+  /// three-point correlation function shot noise
+  std::vector< std::complex<double> > zeta_shot;
 };
 
 /**
@@ -257,13 +257,10 @@ struct ThreePCFWindowMeasurements {
   std::vector<double> r1eff;  ///< first effective separation in bins
   std::vector<double> r2eff;  ///< second effective separation in bins
   std::vector<int> npairs;    ///< number of pairwise separations
-  std::vector< std::complex<double> > zeta_raw;   ///< three-point
-                                                  ///< correlation function
-                                                  ///< window
-                                                  ///< raw measurements
-  std::vector< std::complex<double> > zeta_shot;  ///< three-point
-                                                  ///< correlation function
-                                                  ///< window shot noise
+  /// three-point correlation function window raw measurements
+  std::vector< std::complex<double> > zeta_raw;
+  /// three-point correlation function window shot noise
+  std::vector< std::complex<double> > zeta_shot;
 };
 
 }  // namespace trv

@@ -135,7 +135,7 @@ void sj_transform(
  * @f[
  *   b_\ell(k) = (2\pi k)^{-3/2} \int_0^\infty k \mathrm{d}r \,
  *     r^{3/2 + i} J_\ell(k r) a_\ell(r) \,.
- * @f$
+ * @f]
  *
  * @note This is the Hankel transform definition used in cosmological
  *       wide-angle expansions,

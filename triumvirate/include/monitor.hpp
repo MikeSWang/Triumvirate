@@ -116,12 +116,12 @@ std::string show_timestamp();
  */
 enum LogLevel {
   // CAVEAT: Discretionary choices.
-  NSET = 0,   ///>  0: unset
-  DBUG = 10,  ///> 10: debugging
-  STAT = 20,  ///> 20: status
-  INFO = 30,  ///> 30: info
-  WARN = 40,  ///> 40: warning
-  ERRO = 50   ///> 50: error/critical
+  NSET = 0,   ///<  0: unset
+  DBUG = 10,  ///< 10: debugging
+  STAT = 20,  ///< 20: status
+  INFO = 30,  ///< 30: info
+  WARN = 40,  ///< 40: warning
+  ERRO = 50   ///< 50: error/critical
 };
 
 /**
@@ -130,7 +130,7 @@ enum LogLevel {
  */
 class Logger {
  public:
-  int level_limit;  ///> logger threshold level
+  int level_limit;  ///< logger threshold level
 
   /**
    * @brief Construct the logger with the specified threshold level.
@@ -246,7 +246,7 @@ class Logger {
   void emit(std::string log_type, const char* fmt_string, std::va_list args);
 };
 
-extern Logger logger;  ///< default logger at `NSET` level
+extern Logger logger;  ///< default logger (at `NSET` logging level)
 
 
 // ***********************************************************************
