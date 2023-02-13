@@ -42,7 +42,7 @@ namespace trv {
 namespace maths {
 
 /**
- * @brief Calculate a low-ringing pivot value f@$ k r = k_c r_c f@$
+ * @brief Calculate a low-ringing pivot value @f$ k r = k_c r_c @f$
  *        for the FFTLog transform.
  *
  * @param[in] mu Order of the Hankel transform.
@@ -50,13 +50,14 @@ namespace maths {
  * @param[in] L Logarithmic interval.
  * @param[in] N Sample number.
  * @param[out] kr_c Initial pivot value.
+ * @returns Low-ringing pivot value.
  */
 double calc_kr_pivot_lowring(
   double mu, double q, double L, int N, double kr_c=1.
 );
 
 /**
- * @brief Compute the FFTLog transform kernel coefficients f@$ u f@$.
+ * @brief Compute the FFTLog transform kernel coefficients @f$ u @f$.
  *
  * @param[in] mu Order of the Hankel transform.
  * @param[in] q FFTLog power-law bias index.
@@ -73,9 +74,9 @@ void compute_u_kernel_coeff(
  * @brief Perform the (forward) Hankel transform.
  *
  * The transform is defined here as
- * f@[
+ * @f[
  *   b(k) = \int_0^\infty k \mathrm{d}r \, (k r)^q J_\mu(k r) a(r) \,.
- * f@]
+ * @f]
  *
  * @param[in] mu Order of the Hankel transform.
  * @param[in] q FFTLog power-law bias index.
@@ -99,20 +100,20 @@ void hankel_transform(
  * @brief Perform the (forward) spherical Fourier--Bessel transform.
  *
  * The transform is defined here as
- * f@[
+ * @f[
  *   b_\ell(k) = (2\pi k)^{-3/2} \int_0^\infty k \mathrm{d}r \,
  *     r^{m - 1/2} J_\ell(k r) a_\ell(r) \,.
- * f@]
+ * @f]
  *
  * @note When ``m = 2``, this is the Hankel transform definition used in
  *       cosmological correlators,
- *       f@[
+ *       @f[
  *         \xi_\ell(r) = 4\pi \mathrm{i}^\ell \int_0^\infty
  *           \frac{\mathrm{d}k \, k^2}{(2\pi)^3}
  *           j_\ell(kr) P_\ell(k) \,,
- *       f@]
- *       i.e. f@$ a(r) f@$ corresponds to f@$ P_\ell(k) f@$ and
- *       f@$ b(k) f@$ corresponds to f@$ \mathrm{i}^{-\ell} \xi_\ell(r)f@$.
+ *       @f]
+ *       i.e. @f$ a(r) @f$ corresponds to @f$ P_\ell(k) @f$ and
+ *       @f$ b(k) @f$ corresponds to @f$ \mathrm{i}^{-\ell} \xi_\ell(r)@f$.
  *
  * @param[in] ell Order of the transform.
  * @param[in] m Dimensional power-law index.
@@ -131,21 +132,21 @@ void sj_transform(
  *        Bessel transform.
  *
  * The transform is defined here as
- * f@[
+ * @f[
  *   b_\ell(k) = (2\pi k)^{-3/2} \int_0^\infty k \mathrm{d}r \,
  *     r^{3/2 + i} J_\ell(k r) a_\ell(r) \,.
- * f@$
+ * @f$
  *
  * @note This is the Hankel transform definition used in cosmological
  *       wide-angle expansions,
- *       f@[
+ *       @f[
  *         \xi_\ell^{(n)}(r) = 4\pi \mathrm{i}^\ell \int_0^\infty
  *           \frac{\mathrm{d}k \, k^2}{(2\pi)^3}
  *           (k r)^{-n} j_\ell(kr) P_\ell^{(n)}(k) \,,
- *       f@]
- *       i.e. f@$ a(r) f@$ corresponds to f@$ P_\ell^{(n)}(k) f@$ and
- *       f@$ b(k) f@$ corresponds to
- *       f@$ \mathrm{i}^{-\ell} \xi_\ell^{(n)}(r)f@$ with f@$ n f@$
+ *       @f]
+ *       i.e. @f$ a(r) @f$ corresponds to @f$ P_\ell^{(n)}(k) @f$ and
+ *       @f$ b(k) @f$ corresponds to
+ *       @f$ \mathrm{i}^{-\ell} \xi_\ell^{(n)}(r)@f$ with @f$ n @f$
  *       identified with `i`.
  *
  * @param[in] ell Order of the transform.

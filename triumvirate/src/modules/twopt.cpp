@@ -26,8 +26,10 @@
 
 #include "twopt.hpp"
 
-/// CAVEAT: Discretionary choice such that the eps_norm / norm = O(0.01%).
+/// @cond DOXYGEN_DOC_CONST
+/// CAVEAT: Discretionary choice such that the eps_norm/norm is of order 0.01%.
 const double eps_norm = 1.e-5;
+/// @endcond
 
 namespace trvs = trv::sys;
 namespace trvm = trv::maths;

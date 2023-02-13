@@ -59,9 +59,9 @@ namespace trv {
  *        components of full two-point statistics.
  *
  * The calculated quantity is
- * f@[
+ * @f[
  *   (2\ell + 1) (2L + 1) W(\ell, 0, L; m, 0, M) \,.
- * f@]
+ * @f]
  *
  * @param ell, ELL, m, M Wigner 3-j components.
  * @return Coupling coefficient for spherical-harmonic components in
@@ -118,23 +118,23 @@ double calc_powspec_shotnoise_from_particles(
  *        reduced spherical harmonics.
  *
  * This calculates the quantity
- * f@[
+ * @f[
  *   \bar{N}_{LM}(\vec{x}) = {\sum_i}{\vphantom{\sum}}'
  *     y_{LM}^*(\hat{\vec{x}}) w(\vec{x})^2 \,,
- * f@]
+ * @f]
  * where if a pair of catalogues are provided,
- * f@[
+ * @f[
  *   {\sum_i}{\vphantom{\sum}}' =
- *     \sum_{i \in mathrm{data}} + \alpha^2 \sum_{i \in mathrm{rand}} \,,
- * f@]
+ *     \sum_{i \in \mathrm{data}} + \alpha^2 \sum_{i \in \mathrm{rand}} \,,
+ * @f]
  * and otherwise
- * f@[
+ * @f[
  *   {\sum_i}{\vphantom{\sum}}' =
- *     \alpha^2 \sum_{i \in mathrm{data or rand}} \,.
- * f@]
+ *     \alpha^2 \sum_{i \in \mathrm{data\ or\ rand}} \,.
+ * @f]
  *
- * @param catalogue_data (Data-source) particle catalogue.
- * @param catalogue_rand (Random-source) particle catalogue.
+ * @param particles_data (Data-source) particle catalogue.
+ * @param particles_rand (Random-source) particle catalogue.
  * @param los_data (Data-source) particle lines of sight.
  * @param los_rand (Random-source) particle lines of sight.
  * @param alpha Alpha contrast.
@@ -246,8 +246,8 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
 );
 
 /**
- * Compute two-point correlation function window from a random catalogue
- * and optionally save the results.
+ * @brief Compute two-point correlation function window from a random
+ *        catalogue and optionally save the results.
  *
  * @param catalogue_rand (Random-source) particle catalogue.
  * @param los_rand (Random-source) particle lines of sight.

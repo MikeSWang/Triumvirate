@@ -40,6 +40,9 @@
  * @brief Triumvirate program for measuring two- and three-point
  *        clustering statistics.
  *
+ * @param argc Number of command-line arguments.
+ * @param argv Command-line arguments.
+ * @returns Exit status.
  */
 int main(int argc, char* argv[]) {
 #ifdef TRV_USE_LOGO

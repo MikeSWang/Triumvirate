@@ -18,7 +18,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * @file fftlog.hpp
+ * @file fftlog.cpp
  * @authors Mike S Wang (https://github.com/MikeSWang)
  *          Naonori Sugiyama (https://github.com/naonori)
  *

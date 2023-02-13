@@ -56,11 +56,11 @@ namespace maths {
 extern const std::complex<double> M_I;  ///< imaginary unit
 
 /**
- * @brief Evaluate a complex number f@$ r e^{i \theta} f@$
+ * @brief Evaluate a complex number @f$ r e^{i \theta} @f$
  *        in the polar form.
  *
- * @param r Modulus f@$ r f@$.
- * @param theta Argument f@$ \theta f@$.
+ * @param r Modulus @f$ r @f$.
+ * @param theta Argument @f$ \theta @f$.
  * @returns Value of the complex number.
  */
 std::complex<double> eval_complex_in_polar(double r, double theta);
@@ -94,39 +94,38 @@ double get_vec3d_magnitude(double vec[3]);
 /// **********************************************************************
 
 /**
- * @brief Evaluate the Lanczos approximation series f@$ A_g(z) f@$
+ * @brief Evaluate the Lanczos approximation series @f$ A_g(z) @f$
  *        for the gamma function.
  *
  * The series approximate the gamma function by
- * f@[
+ * @f[
  *   \Gamma(z + 1) = \sqrt{2\pi}
  *     (z + g + 1/2)^{z + 1/2} \mathrm{e}^{- z - g - 1/2} A_g(z)
- * f@]
- *
- * where f@$ g f@$ is the Lanczos constant.
+ * @f]
+ * where @f$ g @f$ is the Lanczos constant.
  *
  * @param z Complex argument.
- * @returns Value of f@$ A_g(z) f@$.
+ * @returns Value of @f$ A_g(z) @f$.
  */
 std::complex<double> eval_lanczos_approx_series(std::complex<double> z);
 
 /**
- * @brief Evaluate the gamma function f@$ \Gamma(z) f@$ on
+ * @brief Evaluate the gamma function @f$ \Gamma(z) @f$ on
  *        the complex plane using the Lanczos approximation.
  *
  * @param z Complex argument.
- * @returns Value of f@$ \Gamma(z) f@$.
+ * @returns Value of @f$ \Gamma(z) @f$.
  *
  * @see trv::eval_lanczos_approx_series()
  */
 std::complex<double> eval_gamma(std::complex<double> z);
 
 /**
- * @brief Evaluate the log-gamma function f@$ \ln\Gamma(z) f@$
+ * @brief Evaluate the log-gamma function @f$ \ln\Gamma(z) @f$
  *        on the complex plane using the Lanczos approximation.
  *
  * @param z Complex argument.
- * @returns Value of f@$ \ln\Gamma(z) f@$.
+ * @returns Value of @f$ \ln\Gamma(z) @f$.
  *
  * @see trv::eval_lanczos_approx_series()
  */
@@ -136,10 +135,10 @@ std::complex<double> eval_lngamma(std::complex<double> z);
  * @brief Evaluate the logarithm of the ratio of two gamma functions.
  *
  * The ratio is of the form
- * f@$
+ * @f$
  *   \Gamma(\frac{\nu + \mu + 1}{2}) / \Gamma(\frac{\nu - \mu + 1}{2})
- * f@$
- * in the asymptotic limit f@$ \mu, \nu \to \infty f@$.
+ * @f$
+ * in the asymptotic limit @f$ \mu, \nu \to \infty @f$.
  *
  * @param mu Real variable.
  * @param nu Complex variable.
@@ -181,10 +180,9 @@ double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3);
  * The 'reduced' (conjugated and unit normalised) spherical harmonics are
  * given by
  * @f[
- *   y_\ell^m = \sqrt(\frac{4*\pi}{2\ell + 1}) {Y_\ell^m}^\ast
+ *   y_\ell^m = \sqrt{\frac{4\pi}{2\ell + 1}} {Y_\ell^m}^\ast
  * @f]
- *
- * with f@$ y_0^0 = 1 f@$.
+ * with @f$ y_0^0 = 1 @f$.
  */
 class SphericalHarmonicCalculator {
  public:
@@ -194,7 +192,7 @@ class SphericalHarmonicCalculator {
    * @param ell Degree @f$ ell @f$.
    * @param m Order @f$ m @f$.
    * @param pos 3-d position vector.
-   * @returns Value of @f$ y_\ell^m f@$.
+   * @returns Value of @f$ y_\ell^m @f$.
    */
   static std::complex<double> calc_reduced_spherical_harmonic(
     const int ell, const int m, double pos[3]
@@ -207,7 +205,7 @@ class SphericalHarmonicCalculator {
    * @param[in] m Order @f$ m @f$.
    * @param[in] boxsize Box size in each dimension.
    * @param[in] ngrid Grid number in each dimension.
-   * @param[out] ylm_out Stored @f$ y_\ell^m f@$ values.
+   * @param[out] ylm_out Stored @f$ y_\ell^m @f$ values.
    * @throws trv::sys::InvalidData When the output
    *                               variable is not provided.
    */
@@ -225,7 +223,7 @@ class SphericalHarmonicCalculator {
    * @param[in] m Order @f$ m @f$.
    * @param[in] boxsize Box size in each dimension.
    * @param[in] ngrid Grid number in each dimension.
-   * @param[out] ylm_out Stored @f$ y_\ell^m f@$ values.
+   * @param[out] ylm_out Stored @f$ y_\ell^m @f$ values.
    * @throws trv::sys::InvalidData When the output
    *                               variable is not provided.
    */
@@ -263,7 +261,7 @@ class SphericalBesselCalculator {
   /**
    * @brief Evaluate the interpolated function.
    *
-   * @param x Argument f@$ x f@$.
+   * @param x Argument @f$ x @f$.
    * @returns Value of @f$ j_\ell @f$.
    */
   double eval(double x);
