@@ -63,12 +63,12 @@ namespace trv {
  */
 class MeshField {
  public:
-  trv::ParameterSet params;  ///> parameter set
-  fftw_complex* field;       ///> complex field on mesh
-  double dr[3];              ///> grid size in each dimension
-  double dk[3];              ///> fundamental wavenumber in each dimension
-  double vol;                ///> mesh volume
-  double vol_cell;           ///> mesh grid cell volume
+  trv::ParameterSet params;  ///< parameter set
+  fftw_complex* field;       ///< complex field on mesh
+  double dr[3];              ///< grid size in each dimension
+  double dk[3];              ///< fundamental wavenumber in each dimension
+  double vol;                ///< mesh volume
+  double vol_cell;           ///< mesh grid cell volume
 
   // ---------------------------------------------------------------------
   // Life cycle
@@ -281,7 +281,7 @@ class MeshField {
   /**
    * @brief Fourier transform the field.
    *
-   * If @ref trv::MeshField.params.interlace is set to "true", interlacing
+   * If @c trv::MeshField.params.interlace is set to "true", interlacing
    * is performed where a phase factor is multiplied into the 'shadow'
    * complex field before the average of the complex field and its shadow
    * is taken.
@@ -389,7 +389,8 @@ class MeshField {
   double calc_grid_based_powlaw_norm(ParticleCatalogue& particles, int order);
 
  private:
-  fftw_complex* field_s = nullptr;  ///> half-grid shifted complex field on mesh
+  /// half-grid shifted complex field on mesh
+  fftw_complex* field_s = nullptr;
 
   friend class FieldStats;
 
@@ -498,12 +499,12 @@ class FieldStats {
   std::vector<int> npairs;  ///< number of separation pairs in bins
   std::vector<double> k;    ///< average wavenumber in bins
   std::vector<double> r;    ///< average separation in bins
-  std::vector< std::complex<double> > sn;  ///< shot-noise power in bins
-  std::vector< std::complex<double> > pk;  ///< pseudo power spectrum
-                                           ///< in bins
-  std::vector< std::complex<double> > xi;  ///< pseudo two-point
-                                           ///< correlation function
-                                           ///< in bins
+  /// shot-noise power in bins
+  std::vector< std::complex<double> > sn;
+  /// pseudo power spectrum in bins
+  std::vector< std::complex<double> > pk;
+  /// pseudo two-point correlation function in bins
+  std::vector< std::complex<double> > xi;
 
   // ---------------------------------------------------------------------
   // Life cycle
@@ -674,11 +675,11 @@ class FieldStats {
   );
 
  private:
-  trv::ParameterSet params;  ///> parameter set
-  double dr[3];              ///> grid size in each dimension
-  double dk[3];              ///> fundamental wavenumber in each dimension
-  double vol;                ///> mesh volume
-  double vol_cell;           ///> mesh grid cell volume
+  trv::ParameterSet params;  ///< parameter set
+  double dr[3];              ///< grid size in each dimension
+  double dk[3];              ///< fundamental wavenumber in each dimension
+  double vol;                ///< mesh volume
+  double vol_cell;           ///< mesh grid cell volume
 
   // ---------------------------------------------------------------------
   // Utilities

@@ -136,7 +136,8 @@ std::complex<double> eval_lngamma(std::complex<double> z);
  *
  * The ratio is of the form
  * @f$
- *   \Gamma(\frac{\nu + \mu + 1}{2}) / \Gamma(\frac{\nu - \mu + 1}{2})
+ *   \Gamma\big(\frac{\nu + \mu + 1}{2}\big)
+ *     \big/ \Gamma\big(\frac{\nu - \mu + 1}{2}\big)
  * @f$
  * in the asymptotic limit @f$ \mu, \nu \to \infty @f$.
  *
@@ -163,8 +164,8 @@ void get_lngamma_components(double x, double y, double& lnr, double& theta);
 // Spherical harmonics
 // ***********************************************************************
 
-extern const double eps_coupling;  ///< zero-tolerance for
-                                   ///< Wigner 3-j coupling coefficients
+/// zero-tolerance for Wigner 3-j coupling coefficients
+extern const double eps_coupling;
 
 /**
  * @brief Calculate Wigner 3-j symbol.

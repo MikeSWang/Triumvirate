@@ -66,7 +66,7 @@ class ParticleCatalogue {
     double ws;      ///< particle sample weight
     double wc;      ///< particle clustering weight
     double w;       ///< particle overall weight
-  }* pdata;
+  }* pdata;         ///< particle data
 
   int ntotal;     ///< total number of particles
   double wtotal;  ///< total sample weight of particles

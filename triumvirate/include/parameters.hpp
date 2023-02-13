@@ -56,13 +56,18 @@ class ParameterSet {
   // I/O
   // ---------------------------------------------------------------------
 
-  std::string catalogue_dir;        ///< catalogue directory
-  std::string measurement_dir;      ///< measurement/output directory
-  std::string data_catalogue_file;  ///< data catalogue file
-  std::string rand_catalogue_file;  ///< random catalogue file
-  std::string catalogue_columns;    ///< catalogue data columns
-                                    ///< (comma-separated without space)
-  std::string output_tag;           ///< output tag
+  /// catalogue directory
+  std::string catalogue_dir;
+  /// measurement/output directory
+  std::string measurement_dir;
+  /// data catalogue file
+  std::string data_catalogue_file;
+  /// random catalogue file
+  std::string rand_catalogue_file;
+  /// catalogue data columns (comma-separated without space)
+  std::string catalogue_columns;
+  /// output tag
+  std::string output_tag;
 
   // ---------------------------------------------------------------------
   // Mesh sampling
@@ -78,43 +83,38 @@ class ParameterSet {
                   // RFE: change to @c long long and take care of int()
 
   // Mesh alignment.
-  std::string alignment = "centre";  ///< box alignment:
-                                     ///< {"centre" (default), "pad"}
-  std::string padscale = "box";      ///< padding scale
-                                     ///< (if @c alignment is "pad"):
-                                     ///< {"box" (default), "grid"}
-  double padfactor;                  ///< padding factor
+  /// box alignment: {"centre" (default), "pad"}
+  std::string alignment = "centre";
+  /// padding scale (if @c alignment is "pad"): {"box" (default), "grid"}
+  std::string padscale = "box";
+  /// padding factor
+  double padfactor;
 
   // Mesh assignment.
-  std::string assignment = "tsc";   ///< mesh assignment scheme:
-                                    ///< {"ngp", "cic",
-                                    ///<  "tsc" (default), "pcs"}
-  std::string interlace = "false";  ///< interlacing switch:
-                                    ///< {"true"/"on",
-                                    ///<  "false"/"off" (default)}
+  /// mesh assignment scheme: {"ngp", "cic", "tsc" (default), "pcs"}
+  std::string assignment = "tsc";
+  /// interlacing switch: {"true"/"on", "false"/"off" (default)}
+  std::string interlace = "false";
 
   // ---------------------------------------------------------------------
   // Measurement
   // ---------------------------------------------------------------------
 
   // Measurement specification.
-  std::string catalogue_type;    ///< catalogue type:
-                                 ///< {"survey", "random", "sim"}
-  std::string statistic_type;  ///< statistic type:
-                                 ///< {"powspec", "2pcf", "2pcf-win",
-                                 ///<  "bispec", "3pcf", "3pcf-win",
-                                 ///<  "3pcf-win-wa"}
+  /// catalogue type: {"survey", "random", "sim"}
+  std::string catalogue_type;
+  /// statistic type: {"powspec", "2pcf", "2pcf-win", "bispec", "3pcf",
+  ///                  "3pcf-win", "3pcf-win-wa"}
+  std::string statistic_type;
 
-  std::string norm_convention = "particle";   ///< normalisation
-                                              ///< convention:
-                                              ///< {"particle" (default),
-                                              ///<  "mesh"}
+  /// normalisation convention: {"particle" (default), "mesh"}
+  std::string norm_convention = "particle";
 
-  std::string binning = "lin";  ///< binning scheme:
-                                ///< {"lin" (default), "log",
-                                ///<  "linpad", "logpad", "custom"}
-  std::string form = "diag";    ///< form of the bispectrum measurement:
-                                ///< {"diag" (default), "full"}
+  /// binning scheme: {"lin" (default), "log",
+  ///                  "linpad", "logpad", "custom"}
+  std::string binning = "lin";
+  /// form of the bispectrum measurement: {"diag" (default), "full"}
+  std::string form = "diag";
 
   // Derived measurement specification.
   std::string npoint;  ///< <i>N</i>-point case: {"2pt", "3pt"}
@@ -131,21 +131,18 @@ class ParameterSet {
   double bin_min;  ///< measurement range minimum (in Mpc/h or h/Mpc)
   double bin_max;  ///< measurement range maximum (in Mpc/h or h/Mpc)
 
-  int num_bins;  ///< number of measurement bins
-  int idx_bin;   ///< fixed bin index in "full" @c form
-                 ///< bispectrum measurements
+  /// number of measurement bins
+  int num_bins;
+  /// fixed bin index in "full" @c form bispectrum measurements
+  int idx_bin;
 
   // ---------------------------------------------------------------------
   // Misc
   // ---------------------------------------------------------------------
 
-  int verbose = 20;  ///< logging verbosity level:
-                     ///< {0  (NSET),
-                     ///<  10 (DBUG),
-                     ///<  20 (STAT) (default),
-                     ///<  30 (INFO),
-                     ///<  40 (WARN),
-                     ///<  50 (ERRO)}
+  /// logging verbosity level: {0  (NSET), 10 (DBUG), 20 (STAT) (default),
+  ///                           30 (INFO), 40 (WARN), 50 (ERRO)}
+  int verbose = 20;
 
   /**
    * @brief Read parameters from a file.
