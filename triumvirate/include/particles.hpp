@@ -57,13 +57,16 @@ class ParticleCatalogue {
  public:
   std::string source;  ///< catalogue source
 
+  /**
+   * @brief Particle data container.
+   */
   struct ParticleData {
     double pos[3];  ///< particle position vector
     double nz;      ///< redshift-dependent expected number density
     double ws;      ///< particle sample weight
     double wc;      ///< particle clustering weight
     double w;       ///< particle overall weight
-  }* pdata;         ///< particle data container
+  }* pdata;
 
   int ntotal;     ///< total number of particles
   double wtotal;  ///< total sample weight of particles
@@ -228,7 +231,7 @@ class ParticleCatalogue {
    *
    * The amount of padding is a fraction of the box size.
    *
-   * @param particles Particle catalogue.
+   * @param catalogue Particle catalogue.
    * @param boxsize Box size in each dimension.
    * @param boxsize_pad Box size padding factor in each dimension.
    */

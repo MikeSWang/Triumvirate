@@ -60,10 +60,10 @@ namespace trv {
  *        components of full three-point statistics.
  *
  * The calculated quantity is
- * f@[
+ * @f[
  *   (2\ell_1 + 1) (2\ell_2 + 1) (2L + 1)
- *   W(\ell1, \ell2, L; 0, 0, 0) W(\ell1, \ell2, L; m, 0, M) \,.
- * f@]
+ *   W(\ell_1, \ell_2, L; 0, 0, 0) W(\ell_1, \ell_2, L; m, 0, M) \,.
+ * @f]
  *
  * @param ell1, ell2, ELL, m1, m2, M Wigner 3-j components.
  * @return Coupling coefficient for spherical-harmonic components in
@@ -118,20 +118,20 @@ double calc_bispec_normalisation_from_particles(
  *        reduced spherical harmonics.
  *
  * This calculates the quantity
- * f@[
+ * @f[
  *   \bar{S}_{LM} = {\sum_i}{\vphantom{\sum}}'
  *     y_{LM}^*(\vec{x}_i) w(\vec{x}_i)^3 \,,
- * f@]
+ * @f]
  * where if a pair of catalogues are provided,
- * f@[
+ * @f[
  *   {\sum_i}{\vphantom{\sum}}' =
- *     \sum_{i \in mathrm{data}} - \alpha^3 \sum_{i \in mathrm{rand}} \,,
- * f@]
+ *     \sum_{i \in \mathrm{data}} - \alpha^3 \sum_{i \in \mathrm{rand}} \,,
+ * @f]
  * and otherwise
- * f@[
+ * @f[
  *   {\sum_i}{\vphantom{\sum}}' =
- *     \alpha^3  \sum_{i \in mathrm{data or rand}} \,.
- * f@]
+ *     \alpha^3  \sum_{i \in \mathrm{data\ or\ rand}} \,.
+ * @f]
  *
  * @note See eq. (46) in Sugiyama et al. (2019)
  *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].

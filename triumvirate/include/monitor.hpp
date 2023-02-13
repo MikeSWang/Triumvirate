@@ -38,6 +38,7 @@
 #include <stdexcept>
 #include <string>
 
+/// @cond DOXYGEN_DOC_MACROS
 /// Declares OMP macros.
 #ifdef TRV_USE_OMP
 #include <omp.h>
@@ -47,6 +48,7 @@
 #define OMP_ATOMIC
 #define OMP_CRITICAL
 #endif  // TRV_USE_OMP
+/// @endcond
 
 /// Enter debugging mode.
 #ifdef DBG_MODE
@@ -70,6 +72,7 @@ extern double gbytesMaxMem;  ///< maximum memory usage in gibibytes
  * @brief Return size in gibibytes.
  *
  * @tparam T A @c typename.
+ * @param num Number of type-double elements.
  * @returns Size in gibibytes.
  */
 template <typename T>

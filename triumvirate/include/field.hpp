@@ -90,7 +90,7 @@ class MeshField {
    * @brief (Re-)initialise the complex field (and its shadow) on mesh.
    *
    * This is an explicit method to reset values of
-   * @ref trv::MeshField.field and @ref trv::MeshField.field_s to zeros.
+   * @ref trv::MeshField.field (and its interlaced counterpart) to zeros.
    */
   void initialise_density_field();
 
@@ -137,9 +137,9 @@ class MeshField {
    * @brief Compute the unweighted field.
    *
    * This is is the number density field
-   * f@[
+   * @f[
    *   n(\vec{x}) = \sum_i \delta^{(\mathrm{D})}(\vec{x} - \vec{x}_i) \,.
-   * f@]
+   * @f]
    *
    * @param particles Particle catalogue.
    */
@@ -152,11 +152,11 @@ class MeshField {
    * a simulation snapshot in a periodic box, with a global field value
    * calculated from the particle number and box volume subtracted
    * to compute the fluctuations, i.e.
-   * f@[
+   * @f[
    *   \delta{n}(\vec{x}) =
    *     \sum_i \delta^{(\mathrm{D})}(\vec{x} - \vec{x}_i) - N / V \,,
-   * f@]
-   * where f@$ N f@$ is the total number of particles and f@$ V f@$ the
+   * @f]
+   * where @f$ N @f$ is the total number of particles and @f$ V @f$ the
    * box volume.
    *
    * @param particles Particle catalogue.
@@ -169,22 +169,22 @@ class MeshField {
    * @brief Compute the weighted field (fluctuations) further weighted by
    *        the reduced spherical harmonics.
    *
-   * For a field (or its fluctuations) f@$ f f@$, this is
-   * f@[
+   * For a field (or its fluctuations) @f$ f @f$, this is
+   * @f[
    *   f_{LM}(\vec{x}) = {\sum_i}{\vphantom{\sum}}'
    *     y_{LM}^*(\hat{\vec{x}}) w(\vec{x})
    *     \delta^{(\mathrm{D})}(\vec{x} - \vec{x}_i) \,,
-   * f@]
+   * @f]
    * where if a pair of catalogues are provided,
-   * f@[
+   * @f[
    *   {\sum_i}{\vphantom{\sum}}' =
-   *     \sum_{i \in mathrm{data}} - \alpha \sum_{i \in mathrm{rand}}
-   * f@]
-   * with f@$ f \equiv \delta{n} f@$, and otherwise
-   * f@[
-   *   {\sum_i}{\vphantom{\sum}}' = \sum_{i \in mathrm{data or rand}}
-   * f@]
-   * with f@$ f \equiv n f@$.
+   *     \sum_{i \in \mathrm{data}} - \alpha \sum_{i \in \mathrm{rand}}
+   * @f]
+   * with @f$ f \equiv \delta{n} @f$, and otherwise
+   * @f[
+   *   {\sum_i}{\vphantom{\sum}}' = \sum_{i \in \mathrm{data\ or\ rand}}
+   * @f]
+   * with @f$ f \equiv n @f$.
    *
    * @note See eq. (34) in Sugiyama et al. (2019)
    *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
@@ -224,21 +224,21 @@ class MeshField {
    * @brief Compute the quadratic weighted field (fluctuations) further
    *        weighted by the reduced spherical harmonics.
    *
-   * For a quadratic field (of fluctuations) f@$ f f@$, this is
-   * f@[
+   * For a quadratic field (of fluctuations) @f$ f @f$, this is
+   * @f[
    *   f_{LM}(\vec{x}) = {\sum_i}{\vphantom{\sum}}'
    *     y_{LM}^*(\hat{\vec{x}}) w(\vec{x})^2
    *     \delta^{(\mathrm{D})}(\vec{x} - \vec{x}_i) \,,
-   * f@]
+   * @f]
    * where if a pair of catalogues are provided,
-   * f@[
+   * @f[
    *   {\sum_i}{\vphantom{\sum}}' =
-   *     \sum_{i \in mathrm{data}} + \alpha^2 \sum_{i \in mathrm{rand}} \,,
-   * f@]
+   *     \sum_{i \in \mathrm{data}} + \alpha^2 \sum_{i \in \mathrm{rand}} \,,
+   * @f]
    * and otherwise
-   * f@[
-   *   {\sum_i}{\vphantom{\sum}}' = \sum_{i \in mathrm{data or rand}} \,.
-   * f@]
+   * @f[
+   *   {\sum_i}{\vphantom{\sum}}' = \sum_{i \in \mathrm{data\ or\ rand}} \,.
+   * @f]
    *
    * @note See eq. (46) in Sugiyama et al. (2019)
    *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
@@ -300,8 +300,8 @@ class MeshField {
   /**
    * @brief Apply wide-angle correction kernel in configuration space.
    *
-   * This multiplies the field by a power law f@$ r^{- i - j} f@$ at order
-   * f@$ (i, j) f@$ where f@$ r f@$ is the grid cell radial distance.
+   * This multiplies the field by a power law @f$ r^{- i - j} @f$ at order
+   * @f$ (i, j) @f$ where @f$ r @f$ is the grid cell radial distance.
    */
   void apply_wide_angle_pow_law_kernel();
 
@@ -316,17 +316,17 @@ class MeshField {
   /// --------------------------------------------------------------------
 
   /**
-   * @brief Inverse Fourier transform a field f@$ f f@$ weighted by the
+   * @brief Inverse Fourier transform a field @f$ f @f$ weighted by the
    *        reduced spherical harmonics restricted to a wavenumber band.
    *
    * This method computes the quantity
-   * f@[
+   * @f[
    *   F_{LM}(\vec{x}; k) = \frac{(2\pi)^3}{4\pi k^2}
    *     \int \frac{\mathrm{d}^3\,\vec{k}'}{(2\pi)^3}
    *       \mathrm{e}^{\mathrm{i} \vec{k}' \cdot \vec{x}}
    *       \delta^{(\mathrm{D})}(k' - k)
    *       y_{LM}(\hat{\vec{k}}) f(\vec{k}) \,.
-   * f@]
+   * @f]
    *
    * @note See eq. (42) in Sugiyama et al. (2019)
    *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
@@ -345,16 +345,16 @@ class MeshField {
   );
 
   /**
-   * @brief Inverse Fourier transform a field f@$ f f@$ weighted by the
+   * @brief Inverse Fourier transform a field @f$ f @f$ weighted by the
    *        spherical Bessel function and reduced spherical harmonics.
    *
    * This method computes the quantity
-   * f@[
+   * @f[
    *   F_{LM}(\vec{x}; r) = \mathrm{i}^L
    *     \int \frac{\mathrm{d}^3\,\vec{k}}{(2\pi)^3}
    *       \mathrm{e}^{\mathrm{i} \vec{k} \cdot \vec{x}}
    *       j_L(kr) y_{LM}(\hat{\vec{k}}) f(\vec{k}) \,.
-   * f@]
+   * @f]
    *
    * @note See eq. (49) in Sugiyama et al. (2019)
    *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
@@ -376,14 +376,14 @@ class MeshField {
   /// --------------------------------------------------------------------
 
   /**
-   * Calculate the normalisation factor f@$ 1/I_N f@$ for <i>N</i>-point
+   * Calculate the normalisation factor @f$ 1/I_N @f$ for <i>N</i>-point
    * (for two-point statistics), where
-   * f@[
+   * @f[
    *   I_N = \int\mathrm{d}^3\,\vec{x} w(\vec{x})^N \bar{n}(\vec{x})^N \,.
-   * f@]
+   * @f]
    *
    * @param particles (Typically random-source) particle catalogue.
-   * @param order Order f@$ N f@$ of the <i>N</i>-point statistics.
+   * @param order Order @f$ N @f$ of the <i>N</i>-point statistics.
    * @returns norm_factor Normalisation factor.
    */
   double calc_grid_based_powlaw_norm(ParticleCatalogue& particles, int order);
@@ -533,16 +533,16 @@ class FieldStats {
   /**
    * @brief Compute binned two-point statistics in Fourier space.
    *
-   * For a pair of Fourier-space fields f@$ f_{a,b} f@$, this computes
-   * f@[
+   * For a pair of Fourier-space fields @f$ f_{a,b} @f$, this computes
+   * @f[
    *   \int \frac{\mathrm{d}^2\,\hat{\vec{k}}}{4\pi} y_{LM}(\hat{\vec{k}})
    *     W(\vec{k})^{-2} [
    *       f_a(\vec{k}) f_b(\vec{k}) - P_\mathrm{shot} C_1(\vec{k})
    *     ] \,,
-   * f@]
-   * where f@$ W(\vec{k}) f@$ is the mesh assignment window in Fourier
-   * space, f@$ P_\mathrm{shot} f@$ is the shot noise amplitude, and
-   * f@$ C_1 f@$ is the mode-dependent aliasing function.
+   * @f]
+   * where @f$ W(\vec{k}) @f$ is the mesh assignment window in Fourier
+   * space, @f$ P_\mathrm{shot} @f$ is the shot noise amplitude, and
+   * @f$ C_1 @f$ is the mode-dependent aliasing function.
    *
    * @note See eq. (20) in Jing (2004)
    *       [<a href="https://arxiv.org/abs/astro-ph/0409240">astro-ph/0409240</a>].
@@ -591,15 +591,15 @@ class FieldStats {
    *        shot noise.
    *
    * This computes the quantity
-   * f@[
+   * @f[
    *   \frac{(-1)^{\ell_a + \ell_b}}{N_\mathrm{mode}(r) V_\mathrm{cell}}
    *   \int \frac{\mathrm{d}^2\,\hat{\vec{r}}}{4\pi}
    *     y^*_{\ell_a m_a}(\hat{\vec{r}}) y^*_{\ell_b m_b}(\hat{\vec{r}})
    *   \int \frac{\mathrm{d}^3\,\vec{k}}{(2\pi)^3}
    *     \mathrm{e}^{\mathrm{i} \vec{k} \cdot \vec{r}}
    *     W(\vec{k})^{-2} [f_a(\vec{k}) f_b(\vec{k}) - S C_1(\vec{k})] \,,
-   * f@]
-   * where f@$ S f@$ is the shot noise amplitude (see
+   * @f]
+   * where @f$ S @f$ is the shot noise amplitude (see
    * @ref trv::FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier
    * for other notations).
    *
@@ -631,14 +631,14 @@ class FieldStats {
    *        mesh grid.
    *
    * This computes the quantity
-   * f@[
+   * @f[
    *   \int \mathrm{d}^3\,\vec{r}
    *     j_{\ell_a}(k_a r) j_{\ell_b}(k_b r)
    *     y^*_{\ell_a m_a}(\hat{\vec{x}}) y^*_{\ell_b m_b}(\hat{\vec{x}})
    *   \int \frac{\mathrm{d}^3\,\vec{k}}{(2\pi)^3}
    *     \mathrm{e}^{\mathrm{i} \vec{k} \cdot \vec{r}}
    *     W(\vec{k})^{-2} [f_a(\vec{k}) f_b(\vec{k}) - S C_1(\vec{k})]
-   * f@]
+   * @f]
    * (see
    * @ref trv::FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier
    * for other notations).
@@ -661,12 +661,14 @@ class FieldStats {
    * @param sj_b Second spherical Bessel function.
    * @param shotnoise_amp Shot-noise amplitude.
    * @param k_a, k_b Wavenumbers at which the shot noise is evaluated.
+   * @returns Unbinned uncoupled bispectrum shot noise.
    */
   std::complex<double> compute_uncoupled_shotnoise_for_bispec_per_bin(
     MeshField& field_a, MeshField& field_b,
     std::vector< std::complex<double> >& ylm_a,
     std::vector< std::complex<double> >& ylm_b,
-    trvm::SphericalBesselCalculator& sj1, trvm::SphericalBesselCalculator& sj2,
+    trvm::SphericalBesselCalculator& sj_a,
+    trvm::SphericalBesselCalculator& sj_b,
     std::complex<double> shotnoise_amp,
     double k_a, double k_b
   );
@@ -704,7 +706,7 @@ class FieldStats {
 
   /**
    * @brief Calculate the shot-noise aliasing scale-dependence function
-   *        f@$ C_1(\vec{k}) f@$ at each mesh grid.
+   *        @f$ C_1(\vec{k}) @f$ at each mesh grid.
    *
    * @note See eqs. (45) and (46) in Sugiyama et al. (2019)
    *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>]

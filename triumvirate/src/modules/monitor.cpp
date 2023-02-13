@@ -26,11 +26,13 @@
 
 #include "monitor.hpp"
 
+/// @cond DOXYGEN_DOC_MACROS
 #ifdef TRV_EXTCALL
 #define SHOW_CPPSTATE "C++"
 #else  // !TRV_EXTCALL
 #define SHOW_CPPSTATE "\b"
 #endif  // TRV_EXTCALL
+/// @endcond
 
 namespace trv {
 namespace sys {
@@ -47,7 +49,7 @@ double gbytesMaxMem = 0.;
 auto clockStart = std::chrono::steady_clock::now();  ///< program
                                                      ///< starting time
 
-Logger logger(NSET);
+Logger logger(NSET);  ///< default logger
 
 void update_maxmem() {
   trv::sys::gbytesMaxMem = (trv::sys::gbytesMem > trv::sys::gbytesMaxMem) ?
