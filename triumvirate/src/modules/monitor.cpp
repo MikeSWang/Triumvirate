@@ -37,9 +37,9 @@
 namespace trv {
 namespace sys {
 
-/// **********************************************************************
-/// Program tracking
-/// **********************************************************************
+// ***********************************************************************
+// Program tracking
+// ***********************************************************************
 
 int currTask = 0;
 
@@ -57,32 +57,32 @@ void update_maxmem() {
 }
 
 std::string show_current_datetime() {
-  /// Get current time.
+  // Get current time.
   auto now = std::chrono::system_clock::now();
   auto timenow = std::chrono::system_clock::to_time_t(now);
 
-  /// Format timestamp.
+  // Format timestamp.
   char buffer[64];
   std::strftime(
     buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", std::localtime(&timenow)
   );
 
-  /// Print timestamp to string.
+  // Print timestamp to string.
   std::string timestamp = std::string(buffer);
 
   return timestamp;
 }
 
 std::string show_elapsed_time(double elapsed_time_in_seconds) {
-  /// Round time to an integer number of seconds.
+  // Round time to an integer number of seconds.
   int time = int(elapsed_time_in_seconds);
 
-  /// Calculate the hour, minute and second and convert to strings.
+  // Calculate the hour, minute and second and convert to strings.
   std::string h = std::to_string(time / 3600);
   std::string m = std::to_string((time % 3600) / 60);
   std::string s = std::to_string(time % 60);
 
-  /// Format the strings.
+  // Format the strings.
   std::string hh;
   if (h.length() < 2) {
     hh = std::string(2 - h.length(), '0') + h;
@@ -93,21 +93,21 @@ std::string show_elapsed_time(double elapsed_time_in_seconds) {
   std::string mm = std::string(2 - m.length(), '0') + m;
   std::string ss = std::string(2 - s.length(), '0') + s;
 
-  /// Form the elapsed time string.
+  // Form the elapsed time string.
   std::string elapsed_time = hh + ":" + mm + ":" + ss;
 
   return elapsed_time;
 }
 
 std::string show_timestamp() {
-  /// Calculate the elapsed time in seconds.
+  // Calculate the elapsed time in seconds.
   double elapsed_time = double(
     std::chrono::duration_cast<std::chrono::seconds>(
       std::chrono::steady_clock::now() - clockStart
     ).count()
   );
 
-  /// Format the timestamp.
+  // Format the timestamp.
   char timestamp_[128];
   std::sprintf(
     timestamp_, "%s (+%s)",
@@ -175,7 +175,7 @@ void Logger::log(LogLevel entry_level, const char* fmt_string, ...) {
 
 void Logger::log(int level_entry, const char* fmt_string, ...) {
   if (level_entry >= this->level_limit) {
-    /// SEE: trv::sys::LogLevel.
+    // SEE: trv::sys::LogLevel.
     level_entry /= 10;
 
     std::string log_type;
@@ -245,9 +245,9 @@ void Logger::error(const char* fmt_string, ...) {
 }
 
 
-/// **********************************************************************
-/// Program exceptions
-/// **********************************************************************
+// ***********************************************************************
+// Program exceptions
+// ***********************************************************************
 
 UnimplementedError::UnimplementedError(const char* fmt_string, ...):
   std::logic_error(
@@ -316,9 +316,9 @@ InvalidData::InvalidData(const char* fmt_string, ...): std::runtime_error(
 const char* InvalidData::what() const noexcept {return this->err_mesg.c_str();}
 
 
-/// **********************************************************************
-/// Program notices
-/// **********************************************************************
+// ***********************************************************************
+// Program notices
+// ***********************************************************************
 
 void display_prog_notice() {
   std::printf(

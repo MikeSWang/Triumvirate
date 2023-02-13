@@ -31,16 +31,16 @@ namespace trvs = trv::sys;
 namespace trv {
 
 int ParameterSet::read_from_file(char* parameter_filepath) {
-  /// --------------------------------------------------------------------
-  /// Initialisation
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Initialisation
+  // ---------------------------------------------------------------------
 
-  /// Load parameter file.
+  // Load parameter file.
   std::string param_filepath = parameter_filepath;
 
   std::ifstream fin(param_filepath.c_str());
 
-  /// Initialise temporary variables to hold the extracted parameters.
+  // Initialise temporary variables to hold the extracted parameters.
   char catalogue_dir_[1024];
   char measurement_dir_[1024];
   char data_catalogue_file_[1024];
@@ -62,13 +62,13 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   char binning_[16];
   char form_[16];
 
-  /// --------------------------------------------------------------------
-  /// Extraction
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Extraction
+  // ---------------------------------------------------------------------
   std::string line_str;
   char dummy_str[1024], dummy_equal[1024];
   while (std::getline(fin, line_str)) {
-    /// Check if the line is a parameter assignment.
+    // Check if the line is a parameter assignment.
     if (line_str.find("%") == 0) {
       continue;
     }  // skip comment lines
@@ -83,7 +83,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
       continue;
     }  // skip non-assignment lines
 
-    /// Define convenience function for scanning string parameters.
+    // Define convenience function for scanning string parameters.
     auto scan_par_str = [line_str, dummy_str, dummy_equal](
       const char* par_name, const char* fmt, const char* par_value
     ) {
@@ -94,7 +94,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
       }
     };
 
-    /// I/O --------------------------------------------------------------
+    // -- I/O ------------------------------------------------------------
 
     scan_par_str("catalogue_dir", "%s %s %s", catalogue_dir_);
     scan_par_str("measurement_dir", "%s %s %s", measurement_dir_);
@@ -103,7 +103,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
     scan_par_str("catalogue_columns", "%s %s %s", catalogue_columns_);
     scan_par_str("output_tag", "%s %s %s", output_tag_);
 
-    /// Mesh sampling ----------------------------------------------------
+    // -- Mesh sampling --------------------------------------------------
 
     if (line_str.find("boxsize_x") != std::string::npos) {
       std::sscanf(
@@ -149,7 +149,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
     scan_par_str("assignment", "%s %s %s", assignment_);
     scan_par_str("interlace", "%s %s %s", interlace_);
 
-    /// Measurement ------------------------------------------------------
+    // -- Measurement ----------------------------------------------------
 
     scan_par_str("catalogue_type", "%s %s %s", catalogue_type_);
     scan_par_str("statistic_type", "%s %s %s", statistic_type_);
@@ -207,7 +207,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
     }
   }
 
-  /// Misc ---------------------------------------------------------------
+  // -- Misc -------------------------------------------------------------
 
   if (line_str.find("verbose") != std::string::npos) {
     std::sscanf(
@@ -215,13 +215,13 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Attribution
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Attribution
+  // ---------------------------------------------------------------------
 
-  /// Attribute numerical parameters (directly extracted above).
+  // Attribute numerical parameters (directly extracted above).
 
-  /// Attribute string parameters.
+  // Attribute string parameters.
   this->catalogue_dir = catalogue_dir_;
   this->measurement_dir = measurement_dir_;
   this->data_catalogue_file = data_catalogue_file_;
@@ -240,7 +240,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   this->binning = binning_;
   this->form = form_;
 
-  /// Attribute derived parameters.
+  // Attribute derived parameters.
   this->boxsize[0] = boxsize_x;
   this->boxsize[1] = boxsize_y;
   this->boxsize[2] = boxsize_z;
@@ -252,12 +252,12 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   this->volume = boxsize_x * boxsize_y * boxsize_z;
   this->nmesh = ngrid_x * ngrid_y * ngrid_z;
 
-  /// --------------------------------------------------------------------
-  /// Debugging mode
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Debugging mode
+  // ---------------------------------------------------------------------
 
 #ifdef DBG_PARS
-  /// Define convenience function for displaying debugged parameters.
+  // Define convenience function for displaying debugged parameters.
   auto debug_par_str = [](std::string name, std::string value) {
     std::cout << name << ": " << value << std::endl;
   };
@@ -268,7 +268,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
     std::cout << name << ": " << value << std::endl;
   };
 
-  /// Display debugged parameters.
+  // Display debugged parameters.
   debug_par_str("catalogue_dir", this->catalogue_dir);
   debug_par_str("measurement_dir", this->measurement_dir);
   debug_par_str("data_catalogue_file", this->data_catalogue_file);
@@ -316,7 +316,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
 int ParameterSet::validate() {
   trvs::logger.reset_level(this->verbose);
 
-  /// Validate and derive string parameters.
+  // Validate and derive string parameters.
   if (this->catalogue_dir != "") {
     this->catalogue_dir += "/";  // transmutation
   }  // any duplicate '/' has no effect
@@ -498,7 +498,7 @@ int ParameterSet::validate() {
     }
   }
 
-  /// Validate numerical parameters.
+  // Validate numerical parameters.
   if (this->volume < 0.) {
     if (trvs::currTask == 0) {
       trvs::logger.error(
@@ -612,9 +612,9 @@ int ParameterSet::validate() {
     }
   }
 
-  /// Check for parameter conflicts.
+  // Check for parameter conflicts.
   if (this->binning == "linpad" || this->binning == "logpad") {
-    /// SEE: See @ref trv::Binning.
+    // SEE: See @ref trv::Binning.
     int nbin_pad = 5;
 
     if (this->num_bins < nbin_pad + 2) {
@@ -661,7 +661,7 @@ int ParameterSet::validate() {
 }
 
 int ParameterSet::print_to_file(char* out_parameter_filepath) {
-  /// Create output file.
+  // Create output file.
   std::FILE* ofileptr;
   if (!(ofileptr = std::fopen(out_parameter_filepath, "w"))) {
     if (trvs::currTask == 0) {
@@ -676,7 +676,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
     }
   }
 
-  /// Define convenience function for printing parameters.
+  // Define convenience function for printing parameters.
   auto print_par_str = [ofileptr](const char* fmt, std::string par_val) {
     std::fprintf(ofileptr, fmt, par_val.c_str());
   };
@@ -687,7 +687,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
     std::fprintf(ofileptr, fmt, par_val);
   };
 
-  /// Print parameters to file.
+  // Print parameters to file.
   print_par_str("catalogue_dir = %s\n", this->catalogue_dir);
   print_par_str("measurement_dir = %s\n", this->measurement_dir);
   print_par_str("data_catalogue_file = %s\n", this->data_catalogue_file);
@@ -749,7 +749,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
 }
 
 int ParameterSet::print_to_file() {
-  /// Set output file path to default.
+  // Set output file path to default.
   char ofilepath[1024];
   std::sprintf(
     ofilepath, "%s/parameters_used%s",

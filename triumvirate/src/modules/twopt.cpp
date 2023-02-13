@@ -36,9 +36,9 @@ namespace trvm = trv::maths;
 
 namespace trv {
 
-/// **********************************************************************
-/// Coupling coefficients
-/// **********************************************************************
+// ***********************************************************************
+// Coupling coefficients
+// ***********************************************************************
 
 double calc_coupling_coeff_2pt(int ell, int ELL, int m, int M) {
   return (2*ell + 1) * (2*ELL + 1)
@@ -47,9 +47,9 @@ double calc_coupling_coeff_2pt(int ell, int ELL, int m, int M) {
 }
 
 
-/// **********************************************************************
-/// Normalisation
-/// **********************************************************************
+// ***********************************************************************
+// Normalisation
+// ***********************************************************************
 
 double calc_powspec_normalisation_from_mesh(
   trv::ParticleCatalogue& particles, trv::ParameterSet& params, double alpha
@@ -104,9 +104,9 @@ double calc_powspec_normalisation_from_particles(
 }
 
 
-/// **********************************************************************
-/// Shot noise
-/// **********************************************************************
+// ***********************************************************************
+// Shot noise
+// ***********************************************************************
 
 double calc_powspec_shotnoise_from_particles(
   ParticleCatalogue& particles, double alpha
@@ -214,12 +214,12 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_powspec(
 }
 
 
-/// **********************************************************************
-/// Full statistics
-/// **********************************************************************
+// ***********************************************************************
+// Full statistics
+// ***********************************************************************
 
-/// STYLE: Standard naming convention is not always followed for
-/// intermediary quantities in the functions below.
+// STYLE: Standard naming convention is not always followed for
+// intermediary quantities in the functions below.
 
 trv::PowspecMeasurements compute_powspec(
   ParticleCatalogue& catalogue_data, ParticleCatalogue& catalogue_rand,
@@ -235,15 +235,15 @@ trv::PowspecMeasurements compute_powspec(
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Set-up
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Set-up
+  // ---------------------------------------------------------------------
 
-  /// Set up input.
+  // Set up input.
   double alpha = catalogue_data.wtotal / catalogue_rand.wtotal;
   int ell1 = params.ELL;
 
-  /// Set up output.
+  // Set up output.
   int* nmodes_save = new int[kbinning.num_bins];
   double* k_save = new double[kbinning.num_bins];
   std::complex<double>* pk_save = new std::complex<double>[kbinning.num_bins];
@@ -255,9 +255,9 @@ trv::PowspecMeasurements compute_powspec(
     sn_save[ibin] = 0.;
   }  // likely redundant but safe
 
-  /// --------------------------------------------------------------------
-  /// Measurement
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Measurement
+  // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_init_threads();
@@ -280,8 +280,8 @@ trv::PowspecMeasurements compute_powspec(
       catalogue_data, catalogue_rand, los_data, los_rand, alpha, params.ELL, M_
     );  // \bar{N}_LM(k)
 
-    /// Compute quantity equivalent to (-1)^m₁ δᴰ_{m₁, -M} which, after
-    /// being summed over m₁, agrees with Hand et al. (2017) [1704.02357].
+    // Compute quantity equivalent to (-1)^m₁ δᴰ_{m₁, -M} which, after
+    // being summed over m₁, agrees with Hand et al. (2017) [1704.02357].
     FieldStats stats_2pt(params);
     for (int m1 = - ell1; m1 <= ell1; m1++) {
       double coupling = calc_coupling_coeff_2pt(ell1, params.ELL, m1, M_);
@@ -315,9 +315,9 @@ trv::PowspecMeasurements compute_powspec(
   fftw_cleanup();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// --------------------------------------------------------------------
-  /// Results
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Results
+  // ---------------------------------------------------------------------
 
   trv::PowspecMeasurements powspec_out;
   for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
@@ -354,15 +354,15 @@ trv::TwoPCFMeasurements compute_corrfunc(
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Set-up
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Set-up
+  // ---------------------------------------------------------------------
 
-  /// Set up input.
+  // Set up input.
   double alpha = catalogue_data.wtotal / catalogue_rand.wtotal;
   int ell1 = params.ELL;
 
-  /// Set up output.
+  // Set up output.
   int* npairs_save = new int[rbinning.num_bins];
   double* r_save = new double[rbinning.num_bins];
   std::complex<double>* xi_save = new std::complex<double>[rbinning.num_bins];
@@ -372,9 +372,9 @@ trv::TwoPCFMeasurements compute_corrfunc(
     xi_save[ibin] = 0.;
   }  // likely redundant but safe
 
-  /// --------------------------------------------------------------------
-  /// Measurement
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Measurement
+  // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_init_threads();
@@ -397,8 +397,8 @@ trv::TwoPCFMeasurements compute_corrfunc(
       catalogue_data, catalogue_rand, los_data, los_rand, alpha, params.ELL, M_
     );  // \bar{N}_LM(k)
 
-    /// Compute quantity equivalent to (-1)^m₁ δᴰ_{m₁, -M} which, after
-    /// being summed over m₁, agrees with Hand et al. (2017) [1704.02357].
+    // Compute quantity equivalent to (-1)^m₁ δᴰ_{m₁, -M} which, after
+    // being summed over m₁, agrees with Hand et al. (2017) [1704.02357].
     FieldStats stats_2pt(params);
     for (int m1 = - ell1; m1 <= ell1; m1++) {
       double coupling = calc_coupling_coeff_2pt(ell1, params.ELL, m1, M_);
@@ -433,9 +433,9 @@ trv::TwoPCFMeasurements compute_corrfunc(
   fftw_cleanup();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// --------------------------------------------------------------------
-  /// Results
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Results
+  // ---------------------------------------------------------------------
 
   trv::TwoPCFMeasurements corrfunc_out;
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
@@ -471,9 +471,9 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Set-up
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Set-up
+  // ---------------------------------------------------------------------
 
   int* nmodes_save = new int[kbinning.num_bins];
   double* k_save = new double[kbinning.num_bins];
@@ -486,7 +486,7 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
     sn_save[ibin] = 0.;
   }  // likely redundant but safe
 
-  /// Check input normalisation matches expectation.
+  // Check input normalisation matches expectation.
   double norm = double(catalogue_data.ntotal) * double(catalogue_data.ntotal)
     / params.volume;
   if (std::fabs(1 - norm * norm_factor) > eps_norm) {
@@ -496,23 +496,23 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Measurement
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Measurement
+  // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_init_threads();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// Compute power spectrum.
+  // Compute power spectrum.
   MeshField dn(params);  // δn(k)
   dn.compute_unweighted_field_fluctuations_insitu(catalogue_data);
   dn.fourier_transform();
 
   std::complex<double> sn_amp = double(catalogue_data.ntotal);  // \bar{N}
 
-  /// Under the global plane-parallel approximation, δᴰ_{M0} enforces
-  /// M = 0 for any spherical-harmonic-weighted field fluctuations.
+  // Under the global plane-parallel approximation, δᴰ_{M0} enforces
+  // M = 0 for any spherical-harmonic-weighted field fluctuations.
   FieldStats stats_2pt(params);
   stats_2pt.compute_ylm_wgtd_2pt_stats_in_fourier(
     dn, dn, sn_amp, params.ELL, 0, kbinning
@@ -531,11 +531,11 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
   fftw_cleanup();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// --------------------------------------------------------------------
-  /// Results
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Results
+  // ---------------------------------------------------------------------
 
-  /// Fill in output struct.
+  // Fill in output struct.
   trv::PowspecMeasurements powspec_out;
   for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     powspec_out.kbin.push_back(kbinning.bin_centres[ibin]);
@@ -573,9 +573,9 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Set-up
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Set-up
+  // ---------------------------------------------------------------------
 
   int* npairs_save = new int[rbinning.num_bins];
   double* r_save = new double[rbinning.num_bins];
@@ -586,7 +586,7 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
     xi_save[ibin] = 0.;
   }  // likely redundant but safe
 
-  /// Check input normalisation matches expectation.
+  // Check input normalisation matches expectation.
   double norm = double(catalogue_data.ntotal) * double(catalogue_data.ntotal)
     / params.volume;
   if (std::fabs(1 - norm * norm_factor) > eps_norm) {
@@ -596,23 +596,23 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Measurement
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Measurement
+  // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_init_threads();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// Compute 2PCF.
+  // Compute 2PCF.
   MeshField dn(params);  // δn(k)
   dn.compute_unweighted_field_fluctuations_insitu(catalogue_data);
   dn.fourier_transform();
 
   std::complex<double> sn_amp = double(catalogue_data.ntotal);  // \bar{N}
 
-  /// Under the global plane-parallel approximation, δᴰ_{M0} enforces
-  /// M = 0 for any spherical-harmonic-weighted field fluctuations.
+  // Under the global plane-parallel approximation, δᴰ_{M0} enforces
+  // M = 0 for any spherical-harmonic-weighted field fluctuations.
   FieldStats stats_2pt(params);
   stats_2pt.compute_ylm_wgtd_2pt_stats_in_config(
     dn, dn, sn_amp, params.ELL, 0, rbinning
@@ -630,11 +630,11 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
   fftw_cleanup();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// --------------------------------------------------------------------
-  /// Results
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Results
+  // ---------------------------------------------------------------------
 
-  /// Fill in output struct.
+  // Fill in output struct.
   trv::TwoPCFMeasurements corrfunc_out;
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     corrfunc_out.rbin.push_back(rbinning.bin_centres[ibin]);
@@ -670,14 +670,14 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Set-up
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Set-up
+  // ---------------------------------------------------------------------
 
-  /// Set up input.
+  // Set up input.
   int ell1 = params.ELL;
 
-  /// Set up output.
+  // Set up output.
   int* npairs_save = new int[rbinning.num_bins];
   double* r_save = new double[rbinning.num_bins];
   std::complex<double>* xi_save = new std::complex<double>[rbinning.num_bins];
@@ -687,9 +687,9 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
     xi_save[ibin] = 0.;
   }  // likely redundant but safe
 
-  /// --------------------------------------------------------------------
-  /// Measurement
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Measurement
+  // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_init_threads();
@@ -711,8 +711,8 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
       catalogue_rand, los_rand, alpha, params.ELL, M_
     );  // \bar{N}_LM(k)
 
-    /// Calculate equivalent to (-1)^m₁ δᴰ_{m₁, -M} which, after being
-    /// summed over m₁, agrees with Hand et al. (2017) [1704.02357].
+    // Calculate equivalent to (-1)^m₁ δᴰ_{m₁, -M} which, after being
+    // summed over m₁, agrees with Hand et al. (2017) [1704.02357].
     for (int m1 = - ell1; m1 <= ell1; m1++) {
       double coupling = trv::calc_coupling_coeff_2pt(ell1, params.ELL, m1, M_);
       if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
@@ -747,9 +747,9 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
   fftw_cleanup();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// --------------------------------------------------------------------
-  /// Results
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Results
+  // ---------------------------------------------------------------------
 
   trv::TwoPCFWindowMeasurements corrfunc_win_out;
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {

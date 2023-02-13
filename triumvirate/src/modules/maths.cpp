@@ -31,9 +31,9 @@ namespace trvs = trv::sys;
 namespace trv {
 namespace maths {
 
-/// **********************************************************************
-/// Complex numbers
-/// **********************************************************************
+// ***********************************************************************
+//Complex numbers
+// ***********************************************************************
 
 const std::complex<double> M_I(0., 1.);  ///< imaginary unit
 
@@ -42,9 +42,9 @@ std::complex<double> eval_complex_in_polar(double r, double theta) {
 }
 
 
-/// **********************************************************************
-/// Vectors
-/// **********************************************************************
+// ***********************************************************************
+//Vectors
+// ***********************************************************************
 
 double get_vec3d_magnitude(std::vector<double> vec) {
   return std::sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
@@ -55,12 +55,12 @@ double get_vec3d_magnitude(double vec[3]) {
 }
 
 
-/// **********************************************************************
-/// Gamma function
-/// **********************************************************************
+// ***********************************************************************
+//Gamma function
+// ***********************************************************************
 
-/// Lanzcos approximation parameters.
-/// CAVEAT: Discretionary choices (for the Lanczos approximation series).
+//Lanzcos approximation parameters.
+//CAVEAT: Discretionary choices (for the Lanczos approximation series).
 const int nterm_lanczos = 9;  ///< number of terms in approximation series
 const double gconst_lanczos = 7.;  ///< Lanczos approximation constant
 const double pcoeff_lanczos[] = {
@@ -88,13 +88,13 @@ std::complex<double> eval_lanczos_approx_series(std::complex<double> z) {
 }
 
 std::complex<double> eval_gamma(std::complex<double> z) {
-  /// Exploit Euler's reflection formula as the Lanczos approximation
-  /// is only valid for Re{z} > 1/2.
+  //Exploit Euler's reflection formula as the Lanczos approximation
+  //is only valid for Re{z} > 1/2.
   if (z.real() < 1./2) {
     return M_PI / (std::sin(M_PI * z) * eval_gamma(1. - z));
   }
 
-  /// Substitute variables into the approximation formula.
+  //Substitute variables into the approximation formula.
   z -= 1.;
 
   std::complex<double> t = z + gconst_lanczos + 1./2;
@@ -107,13 +107,13 @@ std::complex<double> eval_gamma(std::complex<double> z) {
 }
 
 std::complex<double> eval_lngamma(std::complex<double> z) {
-  /// Exploit Euler's reflection formula as the Lanczos approximation
-  /// is only valid for Re{z} > 1/2.
+  //Exploit Euler's reflection formula as the Lanczos approximation
+  //is only valid for Re{z} > 1/2.
   if (z.real() < 1./2) {
     return std::log(M_PI) - std::log(std::sin(M_PI * z)) - eval_lngamma(1. - z);
   }
 
-  /// Substitute variables into the approximation formula.
+  //Substitute variables into the approximation formula.
   z -= 1;
 
   std::complex<double> t = z + gconst_lanczos + 1./2;
@@ -149,28 +149,28 @@ void get_lngamma_components(double x, double y, double& lnr, double& theta) {
 }
 
 
-/// **********************************************************************
-/// Spherical harmonics
-/// **********************************************************************
+// ***********************************************************************
+//Spherical harmonics
+// ***********************************************************************
 
-/// CAVEAT: Discretionary choice such that eps = 1.e-9.
+//CAVEAT: Discretionary choice such that eps = 1.e-9.
 const double eps_coupling = 1.e-9;
 
 double wigner_3j(int j1, int j2, int j3, int m1, int m2, int m3) {
   return gsl_sf_coupling_3j(2*j1, 2*j2, 2*j3, 2*m1, 2*m2, 2*m3);
 }
 
-/// STYLE: Column limit exceeded here.
+//STYLE: Column limit exceeded here.
 std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmonic(
   const int ell, const int m, double pos[3]
 ) {
-  /// CAVEAT: Discretionary choice such that eps = 1.e-9.
+  //CAVEAT: Discretionary choice such that eps = 1.e-9.
   const double eps = 1.e-9;
 
-  /// Return unity in the trivial case.
+  //Return unity in the trivial case.
   if (ell == 0 && m == 0) {return 1.;}
 
-  /// Calculate modulus.
+  //Calculate modulus.
   double xyz_mod_sq = 0.;
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     xyz_mod_sq += pos[iaxis] * pos[iaxis];
@@ -178,13 +178,13 @@ std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmoni
 
   double xyz_mod = std::sqrt(xyz_mod_sq);  // r = √(x² + y² + z²)
 
-  /// Return zero in the trivial case.
+  //Return zero in the trivial case.
   if (std::fabs(xyz_mod) < eps) {return 0.;}
 
-  /// Calculate the angular variable μ = cos(θ).
+  //Calculate the angular variable μ = cos(θ).
   double mu = pos[2] / xyz_mod;  // μ = z / r
 
-  /// Calculate the angular variable ϕ.
+  //Calculate the angular variable ϕ.
   double xy_mod = std::sqrt(pos[0] * pos[0] + pos[1] * pos[1]); // r_xy =
                                                                 // √(x² + y²)
 
@@ -196,49 +196,49 @@ std::complex<double> SphericalHarmonicCalculator::calc_reduced_spherical_harmoni
     }
   }
 
-  /// Calculate spherical harmonics with m >= 0 via the normalised
-  /// associated Legendre polynomial, i.e. Y_lm = √((2l + 1)/(4π))
-  /// √((l - |m|)!/(l + |m|)!) P_l^|m|(μ) * exp(imϕ).
+  //Calculate spherical harmonics with m >= 0 via the normalised
+  //associated Legendre polynomial, i.e. Y_lm = √((2l + 1)/(4π))
+  //√((l - |m|)!/(l + |m|)!) P_l^|m|(μ) * exp(imϕ).
   std::complex<double> ylm = std::exp(M_I * double(m) * phi)
     * gsl_sf_legendre_sphPlm(ell, std::abs(m), mu);
 
-  /// Impose parity and conjugation.
+  //Impose parity and conjugation.
   ylm = std::pow(-1, (m - std::abs(m))/2) * std::conj(ylm);
 
-  /// Normalise to the reduced form.
+  //Normalise to the reduced form.
   ylm *= std::sqrt(4.*M_PI / (2.*ell + 1.));
 
   return ylm;
 }
 
-/// STYLE: Column limit exceeded here.
+//STYLE: Column limit exceeded here.
 void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_space(
   const int ell, const int m,
   const double boxsize[3], const int ngrid[3],
   std::vector< std::complex<double> >& ylm_out
 ) {
-  /// Determine the fundamental wavenumber in each dimension.
+  //Determine the fundamental wavenumber in each dimension.
   double dk[3] = {
     2.*M_PI / boxsize[0], 2.*M_PI / boxsize[1], 2.*M_PI / boxsize[2]
   };
 
-  /// Assign a wavevector to each grid cell.
+  //Assign a wavevector to each grid cell.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for collapse(3)
 #endif  // TRV_USE_OMP
   for (int i = 0; i < ngrid[0]; i++) {
     for (int j = 0; j < ngrid[1]; j++) {
       for (int k = 0; k < ngrid[2]; k++) {
-        /// Lay the 'bricks' vertically, then inwards, then to
-        /// the right, i.e. along z-axis, y-axis and then x-axis.
-        /// The assigned flattened-grid array index is
-        /// (i * ngrid_y * ngrid_z + j * ngrid_z + k)
-        /// where ngrid is the grid number along each axis.
+        //Lay the 'bricks' vertically, then inwards, then to
+        //the right, i.e. along z-axis, y-axis and then x-axis.
+        //The assigned flattened-grid array index is
+        //(i * ngrid_y * ngrid_z + j * ngrid_z + k)
+        //where ngrid is the grid number along each axis.
         long long idx_grid = (i * ngrid[1] + j) * ngrid[2] + k;
 
-        /// This conforms to the (absurd) FFT array-ordering convention
-        /// that negative wavenumbers/frequencies come after zero and
-        /// positive wavenumbers/frequencies.
+        //This conforms to the (absurd) FFT array-ordering convention
+        //that negative wavenumbers/frequencies come after zero and
+        //positive wavenumbers/frequencies.
         double kvec[3];
         kvec[0] = (i < ngrid[0]/2) ? i * dk[0] : (i - ngrid[0]) * dk[0];
         kvec[1] = (j < ngrid[1]/2) ? j * dk[1] : (j - ngrid[1]) * dk[1];
@@ -250,36 +250,36 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_fourier_sp
   }
 }
 
-/// STYLE: Column limit exceeded here.
+//STYLE: Column limit exceeded here.
 void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_space(
   const int ell, const int m,
   const double boxsize[3], const int ngrid[3],
   std::vector< std::complex<double> >& ylm_out
 ) {
-  /// Determine the grid cell size in each dimension.
+  //Determine the grid cell size in each dimension.
   double dr[3] = {
     boxsize[0] / double(ngrid[0]),
     boxsize[1] / double(ngrid[1]),
     boxsize[2] / double(ngrid[2])
   };
 
-  /// Assign a position vector to each grid cell.
+  //Assign a position vector to each grid cell.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for collapse(3)
 #endif  // TRV_USE_OMP
   for (int i = 0; i < ngrid[0]; i++) {
     for (int j = 0; j < ngrid[1]; j++) {
       for (int k = 0; k < ngrid[2]; k++) {
-        /// Lay the 'bricks' vertically, then inwards, then to
-        /// the right, i.e. along z-axis, y-axis and then x-axis.
-        /// The assigned flattened-grid array index is
-        /// (i * ngrid_y * ngrid_z + j * ngrid_z + k)
-        /// where ngrid is the grid number along each axis.
+        //Lay the 'bricks' vertically, then inwards, then to
+        //the right, i.e. along z-axis, y-axis and then x-axis.
+        //The assigned flattened-grid array index is
+        //(i * ngrid_y * ngrid_z + j * ngrid_z + k)
+        //where ngrid is the grid number along each axis.
         long long idx_grid = (i * ngrid[1] + j) * ngrid[2] + k;
 
-        /// This conforms to the (absurd) FFT array-ordering convention
-        /// that negative wavenumbers/frequencies come after zero and
-        /// positive wavenumbers/frequencies.
+        //This conforms to the (absurd) FFT array-ordering convention
+        //that negative wavenumbers/frequencies come after zero and
+        //positive wavenumbers/frequencies.
         double rvec[3];
         rvec[0] = (i < ngrid[0]/2) ? i * dr[0] : (i - ngrid[0]) * dr[0];
         rvec[1] = (j < ngrid[1]/2) ? j * dr[1] : (j - ngrid[1]) * dr[1];
@@ -292,18 +292,18 @@ void SphericalHarmonicCalculator::store_reduced_spherical_harmonic_in_config_spa
 }
 
 
-/// **********************************************************************
-/// Spherical Bessel function
-/// **********************************************************************
+// ***********************************************************************
+//Spherical Bessel function
+// ***********************************************************************
 
 SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
-  /// Set up sampling range and number.
-  /// CAVEAT: Discretionary choices such that max(kr) > 4096π, Δ(kr) = 0.01.
+  //Set up sampling range and number.
+  //CAVEAT: Discretionary choices such that max(kr) > 4096π, Δ(kr) = 0.01.
   const double xmin = 0.;       ///< minimum of interpolation range
   const double xmax = 15000.;   ///< maximum of interpolation range
   const int nsample = 1500000;  ///< interpolation sample number
 
-  /// Initialise and evaluate at sample points.
+  //Initialise and evaluate at sample points.
   double dx = (xmax - xmin) / (nsample - 1);
 
   double* x = new double[nsample];
@@ -317,7 +317,7 @@ SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
     j_ell[i] = gsl_sf_bessel_jl(ell, x[i]);
   }
 
-  /// Initialise the interpolator using cubic spline and the accelerator.
+  //Initialise the interpolator using cubic spline and the accelerator.
   this->accel = gsl_interp_accel_alloc();
   this->spline = gsl_spline_alloc(gsl_interp_cspline, nsample);
 

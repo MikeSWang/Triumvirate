@@ -51,9 +51,9 @@
 
 namespace trv {
 
-/// **********************************************************************
-/// Coupling coefficients
-/// **********************************************************************
+// ***********************************************************************
+// Coupling coefficients
+// ***********************************************************************
 
 /**
  * @brief Calculate the coupling coefficient for spherical-harmonic
@@ -81,9 +81,9 @@ double calc_coupling_coeff_3pt(
 void validate_multipole_coupling(trv::ParameterSet& params);
 
 
-/// **********************************************************************
-/// Normalisation
-/// **********************************************************************
+// ***********************************************************************
+// Normalisation
+// ***********************************************************************
 
 /**
  * @brief Calculate mesh-based bispectrum normalisation.
@@ -109,9 +109,9 @@ double calc_bispec_normalisation_from_particles(
 );
 
 
-/// **********************************************************************
-/// Shot noise
-/// **********************************************************************
+// ***********************************************************************
+// Shot noise
+// ***********************************************************************
 
 /**
  * @brief Calculate bispectrum shot noise amplitude weighted by
@@ -170,14 +170,14 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
 );
 
 
-/// **********************************************************************
-/// Full statistics
-/// **********************************************************************
+// ***********************************************************************
+// Full statistics
+// ***********************************************************************
 
-/// STYLE: Standard naming convention is not always followed for
-/// intermediary quantities in the functions below.
+// STYLE: Standard naming convention is not always followed for
+// intermediary quantities in the functions below.
 
-/// Hereafter 'the Paper' refers to Sugiyama et al. (2019) [1803.02132].
+// Hereafter 'the Paper' refers to Sugiyama et al. (2019) [1803.02132].
 
 /**
  * @brief Compute bispectrum from paired survey-type catalogues.

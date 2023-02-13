@@ -28,25 +28,25 @@
 
 namespace trv {
 
-/// **********************************************************************
-/// Utilities
-/// **********************************************************************
+// ***********************************************************************
+// Utilities
+// ***********************************************************************
 
 namespace sys {
 
 bool if_filepath_is_set(std::string pathstr) {
-  /// Check if the string is empty.
+  // Check if the string is empty.
   if (pathstr.empty()) {return false;}
 
-  /// Check if the path is a directory not file.
+  // Check if the path is a directory not file.
   std::string endchar = "/";
   int strcomp = pathstr.compare(
     pathstr.length() - endchar.length(), endchar.length(), endchar
   );
   if (strcomp == 0) {return false;}  // `pathstr` ends in "/"
 
-  /// Check if the string contains non-whitespace characters.  If so,
-  /// the path is set, otherwise not.
+  // Check if the string contains non-whitespace characters.  If so,
+  // the path is set, otherwise not.
   for (std::string::size_type ichar = 0; ichar < pathstr.length(); ichar++){
     if (!std::isspace(pathstr[ichar])) {return true;}
   }
@@ -57,13 +57,13 @@ bool if_filepath_is_set(std::string pathstr) {
 }  // namespace trv::sys
 
 
-/// **********************************************************************
-/// Outputs
-/// **********************************************************************
+// ***********************************************************************
+// Outputs
+// ***********************************************************************
 
-/// ----------------------------------------------------------------------
-/// Measurement header
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Measurement header
+// -----------------------------------------------------------------------
 
 void print_measurement_header_to_file(
   std::FILE* fileptr, trv::ParameterSet& params,
@@ -225,15 +225,15 @@ void print_measurement_header_to_file(
 }
 
 
-/// ----------------------------------------------------------------------
-/// Two-point measurement data table
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Two-point measurement data table
+// -----------------------------------------------------------------------
 
 void print_measurement_datatab_to_file(
   std::FILE* fileptr,
   trv::ParameterSet& params, trv::PowspecMeasurements& meas_powspec
 ) {
-  /// Print data table columns.
+  // Print data table columns.
   std::fprintf(
     fileptr,
     "%s "
@@ -244,7 +244,7 @@ void print_measurement_datatab_to_file(
     params.ELL, params.ELL, params.ELL, params.ELL
   );
 
-  /// Print data table.
+  // Print data table.
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
     std::fprintf(
       fileptr,
@@ -262,7 +262,7 @@ void print_measurement_datatab_to_file(
   std::FILE* fileptr,
   trv::ParameterSet& params, trv::TwoPCFMeasurements& meas_2pcf
 ) {
-  /// Print data table columns.
+  // Print data table columns.
   std::fprintf(
     fileptr,
     "%s [0] r_cen, [1] r_eff, [2] npairs, [3] Re{xi%d}, [4] Im{xi%d}\n",
@@ -270,7 +270,7 @@ void print_measurement_datatab_to_file(
     params.ELL, params.ELL
   );
 
-  /// Print data table.
+  // Print data table.
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
     std::fprintf(
       fileptr,
@@ -287,7 +287,7 @@ void print_measurement_datatab_to_file(
   std::FILE* fileptr,
   trv::ParameterSet& params, trv::TwoPCFWindowMeasurements& meas_2pcf_win
 ) {
-  /// Print data table columns.
+  // Print data table columns.
   std::fprintf(
     fileptr,
     "%s [0] r_cen, [1] r_eff, [2] npairs, [3] Re{xi%d}, [4] Im{xi%d}\n",
@@ -295,7 +295,7 @@ void print_measurement_datatab_to_file(
     params.ELL, params.ELL
   );
 
-  /// Print data table.
+  // Print data table.
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
     std::fprintf(
       fileptr,
@@ -309,9 +309,9 @@ void print_measurement_datatab_to_file(
 };
 
 
-/// ----------------------------------------------------------------------
-/// Three-point measurement data table
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Three-point measurement data table
+// -----------------------------------------------------------------------
 
 void print_measurement_datatab_to_file(
   std::FILE* fileptr,
@@ -320,7 +320,7 @@ void print_measurement_datatab_to_file(
   char multipole_str[4];
   std::sprintf(multipole_str, "%d%d%d", params.ell1, params.ell2, params.ELL);
 
-  /// Print data table columns.
+  // Print data table columns.
   std::fprintf(
     fileptr,
     "%s "
@@ -331,7 +331,7 @@ void print_measurement_datatab_to_file(
     multipole_str, multipole_str, multipole_str, multipole_str
   );
 
-  /// Print data table.
+  // Print data table.
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
     std::fprintf(
       fileptr,
@@ -352,7 +352,7 @@ void print_measurement_datatab_to_file(
   char multipole_str[4];
   std::sprintf(multipole_str, "%d%d%d", params.ell1, params.ell2, params.ELL);
 
-  /// Print data table columns.
+  // Print data table columns.
   std::fprintf(
     fileptr,
     "%s "
@@ -363,7 +363,7 @@ void print_measurement_datatab_to_file(
     multipole_str, multipole_str, multipole_str, multipole_str
   );
 
-  /// Print data table.
+  // Print data table.
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
     std::fprintf(
       fileptr,
@@ -384,7 +384,7 @@ void print_measurement_datatab_to_file(
   char multipole_str[4];
   std::sprintf(multipole_str, "%d%d%d", params.ell1, params.ell2, params.ELL);
 
-  /// Print data table columns.
+  // Print data table columns.
   std::fprintf(
     fileptr,
     "%s "
@@ -395,7 +395,7 @@ void print_measurement_datatab_to_file(
     multipole_str, multipole_str, multipole_str, multipole_str
   );
 
-  /// Print data table.
+  // Print data table.
   for (int ibin = 0; ibin < params.num_bins; ibin++) {
     std::fprintf(
       fileptr,

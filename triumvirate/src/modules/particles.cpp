@@ -30,16 +30,16 @@ namespace trvs = trv::sys;
 
 namespace trv {
 
-/// **********************************************************************
-/// Life cycle
-/// **********************************************************************
+// ***********************************************************************
+// Life cycle
+// ***********************************************************************
 
 ParticleCatalogue::ParticleCatalogue(int verbose) {
   if (verbose >= 0) {
     trvs::logger.reset_level(verbose);
   }
 
-  /// Set default values (likely redundant but safe).
+  // Set default values (likely redundant but safe).
   this->pdata = nullptr;
   this->ntotal = 0;
   this->wtotal = 0.;
@@ -52,7 +52,7 @@ ParticleCatalogue::ParticleCatalogue(int verbose) {
 ParticleCatalogue::~ParticleCatalogue() {this->finalise_particles();}
 
 void ParticleCatalogue::initialise_particles(const int num) {
-  /// Check the total number of particles.
+  // Check the total number of particles.
   if (num <= 0) {
     trvs::logger.error("Number of particles is non-positive.");
     throw trvs::InvalidParameter("Number of particles is non-positive.\n");
@@ -60,7 +60,7 @@ void ParticleCatalogue::initialise_particles(const int num) {
 
   this->ntotal = num;
 
-  /// Renew particle data.
+  // Renew particle data.
   delete[] this->pdata; this->pdata = nullptr;
 
   this->pdata = new ParticleData[this->ntotal];
@@ -70,7 +70,7 @@ void ParticleCatalogue::initialise_particles(const int num) {
 }
 
 void ParticleCatalogue::finalise_particles() {
-  /// Free particle data.
+  // Free particle data.
   if (this->pdata != nullptr) {
     delete[] this->pdata; this->pdata = nullptr;
     trvs::gbytesMem -= trvs::size_in_gb<struct ParticleData>(this->ntotal);
@@ -78,18 +78,18 @@ void ParticleCatalogue::finalise_particles() {
 }
 
 
-/// **********************************************************************
-/// Operators & reserved methods
-/// **********************************************************************
+// ***********************************************************************
+// Operators & reserved methods
+// ***********************************************************************
 
 ParticleCatalogue::ParticleData& ParticleCatalogue::operator[](const int pid) {
   return this->pdata[pid];
 }
 
 
-/// **********************************************************************
-/// Data I/O
-/// **********************************************************************
+// ***********************************************************************
+// Data I/O
+// ***********************************************************************
 
 int ParticleCatalogue::load_catalogue_file(
   const std::string& catalogue_filepath,
@@ -107,11 +107,11 @@ int ParticleCatalogue::load_catalogue_file(
   }
   this->source = "extfile:" + catalogue_filepath;
 
-  /// --------------------------------------------------------------------
-  /// Columns & fields
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Columns & fields
+  // ---------------------------------------------------------------------
 
-  /// CAVEAT: Hard-coded ordered column names.
+  // CAVEAT: Hard-coded ordered column names.
   const std::vector<std::string> names_ordered = {
     "x", "y", "z", "nz", "ws", "wc"
   };
@@ -123,7 +123,7 @@ int ParticleCatalogue::load_catalogue_file(
     colnames.push_back(name);
   }
 
-  /// CAVEAT: Default -1 index as a flag for unfound column names.
+  // CAVEAT: Default -1 index as a flag for unfound column names.
   std::vector<int> name_indices(names_ordered.size(), -1);
   for (int iname = 0; iname < int(names_ordered.size()); iname++) {
     std::ptrdiff_t col_idx = std::distance(
@@ -135,7 +135,7 @@ int ParticleCatalogue::load_catalogue_file(
     }
   }
 
-  /// Check for the 'nz' column.
+  // Check for the 'nz' column.
   if (name_indices[3] == -1) {
     if (trvs::currTask == 0) {
       trvs::logger.warn(
@@ -146,9 +146,9 @@ int ParticleCatalogue::load_catalogue_file(
     }
   }
 
-  /// --------------------------------------------------------------------
-  /// Data reading
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Data reading
+  // ---------------------------------------------------------------------
 
   std::ifstream fin;
 
@@ -162,17 +162,17 @@ int ParticleCatalogue::load_catalogue_file(
     }
   }
 
-  /// Initialise particle data.
+  // Initialise particle data.
   int num_lines = 0;
   std::string line_str;
   while (std::getline(fin, line_str)) {
-    /// Terminate at the end of file.
+    // Terminate at the end of file.
     if (!fin) {break;}
 
-    /// Skip empty lines or comment lines.
+    // Skip empty lines or comment lines.
     if (line_str.empty() || line_str[0] == '#') {continue;}
 
-    /// Count the line as valid otherwise.
+    // Count the line as valid otherwise.
     num_lines++;
   }
 
@@ -180,7 +180,7 @@ int ParticleCatalogue::load_catalogue_file(
 
   this->initialise_particles(num_lines);
 
-  /// Set particle data.
+  // Set particle data.
   double nz_box_default = 0.;
   if (volume > 0.) {
     nz_box_default = this->ntotal / volume;
@@ -192,13 +192,13 @@ int ParticleCatalogue::load_catalogue_file(
   double nz, ws, wc;  // placeholder variables
   double entry;       // data entry (per column per row)
   while (std::getline(fin, line_str)) {  // std::string line_str;
-    /// Terminate at the end of file.
+    // Terminate at the end of file.
     if (!fin) {break;}
 
-    /// Skip empty lines or comment lines.
+    // Skip empty lines or comment lines.
     if (line_str.empty() || line_str[0] == '#') {continue;}
 
-    /// Extract row entries.
+    // Extract row entries.
     std::vector<double> row;
 
     std::stringstream ss(
@@ -206,7 +206,7 @@ int ParticleCatalogue::load_catalogue_file(
     );
     while (ss >> entry) {row.push_back(entry);}
 
-    /// Add the current line as a particle.
+    // Add the current line as a particle.
     this->pdata[idx_line].pos[0] = row[name_indices[0]];  // x
     this->pdata[idx_line].pos[1] = row[name_indices[1]];  // y
     this->pdata[idx_line].pos[2] = row[name_indices[2]];  // z
@@ -239,14 +239,14 @@ int ParticleCatalogue::load_catalogue_file(
 
   fin.close();
 
-  /// --------------------------------------------------------------------
-  /// Catalogue properties
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Catalogue properties
+  // ---------------------------------------------------------------------
 
-  /// Calculate sample weight sum.
+  // Calculate sample weight sum.
   this->calc_wtotal();
 
-  /// Calculate the extents of particles.
+  // Calculate the extents of particles.
   this->calc_pos_min_and_max();
 
   return 0;
@@ -258,7 +258,7 @@ int ParticleCatalogue::load_particle_data(
 ) {
   this->source = "extdata";
 
-  /// Check data array sizes.
+  // Check data array sizes.
   int ntotal = x.size();
   if (!(
     ntotal == int(y.size())
@@ -279,7 +279,7 @@ int ParticleCatalogue::load_particle_data(
     }
   }
 
-  /// Fill in particle data.
+  // Fill in particle data.
   this->initialise_particles(ntotal);
 
 #ifdef TRV_USE_OMP
@@ -295,19 +295,19 @@ int ParticleCatalogue::load_particle_data(
     this->pdata[pid].w = ws[pid] * wc[pid];
   }
 
-  /// Calculate sample weight sum.
+  // Calculate sample weight sum.
   this->calc_wtotal();
 
-  /// Calculate the extents of particles.
+  // Calculate the extents of particles.
   this->calc_pos_min_and_max();
 
   return 0;
 }
 
 
-/// **********************************************************************
-/// Catalogue properties
-/// **********************************************************************
+// ***********************************************************************
+// Catalogue properties
+// ***********************************************************************
 
 void ParticleCatalogue::calc_wtotal() {
   if (this->pdata == nullptr) {
@@ -345,14 +345,14 @@ void ParticleCatalogue::calc_pos_min_and_max() {
     }
   }
 
-  /// Initialise minimum and maximum values with the 0th particle's.
+  // Initialise minimum and maximum values with the 0th particle's.
   double pos_min[3], pos_max[3];
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     pos_min[iaxis] = this->pdata[0].pos[iaxis];
     pos_max[iaxis] = this->pdata[0].pos[iaxis];
   }
 
-  /// Update minimum and maximum values partice by particle.
+  // Update minimum and maximum values partice by particle.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(min:pos_min) reduction(max:pos_max)
 #endif  // TRV_USE_OMP
@@ -384,9 +384,9 @@ void ParticleCatalogue::calc_pos_min_and_max() {
 }
 
 
-/// **********************************************************************
-/// Catalogue operations
-/// **********************************************************************
+// ***********************************************************************
+// Catalogue operations
+// ***********************************************************************
 
 void ParticleCatalogue::offset_coords(const double dpos[3]) {
   if (this->pdata == nullptr) {

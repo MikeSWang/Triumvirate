@@ -31,22 +31,22 @@ namespace trvm = trv::maths;
 
 namespace trv {
 
-/// **********************************************************************
-/// Mesh field
-/// **********************************************************************
+// ***********************************************************************
+// Mesh field
+// ***********************************************************************
 
-/// ----------------------------------------------------------------------
-/// Life cycle
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Life cycle
+// -----------------------------------------------------------------------
 
 MeshField::MeshField(trv::ParameterSet& params) {
-  /// Attach the full parameter set to @ref trv::MeshField.
+  // Attach the full parameter set to @ref trv::MeshField.
   this->params = params;
 
   trvs::logger.reset_level(params.verbose);
 
-  /// Initialise the field (and its shadow field if interlacing is used)
-  /// and increase allocated memory.
+  // Initialise the field (and its shadow field if interlacing is used)
+  // and increase allocated memory.
   this->field = fftw_alloc_complex(this->params.nmesh);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
@@ -61,17 +61,17 @@ MeshField::MeshField(trv::ParameterSet& params) {
 
   this->initialise_density_field();  // likely redundant but safe
 
-  /// Calculate grid sizes in configuration space.
+  // Calculate grid sizes in configuration space.
   this->dr[0] = this->params.boxsize[0] / this->params.ngrid[0];
   this->dr[1] = this->params.boxsize[1] / this->params.ngrid[1];
   this->dr[2] = this->params.boxsize[2] / this->params.ngrid[2];
 
-  /// Calculate fundamental wavenumbers in Fourier space.
+  // Calculate fundamental wavenumbers in Fourier space.
   this->dk[0] = 2.*M_PI / this->params.boxsize[0];
   this->dk[1] = 2.*M_PI / this->params.boxsize[1];
   this->dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-  /// Calculate mesh volume and mesh grid cell volume.
+  // Calculate mesh volume and mesh grid cell volume.
   this->vol = this->params.volume;
   this->vol_cell = this->vol / double(this->params.nmesh);
 }
@@ -98,7 +98,7 @@ void MeshField::initialise_density_field() {
 }
 
 void MeshField::finalise_density_field() {
-  /// Free memory usage.
+  // Free memory usage.
   if (this->field != nullptr) {
     fftw_free(this->field); this->field = nullptr;
     trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
@@ -110,16 +110,16 @@ void MeshField::finalise_density_field() {
 }
 
 
-/// ----------------------------------------------------------------------
-/// Operators & reserved methods
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Operators & reserved methods
+// -----------------------------------------------------------------------
 
 const fftw_complex& MeshField::operator[](int gid) {return this->field[gid];}
 
 
-/// ----------------------------------------------------------------------
-/// Mesh grid properties
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Mesh grid properties
+// -----------------------------------------------------------------------
 
 long long MeshField::get_grid_index(int i, int j, int k) {
   long long idx_grid =
@@ -146,9 +146,9 @@ void MeshField::get_grid_wavevector(int i, int j, int k, double kvec[3]) {
 }
 
 
-/// ----------------------------------------------------------------------
-/// Mesh assignment
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Mesh assignment
+// -----------------------------------------------------------------------
 
 void MeshField::assign_weighted_field_to_mesh(
   ParticleCatalogue& particles, fftw_complex* weights
@@ -194,18 +194,18 @@ void MeshField::assign_weighted_field_to_mesh(
 void MeshField::assign_weighted_field_to_mesh_ngp(
   ParticleCatalogue& particles, fftw_complex* weight
 ) {
-  /// Set interpolation order, i.e. number of grids, per dimension,
-  /// to which a single particle is assigned.
+  // Set interpolation order, i.e. number of grids, per dimension,
+  // to which a single particle is assigned.
   const int order = 1;
 
-  /// Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ), where δᴰ ↔ δᴷ / dV,
-  /// dV =: `vol_cell`.
+  // Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ), where δᴰ ↔ δᴷ / dV,
+  // dV =: `vol_cell`.
   const double inv_vol_cell = 1 / this->vol_cell;
 
-  /// Reset field values to zero.
+  // Reset field values to zero.
   this->initialise_density_field();
 
-  /// Assign particles to grid cells.
+  // Assign particles to grid cells.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -215,7 +215,7 @@ void MeshField::assign_weighted_field_to_mesh_ngp(
     long long gid = 0;     // flattened grid cell index
 
     for (int iaxis = 0; iaxis < 3; iaxis++) {
-      /// Carefully set covered sampling window grid indices.
+      // Carefully set covered sampling window grid indices.
       double loc_grid = this->params.ngrid[iaxis] *
         particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
 
@@ -227,7 +227,7 @@ void MeshField::assign_weighted_field_to_mesh_ngp(
 
       ijk[0][iaxis] = idx_grid;
 
-      /// Set sampling window value (only 0th element as ``order == 1``).
+      // Set sampling window value (only 0th element as ``order == 1``).
       win[0][iaxis] = 1.;
     }
 
@@ -250,7 +250,7 @@ OMP_ATOMIC
     }
   }
 
-  /// Perform interlacing if needed.
+  // Perform interlacing if needed.
   if (this->params.interlace == "true") {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -261,7 +261,7 @@ OMP_ATOMIC
       long long gid = 0;
 
       for (int iaxis = 0; iaxis < 3; iaxis++) {
-        /// Apply a half-grid shift and impose the periodic boundary condition.
+        // Apply a half-grid shift and impose the periodic boundary condition.
         double loc_grid = this->params.ngrid[iaxis]
           * particles[pid].pos[iaxis] / this->params.boxsize[iaxis] + 0.5;
 
@@ -304,18 +304,18 @@ OMP_ATOMIC
 void MeshField::assign_weighted_field_to_mesh_cic(
   ParticleCatalogue& particles, fftw_complex* weight
 ) {
-  /// Set interpolation order, i.e. number of grids, per dimension,
-  /// to which a single particle is assigned.
+  // Set interpolation order, i.e. number of grids, per dimension,
+  // to which a single particle is assigned.
   const int order = 2;
 
-  /// Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ), where δᴰ ↔ δᴷ / dV,
-  /// dV =: `vol_cell`.
+  // Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ), where δᴰ ↔ δᴷ / dV,
+  // dV =: `vol_cell`.
   const double inv_vol_cell = 1 / this->vol_cell;
 
-  /// Reset field values to zero.
+  // Reset field values to zero.
   this->initialise_density_field();
 
-  /// Assign particles to grid cells.
+  // Assign particles to grid cells.
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -326,7 +326,7 @@ void MeshField::assign_weighted_field_to_mesh_cic(
     long long gid = 0;     // flattened grid cell index
 
     for (int iaxis = 0; iaxis < 3; iaxis++) {
-      /// Carefully set covered sampling window grid indices.
+      // Carefully set covered sampling window grid indices.
       double loc_grid = this->params.ngrid[iaxis]
         * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
 
@@ -336,7 +336,7 @@ void MeshField::assign_weighted_field_to_mesh_cic(
       ijk[1][iaxis] = (idx_grid == this->params.ngrid[iaxis] - 1)
         ? 0 : idx_grid + 1;
 
-      /// Set sampling window value (up to the 1st element as `order == 2`).
+      // Set sampling window value (up to the 1st element as `order == 2`).
       double s = loc_grid - idx_grid;  // particle-to-grid grid-index distance
 
       win[0][iaxis] = 1. - s;
@@ -362,7 +362,7 @@ OMP_ATOMIC
     }
   }
 
-  /// Perform interlacing if needed.
+  // Perform interlacing if needed.
   if (this->params.interlace == "true") {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -373,7 +373,7 @@ OMP_ATOMIC
       long long gid = 0;
 
       for (int iaxis = 0; iaxis < 3; iaxis++) {
-        /// Apply a half-grid shift and impose the periodic boundary condition.
+        // Apply a half-grid shift and impose the periodic boundary condition.
         double loc_grid = this->params.ngrid[iaxis]
           * particles[pid].pos[iaxis] / this->params.boxsize[iaxis] + 0.5;
 
@@ -416,18 +416,18 @@ OMP_ATOMIC
 void MeshField::assign_weighted_field_to_mesh_tsc(
   ParticleCatalogue& particles, fftw_complex* weight
 ) {
-  /// Set interpolation order, i.e. number of grids, per dimension,
-  /// to which a single particle is assigned.
+  // Set interpolation order, i.e. number of grids, per dimension,
+  // to which a single particle is assigned.
   const int order = 3;
 
-  /// Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ), where δᴰ ↔ δᴷ / dV,
-  /// dV =: `vol_cell`.
+  // Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ), where δᴰ ↔ δᴷ / dV,
+  // dV =: `vol_cell`.
   const double inv_vol_cell = 1 / this->vol_cell;
 
-  /// Reset field values to zero.
+  // Reset field values to zero.
   this->initialise_density_field();
 
-  /// Perform assignment.
+  // Perform assignment.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -437,7 +437,7 @@ void MeshField::assign_weighted_field_to_mesh_tsc(
     long long gid = 0;     // flattened grid cell index
 
     for (int iaxis = 0; iaxis < 3; iaxis++) {
-      /// Carefully set covered sampling window grid indices.
+      // Carefully set covered sampling window grid indices.
       double loc_grid = this->params.ngrid[iaxis]
         * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
 
@@ -457,7 +457,7 @@ void MeshField::assign_weighted_field_to_mesh_tsc(
           ? 0 : ijk[1][iaxis] + 1;
       }
 
-      /// Set sampling window value (up to the 2nd element as `order == 3`).
+      // Set sampling window value (up to the 2nd element as `order == 3`).
       double s = loc_grid - idx_grid;
 
       if (s < 0.5) {
@@ -491,7 +491,7 @@ OMP_ATOMIC
     }
   }
 
-  /// Perform interlacing if needed.
+  // Perform interlacing if needed.
   if (this->params.interlace == "true") {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -502,7 +502,7 @@ OMP_ATOMIC
       long long gid = 0;
 
       for (int iaxis = 0; iaxis < 3; iaxis++) {
-        /// Apply a half-grid shift and impose the periodic boundary condition.
+        // Apply a half-grid shift and impose the periodic boundary condition.
         double loc_grid = this->params.ngrid[iaxis]
           * particles[pid].pos[iaxis] / this->params.boxsize[iaxis] + 0.5;
 
@@ -564,18 +564,18 @@ OMP_ATOMIC
 void MeshField::assign_weighted_field_to_mesh_pcs(
   ParticleCatalogue& particles, fftw_complex* weight
 ) {
-  /// Set interpolation order, i.e. number of grids, per dimension,
-  /// to which a single particle is assigned.
+  // Set interpolation order, i.e. number of grids, per dimension,
+  // to which a single particle is assigned.
   const int order = 4;
 
-  /// Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ),
-  /// where δᴰ corresponds to δᴷ / dV, dV =: `vol_cell`.
+  // Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ),
+  // where δᴰ corresponds to δᴷ / dV, dV =: `vol_cell`.
   const double inv_vol_cell = 1 / this->vol_cell;
 
-  /// Reset field values to zero.
+  // Reset field values to zero.
   this->initialise_density_field();
 
-  /// Perform assignment.
+  // Perform assignment.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -585,7 +585,7 @@ void MeshField::assign_weighted_field_to_mesh_pcs(
     long long gid = 0;     // flattened grid cell index
 
     for (int iaxis = 0; iaxis < 3; iaxis++) {
-      /// Carefully set covered sampling window grid indices.
+      // Carefully set covered sampling window grid indices.
       double loc_grid = this->params.ngrid[iaxis]
         * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
 
@@ -599,7 +599,7 @@ void MeshField::assign_weighted_field_to_mesh_pcs(
       ijk[3][iaxis] = (ijk[2][iaxis] == this->params.ngrid[iaxis] - 1)
         ? 0 : ijk[2][iaxis] + 1;
 
-      /// Set sampling window value (up to the 2nd element as `order == 3`).
+      // Set sampling window value (up to the 2nd element as `order == 3`).
       double s = loc_grid - idx_grid;
 
       win[0][iaxis] = 1./6 * (1. - s) * (1. - s) * (1. - s);
@@ -629,7 +629,7 @@ OMP_ATOMIC
     }
   }
 
-  /// Perform interlacing if needed.
+  // Perform interlacing if needed.
   if (this->params.interlace == "true") {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -640,7 +640,7 @@ OMP_ATOMIC
       long long gid = 0;
 
       for (int iaxis = 0; iaxis < 3; iaxis++) {
-        /// Apply a half-grid shift and impose the periodic boundary condition.
+        // Apply a half-grid shift and impose the periodic boundary condition.
         double loc_grid = this->params.ngrid[iaxis]
           * particles[pid].pos[iaxis] / this->params.boxsize[iaxis] + 0.5;
 
@@ -713,7 +713,7 @@ double MeshField::calc_assignment_window_in_fourier(int i, int j, int k) {
   double u_y = M_PI * j / double(this->params.ngrid[1]);
   double u_z = M_PI * k / double(this->params.ngrid[2]);
 
-  /// Note sin(u) / u -> 1 as u -> 0.
+  // Note sin(u) / u -> 1 as u -> 0.
   double wk_x = (i != 0) ? std::sin(u_x) / u_x : 1.;
   double wk_y = (j != 0) ? std::sin(u_y) / u_y : 1.;
   double wk_z = (k != 0) ? std::sin(u_z) / u_z : 1.;
@@ -724,9 +724,9 @@ double MeshField::calc_assignment_window_in_fourier(int i, int j, int k) {
 }
 
 
-/// ----------------------------------------------------------------------
-/// Field computations
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Field computations
+// -----------------------------------------------------------------------
 
 void MeshField::compute_unweighted_field(ParticleCatalogue& particles) {
   fftw_complex* unit_weight = nullptr;
@@ -756,7 +756,7 @@ void MeshField::compute_unweighted_field_fluctuations_insitu(
 ) {
   this->compute_unweighted_field(particles);
 
-  /// Subtract the global mean density to compute fluctuations, i.e. δn.
+  // Subtract the global mean density to compute fluctuations, i.e. δn.
   double nbar = double(particles.ntotal) / this->vol;
 
 #ifdef TRV_USE_OMP
@@ -775,7 +775,7 @@ void MeshField::compute_ylm_wgtd_field(
 ) {
   fftw_complex* weight_kern = nullptr;
 
-  /// Compute the weighted data-source field.
+  // Compute the weighted data-source field.
   weight_kern = fftw_alloc_complex(particles_data.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
@@ -802,7 +802,7 @@ void MeshField::compute_ylm_wgtd_field(
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
 
-  /// Compute the weighted random-source field.
+  // Compute the weighted random-source field.
   weight_kern = fftw_alloc_complex(particles_rand.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
@@ -830,7 +830,7 @@ void MeshField::compute_ylm_wgtd_field(
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
 
-  /// Subtract to compute fluctuations, i.e. δn_LM.
+  // Subtract to compute fluctuations, i.e. δn_LM.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -856,7 +856,7 @@ void MeshField::compute_ylm_wgtd_field(
 ) {
   fftw_complex* weight_kern = nullptr;
 
-  /// Compute the weighted field.
+  // Compute the weighted field.
   weight_kern = fftw_alloc_complex(particles.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
@@ -881,7 +881,7 @@ void MeshField::compute_ylm_wgtd_field(
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 
-  /// Apply the normalising alpha contrast.
+  // Apply the normalising alpha contrast.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -899,7 +899,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
 ) {
   fftw_complex* weight_kern = nullptr;
 
-  /// Compute the quadratic weighted data-source field.
+  // Compute the quadratic weighted data-source field.
   weight_kern = fftw_alloc_complex(particles_data.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
@@ -928,7 +928,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
 
-  /// Compute the quadratic weighted random-source field.
+  // Compute the quadratic weighted random-source field.
   weight_kern = fftw_alloc_complex(particles_rand.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
@@ -958,7 +958,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
 
-  /// Add to compute quadratic fluctuations, i.e. N_LM.
+  // Add to compute quadratic fluctuations, i.e. N_LM.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -984,7 +984,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
 ) {
   fftw_complex* weight_kern = nullptr;
 
-  /// Compute the quadratic weighted field.
+  // Compute the quadratic weighted field.
   weight_kern = fftw_alloc_complex(particles.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
@@ -1011,8 +1011,8 @@ void MeshField::compute_ylm_wgtd_quad_field(
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 
-  /// Apply mean-density matching normalisation (i.e. alpha contrast)
-  /// to compute N_LM.
+  // Apply mean-density matching normalisation (i.e. alpha contrast)
+  // to compute N_LM.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -1023,12 +1023,12 @@ void MeshField::compute_ylm_wgtd_quad_field(
 }
 
 
-/// ----------------------------------------------------------------------
-/// Field transforms
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Field transforms
+// -----------------------------------------------------------------------
 
 void MeshField::fourier_transform() {
-  /// Apply FFT volume normalisation, where ∫d³x ↔ dV Σᵢ, dV =: `vol_cell`.
+  // Apply FFT volume normalisation, where ∫d³x ↔ dV Σᵢ, dV =: `vol_cell`.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -1037,7 +1037,7 @@ void MeshField::fourier_transform() {
     this->field[gid][1] *= this->vol_cell;
   }
 
-  /// Perform FFT.
+  // Perform FFT.
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
@@ -1050,7 +1050,7 @@ void MeshField::fourier_transform() {
   fftw_execute(transform);
   fftw_destroy_plan(transform);
 
-  /// Interlace with the shadow field.
+  // Interlace with the shadow field.
   if (this->params.interlace == "true") {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -1080,7 +1080,7 @@ void MeshField::fourier_transform() {
         for (int k = 0; k < this->params.ngrid[2]; k++) {
           long long idx_grid = this->get_grid_index(i, j, k);
 
-          /// Calculate the index vector representing the grid cell.
+          // Calculate the index vector representing the grid cell.
           double m[3];
           m[0] = (i < this->params.ngrid[0]/2)
             ? double(i) / this->params.ngrid[0]
@@ -1092,9 +1092,9 @@ void MeshField::fourier_transform() {
             ? double(k) / this->params.ngrid[2]
             : double(k) / this->params.ngrid[2] - 1;
 
-          /// Multiply by the phase factor from the half-grid shift and
-          /// add the shadow mesh field contribution.  Note the positive
-          /// sign of `arg`.
+          // Multiply by the phase factor from the half-grid shift and
+          // add the shadow mesh field contribution.  Note the positive
+          // sign of `arg`.
           double arg = M_PI * (m[0] + m[1] + m[2]);
 
           this->field[idx_grid][0] +=
@@ -1115,8 +1115,8 @@ void MeshField::fourier_transform() {
 }
 
 void MeshField::inv_fourier_transform() {
-  /// Apply inverse FFT volume normalisation, where ∫d³k/(2π)³ ↔ (1/V) Σᵢ,
-  /// V =: `vol`.
+  // Apply inverse FFT volume normalisation, where ∫d³k/(2π)³ ↔ (1/V) Σᵢ,
+  // V =: `vol`.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -1125,7 +1125,7 @@ void MeshField::inv_fourier_transform() {
     this->field[gid][1] /= this->vol;
   }
 
-  /// Perform inverse FFT.
+  // Perform inverse FFT.
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
@@ -1140,12 +1140,12 @@ void MeshField::inv_fourier_transform() {
 }
 
 
-/// ----------------------------------------------------------------------
-/// Field operations
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Field operations
+// -----------------------------------------------------------------------
 
 void MeshField::apply_wide_angle_pow_law_kernel() {
-  /// CAVEAT: Discretionary choice such that eps_r / r = O(1.e-9).
+  // CAVEAT: Discretionary choice such that eps_r / r = O(1.e-9).
   const double eps_r = 1.e-6;
 
 #ifdef TRV_USE_OMP
@@ -1194,23 +1194,23 @@ void MeshField::apply_assignment_compensation() {
 }
 
 
-/// ----------------------------------------------------------------------
-/// One-point statistics
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// One-point statistics
+// -----------------------------------------------------------------------
 
 void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   MeshField& field_fourier, std::vector< std::complex<double> >& ylm,
   double k_lower, double k_upper,
   double& k_eff, int& nmodes
 ) {
-  /// Reset field values to zero.
+  // Reset field values to zero.
   this->initialise_density_field();
 
-  /// Reset effective wavenumber and wavevector modes.
+  // Reset effective wavenumber and wavevector modes.
   k_eff = 0.;
   nmodes = 0;
 
-  /// Perform wavevector mode binning in the band.
+  // Perform wavevector mode binning in the band.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for collapse(3) reduction(+:k_eff, nmodes)
 #endif  // TRV_USE_OMP
@@ -1224,17 +1224,17 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
 
         double k_ = trvm::get_vec3d_magnitude(kv);
 
-        /// Determine the grid cell contribution to the band.
+        // Determine the grid cell contribution to the band.
         if (k_lower < k_ && k_ <= k_upper) {
           std::complex<double> fk(
             field_fourier[idx_grid][0], field_fourier[idx_grid][1]
           );
 
-          /// Apply assignment compensation.
+          // Apply assignment compensation.
           double win = this->calc_assignment_window_in_fourier(i, j, k);
           fk /= win;
 
-          /// Weight the field.
+          // Weight the field.
           this->field[idx_grid][0] = (ylm[idx_grid] * fk).real();
           this->field[idx_grid][1] = (ylm[idx_grid] * fk).imag();
 
@@ -1248,7 +1248,7 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
     }
   }
 
-  /// Perform inverse FFT.
+  // Perform inverse FFT.
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
@@ -1261,7 +1261,7 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   fftw_execute(inv_transform);
   fftw_destroy_plan(inv_transform);
 
-  /// Average over wavevector modes in the band.
+  // Average over wavevector modes in the band.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -1279,11 +1279,11 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
     trvm::SphericalBesselCalculator& sjl,
     double r
 ) {
-  /// Reset field values to zero.
+  // Reset field values to zero.
   this->initialise_density_field();
 
-  /// Compute the field weighted by the spherical Bessel function and
-  /// reduced spherical harmonics.
+  // Compute the field weighted by the spherical Bessel function and
+  // reduced spherical harmonics.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for collapse(3)
 #endif  // TRV_USE_OMP
@@ -1297,7 +1297,7 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
 
         double k_ = trvm::get_vec3d_magnitude(kv);
 
-        /// Apply assignment compensation.
+        // Apply assignment compensation.
         std::complex<double> fk(
           field_fourier[idx_grid][0], field_fourier[idx_grid][1]
         );
@@ -1305,8 +1305,8 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
         double win = this->calc_assignment_window_in_fourier(i, j, k);
         fk /= win;
 
-        /// Weight the field including the volume normalisation,
-        /// where ∫d³k/(2π)³ ↔ (1/V) Σᵢ, V =: `vol`.
+        // Weight the field including the volume normalisation,
+        // where ∫d³k/(2π)³ ↔ (1/V) Σᵢ, V =: `vol`.
         this->field[idx_grid][0] =
           sjl.eval(k_ * r) * (ylm[idx_grid] * fk).real() / this->vol;
         this->field[idx_grid][1] =
@@ -1315,7 +1315,7 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
     }
   }
 
-  /// Perform inverse FFT.
+  // Perform inverse FFT.
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
@@ -1330,14 +1330,14 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
 }
 
 
-/// ----------------------------------------------------------------------
-/// Misc
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Misc
+// -----------------------------------------------------------------------
 
 double MeshField::calc_grid_based_powlaw_norm(
   ParticleCatalogue& particles, int order
 ) {
-  /// Initialise the weight field.
+  // Initialise the weight field.
   fftw_complex* weight = nullptr;
 
   weight = fftw_alloc_complex(particles.ntotal);
@@ -1353,15 +1353,15 @@ double MeshField::calc_grid_based_powlaw_norm(
     weight[pid][1] = 0.;
   }
 
-  /// Compute the weighted field.
+  // Compute the weighted field.
   this->assign_weighted_field_to_mesh(particles, weight);
 
   fftw_free(weight); weight = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 
-  /// Compute normalisation volume integral, where ∫d³x ↔ dV Σᵢ,
-  /// dV =: `vol_cell`.
+  // Compute normalisation volume integral, where ∫d³x ↔ dV Σᵢ,
+  // dV =: `vol_cell`.
   double vol_int = 0.;
 
 #ifdef TRV_USE_OMP
@@ -1379,35 +1379,35 @@ double MeshField::calc_grid_based_powlaw_norm(
 }
 
 
-/// **********************************************************************
-/// Field statistics
-/// **********************************************************************
+// ***********************************************************************
+// Field statistics
+// ***********************************************************************
 
-/// ----------------------------------------------------------------------
-/// Life cycle
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Life cycle
+// -----------------------------------------------------------------------
 
 FieldStats::FieldStats(trv::ParameterSet& params){
   this->params = params;
 
   this->reset_stats();
 
-  /// Calculate grid sizes in configuration space.
+  // Calculate grid sizes in configuration space.
   this->dr[0] = this->params.boxsize[0] / this->params.ngrid[0];
   this->dr[1] = this->params.boxsize[1] / this->params.ngrid[1];
   this->dr[2] = this->params.boxsize[2] / this->params.ngrid[2];
 
-  /// Calculate fundamental wavenumbers in Fourier space.
+  // Calculate fundamental wavenumbers in Fourier space.
   this->dk[0] = 2.*M_PI / this->params.boxsize[0];
   this->dk[1] = 2.*M_PI / this->params.boxsize[1];
   this->dk[2] = 2.*M_PI / this->params.boxsize[2];
 
-  /// Calculate mesh volume and mesh grid cell volume.
+  // Calculate mesh volume and mesh grid cell volume.
   this->vol = this->params.volume;
   this->vol_cell = this->vol / double(this->params.nmesh);
 }
 
-/// An empty destructor is redundant but left here for future implementations.
+// An empty destructor is redundant but left here for future implementations.
 FieldStats::~FieldStats() {}
 
 void FieldStats::reset_stats() {
@@ -1431,16 +1431,16 @@ void FieldStats::resize_stats(int num_bins){
 }
 
 
-/// ----------------------------------------------------------------------
-/// Utilities
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Utilities
+// -----------------------------------------------------------------------
 
 bool FieldStats::if_fields_compatible(
   MeshField& field_a, MeshField& field_b
 ) {
   bool flag_compatible = true;
 
-  /// Check if physical dimensions match.
+  // Check if physical dimensions match.
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     if (
       this->params.boxsize[iaxis] != field_a.params.boxsize[iaxis]
@@ -1452,8 +1452,8 @@ bool FieldStats::if_fields_compatible(
     }
   }
 
-  /// Check if derived physical dimensions match.  This is usually
-  /// redundant but parameters may have been altered.
+  // Check if derived physical dimensions match.  This is usually
+  // redundant but parameters may have been altered.
   if (
     this->params.nmesh != field_a.params.nmesh
     || this->params.nmesh != field_b.params.nmesh
@@ -1467,9 +1467,9 @@ bool FieldStats::if_fields_compatible(
 }
 
 
-/// ----------------------------------------------------------------------
-/// Binned statistics
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Binned statistics
+// -----------------------------------------------------------------------
 
 void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
   MeshField& field_a, MeshField& field_b, std::complex<double> shotnoise_amp,
@@ -1477,7 +1477,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
 ) {
   this->resize_stats(kbinning.num_bins);
 
-  /// Check mesh fields compatibility and reuse methods of the first mesh field.
+  // Check mesh fields compatibility and reuse methods of the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
     trvs::logger.error(
       "Input mesh fields have incompatible physical properties."
@@ -1495,9 +1495,9 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
     field_a.get_grid_wavevector(i, j, k, kvec);
   };
 
-  /// Perform fine binning.
-  /// NOTE: Dynamically allocate owing to size.
-  /// CAVEAT: Discretionary choices such that 0.0 < k < 10.0.
+  // Perform fine binning.
+  // NOTE: Dynamically allocate owing to size.
+  // CAVEAT: Discretionary choices such that 0.0 < k < 10.0.
   const int n_sample = 1e5;
   const double dk_sample = 1.e-4;
 
@@ -1542,7 +1542,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
           std::complex<double> sn_mode =
             shotnoise_amp * this->calc_shotnoise_aliasing(i, j, k);
 
-          /// Apply grid corrections.
+          // Apply grid corrections.
           double win_pk, win_sn;
           if (this->params.interlace == "true") {
             win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
@@ -1563,7 +1563,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
           pk_mode /= win_pk;
           sn_mode /= win_sn;
 
-          /// Weight by reduced spherical harmonics.
+          // Weight by reduced spherical harmonics.
           std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
             calc_reduced_spherical_harmonic(ell, m, kv);
 
@@ -1575,7 +1575,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
           double sn_mode_real = sn_mode.real();
           double sn_mode_imag = sn_mode.imag();
 
-          /// Add contribution.
+          // Add contribution.
 OMP_ATOMIC
           nmodes_sample[idx_k]++;
 OMP_ATOMIC
@@ -1598,7 +1598,7 @@ OMP_ATOMIC
     sn_sample[i] = sn_sample_real[i] + trvm::M_I * sn_sample_imag[i];
   }
 
-  /// Perform binning.
+  // Perform binning.
   for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     double k_lower = kbinning.bin_edges[ibin];
     double k_upper = kbinning.bin_edges[ibin + 1];
@@ -1639,8 +1639,8 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
 ) {
   this->resize_stats(rbinning.num_bins);
 
-  /// Check mesh fields compatibility and reuse properties and methods of
-  /// the first mesh field.
+  // Check mesh fields compatibility and reuse properties and methods of
+  // the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
     trvs::logger.error(
       "Input mesh fields have incompatible physical properties."
@@ -1664,8 +1664,8 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   //   field_a.get_grid_wavevector(i, j, k, kvec);
   // };
 
-  /// Set up 3-d two-point statistics mesh grids (before inverse
-  /// Fourier transform).
+  // Set up 3-d two-point statistics mesh grids (before inverse
+  // Fourier transform).
   fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
@@ -1679,7 +1679,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
     twopt_3d[gid][1] = 0.;
   }  // likely redundant but safe
 
-  /// Compute shot noise--subtracted mode powers on mesh grids.
+  // Compute shot noise--subtracted mode powers on mesh grids.
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
@@ -1692,7 +1692,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
         std::complex<double> sn_mode =
           shotnoise_amp * this->calc_shotnoise_aliasing(i, j, k);
 
-        /// Apply grid corrections.
+        // Apply grid corrections.
         double win_pk = 1., win_sn = 1.;
         if (this->params.interlace == "true") {
           win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
@@ -1721,7 +1721,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
     }
   }
 
-  /// Inverse Fourier transform.
+  // Inverse Fourier transform.
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
@@ -1734,9 +1734,9 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   fftw_execute(inv_transform);
   fftw_destroy_plan(inv_transform);
 
-  /// Perform fine binning.
-  /// NOTE: Dynamically allocate owing to size.
-  /// CAVEAT: Discretionary choices such that 0 < r < 100k.
+  // Perform fine binning.
+  // NOTE: Dynamically allocate owing to size.
+  // CAVEAT: Discretionary choices such that 0 < r < 100k.
   const int n_sample = 1e5;
   const double dr_sample = 1.;
 
@@ -1773,7 +1773,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
             twopt_3d[idx_grid][0], twopt_3d[idx_grid][1]
           );
 
-          /// Weight by reduced spherical harmonics.
+          // Weight by reduced spherical harmonics.
           std::complex<double> ylm = trvm::SphericalHarmonicCalculator::
             calc_reduced_spherical_harmonic(ell, m, rv);
 
@@ -1782,7 +1782,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
           double xi_pair_real = xi_pair.real();
           double xi_pair_imag = xi_pair.imag();
 
-          /// Add contribution.
+          // Add contribution.
 OMP_ATOMIC
           npairs_sample[idx_r]++;
 OMP_ATOMIC
@@ -1800,7 +1800,7 @@ OMP_ATOMIC
     xi_sample[i] = xi_sample_real[i] + trvm::M_I * xi_sample_imag[i];
   }
 
-  /// Perform binning.
+  // Perform binning.
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     double r_lower = rbinning.bin_edges[ibin];
     double r_upper = rbinning.bin_edges[ibin + 1];
@@ -1842,8 +1842,8 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
 ) {
   this->resize_stats(rbinning.num_bins);
 
-  /// Check mesh fields compatibility and reuse properties and methods of
-  /// the first mesh field.
+  // Check mesh fields compatibility and reuse properties and methods of
+  // the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
     trvs::logger.error(
       "Input mesh fields have incompatible physical properties."
@@ -1867,8 +1867,8 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   //   field_a.get_grid_wavevector(i, j, k, kvec);
   // };
 
-  /// Set up 3-d two-point statistics mesh grids (before inverse
-  /// Fourier transform).
+  // Set up 3-d two-point statistics mesh grids (before inverse
+  // Fourier transform).
   fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
@@ -1882,7 +1882,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
     twopt_3d[gid][1] = 0.;
   }  // likely redundant but safe
 
-  /// Compute meshed statistics.
+  // Compute meshed statistics.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for collapse(3)
 #endif  // TRV_USE_OMP
@@ -1898,7 +1898,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
         std::complex<double> sn_mode =
           shotnoise_amp * this->calc_shotnoise_aliasing(i, j, k);
 
-        /// Apply grid corrections.
+        // Apply grid corrections.
         double win_pk, win_sn;
         if (this->params.interlace == "true") {
           win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
@@ -1927,7 +1927,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
     }
   }
 
-  /// Inverse Fourier transform.
+  // Inverse Fourier transform.
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
@@ -1940,9 +1940,9 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   fftw_execute(inv_transform);
   fftw_destroy_plan(inv_transform);
 
-  /// Perform fine binning.
-  /// NOTE: Dynamically allocate owing to size.
-  /// CAVEAT: Discretionary choices such that 0 < r < 100k.
+  // Perform fine binning.
+  // NOTE: Dynamically allocate owing to size.
+  // CAVEAT: Discretionary choices such that 0 < r < 100k.
   const int n_sample = 1e5;
   const double dr_sample = 1.;
 
@@ -1979,13 +1979,13 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
             twopt_3d[idx_grid][0], twopt_3d[idx_grid][1]
           );
 
-          /// Weight by reduced spherical harmonics.
+          // Weight by reduced spherical harmonics.
           xi_pair *= ylm_a[idx_grid] * ylm_b[idx_grid];
 
           double xi_pair_real = xi_pair.real();
           double xi_pair_imag = xi_pair.imag();
 
-          /// Add contribution.
+          // Add contribution.
 OMP_ATOMIC
           npairs_sample[idx_r]++;
 OMP_ATOMIC
@@ -2003,7 +2003,7 @@ OMP_ATOMIC
     xi_sample[i] = xi_sample_real[i] + trvm::M_I * xi_sample_imag[i];
   }
 
-  /// Perform binning.
+  // Perform binning.
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     double r_lower = rbinning.bin_edges[ibin];
     double r_upper = rbinning.bin_edges[ibin + 1];
@@ -2025,7 +2025,7 @@ OMP_ATOMIC
     }
   }
 
-  /// Apply normalisation factors.
+  // Apply normalisation factors.
   double norm_factors = 1 / this->vol_cell
     * std::pow(-1, this->params.ell1 + this->params.ell2);
 
@@ -2054,8 +2054,8 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   std::complex<double> shotnoise_amp,
   double k_a, double k_b
 ) {
-  /// Check mesh fields compatibility and reuse properties and methods of
-  /// the first mesh field.
+  // Check mesh fields compatibility and reuse properties and methods of
+  // the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
     trvs::logger.error(
       "Input mesh fields have incompatible physical properties."
@@ -2079,8 +2079,8 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   //   field_a.get_grid_wavevector(i, j, k, kvec);
   // };
 
-  /// Set up 3-d two-point statistics mesh grids (before inverse
-  /// Fourier transform).
+  // Set up 3-d two-point statistics mesh grids (before inverse
+  // Fourier transform).
   fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
@@ -2094,7 +2094,7 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
     twopt_3d[gid][1] = 0.;
   }  // likely redundant but safe
 
-  /// Compute meshed statistics.
+  // Compute meshed statistics.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for collapse(3)
 #endif  // TRV_USE_OMP
@@ -2110,7 +2110,7 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
         std::complex<double> sn_mode =
           shotnoise_amp * this->calc_shotnoise_aliasing(i, j, k);
 
-        /// Apply grid corrections.
+        // Apply grid corrections.
         double win_pk, win_sn;
         if (this->params.interlace == "true") {
           win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
@@ -2139,7 +2139,7 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
     }
   }
 
-  /// Inverse Fourier transform.
+  // Inverse Fourier transform.
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_plan_with_nthreads(omp_get_max_threads());
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
@@ -2152,8 +2152,8 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   fftw_execute(inv_transform);
   fftw_destroy_plan(inv_transform);
 
-  /// Weight by spherical Bessel functions and harmonics before summing
-  /// over the configuration-space grids.
+  // Weight by spherical Bessel functions and harmonics before summing
+  // over the configuration-space grids.
   double S_ij_k_real = 0., S_ij_k_imag = 0.;
 
 #ifdef TRV_USE_OMP
@@ -2199,9 +2199,9 @@ std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
 }
 
 
-/// ----------------------------------------------------------------------
-/// Sampling corrections
-/// ----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Sampling corrections
+// -----------------------------------------------------------------------
 
 double FieldStats::calc_shotnoise_aliasing(int i, int j, int k) {
   i = (i < this->params.ngrid[0]/2) ? i : i - this->params.ngrid[0];

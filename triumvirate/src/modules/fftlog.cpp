@@ -39,8 +39,8 @@ double calc_kr_pivot_lowring(
   double x_m = (mu + 1 - q)/2;
   double y = M_PI * N / (2*L);
 
-  /// Note that no minus is involved by complex conjugation of
-  /// the gamma function.
+  // Note that no minus is involved by complex conjugation of
+  // the gamma function.
   double lnr_, phi_p, phi_m;
   trvm::get_lngamma_components(x_p, y, lnr_, phi_p);
   trvm::get_lngamma_components(x_m, y, lnr_, phi_m);
@@ -101,10 +101,10 @@ void hankel_transform(
   double k[], std::complex<double> b[],
   std::complex<double>* u
 ) {
-  /// Calculate the logarithmic interval.
+  // Calculate the logarithmic interval.
   double L = N * std::log(r[N - 1] / r[0]) / (N - 1.);
 
-  /// Compute the forward transform kernel.
+  // Compute the forward transform kernel.
   std::complex<double>* u_ = nullptr;
   if (u == nullptr) {
     u_ = new std::complex<double>[N];
@@ -117,7 +117,7 @@ void hankel_transform(
     u = u_;
   }
 
-  /// Compute output sample points corresponding to the input sample points.
+  // Compute output sample points corresponding to the input sample points.
   double kr_0 = kr_c * std::exp(-L);
 
   k[0] = kr_0 / r[0];
@@ -125,9 +125,9 @@ void hankel_transform(
     k[j] = k[0] * std::exp(j * L / N);
   }
 
-  /// Compute the convolution b = a * u using FFT.
-  /// ``(`` and ``)`` necessary
-  /// (see https://www.fftw.org/doc/Complex-numbers.html).
+  // Compute the convolution b = a * u using FFT.
+  // ``(`` and ``)`` are necessary
+  // (see https://www.fftw.org/doc/Complex-numbers.html).
   fftw_plan forward_plan = fftw_plan_dft_1d(
     N, (fftw_complex*) a, (fftw_complex*) b, -1, FFTW_ESTIMATE
   );
@@ -144,7 +144,7 @@ void hankel_transform(
   fftw_destroy_plan(forward_plan);
   fftw_destroy_plan(reverse_plan);
 
-  /// Reverse the array `b`.
+  // Reverse the array `b`.
   std::complex<double> b_;
   for (int n = 0; n < N/2; n++) {
     b_ = b[n];
@@ -219,8 +219,8 @@ void transform_corrfunc_to_powspec_multipole(
 
   trvm::sj_transform(ell, m, N, r, xi, k, pk);
 
-  /// Factors of π are needed here the forward transform is used
-  /// in the backend as the backward transform.
+  // Factors of π are needed here the forward transform is used
+  // in the backend as the backward transform.
   for (int j = 0; j < N; j++) {
     pk[j] *= 8 * M_PI * M_PI * M_PI;
   }
