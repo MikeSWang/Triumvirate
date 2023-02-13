@@ -50,9 +50,9 @@
 
 namespace trv {
 
-/// **********************************************************************
-/// Coupling coefficients
-/// **********************************************************************
+// ***********************************************************************
+// Coupling coefficients
+// ***********************************************************************
 
 /**
  * @brief Calculate the coupling coefficient for spherical-harmonic
@@ -70,9 +70,9 @@ namespace trv {
 double calc_coupling_coeff_2pt(int ell, int ELL, int m, int M);
 
 
-/// **********************************************************************
-/// Normalisation
-/// **********************************************************************
+// ***********************************************************************
+// Normalisation
+// ***********************************************************************
 
 /**
  * @brief Calculate mesh-based power spectrum normalisation.
@@ -98,9 +98,9 @@ double calc_powspec_normalisation_from_particles(
 );
 
 
-/// **********************************************************************
-/// Shot noise
-/// **********************************************************************
+// ***********************************************************************
+// Shot noise
+// ***********************************************************************
 
 /**
  * @brief Calculate particle-based power spectrum shot noise level.
@@ -167,12 +167,12 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_powspec(
 );
 
 
-/// **********************************************************************
-/// Full statistics
-/// **********************************************************************
+// ***********************************************************************
+// Full statistics
+// ***********************************************************************
 
-/// STYLE: Standard naming convention is not always followed for
-/// intermediary quantities in the functions below.
+// STYLE: Standard naming convention is not always followed for
+// intermediary quantities in the functions below.
 
 /**
  * @brief Compute power spectrum from paired survey-type catalogues.

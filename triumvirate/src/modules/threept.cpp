@@ -31,9 +31,9 @@ namespace trvm = trv::maths;
 
 namespace trv {
 
-/// **********************************************************************
-/// Coupling coefficients
-/// **********************************************************************
+// ***********************************************************************
+// Coupling coefficients
+// ***********************************************************************
 
 double calc_coupling_coeff_3pt(
   int ell1, int ell2, int ELL, int m1, int m2, int M
@@ -62,9 +62,9 @@ void validate_multipole_coupling(trv::ParameterSet& params) {
 }
 
 
-/// **********************************************************************
-/// Normalisation
-/// **********************************************************************
+// ***********************************************************************
+// Normalisation
+// ***********************************************************************
 
 double calc_bispec_normalisation_from_mesh(
   ParticleCatalogue& particles, trv::ParameterSet& params, double alpha
@@ -119,9 +119,9 @@ double calc_bispec_normalisation_from_particles(
 }
 
 
-/// **********************************************************************
-/// Shot noise
-/// **********************************************************************
+// ***********************************************************************
+// Shot noise
+// ***********************************************************************
 
 std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
   ParticleCatalogue& particles_data, ParticleCatalogue& particles_rand,
@@ -206,14 +206,14 @@ std::complex<double> calc_ylm_wgtd_shotnoise_amp_for_bispec(
 }
 
 
-/// **********************************************************************
-/// Full statistics
-/// **********************************************************************
+// ***********************************************************************
+// Full statistics
+// ***********************************************************************
 
-/// STYLE: Standard naming convention is not always followed for
-/// intermediary quantities in the functions below.
+// STYLE: Standard naming convention is not always followed for
+// intermediary quantities in the functions below.
 
-/// Hereafter 'the Paper' refers to Sugiyama et al. (2019) [1803.02132].
+// Hereafter 'the Paper' refers to Sugiyama et al. (2019) [1803.02132].
 
 trv::BispecMeasurements compute_bispec(
   ParticleCatalogue& catalogue_data, ParticleCatalogue& catalogue_rand,
@@ -229,18 +229,18 @@ trv::BispecMeasurements compute_bispec(
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Set-up
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Set-up
+  // ---------------------------------------------------------------------
 
-  /// Set up/check input.
+  // Set up/check input.
   validate_multipole_coupling(params);
 
   double alpha = catalogue_data.wtotal / catalogue_rand.wtotal;
 
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
-  /// Set up output.
+  // Set up output.
   int* nmodes_save = new int[kbinning.num_bins];
   double* k1_save = new double[kbinning.num_bins];
   double* k2_save = new double[kbinning.num_bins];
@@ -254,15 +254,15 @@ trv::BispecMeasurements compute_bispec(
     sn_save[ibin] = 0.;
   }  // likely redundant but safe
 
-  /// --------------------------------------------------------------------
-  /// Measurement
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Measurement
+  // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_init_threads();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// Compute common field quantities.
+  // Compute common field quantities.
   MeshField dn_00(params);  // δn_00(k)
   dn_00.compute_ylm_wgtd_field(
     catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
@@ -282,10 +282,10 @@ trv::BispecMeasurements compute_bispec(
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
-  /// Compute bispectrum terms including shot noise.
+  // Compute bispectrum terms including shot noise.
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      /// Check for if all Wigner-3j symbols are zero.
+      // Check for if all Wigner-3j symbols are zero.
       std::string flag_vanishing = "true";
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
         double coupling = trv::calc_coupling_coeff_3pt(
@@ -298,7 +298,7 @@ trv::BispecMeasurements compute_bispec(
       }
       if (flag_vanishing == "true") {continue;}
 
-      /// Initialise reduced-spherical-harmonic weights on mesh grids.
+      // Initialise reduced-spherical-harmonic weights on mesh grids.
       std::vector< std::complex<double> > ylm_k_a(params.nmesh);
       std::vector< std::complex<double> > ylm_k_b(params.nmesh);
       std::vector< std::complex<double> > ylm_r_a(params.nmesh);
@@ -325,17 +325,17 @@ trv::BispecMeasurements compute_bispec(
         );
 
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-        /// Calculate the coupling coefficient.
+        // Calculate the coupling coefficient.
         double coupling = trv::calc_coupling_coeff_3pt(
           params.ell1, params.ell2, params.ELL, m1_, m2_, M_
         );  // Wigner 3-j's
         if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
 
-        /// ······························································
-        /// Raw bispectrum
-        /// ······························································
+        // ·······························································
+        // Raw bispectrum
+        // ·······························································
 
-        /// Compute bispectrum components in eqs. (41) & (42) in the Paper.
+        // Compute bispectrum components in eqs. (41) & (42) in the Paper.
         MeshField G_LM(params);  // G_LM
         G_LM.compute_ylm_wgtd_field(
           catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -400,11 +400,11 @@ trv::BispecMeasurements compute_bispec(
           bk_save[ibin] += coupling * vol_cell * bk_component;
         }
 
-        /// ······························································
-        /// Shot noise
-        /// ······························································
+        // ·······························································
+        // Shot noise
+        // ·······························································
 
-        /// Compute shot noise components in eqs. (45) & (46) in the Paper.
+        // Compute shot noise components in eqs. (45) & (46) in the Paper.
         MeshField dn_LM_for_sn(params);  // δn_LM(k) (for shot noise)
         dn_LM_for_sn.compute_ylm_wgtd_field(
           catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -425,8 +425,8 @@ trv::BispecMeasurements compute_bispec(
         );  // \bar{S}_LM
 
         if (params.ell1 == 0 && params.ell2 == 0) {
-          /// When l₁ = l₂ = 0, the Wigner 3-j symbol enforces L = 0
-          /// and the pre-factors involving degrees and orders become 1.
+          // When l₁ = l₂ = 0, the Wigner 3-j symbol enforces L = 0
+          // and the pre-factors involving degrees and orders become 1.
           std::complex<double> S_ijk = coupling * Sbar_LM;  // S|{i = j = k}
           for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
             sn_save[ibin] += S_ijk;
@@ -434,7 +434,7 @@ trv::BispecMeasurements compute_bispec(
         }
 
         if (params.ell2 == 0) {
-          /// When l₂ = 0, the Wigner 3-j symbol enforces L = l₁.
+          // When l₂ = 0, the Wigner 3-j symbol enforces L = l₁.
           FieldStats stats_sn(params);  // S|{i ≠ j = k}
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_00_for_sn, N_LM, Sbar_LM, params.ell1, m1_, kbinning
@@ -456,7 +456,7 @@ trv::BispecMeasurements compute_bispec(
         }
 
         if (params.ell1 == 0) {
-          /// When l₁ = 0, the Wigner 3-j symbol enforces L = l₂.
+          // When l₁ = 0, the Wigner 3-j symbol enforces L = l₂.
           FieldStats stats_sn(params);  // S|{j ≠ i = k}
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_00_for_sn, N_LM, Sbar_LM, params.ell2, m2_, kbinning
@@ -502,9 +502,9 @@ trv::BispecMeasurements compute_bispec(
   fftw_cleanup();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// --------------------------------------------------------------------
-  /// Results
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Results
+  // ---------------------------------------------------------------------
 
   trv::BispecMeasurements bispec_out;
   for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
@@ -549,18 +549,18 @@ trv::ThreePCFMeasurements compute_3pcf(
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Set-up
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Set-up
+  // ---------------------------------------------------------------------
 
-  /// Set up/check input.
+  // Set up/check input.
   validate_multipole_coupling(params);
 
   double alpha = catalogue_data.wtotal / catalogue_rand.wtotal;
 
   double parity = std::pow(-1, params.ell1 + params.ell2);
 
-  /// Set up output.
+  // Set up output.
   int* npairs_save = new int[rbinning.num_bins];
   double* r1_save = new double[rbinning.num_bins];
   double* r2_save = new double[rbinning.num_bins];
@@ -574,15 +574,15 @@ trv::ThreePCFMeasurements compute_3pcf(
     sn_save[ibin] = 0.;
   }  // likely redundant but safe
 
-  /// --------------------------------------------------------------------
-  /// Measurement
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Measurement
+  // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_init_threads();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// Compute common field quantities.
+  // Compute common field quantities.
   MeshField dn_00(params);  // δn_00(k)
   dn_00.compute_ylm_wgtd_field(
     catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
@@ -600,11 +600,11 @@ trv::ThreePCFMeasurements compute_3pcf(
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
-  /// Compute 3PCF terms including shot noise.
+  // Compute 3PCF terms including shot noise.
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      /// Check for vanishing cases where all Wigner-3j symbols are zero.
-      /// Check for if all Wigner-3j symbols are zero.
+      // Check for vanishing cases where all Wigner-3j symbols are zero.
+      // Check for if all Wigner-3j symbols are zero.
       std::string flag_vanishing = "true";
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
         double coupling = trv::calc_coupling_coeff_3pt(
@@ -617,7 +617,7 @@ trv::ThreePCFMeasurements compute_3pcf(
       }
       if (flag_vanishing == "true") {continue;}
 
-      /// Initialise reduced-spherical-harmonic weights on mesh grids.
+      // Initialise reduced-spherical-harmonic weights on mesh grids.
       std::vector< std::complex<double> > ylm_r_a(params.nmesh);
       std::vector< std::complex<double> > ylm_r_b(params.nmesh);
       std::vector< std::complex<double> > ylm_k_a(params.nmesh);
@@ -644,17 +644,17 @@ trv::ThreePCFMeasurements compute_3pcf(
         );
 
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-        /// Calculate the coupling coefficient.
+        // Calculate the coupling coefficient.
         double coupling = trv::calc_coupling_coeff_3pt(
           params.ell1, params.ell2, params.ELL, m1_, m2_, M_
         );  // Wigner 3-j's
         if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
 
-        /// ······························································
-        /// Shot noise
-        /// ······························································
+        // ·······························································
+        // Shot noise
+        // ·······························································
 
-        /// Compute shot noise components in eq. (51) in the Paper.
+        // Compute shot noise components in eq. (51) in the Paper.
         MeshField dn_LM_for_sn(params);  // δn_LM(k) (for shot noise)
         dn_LM_for_sn.compute_ylm_wgtd_field(
           catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -677,7 +677,7 @@ trv::ThreePCFMeasurements compute_3pcf(
             sn_save[ibin] += coupling * stats_sn.xi[ibin];
           } else
           if (params.form == "full") {
-            /// Enforce the Kronecker delta in eq. (51) in the Paper.
+            // Enforce the Kronecker delta in eq. (51) in the Paper.
             if (ibin == params.idx_bin) {
               sn_save[ibin] += coupling * stats_sn.xi[ibin];
             }
@@ -687,7 +687,7 @@ trv::ThreePCFMeasurements compute_3pcf(
           }
         }
 
-        /// Only record the binned coordinates and counts once.
+        // Only record the binned coordinates and counts once.
         if (M_ == 0 && m1_ == 0 && m2_ == 0) {
           for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
             npairs_save[ibin] = stats_sn.npairs[ibin];
@@ -705,11 +705,11 @@ trv::ThreePCFMeasurements compute_3pcf(
           }
         }
 
-        /// ······························································
-        /// Raw 3PCF
-        /// ······························································
+        // ·······························································
+        // Raw 3PCF
+        // ·······························································
 
-        /// Compute 3PCF components in eqs. (42), (48) & (49) in the Paper.
+        // Compute 3PCF components in eqs. (42), (48) & (49) in the Paper.
         MeshField G_LM(params);  // G_LM
         G_LM.compute_ylm_wgtd_field(
           catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -777,9 +777,9 @@ trv::ThreePCFMeasurements compute_3pcf(
   fftw_cleanup();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// --------------------------------------------------------------------
-  /// Results
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Results
+  // ---------------------------------------------------------------------
 
   trv::ThreePCFMeasurements threepcf_out;
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
@@ -824,16 +824,16 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Set-up
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Set-up
+  // ---------------------------------------------------------------------
 
-  /// Set up/check input.
+  // Set up/check input.
   validate_multipole_coupling(params);
 
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
-  /// Set up output.
+  // Set up output.
   int* nmodes_save = new int[kbinning.num_bins];
   double* k1_save = new double[kbinning.num_bins];
   double* k2_save = new double[kbinning.num_bins];
@@ -847,15 +847,15 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
     sn_save[ibin] = 0.;
   }  // likely redundant but safe
 
-  /// --------------------------------------------------------------------
-  /// Measurement
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Measurement
+  // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_init_threads();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// Compute common field quantities.
+  // Compute common field quantities.
   MeshField dn_00(params);  // δn_00(k)
   dn_00.compute_unweighted_field_fluctuations_insitu(catalogue_data);
   dn_00.fourier_transform();
@@ -865,8 +865,8 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
   double vol_cell = dn_00.vol_cell;
 
-  /// Under the global plane-parallel approximation, y_{LM} = δᴰ_{M0}
-  /// (L-invariant) for the line-of-sight spherical harmonic.
+  // Under the global plane-parallel approximation, y_{LM} = δᴰ_{M0}
+  // (L-invariant) for the line-of-sight spherical harmonic.
   MeshField N_L0(params);  // N_L0(k)
   N_L0.compute_unweighted_field(catalogue_data);
   N_L0.fourier_transform();
@@ -876,20 +876,20 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
-  /// Compute bispectrum terms including shot noise.
+  // Compute bispectrum terms including shot noise.
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      /// Under the global plane-parallel approximation, δᴰ_{M0} enforces
-      /// M = 0 for any spherical-harmonic-weighted field fluctuations.
+      // Under the global plane-parallel approximation, δᴰ_{M0} enforces
+      // M = 0 for any spherical-harmonic-weighted field fluctuations.
       int M_ = 0;
 
-      /// Calculate the coupling coefficient.
+      // Calculate the coupling coefficient.
       double coupling = trv::calc_coupling_coeff_3pt(
         params.ell1, params.ell2, params.ELL, m1_, m2_, M_
       );  // Wigner 3-j's
       if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
 
-      /// Initialise/reset spherical harmonic mesh grids.
+      // Initialise/reset spherical harmonic mesh grids.
       std::vector< std::complex<double> > ylm_k_a(params.nmesh);
       std::vector< std::complex<double> > ylm_k_b(params.nmesh);
       std::vector< std::complex<double> > ylm_r_a(params.nmesh);
@@ -915,9 +915,9 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           params.ell2, m2_, params.boxsize, params.ngrid, ylm_r_b
         );
 
-      /// ······························································
-      /// Raw bispectrum
-      /// ······························································
+      // ·································································
+      // Raw bispectrum
+      // ·································································
 
       MeshField G_00(params);  // G_00
       G_00.compute_unweighted_field_fluctuations_insitu(catalogue_data);
@@ -980,13 +980,13 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         bk_save[ibin] += coupling * vol_cell * bk_component;
       }
 
-      /// ······························································
-      /// Shot noise
-      /// ······························································
+      // ·································································
+      // Shot noise
+      // ·································································
 
-      /// Under the global plane-parallel approximation, y_{LM} = δᴰ_{M0}
-      /// (L-invariant) for the line-of-sight spherical harmonic.
-      /// Also note the field is unweighted from simulation sources.
+      // Under the global plane-parallel approximation, y_{LM} = δᴰ_{M0}
+      // (L-invariant) for the line-of-sight spherical harmonic.
+      // Also note the field is unweighted from simulation sources.
       std::complex<double> Sbar_LM =
         double(catalogue_data.ntotal);  // \bar{S}_LM
       std::complex<double> Sbar_L0 = Sbar_LM;  // \bar{S}_L0
@@ -999,7 +999,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       }
 
       if (params.ell2 == 0) {
-        /// When l₂ = 0, the Wigner 3-j symbol enforces L = l₁.
+        // When l₂ = 0, the Wigner 3-j symbol enforces L = l₁.
         FieldStats stats_sn(params);  // S|{i ≠ j = k}
         stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
           dn_00_for_sn, N_L0, Sbar_LM, params.ell1, m1_, kbinning
@@ -1019,7 +1019,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       }
 
       if (params.ell1 == 0) {
-        /// When l₁ = 0, the Wigner 3-j symbol enforces L = l₂.
+        // When l₁ = 0, the Wigner 3-j symbol enforces L = l₂.
         FieldStats stats_sn(params);  // S|{j ≠ i = k}
         stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
           dn_00_for_sn, N_L0, Sbar_LM, params.ell2, m2_, kbinning
@@ -1064,9 +1064,9 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   fftw_cleanup();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// --------------------------------------------------------------------
-  /// Results
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Results
+  // ---------------------------------------------------------------------
 
   trv::BispecMeasurements bispec_out;
   for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
@@ -1112,16 +1112,16 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Set-up
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Set-up
+  // ---------------------------------------------------------------------
 
-  /// Set up/check input.
+  // Set up/check input.
   validate_multipole_coupling(params);
 
   double parity = std::pow(-1, params.ell1 + params.ell2);
 
-  /// Set up output.
+  // Set up output.
   int* npairs_save = new int[rbinning.num_bins];
   double* r1_save = new double[rbinning.num_bins];
   double* r2_save = new double[rbinning.num_bins];
@@ -1135,15 +1135,15 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
     sn_save[ibin] = 0.;
   }  // likely redundant but safe
 
-  /// --------------------------------------------------------------------
-  /// Measurement
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Measurement
+  // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_init_threads();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// Compute common field quantities.
+  // Compute common field quantities.
   MeshField dn_00(params);  // δn_00(k)
   dn_00.compute_unweighted_field_fluctuations_insitu(catalogue_data);
   dn_00.fourier_transform();
@@ -1159,20 +1159,20 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
-  /// Compute 3PCF terms including shot noise.
+  // Compute 3PCF terms including shot noise.
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      /// Under the global plane-parallel approximation, δᴰ_{M0} enforces
-      /// M = 0 for any spherical-harmonic-weighted field fluctuations.
+      // Under the global plane-parallel approximation, δᴰ_{M0} enforces
+      // M = 0 for any spherical-harmonic-weighted field fluctuations.
       int M_ = 0;
 
-      /// Calculate the coupling coefficient.
+      // Calculate the coupling coefficient.
       double coupling = trv::calc_coupling_coeff_3pt(
         params.ell1, params.ell2, params.ELL, m1_, m2_, M_
       );  // Wigner 3-j's
       if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
 
-      /// Initialise/reset spherical harmonic mesh grids.
+      // Initialise/reset spherical harmonic mesh grids.
       std::vector< std::complex<double> > ylm_r_a(params.nmesh);
       std::vector< std::complex<double> > ylm_r_b(params.nmesh);
       std::vector< std::complex<double> > ylm_k_a(params.nmesh);
@@ -1198,13 +1198,13 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
           params.ell2, m2_, params.boxsize, params.ngrid, ylm_k_b
         );
 
-      /// ································································
-      /// Shot noise
-      /// ································································
+      // ·································································
+      // Shot noise
+      // ·································································
 
-      /// Under the global plane-parallel approximation, y_{LM} = δᴰ_{M0}
-      /// (L-invariant) for the line-of-sight spherical harmonic.
-      /// Also note the field is unweighted from simulation sources.
+      // Under the global plane-parallel approximation, y_{LM} = δᴰ_{M0}
+      // (L-invariant) for the line-of-sight spherical harmonic.
+      // Also note the field is unweighted from simulation sources.
       std::complex<double> Sbar_L0 =
         double(catalogue_data.ntotal);  // \bar{S}_L0
 
@@ -1218,7 +1218,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
           sn_save[ibin] += coupling * stats_sn.xi[ibin];
         } else
         if (params.form == "full") {
-            /// Enforce the Kronecker delta in eq. (51) in the Paper.
+            // Enforce the Kronecker delta in eq. (51) in the Paper.
           if (ibin == params.idx_bin) {
             sn_save[ibin] += coupling * stats_sn.xi[ibin];
           }
@@ -1228,7 +1228,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         }
       }
 
-      /// Only record the binned coordinates and counts once.
+      // Only record the binned coordinates and counts once.
       if (m1_ == 0 && m2_ == 0) {
         for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
           npairs_save[ibin] = stats_sn.npairs[ibin];
@@ -1246,11 +1246,11 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         }
       }
 
-      /// ································································
-      /// Raw 3PCF
-      /// ································································
+      // ·································································
+      // Raw 3PCF
+      // ·································································
 
-      /// Compute 3PCF components in eqs. (42), (48) & (49) in the Paper.
+      // Compute 3PCF components in eqs. (42), (48) & (49) in the Paper.
       MeshField G_00(params);  // G_00
       G_00.compute_unweighted_field_fluctuations_insitu(catalogue_data);
       G_00.fourier_transform();
@@ -1314,9 +1314,9 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   fftw_cleanup();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// --------------------------------------------------------------------
-  /// Results
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Results
+  // ---------------------------------------------------------------------
 
   trv::ThreePCFMeasurements threepcf_out;
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
@@ -1365,16 +1365,16 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Set-up
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Set-up
+  // ---------------------------------------------------------------------
 
-  /// Set up/check input.
+  // Set up/check input.
   validate_multipole_coupling(params);
 
   double parity = std::pow(-1, params.ell1 + params.ell2);
 
-  /// Set up output.
+  // Set up output.
   int* npairs_save = new int[rbinning.num_bins];
   double* r1_save = new double[rbinning.num_bins];
   double* r2_save = new double[rbinning.num_bins];
@@ -1388,15 +1388,15 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
     sn_save[ibin] = 0.;
   }  // likely redundant but safe
 
-  /// --------------------------------------------------------------------
-  /// Measurement
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Measurement
+  // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_init_threads();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// Compute common field quantities.
+  // Compute common field quantities.
   MeshField n_00(params);  // n_00(k)
   n_00.compute_ylm_wgtd_field(catalogue_rand, los_rand, alpha, 0, 0);
   n_00.fourier_transform();
@@ -1410,11 +1410,11 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
-  /// Compute 3PCF window terms including shot noise.
+  // Compute 3PCF window terms including shot noise.
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      /// Check for vanishing cases where all Wigner-3j symbols are zero.
-      /// Check for if all Wigner-3j symbols are zero.
+      // Check for vanishing cases where all Wigner-3j symbols are zero.
+      // Check for if all Wigner-3j symbols are zero.
       std::string flag_vanishing = "true";
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
         double coupling = trv::calc_coupling_coeff_3pt(
@@ -1427,7 +1427,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
       }
       if (flag_vanishing == "true") {continue;}
 
-      /// Initialise reduced-spherical-harmonic weights on mesh grids.
+      // Initialise reduced-spherical-harmonic weights on mesh grids.
       std::vector< std::complex<double> > ylm_r_a(params.nmesh);
       std::vector< std::complex<double> > ylm_r_b(params.nmesh);
       std::vector< std::complex<double> > ylm_k_a(params.nmesh);
@@ -1454,24 +1454,24 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         );
 
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-        /// Calculate the coupling coefficient.
+        // Calculate the coupling coefficient.
         double coupling = trv::calc_coupling_coeff_3pt(
           params.ell1, params.ell2, params.ELL, m1_, m2_, M_
         );  // Wigner 3-j's
         if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
 
-        /// ······························································
-        /// Shot noise
-        /// ······························································
+        // ·······························································
+        // Shot noise
+        // ·······························································
 
-        /// Compute shot noise components in eq. (51) in the Paper.
+        // Compute shot noise components in eq. (51) in the Paper.
         MeshField n_LM_for_sn(params);  // n_LM(k) (for shot noise)
         n_LM_for_sn.compute_ylm_wgtd_field(
           catalogue_rand, los_rand, alpha, params.ELL, M_
         );
         n_LM_for_sn.fourier_transform();
 
-        /// QUEST: Originally this was calc_ylm_wgtd_shotnoise_amp_for_powspec.
+        // QUEST: Originally this was calc_ylm_wgtd_shotnoise_amp_for_powspec.
         std::complex<double> Sbar_LM = calc_ylm_wgtd_shotnoise_amp_for_bispec(
           catalogue_rand, los_rand, alpha, params.ELL, M_
         );  // \bar{S}_LM
@@ -1485,7 +1485,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           if (params.form == "diag") {
             sn_save[ibin] += coupling * stats_sn.xi[ibin];
           } else if (params.form == "full") {
-            /// Enforce the Kronecker delta in eq. (51) in the Paper.
+            // Enforce the Kronecker delta in eq. (51) in the Paper.
             if (ibin == params.idx_bin) {
               sn_save[ibin] += coupling * stats_sn.xi[ibin];
             }
@@ -1495,7 +1495,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           }
         }
 
-        /// Only record the binned coordinates and counts once.
+        // Only record the binned coordinates and counts once.
         if (M_ == 0 && m1_ == 0 && m2_ == 0) {
           for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
             npairs_save[ibin] = stats_sn.npairs[ibin];
@@ -1513,11 +1513,11 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           }
         }
 
-        /// ······························································
-        /// Raw 3PCF
-        /// ······························································
+        // ·······························································
+        // Raw 3PCF
+        // ·······························································
 
-        /// Compute 3PCF components in eqs. (42), (48) & (49) in the Paper.
+        // Compute 3PCF components in eqs. (42), (48) & (49) in the Paper.
         MeshField G_LM(params);  // G_LM
         G_LM.compute_ylm_wgtd_field(
           catalogue_rand, los_rand, alpha, params.ELL, M_
@@ -1526,7 +1526,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         G_LM.apply_assignment_compensation();
         G_LM.inv_fourier_transform();
 
-        /// Perform wide-angle corrections if required.
+        // Perform wide-angle corrections if required.
         if (wide_angle) {
           G_LM.apply_wide_angle_pow_law_kernel();
         }
@@ -1589,9 +1589,9 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   fftw_cleanup();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// --------------------------------------------------------------------
-  /// Results
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Results
+  // ---------------------------------------------------------------------
 
   trv::ThreePCFWindowMeasurements threepcfwin_out;
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
@@ -1641,18 +1641,18 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
     );
   }
 
-  /// --------------------------------------------------------------------
-  /// Set-up
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Set-up
+  // ---------------------------------------------------------------------
 
-  /// Set up/check input.
+  // Set up/check input.
   validate_multipole_coupling(params);
 
   double alpha = catalogue_data.wtotal / catalogue_rand.wtotal;
 
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
-  /// Set up output.
+  // Set up output.
   int* nmodes_save = new int[kbinning.num_bins];
   double* k1_save = new double[kbinning.num_bins];
   double* k2_save = new double[kbinning.num_bins];
@@ -1666,15 +1666,15 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
     sn_save[ibin] = 0.;
   }  // likely redundant but safe
 
-  /// --------------------------------------------------------------------
-  /// Measurement
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Measurement
+  // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_init_threads();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// Compute common field quantities.
+  // Compute common field quantities.
   MeshField dn_00(params);  // δn_00(r)
   dn_00.compute_ylm_wgtd_field(
     catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
@@ -1691,10 +1691,10 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
-  /// Compute bispectrum terms.
+  // Compute bispectrum terms.
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      /// Check for if all Wigner-3j symbols are zero.
+      // Check for if all Wigner-3j symbols are zero.
       std::string flag_vanishing = "true";
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
         double coupling = trv::calc_coupling_coeff_3pt(
@@ -1707,7 +1707,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
       }
       if (flag_vanishing == "true") {continue;}
 
-      /// Initialise reduced-spherical-harmonic weights on mesh grids.
+      // Initialise reduced-spherical-harmonic weights on mesh grids.
       std::vector< std::complex<double> > ylm_k_a(params.nmesh);
       std::vector< std::complex<double> > ylm_k_b(params.nmesh);
       std::vector< std::complex<double> > ylm_r_a(params.nmesh);
@@ -1734,17 +1734,17 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         );
 
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-        /// Calculate the coupling coefficient.
+        // Calculate the coupling coefficient.
         double coupling = trv::calc_coupling_coeff_3pt(
           params.ell1, params.ell2, params.ELL, m1_, m2_, M_
         );  // Wigner 3-j's
         if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
 
-        /// ······························································
-        /// Raw bispectrum
-        /// ······························································
+        // ·······························································
+        // Raw bispectrum
+        // ·······························································
 
-        /// Compute bispectrum components in eqs. (41) & (42) in the Paper.
+        // Compute bispectrum components in eqs. (41) & (42) in the Paper.
         MeshField dn_LM_a(params);  // δn_LM_a
         if (los_choice == 0) {
           dn_LM_a.compute_ylm_wgtd_field(
@@ -1836,11 +1836,11 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           bk_save[ibin] += coupling * vol_cell * bk_component;
         }
 
-        /// ······························································
-        /// Shot noise
-        /// ······························································
+        // ·······························································
+        // Shot noise
+        // ·······························································
 
-        /// Compute shot noise components in eqs. (45) & (46) in the Paper.
+        // Compute shot noise components in eqs. (45) & (46) in the Paper.
         MeshField dn_LM_a_for_sn(params);  // δn_LM_a(k) (for shot noise)
         if (los_choice == 0) {
           dn_LM_a_for_sn.compute_ylm_wgtd_field(
@@ -1913,8 +1913,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         );  // \bar{S}_LM
 
         if (params.ell1 == 0 && params.ell2 == 0) {
-          /// When l₁ = l₂ = 0, the Wigner 3-j symbol enforces L = 0
-          /// and the pre-factors involving degrees and orders become 1.
+          // When l₁ = l₂ = 0, the Wigner 3-j symbol enforces L = 0
+          // and the pre-factors involving degrees and orders become 1.
           std::complex<double> S_ijk = coupling * Sbar_LM;  // S|{i = j = k}
           for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
             sn_save[ibin] += S_ijk;
@@ -1922,7 +1922,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         }
 
         if (params.ell2 == 0) {
-          /// When l₂ = 0, the Wigner 3-j symbol enforces L = l₁.
+          // When l₂ = 0, the Wigner 3-j symbol enforces L = l₁.
           FieldStats stats_sn(params);  // S|{i ≠ j = k}
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_LM_a_for_sn, N_LM_a, Sbar_LM, params.ell1, m1_, kbinning
@@ -1943,7 +1943,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         }
 
         if (params.ell1 == 0) {
-          /// When l₁ = 0, the Wigner 3-j symbol enforces L = l₂.
+          // When l₁ = 0, the Wigner 3-j symbol enforces L = l₂.
             FieldStats stats_sn(params);  // S|{j ≠ i = k}
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_LM_b_for_sn, N_LM_b, Sbar_LM,
@@ -1994,9 +1994,9 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   fftw_cleanup();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  /// --------------------------------------------------------------------
-  /// Results
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Results
+  // ---------------------------------------------------------------------
 
   trv::BispecMeasurements bispec_out;
   for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {

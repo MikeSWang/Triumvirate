@@ -28,9 +28,9 @@
 
 namespace trv {
 
-/// **********************************************************************
-/// Binning schemes
-/// **********************************************************************
+// ***********************************************************************
+// Binning schemes
+// ***********************************************************************
 
 Binning::Binning(std::string space, std::string scheme) {
   this->space = space;
@@ -44,7 +44,7 @@ Binning::Binning(trv::ParameterSet& params) : Binning::Binning(
   this->bin_max = params.bin_max;
   this->num_bins = params.num_bins;
 
-  /// Change default padding to grid scale.
+  // Change default padding to grid scale.
   this->dbin_pad_config = (1 + 5.e-3)
     * *std::max_element(params.boxsize, params.boxsize + 3)
     / *std::min_element(params.ngrid, params.ngrid + 3);
@@ -108,7 +108,7 @@ void Binning::set_bins(std::vector<double> bin_edges) {
 }
 
 void Binning::compute_binning() {
-  /// Set up padding parameters.
+  // Set up padding parameters.
   double dbin_pad;
   if (this->space == "fourier") {
     dbin_pad = this->dbin_pad_fourier;
@@ -117,10 +117,11 @@ void Binning::compute_binning() {
     dbin_pad = this->dbin_pad_config;
   }
 
-  /// Implement binning scheme.
-  /// --------------------------------------------------------------------
-  /// Linear binning
-  /// --------------------------------------------------------------------
+  // Implement binning scheme.
+
+  // ---------------------------------------------------------------------
+  // Linear binning
+  // ---------------------------------------------------------------------
   if (scheme == "lin") {
     double dbin = (this->bin_max - this->bin_min) / double(this->num_bins);
 
@@ -134,9 +135,9 @@ void Binning::compute_binning() {
     }
     this->bin_edges.push_back(this->bin_max);
   } else
-  /// --------------------------------------------------------------------
-  /// Logarithmic binning
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Logarithmic binning
+  // ---------------------------------------------------------------------
   if (scheme == "log")  {
     if (this->bin_min == 0.) {
       throw trv::sys::InvalidParameter(
@@ -158,9 +159,9 @@ void Binning::compute_binning() {
     }
     this->bin_edges.push_back(this->bin_max);
   } else
-  /// --------------------------------------------------------------------
-  /// Padded linear binning
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Padded linear binning
+  // ---------------------------------------------------------------------
   if (scheme == "linpad") {
     for (int ibin = 0; ibin < this->nbin_pad; ibin++) {
       double edge_left = dbin_pad * ibin;
@@ -186,9 +187,9 @@ void Binning::compute_binning() {
     }
     this->bin_edges.push_back(this->bin_max);
   } else
-  /// --------------------------------------------------------------------
-  /// Padded logarithmic binning
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Padded logarithmic binning
+  // ---------------------------------------------------------------------
   if (scheme == "logpad") {
     for (int ibin = 0; ibin < this->nbin_pad; ibin++) {
       double edge_left = dbin_pad * ibin;
@@ -224,13 +225,13 @@ void Binning::compute_binning() {
 }
 
 
-/// **********************************************************************
-/// Line of sight
-/// **********************************************************************
+// ***********************************************************************
+// Line of sight
+// ***********************************************************************
 
 
-/// **********************************************************************
-/// Clustering statistics
-/// **********************************************************************
+// ***********************************************************************
+// Clustering statistics
+// ***********************************************************************
 
 }  // namespace trv

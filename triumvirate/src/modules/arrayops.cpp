@@ -28,9 +28,9 @@
 
 namespace trv {
 
-/// **********************************************************************
-/// Extrapolation
-/// **********************************************************************
+// ***********************************************************************
+// Extrapolation
+// ***********************************************************************
 
 namespace sys {
 
@@ -54,7 +54,7 @@ const char* ExtrapError::what() const noexcept {return this->err_mesg.c_str();}
 namespace utils {
 
 void extrap_loglin(double* a, int N, int N_ext, double* a_ext) {
-  /// Check for sign change or zero.
+  // Check for sign change or zero.
   double dlna_left = std::log(a[1] / a[0]);
   if (std::isnan(dlna_left)) {
     throw trv::sys::ExtrapError(
@@ -71,7 +71,7 @@ void extrap_loglin(double* a, int N, int N_ext, double* a_ext) {
     );
   }
 
-  /// Extrapolate the lower end.
+  // Extrapolate the lower end.
   if (a[0] > 0) {
     for (int i = 0; i < N_ext; i++) {
       a_ext[i] = a[0] * std::exp((i - N_ext) * dlna_left);
@@ -82,12 +82,12 @@ void extrap_loglin(double* a, int N, int N_ext, double* a_ext) {
     }
   }
 
-  /// Fill in the middle part.
+  // Fill in the middle part.
   for (int i = N_ext; i < N_ext + N; i++) {
     a_ext[i] = a[i - N_ext];
   }
 
-  /// Extrapolate the upper end.
+  // Extrapolate the upper end.
   if (a[N - 1] > 0) {
     for (int i = N_ext + N; i < N + 2*N_ext; i++) {
       a_ext[i] = a[N - 1] * std::exp((i - N_ext - (N - 1)) * dlna_right);
@@ -106,7 +106,7 @@ void extrap2d_logbilin(
 ) {
   double dlna_left, dlna_right;
   for (int i = N_ext; i < N_ext + N; i++) {
-    /// Check for sign change or zero.
+    // Check for sign change or zero.
     dlna_left = std::log(a[i - N_ext][1] / a[i - N_ext][0]);
     if (std::isnan(dlna_left)) {
       throw trv::sys::ExtrapError(
@@ -123,7 +123,7 @@ void extrap2d_logbilin(
       );
     }
 
-    /// Extrapolate the middle left edge.
+    // Extrapolate the middle left edge.
     for (int j = 0; j < N_ext; j++) {
       if (a[i - N_ext][0] > 0) {
         a_ext[i][j] = a[i - N_ext][0] * std::exp((j - N_ext) * dlna_left);
@@ -132,12 +132,12 @@ void extrap2d_logbilin(
       }
     }
 
-    /// Fill in the central part.
+    // Fill in the central part.
     for (int j = N_ext; j < N_ext + N; j++) {
       a_ext[i][j] = a[i - N_ext][j - N_ext];
     }
 
-    /// Extrapolate the middle right edge.
+    // Extrapolate the middle right edge.
     for (int j = N_ext + N; j < N + 2*N_ext; j++) {
       if (a[i - N_ext][N - 1] > 0) {
         a_ext[i][j] = a[i - N_ext][N - 1] * std::exp(
@@ -151,7 +151,7 @@ void extrap2d_logbilin(
 
   double dlna_up, dlna_down;
   for (int j = 0; j < N + 2*N_ext; j++) {
-    /// Check for sign change or zero.
+    // Check for sign change or zero.
     dlna_up = std::log(a_ext[N_ext + 1][j] / a_ext[N_ext][j]);
     if (std::isnan(dlna_up)) {
       throw trv::sys::ExtrapError(
@@ -168,7 +168,7 @@ void extrap2d_logbilin(
       );
     }
 
-    /// Extrapolate the upper edge.
+    // Extrapolate the upper edge.
     for (int i = 0; i < N_ext; i++) {
       if (a_ext[N_ext][j] > 0) {
         a_ext[i][j] = a_ext[N_ext][j] * std::exp((i - N_ext) * dlna_up);
@@ -177,7 +177,7 @@ void extrap2d_logbilin(
       }
     }
 
-    /// Extrapolate the lower edge.
+    // Extrapolate the lower edge.
     for (int i = N_ext + N; i < N + 2*N_ext; i++) {
       if (a_ext[N_ext + N - 1][j] > 0) {
         a_ext[i][j] = a_ext[N_ext + N - 1][j] * std::exp(
@@ -200,17 +200,17 @@ void extrap2d_bilin(
     da_left = a[i - N_ext][1] -  a[i - N_ext][0];
     da_right = a[i - N_ext][N - 1] - a[i - N_ext][N - 2];
 
-    /// Extrapolate the middle left edge.
+    // Extrapolate the middle left edge.
     for (int j = 0; j < N_ext; j++) {
       a_ext[i][j] = a[i - N_ext][0] + (j - N_ext) * da_left;
     }
 
-    /// Fill in the central part.
+    // Fill in the central part.
     for (int j = N_ext; j < N_ext + N; j++) {
       a_ext[i][j] = a[i - N_ext][j - N_ext];
     }
 
-    /// Extrapolate the middle right edge.
+    // Extrapolate the middle right edge.
     for (int j = N_ext + N; j < N + 2*N_ext; j++) {
       a_ext[i][j] = a[i - N_ext][N-1] + (j - N_ext - (N - 1)) * da_right;
     }
@@ -221,12 +221,12 @@ void extrap2d_bilin(
     da_up = a_ext[N_ext + 1][j] - a_ext[N_ext][j];
     da_down = a_ext[N_ext + N - 1][j] - a_ext[N_ext + N - 2][j];
 
-    /// Extrapolate the upper edge.
+    // Extrapolate the upper edge.
     for (int i =  0; i < N_ext; i++) {
       a_ext[i][j] = a_ext[N_ext][j] + (i - N_ext) * da_up;
     }
 
-    /// Extrapolate the lower edge.
+    // Extrapolate the lower edge.
     for (int i =  N_ext + N; i < 2*N_ext + N; i++) {
       a_ext[i][j] = a_ext[N_ext + N - 1][j] + (i - N_ext - (N - 1)) * da_down;
     }

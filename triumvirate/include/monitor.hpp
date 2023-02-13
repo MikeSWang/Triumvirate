@@ -39,7 +39,7 @@
 #include <string>
 
 /// @cond DOXYGEN_DOC_MACROS
-/// Declares OMP macros.
+// Declares OMP macros.
 #ifdef TRV_USE_OMP
 #include <omp.h>
 #define OMP_ATOMIC _Pragma("omp atomic")
@@ -50,7 +50,7 @@
 #endif  // TRV_USE_OMP
 /// @endcond
 
-/// Enter debugging mode.
+// Enter debugging mode.
 #ifdef DBG_MODE
 #include <iostream>
 #endif  // DBG_MODE
@@ -58,11 +58,11 @@
 namespace trv {
 namespace sys {
 
-/// **********************************************************************
-/// Program tracking
-/// **********************************************************************
+// ***********************************************************************
+// Program tracking
+// ***********************************************************************
 
-/// RFE: Implement MPI.
+// RFE: Implement MPI.
 extern int currTask;  ///< current task
 
 extern double gbytesMem;     ///< current memory usage in gibibytes
@@ -115,7 +115,7 @@ std::string show_timestamp();
  *
  */
 enum LogLevel {
-  /// CAVEAT: Discretionary choices.
+  // CAVEAT: Discretionary choices.
   NSET = 0,   ///>  0: unset
   DBUG = 10,  ///> 10: debugging
   STAT = 20,  ///> 20: status
@@ -249,9 +249,9 @@ class Logger {
 extern Logger logger;  ///< default logger at `NSET` level
 
 
-/// **********************************************************************
-/// Program exceptions
-/// **********************************************************************
+// ***********************************************************************
+// Program exceptions
+// ***********************************************************************
 
 /**
  * @brief Exception raised when a function or method is unimplemented.
@@ -350,9 +350,9 @@ class InvalidData: public std::runtime_error {
 };
 
 
-/// **********************************************************************
-/// Program notices
-/// **********************************************************************
+// ***********************************************************************
+// Program notices
+// ***********************************************************************
 
 /**
  * @brief Display program notice including logo in @c stdout.

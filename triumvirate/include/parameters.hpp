@@ -52,9 +52,9 @@ namespace trv {
  */
 class ParameterSet {
  public:
-  /// --------------------------------------------------------------------
-  /// I/O
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // I/O
+  // ---------------------------------------------------------------------
 
   std::string catalogue_dir;        ///< catalogue directory
   std::string measurement_dir;      ///< measurement/output directory
@@ -64,20 +64,20 @@ class ParameterSet {
                                     ///< (comma-separated without space)
   std::string output_tag;           ///< output tag
 
-  /// --------------------------------------------------------------------
-  /// Mesh sampling
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Mesh sampling
+  // ---------------------------------------------------------------------
 
-  /// Mesh properties.
+  // Mesh properties.
   double boxsize[3];  ///< box size (in Mpc/h) in each dimension
   int ngrid[3];       ///< grid number in each dimension
 
-  /// Derived mesh quantities.
+  // Derived mesh quantities.
   double volume;  ///< box volume (in Mpc^3/h^3)
   int nmesh;      ///< number of mesh grid cells
                   // RFE: change to @c long long and take care of int()
 
-  /// Mesh alignment.
+  // Mesh alignment.
   std::string alignment = "centre";  ///< box alignment:
                                      ///< {"centre" (default), "pad"}
   std::string padscale = "box";      ///< padding scale
@@ -85,7 +85,7 @@ class ParameterSet {
                                      ///< {"box" (default), "grid"}
   double padfactor;                  ///< padding factor
 
-  /// Mesh assignment.
+  // Mesh assignment.
   std::string assignment = "tsc";   ///< mesh assignment scheme:
                                     ///< {"ngp", "cic",
                                     ///<  "tsc" (default), "pcs"}
@@ -93,11 +93,11 @@ class ParameterSet {
                                     ///< {"true"/"on",
                                     ///<  "false"/"off" (default)}
 
-  /// --------------------------------------------------------------------
-  /// Measurement
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Measurement
+  // ---------------------------------------------------------------------
 
-  /// Measurement specification.
+  // Measurement specification.
   std::string catalogue_type;    ///< catalogue type:
                                  ///< {"survey", "random", "sim"}
   std::string statistic_type;  ///< statistic type:
@@ -116,11 +116,11 @@ class ParameterSet {
   std::string form = "diag";    ///< form of the bispectrum measurement:
                                 ///< {"diag" (default), "full"}
 
-  /// Derived measurement specification.
+  // Derived measurement specification.
   std::string npoint;  ///< <i>N</i>-point case: {"2pt", "3pt"}
   std::string space;   ///< coordinte space: {"fourier", "config"}
 
-  /// Measurement parameters.
+  // Measurement parameters.
   int ell1;  ///< spherical degree associated with the first wavevector
   int ell2;  ///< spherical degree associated with the second wavevector
   int ELL;   ///< spherical degree associated with the line of sight
@@ -135,9 +135,9 @@ class ParameterSet {
   int idx_bin;   ///< fixed bin index in "full" @c form
                  ///< bispectrum measurements
 
-  /// --------------------------------------------------------------------
-  /// Misc
-  /// --------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Misc
+  // ---------------------------------------------------------------------
 
   int verbose = 20;  ///< logging verbosity level:
                      ///< {0  (NSET),
