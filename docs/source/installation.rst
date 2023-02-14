@@ -5,10 +5,10 @@ Installation
 Python package
 ==============
 
-.. image:: https://img.shields.io/pypi/v/Triumvirate?logo=PyPI&style=flat-square&color=informational
+.. image:: https://img.shields.io/pypi/v/Triumvirate?logo=PyPI&color=informational
     :target: https://pypi.org/project/Triumvirate
     :alt: PyPI
-.. image:: https://img.shields.io/conda/vn/conda-forge/triumvirate?logo=conda-forge&style=flat-square
+.. image:: https://img.shields.io/conda/vn/conda-forge/triumvirate?logo=conda-forge
     :target: https://anaconda.org/conda-forge/triumvirate
     :alt: conda
 
