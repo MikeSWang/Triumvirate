@@ -70,7 +70,7 @@ Changes in recent releases are listed in the `change log
 Licence
 =======
 
-.. image:: https://img.shields.io/github/license/MikeSWang/Triumvirate?style=flat-square&color=informational
+.. image:: https://img.shields.io/github/license/MikeSWang/Triumvirate?label=licence&style=flat-square&color=informational
     :target: https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE
     :alt: GPL-3.0 Licence
 
