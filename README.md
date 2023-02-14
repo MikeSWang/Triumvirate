@@ -128,7 +128,7 @@ Changes in recent releases are listed in the [change log](CHANGELOG.md).
 ## Licence
 
 [![Licence](
-https://img.shields.io/github/license/MikeSWang/Triumvirate?style=flat-square&color=informational
+https://img.shields.io/github/license/MikeSWang/Triumvirate?label=licence&style=flat-square&color=informational
 )](https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE)
 
 ``Triumvirate`` is made freely available under the [GPL-3.0 licence](
