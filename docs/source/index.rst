@@ -26,13 +26,13 @@ Attribution
 .. image:: https://img.shields.io/badge/JOSS-doi-brightgreen
     :target: https://joss.theoj.org/papers/?/status.svg
     :alt: JOSS
-.. image:: https://img.shields.io/badge/arXiv-yymm.%3F-b31b1b?style=flat-square
+.. image:: https://img.shields.io/badge/arXiv-yymm.%3F-b31b1b
     :target: https://arxiv.org/abs/?.?
     :alt: arXiv
-.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-informational?style=flat-square
+.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-informational
     :target: https://doi.org/10.1093/mnras/sty3249
     :alt: MNRAS
-.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-informational?style=flat-square
+.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-informational
     :target: https://doi.org/10.1093/mnras/stx2333
     :alt: MNRAS
 
