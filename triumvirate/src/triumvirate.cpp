@@ -94,6 +94,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  trv::sys::make_write_dir(params.measurement_dir);
   if (params.print_to_file()) {
     if (trv::sys::currTask == 0) {
       trv::sys::logger.warn(
@@ -413,8 +414,6 @@ int main(int argc, char* argv[]) {
   // ---------------------------------------------------------------------
   // B.5 Clustering algorithms
   // ---------------------------------------------------------------------
-
-  trv::sys::make_write_dir(params.measurement_dir);
 
   char save_filepath[1024];
   if (params.statistic_type == "powspec") {
