@@ -62,7 +62,9 @@ endif
 
 INCLUDES := -I${DIR_INCLUDE}
 CFLAGS := -O3 -Wall $(shell pkg-config --cflags gsl fftw3)
-LDFLAGS := $(shell pkg-config --libs gsl fftw3)
+LDFLAGS := $(if $(shell pkg-config --libs gsl fftw3),\
+                $(shell pkg-config --libs gsl fftw3),\
+								$(-lgsl -lgslcblas -lm -lfftw3))
 
 
 # ------------------------------------------------------------------------
@@ -142,11 +144,12 @@ export PY_LDFLAGS=${LDFLAGS}
 
 .PHONY: ${PROGNAME}
 
+PROGEXE := ${PROGNAME}
 PROGLIB := ${DIR_BUILDLIB}/lib${LIBNAME}.a
 
-PROGSRC := ${DIR_SRC}/${PROGNAME}.cpp
+PROGSRC := ${DIR_SRC}/${PROGEXE}.cpp
 MODULESRC := $(wildcard ${DIR_MODULESRC}/*.cpp)
-PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}.o
+PROGOBJ := ${DIR_BUILDOBJ}/${PROGEXE}.o
 MODULEOBJ := $(patsubst ${DIR_MODULESRC}/%.cpp,${DIR_BUILDOBJ}/%.o,${MODULESRC})
 
 # ------------------------------------------------------------------------
@@ -157,13 +160,13 @@ install: cppinstall pyinstall
 
 cppinstall: cpplibinstall cppappbuild
 
-cppappbuild: ${PROGNAME}
-
-cpplibinstall: ${PROGLIB}
-
 pyinstall:
 	@echo "Installing Triumvirate Python package (in development mode)..."
 	python -m pip install --verbose --user --editable .
+
+cppappbuild: ${PROGEXE}
+
+cpplibinstall: ${PROGLIB}
 
 
 # ------------------------------------------------------------------------
@@ -185,7 +188,7 @@ testit:
 # Components
 # ------------------------------------------------------------------------
 
-${PROGNAME}: ${PROGOBJ} ${MODULEOBJ}
+${PROGEXE}: ${PROGOBJ} ${MODULEOBJ}
 	@echo "Compiling Triumvirate C++ program..."
 	$(CXX) $(CFLAGS) -o $(addprefix $(DIR_BUILD)/, $(notdir $@)) $^ $(LDFLAGS)
 
