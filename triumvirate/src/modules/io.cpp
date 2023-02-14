@@ -54,6 +54,17 @@ bool if_filepath_is_set(std::string pathstr) {
   return false;
 }
 
+void make_write_dir(std::string dirstr) {
+  if (mkdir(dirstr.c_str(), 0777) && errno != EEXIST) {
+    trv::sys::logger.error(
+      "Failed to create output measurement directory."
+    );
+    throw trv::sys::IOError(
+      "Failed to create output measurement directory.\n"
+    );
+  }
+}
+
 }  // namespace trv::sys
 
 

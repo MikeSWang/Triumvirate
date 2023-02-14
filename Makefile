@@ -3,6 +3,7 @@
 # ========================================================================
 
 PROGNAME := triumvirate
+LIBNAME := trv
 
 # ------------------------------------------------------------------------
 # Directories
@@ -20,7 +21,8 @@ DIR_INCLUDE := ${DIR_PKG}/include
 DIR_SRC := ${DIR_PKG}/src
 DIR_TESTS := ${DIR_PKG}/tests
 
-# Build object subdirectory
+# Build subdirectories
+DIR_BUILDLIB := ${DIR_BUILD}/lib
 DIR_BUILDOBJ := ${DIR_BUILD}/obj
 
 # Module source subdirectory
@@ -140,6 +142,8 @@ export PY_LDFLAGS=${LDFLAGS}
 
 .PHONY: ${PROGNAME}
 
+PROGLIB := ${DIR_BUILDLIB}/lib${LIBNAME}.a
+
 PROGSRC := ${DIR_SRC}/${PROGNAME}.cpp
 MODULESRC := $(wildcard ${DIR_MODULESRC}/*.cpp)
 PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}.o
@@ -151,7 +155,11 @@ MODULEOBJ := $(patsubst ${DIR_MODULESRC}/%.cpp,${DIR_BUILDOBJ}/%.o,${MODULESRC})
 
 install: cppinstall pyinstall
 
-cppinstall: ${PROGNAME}
+cppinstall: cpplibinstall cppappbuild
+
+cppappbuild: ${PROGNAME}
+
+cpplibinstall: ${PROGLIB}
 
 pyinstall:
 	@echo "Installing Triumvirate Python package (in development mode)..."
@@ -178,8 +186,13 @@ testit:
 # ------------------------------------------------------------------------
 
 ${PROGNAME}: ${PROGOBJ} ${MODULEOBJ}
-	@echo "Building Triumvirate C++ program..."
+	@echo "Compiling Triumvirate C++ program..."
 	$(CXX) $(CFLAGS) -o $(addprefix $(DIR_BUILD)/, $(notdir $@)) $^ $(LDFLAGS)
+
+${PROGLIB}: ${MODULEOBJ}
+	@echo "Installing Triumvirate C++ library..."
+	if [ ! -d build/lib ]; then mkdir -p build/lib; fi
+	ar -rcsv build/lib/libtrv.a $^
 
 ${PROGOBJ}: ${PROGSRC}
 	if [ ! -d build/obj ]; then mkdir -p build/obj; fi
