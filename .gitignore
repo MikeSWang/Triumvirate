@@ -8,6 +8,9 @@ __pycache__/
 # Compiled objects
 *.o
 
+# Compiled static libraries
+*.a
+
 # Distribution/packaging
 build/
 develop-eggs/
@@ -18,17 +21,27 @@ eggs/
 *.egg
 *.egg-info/
 lib/
+lib64/
+sdist/
+var/
 wheels/
 
+# Executables
+*.out
+
 # Unit test/coverage reports
+.tox
 .coverage
+.coverage.*
+.cache
+nosetests.xml
 coverage.xml
 *.cover
 .pytest_cache/
 cover/
 
 # Sphinx documentation
-docs/build/**
+docs/build/
 *.rst
 
 # Jupyter Notebook
@@ -54,9 +67,6 @@ triumvirate/*.cpp
 # File: publication/supplements/*.npy
 publication/supplements/*.npy
 
-# Directory (temporary):
-fftlog2d/
-
 # Exceptions
 # File: build/.ignore
 !build/.ignore
@@ -71,10 +81,10 @@ fftlog2d/
 !docs/source/index.rst
 !docs/source/background.rst
 !docs/source/installation.rst
+!docs/source/tutorials.rst
 !docs/source/apiref.rst
 !docs/source/apidoc_py.rst
 !docs/source/apidoc_cpp.rst
-!docs/source/tutorials.rst
 
 # File: docs/build/.ignore
 !docs/build/.gitignore
