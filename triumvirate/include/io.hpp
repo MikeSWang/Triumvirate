@@ -28,6 +28,8 @@
 #ifndef TRIUMVIRATE_INCLUDE_IO_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_IO_HPP_INCLUDED_
 
+#include <sys/stat.h>
+#include <cerrno>
 #include <string>
 
 #include "parameters.hpp"
@@ -49,6 +51,14 @@ namespace sys {
  * @returns { @c true , @c false }
  */
 bool if_filepath_is_set(std::string pathstr);
+
+/**
+ * @brief Make write directory.
+ *
+ * @param dirstr Directory path string.
+ * @throws trv::sys::IOError When write directory cannot be created.
+ */
+void make_write_dir(std::string dirstr);
 
 }  // namespace trv::sys
 
