@@ -6,7 +6,7 @@ DOCS_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 cd ${DOCS_DIR}
 
 # Set API doc directories and paths.
-DOXY_CONF_FILE=source/doxygen.conf
+DOXY_CONF_FILE=source/Doxyfile.in
 
 APIDOC_PY_DIR=./source/apidoc_py
 TMPL_DIR=./source/_templates/
