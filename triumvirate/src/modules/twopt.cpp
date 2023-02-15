@@ -19,7 +19,7 @@
 
 /**
  * @file twopt.cpp
- * @authors Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang),
  *          Naonori Sugiyama (https://github.com/naonori)
  *
  */
@@ -56,7 +56,8 @@ double calc_powspec_normalisation_from_mesh(
 ) {
   trv::MeshField catalogue_mesh(params);
 
-  double norm_factor = catalogue_mesh.calc_grid_based_powlaw_norm(particles, 2);
+  double norm_factor =
+    catalogue_mesh.calc_grid_based_powlaw_norm(particles, 2);
 
   catalogue_mesh.finalise_density_field();  // likely redundant but safe
 

@@ -19,7 +19,7 @@
 
 /**
  * @file io.cpp
- * @authors Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang),
  *          Naonori Sugiyama (https://github.com/naonori)
  *
  */
@@ -29,7 +29,7 @@
 namespace trv {
 
 // ***********************************************************************
-// Utilities
+// Paths
 // ***********************************************************************
 
 namespace sys {
@@ -69,8 +69,10 @@ void make_write_dir(std::string dirstr) {
 
 
 // ***********************************************************************
-// Outputs
+// Files
 // ***********************************************************************
+
+namespace io {
 
 // -----------------------------------------------------------------------
 // Measurement header
@@ -78,7 +80,8 @@ void make_write_dir(std::string dirstr) {
 
 void print_measurement_header_to_file(
   std::FILE* fileptr, trv::ParameterSet& params,
-  trv::ParticleCatalogue& catalogue_data, trv::ParticleCatalogue& catalogue_rand,
+  trv::ParticleCatalogue& catalogue_data,
+  trv::ParticleCatalogue& catalogue_rand,
   double norm_factor, double norm_factor_alt
 ) {
   std::fprintf(
@@ -414,10 +417,13 @@ void print_measurement_datatab_to_file(
       meas_3pcf_win.r1bin[ibin], meas_3pcf_win.r1eff[ibin],
       meas_3pcf_win.r2bin[ibin], meas_3pcf_win.r2eff[ibin],
       meas_3pcf_win.npairs[ibin],
-      meas_3pcf_win.zeta_raw[ibin].real(), meas_3pcf_win.zeta_raw[ibin].imag(),
-      meas_3pcf_win.zeta_shot[ibin].real(), meas_3pcf_win.zeta_shot[ibin].imag()
+      meas_3pcf_win.zeta_raw[ibin].real(),
+      meas_3pcf_win.zeta_raw[ibin].imag(),
+      meas_3pcf_win.zeta_shot[ibin].real(),
+      meas_3pcf_win.zeta_shot[ibin].imag()
     );
   }
 }
 
+}  // namespace trv::io
 }  // namespace trv

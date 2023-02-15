@@ -19,7 +19,7 @@
 
 /**
  * @file threept.hpp
- * @authors Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang),
  *          Naonori Sugiyama (https://github.com/naonori)
  * @brief Three-point statistic computations.
  *

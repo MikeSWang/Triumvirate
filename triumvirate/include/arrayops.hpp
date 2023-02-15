@@ -19,7 +19,7 @@
 
 /**
  * @file arrayops.hpp
- * @authors Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang),
  *          Naonori Sugiyama (https://github.com/naonori)
  * @brief Array operations.
  *
@@ -71,7 +71,7 @@ class ExtrapError: public std::runtime_error {
 
 }  // namespace trv::sys
 
-namespace utils {
+namespace array {
 
 /**
  * @brief Extrapolate sample series exponentially (i.e. log-linearly).
@@ -131,7 +131,7 @@ void extrap2d_bizeros(
   std::vector< std::vector<double> >& a_ext
 );
 
-}  // namespace trv::utils
+}  // namespace trv::array
 }  // namespace trv
 
 #endif  // !TRIUMVIRATE_INCLUDE_ARRAYOPS_HPP_INCLUDED_

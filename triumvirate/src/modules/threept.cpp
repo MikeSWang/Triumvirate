@@ -19,7 +19,7 @@
 
 /**
  * @file threept.cpp
- * @authors Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang),
  *          Naonori Sugiyama (https://github.com/naonori)
  *
  */
@@ -71,7 +71,8 @@ double calc_bispec_normalisation_from_mesh(
 ) {
   MeshField catalogue_mesh(params);
 
-  double norm_factor = catalogue_mesh.calc_grid_based_powlaw_norm(particles, 3);
+  double norm_factor =
+    catalogue_mesh.calc_grid_based_powlaw_norm(particles, 3);
 
   catalogue_mesh.finalise_density_field();  // likely redundant but safe
 
@@ -462,7 +463,8 @@ trv::BispecMeasurements compute_bispec(
             dn_00_for_sn, N_LM, Sbar_LM, params.ell2, m2_, kbinning
           );
           for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-            sn_save[ibin] += coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
+            sn_save[ibin] +=
+              coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
           }
         }
 
@@ -564,8 +566,10 @@ trv::ThreePCFMeasurements compute_3pcf(
   int* npairs_save = new int[rbinning.num_bins];
   double* r1_save = new double[rbinning.num_bins];
   double* r2_save = new double[rbinning.num_bins];
-  std::complex<double>* zeta_save = new std::complex<double>[rbinning.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[rbinning.num_bins];
+  std::complex<double>* zeta_save =
+    new std::complex<double>[rbinning.num_bins];
+  std::complex<double>* sn_save =
+    new std::complex<double>[rbinning.num_bins];
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     npairs_save[ibin] = 0;
     r1_save[ibin] = 0.;
@@ -1006,7 +1010,8 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         );
         if (params.form == "diag") {
           for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-            sn_save[ibin] += coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
+            sn_save[ibin] +=
+              coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
           }
         } else
         if (params.form == "full") {
@@ -1125,8 +1130,10 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   int* npairs_save = new int[rbinning.num_bins];
   double* r1_save = new double[rbinning.num_bins];
   double* r2_save = new double[rbinning.num_bins];
-  std::complex<double>* zeta_save = new std::complex<double>[rbinning.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[rbinning.num_bins];
+  std::complex<double>* zeta_save =
+    new std::complex<double>[rbinning.num_bins];
+  std::complex<double>* sn_save =
+    new std::complex<double>[rbinning.num_bins];
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     npairs_save[ibin] = 0;
     r1_save[ibin] = 0.;
@@ -1378,8 +1385,10 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   int* npairs_save = new int[rbinning.num_bins];
   double* r1_save = new double[rbinning.num_bins];
   double* r2_save = new double[rbinning.num_bins];
-  std::complex<double>* zeta_save = new std::complex<double>[rbinning.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[rbinning.num_bins];
+  std::complex<double>* zeta_save =
+    new std::complex<double>[rbinning.num_bins];
+  std::complex<double>* sn_save =
+    new std::complex<double>[rbinning.num_bins];
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     npairs_save[ibin] = 0;
     r1_save[ibin] = 0.;
@@ -1950,7 +1959,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             params.ell2, m2_, kbinning
           );
           for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-            sn_save[ibin] += coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
+            sn_save[ibin] +=
+              coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
           }
         }
 

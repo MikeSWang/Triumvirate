@@ -19,7 +19,7 @@
 
 /**
  * @file field.cpp
- * @authors Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang),
  *          Naonori Sugiyama (https://github.com/naonori)
  *
  */
@@ -2046,7 +2046,8 @@ OMP_ATOMIC
   delete[] xi_sample;
 }
 
-std::complex<double> FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
+std::complex<double> \
+FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   MeshField& field_a, MeshField& field_b,
   std::vector< std::complex<double> >& ylm_a,
   std::vector< std::complex<double> >& ylm_b,

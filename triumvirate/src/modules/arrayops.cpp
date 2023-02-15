@@ -19,7 +19,7 @@
 
 /**
  * @file arrayops.cpp
- * @authors Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang),
  *          Naonori Sugiyama (https://github.com/naonori)
  *
  */
@@ -51,7 +51,7 @@ const char* ExtrapError::what() const noexcept {return this->err_mesg.c_str();}
 
 }  // namespace trv::sys
 
-namespace utils {
+namespace array {
 
 void extrap_loglin(double* a, int N, int N_ext, double* a_ext) {
   // Check for sign change or zero.
@@ -260,5 +260,5 @@ void extrap2d_bizeros(
   }
 }
 
-}  // namespace trv::utils
+}  // namespace trv::array
 }  // namespace trv

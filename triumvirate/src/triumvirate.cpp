@@ -19,7 +19,7 @@
 
 /**
  * @file triumvirate.cpp
- * @authors Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang),
  *          Naonori Sugiyama (https://github.com/naonori)
  * @brief Perform two- and three-point clustering statistic measurements.
  *
@@ -229,7 +229,8 @@ int main(int argc, char* argv[]) {
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
     for (int pid = 0; pid < catalogue_data.ntotal; pid++) {
-      double los_mag = trv::maths::get_vec3d_magnitude(catalogue_data[pid].pos);
+      double los_mag =
+        trv::maths::get_vec3d_magnitude(catalogue_data[pid].pos);
 
       if (los_mag == 0.) {
         trv::sys::logger.warn(
@@ -256,7 +257,8 @@ int main(int argc, char* argv[]) {
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
     for (int pid = 0; pid < catalogue_rand.ntotal; pid++) {
-      double los_mag = trv::maths::get_vec3d_magnitude(catalogue_rand[pid].pos);
+      double los_mag =
+        trv::maths::get_vec3d_magnitude(catalogue_rand[pid].pos);
 
       if (los_mag == 0.) {
         trv::sys::logger.warn(
@@ -429,7 +431,7 @@ int main(int argc, char* argv[]) {
         params, binning, norm_factor
       );
       save_fileptr = std::fopen(save_filepath, "w");
-      trv::print_measurement_header_to_file(
+      trv::io::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, catalogue_rand,
         norm_factor, norm_factor_alt
       );
@@ -439,11 +441,13 @@ int main(int argc, char* argv[]) {
         catalogue_data, params, binning, norm_factor
       );
       save_fileptr = std::fopen(save_filepath, "w");
-      trv::print_measurement_header_to_file(
+      trv::io::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, norm_factor, norm_factor_alt
       );
     }
-    trv::print_measurement_datatab_to_file(save_fileptr, params, meas_powspec);
+    trv::io::print_measurement_datatab_to_file(
+      save_fileptr, params, meas_powspec
+    );
     std::fclose(save_fileptr);
   } else
   if (params.statistic_type == "2pcf") {
@@ -459,7 +463,7 @@ int main(int argc, char* argv[]) {
         params, binning, norm_factor
       );
       save_fileptr = std::fopen(save_filepath, "w");
-      trv::print_measurement_header_to_file(
+      trv::io::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, catalogue_rand,
         norm_factor, norm_factor_alt
       );
@@ -469,11 +473,13 @@ int main(int argc, char* argv[]) {
         catalogue_data, params, binning, norm_factor
       );
       save_fileptr = std::fopen(save_filepath, "w");
-      trv::print_measurement_header_to_file(
+      trv::io::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, norm_factor, norm_factor_alt
       );
     }
-    trv::print_measurement_datatab_to_file(save_fileptr, params, meas_2pcf);
+    trv::io::print_measurement_datatab_to_file(
+      save_fileptr, params, meas_2pcf
+    );
     std::fclose(save_fileptr);
   } else
   if (params.statistic_type == "2pcf-win") {
@@ -486,10 +492,12 @@ int main(int argc, char* argv[]) {
       catalogue_rand, los_rand, params, binning, alpha, norm_factor
     );
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    trv::print_measurement_header_to_file(
+    trv::io::print_measurement_header_to_file(
       save_fileptr, params, catalogue_rand, norm_factor, norm_factor_alt
     );
-    trv::print_measurement_datatab_to_file(save_fileptr, params, meas_2pcf_win);
+    trv::io::print_measurement_datatab_to_file(
+      save_fileptr, params, meas_2pcf_win
+    );
     std::fclose(save_fileptr);
   } else
   if (params.statistic_type == "bispec") {
@@ -517,7 +525,7 @@ int main(int argc, char* argv[]) {
         params, binning, norm_factor
       );
       save_fileptr = std::fopen(save_filepath, "w");
-      trv::print_measurement_header_to_file(
+      trv::io::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, catalogue_rand,
         norm_factor, norm_factor_alt
       );
@@ -527,11 +535,13 @@ int main(int argc, char* argv[]) {
         catalogue_data, params, binning, norm_factor
       );
       save_fileptr = std::fopen(save_filepath, "w");
-      trv::print_measurement_header_to_file(
+      trv::io::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, norm_factor, norm_factor_alt
       );
     }
-    trv::print_measurement_datatab_to_file(save_fileptr, params, meas_bispec);
+    trv::io::print_measurement_datatab_to_file(
+      save_fileptr, params, meas_bispec
+    );
     std::fclose(save_fileptr);
   } else
   if (params.statistic_type == "3pcf") {
@@ -559,7 +569,7 @@ int main(int argc, char* argv[]) {
         params, binning, norm_factor
       );
       save_fileptr = std::fopen(save_filepath, "w");
-      trv::print_measurement_header_to_file(
+      trv::io::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, catalogue_rand,
         norm_factor, norm_factor_alt
       );
@@ -569,11 +579,13 @@ int main(int argc, char* argv[]) {
         catalogue_data, params, binning, norm_factor
       );
       save_fileptr = std::fopen(save_filepath, "w");
-      trv::print_measurement_header_to_file(
+      trv::io::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, norm_factor, norm_factor_alt
       );
     }
-    trv::print_measurement_datatab_to_file(save_fileptr, params, meas_3pcf);
+    trv::io::print_measurement_datatab_to_file(
+      save_fileptr, params, meas_3pcf
+    );
     std::fclose(save_fileptr);
   } else
   if (params.statistic_type == "3pcf-win") {
@@ -599,10 +611,12 @@ int main(int argc, char* argv[]) {
       catalogue_rand, los_rand, params, binning, alpha, norm_factor, wa
     );
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    trv::print_measurement_header_to_file(
+    trv::io::print_measurement_header_to_file(
       save_fileptr, params, catalogue_rand, norm_factor, norm_factor_alt
     );
-    trv::print_measurement_datatab_to_file(save_fileptr, params, meas_3pcf_win);
+    trv::io::print_measurement_datatab_to_file(
+      save_fileptr, params, meas_3pcf_win
+    );
     std::fclose(save_fileptr);
   } else
   if (params.statistic_type == "3pcf-win-wa") {
@@ -625,14 +639,15 @@ int main(int argc, char* argv[]) {
     }
     bool wa = true;
     /// three-point correlation function window wide-angle corrections
-    trv::ThreePCFWindowMeasurements meas_3pcf_win_wa = trv::compute_3pcf_window(
-      catalogue_rand, los_rand, params, binning, alpha, norm_factor, wa
-    );
+    trv::ThreePCFWindowMeasurements meas_3pcf_win_wa =
+      trv::compute_3pcf_window(
+        catalogue_rand, los_rand, params, binning, alpha, norm_factor, wa
+      );
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
-    trv::print_measurement_header_to_file(
+    trv::io::print_measurement_header_to_file(
       save_fileptr, params, catalogue_rand, norm_factor, norm_factor_alt
     );
-    trv::print_measurement_datatab_to_file(
+    trv::io::print_measurement_datatab_to_file(
       save_fileptr, params, meas_3pcf_win_wa
     );
     std::fclose(save_fileptr);

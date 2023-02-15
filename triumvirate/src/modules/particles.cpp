@@ -19,7 +19,7 @@
 
 /**
  * @file particles.cpp
- * @authors Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang),
  *          Naonori Sugiyama (https://github.com/naonori)
  *
  */
@@ -408,7 +408,8 @@ void ParticleCatalogue::offset_coords(const double dpos[3]) {
   this->calc_pos_min_and_max();
 }
 
-void ParticleCatalogue::offset_coords_for_periodicity(const double boxsize[3]) {
+void ParticleCatalogue::\
+offset_coords_for_periodicity(const double boxsize[3]) {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
