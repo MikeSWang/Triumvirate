@@ -47,7 +47,7 @@ Acknowledgement
 .. figure:: _static/ERC-Logo-Flag.png
     :alt: ERC
     :align: left
-    :width: 25%
+    :width: 33%
 
 |br| This project has received funding from the European Research Council (ERC)
 under the European Union's Horizon 2020 research and innovation programme
