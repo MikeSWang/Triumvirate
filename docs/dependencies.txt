@@ -1,4 +1,5 @@
 breathe
+exhale
 sphinx_book_theme
 myst_nb
 sphinxcontrib-bibtex

@@ -3,7 +3,7 @@ API Reference
 *************
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     apidoc_py
     apidoc_cpp

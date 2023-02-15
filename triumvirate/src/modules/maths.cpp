@@ -35,7 +35,9 @@ namespace maths {
 // Complex numbers
 // ***********************************************************************
 
+/// @cond DOXYGEN_DOC_MISC
 const std::complex<double> M_I(0., 1.);  ///< imaginary unit
+/// @endcond
 
 std::complex<double> eval_complex_in_polar(double r, double theta) {
   return r * (std::cos(theta) + M_I * std::sin(theta));

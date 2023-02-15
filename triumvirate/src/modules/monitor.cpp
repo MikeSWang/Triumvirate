@@ -48,7 +48,9 @@ double gbytesMaxMem = 0.;
 
 auto clockStart = std::chrono::steady_clock::now();  ///< program starting time
 
+/// @cond DOXYGEN_DOC_MISC
 Logger logger(NSET);  ///< default logger at `NSET` logging level
+/// @endcond
 
 void update_maxmem() {
   trv::sys::gbytesMaxMem = (trv::sys::gbytesMem > trv::sys::gbytesMaxMem) ?
