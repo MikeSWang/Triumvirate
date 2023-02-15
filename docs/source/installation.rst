@@ -35,14 +35,14 @@ Alternatively, you may use `pip`, ideally in a virtual environment
     Please note the capitalisation of the package name in the commands above.
 
 By default, the installed package from public distributions is built with
-OpenMP enabled.
+OpenMP enabled (if available).
 
 
-C++ program
-===========
+C++ library & program
+=====================
 
-|Triumvirate| as a 'black-box' C++ program is built as a binary executable
-using `make`.
+|Triumvirate| as either a C++ library or a 'black-box' C++ program can be
+built using `make`.
 
 You need to first obtain the source code by cloning into the GitHub repository
 and change to the repository directory:
@@ -57,25 +57,25 @@ Then to compile, run:
 .. code:: console
 
     $ make clean
-    $ make cppinstall [useomp=[true|1]]
+    $ make [cppinstall|cpplibinstall|cppappbuild] [useomp=[true|1]]
 
+Here ``cppinstall`` builds both a static library and a binary executable,
+``cpplibinstall`` only the former and ``cppappbuild`` only the latter.
 To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to
 the end of the second line as shown above.
 
-By default, the binary executable is compiled to ``build/triumvirate`` in
-the repository directory.
-
-.. admonition:: C++ library
-
-    In the future, the C++ code will also be released as a library.
+By default, the static library is compiled to ``build/lib/libtrv.a`` and the
+binary executable is compiled to ``build/triumvirate`` in the repository
+directory.
 
 
 Development mode
 ================
 
-Both the Python package and the C++ program can be set up in development
-mode with `make`. As in `C++ program`_ above, first ``git clone`` this
-repository and ``git checkout`` the branch/release you would like to edit
+Both the Python package and the C++ library/program can be set up in
+development mode with `make`. As in `C++ library & program`_ above, first
+``git clone`` this repository and ``git checkout`` the branch/release you
+would like to edit
 
 .. code:: console
 
@@ -90,8 +90,10 @@ then at the repository directory root run
     $ make [py|cpp]install [useomp=[true|1]]
 
 where ``install`` builds both and ``pyinstall``/``cppinstall`` is for
-Python/C++ build only. Again, to enable OpenMP parallelisation, append
-``useomp=true`` or ``useomp=1`` to the end of the second line as shown above.
+Python/C++ build only; you may also replace this with ``cpplibinstall`` or
+``cppappbuild`` as above to compile the C++ static library or binary executable
+only. Again, to enable OpenMP parallelisation, append ``useomp=true`` or
+``useomp=1`` to the end of the second line as shown above.
 
 The latest release is on the ``main`` branch. The default ``Makefile``
 (located at the repository diretory root) suits most use cases, but you may
