@@ -190,7 +190,7 @@ class SphericalHarmonicCalculator {
   /**
    * @brief Calculate the reduced spherical harmonic.
    *
-   * @param ell Degree @f$ ell @f$.
+   * @param ell Degree @f$ \ell @f$.
    * @param m Order @f$ m @f$.
    * @param pos 3-d position vector.
    * @returns Value of @f$ y_\ell^m @f$.
@@ -202,7 +202,7 @@ class SphericalHarmonicCalculator {
   /**
    * @brief Store reduced spherical harmonics computed in Fourier space.
    *
-   * @param[in] ell Degree @f$ ell @f$.
+   * @param[in] ell Degree @f$ \ell @f$.
    * @param[in] m Order @f$ m @f$.
    * @param[in] boxsize Box size in each dimension.
    * @param[in] ngrid Grid number in each dimension.
@@ -220,7 +220,7 @@ class SphericalHarmonicCalculator {
    * @brief Store reduced spherical harmonics computed in
    *        configuration space.
    *
-   * @param[in] ell Degree @f$ ell @f$.
+   * @param[in] ell Degree @f$ \ell @f$.
    * @param[in] m Order @f$ m @f$.
    * @param[in] boxsize Box size in each dimension.
    * @param[in] ngrid Grid number in each dimension.
