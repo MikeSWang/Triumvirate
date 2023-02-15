@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/Triumvirate.png" alt=Triumvirate-Logo width=67%>
+<img src="docs/source/_static/Triumvirate.png" alt=Triumvirate-Logo width=67%>
 </p>
 
 # Three-Point Clustering Measurements in LSS
@@ -106,9 +106,11 @@ in the BibTeX format.
 
 ## Acknowledgement
 
+<img src="docs/source/_static/ERC-Logo-Flag.png" alt="ERC" width="25%">
+
 This project has received funding from the European Research Council (ERC)
 under the European Union's Horizon 2020 research and innovation programme
-(grant agreement [853291](https://doi.org/10.3030/853291)).
+(Grant agreement No. [853291](https://doi.org/10.3030/853291)).
 
 Key underlying numerical algorithms were originally developed by
 Naonori S Sugiyama, and are available in the GitHub repository [``hitomi``](
