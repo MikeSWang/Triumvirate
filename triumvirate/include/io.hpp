@@ -19,7 +19,7 @@
 
 /**
  * @file io.hpp
- * @authors Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang),
  *          Naonori Sugiyama (https://github.com/naonori)
  * @brief I/O support including custom exceptions and utility functions.
  *
@@ -39,7 +39,7 @@
 namespace trv {
 
 // ***********************************************************************
-// Utilities
+// Paths
 // ***********************************************************************
 
 namespace sys {
@@ -64,10 +64,14 @@ void make_write_dir(std::string dirstr);
 
 
 // ***********************************************************************
-// Outputs
+// Files
 // ***********************************************************************
 
+namespace io {
+
+/// @cond DOXYGEN_DOC_MISC
 const char comment_delimiter[] = "#";  ///< header comment delimiter
+/// @endcond
 
 // -----------------------------------------------------------------------
 // Pre-measurement header
@@ -86,7 +90,8 @@ const char comment_delimiter[] = "#";  ///< header comment delimiter
  */
 void print_measurement_header_to_file(
   std::FILE* fileptr, trv::ParameterSet& params,
-  trv::ParticleCatalogue& catalogue_data, trv::ParticleCatalogue& catalogue_rand,
+  trv::ParticleCatalogue& catalogue_data,
+  trv::ParticleCatalogue& catalogue_rand,
   double norm_factor, double norm_factor_alt
 );
 
@@ -207,6 +212,7 @@ void print_measurement_datatab_to_file(
   trv::ParameterSet& params, trv::ThreePCFWindowMeasurements& meas_3pcf_win
 );
 
+}  // namespace trv::io
 }  // namespace trv
 
 #endif  // !TRIUMVIRATE_INCLUDE_IO_HPP_INCLUDED_

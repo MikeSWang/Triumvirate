@@ -19,7 +19,7 @@
 
 /**
  * @file parameters.cpp
- * @authors Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang),
  *          Naonori Sugiyama (https://github.com/naonori)
  *
  */
@@ -601,14 +601,18 @@ int ParameterSet::validate() {
   if (this->num_bins < 2) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Number of bins `num_bins` must be >= 2.");
-      throw trvs::InvalidParameter("Number of bins `num_bins` must be >= 2.\n");
+      throw trvs::InvalidParameter(
+        "Number of bins `num_bins` must be >= 2.\n"
+      );
     }
   }
 
   if (this->idx_bin < 0 && this->npoint == "3pt" && this->form == "full") {
     if (trvs::currTask == 0) {
       trvs::logger.error("Fixed bin index `idx_bin` must be >= 0.");
-      throw trvs::InvalidParameter("Fixed bin index `idx_bin` must be >= 0.\n");
+      throw trvs::InvalidParameter(
+        "Fixed bin index `idx_bin` must be >= 0.\n"
+      );
     }
   }
 

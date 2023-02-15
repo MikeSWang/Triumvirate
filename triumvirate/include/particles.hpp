@@ -19,7 +19,7 @@
 
 /**
  * @file particles.hpp
- * @authors Mike S Wang (https://github.com/MikeSWang)
+ * @authors Mike S Wang (https://github.com/MikeSWang),
  *          Naonori Sugiyama (https://github.com/naonori)
  * @brief Particle containers with I/O methods and operations.
  *
