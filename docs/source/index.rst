@@ -44,9 +44,14 @@ contain the relevant information in the BibTeX format.
 Acknowledgement
 ===============
 
-This project has received funding from the European Research Council (ERC)
+.. figure:: _static/ERC-Logo-Flag.png
+    :alt: ERC
+    :align: left
+    :width: 25%
+
+|br| This project has received funding from the European Research Council (ERC)
 under the European Union's Horizon 2020 research and innovation programme
-(grant agreement `853291 <https://doi.org/10.3030/853291>`_).
+(Grant agreement No. `853291 <https://doi.org/10.3030/853291>`_).
 
 Key underlying numerical algorithms were originally developed by
 Naonori S Sugiyama, and are available in the GitHub repository |hitomi|_.
