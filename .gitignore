@@ -42,7 +42,7 @@ cover/
 
 # Sphinx documentation
 docs/build/
-docs/source/**/xml
+docs/source/apidoc*/**
 *.rst
 
 # Jupyter Notebook

@@ -33,13 +33,13 @@ pkg_author = setup_cfg.get('author')
 import_module(pkg_name)
 pkg = sys.modules[pkg_name]
 
-pkf_version = pkg.__version__
+pkg_version = pkg.__version__
 pkg_date = pkg.__date__.split('-').pop(0)
 
 # Set fields.
 project = pkg_name
 author = pkg_author
-release = pkf_version
+release = pkg_version
 if datetime.now().year == int(pkg_date):
     copyright = pkg_date
 else:
@@ -58,8 +58,11 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
+    'sphinx.ext.graphviz',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
+    'breathe',
+    'exhale',
     'myst_nb',
     'sphinxcontrib.bibtex',
     'sphinx_copybutton',
@@ -108,6 +111,21 @@ autosummary_generate = True
 
 bibtex_bibfiles = ['_static/refs.bib']
 bibtex_reference_style = 'author_year'
+
+breathe_projects = {'Triumvirate': "apidoc_cpp/xml/"}
+breathe_default_project = 'Triumvirate'
+
+exhale_args = {
+    'containmentFolder': "./apidoc_cpp",
+    'rootFileName': "apidoc_cpp.rst",
+    'rootFileTitle': "C++ Library",
+    'createTreeView': True,
+    'treeViewIsBootstrap': True,
+    'exhaleExecutesDoxygen': True,
+    'exhaleUseDoxyfile': True,
+    'doxygenStripFromPath': "..",
+    'fullToctreeMaxDepth': 1,
+}
 
 intersphinx_mapping = {
     'python': ("https://docs.python.org/3", None),
