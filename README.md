@@ -61,21 +61,23 @@ page in the documentation.
 
 ### Development mode
 
-Both the Python package and the C++ program can be set up in development
-mode with `make`. First `git clone` this repository and `git checkout` the
-branch/release you would like to edit
+Both the Python package and the C++ library/program can be set up in
+development mode with `make`. First `git clone` this repository and
+`git checkout` the branch/release you would like to edit:
 ```bash
 git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
 cd Triumvirate
 ```
-then at the repository directory root run
+Then at the repository directory root run
 ```bash
 make clean
 make [py|cpp]install [useomp=[true|1]]
 ```
 where ``install`` builds both and ``pyinstall``/``cppinstall`` is for
-Python/C++ build only. To enable OpenMP parallelisation, append
-``useomp=true`` or ``useomp=1`` to the end of the second line as shown above.
+Python/C++ build only; you may also replace this with ``cpplibinstall`` or
+``cppappbuild`` to compile the C++ static library or binary executable only.
+To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to
+the end of the second line as shown above.
 
 The latest release is on the ``main`` branch. The default ``Makefile``
 (located at the repository diretory root) suits most use cases, but you may
