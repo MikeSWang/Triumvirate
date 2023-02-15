@@ -42,7 +42,7 @@ cover/
 
 # Sphinx documentation
 docs/build/
-docs/source/apidoc*/**
+docs/source/apidoc*/
 *.rst
 
 # Jupyter Notebook
@@ -52,8 +52,7 @@ docs/source/apidoc*/**
 .vscode/
 
 # Storage
-storage/input/**
-storage/output/**
+storage/
 
 # Sandboxes
 sandbox/
@@ -77,7 +76,6 @@ publication/supplements/*.npy
 # File: docs/source/installation.rst
 # File: docs/source/apiref.rst
 # File: docs/source/apidoc_py.rst
-# File: docs/source/apidoc_cpp.rst
 # File: docs/source/tutorials.rst
 !docs/source/index.rst
 !docs/source/background.rst
@@ -85,7 +83,6 @@ publication/supplements/*.npy
 !docs/source/tutorials.rst
 !docs/source/apiref.rst
 !docs/source/apidoc_py.rst
-!docs/source/apidoc_cpp.rst
 
 # File: docs/build/.ignore
 !docs/build/.gitignore
@@ -97,13 +94,3 @@ publication/supplements/*.npy
 # File: tests/test_output/.gitignore
 **/tests/test_output/**
 !**/tests/test_output/.gitignore
-
-# File: storage/input/params/params_example.yml
-# File: storage/input/params/params_example.ini
-!storage/input/params/
-storage/input/params/**
-!storage/input/params/params_example.yml
-!storage/input/params/params_example.ini
-
-# File: storage/output/.gitignore
-!storage/output/.gitignore
