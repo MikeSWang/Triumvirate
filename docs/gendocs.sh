@@ -59,7 +59,7 @@ sphinx-apidoc -efEMT -d 1\
 
 rm ${RM_FILES}
 make html
-rm ./source/Doxyfile
+if [[ "${READTHEDOCS}" != "True" ]]; then rm ./source/Doxyfile; fi
 
 # Return to original directory.
 cd -
