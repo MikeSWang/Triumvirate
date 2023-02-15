@@ -1,0 +1,16 @@
+.github-corner svg {
+    fill: var(--primary-light-color);
+    color: var(--page-background-color);
+    width: 80px;
+    height: 80px;
+}
+
+@media screen and (max-width: 767px) {
+    .github-corner svg {
+        width: 40px;
+        height: 40px;
+    }
+    #projectnumber {
+        margin-right: 22px;
+    }
+}
