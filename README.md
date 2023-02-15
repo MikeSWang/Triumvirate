@@ -51,14 +51,13 @@ can be found on the [Installation](
 https://triumvirate.readthedocs.io/en/latest/installation.html#python-package)
 page in the documentation.
 
-### C++ program
+### C++ library & program
 
-``Triumvirate`` as a 'black-box' C++ program is built as a binary executable
-using `make`. Instructions for compilation can be found on the [Installation](
+``Triumvirate`` as either a C++ library or a 'black-box' C++ program can be
+built using `make`. Instructions for compilation can be found on the
+[Installation](
 https://triumvirate.readthedocs.io/en/latest/installation.html#c-program)
 page in the documentation.
-
-> **NOTE**: In the future, the C++ code will also be released as a library.
 
 ### Development mode
 
