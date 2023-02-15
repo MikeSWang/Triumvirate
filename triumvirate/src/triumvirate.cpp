@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  trv::ParameterSet params;  ///< program parameters
+  trv::ParameterSet params;  // program parameters
   if (params.read_from_file(argv[1])) {
     if (trv::sys::currTask == 0) {
       trv::sys::logger.error(
@@ -118,8 +118,8 @@ int main(int argc, char* argv[]) {
     trv::sys::logger.stat("[A.2] Reading catalogues...");
   }
 
-  trv::ParticleCatalogue catalogue_data; ///< data-source catalogue
-  std::string flag_data = "false";       ///< data-source catalogue status
+  trv::ParticleCatalogue catalogue_data; // data-source catalogue
+  std::string flag_data = "false";       // data-source catalogue status
   if (params.catalogue_type == "survey" || params.catalogue_type == "sim") {
     if (!(trv::sys::if_filepath_is_set(params.data_catalogue_file))) {
       if (trv::sys::currTask == 0) {
@@ -150,8 +150,8 @@ int main(int argc, char* argv[]) {
     flag_data = "true";
   }
 
-  trv::ParticleCatalogue catalogue_rand; ///< random-source catalogue
-  std::string flag_rand = "false";       ///< random-source catalogue status
+  trv::ParticleCatalogue catalogue_rand; // random-source catalogue
+  std::string flag_rand = "false";       // random-source catalogue status
   if (params.catalogue_type == "survey" || params.catalogue_type == "random") {
     if (!(trv::sys::if_filepath_is_set(params.rand_catalogue_file))) {
       if (trv::sys::currTask == 0) {
@@ -202,7 +202,7 @@ int main(int argc, char* argv[]) {
     trv::sys::logger.stat("[B.1] Setting up binning...");
   }
 
-  trv::Binning binning(params);  ///< binning
+  trv::Binning binning(params);  // binning
   binning.set_bins();
 
   if (trv::sys::currTask == 0) {
@@ -219,7 +219,7 @@ int main(int argc, char* argv[]) {
 
   trv::LineOfSight* los_data = nullptr;
   if (flag_data == "true") {
-    /// data-source LoS
+    // data-source LoS
     los_data = new trv::LineOfSight[catalogue_data.ntotal];
     trv::sys::gbytesMem +=
       trv::sys::size_in_gb<struct trv::LineOfSight>(catalogue_data.ntotal);
@@ -247,7 +247,7 @@ int main(int argc, char* argv[]) {
 
   trv::LineOfSight* los_rand = nullptr;
   if (flag_rand == "true") {
-    /// random-source LoS
+    // random-source LoS
     los_rand = new trv::LineOfSight[catalogue_rand.ntotal];
     trv::sys::gbytesMem +=
       trv::sys::size_in_gb<struct trv::LineOfSight>(catalogue_rand.ntotal);
@@ -354,7 +354,7 @@ int main(int argc, char* argv[]) {
   // B.4 Constants
   // ---------------------------------------------------------------------
 
-  double alpha;  ///< alpha contrast
+  double alpha;  // alpha contrast
   if (flag_data == "true" && flag_rand == "true") {
     alpha = catalogue_data.wtotal / catalogue_rand.wtotal;
   } else {
@@ -368,7 +368,7 @@ int main(int argc, char* argv[]) {
   trv::ParticleCatalogue& catalogue_for_norm =
     (flag_rand == "true") ? catalogue_rand : catalogue_data;
   double alpha_for_norm = (flag_rand == "true") ? alpha : 1.;
-  double norm_factor = 0., norm_factor_alt = 0.;  ///< normalisation factors
+  double norm_factor = 0., norm_factor_alt = 0.;  // normalisation factors
   if (params.norm_convention == "particle") {
     if (params.npoint == "2pt") {
       norm_factor = trv::calc_powspec_normalisation_from_particles(
@@ -424,7 +424,7 @@ int main(int argc, char* argv[]) {
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
     std::FILE* save_fileptr = nullptr;
-    trv::PowspecMeasurements meas_powspec;  ///< power spectrum
+    trv::PowspecMeasurements meas_powspec;  // power spectrum
     if (params.catalogue_type == "survey") {
       meas_powspec = trv::compute_powspec(
         catalogue_data, catalogue_rand, los_data, los_rand,
@@ -456,7 +456,7 @@ int main(int argc, char* argv[]) {
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
     std::FILE* save_fileptr = nullptr;
-    trv::TwoPCFMeasurements meas_2pcf;  ///< two-point correlation function
+    trv::TwoPCFMeasurements meas_2pcf;  // two-point correlation function
     if (params.catalogue_type == "survey") {
       meas_2pcf = trv::compute_corrfunc(
         catalogue_data, catalogue_rand, los_data, los_rand,
@@ -487,7 +487,7 @@ int main(int argc, char* argv[]) {
       save_filepath, "%s/xiw%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
-    /// two-point correlation function window
+    // two-point correlation function window
     trv::TwoPCFWindowMeasurements meas_2pcf_win = trv::compute_corrfunc_window(
       catalogue_rand, los_rand, params, binning, alpha, norm_factor
     );
@@ -518,7 +518,7 @@ int main(int argc, char* argv[]) {
       );
     }
     std::FILE* save_fileptr = nullptr;
-    trv::BispecMeasurements meas_bispec;  ///< bispectrum
+    trv::BispecMeasurements meas_bispec;  // bispectrum
     if (params.catalogue_type == "survey") {
       meas_bispec = trv::compute_bispec(
         catalogue_data, catalogue_rand, los_data, los_rand,
@@ -562,7 +562,7 @@ int main(int argc, char* argv[]) {
       );
     }
     std::FILE* save_fileptr = nullptr;
-    trv::ThreePCFMeasurements meas_3pcf;  ///< three-point correlation function
+    trv::ThreePCFMeasurements meas_3pcf;  // three-point correlation function
     if (params.catalogue_type == "survey") {
       meas_3pcf = trv::compute_3pcf(
         catalogue_data, catalogue_rand, los_data, los_rand,
@@ -606,7 +606,7 @@ int main(int argc, char* argv[]) {
       );
     }
     bool wa = false;
-    /// three-point correlation function window
+    // three-point correlation function window
     trv::ThreePCFWindowMeasurements meas_3pcf_win = trv::compute_3pcf_window(
       catalogue_rand, los_rand, params, binning, alpha, norm_factor, wa
     );
@@ -638,7 +638,7 @@ int main(int argc, char* argv[]) {
       );
     }
     bool wa = true;
-    /// three-point correlation function window wide-angle corrections
+    // three-point correlation function window wide-angle corrections
     trv::ThreePCFWindowMeasurements meas_3pcf_win_wa =
       trv::compute_3pcf_window(
         catalogue_rand, los_rand, params, binning, alpha, norm_factor, wa

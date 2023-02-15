@@ -74,7 +74,7 @@ std::complex<double> eval_complex_in_polar(double r, double theta);
  * @brief Return the magnitude of a 3-d vector.
  *
  * @param vec A 3-d vector.
- * @return Vector magnitude.
+ * @returns Vector magnitude.
  */
 double get_vec3d_magnitude(std::vector<double> vec);
 
@@ -82,7 +82,7 @@ double get_vec3d_magnitude(std::vector<double> vec);
  * @brief Return the magnitude of a 3-d vector.
  *
  * @param vec A 3-d vector.
- * @return Vector magnitude.
+ * @returns Vector magnitude.
  *
  * @overload
  */
