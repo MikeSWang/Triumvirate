@@ -66,7 +66,7 @@ namespace trv {
  * @f]
  *
  * @param ell1, ell2, ELL, m1, m2, M Wigner 3-j components.
- * @return Coupling coefficient for spherical-harmonic components in
+ * @returns Coupling coefficient for spherical-harmonic components in
  *         three-point statistics.
  */
 double calc_coupling_coeff_3pt(

@@ -64,7 +64,7 @@ class ExtrapError: public std::runtime_error {
   /**
    * @brief Exception string representation.
    *
-   * @return String representation of the exception.
+   * @returns String representation of the exception.
    */
   virtual const char* what() const noexcept;
 };
