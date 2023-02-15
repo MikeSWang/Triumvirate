@@ -75,14 +75,14 @@ Development mode
 Both the Python package and the C++ library/program can be set up in
 development mode with `make`. As in `C++ library & program`_ above, first
 ``git clone`` this repository and ``git checkout`` the branch/release you
-would like to edit
+would like to edit:
 
 .. code:: console
 
     $ git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
     $ cd Triumvirate
 
-then at the repository directory root run
+Then at the repository directory root run
 
 .. code:: console
 
