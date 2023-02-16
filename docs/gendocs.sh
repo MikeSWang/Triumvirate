@@ -41,6 +41,10 @@ recycle_doxyfile () {
 
 if [[ "${READTHEDOCS}" == "True" ]]; then
     sed -i "s/\$darkmode//g" ./source/_themes/doxygen-header.html
+    sed -i "s/--searchbar-width: 210px;/--searchbar-width: 180px;/g" \
+        ./source/_themes/doxygen-awesome.css
+    sed -i "s/--top-height: 150px;/--top-height: 180px;/g" \
+        ./source/_themes/doxygen-awesome-sidebar-only.css
 fi
 
 # Clean up.
