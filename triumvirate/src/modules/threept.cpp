@@ -1480,7 +1480,6 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         );
         n_LM_for_sn.fourier_transform();
 
-        // QUEST: Originally this was calc_ylm_wgtd_shotnoise_amp_for_powspec.
         std::complex<double> Sbar_LM = calc_ylm_wgtd_shotnoise_amp_for_bispec(
           catalogue_rand, los_rand, alpha, params.ELL, M_
         );  // \bar{S}_LM
