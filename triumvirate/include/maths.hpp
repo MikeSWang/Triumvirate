@@ -86,7 +86,7 @@ double get_vec3d_magnitude(std::vector<double> vec);
  *
  * @overload
  */
-double get_vec3d_magnitude(double vec[3]);
+double get_vec3d_magnitude(const double vec[3]);
 
 
 // ***********************************************************************

@@ -67,7 +67,7 @@ double calc_kr_pivot_lowring(
  * @param[out] u Kernel coefficients.
  */
 void compute_u_kernel_coeff(
-  double mu, double q, double L, int N, double kr_c, std::complex<double> u[]
+  double mu, double q, double L, int N, double kr_c, std::complex<double>* u
 );
 
 /**
@@ -91,8 +91,8 @@ void compute_u_kernel_coeff(
  */
 void hankel_transform(
   double mu, double q, double kr_c, int N, bool lowring,
-  const double r[], std::complex<double> a[],
-  double k[], std::complex<double> b[],
+  const double r[], const std::complex<double> a[],
+  double* k, std::complex<double>* b,
   std::complex<double>* u
 );
 
