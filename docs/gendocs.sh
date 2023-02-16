@@ -12,7 +12,7 @@ DOXY_CONF_FILE=./source/Doxyfile.conf
 DOXYFILE_FOR_EXHALE=./source/Doxyfile
 
 # Set local theme files.
-MATHJAX_LOCAL_DIR_FOR_EXHALE=".\/source\/_themes\/MathJax-2.7.9\/"
+MATHJAX_LOCAL_DIR_FOR_EXHALE="..\/_static\/_themes\/MathJax-2.7.9\/"
 
 # Sey API directories.
 APIREF_DOXY_DIRNAME=apiref_doxy
@@ -45,6 +45,10 @@ recycle_doxyfile () {
 if [[ "${READTHEDOCS}" == "True" ]]; then
     sed -i "s/\$darkmode//g" ./source/_themes/doxygen-header.html
     sed -i "s/--spacing-small: 5px;/--spacing-small: 10px;/g" \
+        ./source/_themes/doxygen-awesome.css
+    sed -i "s/--spacing-medium: 10px;/--spacing-medium: 15px;/g" \
+        ./source/_themes/doxygen-awesome.css
+    sed -i "s/--spacing-large: 16px;/--spacing-large: 20px;/g" \
         ./source/_themes/doxygen-awesome.css
 fi
 
