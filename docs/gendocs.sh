@@ -86,6 +86,8 @@ if [[ "${READTHEDOCS}" != "True" ]]; then
     mkdir -p ${HTML_PUBLIC_DIR}/${IMG_MIRROR_SUBDIR}
     find ${STAT_DIR} -maxdepth 1 -type f \
         -exec cp {} ${HTML_PUBLIC_DIR}/${IMG_MIRROR_SUBDIR} \;
+    echo -e "RewriteEngine On\nRewriteRule (.*)\$ index.html" \
+        > ${HTML_PUBLIC_DIR}.htaccess
 fi
 
 # Return to original directory.
