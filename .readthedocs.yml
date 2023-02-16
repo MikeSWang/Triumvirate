@@ -14,11 +14,10 @@ build:
     post_build:
       - rm docs/source/Doxyfile
       - echo $(ls -l ${READTHEDOCS_OUTPUT})
-      - mv ${READTHEDOCS_OUTPUT}/_static/apiref_doxy/ \
-            ${READTHEDOCS_OUTPUT}/
-      - mkdir -p ${READTHEDOCS_OUTPUT}/apiref_doxy/docs/source/_static/
+      - mv build/sphinx/html/_static/apiref_doxy/ ${READTHEDOCS_OUTPUT}/html/
+      - mkdir -p ${READTHEDOCS_OUTPUT}/html/apiref_doxy/docs/source/_static/
       - find ./source/_static/ -maxdepth 1 -type f -exec cp {} \
-            ${READTHEDOCS_OUTPUT}/apiref_doxy/docs/source/_static/
+            ${READTHEDOCS_OUTPUT}/html/apiref_doxy/docs/source/_static/
 
 sphinx:
    configuration: docs/source/conf.py
