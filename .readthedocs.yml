@@ -15,7 +15,7 @@ build:
       - echo ${READTHEDOCS_OUTPUT}
       - find $(pwd) -type d -print
       - rm docs/source/Doxyfile
-      - mv ${READTHEDOCS_OUTPUT}/html/_static/apiref_doxy/ \
+      - mv ${READTHEDOCS_OUTPUT}/html/_static/apiref_doxy/\
             ${READTHEDOCS_OUTPUT}/html/
       - mkdir -p ${READTHEDOCS_OUTPUT}/html/apiref_doxy/docs/source/_static/
       - find docs/source/_static/ -maxdepth 1 -type f -exec cp {} \
