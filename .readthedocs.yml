@@ -12,8 +12,6 @@ build:
       - python -m pip install --verbose --editable .
       - bash docs/gendocs.sh
     post_build:
-      - echo ${READTHEDOCS_OUTPUT}
-      - find $(pwd) -type d -print
       - rm docs/source/Doxyfile
       - >
         mv ${READTHEDOCS_OUTPUT}/html/_static/apiref_doxy/
