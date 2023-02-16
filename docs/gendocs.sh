@@ -20,6 +20,8 @@ SPHINX_SOURCE_STATIC_DIR=./source/_static/
 SPHINX_BUILD_HTML_DIR=./build/sphinx/html/
 DOXYGEN_BUILD_HTML_DIR=./build/doxygen/html/
 
+APIDOC_DOXY_DIR=${SPHINX_SOURCE_STATIC_DIR}/apiref_doxy/
+
 
 # -- Build Docs ----------------------------------------------------------
 
@@ -30,11 +32,8 @@ make clean
 doxygen ${DOXY_CONF_FILE}
 
 # Bridge Doxygen and Sphinx docs.
-if [[ "${READTHEDOCS}" != "True" ]]; then
-    APIDOC_DOXY_DIR=${SPHINX_SOURCE_STATIC_DIR}/apiref_doxy/
-    mkdir -p ${APIDOC_DOXY_DIR}
-    cp -r ${DOXYGEN_BUILD_HTML_DIR}/** ${APIDOC_DOXY_DIR}
-fi
+mkdir -p ${APIDOC_DOXY_DIR}
+cp -r ${DOXYGEN_BUILD_HTML_DIR}/** ${APIDOC_DOXY_DIR}
 
 # Build Sphinx docs with Doxygen+Breathe+Exhale.
 cp ${DOXY_CONF_FILE} ./source/Doxyfile
