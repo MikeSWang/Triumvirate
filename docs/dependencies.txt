@@ -1,4 +1,3 @@
-graphviz
 breathe
 exhale
 sphinx_book_theme
