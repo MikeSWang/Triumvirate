@@ -91,7 +91,7 @@ void compute_u_kernel_coeff(
  */
 void hankel_transform(
   double mu, double q, double kr_c, int N, bool lowring,
-  const double r[], const std::complex<double> a[],
+  double* r, const std::complex<double>* a,
   double* k, std::complex<double>* b,
   std::complex<double>* u
 );
