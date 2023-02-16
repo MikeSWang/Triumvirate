@@ -40,7 +40,7 @@ recycle_doxyfile () {
 }
 
 if [[ "${READTHEDOCS}" == "True" ]]; then
-    sed -i "s/\$darkmode//g" ./docs/source/_themes/doxygen-header.html
+    sed -i "s/\$darkmode//g" ./source/_themes/doxygen-header.html
 fi
 
 # Clean up.
