@@ -25,8 +25,8 @@ clean:
 	  find source/apidoc_cpp -mindepth 1 -exec rm -rf {} +; \
 	fi
 	if [ -d source/apidoc_py ]; then \
-	  find source/apidoc_py -type f -iname "*.rst" -exec rm -rf {} +; \
+	  find source/apidoc_py -mindepth 1 -exec rm -rf {} +; \
 	fi
-	if [ -d source/_static/apiref_doxy ]; then \
-	  find source/_static/apiref_doxy -mindepth 1 -exec rm -rf {} +; \
+	if [ -d source/apiref_doxy ]; then \
+	  find source/apiref_doxy -mindepth 1 -exec rm -rf {} +; \
 	fi
