@@ -12,10 +12,10 @@ build:
       - python -m pip install --verbose --editable .
       - bash docs/gendocs.sh
     post_build:
+      - echo ${READTHEDOCS_OUTPUT}
+      - find $(pwd) -type d -print
       - rm docs/source/Doxyfile
-      - find . -type d -print
-      - find ${READTHEDOCS_OUTPUT} -type d -print
-      - mv docs/build/sphinx/html/_static/apiref_doxy/ \
+      - mv ${READTHEDOCS_OUTPUT}/html/_static/apiref_doxy/ \
             ${READTHEDOCS_OUTPUT}/html/
       - mkdir -p ${READTHEDOCS_OUTPUT}/html/apiref_doxy/docs/source/_static/
       - find docs/source/_static/ -maxdepth 1 -type f -exec cp {} \
