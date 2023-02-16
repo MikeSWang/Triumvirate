@@ -12,7 +12,7 @@ build:
       - python -m pip install --verbose --editable .
       - bash docs/gendocs.sh
     post_build:
-      - rm ./source/Doxyfile
+      - rm docs/source/Doxyfile
 
 sphinx:
    configuration: docs/source/conf.py
