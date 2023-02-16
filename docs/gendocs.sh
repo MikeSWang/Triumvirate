@@ -66,6 +66,7 @@ sphinx-apidoc -efEMT -d 1\
 rm ${RM_FILES}
 make html
 
+# Clean up.
 if [[ "${READTHEDOCS}" != "True" ]]; then rm ${DOXYFILE_FOR_EXHALE}; fi
 
 
