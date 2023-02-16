@@ -301,9 +301,9 @@ store_reduced_spherical_harmonic_in_config_space(
 SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
   // Set up sampling range and number.
   // CAVEAT: Discretionary choices such that max(kr) > 4096π, Δ(kr) = 0.01.
-  const double xmin = 0.;       ///< minimum of interpolation range
-  const double xmax = 15000.;   ///< maximum of interpolation range
-  const int nsample = 1500000;  ///< interpolation sample number
+  const double xmin = 0.;       // minimum of interpolation range
+  const double xmax = 15000.;   // maximum of interpolation range
+  const int nsample = 1500000;  // interpolation sample number
 
   // Initialise and evaluate at sample points.
   double dx = (xmax - xmin) / (nsample - 1);
