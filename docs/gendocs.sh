@@ -7,23 +7,36 @@ DOCS_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 cd ${DOCS_DIR}
 
-# Set API doc directories and paths.
+# Set Doxygen configuration file.
 DOXY_CONF_FILE=./source/Doxyfile.conf
+DOXYFILE_FOR_EXHALE=./source/Doxyfile
 
-APIDOC_PY_DIR=./source/apidoc_py
+# Sey API directories.
+APIREF_DOXY_DIRNAME=apiref_doxy
+APIREF_DOXY_DIR_FOR_SPHINX=./source/${APIREF_DOXY_DIRNAME}/
+APIDOC_PY_DIR=./source/apidoc_py/
+APIDOC_CPP_DIR_FOR_EXHALE=".\/source\/apidoc_cpp\/"
+
+# Set source subdirectories.
+STAT_DIR=./source/_static/
 TMPL_DIR=./source/_templates/
-EXCL_DIRS="../triumvirate ../**/tests/*"
 
-RM_FILES="${APIDOC_PY_DIR}/triumvirate.rst"
-
-SPHINX_SOURCE_STATIC_DIR=./source/_static/
+# Set built HTML directories.
 SPHINX_BUILD_HTML_DIR=./build/sphinx/html/
 DOXYGEN_BUILD_HTML_DIR=./build/doxygen/html/
 
-APIDOC_DOXY_DIR=${SPHINX_SOURCE_STATIC_DIR}/apiref_doxy/
+# Set exclusion path patterns.
+EXCL_DIRS="../triumvirate ../**/tests/*"
+RM_FILES="${APIDOC_PY_DIR}/triumvirate.rst"
 
 
 # -- Build Docs ----------------------------------------------------------
+
+recycle_doxyfile () {
+    str_confline=$1
+    str_confvar=$(printf $1 | tr -s ' ' | cut -d ' ' -f 1)
+    sed -i "s/${str_confvar} .*=.*/${str_confline}/g" ${DOXYFILE_FOR_EXHALE}
+}
 
 # Clean up.
 make clean
@@ -32,57 +45,47 @@ make clean
 doxygen ${DOXY_CONF_FILE}
 
 # Bridge Doxygen and Sphinx docs.
-mkdir -p ${APIDOC_DOXY_DIR}
-cp -r ${DOXYGEN_BUILD_HTML_DIR}/** ${APIDOC_DOXY_DIR}
+mkdir -p ${APIREF_DOXY_DIR_FOR_SPHINX}
+cp -r ${DOXYGEN_BUILD_HTML_DIR}/** ${APIREF_DOXY_DIR_FOR_SPHINX}
 
 # Build Sphinx docs with Doxygen+Breathe+Exhale.
-cp ${DOXY_CONF_FILE} ./source/Doxyfile
+cp ${DOXY_CONF_FILE} ${DOXYFILE_FOR_EXHALE}
 
-SPHINX_DOXYFILE_OUTPUT_DIR=".\/source\/apidoc_cpp\/"
+recycle_doxyfile "OUTPUT_DIRECTORY       = ${APIDOC_CPP_DIR_FOR_EXHALE}"
+recycle_doxyfile "GENERATE_HTML          = NO"
+recycle_doxyfile "GENERATE_XML           = YES"
+recycle_doxyfile "HTML_HEADER            ="
+recycle_doxyfile "USE_MDFILE_AS_MAINPAGE ="
+sed -i "s/..\/README.md//g" ${DOXYFILE_FOR_EXHALE}
+sed -i "s/.\/source/..\/source/g" ${DOXYFILE_FOR_EXHALE}
+sed -i "s/..\/triumvirate/..\/..\/triumvirate/g" ${DOXYFILE_FOR_EXHALE}
 
-sed -i\
-    "s/OUTPUT_DIRECTORY .*=.*/OUTPUT_DIRECTORY       = ${SPHINX_DOXYFILE_OUTPUT_DIR}/g"\
-    ./source/Doxyfile
-sed -i\
-    "s/GENERATE_HTML .*=.*/GENERATE_HTML          = NO/g"\
-    ./source/Doxyfile
-sed -i\
-    "s/GENERATE_XML .*=.*/GENERATE_XML          = YES/g"\
-    ./source/Doxyfile
-sed -i\
-    "s/HTML_HEADER .*=.*/HTML_HEADER            =/g"\
-    ./source/Doxyfile
-sed -i\
-    "s/USE_MDFILE_AS_MAINPAGE .*=.*/USE_MDFILE_AS_MAINPAGE =/g"\
-    ./source/Doxyfile
-sed -i\
-    "s/..\/README.md//g"\
-    ./source/Doxyfile
-sed -i\
-    "s/.\/source/..\/source/g"\
-    ./source/Doxyfile
-sed -i\
-    "s/..\/triumvirate/..\/..\/triumvirate/g"\
-    ./source/Doxyfile
 sphinx-apidoc -efEMT -d 1\
     -t ${TMPL_DIR} -o ${APIDOC_PY_DIR} ${EXCL_DIRS}
 
 rm ${RM_FILES}
 make html
 
+if [[ "${READTHEDOCS}" != "True" ]]; then rm ${DOXYFILE_FOR_EXHALE}; fi
+
 
 # -- Organise Docs -------------------------------------------------------
 
 HTML_PUBLIC_DIR=./build/public_html/
-IMG_MIRROR_DIR_STEM=_static/_static/apiref_doxy/docs/source/_static/
+IMG_MIRROR_SUBDIR=${APIREF_DOXY_DIRNAME}/docs/source/_static/
 
 if [[ "${READTHEDOCS}" != "True" ]]; then
-    rm ./source/Doxyfile
+    # Move Sphinx-build HTML to public HTML directory.
     mkdir -p ${HTML_PUBLIC_DIR}
     cp -r ${SPHINX_BUILD_HTML_DIR}/** ${HTML_PUBLIC_DIR}
-    mkdir -p ${HTML_PUBLIC_DIR}/${IMG_MIRROR_DIR_STEM}
-    find ${SPHINX_SOURCE_STATIC_DIR} -maxdepth 1 -type f \
-        -exec cp {} ${HTML_PUBLIC_DIR}/${IMG_MIRROR_DIR_STEM} \;
+    # Promote Doxygen-build HTML to top-level subdirectory
+    # under the public HTML directory.
+    mv ${HTML_PUBLIC_DIR}/_static/${APIREF_DOXY_DIRNAME}/ ${HTML_PUBLIC_DIR}/
+    # Move static assets to a mirrored subdirectory
+    # in the public HTML directory for Doxygen mainpage.
+    mkdir -p ${HTML_PUBLIC_DIR}/${IMG_MIRROR_SUBDIR}
+    find ${STAT_DIR} -maxdepth 1 -type f \
+        -exec cp {} ${HTML_PUBLIC_DIR}/${IMG_MIRROR_SUBDIR} \;
 fi
 
 # Return to original directory.

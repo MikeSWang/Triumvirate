@@ -129,7 +129,7 @@ exhale_args = {
     'afterTitleDescription': textwrap.dedent("""
         .. seealso::
 
-            `Doxygen version <../_static/_static/apiref_doxy/index.html>`_
+            `Doxygen version <../apiref_doxy/index.html>`_
             of the C++ API reference.
     """),
 }
