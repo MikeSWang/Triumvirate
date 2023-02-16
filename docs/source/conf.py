@@ -6,6 +6,7 @@
 import inspect
 import os
 import sys
+import textwrap
 from configparser import ConfigParser
 from datetime import datetime
 from importlib import import_module
@@ -125,6 +126,12 @@ exhale_args = {
     'exhaleUseDoxyfile': True,
     'doxygenStripFromPath': "..",
     'fullToctreeMaxDepth': 1,
+    'afterTitleDescription': textwrap.dedent("""
+        .. seealso::
+
+            `Doxygen version <../_static/_static/apiref_doxy/index.html>`_
+            of the C++ API reference.
+    """),
 }
 
 intersphinx_mapping = {

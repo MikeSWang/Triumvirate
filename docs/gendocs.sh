@@ -16,6 +16,10 @@ EXCL_DIRS="../triumvirate ../**/tests/*"
 
 RM_FILES="${APIDOC_PY_DIR}/triumvirate.rst"
 
+SPHINX_SOURCE_STATIC_DIR=./source/_static/
+SPHINX_BUILD_HTML_DIR=./build/sphinx/html/
+DOXYGEN_BUILD_HTML_DIR=./build/doxygen/html/
+
 
 # -- Build Docs ----------------------------------------------------------
 
@@ -24,6 +28,13 @@ make clean
 
 # Build Doxygen docs.
 doxygen ${DOXY_CONF_FILE}
+
+# Bridge Doxygen and Sphinx docs.
+if [[ "${READTHEDOCS}" != "True" ]]; then
+    APIDOC_DOXY_DIR=${SPHINX_SOURCE_STATIC_DIR}/apiref_doxy/
+    mkdir -p ${APIDOC_DOXY_DIR}
+    cp -r ${DOXYGEN_BUILD_HTML_DIR}/** ${APIDOC_DOXY_DIR}
+fi
 
 # Build Sphinx docs with Doxygen+Breathe+Exhale.
 cp ${DOXY_CONF_FILE} ./source/Doxyfile
@@ -59,7 +70,21 @@ sphinx-apidoc -efEMT -d 1\
 
 rm ${RM_FILES}
 make html
-if [[ "${READTHEDOCS}" != "True" ]]; then rm ./source/Doxyfile; fi
+
+
+# -- Organise Docs -------------------------------------------------------
+
+HTML_PUBLIC_DIR=./build/public_html/
+IMG_MIRROR_DIR_STEM=_static/_static/apiref_doxy/docs/source/_static/
+
+if [[ "${READTHEDOCS}" != "True" ]]; then
+    rm ./source/Doxyfile
+    mkdir -p ${HTML_PUBLIC_DIR}
+    cp -r ${SPHINX_BUILD_HTML_DIR}/** ${HTML_PUBLIC_DIR}
+    mkdir -p ${HTML_PUBLIC_DIR}/${IMG_MIRROR_DIR_STEM}
+    find ${SPHINX_SOURCE_STATIC_DIR} -maxdepth 1 -type f \
+        -exec cp {} ${HTML_PUBLIC_DIR}/${IMG_MIRROR_DIR_STEM} \;
+fi
 
 # Return to original directory.
 cd -
