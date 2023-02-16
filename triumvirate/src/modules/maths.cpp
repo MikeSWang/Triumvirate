@@ -52,7 +52,7 @@ double get_vec3d_magnitude(std::vector<double> vec) {
   return std::sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
 }
 
-double get_vec3d_magnitude(const double vec) {
+double get_vec3d_magnitude(const double vec[3]) {
   return std::sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
 }
 
