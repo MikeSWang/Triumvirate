@@ -11,7 +11,7 @@ build:
   jobs:
     pre_build:
       - python -m pip install --verbose --editable .
-      - bash docs/gendocs.sh
+      - bash docs/autogen_docs.sh
     post_build:
       - rm docs/source/Doxyfile
       - >

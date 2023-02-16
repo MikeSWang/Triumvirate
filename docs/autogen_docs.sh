@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 
+# @file autogen_docs.sh
+# @author Mike S Wang
+#
+# Automate documentation generation locally and on RTD (readthedocs.io).
+#
+
 # -- Directories & Paths -------------------------------------------------
 
-# Change to the docs directory.
+# Change to the ``docs`` directory.
 DOCS_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 cd ${DOCS_DIR}
@@ -32,6 +38,15 @@ RM_FILES="${APIDOC_PY_DIR}/triumvirate.rst"
 
 # -- Build Docs ----------------------------------------------------------
 
+# func: recycle_doxyfile
+#
+# Replace key--value pairs in Doxyfile[.conf].
+#
+# args: replacement string
+# globals: DOXYFILE_FOR_EXHALE
+# locals: str_confline, str_confvar
+# returns: (none)
+#
 recycle_doxyfile () {
     str_confline=$1
     str_confvar=$(printf $1 | tr -s ' ' | cut -d ' ' -f 1)
@@ -41,12 +56,6 @@ recycle_doxyfile () {
 # Ensure RTD Doxygen backward compatibility.
 if [[ "${READTHEDOCS}" == "True" ]]; then
     sed -i "s/\$darkmode//g" ./source/_themes/doxygen-header.html
-    sed -i "s/--spacing-small: 5px;/--spacing-small: 10px;/g" \
-        ./source/_themes/doxygen-awesome.css
-    sed -i "s/--spacing-medium: 10px;/--spacing-medium: 15px;/g" \
-        ./source/_themes/doxygen-awesome.css
-    sed -i "s/--spacing-large: 16px;/--spacing-large: 20px;/g" \
-        ./source/_themes/doxygen-awesome.css
 fi
 
 # Clean up.
@@ -71,10 +80,10 @@ sed -i "s/..\/README.md//g" ${DOXYFILE_FOR_EXHALE}
 sed -i "s/.\/source/..\/source/g" ${DOXYFILE_FOR_EXHALE}
 sed -i "s/..\/triumvirate/..\/..\/triumvirate/g" ${DOXYFILE_FOR_EXHALE}
 
-sphinx-apidoc -efEMT -d 1\
-    -t ${TMPL_DIR} -o ${APIDOC_PY_DIR} ${EXCL_DIRS}
+sphinx-apidoc -efEMT -d 1 -t ${TMPL_DIR} -o ${APIDOC_PY_DIR} ${EXCL_DIRS}
 
 rm ${RM_FILES}
+
 make html
 
 # Clean up.
@@ -83,21 +92,27 @@ if [[ "${READTHEDOCS}" != "True" ]]; then rm ${DOXYFILE_FOR_EXHALE}; fi
 
 # -- Organise Docs -------------------------------------------------------
 
-HTML_PUBLIC_DIR=./build/public_html/
-IMG_MIRROR_SUBDIR=${APIREF_DOXY_DIRNAME}/docs/source/_static/
 
 if [[ "${READTHEDOCS}" != "True" ]]; then
+    # Set directories.
+    HTML_PUBLIC_DIR=./build/public_html/
+    IMG_MIRROR_SUBDIR=${APIREF_DOXY_DIRNAME}/docs/source/_static/
+
     # Move Sphinx-build HTML to public HTML directory.
     mkdir -p ${HTML_PUBLIC_DIR}
     cp -r ${SPHINX_BUILD_HTML_DIR}/** ${HTML_PUBLIC_DIR}
+
     # Promote Doxygen-build HTML to top-level subdirectory
     # under the public HTML directory.
     mv ${HTML_PUBLIC_DIR}/_static/${APIREF_DOXY_DIRNAME}/ ${HTML_PUBLIC_DIR}/
+
     # Move static assets to a mirrored subdirectory
-    # in the public HTML directory for Doxygen mainpage.
+    # in the public HTML directory for Doxygen 'mainpage'.
     mkdir -p ${HTML_PUBLIC_DIR}/${IMG_MIRROR_SUBDIR}
     find ${STAT_DIR} -maxdepth 1 -type f \
         -exec cp {} ${HTML_PUBLIC_DIR}/${IMG_MIRROR_SUBDIR} \;
+
+    # Redirect listings to index pages.
     echo -e "RewriteEngine On\nRewriteRule (.*)\$ index.html" \
         > ${HTML_PUBLIC_DIR}.htaccess
 fi
