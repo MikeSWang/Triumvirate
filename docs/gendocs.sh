@@ -11,9 +11,6 @@ cd ${DOCS_DIR}
 DOXY_CONF_FILE=./source/Doxyfile.conf
 DOXYFILE_FOR_EXHALE=./source/Doxyfile
 
-# Set local theme files.
-MATHJAX_LOCAL_DIR_FOR_EXHALE="..\/_static\/_themes\/MathJax-2.7.9\/"
-
 # Sey API directories.
 APIREF_DOXY_DIRNAME=apiref_doxy
 APIREF_DOXY_DIR_FOR_SPHINX=./source/${APIREF_DOXY_DIRNAME}/
@@ -70,7 +67,6 @@ recycle_doxyfile "GENERATE_HTML          = NO"
 recycle_doxyfile "GENERATE_XML           = YES"
 recycle_doxyfile "HTML_HEADER            ="
 recycle_doxyfile "USE_MDFILE_AS_MAINPAGE ="
-recycle_doxyfile "MATHJAX_RELPATH        = ${MATHJAX_LOCAL_DIR_FOR_EXHALE}"
 sed -i "s/..\/README.md//g" ${DOXYFILE_FOR_EXHALE}
 sed -i "s/.\/source/..\/source/g" ${DOXYFILE_FOR_EXHALE}
 sed -i "s/..\/triumvirate/..\/..\/triumvirate/g" ${DOXYFILE_FOR_EXHALE}
