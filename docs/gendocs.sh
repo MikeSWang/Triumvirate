@@ -32,11 +32,16 @@ RM_FILES="${APIDOC_PY_DIR}/triumvirate.rst"
 
 # -- Build Docs ----------------------------------------------------------
 
+# Pre-configure.
 recycle_doxyfile () {
     str_confline=$1
     str_confvar=$(printf $1 | tr -s ' ' | cut -d ' ' -f 1)
     sed -i "s/${str_confvar} .*=.*/${str_confline}/g" ${DOXYFILE_FOR_EXHALE}
 }
+
+if [[ "${READTHEDOCS}" == "True" ]]; then
+    sed -i "s/\$darkmode//g" ./docs/source/_themes/doxygen-header.html
+fi
 
 # Clean up.
 make clean
