@@ -32,19 +32,19 @@ RM_FILES="${APIDOC_PY_DIR}/triumvirate.rst"
 
 # -- Build Docs ----------------------------------------------------------
 
-# Pre-configure.
 recycle_doxyfile () {
     str_confline=$1
     str_confvar=$(printf $1 | tr -s ' ' | cut -d ' ' -f 1)
     sed -i "s/${str_confvar} .*=.*/${str_confline}/g" ${DOXYFILE_FOR_EXHALE}
 }
 
+# Ensure RTD Doxygen backward compatibility.
 if [[ "${READTHEDOCS}" == "True" ]]; then
     sed -i "s/\$darkmode//g" ./source/_themes/doxygen-header.html
-    sed -i "s/--searchbar-width: 210px;/--searchbar-width: 180px;/g" \
+    sed -i "s/--spacing-medium: 10px;/--spacing-medium: 16px;/g" \
         ./source/_themes/doxygen-awesome.css
-    sed -i "s/--top-height: 150px;/--top-height: 180px;/g" \
-        ./source/_themes/doxygen-awesome-sidebar-only.css
+    # sed -i "s/--top-height: 150px;/--top-height: 180px;/g" \
+    #     ./source/_themes/doxygen-awesome-sidebar-only.css
 fi
 
 # Clean up.
@@ -65,6 +65,7 @@ recycle_doxyfile "GENERATE_HTML          = NO"
 recycle_doxyfile "GENERATE_XML           = YES"
 recycle_doxyfile "HTML_HEADER            ="
 recycle_doxyfile "USE_MDFILE_AS_MAINPAGE ="
+recycle_doxyfile "MATHJAX_RELPATH        = https://cdn.jsdelivr.net/npm/mathjax@2"
 sed -i "s/..\/README.md//g" ${DOXYFILE_FOR_EXHALE}
 sed -i "s/.\/source/..\/source/g" ${DOXYFILE_FOR_EXHALE}
 sed -i "s/..\/triumvirate/..\/..\/triumvirate/g" ${DOXYFILE_FOR_EXHALE}
