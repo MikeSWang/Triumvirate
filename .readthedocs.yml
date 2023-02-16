@@ -13,11 +13,11 @@ build:
       - bash docs/gendocs.sh
     post_build:
       - rm docs/source/Doxyfile
-      - find ${READTHEDOCS_OUTPUT} -type d -print
-      - find ${docs} -type d -print
-      - mv docs/build/sphinx/html/_static/apiref_doxy/ ${READTHEDOCS_OUTPUT}/html/
+      - mv docs/build/sphinx/html/_static/apiref_doxy/ \
+            ${READTHEDOCS_OUTPUT}/html/
       - mkdir -p ${READTHEDOCS_OUTPUT}/html/apiref_doxy/docs/source/_static/
-      - find docs/source/_static/ -maxdepth 1 -type f -exec cp {} ${READTHEDOCS_OUTPUT}/html/apiref_doxy/docs/source/_static/
+      - find docs/source/_static/ -maxdepth 1 -type f -exec cp {} \
+            ${READTHEDOCS_OUTPUT}/html/apiref_doxy/docs/source/_static/ \;
 
 sphinx:
    configuration: docs/source/conf.py
