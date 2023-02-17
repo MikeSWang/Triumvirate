@@ -43,6 +43,7 @@ cover/
 # Sphinx documentation
 docs/build/
 docs/source/api*/
+docs/source/tutorials/**
 *.rst
 
 # Jupyter Notebook
@@ -83,6 +84,9 @@ publication/supplements/*.npy
 !docs/source/tutorials.rst
 !docs/source/apiref.rst
 !docs/source/apidoc_py.rst
+
+# Files: docs/source/tutorials/*.ipynb
+!docs/source/tutorials/*.ipynb
 
 # File: docs/build/.ignore
 !docs/build/.gitignore
