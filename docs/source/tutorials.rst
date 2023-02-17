@@ -20,6 +20,7 @@ Using the Python package
     tutorials/Logging.ipynb
     tutorials/Parameters.ipynb
     tutorials/Binning.ipynb
+    tutorials/Catalogue.ipynb
 
 
 Running the C++ program
