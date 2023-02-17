@@ -106,7 +106,7 @@ void Binning::set_bins(double boxsize_max, int ngrid_min) {
 void Binning::set_bins(std::vector<double> bin_edges) {
   this->bin_min = bin_edges.front();
   this->bin_max = bin_edges.back();
-  this->num_bins = bin_edges.size();
+  this->num_bins = bin_edges.size() - 1;
 
   // Reset attributes.
   this->bin_edges.clear();
