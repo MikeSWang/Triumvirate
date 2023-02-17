@@ -67,6 +67,7 @@ extensions = [
     'myst_nb',
     'sphinxcontrib.bibtex',
     'sphinx_copybutton',
+    'sphinx_togglebutton',
 ]
 
 master_doc = 'index'

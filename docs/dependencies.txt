@@ -4,3 +4,4 @@ sphinx_book_theme
 myst_nb
 sphinxcontrib-bibtex
 sphinx-copybutton
+sphinx_togglebutton
