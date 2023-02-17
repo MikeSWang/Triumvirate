@@ -373,10 +373,10 @@ def wconv_bispec(formulae, Q, bk, k, k_out, r_common, r_Q=None,
     bk_wconv : dict of {str: :class:`numpy.ndarray`}
         Window-convolved bispectrum samples.
 
-    Notes
-    -----
-    This function assumes the wavenumber samples :math:`k_{1,2}` in the
-    bispectrum :math:`B_{\ell_1 \ell_2 L}(k_1, k_2)` are the same.
+    .. attention::
+
+        This function assumes the wavenumber samples :math:`k_{1,2}` in
+        the bispectrum :math:`B_{\ell_1 \ell_2 L}(k_1, k_2)` are the same.
 
     """
     if transform_kwargs is None:

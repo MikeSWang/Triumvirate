@@ -420,10 +420,10 @@ def transform_bispec_to_3pcf(ell1, ell2, k_in, bk_in, r_out,
     ValueError
         When `n_extrap` is not set but `extrap` is.
 
-    Notes
-    -----
-    This function assumes the wavenumber samples :math:`k_{1,2}` in the
-    bispectrum :math:`B_{\ell_1 \ell_2 L}(k_1, k_2)` are the same.
+    .. attention::
+
+        This function assumes the wavenumber samples :math:`k_{1,2}` in
+        the bispectrum :math:`B_{\ell_1 \ell_2 L}(k_1, k_2)` are the same.
 
     """
     # Prepare samples.
@@ -554,10 +554,10 @@ def transform_3pcf_to_bispec(ell1, ell2, r_in, zeta_in, k_out,
     ValueError
         When `n_extrap` is not set but `extrap` is.
 
-    Notes
-    -----
-    This function assumes the separation samples :math:`r_{1,2}` in the
-    3PCF :math:`\zeta_{\ell_1 \ell_2 L}(r_1, r_2)` are the same.
+    .. attention::
+
+        This function assumes the separation samples :math:`r_{1,2}` in
+        the 3PCF :math:`\zeta_{\ell_1 \ell_2 L}(r_1, r_2)` are the same.
 
     """
     # Prepare samples.
