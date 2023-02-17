@@ -142,6 +142,21 @@ intersphinx_mapping = {
     'nbodykit': ("https://nbodykit.readthedocs.io/en/latest/", None),
 }
 
+myst_enable_extensions = [
+    'amsmath',
+    'colon_fence',
+    'deflist',
+    'dollarmath',
+    'fieldlist',
+    'html_admonition',
+    'html_image',
+    'replacements',
+    'substitution',
+    'tasklist',
+]
+
+myst_dmath_double_inline = True
+
 napoleon_include_special_with_doc = True
 napoleon_google_docstring = False
 napoleon_use_param = False

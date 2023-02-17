@@ -103,7 +103,8 @@ cdef class Binning:
         return self
 
     def set_bins(self, bin_min, bin_max, num_bins):
-        """Set bin quantities including bin edges, centres and widths.
+        """Set bin quantities including recalculated bin edges, centres
+        and widths.
 
         Parameters
         ----------
@@ -144,12 +145,13 @@ cdef class Binning:
         self.bin_edges = self.thisptr.bin_edges
         self.bin_centres = self.thisptr.bin_centres
         self.bin_widths = self.thisptr.bin_widths
+        self.scheme = self.thisptr.scheme
 
     def set_custom_bins(self, bin_edges):
         """Set custom bins using bin edges.
 
         :attr:`bin_centres` and :attr:`bin_widths` are also automatically
-        set for internal consistency.
+        set for internal consistency. :attr:`scheme` is set to 'custom'.
 
         Parameters
         ----------
@@ -163,7 +165,9 @@ cdef class Binning:
         self.bin_edges = bin_edges
         self.bin_centres = bin_centres
         self.bin_widths = bin_widths
+        self.scheme = 'custom'
 
         self.thisptr.bin_edges = self.bin_edges
         self.thisptr.bin_centres = self.bin_centres
         self.thisptr.bin_widths = self.bin_widths
+        self.thisptr.scheme = self.scheme.encode('utf-8')

@@ -65,10 +65,17 @@ void Binning::set_bins(double coord_min, double coord_max, int nbin) {
   this->bin_max = coord_max;
   this->num_bins = nbin;
 
-  this->compute_binning();
+  this->set_bins();
 }
 
-void Binning::set_bins() {this->compute_binning();}
+void Binning::set_bins() {
+  // Reset vector attributes.
+  this->bin_edges.clear();
+  this->bin_centres.clear();
+  this->bin_widths.clear();
+
+  this->compute_binning();
+}
 
 void Binning::set_bins(double boxsize_max, int ngrid_min) {
   this->scheme = "lin";
@@ -88,6 +95,11 @@ void Binning::set_bins(double boxsize_max, int ngrid_min) {
 
   this->num_bins = ngrid_min / 2;
 
+  // Reset vector attributes.
+  this->bin_edges.clear();
+  this->bin_centres.clear();
+  this->bin_widths.clear();
+
   this->compute_binning();
 }
 
@@ -95,6 +107,12 @@ void Binning::set_bins(std::vector<double> bin_edges) {
   this->bin_min = bin_edges.front();
   this->bin_max = bin_edges.back();
   this->num_bins = bin_edges.size();
+
+  // Reset attributes.
+  this->bin_edges.clear();
+  this->bin_centres.clear();
+  this->bin_widths.clear();
+  this->scheme = "custom";
 
   this->bin_edges = bin_edges;
 
