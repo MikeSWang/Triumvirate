@@ -17,8 +17,13 @@ from astropy.table import Table
 from triumvirate._particles import _ParticleCatalogue
 
 try:
-    from nbodykit.base.catalog import CatalogSource
-    from nbodykit.source.catalog import CSVCatalog
+    from nbodykit.source.catalog import (
+        ArrayCatalog,
+        BinaryCatalog,
+        CSVCatalog,
+        FITSCatalog,
+        HDFCatalog,
+    )
     _nbkt_imported = True
 except Exception:
     _nbkt_imported = False
@@ -79,14 +84,7 @@ class ParticleCatalogue:
         self._logger = logger
         self._source = 'extdata'
 
-        # Initialise particle data.
-        if _nbkt_imported:
-            self._pdata = CatalogSource(comm=None)
-            self._arch = 'nbodykit'
-        else:
-            self._pdata = Table()
-            self._arch = 'astropy'
-
+        # Initialise particle data (with 'astropy').
         if nz is None:
             warnings.warn(
                 "Catalogue 'nz' field is None and thus set to zero, "
@@ -94,6 +92,7 @@ class ParticleCatalogue:
             )
             nz = 0.
 
+        self._pdata = Table()
         self._pdata['x'] = x
         self._pdata['y'] = y
         self._pdata['z'] = z
@@ -101,10 +100,16 @@ class ParticleCatalogue:
         self._pdata['ws'] = ws
         self._pdata['wc'] = wc
 
+        if _nbkt_imported:
+            self._pdata = ArrayCatalog(self._pdata)
+            self._backend = 'nbodykit'
+        else:
+            self._backend = 'astropy'
+
         # Compute catalogue properties.
         self._calc_bounds(init=True)
 
-        self.ntotal = len(self._pdata)
+        self.ntotal = len(self)
         self.wtotal = self._compute(self._pdata['ws'].sum())
 
         if self._logger:
@@ -117,7 +122,7 @@ class ParticleCatalogue:
     @classmethod
     def read_from_file(cls, filepath, reader='astropy', names=None,
                        format='ascii.no_header', table_kwargs=None,
-                       name_mapping=None, logger=None):
+                       file_kwargs=None, name_mapping=None, logger=None):
         """Read particle data from file.
 
         Parameters
@@ -125,20 +130,18 @@ class ParticleCatalogue:
         filepath : str or :class:`pathlib.Path`
             Catalogue file path.
         reader : {'astropy', 'nbodykit'}, optional
-            If 'astropy' (default), :class:`astropy.table.Table`
-            is used for reading in the catalogue file; else if 'nbodykit',
-            :mod:`nbodykit.source.catalog` is used (if ``nbodykit``
-            is installed).
-        names : sequence of str, optional
-            Catalogue file field names.  Cannot be `None` (default)
-            if `reader` is 'nbodykit'.  If `None`, the header in the file
-            is used to infer the names.
+            If 'astropy' (default), |Table| is used for reading in the
+            catalogue file; else if 'nbodykit', child classes of
+            |FileCatalogBase| is used (if :mod:`nbodykit` is available).
+        names : sequence of str, list of tuple or :class:`numpy.dtype`, \
+                int or str, optional
+            Catalogue file field names or data types.  See the note below
+            for more details.  If `None` (default), the header in the file
+            may be used to infer the field names or data types.  Cannot be
+            `None` if ``reader='nbodykit'``.
         format : str, optional
-            File format specifier (default is 'ascii.no_header', with any
-            header included as comment lines).  Used only when `reader`
-            is 'astropy'.  See
-            `<https://docs.astropy.org/en/latest/io/ascii/
-            index.html#supported-formats>`_ for supported file formats.
+            File format specifier (default is 'ascii.no_header' for
+            default `reader` value 'astropy').  See the note below.
         name_mapping : dict of {str: str}, optional
             Mapping between any of the default column names 'x', 'y', 'z',
             'nz', 'ws' and 'wc' (keys) and the corresponding field names
@@ -147,15 +150,79 @@ class ParticleCatalogue:
         table_kwargs : dict, optional
             Keyword arguments to be passed to
             :attr:`astropy.table.Table.read` (default is `None`).
-            Used only when `reader` is 'astropy'.
+            Used only when ``reader='astropy'``.  See also |Table|.
+        file_kwargs : dict, optional
+            Keyword arguments to be passed to child classes of
+            :attr:`nbodykit.source.catalog.file.FileCatalogBase` (default
+            is `None`). Used only when ``reader='nbodykit'``.  See also
+            the hint below.
         logger : :class:`logging.Logger`, optional
             Program logger (default is `None`).
 
-        Notes
-        -----
-        If any of 'nz', 'ws' and 'wc' columns are not provided,
-        these columns are initialised with the default values in
-        :meth:`~triumvirate.catalogue.ParticleCatalogue.__init__`.
+        .. note::
+            :class: dropdown
+
+            .. admonition:: `format` argument
+
+                If ``reader='astropy'``, see
+                `<https://docs.astropy.org/en/latest/io/ascii/
+                index.html#supported-formats>`_ for supported file
+                formats.
+
+                If ``reader='nbodykit'``, supported file formats are:
+                * 'text': plain-text files read in by |CSVCatalog|;
+                * 'fits': FITS files read in by |FITSCatalog|;
+                * 'binary': binary files read in by |BinaryCatalog|;
+                * 'hdf': HDF files read in by |HDFCatalog|.
+
+            .. admonition:: `names` argument
+
+                If ``reader='astropy'`` or ``format='text'``, this is the
+                sequence of data column names (sequence of str).
+
+                If ``reader='nbodykit'``, this corresponds to various
+                arguments depending on `format`:
+                * ``format='text'``, this is the ``names`` argument
+                  (sequence of str) for |CSVCatalog|;
+                * ``format='fits'``, this is the ``ext`` argument
+                  (int or str) for |FITSCatalog|;
+                * ``format='binary'``, this is the ``dtype`` argument
+                  (list of tuple or :class:`numpy.dtype`) for
+                  |BinaryCatalog|;
+                * ``format='hdf'``, this is the ``root`` argument (str)
+                  for |HDFCatalog|.
+
+            .. seealso::
+
+                For ``reader='astropy'``, see |Table|.
+
+                For ``reader='nbodykit'``, see
+                `<https://nbodykit.readthedocs.io/en/latest/catalogs/
+                reading.html>`_ for more details.
+
+        .. hint::
+
+            If any of 'nz', 'ws' and 'wc' columns are not provided,
+            these columns are initialised with the default values in
+            :class:`~triumvirate.catalogue.
+
+        .. |Table| replace::
+            :class:`astropy.table.Table`
+
+        .. |FileCatalogBase| replace::
+            :class:`nbodykit.source.catalog.file.FileCatalogBase`
+
+        .. |CSVCatalog| replace::
+            :class:`nbodykit.source.catalog.file.CSVCatalog`
+
+        .. |FITSCatalog| replace::
+            :class:`nbodykit.source.catalog.file.FITSCatalog`
+
+        .. |BinaryCatalog| replace::
+            :class:`nbodykit.source.catalog.file.BinaryCatalog`
+
+        .. |HDFCatalog| replace::
+            :class:`nbodykit.source.catalog.file.HDFCatalog`
 
         """
         self = object.__new__(cls)
@@ -165,16 +232,16 @@ class ParticleCatalogue:
 
         if reader.lower() == 'nbodykit':
             if _nbkt_imported:
-                self._arch = 'nbodykit'
+                self._backend = 'nbodykit'
             else:
                 warnings.warn(
                     "'astropy' is used for catalogue I/O as "
                     "'nbodykit' is unavailable",
                     category=warnings.RuntimeWarning
                 )
-                self._arch = 'astropy'
+                self._backend = 'astropy'
         elif reader.lower() == 'astropy':
-            self._arch = 'astropy'
+            self._backend = 'astropy'
         else:
             raise ValueError(
                 f"Unsupported catalogue file reader: {reader}. "
@@ -182,10 +249,21 @@ class ParticleCatalogue:
             )
 
         # Initialise particle data.
-        if self._arch == 'nbodykit':
-            self._pdata = CSVCatalog(str(filepath), names)
+        if self._backend == 'nbodykit':
+            if format == 'text':
+                self._pdata = CSVCatalog(str(filepath), names)
+            elif format == 'fits':
+                self._pdata = FITSCatalog(str(filepath), ext=names)
+            elif format == 'binary':
+                self._pdata = BinaryCatalog(str(filepath), dtype=names)
+            elif format == 'hdf':
+                self._pdata = HDFCatalog(str(filepath), root=names)
+            else:
+                raise ValueError(
+                    f"Unsupported `format` for `reader='nbodykit'`: {format}."
+                )
 
-        if self._arch == 'astropy':
+        if self._backend == 'astropy':
             if table_kwargs is None:
                 table_kwargs = {}
 
@@ -198,9 +276,9 @@ class ParticleCatalogue:
                     self._pdata.rename_column(name_alt_, name_)
 
         # Validate particle data columns.
-        if self._arch == 'nbodykit':
+        if self._backend == 'nbodykit':
             colnames = self._pdata.columns
-        if self._arch == 'astropy':
+        if self._backend == 'astropy':
             colnames = self._pdata.colnames
 
         for axis_name in ['x', 'y', 'z']:
