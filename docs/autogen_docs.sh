@@ -42,6 +42,16 @@ RM_FILES="${APIDOC_PY_DIR}/triumvirate.rst"
 
 # -- Build Docs ----------------------------------------------------------
 
+# @func replace_in_file
+#
+# Replace strings in file.
+#
+# @args File, string to be replaced, string replacement.
+#
+replace_in_file () {
+    sed -i "s/${2}/${3}/g" $1
+}
+
 # @func recycle_doxyfile
 #
 # Replace key--value pairs in Doxyfile[.conf].
@@ -58,15 +68,13 @@ recycle_doxyfile () {
 
 # HACK: Ensure RTD Doxygen backward compatibility.
 if [[ "${READTHEDOCS}" == "True" ]]; then
-    sed -i \
-        "s/\$darkmode//g" \
-        ./source/_themes/doxygen-header.html
-    sed -i \
-        "s/top: 0; right: 0;/bottom: 0; left: 0; transform: scale(-1, -1);/g" \
-        ./source/_themes/doxygen-header.html
-    sed -i "s/doxygen-awesome-sidebar-only.css//g" ${DOXY_CONF_FILE}
-    recycle_doxyfile \
-        "MATHJAX_RELPATH        = https://cdn.jsdelivr.net/npm/mathjax@2"
+    replace_in_file ./source/_themes/doxygen-header.html "\$darkmode"
+    replace_in_file ./source/_themes/doxygen-header.html \
+        "top: 0; right: 0;" "bottom: 0; left: 0; transform: scale(-1, -1);"
+    replace_in_file ${DOXY_CONF_FILE} "doxygen-awesome-sidebar-only.css"
+    replace_in_file ${DOXY_CONF_FILE} \
+        "= https://cdn.jsdelivr.net/npm/mathjax@3" \
+        "= https://cdn.jsdelivr.net/npm/mathjax@2"
 fi
 
 # Clean up.
