@@ -69,10 +69,6 @@ recycle_doxyfile () {
 # HACK: Ensure RTD Doxygen backward compatibility.
 if [[ "${READTHEDOCS}" == "True" ]]; then
     replace_in_file ./source/_themes/doxygen-header.html "\$darkmode"
-    # replace_in_file ${DOXY_CONF_FILE} \
-    #     "doxygen-awesome-sidebar-only-darkmode-toggle.css"
-    # replace_in_file ${DOXY_CONF_FILE} \
-    #     "doxygen-awesome-darkmode-toggle.js"
     replace_in_file ${DOXY_CONF_FILE} \
         "= https:\/\/cdn.jsdelivr.net\/npm\/mathjax@3" \
         "= https:\/\/cdn.jsdelivr.net\/npm\/mathjax@2"
