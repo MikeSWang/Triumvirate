@@ -74,8 +74,8 @@ if [[ "${READTHEDOCS}" == "True" ]]; then
     replace_in_file ${DOXY_CONF_FILE} \
         "doxygen-awesome-darkmode-toggle.js"
     replace_in_file ${DOXY_CONF_FILE} \
-        "= https://cdn.jsdelivr.net/npm/mathjax@3" \
-        "= https://cdn.jsdelivr.net/npm/mathjax@2"
+        "= https:\/\/cdn.jsdelivr.net\/npm\/mathjax@3" \
+        "= https:\/\/cdn.jsdelivr.net\/npm\/mathjax@2"
 fi
 
 # Clean up.
