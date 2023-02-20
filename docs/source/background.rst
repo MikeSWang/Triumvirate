@@ -40,8 +40,3 @@ following functionalities:
 .. |Triumvirate| raw:: html
 
     <span style="font-variant: small-caps">Triumvirate</span>
-
-
-.. |hitomi| replace:: ``hitomi``
-.. _hitomi: https://github.com/naonori/hitomi
-

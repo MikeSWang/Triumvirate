@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-
+#
 # @file autogen_docs.sh
 # @author Mike S Wang
+# @brief Automate documentation generation locally and on `RTD <rtfd.io>`_.
+# @args Exclusion case, {"excl_doxy", "excl_sphinx"}.
 #
-# Automate documentation generation locally and on RTD (readthedocs.io).
-#
+
+# Parse command-line arguments.
+excl=${1#"excl_"}  # {"doxy", "sphinx"}
+
 
 # -- Directories & Paths -------------------------------------------------
 
@@ -38,14 +42,13 @@ RM_FILES="${APIDOC_PY_DIR}/triumvirate.rst"
 
 # -- Build Docs ----------------------------------------------------------
 
-# func: recycle_doxyfile
+# @func recycle_doxyfile
 #
 # Replace key--value pairs in Doxyfile[.conf].
 #
-# args: replacement string
-# globals: DOXYFILE_FOR_EXHALE
-# locals: str_confline, str_confvar
-# returns: (none)
+# @args Replacement string.
+# @globals DOXYFILE_FOR_EXHALE
+# @locals str_confline, str_confvar
 #
 recycle_doxyfile () {
     str_confline=$1
@@ -53,58 +56,69 @@ recycle_doxyfile () {
     sed -i "s/${str_confvar} .*=.*/${str_confline}/g" ${DOXYFILE_FOR_EXHALE}
 }
 
-# Ensure RTD Doxygen backward compatibility.
+# HACK: Ensure RTD Doxygen backward compatibility.
 if [[ "${READTHEDOCS}" == "True" ]]; then
     sed -i "s/\$darkmode//g" ./source/_themes/doxygen-header.html
 fi
 
 # Clean up.
-make clean
+make clean excl=$excl
 
 # Build Doxygen docs.
-doxygen ${DOXY_CONF_FILE}
+if [[ "$excl" != 'doxy' ]]; then
+    doxygen ${DOXY_CONF_FILE}
+fi
 
-# Bridge Doxygen and Sphinx docs.
-mkdir -p ${APIREF_DOXY_DIR_FOR_SPHINX}
-cp -r ${DOXYGEN_BUILD_HTML_DIR}/** ${APIREF_DOXY_DIR_FOR_SPHINX}
+# Build Sphinx docs.
+if [[ "$excl" != 'sphinx' ]]; then
+    # Bridge Doxygen and Sphinx docs.
+    mkdir -p ${APIREF_DOXY_DIR_FOR_SPHINX}
+    cp -r ${DOXYGEN_BUILD_HTML_DIR}/** ${APIREF_DOXY_DIR_FOR_SPHINX}
 
-# Build Sphinx docs with Doxygen+Breathe+Exhale.
-cp ${DOXY_CONF_FILE} ${DOXYFILE_FOR_EXHALE}
+    # Configure Doxygen for Breathe+Exhale.
+    cp ${DOXY_CONF_FILE} ${DOXYFILE_FOR_EXHALE}
 
-recycle_doxyfile "OUTPUT_DIRECTORY       = ${APIDOC_CPP_DIR_FOR_EXHALE}"
-recycle_doxyfile "GENERATE_HTML          = NO"
-recycle_doxyfile "GENERATE_XML           = YES"
-recycle_doxyfile "HTML_HEADER            ="
-recycle_doxyfile "USE_MDFILE_AS_MAINPAGE ="
-sed -i "s/..\/README.md//g" ${DOXYFILE_FOR_EXHALE}
-sed -i "s/.\/source/..\/source/g" ${DOXYFILE_FOR_EXHALE}
-sed -i "s/..\/triumvirate/..\/..\/triumvirate/g" ${DOXYFILE_FOR_EXHALE}
+    recycle_doxyfile "OUTPUT_DIRECTORY       = ${APIDOC_CPP_DIR_FOR_EXHALE}"
+    recycle_doxyfile "GENERATE_HTML          = NO"
+    recycle_doxyfile "GENERATE_XML           = YES"
+    recycle_doxyfile "HAVE_DOT               = NO"
+    recycle_doxyfile "HTML_HEADER            ="
+    recycle_doxyfile "USE_MDFILE_AS_MAINPAGE ="
+    sed -i "s/..\/README.md//g" ${DOXYFILE_FOR_EXHALE}
+    sed -i "s/.\/source/..\/source/g" ${DOXYFILE_FOR_EXHALE}
+    sed -i "s/..\/triumvirate/..\/..\/triumvirate/g" ${DOXYFILE_FOR_EXHALE}
 
-sphinx-apidoc -efEMT -d 1 -t ${TMPL_DIR} -o ${APIDOC_PY_DIR} ${EXCL_DIRS}
+    # Build Sphinx docs with Doxygen+Breathe+Exhale.
+    sphinx-apidoc -efEMT -d 1 -t ${TMPL_DIR} -o ${APIDOC_PY_DIR} ${EXCL_DIRS}
 
-rm ${RM_FILES}
+    rm ${RM_FILES}
 
-make html
+    make html
 
-# Clean up.
-if [[ "${READTHEDOCS}" != "True" ]]; then rm ${DOXYFILE_FOR_EXHALE}; fi
+    # Clean up.
+    if [[ "${READTHEDOCS}" != "True" ]]; then rm ${DOXYFILE_FOR_EXHALE}; fi
+fi
 
 
 # -- Organise Docs -------------------------------------------------------
 
-
 if [[ "${READTHEDOCS}" != "True" ]]; then
     # Set directories.
     HTML_PUBLIC_DIR=./build/public_html/
+    STAT_APIREF_DOXY_SUBDIR=_static/${APIREF_DOXY_DIRNAME}/
     IMG_MIRROR_SUBDIR=${APIREF_DOXY_DIRNAME}/docs/source/_static/
 
     # Move Sphinx-build HTML to public HTML directory.
     mkdir -p ${HTML_PUBLIC_DIR}
-    cp -r ${SPHINX_BUILD_HTML_DIR}/** ${HTML_PUBLIC_DIR}
+    if [[ -d ${SPHINX_BUILD_HTML_DIR} ]]; then
+        cp -r ${SPHINX_BUILD_HTML_DIR}/** ${HTML_PUBLIC_DIR}
+    fi
 
     # Promote Doxygen-build HTML to top-level subdirectory
     # under the public HTML directory.
-    mv ${HTML_PUBLIC_DIR}/_static/${APIREF_DOXY_DIRNAME}/ ${HTML_PUBLIC_DIR}/
+    if [[ -d ${HTML_PUBLIC_DIR}/${STAT_APIREF_DOXY_SUBDIR} ]]; then
+        mv ${HTML_PUBLIC_DIR}/${STAT_APIREF_DOXY_SUBDIR} ${HTML_PUBLIC_DIR}/
+    fi
 
     # Move static assets to a mirrored subdirectory
     # in the public HTML directory for Doxygen 'mainpage'.

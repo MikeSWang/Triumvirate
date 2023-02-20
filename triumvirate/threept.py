@@ -62,16 +62,18 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         should be provided (see below).
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        for sampling parameters---
 
-        and one and only one of the following when 'boxalign' is 'pad':
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
+
+        and one and only one of the following when 'boxalign' is 'pad'---
+
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     degrees : tuple of (int, int, int) or str of length 3, optional
@@ -386,16 +388,18 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         should be provided when `form` is 'full'.
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        for sampling parameters---
 
-        and one and only one of the following when 'boxalign' is 'pad':
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
+
+        and one and only one of the following when 'boxalign' is 'pad'---
+
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     degrees : tuple of (int, int, int) or str of length 3, optional
@@ -624,18 +628,18 @@ def compute_bispec(catalogue_data, catalogue_rand,
         this will override ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
@@ -718,18 +722,18 @@ def compute_3pcf(catalogue_data, catalogue_rand,
         this will override ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
@@ -815,18 +819,18 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         this will override ``paramset['idx_bin']``.
 #     sampling_params : dict, optional
 #         Dictionary containing a subset of the following entries
-#         for sampling parameters:
+#         for sampling parameters---
 #
-#             * 'boxalign': {'centre', 'pad'};
-#             * 'boxsize': sequence of [float, float, float];
-#             * 'ngrid': sequence of [int, int, int];
-#             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-#             * 'interlace': bool;
+#         - 'boxalign': {'centre', 'pad'};
+#         - 'boxsize': sequence of [float, float, float];
+#         - 'ngrid': sequence of [int, int, int];
+#         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+#         - 'interlace': bool;
 #
-#         and one and only one of the following when 'boxalign' is 'pad':
+#         and one and only one of the following when 'boxalign' is 'pad'---
 #
-#             * 'boxpad': float;
-#             * 'gridpad': float.
+#         - 'boxpad': float;
+#         - 'gridpad': float.
 #
 #         This will override corresponding entries in `paramset`.
 #     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
@@ -1026,18 +1030,18 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         should be provided when `form` is 'full'.
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     degrees : tuple of (int, int, int) or str of length 3, optional
@@ -1230,18 +1234,18 @@ def compute_bispec_in_gpp_box(catalogue_data,
         this will override ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
@@ -1315,18 +1319,18 @@ def compute_3pcf_in_gpp_box(catalogue_data,
         this will override ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
@@ -1415,18 +1419,18 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         this will override ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
