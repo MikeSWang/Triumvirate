@@ -4,18 +4,10 @@
 
 # Three-Point Clustering Measurements in LSS
 
-[![Build](
-https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/build.yml?branch=main&logo=GitHub%20Actions
-)](https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml)
-[![Tests](
-https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/tests.yml?branch=main&logo=GitHub%20Actions&label=tests
-)](https://github.com/MikeSWang/Triumvirate/actions/workflows/tests.yml)
-[![Docs](
-https://img.shields.io/readthedocs/triumvirate/latest?logo=Read%20the%20Docs
-)](https://triumvirate.readthedocs.io/en/latest/)
-[![Release](
-https://img.shields.io/github/v/release/MikeSWang/Triumvirate?logo=Git
-)](https://github.com/MikeSWang/Triumvirate/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/build.yml?branch=main&logo=GitHub%20Actions)](https://github.com/MikeSWang/Triumvirate/actions/workflows/build.yml)
+[![Tests](https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/tests.yml?branch=main&logo=GitHub%20Actions&label=tests)](https://github.com/MikeSWang/Triumvirate/actions/workflows/tests.yml)
+[![Docs](https://img.shields.io/readthedocs/triumvirate/latest?logo=Read%20the%20Docs)](https://triumvirate.readthedocs.io/en/latest/)
+[![Release](https://img.shields.io/github/v/release/MikeSWang/Triumvirate?logo=Git)](https://github.com/MikeSWang/Triumvirate/releases/latest)
 
 ``Triumvirate`` is a Python/C++ software package for measuring three-point (and
 two-point) clustering statistics in large-scale structure (LSS) cosmological
@@ -37,12 +29,8 @@ be found at [triumvirate.readthedocs.io](https://triumvirate.readthedocs.io).
 
 ### Python package
 
-[![PyPI](
-https://img.shields.io/pypi/v/Triumvirate?logo=PyPI&color=informational
-)](https://pypi.org/project/Triumvirate)
-[![conda](
-https://img.shields.io/conda/vn/conda-forge/triumvirate?logo=conda-forge
-)](https://anaconda.org/conda-forge/triumvirate)
+[![PyPI](https://img.shields.io/pypi/v/Triumvirate?logo=PyPI&color=informational)](https://pypi.org/project/Triumvirate)
+[![conda](https://img.shields.io/conda/vn/conda-forge/triumvirate?logo=conda-forge)](https://anaconda.org/conda-forge/triumvirate)
 
 ``Triumvirate`` as a Python package is distributed through [PyPI](
 https://pypi.org/project/Triumvirate) and [conda-forge](
@@ -80,24 +68,16 @@ To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to
 the end of the second line as shown above.
 
 The latest release is on the ``main`` branch. The default ``Makefile``
-(located at the repository diretory root) suits most use cases, but you may
+(located at the repository directory root) suits most use cases, but you may
 modify it as appropriate for your need.
 
 
 ## Attribution
 
-[![JOSS](
-https://img.shields.io/badge/JOSS-doi-brightgreen
-)](https://joss.theoj.org/papers/?/status.svg)
-[![arXiv](
-https://img.shields.io/badge/arXiv-yymm.%3F-b31b1b
-)](https://arxiv.org/abs/?.?)
-[![MNRAS](
-https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-informational
-)](https://doi.org/10.1093/mnras/sty3249)
-[![MNRAS](
-https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-informational
-)](https://doi.org/10.1093/mnras/stx2333)
+[![JOSS](https://img.shields.io/badge/JOSS-doi-brightgreen)](https://joss.theoj.org/papers/?/status.svg)
+[![arXiv](https://img.shields.io/badge/arXiv-yymm.%3F-b31b1b)](https://arxiv.org/abs/?.?)
+[![MNRAS](https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-informational)](https://doi.org/10.1093/mnras/sty3249)
+[![MNRAS](https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-informational)](https://doi.org/10.1093/mnras/stx2333)
 
 To acknowledge the use of ``Triumvirate`` in your published research, please
 cite the publications linked above which contain the relevant information
@@ -130,12 +110,11 @@ Changes in recent releases are listed in the [change log](CHANGELOG.md).
 
 ## Licence
 
-[![Licence](
-https://img.shields.io/github/license/MikeSWang/Triumvirate?label=licence&style=flat-square&color=informational
-)](https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE)
+[![Licence](https://img.shields.io/github/license/MikeSWang/Triumvirate?label=licence&style=flat-square&color=informational)](https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE)
 
 ``Triumvirate`` is made freely available under the [GPL-3.0 licence](
 https://www.gnu.org/licenses/gpl-3.0.en.html). Please see
-[``LICENCE``](LICENCE) for full terms and conditions.
+``LICENCE`` (located at the repository directory root) for full terms
+and conditions.
 
 &copy; 2023 MS Wang & NS Sugiyama
