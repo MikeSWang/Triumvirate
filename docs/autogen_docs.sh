@@ -59,6 +59,7 @@ recycle_doxyfile () {
 # HACK: Ensure RTD Doxygen backward compatibility.
 if [[ "${READTHEDOCS}" == "True" ]]; then
     sed -i "s/\$darkmode//g" ./source/_themes/doxygen-header.html
+    recycle_doxyfile "MATHJAX_RELPATH        = https://cdn.jsdelivr.net/npm/mathjax@2"
 fi
 
 # Clean up.
