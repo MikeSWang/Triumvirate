@@ -44,13 +44,15 @@ cdef class Binning:
     bin_widths : list of float
         Bin widths of length :attr:`num_bins`.
 
-    Notes
-    -----
-    The bin setting method supports linear ('lin') and
-    log-linear/exponential ('log') binning, with possible linear padding
-    from zero for the first 5 bins ('linpad' or 'logpad').  The padding
-    is either 1.e-3 ('fourier' space) and 10. ('config' space), or
-    determined by the mesh grid resolution if set using mesh grid sizes.
+
+    .. note::
+
+        The bin setting method supports linear ('lin') and
+        log-linear/exponential ('log') binning, with possible linear
+        padding from zero for the first 5 bins ('linpad' or 'logpad').
+        The padding is either 1.e-3 ('fourier' space) and 10. ('config'
+        space), or determined by the mesh grid resolution if set using
+        mesh grid sizes.
 
     """
 

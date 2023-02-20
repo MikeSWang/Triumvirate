@@ -8,6 +8,16 @@ SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = source
 BUILDDIR      = build/sphinx
 
+# Command-line arguments.
+ifdef excl
+ifeq ($(strip ${excl}), $(filter $(strip ${excl}), doxy))
+export excl_doxy=true
+endif
+ifeq ($(strip ${excl}), $(filter $(strip ${excl}), sphinx))
+export excl_sphinx=true
+endif
+endif
+
 # Put it first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
@@ -20,7 +30,16 @@ help:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 clean:
-	find build/ -mindepth 1 -maxdepth 1 -not -name ".gitignore" -exec rm -rf {} +
+	if [ "${excl_doxy}" != "true" ]; then rm -rf build/doxygen; fi
+	if [ "${excl_sphinx}" != "true" ]; then rm -rf build/sphinx; fi
+
+	find build/ -mindepth 1 -maxdepth 1 -type f \
+		-not -name ".gitignore" \
+		-exec rm -rf {} +
+	find build/ -mindepth 1 -maxdepth 1 -type d \
+	  -not \( -name "doxygen" -or -name "sphinx" \) \
+		-exec rm -rf {} +
+
 	if [ -d source/apidoc_cpp ]; then \
 	  find source/apidoc_cpp -mindepth 1 -exec rm -rf {} +; \
 	fi

@@ -60,18 +60,18 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         must be provided.
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     degree : int, optional
@@ -333,18 +333,18 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         and `params_sampling` must be provided.
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     degree : int, optional
@@ -560,18 +560,18 @@ def compute_powspec(catalogue_data, catalogue_rand,
         constructed from `paramset`.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
@@ -650,18 +650,18 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
         constructed from `paramset`.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
@@ -734,18 +734,18 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
         and `sampling_params` must be provided.
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     degree : int, optional
@@ -924,18 +924,18 @@ def compute_powspec_in_gpp_box(catalogue_data,
         constructed from `paramset`.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
@@ -1004,18 +1004,18 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
         constructed from `paramset`.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
@@ -1092,18 +1092,18 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
         constructed from `paramset`.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'boxalign': {'centre', 'pad'};
-            * 'boxsize': sequence of [float, float, float];
-            * 'ngrid': sequence of [int, int, int];
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxalign': {'centre', 'pad'};
+        - 'boxsize': sequence of [float, float, float];
+        - 'ngrid': sequence of [int, int, int];
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'boxalign' is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
         This will override corresponding entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
