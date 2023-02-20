@@ -116,6 +116,7 @@ bibtex_reference_style = 'author_year'
 
 breathe_projects = {'Triumvirate': "apidoc_cpp/xml/"}
 breathe_default_project = 'Triumvirate'
+breathe_implementation_filename_extensions = ['.cpp']
 
 exhale_args = {
     'containmentFolder': "./apidoc_cpp",
