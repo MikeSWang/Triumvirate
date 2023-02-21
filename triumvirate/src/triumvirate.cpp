@@ -37,7 +37,7 @@
 #include "threept.hpp"
 
 /**
- * @brief Triumvirate program for measuring two- and three-point
+ * @brief A 'black-box' program for measuring two- and three-point
  *        clustering statistics.
  *
  * @param argc Number of command-line arguments.
