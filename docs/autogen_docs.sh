@@ -42,21 +42,45 @@ RM_FILES="${APIDOC_PY_DIR}/triumvirate.rst"
 
 # -- Build Docs ----------------------------------------------------------
 
+# @func get_version_release
+#
+# Get the project release number.
+#
+get_version_release () {
+    echo $(python -c "import triumvirate; print(triumvirate.__version__")
+}
+
 # @func replace_in_file
 #
 # Replace strings in file.
 #
-# @args File, string to be replaced, string replacement.
+# @arg File
+# @arg String to be replaced
+# @arg String replacement.
 #
 replace_in_file () {
-    sed -i "s/${2}/${3}/g" $1
+    sed -i "s/${2}/${3}/g" ${1}
+}
+
+# @func replace_in_doxyfile
+#
+# Replace key--value pairs in Doxyfile.conf.
+#
+# @arg Replacement string.
+# @globals DOXY_CONF_FILE
+# @locals str_confline, str_confvar
+#
+replace_in_doxyfile () {
+    str_confline=$1
+    str_confvar=$(printf $1 | tr -s ' ' | cut -d ' ' -f 1)
+    sed -i "s/${str_confvar} .*=.*/${str_confline}/g" ${DOXY_CONF_FILE}
 }
 
 # @func recycle_doxyfile
 #
 # Replace key--value pairs in Doxyfile[.conf].
 #
-# @args Replacement string.
+# @arg Replacement string.
 # @globals DOXYFILE_FOR_EXHALE
 # @locals str_confline, str_confvar
 #
@@ -66,16 +90,18 @@ recycle_doxyfile () {
     sed -i "s/${str_confvar} .*=.*/${str_confline}/g" ${DOXYFILE_FOR_EXHALE}
 }
 
-# HACK: Ensure RTD Doxygen backward compatibility.
-if [[ "${READTHEDOCS}" == "True" ]]; then
-    replace_in_file ./source/_themes/doxygen-header.html "\$darkmode"
-    replace_in_file ${DOXY_CONF_FILE} \
-        "= https:\/\/cdn.jsdelivr.net\/npm\/mathjax@3" \
-        "= https:\/\/cdn.jsdelivr.net\/npm\/mathjax@2"
-fi
-
 # Clean up.
 make clean excl=$excl
+
+# Pre-configure Doxygen-related docs.
+replace_in_doxyfile "PROJECT_NUMBER         = $(get_version_release)"
+
+# HACK: Ensure RTD Doxygen backward compatibility.
+if [[ "${READTHEDOCS}" == "True" ]]; then
+    MATHJAX_RELPATH="https:\/\/cdn.jsdelivr.net\/npm\/mathjax@2"
+    replace_in_file ./source/_themes/doxygen-header.html "\$darkmode"
+    replace_in_doxyfile "MATHJAX_RELPATH        = ${MATHJAX_RELPATH}"
+fi
 
 # Build Doxygen docs.
 if [[ "$excl" != 'doxy' ]]; then
