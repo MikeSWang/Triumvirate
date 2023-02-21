@@ -47,7 +47,7 @@ RM_FILES="${APIDOC_PY_DIR}/triumvirate.rst"
 # Get the project release number.
 #
 get_version_release () {
-    echo $(python -c "import triumvirate; print(triumvirate.__version__")
+    echo $(python -c "import triumvirate; print(triumvirate.__version__)")
 }
 
 # @func replace_in_file
