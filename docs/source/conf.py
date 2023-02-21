@@ -159,6 +159,11 @@ myst_enable_extensions = [
 
 myst_dmath_double_inline = True
 
+myst_substitutions = {
+    'Triumvirate':
+        "<span style=\"font-variant: small-caps\">Triumvirate</span>",
+}
+
 napoleon_include_special_with_doc = True
 napoleon_google_docstring = False
 napoleon_use_param = False
