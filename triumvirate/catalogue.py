@@ -37,6 +37,14 @@ class MissingField(ValueError):
     pass
 
 
+class DefaultFieldValue(UserWarning):
+    """Warning issued when values of a field are not provided and set
+    to default.
+
+    """
+    pass
+
+
 class ParticleCatalogue:
     """Catalogue holding particle coordinates, weights and
     redshift-dependent mean number densities.
@@ -87,7 +95,8 @@ class ParticleCatalogue:
         if nz is None:
             warnings.warn(
                 "Catalogue 'nz' field is None and thus set to zero, "
-                "which may raise errors in some computations."
+                "which may raise errors in some computations.",
+                category=DefaultFieldValue
             )
             nz = 0.
 
@@ -229,7 +238,7 @@ class ParticleCatalogue:
                 warnings.warn(
                     "'astropy' is used for catalogue I/O as "
                     "'nbodykit' is unavailable",
-                    category=warnings.RuntimeWarning
+                    category=RuntimeWarning
                 )
                 self._backend = 'astropy'
         elif reader.lower() == 'astropy':
@@ -287,14 +296,16 @@ class ParticleCatalogue:
             self._pdata['nz'] = 0.
             warnings.warn(
                 "Catalogue 'nz' field is not provided and thus set to zero, "
-                "which may raise errors in some computations."
+                "which may raise errors in some computations.",
+                category=DefaultFieldValue
             )
 
         for name_wgt in ['ws', 'wc']:
             if name_wgt not in colnames:
                 warnings.warn(
                     f"Catalogue '{name_wgt}' field is not provided, "
-                    "so is set to unity."
+                    "so is set to unity.",
+                    category=DefaultFieldValue
                 )
                 self._pdata[name_wgt] = 1.
 
@@ -422,8 +433,10 @@ class ParticleCatalogue:
         .. note::
 
             The reference catalogue is typically the random-source
-            catalogue (if provided).  The box corner closest to the
-            origin is used as the new coordinate origin.
+            catalogue (if provided).  Particle coordinates in both
+            catalogues are shifted by the same displacement vector such
+            that the mid-point of particle coordinate extents in the
+            reference catalogue is at the centre of the box.
 
         """
         if np.isscalar(boxsize):
@@ -443,8 +456,7 @@ class ParticleCatalogue:
                 warnings.warn(
                     "`boxsize` is smaller than the particle extents "
                     f"in {axis} axis. Some particles will lie outside "
-                    "the box after centring.",
-                    category=UserWarning
+                    "the box after centring."
                 )
 
         origin = np.array([
@@ -460,10 +472,10 @@ class ParticleCatalogue:
             catalogue_ref=None):
         """Pad a (pair of) catalogue(s) in a box.
 
-        The minimum particle extents in each dimension are shifted away
-        from the origin of the box depending on the amount of padding,
-        which can be set as a multiple of either the grid sizes or
-        the box sizes (i.e. number of grids or fraction of boxsizes).
+        The particle coordinates are shifted away from the box corner
+        at the origin such that in each dimension the minimum particle
+        coordinate is given by the amount of padding, which can be set as
+        a fraction of the box size or a multiple of the grid cell size.
 
         Parameters
         ----------
@@ -493,8 +505,10 @@ class ParticleCatalogue:
         .. note::
 
             The reference catalogue is typically the random-source
-            catalogue (if provided).  The box corner closest to the
-            origin is used as the new coordinate origin.
+            catalogue (if provided).  Particle coordinates in both
+            catalogues are shifted by the same displacement vector such
+            that the minimum particle coordinates in the reference
+            catalogue are the amounts of padding specified.
 
         """
         if boxsize_pad is None and ngrid_pad is None:
@@ -535,8 +549,7 @@ class ParticleCatalogue:
                 warnings.warn(
                     "`boxsize` is smaller than the particle extents "
                     f"in {axis} axis. Some particles now lie outside "
-                    "the box after padding.",
-                    category=UserWarning
+                    "the box after padding."
                 )
 
     def periodise(self, boxsize):
