@@ -30,4 +30,4 @@ cosmological analyses.
 __copyright__ = "Copyright 2023, MS Wang & NS Sugiyama"
 __date__ = "2023-03-01"
 __license__ = "GPL-3.0"
-__version__ = "0.0rc1"
+__version__ = "0.0.0-rc.0"

@@ -22,7 +22,8 @@ https://triumvirate.readthedocs.io/en/latest/background.html),
 https://triumvirate.readthedocs.io/en/latest/installation.html),
 [tutorials](https://triumvirate.readthedocs.io/en/latest/tutorials.html) and
 [API reference](https://triumvirate.readthedocs.io/en/latest/apiref.html) can
-be found at [triumvirate.readthedocs.io](https://triumvirate.readthedocs.io).
+be found at [triumvirate.readthedocs.io](
+https://triumvirate.readthedocs.io/en/latest/).
 
 
 ## Installation
