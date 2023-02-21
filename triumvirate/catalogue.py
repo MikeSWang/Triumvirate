@@ -242,6 +242,9 @@ class ParticleCatalogue:
 
         # Initialise particle data.
         if self._backend == 'nbodykit':
+            if file_kwargs is None:
+                file_kwargs = {}
+
             filepath = str(filepath)
             if format == 'text':
                 self._pdata = CSVCatalog(filepath, names, **file_kwargs)
@@ -388,6 +391,12 @@ class ParticleCatalogue:
             Box size (in each dimension) over which the mean density
             is calculated.  Used only when `volume` is `None`.
 
+
+        .. attention::
+
+            The invocation of this method resets the particle data
+            column ``'nz'``.
+
         """
         if np.isscalar(boxsize):
             boxsize = [boxsize, boxsize, boxsize]
@@ -424,6 +433,19 @@ class ParticleCatalogue:
             catalogue_ref_ = self
         else:
             catalogue_ref_ = catalogue_ref
+
+        for iaxis, axis in enumerate(['x', 'y', 'z']):
+            if (
+                boxsize[iaxis] <= np.abs(np.diff(self.bounds[axis]))
+                or
+                boxsize[iaxis] <= np.abs(np.diff(catalogue_ref_.bounds[axis]))
+            ):
+                warnings.warn(
+                    "`boxsize` is smaller than the particle extents "
+                    f"in {axis} axis. Some particles will lie outside "
+                    "the box after centring.",
+                    category=UserWarning
+                )
 
         origin = np.array([
             np.mean(catalogue_ref_.bounds[axis]) - boxsize[iaxis]/2.
@@ -486,6 +508,8 @@ class ParticleCatalogue:
                 "Conflicting padding as `boxsize_pad` and `ngrid_pad` "
                 "are both set (not None)."
             )
+        if np.isscalar(boxsize):
+            boxsize = [boxsize, boxsize, boxsize]
 
         if catalogue_ref is None:
             catalogue_ref_ = self
@@ -504,6 +528,16 @@ class ParticleCatalogue:
         self.offset_coords(origin)
         if catalogue_ref is not None:
             catalogue_ref.offset_coords(origin)
+
+        for iaxis, axis in enumerate(['x', 'y', 'z']):
+            if (max(self.bounds[axis]) > boxsize[iaxis]
+                    or max(catalogue_ref_.bounds[axis]) > boxsize[iaxis]):
+                warnings.warn(
+                    "`boxsize` is smaller than the particle extents "
+                    f"in {axis} axis. Some particles now lie outside "
+                    "the box after padding.",
+                    category=UserWarning
+                )
 
     def periodise(self, boxsize):
         """Place particles in a periodic box of given box size.
