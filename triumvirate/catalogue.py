@@ -163,9 +163,8 @@ class ParticleCatalogue:
         .. admonition:: `format` and `names` arguments
             :class: dropdown
 
-            For ``reader='astropy'``, supported `format` can be found at
-            `<https://docs.astropy.org/en/latest/io/ascii/
-            index.html#supported-formats>`_, and `names` correspond to
+            For ``reader='astropy'``, supported `format` can be found in
+            `'Built-In Table Readers/Writers'`_, and `names` correspond to
             the ``names`` argument (sequence of str) in
             :attr:`astropy.table.Table.read`.  See |Table| for more
             details.
@@ -183,8 +182,7 @@ class ParticleCatalogue:
             - ``'hdf'`` and ``root`` (str): HDF files read in
               by |HDFCatalog|.
 
-            See `<https://nbodykit.readthedocs.io/en/latest/catalogs/
-            reading.html>`_ for more details.
+            See `'Reading Catalogs from Disk'`_ for more details.
 
 
         .. hint::
@@ -197,19 +195,26 @@ class ParticleCatalogue:
         .. |Table| replace:: :class:`astropy.table.Table`
 
         .. |FileCatalogBase| replace:: \
-           :class:`nbodykit.source.catalog.file.FileCatalogBase`
+            :class:`nbodykit.source.catalog.file.FileCatalogBase`
 
         .. |CSVCatalog| replace:: \
-           :class:`nbodykit.source.catalog.file.CSVCatalog`
+            :class:`nbodykit.source.catalog.file.CSVCatalog`
 
         .. |FITSCatalog| replace:: \
-           :class:`nbodykit.source.catalog.file.FITSCatalog`
+            :class:`nbodykit.source.catalog.file.FITSCatalog`
 
         .. |BinaryCatalog| replace::  \
-           :class:`nbodykit.source.catalog.file.BinaryCatalog`
+            :class:`nbodykit.source.catalog.file.BinaryCatalog`
 
         .. |HDFCatalog| replace:: \
-           :class:`nbodykit.source.catalog.file.HDFCatalog`
+            :class:`nbodykit.source.catalog.file.HDFCatalog`
+
+        .. _'Built-In Table Readers/Writers': \
+            https://docs.astropy.org/en/latest/io/unified.html
+            #built-in-table-readers-writers
+
+        .. _'Reading Catalogs from Disk': \
+            https://nbodykit.readthedocs.io/en/latest/catalogs/reading.html
 
         """
         self = object.__new__(cls)
