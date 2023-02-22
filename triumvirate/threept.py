@@ -422,7 +422,9 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         This should be set by the caller of this function.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
-        or in '.npz' format.
+        or in '.npz' format.  The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -647,7 +649,9 @@ def compute_bispec(catalogue_data, catalogue_rand,
         `degrees`, `binning`, `form`, `idx_bin` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
-        or in '.npz' format.
+        or in '.npz' format.  The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -655,6 +659,23 @@ def compute_bispec(catalogue_data, catalogue_rand,
     -------
     results : dict of {str: :class:`numpy.ndarray`}
         Measurement results.
+
+    Examples
+    --------
+    Specify multipole `degrees` (0, 0, 2) and bispectrum 'full'
+    non-diagonal `form` with the first wavenumber fixed in bin 5,
+    which override the parameters supplied by `paramset`.
+
+    >>> results = compute_bispec(
+    ...     catalogue_data, catalogue_rand,
+    ...     degrees=(0, 0, 2),
+    ...     form='full',
+    ...     idx_bin=5,
+    ...     paramset=paramset
+    ... )
+
+    See more analogous examples in
+    :func:`~triumvirate.twopt.compute_powspec`.
 
     """
     # if logger:
@@ -741,7 +762,9 @@ def compute_3pcf(catalogue_data, catalogue_rand,
         `degrees`, `binning`, `form`, `idx_bin` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
-        or in '.npz' format.
+        or in '.npz' format.  The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -749,6 +772,10 @@ def compute_3pcf(catalogue_data, catalogue_rand,
     -------
     results : dict of {str: :class:`numpy.ndarray`}
         Measurement results.
+
+    Examples
+    --------
+    See analogous examples in :func:`~triumvirate.threept.compute_bispec`.
 
     """
     # if logger:
@@ -838,7 +865,9 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         `degrees`, `binning`, `form`, `idx_bin` or `sampling_params`.
 #     save : {'.txt', '.npz', False}, optional
 #         If not `False` (default), save the measurements as a '.txt' file
-#         or in '.npz' format.
+#         or in '.npz' format.  The save path is determined from `paramset`
+#         (if unset, a default file in the current working directory is
+#         used).
 #     logger : :class:`logging.Logger`, optional
 #         Logger (default is `None`).
 #
@@ -1064,7 +1093,9 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         this will override ``paramset['idx_bin']``.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
-        or in '.npz' format.
+        or in '.npz' format.  The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -1253,7 +1284,9 @@ def compute_bispec_in_gpp_box(catalogue_data,
         `degrees`, `binning`, `form`, `idx_bin` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
-        or in '.npz' format.
+        or in '.npz' format.  The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -1261,6 +1294,11 @@ def compute_bispec_in_gpp_box(catalogue_data,
     -------
     results : dict of {str: :class:`numpy.ndarray`}
         Measurement results.
+
+    Examples
+    --------
+    See analogous examples in :func:`~triumvirate.threept.compute_bispec`
+    (though without line-of-sight arguments).
 
     """
     # if logger:
@@ -1338,7 +1376,9 @@ def compute_3pcf_in_gpp_box(catalogue_data,
         `degree`, `binning`, `form`, `idx_bin` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
-        or in '.npz' format.
+        or in '.npz' format.  The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -1346,6 +1386,11 @@ def compute_3pcf_in_gpp_box(catalogue_data,
     -------
     results : dict of {str: :class:`numpy.ndarray`}
         Measurement results.
+
+    Examples
+    --------
+    See analogous examples in :func:`~triumvirate.threept.compute_bispec`
+    (though without line-of-sight arguments).
 
     """
     # if logger:
@@ -1438,7 +1483,9 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         `degrees`, `binning`, `form`, `idx_bin` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
-        or in '.npz' format.
+        or in '.npz' format.  The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -1446,6 +1493,10 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
     -------
     results : dict of {str: :class:`numpy.ndarray`}
         Measurement results.
+
+    Examples
+    --------
+    See analogous examples in :func:`~triumvirate.threept.compute_bispec`.
 
     """
     # --------------------------------------------------------------------

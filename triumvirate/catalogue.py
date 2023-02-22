@@ -168,6 +168,30 @@ class ParticleCatalogue:
         logger : :class:`logging.Logger`, optional
             Program logger (default is `None`).
 
+        Examples
+        --------
+        >>> ParticleCatalogue.read_from_file(
+        ...     filepath,
+        ...     reader='astropy',
+        ...     # Original data column names in file
+        ...     names=['X', 'Y', 'Z', 'NZ', 'WEIGHT_SYS', 'WEIGHT_FKP'],
+        ...     format='fits',
+        ...     # Match original data column names to the default names.
+        ...     name_mapping={
+        ...         'x': 'X', 'y': 'Y', 'z': 'Z',
+        ...         'nz': 'NZ', 'ws': 'WEIGHT_SYS', 'wc': 'WEIGHT_FKP',
+        ...     }
+        ... )
+        >>> ParticleCatalogue.read_from_file(
+        ...     filepath,
+        ...     reader='nbodykit',
+        ...     # `names` as the `root` argument passed to `HDFCatalog`
+        ...     names='particles',
+        ...     format='hdf',
+        ...     # `exclude` keyword argument passed to `HDFCatalog`
+        ...     file_kwargs={'exclude': 'irrelevant_data'}
+        ... )
+
 
         .. admonition:: `format` and `names` arguments
             :class: dropdown
@@ -348,9 +372,19 @@ class ParticleCatalogue:
         """
         return self._compute(self._pdata[key])
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, val):
+        """Set data column.
+
+        Parameters
+        ----------
+        key : str
+            Data column name.
+        val : array_like
+            Data column array.
+
+        """
         if isinstance(key, str):
-            self._pdata[key] = value
+            self._pdata[key] = val
         else:
             raise ValueError('Cannot set values for non-string-type key.')
 
