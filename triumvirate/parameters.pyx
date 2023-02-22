@@ -139,6 +139,15 @@ cdef class ParameterSet:
     def __getitem__(self, key):
         """Return parameter value by key like :class:`dict`.
 
+        Parameters
+        ----------
+        key : str
+            Parameter name.
+
+        Returns
+        -------
+        Parameter value.
+
         """
         try:
             return self._params[key]
@@ -148,6 +157,13 @@ cdef class ParameterSet:
     def __setitem__(self, key, val):
         """Set parameter value by key like :class:`dict`.
 
+        Parameters
+        ----------
+        key : str
+            Parameter name.
+        val :
+            Parameter value.
+
         """
         self._params.update({key: val})
         self._original = False
@@ -155,6 +171,15 @@ cdef class ParameterSet:
 
     def __getattr__(self, name):
         """Get parameter value as an attribute.
+
+        Parameters
+        ----------
+        name : str
+            Parameter name.
+
+        Returns
+        -------
+        Parameter value.
 
         """
         try:
@@ -164,6 +189,13 @@ cdef class ParameterSet:
 
     def __setattr__(self, name, value):
         """Set parameter value as an attribute.
+
+        Parameters
+        ----------
+        name : str
+            Parameter name.
+        value :
+            Parameter value.
 
         """
         self.__setitem__(name, value)

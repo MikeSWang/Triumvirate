@@ -84,22 +84,22 @@ cdef class Binning:
             self.set_bins(self.bin_min, self.bin_max, self.num_bins)
 
     @classmethod
-    def from_parameter_set(cls, parameter_set):
+    def from_parameter_set(cls, paramset):
         """Create binning scheme from a parameter set.
 
         This sets :attr:`scheme` and :attr:`space`.
 
         Parameters
         ----------
-        parameter_set : :class:`~triumvirate.parameters.ParameterSet`
+        paramset : :class:`~triumvirate.parameters.ParameterSet`
             Parameter set.
 
         """
         self = cls(
-            parameter_set['space'], parameter_set['binning'],
-            bin_min=parameter_set['range'][0],
-            bin_max=parameter_set['range'][-1],
-            num_bins=parameter_set['num_bins']
+            paramset['space'], paramset['binning'],
+            bin_min=paramset['range'][0],
+            bin_max=paramset['range'][-1],
+            num_bins=paramset['num_bins']
         )
 
         return self

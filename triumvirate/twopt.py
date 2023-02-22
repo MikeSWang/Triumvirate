@@ -358,7 +358,9 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         This should be set by the caller of this function.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
-        or in '.npz' format.
+        or in '.npz' format. The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -579,7 +581,9 @@ def compute_powspec(catalogue_data, catalogue_rand,
         `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
-        or in '.npz' format.
+        or in '.npz' format. The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -593,6 +597,35 @@ def compute_powspec(catalogue_data, catalogue_rand,
     ValueError
         When `paramset` is `None` but `degree`, `binning` or
         `sampling_params` is also `None`.
+
+    Examples
+    --------
+    Specify line-of-sight vectors explicitly.
+
+    >>> results = compute_powspec(
+    ...     catalogue_data, catalogue_rand,
+    ...     #
+    ...     los_data=np.ones((1e3, 3)), los_rand=np.ones((1e4, 3)),
+    ...     paramset=None
+    ... )
+
+    Specify multipole `degree` 2, customised
+    :class:`~triumvirate.dataobjs.Binning` object ``binning``.
+    Whether `paramset` provided or not, relevant parameters are overriden
+    by the supplied keyword arguments.
+
+    >>> results = compute_powspec(
+    ...     catalogue_data, catalogue_rand,
+    ...     degree=2,
+    ...     binning=binning,
+    ...     sampling_params={
+    ...         'boxsize': [1000., 1500., 1000.],
+    ...         'ngrid': [256, 256, 256],
+    ...         # 'boxalign' at default initial value in `ParameterSet`
+    ...         # 'assignment' at default initial value in `ParameterSet`
+    ...         # 'assignment' at default initial value in `ParameterSet`
+    ...     }
+    ... )
 
     """
     # if logger:
@@ -669,7 +702,9 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
         in lieu of `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
-        or in '.npz' format.
+        or in '.npz' format. The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -683,6 +718,10 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
     ValueError
         When `paramset` is `None` but `degree`, `binning` or
         `sampling_params` is also `None`.
+
+    Examples
+    --------
+    See analogous examples in :func:`~triumvirate.twopt.compute_powspec`.
 
     """
     # if logger:
@@ -758,8 +797,10 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
         `catalogue_type` and `statistic_type` (default is `None`).
         This should be set by the caller of this function.
     save : {'.txt', '.npz', False}, optional
-        If not `False` (default), save the measurements
-        as a '.txt' file or in '.npz' format.
+        If not `False` (default), save the measurements as a '.txt' file
+        or in '.npz' format. The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -943,7 +984,9 @@ def compute_powspec_in_gpp_box(catalogue_data,
         in lieu of `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
-        or in '.npz' format.
+        or in '.npz' format. The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -957,6 +1000,11 @@ def compute_powspec_in_gpp_box(catalogue_data,
     ValueError
         When `paramset` is `None` but `degree`, `binning` or
         `sampling_params` is also `None`.
+
+    Examples
+    --------
+    See analogous examples in :func:`~triumvirate.twopt.compute_powspec`
+    (though without line-of-sight arguments).
 
     """
     # if logger:
@@ -1023,7 +1071,9 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
         in lieu of `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
-        or in '.npz' format.
+        or in '.npz' format. The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -1037,6 +1087,11 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
     ValueError
         When `paramset` is `None` but `degree`, `binning` or
         `sampling_params` is also `None`.
+
+    Examples
+    --------
+    See analogous examples in :func:`~triumvirate.twopt.compute_powspec`
+    (though without line-of-sight arguments).
 
     """
     # if logger:
@@ -1111,7 +1166,9 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
         in lieu of `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
-        or in '.npz' format.
+        or in '.npz' format. The save path is determined from `paramset`
+        (if unset, a default file in the current working directory is
+        used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
 
@@ -1125,6 +1182,10 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
     ValueError
         When `paramset` is `None` but `degree`, `binning` or
         `sampling_params` is also `None`.
+
+    Examples
+    --------
+    See analogous examples in :func:`~triumvirate.twopt.compute_powspec`.
 
     """
     # --------------------------------------------------------------------
