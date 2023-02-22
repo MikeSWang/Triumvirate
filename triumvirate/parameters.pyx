@@ -53,6 +53,13 @@ _DEFAULT_PARAM_DICT = {
 }
 
 
+class NonParameter(ValueError):
+    """:exc:`ValueError` raised when a program parameter is non-existent.
+
+    """
+    pass
+
+
 class InvalidParameter(ValueError):
     """:exc:`ValueError` raised when a program parameter is invalid.
 
@@ -130,12 +137,36 @@ cdef class ParameterSet:
         ])
 
     def __getitem__(self, key):
-        return self._params[key]
+        """Return parameter value by key like :class:`dict`.
+
+        """
+        try:
+            return self._params[key]
+        except KeyError:
+            raise NonParameter(f"Non-existent parameter: '{key}'.")
 
     def __setitem__(self, key, val):
+        """Set parameter value by key like :class:`dict`.
+
+        """
         self._params.update({key: val})
         self._original = False
         self._validity = False
+
+    def __getattr__(self, name):
+        """Get parameter value as an attribute.
+
+        """
+        try:
+            return self.__getitem__(name)
+        except (KeyError, NonParameter) as err:
+            raise AttributeError(str(err))
+
+    def __setattr__(self, name, value):
+        """Set parameter value as an attribute.
+
+        """
+        self.__setitem__(name, value)
 
     def items(self):
         """Return the set of entries like a :class:`dict`.
