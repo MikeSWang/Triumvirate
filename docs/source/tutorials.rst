@@ -17,7 +17,7 @@ Using the Python package
 .. toctree::
     :maxdepth: 1
 
-    tutorials/Logging.ipynb
+    tutorials/Logger.ipynb
     tutorials/Parameters.ipynb
     tutorials/Binning.ipynb
     tutorials/Catalogue.ipynb
