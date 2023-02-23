@@ -511,13 +511,13 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
         Dictionary containing a subset of the following entries
         for sampling parameters:
 
-            * 'boxalign': {'centre', 'pad'};
+            * 'alignment': {'centre', 'pad'}---
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad':
+        and one and only one of the following when 'alignment' is 'pad'---
 
             * 'boxpad': float;
             * 'gridpad': float.
@@ -557,8 +557,8 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
                 "`params_default` should be a subdictionary of `paramset`."
             )
 
-    if 'boxalign' in params_sampling.keys():
-        paramset['alignment'] = params_sampling['boxalign']
+    if 'alignment' in params_sampling.keys():
+        paramset['alignment'] = params_sampling['alignment']
         if params_default: params_default.pop('alignment', None)
 
     if paramset.get('alignment') == 'pad':
