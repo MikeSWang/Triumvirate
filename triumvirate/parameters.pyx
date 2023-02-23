@@ -167,8 +167,8 @@ cdef class ParameterSet:
 
         """
         self._params.update({key: val})
+        self._parse_params()
         self._original = False
-        self._validity = False
 
     def __getattr__(self, name):
         """Get parameter value as an attribute.
@@ -228,16 +228,13 @@ cdef class ParameterSet:
         """
         return self._params.get(key)
 
-    def update(self, items):
+    def update(self, *args, **kwargs):
         """Update parameter set like a :class:`dict`.
 
-        Parameters
-        ----------
-        items : :class:`dict` or iterable
-            New items to update to.
-
         """
-        self._params.update(items)
+        self._params.update(*args, **kwargs)
+        self._parse_params()
+        self._original = False
 
     def print_to_file(self, filepath=None):
         """Print out validated parameters to a YAML file.

@@ -21,6 +21,7 @@ Using the Python package
     tutorials/Parameters.ipynb
     tutorials/Binning.ipynb
     tutorials/Catalogue.ipynb
+    tutorials/Measurements.ipynb
 
 
 Running the C++ program

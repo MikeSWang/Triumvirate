@@ -204,9 +204,7 @@ def _get_measurement_filename(paramset):
     if paramset['form'] == 'full':
         binform = "_bin{:02d}".format(paramset['idx_bin'])
 
-    output_tag = paramset['tags']['output']
-    if output_tag is None:
-        output_tag = ""
+    output_tag = paramset['tags']['output'] or ""
 
     if paramset['statistic_type'] == 'bispec':
         return "bk{}{}{}".format(multipole, binform, output_tag)
@@ -556,6 +554,7 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         logger.info("... measured clustering statistics.", cpp_state='end')
 
     if save:
+        odirpath = paramset['directories']['measurements'] or ""
         header = "\n".join([
             catalogue_data.write_attrs_as_header(catalogue_ref=catalogue_rand),
             _print_measurement_header(paramset, norm_factor, norm_factor_alt),
@@ -566,18 +565,14 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
                 ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
             )
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = Path(
-                paramset['directories']['measurements'], ofilename
-            ).with_suffix('.txt')
+            ofilepath = Path(odirpath, ofilename).with_suffix('.txt')
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
         elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = Path(
-                paramset['directories']['measurements'], ofilename
-            ).with_suffix('.npz')
+            ofilepath = Path(odirpath, ofilename).with_suffix('.npz')
             np.savez(ofilepath, **results)
         else:
             raise ValueError(
@@ -1000,6 +995,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         logger.info("... measured clustering statistics.", cpp_state='end')
 
 #     if save:
+#         odirpath = paramset['directories']['measurements'] or ""
 #         header = "\n".join([
 #             catalogue_data.write_attrs_as_header(catalogue_ref=catalogue_rand),  # noqa: E501
 #             _print_measurement_header(paramset, norm_factor, norm_factor_alt),  # noqa: E501
@@ -1010,9 +1006,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #                 ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
 #             )
 #             ofilename = _get_measurement_filename(paramset)
-#             ofilepath = Path(
-#                 paramset['directories']['measurements'], ofilename
-#             ).with_suffix('.txt')
+#             ofilepath = Path(odirpath, ofilename).with_suffix('.txt')
 #             np.savetxt(
 #                 ofilepath, datatab,
 #                 fmt=datafmt, header=header, delimiter='\t'
@@ -1020,9 +1014,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         elif save.lower().endswith('.npz'):
 #             results.update({'header': header})
 #             ofilename = _get_measurement_filename(paramset)
-#             ofilepath = Path(
-#                 paramset['directories']['measurements'], ofilename
-#             ).with_suffix('.npz')
+#             ofilepath = Path(odirpath, ofilename).with_suffix('.npz')
 #             np.savez(ofilepath, **results)
 #         else:
 #             raise ValueError(
@@ -1201,6 +1193,7 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         logger.info("... measured clustering statistics.", cpp_state='end')
 
     if save:
+        odirpath = paramset['directories']['measurements'] or ""
         header = "\n".join([
             catalogue_data.write_attrs_as_header(),
             _print_measurement_header(paramset, norm_factor, norm_factor_alt),
@@ -1211,18 +1204,14 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
                 ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
             )
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = Path(
-                paramset['directories']['measurements'], ofilename
-            ).with_suffix('.txt')
+            ofilepath = Path(odirpath, ofilename).with_suffix('.txt')
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
         elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = Path(
-                paramset['directories']['measurements'], ofilename
-            ).with_suffix('.npz')
+            ofilepath = Path(odirpath, ofilename).with_suffix('.npz')
             np.savez(ofilepath, **results)
         else:
             raise ValueError(
@@ -1596,6 +1585,7 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         )
 
     if save:
+        odirpath = paramset['directories']['measurements'] or ""
         header = "\n".join([
             catalogue_rand.write_attrs_as_header(),
             _print_measurement_header(paramset, norm_factor, norm_factor_alt),
@@ -1606,18 +1596,14 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
                 ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
             )
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = Path(
-                paramset['directories']['measurements'], ofilename
-            ).with_suffix('.txt')
+            ofilepath = Path(odirpath, ofilename).with_suffix('.txt')
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
         elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = Path(
-                paramset['directories']['measurements'], ofilename
-            ).with_suffix('.npz')
+            ofilepath = Path(odirpath, ofilename).with_suffix('.npz')
             np.savez(ofilepath, **results)
         else:
             raise ValueError(
