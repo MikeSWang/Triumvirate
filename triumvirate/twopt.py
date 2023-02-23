@@ -62,13 +62,13 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -335,13 +335,13 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -564,13 +564,13 @@ def compute_powspec(catalogue_data, catalogue_rand,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -604,7 +604,6 @@ def compute_powspec(catalogue_data, catalogue_rand,
 
     >>> results = compute_powspec(
     ...     catalogue_data, catalogue_rand,
-    ...     #
     ...     los_data=np.ones((1e3, 3)), los_rand=np.ones((1e4, 3)),
     ...     paramset=None
     ... )
@@ -621,8 +620,7 @@ def compute_powspec(catalogue_data, catalogue_rand,
     ...     sampling_params={
     ...         'boxsize': [1000., 1500., 1000.],
     ...         'ngrid': [256, 256, 256],
-    ...         # 'boxalign' at default initial value in `ParameterSet`
-    ...         # 'assignment' at default initial value in `ParameterSet`
+    ...         # 'alignment' at default initial value in `ParameterSet`
     ...         # 'assignment' at default initial value in `ParameterSet`
     ...     }
     ... )
@@ -685,13 +683,13 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -775,13 +773,13 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -967,13 +965,13 @@ def compute_powspec_in_gpp_box(catalogue_data,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -1054,13 +1052,13 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -1149,13 +1147,13 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.

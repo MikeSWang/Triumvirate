@@ -64,13 +64,13 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -390,13 +390,13 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -632,13 +632,13 @@ def compute_bispec(catalogue_data, catalogue_rand,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -745,13 +745,13 @@ def compute_3pcf(catalogue_data, catalogue_rand,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -848,13 +848,13 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         Dictionary containing a subset of the following entries
 #         for sampling parameters---
 #
-#         - 'boxalign': {'centre', 'pad'};
+#         - 'alignment': {'centre', 'pad'};
 #         - 'boxsize': sequence of [float, float, float];
 #         - 'ngrid': sequence of [int, int, int];
 #         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
 #         - 'interlace': bool;
 #
-#         and one and only one of the following when 'boxalign' is 'pad'---
+#         and one and only one of the following when 'alignment' is 'pad'---
 #
 #         - 'boxpad': float;
 #         - 'gridpad': float.
@@ -1061,13 +1061,13 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -1267,13 +1267,13 @@ def compute_bispec_in_gpp_box(catalogue_data,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -1359,13 +1359,13 @@ def compute_3pcf_in_gpp_box(catalogue_data,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -1466,13 +1466,13 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and one and only one of the following when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
