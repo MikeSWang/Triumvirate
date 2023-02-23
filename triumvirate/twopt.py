@@ -62,13 +62,13 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'alignment': {'centre', 'pad'};
+        - 'boxalign': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and one and only one of the following when 'boxalign' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -164,9 +164,7 @@ def _get_measurement_filename(paramset):
     """
     multipole = paramset['degrees']['ELL']
 
-    output_tag = paramset['tags']['output']
-    if output_tag is None:
-        output_tag = ""
+    output_tag = paramset['tags']['output'] or ""
 
     if paramset['statistic_type'] == 'powspec':
         return "pk{:d}{}".format(multipole, output_tag)
@@ -335,13 +333,13 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'alignment': {'centre', 'pad'};
+        - 'boxalign': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and one and only one of the following when 'boxalign' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -498,6 +496,7 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         logger.info("... measured clustering statistics.", cpp_state='end')
 
     if save:
+        odirpath = paramset['directories']['measurements'] or ""
         header = "\n".join([
             catalogue_data.write_attrs_as_header(catalogue_ref=catalogue_rand),
             _print_measurement_header(paramset, norm_factor, norm_factor_alt),
@@ -508,18 +507,14 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
                 ['%.9e'] * 2 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 3)
             )
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = Path(
-                paramset['directories']['measurements'], ofilename
-            ).with_suffix('.txt')
+            ofilepath = Path(odirpath, ofilename).with_suffix('.txt')
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
         elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = Path(
-                paramset['directories']['measurements'], ofilename
-            ).with_suffix('.npz')
+            ofilepath = Path(odirpath, ofilename).with_suffix('.npz')
             np.savez(ofilepath, **results)
         else:
             raise ValueError(
@@ -564,13 +559,13 @@ def compute_powspec(catalogue_data, catalogue_rand,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'alignment': {'centre', 'pad'};
+        - 'boxalign': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and one and only one of the following when 'boxalign' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -620,7 +615,7 @@ def compute_powspec(catalogue_data, catalogue_rand,
     ...     sampling_params={
     ...         'boxsize': [1000., 1500., 1000.],
     ...         'ngrid': [256, 256, 256],
-    ...         # 'alignment' at default initial value in `ParameterSet`
+    ...         # 'boxalign' at default initial value in `ParameterSet`
     ...         # 'assignment' at default initial value in `ParameterSet`
     ...     }
     ... )
@@ -683,13 +678,13 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'alignment': {'centre', 'pad'};
+        - 'boxalign': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and one and only one of the following when 'boxalign' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -773,13 +768,13 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'alignment': {'centre', 'pad'};
+        - 'boxalign': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and one and only one of the following when 'boxalign' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -910,6 +905,7 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
         logger.info("... measured clustering statistics.", cpp_state='end')
 
     if save:
+        odirpath = paramset['directories']['measurements'] or ""
         header = "\n".join([
             catalogue_data.write_attrs_as_header(),
             _print_measurement_header(paramset, norm_factor, norm_factor_alt),
@@ -920,18 +916,14 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
                 ['%.9e'] * 2 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 3)
             )
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = Path(
-                paramset['directories']['measurements'], ofilename
-            ).with_suffix('.txt')
+            ofilepath = Path(odirpath, ofilename).with_suffix('.txt')
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
         elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = Path(
-                paramset['directories']['measurements'], ofilename
-            ).with_suffix('.npz')
+            ofilepath = Path(odirpath, ofilename).with_suffix('.npz')
             np.savez(ofilepath, **results)
         else:
             raise ValueError(
@@ -965,13 +957,13 @@ def compute_powspec_in_gpp_box(catalogue_data,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'alignment': {'centre', 'pad'};
+        - 'boxalign': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and one and only one of the following when 'boxalign' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -1052,13 +1044,13 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'alignment': {'centre', 'pad'};
+        - 'boxalign': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and one and only one of the following when 'boxalign' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -1147,13 +1139,13 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'alignment': {'centre', 'pad'};
+        - 'boxalign': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and one and only one of the following when 'boxalign' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
@@ -1276,6 +1268,7 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
         )
 
     if save:
+        odirpath = paramset['directories']['measurements']
         header = "\n".join([
             catalogue_rand.write_attrs_as_header(),
             _print_measurement_header(paramset, norm_factor, norm_factor_alt),
@@ -1286,18 +1279,14 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
                 ['%.9e'] * 2 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 3)
             )
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = Path(
-                paramset['directories']['measurements'], ofilename
-            ).with_suffix('.txt')
+            ofilepath = Path(odirpath, ofilename).with_suffix('.txt')
             np.savetxt(
                 ofilepath, datatab, fmt=datafmt, header=header, delimiter='\t'
             )
         elif save.lower().endswith('.npz'):
             results.update({'header': header})
             ofilename = _get_measurement_filename(paramset)
-            ofilepath = Path(
-                paramset['directories']['measurements'], ofilename
-            ).with_suffix('.npz')
+            ofilepath = Path(odirpath, ofilename).with_suffix('.npz')
             np.savez(ofilepath, **results)
         else:
             raise ValueError(

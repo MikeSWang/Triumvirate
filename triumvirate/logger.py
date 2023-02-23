@@ -93,7 +93,8 @@ def _format_warning(message, category, filename, lineno, line=None):
     )
 
     msg_txt = "{} ({}:{}:{}{{}})".format(
-        msg.message, msg.filename, msg.lineno, msg.category.__name__
+        str(msg.message).replace('{', '{{').replace('}', '}}'),
+        msg.filename, msg.lineno, msg.category.__name__
     )
 
     if msg.line is None:

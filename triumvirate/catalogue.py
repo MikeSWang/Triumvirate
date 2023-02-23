@@ -449,7 +449,7 @@ class ParticleCatalogue:
         if np.isscalar(boxsize):
             boxsize = [boxsize, boxsize, boxsize]
 
-        volume = volume if volume else np.product(boxsize)
+        volume = volume or np.product(boxsize)
 
         self._pdata['nz'] = self.ntotal / volume
 
