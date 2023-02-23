@@ -283,10 +283,10 @@ IOError::IOError(const char* fmt_string, ...): std::runtime_error(
 
 const char* IOError::what() const noexcept {return this->err_mesg.c_str();}
 
-InvalidParameter::InvalidParameter(const char* fmt_string, ...):
-  std::invalid_argument(
-    "Invalid parameter error."  // mandatory default error message
-  ) {
+InvalidParameterError::InvalidParameterError(const char* fmt_string, ...):
+std::invalid_argument(
+  "Invalid parameter error."  // mandatory default error message
+) {
   std::va_list args;
 
   char err_mesg_buf[4096];
@@ -297,11 +297,12 @@ InvalidParameter::InvalidParameter(const char* fmt_string, ...):
   this->err_mesg = std::string(err_mesg_buf);
 }
 
-const char* InvalidParameter::what() const noexcept {
+const char* InvalidParameterError::what() const noexcept {
   return this->err_mesg.c_str();
 }
 
-InvalidData::InvalidData(const char* fmt_string, ...): std::runtime_error(
+InvalidDataError::InvalidDataError(const char* fmt_string, ...):
+std::runtime_error(
   "Invalid data error."  // mandatory default error message
 ) {
   std::va_list args;
@@ -314,7 +315,9 @@ InvalidData::InvalidData(const char* fmt_string, ...): std::runtime_error(
   this->err_mesg = std::string(err_mesg_buf);
 }
 
-const char* InvalidData::what() const noexcept {return this->err_mesg.c_str();}
+const char* InvalidDataError::what() const noexcept {
+  return this->err_mesg.c_str();
+}
 
 
 // ***********************************************************************

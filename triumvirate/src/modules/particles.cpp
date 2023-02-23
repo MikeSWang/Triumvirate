@@ -55,7 +55,9 @@ void ParticleCatalogue::initialise_particles(const int num) {
   // Check the total number of particles.
   if (num <= 0) {
     trvs::logger.error("Number of particles is non-positive.");
-    throw trvs::InvalidParameter("Number of particles is non-positive.\n");
+    throw trvs::InvalidParameterError(
+      "Number of particles is non-positive.\n"
+    );
   }
 
   this->ntotal = num;
@@ -100,7 +102,7 @@ int ParticleCatalogue::load_catalogue_file(
     trvs::logger.error(
       "Catalogue already loaded from another source: %s.", this->source.c_str()
     );
-    throw trvs::InvalidData(
+    throw trvs::InvalidDataError(
       "Catalogue already loaded from another source: %s.\n",
       this->source.c_str()
     );
@@ -272,7 +274,7 @@ int ParticleCatalogue::load_particle_data(
         "Inconsistent particle data dimensions (source=%s).",
         this->source.c_str()
       );
-      throw trvs::InvalidData(
+      throw trvs::InvalidDataError(
         "Inconsistent particle data dimensions (source=%s).\n",
         this->source.c_str()
       );
@@ -313,7 +315,7 @@ void ParticleCatalogue::calc_wtotal() {
   if (this->pdata == nullptr) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Particle data are uninitialised.");
-      throw trvs::InvalidData("Particle data are uninitialised.\n");
+      throw trvs::InvalidDataError("Particle data are uninitialised.\n");
     }
   }
 
@@ -341,7 +343,7 @@ void ParticleCatalogue::calc_pos_min_and_max() {
   if (this->pdata == nullptr) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Particle data are uninitialised.");
-      throw trvs::InvalidData("Particle data are uninitialised.\n");
+      throw trvs::InvalidDataError("Particle data are uninitialised.\n");
     }
   }
 
@@ -392,7 +394,7 @@ void ParticleCatalogue::offset_coords(const double dpos[3]) {
   if (this->pdata == nullptr) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Particle data are uninitialised.");
-      throw trvs::InvalidData("Particle data are uninitialised.\n");
+      throw trvs::InvalidDataError("Particle data are uninitialised.\n");
     }
   }
 

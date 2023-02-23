@@ -88,8 +88,9 @@ class Binning {
    * @param coord_min Minimum coordinate in binning range.
    * @param coord_max Maximum coordinate in binning range.
    * @param nbin Number of bins.
-   * @throws trv::sys::InvalidParameter When @p coord_min is negative.
-   * @throws trv::sys::InvalidParameter When @p nbin is non-positive.
+   * @throws trv::sys::InvalidParameterError When @p coord_min is
+   *                                         negative.
+   * @throws trv::sys::InvalidParameterError When @p nbin is non-positive.
    *
    * @note If @p scheme is "lin" or "log", the bin edges are set linearly
    *       or log-linearly (i.e. exponentially) in the bin range.  If
@@ -145,8 +146,8 @@ class Binning {
   /**
    * @brief Compute bin edges, centres and widths.
    *
-   * @throws trv::sys::InvalidParameter When @p scheme is not one of the
-   *                                    allowed options.
+   * @throws trv::sys::InvalidParameterError When @p scheme is not one of
+   *                                         the allowed options.
    */
   void compute_binning();
 };

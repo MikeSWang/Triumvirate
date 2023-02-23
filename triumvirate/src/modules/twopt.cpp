@@ -72,7 +72,7 @@ double calc_powspec_normalisation_from_particles(
   if (particles.pdata == nullptr) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Particle data are uninitialised.");
-      throw trvs::InvalidData("Particle data are uninitialised.\n");
+      throw trvs::InvalidDataError("Particle data are uninitialised.\n");
     }
   }
 
@@ -92,7 +92,7 @@ double calc_powspec_normalisation_from_particles(
         "Particle 'nz' values appear to be all zeros. "
         "Check the input catalogue contains valid 'nz' field."
       );
-      throw trvs::InvalidData(
+      throw trvs::InvalidDataError(
         "Particle 'nz' values appear to be all zeros. "
         "Check the input catalogue contains valid 'nz' field.\n"
       );
@@ -115,7 +115,7 @@ double calc_powspec_shotnoise_from_particles(
   if (particles.pdata == nullptr) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Particle data are uninitialised.");
-      throw trvs::InvalidData("Particle data are uninitialised.\n");
+      throw trvs::InvalidDataError("Particle data are uninitialised.\n");
     }
   }
 

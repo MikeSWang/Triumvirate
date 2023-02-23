@@ -350,7 +350,7 @@ int ParameterSet::validate() {
         "`catalogue_type` = '%s'.",
         this->catalogue_type.c_str()
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Catalogue type must be 'survey', 'random' or 'sim': "
         "`catalogue_type` = '%s'.\n",
         this->catalogue_type.c_str()
@@ -364,7 +364,7 @@ int ParameterSet::validate() {
         "Box alignment must be 'centre' or 'pad': `alignment` = '%s'.",
         this->alignment.c_str()
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Box alignment must be 'centre' or 'pad': `alignment` = '%s'.\n",
         this->alignment.c_str()
       );
@@ -376,7 +376,7 @@ int ParameterSet::validate() {
         "Pad scale must be 'box' or 'grid': `padscale` = '%s'.",
         this->padscale.c_str()
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Pad scale must be 'box' or 'grid': `padscale` = '%s'.\n",
         this->padscale.c_str()
       );
@@ -395,7 +395,7 @@ int ParameterSet::validate() {
         "'ngp', 'cic', 'tsc' or 'pcs': `assignment` = '%s'.",
         this->assignment.c_str()
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Mesh assignment scheme must be "
         "'ngp', 'cic', 'tsc' or 'pcs': `assignment` = '%s'.\n",
         this->assignment.c_str()
@@ -414,7 +414,7 @@ int ParameterSet::validate() {
         "`interlace` = '%s'.",
         this->interlace.c_str()
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Interlacing must be 'true'/'on' or 'false'/'off': "
         "`interlace` = '%s'.\n",
         this->interlace.c_str()
@@ -445,7 +445,7 @@ int ParameterSet::validate() {
         "Statistic type is not recognised: `statistic_type` = '%s'.",
         this->statistic_type.c_str()
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Statistic type is not recognised: `statistic_type` = '%s'.\n",
         this->statistic_type.c_str()
       );
@@ -460,7 +460,7 @@ int ParameterSet::validate() {
         "'mesh' or 'particle': `norm_convention` = '%s'.",
         this->norm_convention.c_str()
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Normalisation convention must be "
         "'mesh' or 'particle': `norm_convention` = '%s'.\n",
         this->norm_convention.c_str()
@@ -479,7 +479,7 @@ int ParameterSet::validate() {
         "Binning scheme is unrecognised: `binning` = '%s'.",
         this->binning.c_str()
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Binning scheme is unrecognised: `binning` = '%s'.\n",
         this->binning.c_str()
       );
@@ -491,7 +491,7 @@ int ParameterSet::validate() {
         "`form` must be either 'full' or 'diag': `form` = '%s'.",
         this->form.c_str()
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "`form` must be either 'full' or 'diag': `form` = '%s'.\n",
         this->form.c_str()
       );
@@ -507,7 +507,7 @@ int ParameterSet::validate() {
         "or `boxsize` is unset.",
         this->nmesh
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Derived total box volume is non-positive: `volume` = '%d'. "
         "Possible numerical overflow due to large `boxsize`, "
         "or `boxsize` is unset.\n",
@@ -523,7 +523,7 @@ int ParameterSet::validate() {
         "or `ngrid` is unset.",
         this->nmesh
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Derived total mesh grid number is non-positive: `nmesh` = '%d'. "
         "Possible numerical overflow due to large `ngrid`, "
         "or `ngrid` is unset.\n",
@@ -539,7 +539,7 @@ int ParameterSet::validate() {
         "`padfactor` = '%lg'.",
         this->padfactor
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Padding is enabled but the padding factor is negative: "
         "`padfactor` = '%lg'.\n",
         this->padfactor
@@ -551,7 +551,7 @@ int ParameterSet::validate() {
         "for the box size: `padfactor` = '%lg'.",
         this->padscale.c_str(), this->padfactor
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Padding is enabled but the %s padding factor is too large "
         "for the box size: `padfactor` = '%lg'.\n",
         this->padscale.c_str(), this->padfactor
@@ -567,7 +567,7 @@ int ParameterSet::validate() {
         "for the mesh grid numbers: `padfactor` = '%lg'.",
         this->padscale.c_str(), this->padfactor
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Padding is enabled but the %s padding factor is too large "
         "for the mesh grid numbers: `padfactor` = '%lg'.\n",
         this->padscale.c_str(), this->padfactor
@@ -601,7 +601,7 @@ int ParameterSet::validate() {
   if (this->num_bins < 2) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Number of bins `num_bins` must be >= 2.");
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Number of bins `num_bins` must be >= 2.\n"
       );
     }
@@ -610,7 +610,7 @@ int ParameterSet::validate() {
   if (this->idx_bin < 0 && this->npoint == "3pt" && this->form == "full") {
     if (trvs::currTask == 0) {
       trvs::logger.error("Fixed bin index `idx_bin` must be >= 0.");
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Fixed bin index `idx_bin` must be >= 0.\n"
       );
     }
@@ -627,7 +627,7 @@ int ParameterSet::validate() {
           "Binning scheme '%s' requires `num_bins` >= %d.",
           this->binning.c_str(), nbin_pad + 2
         );
-        throw trvs::InvalidParameter(
+        throw trvs::InvalidParameterError(
           "Binning scheme '%s' requires `num_bins` >= %d.\n",
           this->binning.c_str(), nbin_pad + 2
         );
@@ -640,7 +640,7 @@ int ParameterSet::validate() {
       trvs::logger.error(
         "Bin index `idx_bin` must be < `num_bins`."
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Bin index `idx_bin` must be < `num_bins`.\n"
       );
     }

@@ -183,7 +183,7 @@ void MeshField::assign_weighted_field_to_mesh(
         "Unsupported mesh assignment scheme: '%s'.",
         this->params.assignment.c_str()
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Unsupported mesh assignment scheme: '%s'.\n",
         this->params.assignment.c_str()
       );
@@ -1482,7 +1482,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
     trvs::logger.error(
       "Input mesh fields have incompatible physical properties."
     );
-    throw trvs::InvalidData(
+    throw trvs::InvalidDataError(
       "Input mesh fields have incompatible physical properties.\n"
     );
   }
@@ -1645,7 +1645,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
     trvs::logger.error(
       "Input mesh fields have incompatible physical properties."
     );
-    throw trvs::InvalidData(
+    throw trvs::InvalidDataError(
       "Input mesh fields have incompatible physical properties.\n"
     );
   }
@@ -1848,7 +1848,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
     trvs::logger.error(
       "Input mesh fields have incompatible physical properties."
     );
-    throw trvs::InvalidData(
+    throw trvs::InvalidDataError(
       "Input mesh fields have incompatible physical properties.\n"
     );
   }
@@ -2061,7 +2061,7 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
     trvs::logger.error(
       "Input mesh fields have incompatible physical properties."
     );
-    throw trvs::InvalidData(
+    throw trvs::InvalidDataError(
       "Input mesh fields have incompatible physical properties.\n"
     );
   }

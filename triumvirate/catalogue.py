@@ -5,7 +5,8 @@ Catalogue (:mod:`~triumvirate.catalogue`)
 Handle catalogue I/O and processing.
 
 .. autosummary::
-    MissingField
+    MissingValueError
+    DefaultValueWarning
     ParticleCatalogue
 
 """
@@ -29,7 +30,7 @@ except Exception:
     _nbkt_imported = False
 
 
-class MissingField(ValueError):
+class MissingValueError(ValueError):
     """Value error raised when a mandatory field is missing/empty in
     a catalogue.
 
@@ -37,7 +38,7 @@ class MissingField(ValueError):
     pass
 
 
-class DefaultFieldValue(UserWarning):
+class DefaultValueWarning(UserWarning):
     """Warning issued when values of a field are not provided and set
     to default.
 
@@ -96,7 +97,7 @@ class ParticleCatalogue:
             warnings.warn(
                 "Catalogue 'nz' field is None and thus set to zero, "
                 "which may raise errors in some computations.",
-                category=DefaultFieldValue
+                category=DefaultValueWarning
             )
             nz = 0.
 
@@ -314,14 +315,16 @@ class ParticleCatalogue:
 
         for axis_name in ['x', 'y', 'z']:
             if axis_name not in colnames:
-                raise MissingField(f"Mandatory field {axis_name} is missing.")
+                raise MissingValueError(
+                    f"Mandatory field {axis_name} is missing."
+                )
 
         if 'nz' not in colnames:
             self._pdata['nz'] = 0.
             warnings.warn(
                 "Catalogue 'nz' field is not provided and thus set to zero, "
                 "which may raise errors in some computations.",
-                category=DefaultFieldValue
+                category=DefaultValueWarning
             )
 
         for name_wgt in ['ws', 'wc']:
@@ -329,7 +332,7 @@ class ParticleCatalogue:
                 warnings.warn(
                     f"Catalogue '{name_wgt}' field is not provided, "
                     "so is set to unity.",
-                    category=DefaultFieldValue
+                    category=DefaultValueWarning
                 )
                 self._pdata[name_wgt] = 1.
 
