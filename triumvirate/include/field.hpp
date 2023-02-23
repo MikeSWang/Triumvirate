@@ -554,8 +554,9 @@ class FieldStats {
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
    * @param kbinning Wavenumber bins.
-   * @throws trv::sys::InvalidData When @p field_a and @p field_b have
-   *                               incompatible physical properties.
+   * @throws trv::sys::InvalidDataError When @p field_a and @p field_b
+   *                                    have incompatible physical
+   *                                    properties.
    *
    * @note @p field_a and @p field_b are Fourier-space fields and their
    *       entries are arranged in the FFTW convention (i.e. shifted).

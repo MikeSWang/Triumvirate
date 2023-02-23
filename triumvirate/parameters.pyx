@@ -5,7 +5,8 @@ Parameter Set (:mod:`~triumvirate.parameters`)
 Configure program parameter set.
 
 .. autosummary::
-    InvalidParameter
+    NonParameterError
+    InvalidParameterError
     ParameterSet
     fetch_paramset_template
 
@@ -53,14 +54,14 @@ _DEFAULT_PARAM_DICT = {
 }
 
 
-class NonParameter(ValueError):
+class NonParameterError(ValueError):
     """:exc:`ValueError` raised when a program parameter is non-existent.
 
     """
     pass
 
 
-class InvalidParameter(ValueError):
+class InvalidParameterError(ValueError):
     """:exc:`ValueError` raised when a program parameter is invalid.
 
     """
@@ -152,7 +153,7 @@ cdef class ParameterSet:
         try:
             return self._params[key]
         except KeyError:
-            raise NonParameter(f"Non-existent parameter: '{key}'.")
+            raise NonParameterError(f"Non-existent parameter: '{key}'.")
 
     def __setitem__(self, key, val):
         """Set parameter value by key like :class:`dict`.
@@ -184,7 +185,7 @@ cdef class ParameterSet:
         """
         try:
             return self.__getitem__(name)
-        except (KeyError, NonParameter) as err:
+        except (KeyError, NonParameterError) as err:
             raise AttributeError(str(err))
 
     def __setattr__(self, name, value):
@@ -226,6 +227,17 @@ cdef class ParameterSet:
 
         """
         return self._params.get(key)
+
+    def update(self, items):
+        """Update parameter set like a :class:`dict`.
+
+        Parameters
+        ----------
+        items : :class:`dict` or iterable
+            New items to update to.
+
+        """
+        self._params.update(items)
 
     def print_to_file(self, filepath=None):
         """Print out validated parameters to a YAML file.
@@ -317,14 +329,14 @@ cdef class ParameterSet:
 
         # Attribute numerical parameters.
         if None in self._params['boxsize'].values():
-            raise InvalidParameter("`boxsize` parameters must be set.")
+            raise InvalidParameterError("`boxsize` parameters must be set.")
         self.thisptr.boxsize = [
             float(self._params['boxsize']['x']),
             float(self._params['boxsize']['y']),
             float(self._params['boxsize']['z']),
         ]
         if None in self._params['ngrid'].values():
-            raise InvalidParameter("`ngrid` parameters must be set.")
+            raise InvalidParameterError("`ngrid` parameters must be set.")
         self.thisptr.ngrid = [
             self._params['ngrid']['x'],
             self._params['ngrid']['y'],
@@ -362,7 +374,7 @@ cdef class ParameterSet:
         if self._params['degrees']['ELL'] is not None:
             self.thisptr.ELL = self._params['degrees']['ELL']
         else:
-            raise InvalidParameter("`ELL` parameter must be set.")
+            raise InvalidParameterError("`ELL` parameter must be set.")
 
         if self._params['wa_orders']['i'] is not None:
             self.thisptr.i_wa = self._params['wa_orders']['i']
@@ -370,14 +382,14 @@ cdef class ParameterSet:
             self.thisptr.j_wa = self._params['wa_orders']['j']
 
         if self._params['range'] is None or None in self._params['range']:
-            raise InvalidParameter("`range` parameters must be set.")
+            raise InvalidParameterError("`range` parameters must be set.")
         self.thisptr.bin_min = float(self._params['range'][0])
         self.thisptr.bin_max = float(self._params['range'][1])
 
         if self._params['num_bins'] is not None:
             self.thisptr.num_bins = self._params['num_bins']
         else:
-            raise InvalidParameter("`num_bins` parameter must be set.")
+            raise InvalidParameterError("`num_bins` parameter must be set.")
         if self._params['idx_bin'] is not None:
             self.thisptr.idx_bin = self._params['idx_bin']
 
@@ -386,12 +398,16 @@ cdef class ParameterSet:
             self.thisptr.catalogue_type = \
                 self._params['catalogue_type'].lower().encode('utf-8')
         else:
-            raise InvalidParameter("`catalogue_type` parameter must be set.")
+            raise InvalidParameterError(
+                "`catalogue_type` parameter must be set."
+            )
         if self._params['statistic_type'] is not None:
             self.thisptr.statistic_type = \
                 self._params['statistic_type'].lower().encode('utf-8')
         else:
-            raise InvalidParameter("`statistic_type` parameter must be set.")
+            raise InvalidParameterError(
+                "`statistic_type` parameter must be set."
+            )
 
         if self._params['norm_convention'] is not None:
             self.thisptr.norm_convention = \
@@ -425,7 +441,7 @@ cdef class ParameterSet:
             pass
 
         if self.thisptr.validate() != 0:
-            raise InvalidParameter("Invalid measurement parameters.")
+            raise InvalidParameterError("Invalid measurement parameters.")
 
         # Fetch validated parameters that have been derived or transmuted.
         # Transmuted I/O paths are not fetched.

@@ -305,17 +305,17 @@ class IOError: public std::runtime_error {
  * @brief Exception raised when parameters are invalid.
  *
  */
-class InvalidParameter: public std::invalid_argument {
+class InvalidParameterError: public std::invalid_argument {
  public:
   std::string err_mesg;  ///< error message
 
   /**
-   * @brief Construct an @ref trv::sys::InvalidParameter exception.
+   * @brief Construct an @ref trv::sys::InvalidParameterError exception.
    *
    * @param fmt_string Error message format string.
    * @param ... An arbitrary number of substitution arguments.
    */
-  InvalidParameter(const char* fmt_string, ...);
+  InvalidParameterError(const char* fmt_string, ...);
 
   /**
    * @brief Exception string representation.
@@ -329,17 +329,17 @@ class InvalidParameter: public std::invalid_argument {
  * @brief Exception raised when the data to be operated on are invalid.
  *
  */
-class InvalidData: public std::runtime_error {
+class InvalidDataError: public std::runtime_error {
  public:
   std::string err_mesg;  ///< error message
 
   /**
-   * @brief Construct an @ref trv::sys::InvalidData exception.
+   * @brief Construct an @ref trv::sys::InvalidDataError exception.
    *
    * @param fmt_string Error message format string.
    * @param ... An arbitrary number of substitution arguments.
    */
-  InvalidData(const char* fmt_string, ...);
+  InvalidDataError(const char* fmt_string, ...);
 
   /**
    * @brief Exception string representation.

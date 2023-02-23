@@ -207,8 +207,8 @@ class SphericalHarmonicCalculator {
    * @param[in] boxsize Box size in each dimension.
    * @param[in] ngrid Grid number in each dimension.
    * @param[out] ylm_out Stored @f$ y_\ell^m @f$ values.
-   * @throws trv::sys::InvalidData When the output
-   *                               variable is not provided.
+   * @throws trv::sys::InvalidDataError When the output variable is
+   *                                    not provided.
    */
   static void store_reduced_spherical_harmonic_in_fourier_space(
     const int ell, const int m,
@@ -225,8 +225,8 @@ class SphericalHarmonicCalculator {
    * @param[in] boxsize Box size in each dimension.
    * @param[in] ngrid Grid number in each dimension.
    * @param[out] ylm_out Stored @f$ y_\ell^m @f$ values.
-   * @throws trv::sys::InvalidData When the output
-   *                               variable is not provided.
+   * @throws trv::sys::InvalidDataError When the output variable
+   *                                    is not provided.
    */
   static void store_reduced_spherical_harmonic_in_config_space(
     const int ell, const int m,

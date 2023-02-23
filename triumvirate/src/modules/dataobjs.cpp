@@ -55,10 +55,14 @@ Binning::Binning(trv::ParameterSet& params) : Binning::Binning(
 
 void Binning::set_bins(double coord_min, double coord_max, int nbin) {
   if (coord_min < 0.) {
-    throw trv::sys::InvalidParameter("Binning range must be non-negative.");
+    throw trv::sys::InvalidParameterError(
+      "Binning range must be non-negative."
+    );
   }
   if (nbin <= 0) {
-    throw trv::sys::InvalidParameter("Number of bins must be positive.");
+    throw trv::sys::InvalidParameterError(
+      "Number of bins must be positive."
+    );
   }
 
   this->bin_min = coord_min;
@@ -158,7 +162,7 @@ void Binning::compute_binning() {
   // ---------------------------------------------------------------------
   if (scheme == "log")  {
     if (this->bin_min == 0.) {
-      throw trv::sys::InvalidParameter(
+      throw trv::sys::InvalidParameterError(
         "Cannot use logarithmic binning when the lowest edge is zero."
       );
     }
@@ -236,7 +240,7 @@ void Binning::compute_binning() {
     }
     this->bin_edges.push_back(this->bin_max);
   } else {
-    throw trv::sys::InvalidParameter(
+    throw trv::sys::InvalidParameterError(
       "Invalid binning `scheme`: %s.", scheme.c_str()
     );
   }

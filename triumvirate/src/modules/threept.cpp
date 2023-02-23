@@ -53,7 +53,7 @@ void validate_multipole_coupling(trv::ParameterSet& params) {
         "Specified three-point correlator multipole "
         "vanishes identically owing to zero-valued Wigner 3-j symbol."
       );
-      throw trvs::InvalidParameter(
+      throw trvs::InvalidParameterError(
         "Specified three-point correlator multipole "
         "vanishes identically owing to zero-valued Wigner 3-j symbol.\n"
       );
@@ -87,7 +87,7 @@ double calc_bispec_normalisation_from_particles(
   if (particles.pdata == nullptr) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Particle data are uninitialised.");
-      throw trvs::InvalidData("Particle data are uninitialised.\n");
+      throw trvs::InvalidDataError("Particle data are uninitialised.\n");
     }
   }
 
@@ -107,7 +107,7 @@ double calc_bispec_normalisation_from_particles(
         "Particle 'nz' values appear to be all zeros. "
         "Check the input catalogue contains valid 'nz' field."
       );
-      throw trvs::InvalidData(
+      throw trvs::InvalidDataError(
         "Particle 'nz' values appear to be all zeros. "
         "Check the input catalogue contains valid 'nz' field.\n"
       );
