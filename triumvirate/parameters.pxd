@@ -40,14 +40,13 @@ cdef extern from "include/parameters.hpp":
 
         string catalogue_type
         string statistic_type
+        string npoint
+        string space
 
+        string form
         string norm_convention
 
         string binning
-        string form
-
-        string npoint
-        string space
 
         int ell1
         int ell2

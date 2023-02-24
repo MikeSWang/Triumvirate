@@ -333,7 +333,7 @@ void ParticleCatalogue::calc_wtotal() {
   if (trvs::currTask == 0) {
     trvs::logger.info(
       "Catalogue loaded: %d particles with "
-      "total sample weights %.3f (source=%s).",
+      "total sample weight %.3f (source=%s).",
       this->ntotal, this->wtotal, this->source.c_str()
     );
   }

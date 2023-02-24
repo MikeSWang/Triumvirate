@@ -2,13 +2,14 @@
 Tutorials
 *********
 
-Quick start
-===========
+Getting started
+===============
 
 .. toctree::
     :maxdepth: 1
 
     tutorials/QuickStart.ipynb
+    tutorials/Configuration.ipynb
 
 
 Using the Python package

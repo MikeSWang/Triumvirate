@@ -124,7 +124,7 @@ class ParticleCatalogue:
         if self._logger:
             self._logger.info(
                 "Catalogue initialised: %d particles with "
-                "total sample weights %.3f (%s).",
+                "total sample weight %.3f (%s).",
                 self.ntotal, self.wtotal, self
             )
 
@@ -345,7 +345,7 @@ class ParticleCatalogue:
         if self._logger:
             self._logger.info(
                 "Catalogue loaded: %d particles with "
-                "total sample weights %.3f (%s).",
+                "total sample weight %.3f (%s).",
                 self.ntotal, self.wtotal, self
             )
 
@@ -723,7 +723,7 @@ class ParticleCatalogue:
             text_lines = [
                 "Catalogue source: {}"
                     .format(self._source),  # noqa: E131
-                "Catalogue size: {:d} particles of total weight {:.3f}"
+                "Catalogue size: {:d} particles of total sample weight {:.3f}"
                     .format(self.ntotal, self.wtotal),
                 "Catalogue particle extents: "
                 "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"
@@ -735,7 +735,8 @@ class ParticleCatalogue:
             text_lines = [
                 "Data catalogue source: {}"
                     .format(self._source),  # noqa: E131
-                "Data catalogue size: {:d} particles of total weight {:.3f}"
+                "Data catalogue size: "
+                "{:d} particles of total sample weight {:.3f}"
                     .format(self.ntotal, self.wtotal),
                 "Data-source particle extents: "
                 "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"
@@ -744,7 +745,8 @@ class ParticleCatalogue:
                     ),
                 "Random catalogue source: {}"
                     .format(catalogue_ref._source),  # noqa: E131
-                "Random catalogue size: {:d} particles of total weight {:.3f}"
+                "Random catalogue size: "
+                "{:d} particles of total sample weight {:.3f}"
                     .format(  # noqa: E131
                         catalogue_ref.ntotal, catalogue_ref.wtotal
                     ),

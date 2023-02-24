@@ -4,7 +4,7 @@
 
 # Directories for input/output.
 # The paths can be either absolute or relative to the working directory.
-# If unset, the working directory is used as the default.
+# If unset, the current working directory is assumed.
 directories:
   catalogues: triumvirate/tests/test_input/catalogues
   measurements: triumvirate/tests/test_output/
@@ -27,13 +27,13 @@ boxsize:
   y: 1000.
   z: 1000.
 
-# Grid number in each dimension. [mandatory]
+# Grid cell number in each dimension. [mandatory]
 ngrid:
-  x: 128
-  y: 128
-  z: 128
+  x: 64
+  y: 64
+  z: 64
 
-# Mesh alignment: {'centre' (default), 'pad'}.
+# Box alignment: {'centre' (default), 'pad'}.
 alignment: centre
 
 # Padding scale: {'box' (default), 'grid'}.
@@ -52,22 +52,13 @@ interlace: off
 
 # -- Measurements --------------------------------------------------------
 
-# Type of catalogue: {'survey', 'random', 'sim'}. [mandatory]
+# Type of catalogue(s): {'survey', 'random', 'sim'}. [mandatory]
 catalogue_type:
 
 # Type of measurement:
 # {'powspec', '2pcf', '2pcf-win', 'bispec', '3pcf', '3pcf-win', '3pcf-win-wa'}.
 # [mandatory]
 statistic_type:
-
-# Normalisation convention: {'particle' (default), 'mesh'}.
-norm_convention: particle
-
-# Binning scheme: {'lin' (default), 'log', 'linpad', 'logpad', 'custom'}.
-binning: lin
-
-# Form of the three-point correlator: {'full', 'diag' (default)}.
-form: diag
 
 # Degrees of the multipoles. [optional, optional, mandatory]
 degrees:
@@ -80,8 +71,17 @@ wa_orders:
   i: 1
   j: 0
 
-# Minimum and maximum of the binning range
-# (i.e. range of measurement scales) as a list.
+# Form of the three-point statistic measurements: {'full', 'diag' (default)}.
+form: diag
+
+# Normalisation convention: {'particle' (default), 'mesh'}.
+norm_convention: particle
+
+# Binning scheme: {'lin' (default), 'log', 'linpad', 'logpad', 'custom'}.
+binning: lin
+
+# Minimum and maximum of the binning range (i.e. range of measurement scales)
+# as a list.
 # The binning coordinate is either wavenumbers (in h/Mpc) in Fourier space,
 # or separations (in Mpc/h) in configuration space. [mandatory]
 range: [~, ~]
@@ -90,7 +90,7 @@ range: [~, ~]
 # Must be >=2, or >=7 if padding is used in binning. [mandatory]
 num_bins: 10
 
-# Fixed bin index in the full-form three-point statistics measurements.
+# Fixed bin index in the full (2-d) three-point statistics measurements.
 idx_bin: 0
 
 

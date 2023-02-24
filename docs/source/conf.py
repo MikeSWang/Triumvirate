@@ -74,7 +74,7 @@ master_doc = 'index'
 
 pygments_style = 'sphinx'
 
-source_suffix = ['.rst', '.txt', '.md']
+source_suffix = ['.rst', '.md', '.ipynb']
 
 templates_path = ['_templates']
 

@@ -100,33 +100,36 @@ class ParameterSet {
   // Measurement
   // ---------------------------------------------------------------------
 
-  // Measurement specification.
+  // Measurement type.
   /// catalogue type: {"survey", "random", "sim"}
   std::string catalogue_type;
   /// statistic type: {"powspec", "2pcf", "2pcf-win", "bispec", "3pcf",
   ///                  "3pcf-win", "3pcf-win-wa"}
   std::string statistic_type;
 
-  /// normalisation convention: {"particle" (default), "mesh"}
-  std::string norm_convention = "particle";
-
-  /// binning scheme: {"lin" (default), "log",
-  ///                  "linpad", "logpad", "custom"}
-  std::string binning = "lin";
-  /// form of the bispectrum measurement: {"diag" (default), "full"}
-  std::string form = "diag";
-
-  // Derived measurement specification.
+  // Derived measurement type.
   std::string npoint;  ///< <i>N</i>-point case: {"2pt", "3pt"}
   std::string space;   ///< coordinte space: {"fourier", "config"}
 
-  // Measurement parameters.
+  // Measurement indexing.
   int ell1;  ///< spherical degree associated with the first wavevector
   int ell2;  ///< spherical degree associated with the second wavevector
   int ELL;   ///< spherical degree associated with the line of sight
 
   int i_wa;  ///< first order of the wide-angle correction term
   int j_wa;  ///< second order of the wide-angle correction term
+
+  // Measurement choices.
+  /// form of the bispectrum measurement: {"diag" (default), "full"}
+  std::string form = "diag";
+
+  /// normalisation convention: {"particle" (default), "mesh"}
+  std::string norm_convention = "particle";
+
+  // Measurement parameters.
+  /// binning scheme: {"lin" (default), "log",
+  ///                  "linpad", "logpad", "custom"}
+  std::string binning = "lin";
 
   double bin_min;  ///< measurement range minimum (in Mpc/h or h/Mpc)
   double bin_max;  ///< measurement range maximum (in Mpc/h or h/Mpc)
