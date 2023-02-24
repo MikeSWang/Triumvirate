@@ -42,11 +42,11 @@ _DEFAULT_PARAM_DICT = {
     'interlace': False,
     'catalogue_type': None,
     'statistic_type': None,
-    'norm_convention': 'particle',
-    'binning': 'lin',
-    'form': 'diag',
     'degrees': {'ell1': None, 'ell2': None, 'ELL': None},
     'wa_orders': {'i': None, 'j': None},
+    'form': 'diag',
+    'norm_convention': 'particle',
+    'binning': 'lin',
     'range': [None, None],
     'num_bins': None,
     'idx_bin': None,
@@ -406,6 +406,10 @@ cdef class ParameterSet:
                 "`statistic_type` parameter must be set."
             )
 
+        if self._params['form'] is not None:
+            self.thisptr.form = \
+                self._params['form'].lower().encode('utf-8')
+
         if self._params['norm_convention'] is not None:
             self.thisptr.norm_convention = \
                 self._params['norm_convention'].lower().encode('utf-8')
@@ -413,9 +417,6 @@ cdef class ParameterSet:
         if self._params['binning'] is not None:
             self.thisptr.binning = \
                 self._params['binning'].lower().encode('utf-8')
-        if self._params['form'] is not None:
-            self.thisptr.form = \
-                self._params['form'].lower().encode('utf-8')
 
         # -- Misc --------------------------------------------------------
 
@@ -522,11 +523,11 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
         Parameter set to be updated.
     params_sampling : dict, optional
         Dictionary containing a subset of the following entries
-        for sampling parameters:
+        for sampling parameters---
 
-            * 'alignment': {'centre', 'pad'}---
             * 'boxsize': [float, float, float];
             * 'ngrid': [int, int, int];
+            * 'alignment': {'centre', 'pad'}
             * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
             * 'interlace': bool;
 
@@ -629,9 +630,9 @@ def _modify_measurement_parameters(paramset, params_measure=None,
 
             * 'ell1', 'ell2', 'ELL': int;
             * 'i_wa', 'j_wa': int;
+            * 'form': {'diag', 'full'};
             * 'bin_min', 'bin_max': float;
             * 'num_bins': int;
-            * 'form': {'diag', 'full'};
             * 'idx_bin': int.
 
         This will override corresponding parameters in the template.

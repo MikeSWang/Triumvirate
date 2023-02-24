@@ -91,7 +91,7 @@ void print_measurement_header_to_file(
   );
   std::fprintf(
     fileptr,
-    "%s Data catalogue size: %d particles of total weight %.3f\n",
+    "%s Data catalogue size: %d particles of total sample weight %.3f\n",
     comment_delimiter, catalogue_data.ntotal, catalogue_data.wtotal
   );
   std::fprintf(
@@ -110,7 +110,7 @@ void print_measurement_header_to_file(
   );
   std::fprintf(
     fileptr,
-    "%s Random catalogue size: %d particles of total weight %.3f\n",
+    "%s Random catalogue size: %d particles of total sample weight %.3f\n",
     comment_delimiter, catalogue_rand.ntotal, catalogue_rand.wtotal
   );
   std::fprintf(
@@ -180,7 +180,7 @@ void print_measurement_header_to_file(
   );
   std::fprintf(
     fileptr,
-    "%s Catalogue size: %d particles of total weight %.3f\n",
+    "%s Catalogue size: %d particles of total sample weight %.3f\n",
     comment_delimiter, catalogue.ntotal, catalogue.wtotal
   );
   std::fprintf(
