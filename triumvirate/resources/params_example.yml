@@ -96,10 +96,10 @@ idx_bin:
 
 # -- Misc ----------------------------------------------------------------
 
-# Logging verbosity level: an integer between 0 and 50 (inclusive).
+# Logging verbosity level: a non-negative integer.
 # Typical values are: {
-#   0 (unset), 10 (debug), 20 (status) (default),
-#   30 (info), 40 (warning), 50 (error)
+#   0 (NSET, unset), 10 (DBUG, debug), 20 (STAT, status) (default),
+#   30 (INFO, info), 40 (WARN, warning), 50 (ERRO, error)
 # }.
 verbose: 20
 

@@ -1,6 +1,6 @@
 """Generate parameter files from a template.
 
-For C++, the parameter files are assumed to use '%' as the comment
+For C++, the parameter files are assumed to use '#' as the comment
 delimiter, and each parameter assignment is in the form
 ``<param_name> = <param_value>`` on a single line.
 
@@ -134,7 +134,7 @@ def gen_cpp_params(params_template, params_to_modify):
     """
     params = params_template.copy()
     for lineno, line in enumerate(params_template):
-        pname_line = line.split('%')[0].split('=')[0].strip()
+        pname_line = line.split('#')[0].split('=')[0].strip()
         if not pname_line:
             continue  # skip comment lines
         for pidx, (pname, pval) in enumerate(params_to_modify):

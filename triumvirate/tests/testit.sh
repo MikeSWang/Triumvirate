@@ -130,7 +130,7 @@ test_case () {
   fi
 
   # Run.
-  python3 application/gen_param_file.py ${test_paramfile_ini} -i \
+  python3 application/tools/gen_param_file.py ${test_paramfile_ini} -i \
     -o ${test_paramfile_ini_temp} \
     -p data_catalogue_file ${data_catalogue_file} \
     -p rand_catalogue_file ${rand_catalogue_file} \
@@ -146,7 +146,7 @@ test_case () {
   (sleep 2 && rm ${test_paramfile_ini_temp}) \
     & build/triumvirate ${test_paramfile_ini_temp};
 
-  python3 application/gen_param_file.py ${test_paramfile_yml} -y \
+  python3 application/tools/gen_param_file.py ${test_paramfile_yml} -y \
     -o ${test_paramfile_yml_temp} \
     -p files.data_catalogue ${data_catalogue_file} \
     -p files.rand_catalogue ${rand_catalogue_file} \

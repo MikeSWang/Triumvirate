@@ -69,7 +69,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   char dummy_str[1024], dummy_equal[1024];
   while (std::getline(fin, line_str)) {
     // Check if the line is a parameter assignment.
-    if (line_str.find("%") == 0) {
+    if (line_str.find("#") == 0) {
       continue;
     }  // skip comment lines
     if (
