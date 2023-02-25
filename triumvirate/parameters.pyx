@@ -201,35 +201,50 @@ cdef class ParameterSet:
         """
         self.__setitem__(name, value)
 
-    def items(self):
-        """Return the set of entries like a :class:`dict`.
+    def names(self):
+        """Return the set of top-level parameter names like
+        :meth:`dict.keys`.
 
         Returns
         -------
-        :class:`dict_items`
+        :obj:`dict_keys`
+            Top-level parameter names as dictionary keys.
+
+        """
+        return self._params.items()
+
+    def items(self):
+        """Return the set of entries like a :meth:`dict.items`.
+
+        Returns
+        -------
+        :obj:`dict_items`
             Parameters as dictionary items.
 
         """
         return self._params.items()
 
-    def get(self, key):
-        """Return a possibly non-existent entry like a :class:`dict`.
+    def get(self, key, *default_val):
+        """Return a possibly non-existent top-level entry like
+        :meth:`dict.get`.
 
         Parameters
         ----------
         key : str
-            Parameter name, possibly non-existent.
+            Top-level parameter name, possibly non-existent.
+        default_val :
+            Default value if the entry does not exist.
 
         Returns
         -------
         object
-            Parameter value, `None` if non-existent.
+            Top-level parameter value, `None` if non-existent.
 
         """
-        return self._params.get(key)
+        return self._params.get(key, *default_val)
 
     def update(self, *args, **kwargs):
-        """Update parameter set like a :class:`dict`.
+        """Update parameter set like :meth:`dict.update`.
 
         """
         self._params.update(*args, **kwargs)
