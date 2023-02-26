@@ -18,7 +18,7 @@ Python package
 
 We recommend you install using `conda`:
 
-.. code:: console
+.. code-block:: console
 
     $ conda install triumvirate
 
@@ -26,7 +26,7 @@ Alternatively, you may use `pip`, ideally in a virtual environment
 (e.g. created with ``conda create -n <env>`` and activated with
 ``conda activate <env>``):
 
-.. code:: console
+.. code-block:: console
 
     $ python -m pip install Triumvirate
 
@@ -47,14 +47,14 @@ built using `make`.
 You need to first obtain the source code by cloning into the GitHub repository
 and change to the repository directory:
 
-.. code:: console
+.. code-block:: console
 
     $ git clone git@github.com:MikeSWang/Triumvirate.git [--branch <branch-or-release>]
     $ cd Triumvirate
 
 Then to compile, run:
 
-.. code:: console
+.. code-block:: console
 
     $ make clean
     $ make cppinstall|cpplibinstall|cppappbuild [useomp=(true|1)]
@@ -77,14 +77,14 @@ development mode with `make`. As in `C++ library & program`_ above, first
 ``git clone`` this repository and ``git checkout`` the branch/release you
 would like to edit:
 
-.. code:: console
+.. code-block:: console
 
     $ git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
     $ cd Triumvirate
 
 Then at the repository directory root run
 
-.. code:: console
+.. code-block:: console
 
     $ make clean
     $ make [py|cpp]install [useomp=(true|1)]

@@ -68,6 +68,7 @@ extensions = [
     'sphinxcontrib.bibtex',
     'sphinx_copybutton',
     'sphinx_togglebutton',
+    'sphinx_inline_tabs',
 ]
 
 master_doc = 'index'
@@ -87,7 +88,7 @@ html_logo = '_static/Triumvirate.png'
 
 html_static_path = ['', '_static/']
 
-html_title = 'Documentation Home'  # u'\u200c'
+html_title = 'Triumvirate Documentation'  # u'\u200c'
 
 # # Uncomment for 'furo'.
 # html_theme = 'furo'

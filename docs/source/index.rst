@@ -1,4 +1,4 @@
-.. title:: Triumvirate Documentation
+.. title:: Welcome
 
 .. figure:: _static/Triumvirate.png
     :align: center
@@ -14,10 +14,10 @@ cosmological analyses.
 
 .. tip::
 
-    * The scientific context is explained in :doc:`background`.
-    * Installation instructions can be found in :doc:`installation`.
-    * To get started quickly, read :doc:`tutorials`.
-    * For full API, please refer to :doc:`apiref`.
+    * The scientific context is explained in ':doc:`background`'.
+    * Installation instructions can be found in ':doc:`installation`'.
+    * To get started quickly, read ':doc:`tutorials`'.
+    * For full API, please refer to ':doc:`apiref`'.
 
 
 Attribution

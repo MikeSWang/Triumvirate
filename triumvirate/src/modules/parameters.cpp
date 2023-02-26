@@ -317,9 +317,19 @@ int ParameterSet::validate() {
   trvs::logger.reset_level(this->verbose);
 
   // Validate and derive string parameters.
-  if (this->catalogue_dir != "") {
+  // Any duplicate '/' has no effect.
+  if (
+    this->catalogue_dir.find_first_not_of(" \t\n\r\v\f") != std::string::npos
+  ) {
     this->catalogue_dir += "/";  // transmutation
-  }  // any duplicate '/' has no effect
+  }
+  if (
+    this->measurement_dir.find_first_not_of(" \t\n\r\v\f") == std::string::npos
+  ) {
+    this->measurement_dir = "./";  // transmutation
+  } else {
+    this->measurement_dir += "/";  // transmutation
+  }
   if (this->catalogue_type == "survey") {
     if (this->data_catalogue_file != "") {
       this->data_catalogue_file = this->catalogue_dir
@@ -499,7 +509,7 @@ int ParameterSet::validate() {
   }
 
   // Validate numerical parameters.
-  if (this->volume < 0.) {
+  if (this->volume <= 0.) {
     if (trvs::currTask == 0) {
       trvs::logger.error(
         "Derived total box volume is non-positive: `volume` = '%d'. "
@@ -575,6 +585,20 @@ int ParameterSet::validate() {
     }
   }
 
+  if (this->bin_min < 0.) {
+    trvs::logger.error("Lower bin edge must be non-negative.");
+    throw trvs::InvalidParameterError(
+      "Lower bin edge must be non-negative.\n"
+    );
+  }
+  if (this->bin_min >= this->bin_max) {
+    trvs::logger.error(
+      "Lower bin edge must be less than the upper bin edge."
+    );
+    throw trvs::InvalidParameterError(
+      "Lower bin edge must be less than the upper bin edge.\n"
+    );
+  }
   if (this->space == "fourier") {
     double wavenum_nyquist = M_PI *
       *std::min_element(this->ngrid, this->ngrid + 3)
