@@ -53,14 +53,14 @@ page in the documentation.
 Both the Python package and the C++ library/program can be set up in
 development mode with `make`. First `git clone` this repository and
 `git checkout` the branch/release you would like to edit:
-```bash
-git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
-cd Triumvirate
+```console
+$ git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
+$ cd Triumvirate
 ```
 Then at the repository directory root run
-```bash
-make clean
-make [py|cpp]install [useomp=(true|1)]
+```console
+$ make clean
+$ make [py|cpp]install [useomp=(true|1)]
 ```
 where ``install`` builds both and ``pyinstall``/``cppinstall`` is for
 Python/C++ build only; you may also replace this with ``cpplibinstall`` or

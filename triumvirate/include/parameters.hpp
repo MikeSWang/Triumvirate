@@ -74,8 +74,10 @@ class ParameterSet {
   // ---------------------------------------------------------------------
 
   // Mesh properties.
-  double boxsize[3];  ///< box size (in Mpc/h) in each dimension
-  int ngrid[3];       ///< grid number in each dimension
+  /// box size (in Mpc/h) in each dimension
+  double boxsize[3] = {0., 0., 0.};
+  /// grid number in each dimension
+  int ngrid[3] = {0, 0, 0};
 
   // Derived mesh quantities.
   double volume;  ///< box volume (in Mpc^3/h^3)
@@ -88,7 +90,7 @@ class ParameterSet {
   /// padding scale (if @c alignment is "pad"): {"box" (default), "grid"}
   std::string padscale = "box";
   /// padding factor
-  double padfactor;
+  double padfactor = 0.;
 
   // Mesh assignment.
   /// mesh assignment scheme: {"ngp", "cic", "tsc" (default), "pcs"}
@@ -112,12 +114,15 @@ class ParameterSet {
   std::string space;   ///< coordinte space: {"fourier", "config"}
 
   // Measurement indexing.
-  int ell1;  ///< spherical degree associated with the first wavevector
-  int ell2;  ///< spherical degree associated with the second wavevector
-  int ELL;   ///< spherical degree associated with the line of sight
+  /// spherical degree associated with the first wavevector
+  int ell1 = 0;
+  /// spherical degree associated with the second wavevector
+  int ell2 = 0;
+  /// spherical degree associated with the line of sight
+  int ELL = 0;
 
-  int i_wa;  ///< first order of the wide-angle correction term
-  int j_wa;  ///< second order of the wide-angle correction term
+  int i_wa = 0;  ///< first order of the wide-angle correction term
+  int j_wa = 0;  ///< second order of the wide-angle correction term
 
   // Measurement choices.
   /// form of the bispectrum measurement: {"diag" (default), "full"}
@@ -131,13 +136,13 @@ class ParameterSet {
   ///                  "linpad", "logpad", "custom"}
   std::string binning = "lin";
 
-  double bin_min;  ///< measurement range minimum (in Mpc/h or h/Mpc)
-  double bin_max;  ///< measurement range maximum (in Mpc/h or h/Mpc)
+  double bin_min = 0.;  ///< measurement range minimum (in Mpc/h or h/Mpc)
+  double bin_max = 0.;  ///< measurement range maximum (in Mpc/h or h/Mpc)
 
   /// number of measurement bins
-  int num_bins;
+  int num_bins = 0;
   /// fixed bin index in "full" @c form bispectrum measurements
-  int idx_bin;
+  int idx_bin = 0;
 
   // ---------------------------------------------------------------------
   // Misc
