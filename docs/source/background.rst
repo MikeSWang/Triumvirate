@@ -25,8 +25,8 @@ following functionalities:
 
 * both modules mentioned above include the local plane-parallel estimator for
   a pair of survey-like data and random catalogues, and the global
-  plane-parallel estimator for a cubic-box simulation, as in e.g. eq. (52)
-  of :cite:t:`Sugiyama:2019`;
+  plane-parallel estimator for a simulation-like catalogue in a cuboid box,
+  as in e.g. eq. (52) of :cite:t:`Sugiyama:2019`;
 
 * both modules mentioned above can measure the configuration-space window
   function multipoles, which are used to convolve theoretical models derived

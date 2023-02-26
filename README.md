@@ -60,7 +60,7 @@ cd Triumvirate
 Then at the repository directory root run
 ```bash
 make clean
-make [py|cpp]install [useomp=[true|1]]
+make [py|cpp]install [useomp=(true|1)]
 ```
 where ``install`` builds both and ``pyinstall``/``cppinstall`` is for
 Python/C++ build only; you may also replace this with ``cpplibinstall`` or
@@ -100,13 +100,14 @@ https://github.com/naonori/hitomi).
 
 ## Contributing
 
-User feedback and contributions are highly valued and very welcome. Please
-refer to the [contribution guidelines](CONTRIBUTING.md).
+User feedback and contributions are very welcome. Please refer to the
+[contribution guidelines](CONTRIBUTING.md).
 
 
 ## Releases
 
-Changes in recent releases are listed in the [change log](CHANGELOG.md).
+Changes in current and past releases are listed in the
+[change log](CHANGELOG.md).
 
 
 ## Licence
