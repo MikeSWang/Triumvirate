@@ -12,7 +12,7 @@ Configure program parameter set.
 
 """
 from pathlib import Path
-from pprint import pformat
+from pprint import pformat, pprint
 
 import numpy as np
 import yaml
@@ -251,14 +251,20 @@ cdef class ParameterSet:
         self._parse_params()
         self._original = False
 
-    def print_to_file(self, filepath=None):
-        """Print out validated parameters to a YAML file.
+    def print(self):
+        """Print the parameters as dictionary with :func:`pprint.pprint`.
+
+        """
+        pprint(self._params, sort_dicts=False)
+
+    def save(self, filepath=None):
+        """Save validated parameters to a YAML file.
 
         Parameters
         ----------
         filepath : str or :class:`pathlib.Path`, optional
-            Printout file path.  If `None` (default), parameters are
-            printed out to a default file in measurement directory.
+            Saved file path.  If `None` (default), parameters are
+            saved to a default file in the output measurement directory.
 
         """
         if filepath is None:
@@ -275,7 +281,7 @@ cdef class ParameterSet:
             )
 
         if self._logger:
-            self._logger.info("Printed out parameters to %s.", filepath)
+            self._logger.info("Saved parameters to %s.", filepath)
 
     def _parse_params(self):
         """Parse the parameter set into the corresponding
@@ -502,7 +508,7 @@ def fetch_paramset_template(format, ret_defaults=False):
 
     """
     pkg_root_dir = Path(__file__).parent
-    tml_filepath = pkg_root_dir/"resources"/"params_example.yml"
+    tml_filepath = pkg_root_dir/"resources"/"params_template.yml"
 
     text_template = tml_filepath.read_text()
     dict_template = yaml.load(text_template, Loader=yaml.Loader)

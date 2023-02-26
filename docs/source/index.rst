@@ -60,15 +60,15 @@ Naonori S Sugiyama, and are available in the GitHub repository |hitomi|_.
 Contributing
 ============
 
-User feedback and contributions are highly valued and very welcome. Please
-refer to the `contribution guidelines
+User feedback and contributions are very welcome. Please refer to the
+`contribution guidelines
 <https://github.com/MikeSWang/Triumvirate/blob/main/CONTRIBUTING.md>`_.
 
 
 Releases
 ========
 
-Changes in recent releases are listed in the `change log
+Changes in current and past releases are listed in the `change log
 <https://github.com/MikeSWang/Triumvirate/blob/main/CHANGELOG.md>`_.
 
 

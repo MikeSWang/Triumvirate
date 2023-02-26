@@ -57,7 +57,7 @@ Then to compile, run:
 .. code:: console
 
     $ make clean
-    $ make [cppinstall|cpplibinstall|cppappbuild] [useomp=[true|1]]
+    $ make cppinstall|cpplibinstall|cppappbuild [useomp=(true|1)]
 
 Here ``cppinstall`` builds both a static library and a binary executable,
 ``cpplibinstall`` only the former and ``cppappbuild`` only the latter.
@@ -87,7 +87,7 @@ Then at the repository directory root run
 .. code:: console
 
     $ make clean
-    $ make [py|cpp]install [useomp=[true|1]]
+    $ make [py|cpp]install [useomp=(true|1)]
 
 where ``install`` builds both and ``pyinstall``/``cppinstall`` is for
 Python/C++ build only; you may also replace this with ``cpplibinstall`` or
