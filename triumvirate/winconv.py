@@ -161,7 +161,7 @@ def wconv_3pcf_diag(formulae, Q, zeta, r_common, r_Q=None, r_zeta=None):
             \tilde{\zeta}_{000} =
                 1 \cdot Q_{000} \zeta_{000}
                 + (-1) \cdot Q_{000} \zeta_{\mathrm{ic}}
-                + \frac{1}{3} Q_{110} \zeta_{110} \,.
+                + \frac{1}{3} \cdot Q_{110} \zeta_{110} \,.
 
         If a named formula (e.g. 'sugiyama19') is passed, the window
         convolution formula follows that prescription
@@ -260,7 +260,7 @@ def wconv_3pcf(formulae, Q, zeta, r1_common, r2_common,
             \tilde{\zeta}_{000} =
                 1 \cdot Q_{000} \zeta_{000}
                 + (-1) \cdot Q_{000} \zeta_{\mathrm{ic}}
-                + \frac{1}{3} Q_{110} \zeta_{110} \,.
+                + \frac{1}{3} \cdot Q_{110} \zeta_{110} \,.
 
         If a named formula (e.g. 'sugiyama19') is passed, the window
         convolution formula follows that prescription
@@ -372,6 +372,7 @@ def wconv_bispec(formulae, Q, bk, k, k_out, r_common, r_Q=None,
     -------
     bk_wconv : dict of {str: :class:`numpy.ndarray`}
         Window-convolved bispectrum samples.
+
 
     .. attention::
 

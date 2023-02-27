@@ -133,8 +133,8 @@ double calc_bispec_normalisation_from_particles(
  *     \alpha^3  \sum_{i \in \mathrm{data\ or\ rand}} \,.
  * @f]
  *
- * @note See eq. (46) in Sugiyama et al. (2019)
- *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+ * @see Eq. (46) in Sugiyama et al. (2019)
+ *      [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
  *
  * @param particles_data (Data-source) particle catalogue.
  * @param particles_rand (Random-source) particle catalogue.

@@ -186,8 +186,8 @@ class MeshField {
    * @f]
    * with @f$ f \equiv n @f$.
    *
-   * @note See eq. (34) in Sugiyama et al. (2019)
-   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   * @see Eq. (34) in Sugiyama et al. (2019)
+   *      [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
    * @param particles_data (Data-source) particle catalogue.
    * @param particles_rand (Random-source) particle catalogue.
@@ -240,8 +240,8 @@ class MeshField {
    *   {\sum_i}{\vphantom{\sum}}' = \sum_{i \in \mathrm{data\ or\ rand}} \,.
    * @f]
    *
-   * @note See eq. (46) in Sugiyama et al. (2019)
-   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   * @see Eq. (46) in Sugiyama et al. (2019)
+   *      [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
    * @param particles_data (Data-source) particle catalogue.
    * @param particles_rand (Random-source) particle catalogue.
@@ -328,8 +328,8 @@ class MeshField {
    *       y_{LM}(\hat{\vec{k}}) f(\vec{k}) \,.
    * @f]
    *
-   * @note See eq. (42) in Sugiyama et al. (2019)
-   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   * @see Eq. (42) in Sugiyama et al. (2019)
+   *      [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
    * @param[in] field_fourier A Fourier-space field.
    * @param[in] ylm Reduced spherical harmonic on a mesh.
@@ -356,8 +356,8 @@ class MeshField {
    *       j_L(kr) y_{LM}(\hat{\vec{k}}) f(\vec{k}) \,.
    * @f]
    *
-   * @note See eq. (49) in Sugiyama et al. (2019)
-   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   * @see Eq. (49) in Sugiyama et al. (2019)
+   *      [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
    * @param field_fourier A Fourier-space field.
    * @param ylm Reduced spherical harmonic on a mesh.
@@ -545,8 +545,8 @@ class FieldStats {
    * space, @f$ P_\mathrm{shot} @f$ is the shot noise amplitude, and
    * @f$ C_1 @f$ is the mode-dependent aliasing function.
    *
-   * @note See eq. (20) in Jing (2004)
-   *       [<a href="https://arxiv.org/abs/astro-ph/0409240">astro-ph/0409240</a>].
+   * @see Eq. (20) in Jing (2004)
+   *      [<a href="https://arxiv.org/abs/astro-ph/0409240">astro-ph/0409240</a>].
    *
    * @param field_a First field.
    * @param field_b Second field.
@@ -610,8 +610,8 @@ class FieldStats {
    * @ref trv::FieldStats::compute_ylm_wgtd_2pt_stats_in_config
    * before binning and additional normalisation.
    *
-   * @note See eq. (51) in Sugiyama et al. (2019)
-   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   * @see Eq. (51) in Sugiyama et al. (2019)
+   *      [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
    * @param field_a First field.
    * @param field_b Second field.
@@ -650,8 +650,8 @@ class FieldStats {
    * @ref trv::FieldStats::compute_ylm_wgtd_2pt_stats_in_config
    * before binning and additional normalisation.
    *
-   * @note See eq. (45) in Sugiyama et al. (2019)
-   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
+   * @see Eq. (45) in Sugiyama et al. (2019)
+   *      [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>].
    *
    * @param field_a First field.
    * @param field_b Second field.
@@ -710,10 +710,10 @@ class FieldStats {
    * @brief Calculate the shot-noise aliasing scale-dependence function
    *        @f$ C_1(\vec{k}) @f$ at each mesh grid.
    *
-   * @note See eqs. (45) and (46) in Sugiyama et al. (2019)
-   *       [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>]
-   *       and Jing (2004)
-   *       [<a href="https://arxiv.org/abs/astro-ph/0409240">astro-ph/0409240</a>].
+   * @see Eqs. (45) and (46) in Sugiyama et al. (2019)
+   *      [<a href="https://arxiv.org/abs/1803.02132">1803.02132</a>]
+   *      and Jing (2004)
+   *      [<a href="https://arxiv.org/abs/astro-ph/0409240">astro-ph/0409240</a>].
    *
    * @param i, j, k Grid indices.
    * @returns Value of the aliasing function.
