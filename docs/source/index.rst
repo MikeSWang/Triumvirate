@@ -18,6 +18,7 @@ cosmological analyses.
     * Installation instructions can be found in ':doc:`installation`'.
     * To get started quickly, read ':doc:`tutorials`'.
     * For full API, please refer to ':doc:`apiref`'.
+    * Frequently asked questions are answered in ':doc:`faq`'.
 
 
 Attribution
@@ -103,4 +104,5 @@ Licence
     background
     installation
     tutorials
+    faq
     apiref

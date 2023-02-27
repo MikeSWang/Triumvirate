@@ -85,6 +85,7 @@ publication/supplements/*.npy
 !docs/source/background.rst
 !docs/source/installation.rst
 !docs/source/tutorials.rst
+!docs/source/faq.rst
 !docs/source/apiref.rst
 !docs/source/apidoc_py.rst
 
