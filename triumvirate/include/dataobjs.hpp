@@ -122,7 +122,7 @@ class Binning {
    * @param boxsize_max (Maximum) box size.
    * @param ngrid_min (Minimum) grid number.
    *
-   * @note @ref trv::Binning.scheme is reset to "lin".
+   * @attention @ref trv::Binning.scheme is reset to "lin".
    *
    * @overload
    */

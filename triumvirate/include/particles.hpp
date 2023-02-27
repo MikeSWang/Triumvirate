@@ -97,11 +97,11 @@ class ParticleCatalogue {
   /**
    * @brief Initialise particle data container.
    *
-   * @note This does not set the values of
-   *       @ref trv::ParticleCatalogue.ParticleData,
-   *       @ref trv::ParticleCatalogue.wtotal,
-   *       @ref trv::ParticleCatalogue.pos_min or
-   *       @ref trv::ParticleCatalogue.pos_max.
+   * @attention This method does not set the values of
+   *            @ref trv::ParticleCatalogue.ParticleData,
+   *            @ref trv::ParticleCatalogue.wtotal,
+   *            @ref trv::ParticleCatalogue.pos_min or
+   *            @ref trv::ParticleCatalogue.pos_max.
    *
    * @param num Number of data units (i.e. particles).
    */
@@ -166,15 +166,15 @@ class ParticleCatalogue {
   /**
    * @brief Calculate total sample weight of particles.
    *
-   * @note This method merely sets @ref trv::ParticleCatalogue::wtotal.
+   * @attention This method resets @ref trv::ParticleCatalogue::wtotal.
    */
   void calc_wtotal();
 
   /**
    * @brief Calculate the extents of particle positions.
    *
-   * @note This method merely sets @ref trv::ParticleCatalogue::pos_min
-   *       and @ref trv::ParticleCatalogue::pos_max.
+   * @attention This method resets @ref trv::ParticleCatalogue::pos_min
+   *            and @ref trv::ParticleCatalogue::pos_max.
    */
   void calc_pos_min_and_max();
 
