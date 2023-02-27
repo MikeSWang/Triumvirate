@@ -59,7 +59,10 @@ measurement pipeline. The guide to running the program can be found in
 
 
 For developers, ':doc:`apidoc_cpp/apidoc_cpp`' contains the full C++
-API reference.
+API reference. To reuse C++ routines, ensure the linker finds ``libtrv``,
+e.g. by providing the path to the static library (built following
+':doc:`installation`') with the flag :code:`-L<path-to-libtrv.a>`
+during compilation.
 
 
 .. |Triumvirate| raw:: html
