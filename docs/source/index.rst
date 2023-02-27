@@ -104,5 +104,5 @@ Licence
     background
     installation
     tutorials
-    faq
     apiref
+    faq
