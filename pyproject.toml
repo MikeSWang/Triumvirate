@@ -10,6 +10,7 @@ build-backend = 'setuptools.build_meta'
 # requires-python = '>=3.4'
 # dependencies = [
 #     'numpy',
+#     'scipy',
 #     'astropy',
 # ]
 # description = "Three-point clustering measurements in large-scale structure analyses."
@@ -32,19 +33,19 @@ build-backend = 'setuptools.build_meta'
 # nbk = ['nbodykit']
 
 # [project.urls]
-# documentation = "https://mikeswang.github.io/Triumvirate"
 # repository = "https://github.com/MikeSWang/Triumvirate"
+# documentation = "https://mikeswang.github.io/Triumvirate"
 
 # [tool.setuptools.dynamic]
 # version = {attr = 'triumvirate.__version__'}
 # readme = {file = ["README.md", "CHANGELOG.md"]}
 
 # [tool.setuptools.packages.find]
+# where = ['src']
 # exclude = [
 #     'triumvirate.include*',
 #     'triumvirate.src*',
 #     'triumvirate.resources*',
-#     'triumvirate.tests*',
 # ]
 # namespaces = false
 

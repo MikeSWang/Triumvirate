@@ -16,7 +16,8 @@ PKG_NAME = 'Triumvirate'
 
 # -- Repository ----------------------------------------------------------
 
-pkg_dir = pkg_name = PKG_NAME.lower()
+pkg_name = PKG_NAME.lower()
+pkg_dir = os.path.join('src', pkg_name)
 
 # # Extract package information.
 # pkg_info = {}
@@ -150,7 +151,7 @@ pkg_macros = [
     ('TRV_EXTCALL', None),
     # ('TRV_USE_LEGACY_CODE', None),
     # ('DBG_MODE', None),
-    # ('DBG_NOAC', None),
+    # ('DBG_FLAG_NOAC', None),
 ]
 
 npy_macros = [

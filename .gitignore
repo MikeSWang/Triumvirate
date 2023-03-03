@@ -34,7 +34,6 @@ wheels/
 .coverage
 .coverage.*
 .cache
-nosetests.xml
 coverage.xml
 *.cover
 .pytest_cache/
@@ -59,8 +58,8 @@ storage/
 sandbox/
 
 # Exclusions
-# Directory: triumvirate/tests/test_input/catalogues
-triumvirate/tests/test_input/catalogues/**
+# Directory: tests/test_input/catalogues
+**/tests/test_input/catalogues/**
 
 # File: triumvirate/*.cpp
 triumvirate/*.cpp

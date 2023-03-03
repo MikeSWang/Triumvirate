@@ -1550,14 +1550,14 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
             win_sn = win_pk;
           } else
           if (this->params.interlace == "false") {
-#ifndef DBG_NOAC
+#ifndef DBG_FLAG_NOAC
             win_sn = calc_shotnoise_aliasing(i, j, k);
             win_pk = win_sn;
-#else   // !DBG_NOAC
+#else   // !DBG_FLAG_NOAC
             win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
               field_b.calc_assignment_window_in_fourier(i, j, k);
             win_sn = calc_shotnoise_aliasing(i, j, k);
-#endif  // !DBG_NOAC
+#endif  // !DBG_FLAG_NOAC
           }
 
           pk_mode /= win_pk;
@@ -1700,14 +1700,14 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
           win_sn = win_pk;
         } else
         if (this->params.interlace == "false") {
-#ifndef DBG_NOAC
+#ifndef DBG_FLAG_NOAC
           win_sn = calc_shotnoise_aliasing(i, j, k);
           win_pk = win_sn;
-#else   // !DBG_NOAC
+#else   // !DBG_FLAG_NOAC
           win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
             field_b.calc_assignment_window_in_fourier(i, j, k);
           win_sn = calc_shotnoise_aliasing(i, j, k);
-#endif  // !DBG_NOAC
+#endif  // !DBG_FLAG_NOAC
         }
 
         pk_mode /= win_pk;
@@ -1906,14 +1906,14 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
           win_sn = win_pk;
         } else
         if (this->params.interlace == "false") {
-#ifndef DBG_NOAC
+#ifndef DBG_FLAG_NOAC
           win_sn = calc_shotnoise_aliasing(i, j, k);
           win_pk = win_sn;
-#else   // !DBG_NOAC
+#else   // !DBG_FLAG_NOAC
           win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
             field_b.calc_assignment_window_in_fourier(i, j, k);
           win_sn = calc_shotnoise_aliasing(i, j, k);
-#endif  // !DBG_NOAC
+#endif  // !DBG_FLAG_NOAC
         }
 
         pk_mode /= win_pk;
@@ -2119,14 +2119,14 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
           win_sn = win_pk;
         } else
         if (this->params.interlace == "false") {
-#ifndef DBG_NOAC
+#ifndef DBG_FLAG_NOAC
           win_sn = calc_shotnoise_aliasing(i, j, k);
           win_pk = win_sn;
-#else   // !DBG_NOAC
+#else   // !DBG_FLAG_NOAC
           win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
             field_b.calc_assignment_window_in_fourier(i, j, k);
           win_sn = calc_shotnoise_aliasing(i, j, k);
-#endif  // !DBG_NOAC
+#endif  // !DBG_FLAG_NOAC
         }
 
         pk_mode /= win_pk;

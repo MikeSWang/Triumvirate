@@ -94,7 +94,6 @@ html_title = 'Triumvirate Documentation'  # u'\u200c'
 html_theme = 'sphinx_book_theme'
 html_theme_options = {
     'home_page_in_toc': False,
-    # 'logo_only': True,
     'path_to_docs': "docs/source",
     'repository_url': 'https://github.com/MikeSWang/Triumvirate',
     'toc_title': 'On this page',

@@ -1,4 +1,4 @@
-.. title:: Welcome
+.. title:: Home
 
 .. figure:: _static/Triumvirate.png
     :align: center

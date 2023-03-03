@@ -12,25 +12,25 @@ LIBNAME := trv
 # Repository root
 DIR_ROOT := $(shell pwd)
 
-# Package and build directories
-DIR_PKG := ${DIR_ROOT}/${PROGNAME}
+# Package, build and test directories
+DIR_PKG := ${DIR_ROOT}/src/${PROGNAME}
 DIR_BUILD := ${DIR_ROOT}/build
+DIR_TESTS := ${DIR_ROOT}/tests
 
 # Package subdirectories
-DIR_INCLUDE := ${DIR_PKG}/include
-DIR_SRC := ${DIR_PKG}/src
-DIR_TESTS := ${DIR_PKG}/tests
+DIR_PKG_INCLUDE := ${DIR_PKG}/include
+DIR_PKG_SRC := ${DIR_PKG}/src
 
 # Build subdirectories
 DIR_BUILDLIB := ${DIR_BUILD}/lib
 DIR_BUILDOBJ := ${DIR_BUILD}/obj
 
-# Module source subdirectory
-DIR_MODULESRC := ${DIR_SRC}/modules
-
 # Test subdirectories
 DIR_TESTBUILD := ${DIR_TESTS}/test_build
 DIR_TESTOUT := ${DIR_TESTS}/test_output
+
+# Package source module subdirectory
+DIR_PKG_SRCMODULES := ${DIR_PKG_SRC}/modules
 
 
 # ------------------------------------------------------------------------
@@ -60,7 +60,7 @@ endif
 
 # -- Options -------------------------------------------------------------
 
-INCLUDES := -I${DIR_INCLUDE}
+INCLUDES := -I${DIR_PKG_INCLUDE}
 CFLAGS := -O3 -Wall $(shell pkg-config --cflags gsl fftw3)
 LDFLAGS := $(if $(shell pkg-config --libs gsl fftw3),\
                 $(shell pkg-config --libs gsl fftw3),\
@@ -95,7 +95,7 @@ endif
 # Customisation
 # ------------------------------------------------------------------------
 
-# OpenMP: enabled with `useomp=[true,1]`; disabled otherwise.
+# OpenMP: enabled with `useomp=[true|1]`; disabled otherwise.
 ifdef useomp
 ifeq ($(strip ${useomp}), $(filter $(strip ${useomp}), true 1))
 
@@ -105,7 +105,7 @@ LDFLAGS += -lfftw3_omp
 endif
 endif
 
-# Parameter debugging: enabled with `dbgpars=[true,1]`; disabled otherwise.
+# Parameter debugging: enabled with `dbgpars=[true|1]`; disabled otherwise.
 ifdef dbgpars
 ifeq ($(strip ${dbgpars}), $(filter $(strip ${dbgpars}), true 1))
 
@@ -114,7 +114,7 @@ CFLAGS += -DDBG_MODE -DDBG_PARS
 endif
 endif
 
-# Visual enhancements: enabled with `uselogo=[true,1]`; disabled otherwise.
+# Visual enhancements: enabled with `uselogo=[true|1]`; disabled otherwise.
 ifdef uselogo
 ifeq ($(strip ${uselogo}), $(filter $(strip ${uselogo}), true 1))
 
@@ -123,7 +123,8 @@ CFLAGS += -DTRV_USE_LOGO
 endif
 endif
 
-# Other options: e.g. {-g, -DTRV_USE_LEGACY_CODE, -DDBG_MODE, -DDBG_NOAC, ...}.
+# Other options:
+# e.g. {-g, -DTRV_USE_LEGACY_CODE, -DDBG_MODE, -DDBG_FLAG_NOAC, ...}.
 # >>> insert <<<
 
 
@@ -147,10 +148,10 @@ export PY_LDFLAGS=${LDFLAGS}
 PROGEXE := ${PROGNAME}
 PROGLIB := ${DIR_BUILDLIB}/lib${LIBNAME}.a
 
-PROGSRC := ${DIR_SRC}/${PROGEXE}.cpp
-MODULESRC := $(wildcard ${DIR_MODULESRC}/*.cpp)
+PROGSRC := ${DIR_PKG_SRC}/${PROGEXE}.cpp
+MODULESRC := $(wildcard ${DIR_PKG_SRCMODULES}/*.cpp)
 PROGOBJ := ${DIR_BUILDOBJ}/${PROGEXE}.o
-MODULEOBJ := $(patsubst ${DIR_MODULESRC}/%.cpp,${DIR_BUILDOBJ}/%.o,${MODULESRC})
+MODULEOBJ := $(patsubst ${DIR_PKG_SRCMODULES}/%.cpp,${DIR_BUILDOBJ}/%.o,${MODULESRC})
 
 # ------------------------------------------------------------------------
 # Installation
@@ -181,7 +182,7 @@ pytest:
 
 testit:
 	@echo "Performing integration tests... (see ${DIR_TESTOUT}/$@.log)"
-	@bash ${DIR_TESTS}/$@.sh > ${DIR_TESTOUT}/$@.log
+	bash ${DIR_TESTS}/$@.sh > ${DIR_TESTOUT}/$@.log
 
 
 # ------------------------------------------------------------------------
@@ -201,7 +202,7 @@ ${PROGOBJ}: ${PROGSRC}
 	if [ ! -d build/obj ]; then mkdir -p build/obj; fi
 	$(CXX) $(CFLAGS) -o $@ -c $< $(INCLUDES)
 
-${MODULEOBJ}: ${DIR_BUILDOBJ}/%.o: ${DIR_MODULESRC}/%.cpp
+${MODULEOBJ}: ${DIR_BUILDOBJ}/%.o: ${DIR_PKG_SRCMODULES}/%.cpp
 	if [ ! -d build/obj ]; then mkdir -p build/obj; fi
 	$(CXX) $(CFLAGS) -o $@ -c $< $(INCLUDES)
 
