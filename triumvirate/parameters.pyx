@@ -21,7 +21,7 @@ from .parameters cimport CppParameterSet
 
 
 # NOTE: Nested entries must not have a non-None default value.
-_DEFAULT_PARAM_DICT = {
+_TMPL_PARAM_DICT = {
     'directories': {
         'catalogues': None,
         'measurements': None,
@@ -504,7 +504,7 @@ def fetch_paramset_template(format, ret_defaults=False):
     Raises
     ------
     ValueError
-        If `format` is neither 'yaml' nor 'dict'.
+        If `format` is neither 'text' nor 'dict'.
 
     """
     pkg_root_dir = Path(__file__).parent
