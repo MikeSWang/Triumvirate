@@ -99,6 +99,7 @@ Licence
 
 
 .. toctree::
+    :caption: Documentation Home
     :hidden:
 
     background
