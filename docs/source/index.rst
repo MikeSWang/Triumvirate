@@ -4,9 +4,7 @@
     :align: center
     :width: 67 %
 
-##########################################################################
-**Three-Point Clustering Measurements in LSS**
-##########################################################################
+.. rubric:: **Three-Point Clustering Measurements in LSS**
 
 |Triumvirate| is a Python/C++ package for measuring three-point (and
 two-point) clustering statistics in large-scale structure (LSS)
@@ -99,7 +97,7 @@ Licence
 
 
 .. toctree::
-    :caption: Documentation Home
+    :caption: Documentation
     :hidden:
 
     background
