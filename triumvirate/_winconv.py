@@ -10,7 +10,7 @@ from typing import NamedTuple
 import numpy as np
 from scipy.interpolate import interp1d, RectBivariateSpline
 
-from triumvirate.bihankel import (
+from triumvirate._bihankel import (
     transform_bispec_to_3pcf,
     transform_3pcf_to_bispec,
 )
