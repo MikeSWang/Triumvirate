@@ -5,4 +5,4 @@ myst_nb
 sphinxcontrib-bibtex
 sphinx-copybutton
 sphinx_togglebutton
-sphinx-inline-tabs
+sphinx-tabs
