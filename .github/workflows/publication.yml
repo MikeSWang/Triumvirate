@@ -1,15 +1,18 @@
-name: JOSS publication
+name: publication
 
 on:
   push:
     branches:
+      # Host publications on branch 'main' only
       - main
     paths:
+      # Append publications
       - publication/joss/**
-      - .github/workflows/publication-joss.yml
+      # Include workflow files
+      - .github/workflows/publication.yml
 
 jobs:
-  compile-joss:
+  joss:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,14 +23,14 @@ jobs:
         uses: openjournals/openjournals-draft-action@master
         with:
           journal: joss
-          # Input path to the draft file 'paper.md' within the repo.
+          # Set input path to the draft file 'paper.md' within the repo.
           paper-path: publication/joss/paper.md
 
       - name: Upload draft PDF
         uses: actions/upload-artifact@v1
         with:
           name: paper
-          # Output path to the PDF file 'paper.pdf', which should be in
-          # the same directory as the draft .md file and is where Pandoc
-          # writes the compiled PDF.
+          # Set output path to the PDF file 'paper.pdf', which should be
+          # in the same directory as the draft .md file and is
+          # where Pandoc writes the compiled PDF.
           path: publication/joss/paper.pdf
