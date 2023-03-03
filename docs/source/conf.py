@@ -68,7 +68,8 @@ extensions = [
     'sphinxcontrib.bibtex',
     'sphinx_copybutton',
     'sphinx_togglebutton',
-    'sphinx_inline_tabs',
+    'sphinx_tabs.tabs',
+    # 'sphinx_inline_tabs',
 ]
 
 master_doc = 'index'
@@ -90,19 +91,24 @@ html_static_path = ['', '_static/']
 
 html_title = 'Triumvirate Documentation'  # u'\u200c'
 
-# # Uncomment for 'furo'.
-# html_theme = 'furo'
-
-# Uncomment for 'sphinx_book_theme'.
 html_theme = 'sphinx_book_theme'
 html_theme_options = {
+    'home_page_in_toc': False,
+    # 'logo_only': True,
+    'path_to_docs': "docs/source",
     'repository_url': 'https://github.com/MikeSWang/Triumvirate',
-    'home_page_in_toc': True,
-    'logo_only': True,
     'toc_title': 'On this page',
     'use_download_button': False,
     'use_fullscreen_button': False,
-    'use_repository_button': True,
+    'use_repository_button': False,
+    'use_source_button': True,
+    'icon_links': [
+        {
+            'name': 'GitHub',
+            'url': "https://github.com/MikeSWang/Triumvirate",
+            'icon': 'fa-brands fa-github',
+        },
+    ]
 }
 
 
