@@ -18,8 +18,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-*.egg
 *.egg-info/
+*.egg
 lib/
 lib64/
 sdist/
@@ -30,14 +30,14 @@ wheels/
 *.out
 
 # Unit test/coverage reports
-.tox
+cover/
+coverage.xml
 .coverage
 .coverage.*
 .cache
-coverage.xml
 *.cover
 .pytest_cache/
-cover/
+.tox
 
 # Sphinx documentation
 docs/build/
@@ -58,35 +58,33 @@ storage/
 sandbox/
 
 # Exclusions
-# Directory: tests/test_input/catalogues
-**/tests/test_input/catalogues/**
-
-# File: triumvirate/*.cpp
-triumvirate/*.cpp
+# Files: triumvirate/*.cpp
+**/triumvirate/*.cpp
 
 # Files: docs/source/_static/params_template.*
 docs/source/_static/params_template.*
 
-# File: publication/supplements/*.npy
-publication/supplements/*.npy
+# Files: publication/supplements/*.npy
+publication/supplements/**/*.npy
 
 # Exceptions
-# File: build/.ignore
-!build/.ignore
+# File: build/.gitignore
+!build/.gitignore
 
 # File: docs/source/index.rst
 # File: docs/source/background.rst
 # File: docs/source/installation.rst
+# File: docs/source/tutorials.rst
 # File: docs/source/apiref.rst
 # File: docs/source/apidoc_py.rst
-# File: docs/source/tutorials.rst
+# File: docs/source/faq.rst
 !docs/source/index.rst
 !docs/source/background.rst
 !docs/source/installation.rst
 !docs/source/tutorials.rst
-!docs/source/faq.rst
 !docs/source/apiref.rst
 !docs/source/apidoc_py.rst
+!docs/source/faq.rst
 
 # Files: docs/source/tutorials/*.ipynb
 !docs/source/tutorials/*.ipynb
