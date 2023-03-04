@@ -126,9 +126,9 @@ if [[ "$excl" != 'sphinx' ]]; then
     recycle_doxyfile "HAVE_DOT               = NO"
     recycle_doxyfile "HTML_HEADER            ="
     recycle_doxyfile "USE_MDFILE_AS_MAINPAGE ="
-    sed -i "s/.\/source/..\/source/g" ${DOXYFILE_SPHINX}
-    sed -i "s/..\/src/..\/..\/src/g" ${DOXYFILE_SPHINX}
-    sed -i "s/..\/README.md//g" ${DOXYFILE_SPHINX}
+    sed -i "s/\.\/source/..\/source/g" ${DOXYFILE_SPHINX}
+    sed -i "s/\.\.\/src/..\/..\/src/g" ${DOXYFILE_SPHINX}
+    sed -i "s/\.\.\/README.md//g" ${DOXYFILE_SPHINX}
 
     # Build docs with Breathe+Exhale.
     sphinx-apidoc -efEMT -d 1 -t ${TMPL_DIR} -o ${APIDOC_PY_DIR} ${SRC_DIR}
