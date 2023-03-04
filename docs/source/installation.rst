@@ -65,7 +65,7 @@ To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to
 the end of the second line as shown above.
 
 By default, the static library is compiled to ``build/lib/libtrv.a`` and the
-binary executable is compiled to ``build/triumvirate`` in the repository
+binary executable is compiled to ``build/bin/triumvirate`` in the repository
 directory.
 
 

@@ -192,6 +192,7 @@ testit:
 
 ${PROGEXE}: ${PROGOBJ} ${MODULEOBJ}
 	@echo "Compiling Triumvirate C++ program..."
+	if [ ! -d build/bin ]; then mkdir -p build/bin; fi
 	$(CXX) $(CFLAGS) -o $(addprefix $(DIR_BUILDBIN)/, $(notdir $@)) $^ $(LDFLAGS)
 
 ${PROGLIB}: ${MODULEOBJ}
