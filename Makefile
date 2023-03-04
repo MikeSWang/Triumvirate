@@ -24,6 +24,7 @@ DIR_PKG_SRC := ${DIR_PKG}/src
 # Build subdirectories
 DIR_BUILDLIB := ${DIR_BUILD}/lib
 DIR_BUILDOBJ := ${DIR_BUILD}/obj
+DIR_BUILDBIN := ${DIR_BUILD}/bin
 
 # Test subdirectories
 DIR_TESTBUILD := ${DIR_TESTS}/test_build
@@ -191,7 +192,7 @@ testit:
 
 ${PROGEXE}: ${PROGOBJ} ${MODULEOBJ}
 	@echo "Compiling Triumvirate C++ program..."
-	$(CXX) $(CFLAGS) -o $(addprefix $(DIR_BUILD)/, $(notdir $@)) $^ $(LDFLAGS)
+	$(CXX) $(CFLAGS) -o $(addprefix $(DIR_BUILDBIN)/, $(notdir $@)) $^ $(LDFLAGS)
 
 ${PROGLIB}: ${MODULEOBJ}
 	@echo "Installing Triumvirate C++ library..."

@@ -7,7 +7,7 @@
 #
 
 # Parse command-line arguments.
-excl=${1#"excl_"}  # {"doxy", "sphinx"}
+excl=${1#"excl_"}  # exclusion case: {"doxy", "sphinx"}
 
 
 # -- Directories & Paths -------------------------------------------------
@@ -24,22 +24,25 @@ DOXYFILE_SPHINX=./source/Doxyfile
 # Set Sphinx subdirectories.
 STAT_DIR=./source/_static/
 TMPL_DIR=./source/_templates/
+THMS_DIR=./source/_themes/
 
+# Set API subdirectories.
 APIREF_DOXY_DIRNAME=apiref_doxy
 APIREF_DOXY_DIR=./source/${APIREF_DOXY_DIRNAME}/
 APIDOC_PY_DIR=./source/apidoc_py/
-APIDOC_CPP_DIR_STR_ESC=".\/source\/apidoc_cpp\/"
+APIDOC_CPP_DIR_STR=".\/source\/apidoc_cpp\/"
 
-# Set HTML build directories.
+# Set HTML build subdirectories.
 BUILD_HTML_DOXY_DIR=./build/doxygen/html/
 BUILD_HTML_SPHINX_DIR=./build/sphinx/html/
+BUILD_HTML_PUBLIC_DIR=./build/public_html/
 
-# Set resource origin directory.
-RESOURCE_DIR=../${PROJ_NAME}/resources/
+# Set source directory and subdirectories.
+SRC_DIR=../src/
+PKG_RESOURCES_DIR=${SRC_DIR}/${PROJ_NAME}/resources/
 
 # Set exclusion path patterns.
-EXCL_DIRS="../${PROJ_NAME} ../**/tests/*"
-RM_FILES="${APIDOC_PY_DIR}/${PROJ_NAME}.rst"
+EXCL_APIDOC_FILES=${APIDOC_PY_DIR}/${PROJ_NAME}.rst
 
 
 # -- Build Docs ----------------------------------------------------------
@@ -68,7 +71,7 @@ replace_in_file () {
 #
 replace_in_doxyfile () {
     str_confline=$1
-    str_confvar=$(printf $1 | tr -s ' ' | cut -d ' ' -f 1)
+    str_confvar=$(printf ${str_confline} | tr -s ' ' | cut -d ' ' -f 1)
     sed -i "s/${str_confvar} .*=.*/${str_confline}/g" ${DOXYFILE}
 }
 
@@ -80,7 +83,7 @@ replace_in_doxyfile () {
 #
 recycle_doxyfile () {
     str_confline=$1
-    str_confvar=$(printf $1 | tr -s ' ' | cut -d ' ' -f 1)
+    str_confvar=$(printf ${str_confline} | tr -s ' ' | cut -d ' ' -f 1)
     sed -i "s/${str_confvar} .*=.*/${str_confline}/g" ${DOXYFILE_SPHINX}
 }
 
@@ -96,12 +99,12 @@ replace_in_doxyfile "PROJECT_NUMBER         = $(get_version_release)"
 # HACK: Ensure RTD Doxygen backward compatibility.
 if [[ "${READTHEDOCS}" == "True" ]]; then
     MATHJAX_RELPATH="https:\/\/cdn.jsdelivr.net\/npm\/mathjax@2"
-    replace_in_file ./source/_themes/doxygen-header.html "\$darkmode"
+    replace_in_file ${THMS_DIR}/doxygen-header.html "\$darkmode"
     replace_in_doxyfile "MATHJAX_RELPATH        = ${MATHJAX_RELPATH}"
 fi
 
 # Prepare static assets.
-cp -r ${RESOURCE_DIR}/params_template.* ${STAT_DIR}
+cp -r ${PKG_RESOURCES_DIR}/* ${STAT_DIR}
 
 # Build Doxygen docs.
 if [[ "$excl" != 'doxy' ]]; then
@@ -117,20 +120,20 @@ if [[ "$excl" != 'sphinx' ]]; then
     # Configure Doxygen for Breathe+Exhale.
     cp ${DOXYFILE} ${DOXYFILE_SPHINX}
 
-    recycle_doxyfile "OUTPUT_DIRECTORY       = ${APIDOC_CPP_DIR_STR_ESC}"
+    recycle_doxyfile "OUTPUT_DIRECTORY       = ${APIDOC_CPP_DIR_STR}"
     recycle_doxyfile "GENERATE_HTML          = NO"
     recycle_doxyfile "GENERATE_XML           = YES"
     recycle_doxyfile "HAVE_DOT               = NO"
     recycle_doxyfile "HTML_HEADER            ="
     recycle_doxyfile "USE_MDFILE_AS_MAINPAGE ="
-    sed -i "s/..\/README.md//g" ${DOXYFILE_SPHINX}
     sed -i "s/.\/source/..\/source/g" ${DOXYFILE_SPHINX}
-    sed -i "s/..\/${PROJ_NAME}/..\/..\/${PROJ_NAME}/g" ${DOXYFILE_SPHINX}
+    sed -i "s/..\/src/..\/..\/src/g" ${DOXYFILE_SPHINX}
+    sed -i "s/..\/README.md//g" ${DOXYFILE_SPHINX}
 
     # Build docs with Breathe+Exhale.
-    sphinx-apidoc -efEMT -d 1 -t ${TMPL_DIR} -o ${APIDOC_PY_DIR} ${EXCL_DIRS}
+    sphinx-apidoc -efEMT -d 1 -t ${TMPL_DIR} -o ${APIDOC_PY_DIR} ${SRC_DIR}
 
-    rm ${RM_FILES}
+    rm ${EXCL_APIDOC_FILES}
 
     make html
 
@@ -143,31 +146,33 @@ fi
 
 if [[ "${READTHEDOCS}" != "True" ]]; then
     # Set directories.
-    HTML_PUBLIC_DIR=./build/public_html/
-    STAT_APIREF_DOXY_SUBDIR=_static/${APIREF_DOXY_DIRNAME}/
-    STAT_MIRROR_SUBDIR=${APIREF_DOXY_DIRNAME}/docs/source/_static/
+    _APIREF_DOXY=${APIREF_DOXY_DIRNAME}
+    _APIREF_DOXY_IN_HTML_SPHINX=_static/${_APIREF_DOXY}/
+    _STAT_MIRROR_IN_HTML_PUBLIC=${_APIREF_DOXY}/docs/${STAT_DIR}
 
     # Move Sphinx-build HTML to public HTML directory.
-    mkdir -p ${HTML_PUBLIC_DIR}
+    mkdir -p ${BUILD_HTML_PUBLIC_DIR}
     if [[ -d ${BUILD_HTML_SPHINX_DIR} ]]; then
-        cp -r ${BUILD_HTML_SPHINX_DIR}/** ${HTML_PUBLIC_DIR}
+        cp -r ${BUILD_HTML_SPHINX_DIR}/** ${BUILD_HTML_PUBLIC_DIR}
     fi
 
     # Promote Doxygen-build HTML to top-level subdirectory
     # under the public HTML directory.
-    if [[ -d ${HTML_PUBLIC_DIR}/${STAT_APIREF_DOXY_SUBDIR} ]]; then
-        mv ${HTML_PUBLIC_DIR}/${STAT_APIREF_DOXY_SUBDIR} ${HTML_PUBLIC_DIR}/
+    if [[ -d ${BUILD_HTML_PUBLIC_DIR}/${_APIREF_DOXY_IN_HTML_SPHINX} ]]; then
+        mv \
+            ${BUILD_HTML_PUBLIC_DIR}/${_APIREF_DOXY_IN_HTML_SPHINX} \
+            ${BUILD_HTML_PUBLIC_DIR}/
     fi
 
     # Move static assets to a mirrored subdirectory
     # in the public HTML directory for Doxygen 'mainpage'.
-    mkdir -p ${HTML_PUBLIC_DIR}/${STAT_MIRROR_SUBDIR}
+    mkdir -p ${BUILD_HTML_PUBLIC_DIR}/${_STAT_MIRROR_IN_HTML_PUBLIC}
     find ${STAT_DIR} -maxdepth 1 -type f \
-        -exec cp {} ${HTML_PUBLIC_DIR}/${STAT_MIRROR_SUBDIR} \;
+        -exec cp {} ${BUILD_HTML_PUBLIC_DIR}/${_STAT_MIRROR_IN_HTML_PUBLIC} \;
 
     # Redirect HTML listings to the index page.
     echo -e "RewriteEngine On\nRewriteRule (.*)\$ index.html" \
-        > ${HTML_PUBLIC_DIR}.htaccess
+        > ${BUILD_HTML_PUBLIC_DIR}.htaccess
 fi
 
 # Return to original directory.
