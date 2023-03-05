@@ -196,7 +196,7 @@ ${PROGEXE}: ${PROGOBJ} ${MODULEOBJ}
 	$(CXX) $(CFLAGS) -o $(addprefix $(DIR_BUILDBIN)/, $(notdir $@)) $^ $(LDFLAGS)
 
 ${PROGLIB}: ${MODULEOBJ}
-	@echo "Installing Triumvirate C++ library..."
+	@echo "Building Triumvirate C++ library..."
 	if [ ! -d build/lib ]; then mkdir -p build/lib; fi
 	ar -rcsv build/lib/libtrv.a $^
 
@@ -220,17 +220,22 @@ DIR_TESTS := $(or ${DIR_TESTS}, '.')
 DIR_TESTBUILD := $(or ${DIR_TESTBUILD}, '.')
 DIR_TESTOUT := $(or ${DIR_TESTOUT}, '.')
 
-clean:
-	@echo "Cleaning up Triumvirate builds..."
-	rm -rf *.egg-info
+clean: cppclean pyclean
+
+cppclean:
+	@echo "Cleaning up Triumvirate C++ build..."
 	rm -rf core
+	find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".gitignore" -exec rm -r {} +
+
+pyclean:
+	@echo "Cleaning up Triumvirate Python/Cython build..."
+	rm -rf *.egg-info
+	find ${DIR_PKG} -maxdepth 1 \( -name "*.cpp" -or -name "*.so" \) -exec rm {} +
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +
-	find ${DIR_PKG} -maxdepth 1 \( -name "*.cpp" -or -name "*.so" \) -exec rm {} +
-	find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".gitignore" -exec rm -r {} +
 
 cleantest:
 	@echo "Cleaning up Triumvirate tests..."
-	rm -rf ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/* ${DIR_TESTS}/*_temp*
 	rm -rf core
+	rm -rf ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/* ${DIR_TESTS}/*_temp*
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
