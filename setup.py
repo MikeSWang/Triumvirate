@@ -84,7 +84,7 @@ class BuildExt(build_ext):
         super().build_extensions()
 
 
-def return_extension(module_name, extra_cpp_sources, **ext_kwargs):
+def return_extension(module_name, extra_cpp_sources=None, **ext_kwargs):
     """Return an extension from given source files and options.
 
     Parameters
@@ -94,8 +94,9 @@ def return_extension(module_name, extra_cpp_sources, **ext_kwargs):
         ``<pkg_name>.<module_name>``. This sets the .pyx source file to
         ``<pkg_dir>/<module_name>.pyx`` and the .cpp source file to
         ``<pkg_dir>/src/modules/<module_name>.cpp``.
-    extra_cpp_sources : list of str
-        Additional .cpp source files under ``<pkg_dir>/src/modules``.
+    extra_cpp_sources : list of str, optional
+        Additional .cpp source files under ``<pkg_dir>/src/modules``
+        (default is `None`).
     **ext_kwargs
         Options to pass to :class:`Cython.Distutils.Extension`.
 
@@ -111,6 +112,9 @@ def return_extension(module_name, extra_cpp_sources, **ext_kwargs):
         'extra_link_args': ldflags,
         'define_macros': macros,
     }
+
+    if extra_cpp_sources is None:
+        extra_cpp_sources = []
 
     if ext_kwargs:
         ext_module_kwargs.update(ext_kwargs)
@@ -128,24 +132,6 @@ def return_extension(module_name, extra_cpp_sources, **ext_kwargs):
     )
 
 
-# Set source, include and library paths.
-pkg_src = os.path.join(pkg_dir, "src/modules")
-
-pkg_include = os.path.join(pkg_dir, "include")
-
-npy_include = numpy.get_include()
-
-ext_includes = [
-    incl for incl
-    in os.environ.get('PY_INCLUDES', "").replace("-I", "").split()
-    if pkg_dir not in incl
-]
-
-ext_libraries = ['gsl', 'gslcblas', 'm', 'fftw3', 'fftw3_omp',]  # noqa: E231
-
-includes = [pkg_include, npy_include,] + ext_includes  # noqa: E231
-libraries = ext_libraries
-
 # Set macros.
 pkg_macros = [
     ('TRV_EXTCALL', None),
@@ -160,13 +146,35 @@ npy_macros = [
 
 macros = pkg_macros + npy_macros
 
+# Set source, include and library paths.
+pkg_src = os.path.join(pkg_dir, "src/modules")
+
+pkg_include = os.path.join(pkg_dir, "include")
+
+npy_include = numpy.get_include()
+
+ext_includes = [
+    incl for incl
+    in os.environ.get('PY_INCLUDES', "").replace("-I", "").split()
+    if pkg_dir not in incl
+]
+
+ext_libs = ['gsl', 'gslcblas', 'm', 'fftw3', 'fftw3_omp',]  # noqa: E231
+
+includes = [pkg_include, npy_include,] + ext_includes  # noqa: E231
+libs = ext_libs
+
 # Define extension modules.
 module_config = {
-    'parameters': {'extra_cpp_sources': ["monitor.cpp",]},  # noqa: E231
-    'dataobjs': {
-        'extra_cpp_sources': ["monitor.cpp", "parameters.cpp",]  # noqa: E231
+    'parameters': {
+        'extra_cpp_sources': ["monitor.cpp",],  # noqa: E231
     },
-    '_particles': {'extra_cpp_sources': ["monitor.cpp",]},  # noqa: E231
+    'dataobjs': {
+        'extra_cpp_sources': ["monitor.cpp", "parameters.cpp",],  # noqa: E231
+    },
+    '_particles': {
+        'extra_cpp_sources': ["monitor.cpp",],  # noqa: E231
+    },
     '_twopt': {
         'extra_cpp_sources': [
             "monitor.cpp",
@@ -176,7 +184,7 @@ module_config = {
             "particles.cpp",
             "field.cpp",
         ],
-        'libraries': libraries,
+        'libraries': libs,
     },
     '_threept': {
         'extra_cpp_sources': [
@@ -188,13 +196,13 @@ module_config = {
             "field.cpp",
             "twopt.cpp",
         ],
-        'libraries': libraries,
+        'libraries': libs,
     },
     '_fftlog': {
         'extra_cpp_sources': [
-            "monitor.cpp", "maths.cpp", "arrayops.cpp",  # noqa: E231
+            "monitor.cpp", "maths.cpp", "arrayops.cpp",
         ],
-        'libraries': libraries,
+        'libraries': libs,
     },
 }
 
