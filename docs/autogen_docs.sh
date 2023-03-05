@@ -135,7 +135,9 @@ if [[ "$excl" != 'sphinx' ]]; then
 
     rm ${EXCL_APIDOC_FILES}
 
-    make html
+    if [[ "${READTHEDOCS}" != "True" ]]; then
+        make html SPHINXOPTS="-j auto"
+    fi
 
     # Clean up.
     if [[ "${READTHEDOCS}" != "True" ]]; then rm ${DOXYFILE_SPHINX}; fi

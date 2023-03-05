@@ -8,7 +8,7 @@ SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = source
 BUILDDIR      = build/sphinx
 
-# Command-line arguments.
+# Parse command-line arguments.
 ifdef excl
 ifeq ($(strip ${excl}), $(filter $(strip ${excl}), doxy))
 export excl_doxy=true
