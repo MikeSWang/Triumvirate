@@ -1,8 +1,8 @@
 breathe
 exhale
-sphinx_book_theme
-myst_nb
+myst-nb
 sphinxcontrib-bibtex
+sphinx-book-theme
 sphinx-copybutton
-sphinx_togglebutton
 sphinx-tabs
+sphinx-togglebutton

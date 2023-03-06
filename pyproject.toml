@@ -1,5 +1,5 @@
 [build-system]
-requires = ['setuptools', 'wheel', 'Cython', 'oldest-supported-numpy']
+requires = ['setuptools', 'Cython', 'oldest-supported-numpy']
 build-backend = 'setuptools.build_meta'
 
 # [project]
@@ -12,6 +12,7 @@ build-backend = 'setuptools.build_meta'
 #     'numpy',
 #     'scipy',
 #     'astropy',
+#     'pyyaml',
 # ]
 # description = "Three-point clustering measurements in large-scale structure analyses."
 # classifiers = [
