@@ -6,7 +6,7 @@ on:
       - main
       - dev
     paths:
-      - triumvirate/**
+      - src/**
       - setup.py
       - setup.cfg
       - pyproject.toml
