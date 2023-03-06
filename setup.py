@@ -209,8 +209,9 @@ includes = ext_includes + [npy_include, pkg_include_dir,]  # noqa: E231
 # Set libraries.
 ext_libs = ['gsl', 'gslcblas', 'm', 'fftw3', 'fftw3_omp',]  # noqa: E231
 
+pkg_lib = 'trv'
 pkg_library = (
-    'trv',
+    pkg_lib,
     {
         'sources': [
             os.path.join(pkg_src_dir, cpp_source)
@@ -222,7 +223,9 @@ pkg_library = (
     }
 )
 
-libs = [] + ext_libs  # noqa: E231
+# The linking order matters, and to ensure that, `-ltrv` is duplicated
+# in the `pip install` process.
+libs = [pkg_lib] + ext_libs  # noqa: E231
 
 # Define extension modules.
 ext_module_names = [
