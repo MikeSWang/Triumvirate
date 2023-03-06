@@ -10,6 +10,7 @@ build:
     - graphviz
   jobs:
     pre_build:
+      - sed -i "s/ --user//g" Makefile
       - make pyinstall useomp=true
       - python -c "import triumvirate.threept"
       - bash docs/autogen_docs.sh
