@@ -46,3 +46,6 @@ jobs:
 
       - name: Build and install
         run: make clean; make install useomp=true uselogo=true
+
+      - name: Test import
+        run: python -c "import triumvirate.threept"
