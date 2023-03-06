@@ -207,7 +207,7 @@ npy_include = numpy.get_include()
 includes = ext_includes + [npy_include, pkg_include_dir,]  # noqa: E231
 
 # Set libraries.
-ext_libs = ['gsl', 'gslcblas', 'm', 'fftw3', 'fftw3_omp',]  # noqa: E231
+ext_libs = ['gomp', 'gsl', 'gslcblas', 'm', 'fftw3', 'fftw3_omp',]  # noqa: E231
 
 pkg_lib = 'trv'
 pkg_library = (
