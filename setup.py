@@ -12,13 +12,24 @@ from Cython.Distutils import build_ext, Extension
 import numpy
 
 
-PKG_NAME = 'Triumvirate'
+# ========================================================================
+# Repository
+# ========================================================================
+
+PROJECT_NAME = 'Triumvirate'
+
+pkg_name = PROJECT_NAME.lower()
 
 
-# -- Repository ----------------------------------------------------------
+# -- Paths ---------------------------------------------------------------
 
-pkg_name = PKG_NAME.lower()
 pkg_dir = os.path.join('src', pkg_name)
+
+pkg_include_dir = os.path.join(pkg_dir, "include")
+pkg_src_dir = os.path.join(pkg_dir, "src/modules")
+
+
+# -- Info ----------------------------------------------------------------
 
 # # Extract package information.
 # pkg_info = {}
@@ -35,7 +46,11 @@ pkg_dir = os.path.join('src', pkg_name)
 #     branch = 'stable'
 
 
-# -- Compilation ---------------------------------------------------------
+# ========================================================================
+# Set-up
+# ========================================================================
+
+# -- Compiler ------------------------------------------------------------
 
 # Specify language.
 language = 'c++'
@@ -51,7 +66,10 @@ else:
 os.environ['CC'] = os.environ.get('PY_CXX', compiler)
 os.environ['CXX'] = os.environ.get('PY_CXX', compiler)
 
-# Modify compilation options.
+
+# -- Options -------------------------------------------------------------
+
+# Specify backend flags.
 cflags = os.environ.get('PY_CFLAGS', '').split()
 ldflags = [
     lib
@@ -59,7 +77,7 @@ ldflags = [
     if not lib.startswith('-l')
 ]
 
-# Add optional compilation option: OpenMP.
+# Specify optional backend option: OpenMP.
 py_trvomp = os.environ.get('PY_TRVOMP')
 if py_trvomp is not None and py_trvomp.lower() in ['', '1', 'true']:
     for flag in ['-fopenmp', '-DTRV_USE_OMP', '-DTRV_USE_FFTWOMP']:
@@ -67,7 +85,7 @@ if py_trvomp is not None and py_trvomp.lower() in ['', '1', 'true']:
             cflags.extend(flag)
 
 
-# -- Extensions ----------------------------------------------------------
+# -- Command classes -----------------------------------------------------
 
 class BuildExt(build_ext):
     """Modified :class:`Cython.Distutils.build_ext`.
@@ -107,6 +125,8 @@ class BuildClib(build_clib):
         super().build_libraries(libraries)
 
 
+# -- Extensions ----------------------------------------------------------
+
 def define_extension(module_name,
                      auto_cpp_source=False, extra_cpp_sources=None,
                      **ext_kwargs):
@@ -135,10 +155,10 @@ def define_extension(module_name,
 
     """
     ext_module_kwargs = {
+        'define_macros': macros,
         'include_dirs': includes,
         'extra_compile_args': cflags,
         'extra_link_args': ldflags,
-        'define_macros': macros,
     }
 
     if extra_cpp_sources is None:
@@ -161,7 +181,11 @@ def define_extension(module_name,
     )
 
 
-# Set package macros, sources, include directories and libraries.
+# Set macros.
+npy_macros = [
+    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
+]
+
 pkg_macros = [
     ('TRV_EXTCALL', None),
     # ('TRV_USE_LEGACY_CODE', None),
@@ -169,9 +193,21 @@ pkg_macros = [
     # ('DBG_FLAG_NOAC', None),
 ]
 
-pkg_include_dir = os.path.join(pkg_dir, "include")
+macros = npy_macros + pkg_macros
 
-pkg_src_dir = os.path.join(pkg_dir, "src/modules")
+# Set include directories.
+ext_includes = [
+    incl
+    for incl in os.environ.get('PY_INCLUDES', "").replace("-I", "").split()
+    if pkg_dir not in incl
+]
+
+npy_include = numpy.get_include()
+
+includes = ext_includes + [npy_include, pkg_include_dir,]  # noqa: E231
+
+# Set libraries.
+ext_libs = ['gsl', 'gslcblas', 'm', 'fftw3', 'fftw3_omp',]  # noqa: E231
 
 pkg_library = (
     'trv',
@@ -180,31 +216,11 @@ pkg_library = (
             os.path.join(pkg_src_dir, cpp_source)
             for cpp_source in os.listdir(pkg_src_dir)
         ],
-        'include_dirs': [pkg_include_dir,],  # noqa: E231
         'macros': pkg_macros,
+        'cflags': cflags,
+        'include_dirs': [pkg_include_dir,],  # noqa: E231
     }
 )
-
-# Set macros.
-npy_macros = [
-    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
-]
-
-macros = pkg_macros + npy_macros
-
-# Set include directories.
-npy_include = numpy.get_include()
-
-ext_includes = [
-    incl
-    for incl in os.environ.get('PY_INCLUDES', "").replace("-I", "").split()
-    if pkg_dir not in incl
-]
-
-includes = [pkg_include_dir, npy_include,] + ext_includes  # noqa: E231
-
-# Set libraries.
-ext_libs = ['gsl', 'gslcblas', 'm', 'fftw3', 'fftw3_omp',]  # noqa: E231
 
 libs = [] + ext_libs  # noqa: E231
 
