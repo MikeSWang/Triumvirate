@@ -1,11 +1,10 @@
-# CRITICAL: Not in use due to build linking issues.
+# Deprecated: restore for safe setup.
 """Set up Triumvirate and its Cythonised extension modules.
 
 """
 import os
 import platform
 from setuptools import setup
-from setuptools.command.build_clib import build_clib
 
 from Cython.Build import cythonize
 from Cython.Distutils import build_ext, Extension
@@ -107,25 +106,6 @@ class BuildExt(build_ext):
         super().build_extensions()
 
 
-class BuildClib(build_clib):
-    """Modified :class:`setuptools.command.build_clib`.
-
-    """
-    def build_libraries(self, libraries):
-        """Override the compiler and compilation options.
-
-        """
-        # _compiler = os.environ.get('PY_CXX', compiler)
-        # self.compiler.set_executable('compiler_cxx', _compiler)
-        # self.compiler.set_executable('compiler_so', _compiler)
-        # self.compiler.set_executable('linker_so', _compiler)
-
-        if '-Wstrict-prototypes' in self.compiler.compiler_so:
-            self.compiler.compiler_so.remove('-Wstrict-prototypes')
-
-        super().build_libraries(libraries)
-
-
 # -- Extensions ----------------------------------------------------------
 
 def define_extension(module_name,
@@ -210,23 +190,8 @@ includes = ext_includes + [npy_include, pkg_include_dir,]  # noqa: E231
 # Set libraries.
 ext_libs = ['gsl', 'gslcblas', 'm', 'fftw3', 'fftw3_omp',]  # noqa: E231
 
-pkg_lib = 'trv'
-pkg_library = (
-    pkg_lib,
-    {
-        'sources': [
-            os.path.join(pkg_src_dir, cpp_source)
-            for cpp_source in os.listdir(pkg_src_dir)
-        ],
-        'macros': pkg_macros,
-        'cflags': cflags,
-        'include_dirs': [pkg_include_dir,],  # noqa: E231
-    }
-)
-
-# The linking order matters, and to ensure that, `-ltrv` is duplicated
-# in the `pip install` process.
-libs = [pkg_lib,] + ext_libs  # noqa: E231
+# The linking order matters.
+libs = [] + ext_libs  # noqa: E231
 
 # Define extension modules.
 ext_module_names = [
@@ -238,9 +203,42 @@ ext_module_names = [
     '_fftlog',
 ]
 
+ext_module_extra_cpp_sources = [
+    ["monitor.cpp",],  # noqa: E231
+    ["monitor.cpp", "parameters.cpp",],  # noqa: E231
+    ["monitor.cpp",],  # noqa: E231
+    [
+        "monitor.cpp",
+        "maths.cpp",
+        "parameters.cpp",
+        "dataobjs.cpp",
+        "particles.cpp",
+        "field.cpp",
+    ],
+    [
+        "monitor.cpp",
+        "maths.cpp",
+        "parameters.cpp",
+        "dataobjs.cpp",
+        "particles.cpp",
+        "field.cpp",
+        "twopt.cpp",
+    ],
+    [
+        "monitor.cpp",
+        "maths.cpp",
+        "arrayops.cpp",
+    ],
+]
+
 ext_module_config = {
-    ext_mod_name: {'libraries': libs}
-    for ext_mod_name in ext_module_names
+    ext_mod_name: {
+        'auto_cpp_source': True,
+        'extra_cpp_sources': extra_cpp_sources,
+        'libraries': libs,
+    }
+    for ext_mod_name, extra_cpp_sources
+    in zip(ext_module_names, ext_module_extra_cpp_sources)
 }
 
 cython_directives = {
@@ -261,9 +259,7 @@ if __name__ == '__main__':
     setup(
         # license=pkg_info.get('__license__'),
         cmdclass={
-            'build_clib': BuildClib,
             'build_ext': BuildExt,
         },
         ext_modules=cython_ext_modules,
-        libraries=[pkg_library,]  # noqa: E231
     )

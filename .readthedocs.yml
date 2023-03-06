@@ -10,8 +10,8 @@ build:
     - graphviz
   jobs:
     pre_build:
-      - mv _setup.py setup.py
-      - python -m pip install --verbose --editable .
+      - make pyinstall useomp=true
+      - python -c "import triumvirate.threept"
       - bash docs/autogen_docs.sh
     post_build:
       - rm docs/source/Doxyfile
