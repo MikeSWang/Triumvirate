@@ -66,8 +66,8 @@ extensions = [
     'myst_nb',
     'sphinxcontrib.bibtex',
     'sphinx_copybutton',
-    'sphinx_togglebutton',
     'sphinx_tabs.tabs',
+    'sphinx_togglebutton',
     # 'sphinx_inline_tabs',
 ]
 
