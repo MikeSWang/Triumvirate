@@ -36,10 +36,10 @@ jobs:
         with:
           linux: |
             sudo apt-get update
-            sudo apt-get install -y libgsl-dev libfftw3-dev libomp-dev
+            sudo apt-get install -y libgsl-dev libfftw3-dev
           macos: |
             brew install pkg-config
-            brew install gsl fftw libomp
+            brew install gsl fftw
 
       - name: Install Python setup dependencies
         run: python -m pip install --upgrade pip setuptools wheel cython
