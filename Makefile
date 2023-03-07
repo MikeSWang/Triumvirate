@@ -49,8 +49,7 @@ ifeq ($(shell uname -s), Linux)
 CXX := g++
 # macOS: use LLVM compiler. [modify]
 else ifeq ($(shell uname -s), Darwin)
-HOMEBREW_PREFIX ?= /usr/local
-CXX := ${HOMEBREW_PREFIX}/opt/llvm/bin/clang++
+CXX := /usr/bin/clang++
 # Default: use GNU compiler. [modify]
 else
 CXX := g++
@@ -117,7 +116,7 @@ endif  # useomp=(true|1)
 
 else  # useomp
 
-unexport useomp
+undefine useomp
 
 endif  # useomp
 
