@@ -117,7 +117,7 @@ endif  # useomp=(true|1)
 
 else  # useomp
 
-undefine useomp
+unexport useomp
 
 endif  # useomp
 
