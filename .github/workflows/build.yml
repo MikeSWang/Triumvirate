@@ -40,13 +40,14 @@ jobs:
           macos: |
             brew install pkg-config
             brew install gsl fftw libomp
-            echo "make version: $(make --version)"
 
       - name: Install Python setup dependencies
         run: python -m pip install --upgrade pip setuptools wheel cython
 
       - name: Build and install
-        run: make clean; make -j -l install useomp=true
+        run: |
+          sed -i "s/undefine/unexport/g" Makefile
+          make clean; make -j -l install useomp=true
 
       - name: Test Python package import
         run: python -c "import triumvirate.threept"
