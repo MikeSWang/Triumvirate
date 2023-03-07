@@ -13,15 +13,17 @@ import numpy
 
 
 # ========================================================================
-# Repository
+# Package
 # ========================================================================
+
+# -- Names ---------------------------------------------------------------
 
 PROJECT_NAME = 'Triumvirate'
 
 pkg_name = PROJECT_NAME.lower()
 
 
-# -- Paths ---------------------------------------------------------------
+# -- Directories ---------------------------------------------------------
 
 pkg_dir = os.path.join('src', pkg_name)
 
@@ -47,58 +49,21 @@ pkg_src_dir = os.path.join(pkg_dir, "src/modules")
 
 
 # ========================================================================
-# Set-up
+# Commands
 # ========================================================================
-
-# -- Compiler ------------------------------------------------------------
-
-# Specify language.
-language = 'c++'
-
-# Enforce compiler choice.
-if platform.system() == 'Linux':
-    compiler = 'g++'
-elif platform.system() == 'Darwin':
-    compiler = 'clang++'
-else:
-    compiler = 'g++'
-
-os.environ['CC'] = os.environ.get('PY_CXX', compiler)
-os.environ['CXX'] = os.environ.get('PY_CXX', compiler)
-
-
-# -- Options -------------------------------------------------------------
-
-# Specify backend flags.
-cflags = os.environ.get('PY_CFLAGS', '').split()
-ldflags = [
-    lib
-    for lib in os.environ.get('PY_LDFLAGS', '').split()
-    if not lib.startswith('-l')
-]
-
-# Specify optional backend option: OpenMP.
-py_trvomp = os.environ.get('PY_TRVOMP')
-if py_trvomp is not None and py_trvomp.lower() in ['', '1', 'true']:
-    for flag in ['-fopenmp', '-DTRV_USE_OMP', '-DTRV_USE_FFTWOMP']:
-        if flag not in cflags:
-            cflags.extend(flag)
-
-
-# -- Command classes -----------------------------------------------------
 
 class BuildExt(build_ext):
     """Modified :class:`Cython.Distutils.build_ext`.
 
     """
     def build_extensions(self):
-        """Override the compiler and compilation options.
+        """Modify compiler and compilation configuration in
+        :meth:`Cython.Distutils.build_ext.build_extensions`.
 
         """
-        # _compiler = os.environ.get('PY_CXX', compiler)
-        # self.compiler.set_executable('compiler_cxx', _compiler)
-        # self.compiler.set_executable('compiler_so', _compiler)
-        # self.compiler.set_executable('linker_so', _compiler)
+        # self.compiler.set_executable('compiler_cxx', default_compiler)
+        # self.compiler.set_executable('compiler_so', default_compiler)
+        # self.compiler.set_executable('linker_so', default_compiler)
 
         if '-Wstrict-prototypes' in self.compiler.compiler_so:
             self.compiler.compiler_so.remove('-Wstrict-prototypes')
@@ -111,13 +76,13 @@ class BuildClib(build_clib):
 
     """
     def build_libraries(self, libraries):
-        """Override the compiler and compilation options.
+        """Modify compiler and compilation configuration in
+        :meth:`setuptools.command.build_clib.build_libraries`.
 
         """
-        # _compiler = os.environ.get('PY_CXX', compiler)
-        # self.compiler.set_executable('compiler_cxx', _compiler)
-        # self.compiler.set_executable('compiler_so', _compiler)
-        # self.compiler.set_executable('linker_so', _compiler)
+        # self.compiler.set_executable('compiler_cxx', default_compiler)
+        # self.compiler.set_executable('compiler_so', default_compiler)
+        # self.compiler.set_executable('linker_so', default_compiler)
 
         if '-Wstrict-prototypes' in self.compiler.compiler_so:
             self.compiler.compiler_so.remove('-Wstrict-prototypes')
@@ -125,7 +90,123 @@ class BuildClib(build_clib):
         super().build_libraries(libraries)
 
 
-# -- Extensions ----------------------------------------------------------
+# ========================================================================
+# Compilation
+# ========================================================================
+
+# -- Platform choices ----------------------------------------------------
+
+COMPILER_CHOICES = {
+    'default': 'g++',
+    'linux': 'g++',
+    'darwin': 'clang++',
+}
+
+OPENMP_LIB_CHOICES = {
+    'default': 'gomp',
+    'linux': 'gomp',
+    'darwin': 'omp',
+}
+
+build_platform = platform.system().lower()
+if build_platform not in ['linux', 'darwin']:
+    build_platform = 'default'
+
+
+# -- Compiler ------------------------------------------------------------
+
+# Specify language.
+language = 'c++'
+
+# Enforce platform-dependent default compiler choice.
+default_compiler = COMPILER_CHOICES[build_platform]
+
+os.environ['CC'] = os.environ.get('PY_CXX', default_compiler)
+os.environ['CXX'] = os.environ.get('PY_CXX', default_compiler)
+
+
+# -- Options -------------------------------------------------------------
+
+# Specify compilation and linker flags.
+cflags = os.environ.get('PY_CFLAGS', '').split()
+ldflags = [
+    _ldflag for _ldflag in os.environ.get('PY_LDFLAGS', '').split()
+    if not _ldflag.startswith('-l')  # set in `ext_libs` instead
+]
+
+# Add optional flags for OpenMP support (enabled by default).
+disable_omp = os.environ.get('PY_NO_OMP')
+if disable_omp is None:
+    # Enforce platform-dependent default OpenMP library choice.
+    default_libomp = OPENMP_LIB_CHOICES[build_platform]
+
+    ldflag_omp = os.environ.get('PY_LDOMP', '-l' + default_libomp)
+
+    # Ensure OpenMP options are enabled (by default).
+    for _cflag in ['-fopenmp', '-DTRV_USE_OMP', '-DTRV_USE_FFTWOMP']:
+        if _cflag not in cflags:
+            cflags.append(_cflag)
+
+    # Ensure OpenMP-related libraries are linked (by default).
+    for _ldflag in ['-lfftw3_omp', ldflag_omp]:
+        if _ldflag not in ldflags:
+            ldflags.append(_ldflag)
+
+
+# ========================================================================
+# Build
+# ========================================================================
+
+# Set macros.
+pkg_macros = [
+    ('TRV_EXTCALL', None),
+    # ('TRV_USE_LEGACY_CODE', None),
+    # ('DBG_MODE', None),
+    # ('DBG_FLAG_NOAC', None),
+]
+
+npy_macros = [
+    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
+]
+
+macros = pkg_macros + npy_macros
+
+# Set include directories.
+npy_include = numpy.get_include()
+
+ext_includes = [
+    incl
+    for incl in os.environ.get('PY_INCLUDES', "").replace("-I", "").split()
+    if pkg_dir not in incl
+]
+
+includes = [pkg_include_dir, npy_include,] + ext_includes  # noqa: E231
+
+# Set libraries.
+pkg_lib = 'trv'
+pkg_library = (
+    pkg_lib,
+    {
+        'sources': [
+            os.path.join(pkg_src_dir, _cpp_source)
+            for _cpp_source in os.listdir(pkg_src_dir)
+        ],
+        'macros': pkg_macros,
+        'cflags': cflags,
+        'include_dirs': [pkg_include_dir,],  # noqa: E231
+    }
+)
+
+ext_libs = ['gsl', 'gslcblas', 'm', 'fftw3',]  # noqa: E231
+
+# The linking order matters, and to ensure that, `-ltrv` is duplicated
+# also in `libraries` keyword argument in :meth:`setuptools.setup`.
+libs = [pkg_lib,] + ext_libs  # noqa: E231
+
+
+# ========================================================================
+# Extensions
+# ========================================================================
 
 def define_extension(module_name,
                      auto_cpp_source=False, extra_cpp_sources=None,
@@ -157,6 +238,7 @@ def define_extension(module_name,
     ext_module_kwargs = {
         'define_macros': macros,
         'include_dirs': includes,
+        'libraries': libs,
         'extra_compile_args': cflags,
         'extra_link_args': ldflags,
     }
@@ -172,8 +254,8 @@ def define_extension(module_name,
         sources.append(
             os.path.join(pkg_src_dir, f"{module_name}.cpp".lstrip('_'))
         )
-    for cpp_source in extra_cpp_sources:
-        sources.append(os.path.join(pkg_src_dir, cpp_source))
+    for _cpp_source in extra_cpp_sources:
+        sources.append(os.path.join(pkg_src_dir, _cpp_source))
 
     return Extension(
         f'{pkg_name}.{module_name}',
@@ -181,65 +263,14 @@ def define_extension(module_name,
     )
 
 
-# Set macros.
-npy_macros = [
-    ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
-]
-
-pkg_macros = [
-    ('TRV_EXTCALL', None),
-    # ('TRV_USE_LEGACY_CODE', None),
-    # ('DBG_MODE', None),
-    # ('DBG_FLAG_NOAC', None),
-]
-
-macros = npy_macros + pkg_macros
-
-# Set include directories.
-ext_includes = [
-    incl
-    for incl in os.environ.get('PY_INCLUDES', "").replace("-I", "").split()
-    if pkg_dir not in incl
-]
-
-npy_include = numpy.get_include()
-
-includes = ext_includes + [npy_include, pkg_include_dir,]  # noqa: E231
-
-# Set libraries.
-ext_libs = ['gomp', 'gsl', 'gslcblas', 'm', 'fftw3', 'fftw3_omp',]  # noqa: E231
-
-pkg_lib = 'trv'
-pkg_library = (
-    pkg_lib,
-    {
-        'sources': [
-            os.path.join(pkg_src_dir, cpp_source)
-            for cpp_source in os.listdir(pkg_src_dir)
-        ],
-        'macros': pkg_macros,
-        'cflags': cflags,
-        'include_dirs': [pkg_include_dir,],  # noqa: E231
-    }
-)
-
-# The linking order matters, and to ensure that, `-ltrv` is duplicated
-# in the `pip install` process.
-libs = [pkg_lib,] + ext_libs  # noqa: E231
-
-# Define extension modules.
-ext_module_names = [
-    'parameters',
-    'dataobjs',
-    '_particles',
-    '_twopt',
-    '_threept',
-    '_fftlog',
-]
-
-ext_module_config = {
-    ext_mod_name: {'libraries': libs}
-    for ext_mod_name in ext_module_names
+# Cythonise extension modules.
+ext_module_configs = {
+    'parameters': {},
+    'dataobjs': {},
+    '_particles': {},
+    '_twopt': {},
+    '_threept': {},
+    '_fftlog': {},
 }
 
 cython_directives = {
@@ -249,12 +280,17 @@ cython_directives = {
 }
 
 cython_ext_modules = cythonize(
-    [define_extension(name, **cfg) for name, cfg in ext_module_config.items()],
+    [
+        define_extension(name, **cfg)
+        for name, cfg in ext_module_configs.items()
+    ],
     compiler_directives=cython_directives
 )
 
 
-# -- Set-up --------------------------------------------------------------
+# ========================================================================
+# Set-up
+# ========================================================================
 
 if __name__ == '__main__':
     setup(

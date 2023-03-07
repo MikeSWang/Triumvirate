@@ -1,3 +1,7 @@
+# @file Makefile
+# @brief `make` instructions for building and testing Triumvirate.
+# @authors Mike S Wang (https://github.com/MikeSWang)
+#
 # ========================================================================
 # Configuration
 # ========================================================================
@@ -42,21 +46,15 @@ DIR_PKG_SRCMODULES := ${DIR_PKG_SRC}/modules
 
 # Linux: use GNU compiler. [modify]
 ifeq ($(shell uname -s), Linux)
-
 CXX := g++
-
 # macOS: use LLVM compiler. [modify]
 else ifeq ($(shell uname -s), Darwin)
-
 HOMEBREW_PREFIX ?= /usr/local
 CXX := ${HOMEBREW_PREFIX}/opt/llvm/bin/clang++
-
 # Default: use GNU compiler. [modify]
 else
-
 CXX := g++
-
-endif
+endif  # `uname -s`
 
 
 # -- Options -------------------------------------------------------------
@@ -81,52 +79,70 @@ FFTW_DIR = ${FFTW_ROOT}
 ifdef GSL_DIR
 INCLUDES += -I${GSL_DIR}/include
 LDFLAGS += -L${GSL_DIR}/lib
-endif
+endif  # GSL_DIR
 
 # FFTW library
 ifdef FFTW_DIR
 INCLUDES += -I${FFTW_DIR}/include
 LDFLAGS += -L${FFTW_DIR}/lib
-endif
+endif  # FFTW_DIR
 
-endif
+endif  # NERSC_HOST
 
 
 # ------------------------------------------------------------------------
 # Customisation
 # ------------------------------------------------------------------------
 
-# OpenMP: enabled with `useomp=[true|1]`; disabled otherwise.
+# OpenMP: enabled with `useomp=(true|1)`; disabled otherwise.
 ifdef useomp
+
 ifeq ($(strip ${useomp}), $(filter $(strip ${useomp}), true 1))
 
+# Linux: use GNU OpenMP. [modify]
+ifeq ($(shell uname -s), Linux)
+LDFLAG_OMP += -lgomp
+# macOS: use LLVM OpenMP. [modify]
+else ifeq ($(shell uname -s), Darwin)
+LDFLAG_OMP += -lomp
+# Default: use GNU OpenMP. [modify]
+else
+LDFLAG_OMP += -lgomp
+endif  # `uname -s`
+
 CFLAGS += -fopenmp -DTRV_USE_OMP -DTRV_USE_FFTWOMP
-LDFLAGS += -lfftw3_omp
+LDFLAGS += -lfftw3_omp ${LDFLAG_OMP}
 
-endif
-endif
+endif  # useomp=(true|1)
 
-# Parameter debugging: enabled with `dbgpars=[true|1]`; disabled otherwise.
-ifdef dbgpars
-ifeq ($(strip ${dbgpars}), $(filter $(strip ${dbgpars}), true 1))
+else  # useomp
 
-CFLAGS += -DDBG_MODE -DDBG_PARS
+undefine useomp
 
-endif
-endif
+endif  # useomp
 
-# Visual enhancements: enabled with `uselogo=[true|1]`; disabled otherwise.
+ifdef useomp
+WOMP=with
+else
+WOMP=without
+endif  # useomp
+
+# Visual enhancements: enabled with `uselogo=(true|1)`; disabled otherwise.
 ifdef uselogo
 ifeq ($(strip ${uselogo}), $(filter $(strip ${uselogo}), true 1))
-
 CFLAGS += -DTRV_USE_LOGO
+endif  # uselogo=(true|1)
+endif  # uselogo
 
-endif
-endif
+# Parameter debugging: enabled with `dbgpars=(true|1)`; disabled otherwise.
+ifdef dbgpars
+ifeq ($(strip ${dbgpars}), $(filter $(strip ${dbgpars}), true 1))
+CFLAGS += -DDBG_MODE -DDBG_PARS
+endif  # dbgpars=(true|1)
+endif  # dbgpars
 
 # Other options:
 # e.g. {-g, -DTRV_USE_LEGACY_CODE, -DDBG_MODE, -DDBG_FLAG_NOAC, ...}.
-# >>> insert <<<
 
 
 # ------------------------------------------------------------------------
@@ -138,6 +154,10 @@ export PY_CXX=${CXX}
 export PY_INCLUDES=${INCLUDES}
 export PY_CFLAGS=${CFLAGS}
 export PY_LDFLAGS=${LDFLAGS}
+export PY_LDOMP=${LDFLAG_OMP}
+ifndef useomp
+export PY_NO_OMP
+endif  # useomp
 
 
 # ========================================================================
@@ -163,7 +183,7 @@ install: cppinstall pyinstall
 cppinstall: cpplibinstall cppappbuild
 
 pyinstall:
-	@echo "Installing Triumvirate Python package (in development mode)..."
+	@echo "Installing Triumvirate Python package ${WOMP} OpenMP (in development mode)..."
 	python -m pip install --verbose --user --editable .
 
 cppappbuild: ${PROGEXE}
@@ -191,12 +211,12 @@ testit:
 # ------------------------------------------------------------------------
 
 ${PROGEXE}: ${PROGOBJ} ${MODULEOBJ}
-	@echo "Compiling Triumvirate C++ program..."
+	@echo "Compiling Triumvirate C++ program ${WOMP} OpenMP..."
 	if [ ! -d build/bin ]; then mkdir -p build/bin; fi
 	$(CXX) $(CFLAGS) -o $(addprefix $(DIR_BUILDBIN)/, $(notdir $@)) $^ $(LDFLAGS)
 
 ${PROGLIB}: ${MODULEOBJ}
-	@echo "Building Triumvirate C++ library..."
+	@echo "Building Triumvirate C++ library ${WOMP} OpenMP..."
 	if [ ! -d build/lib ]; then mkdir -p build/lib; fi
 	ar -rcsv build/lib/libtrv.a $^
 
