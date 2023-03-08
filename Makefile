@@ -6,8 +6,8 @@
 # Configuration
 # ========================================================================
 
-PROGNAME := triumvirate
-LIBNAME := trv
+PROGNAME = triumvirate
+LIBNAME = trv
 
 # ------------------------------------------------------------------------
 # Directories
@@ -44,16 +44,29 @@ DIR_PKG_SRCMODULES := ${DIR_PKG_SRC}/modules
 
 # -- Compiler ------------------------------------------------------------
 
-# Linux: use GNU compiler. [modify]
+# Linux: GNU compiler by default. [modify]
 ifeq ($(shell uname -s), Linux)
-CXX := g++
-# macOS: use LLVM compiler. [modify]
+
+CXX ?= g++
+
+# macOS: GNU compiler by default. [modify]
 else ifeq ($(shell uname -s), Darwin)
-CXX := /usr/bin/clang++
-# Default: use GNU compiler. [modify]
-else
-CXX := g++
-endif  # `uname -s`
+
+# Use GNU compiler from Homebrew (installed with formula 'gcc').
+# The compiler binary provided with a full path must have the suffix
+# '-<version>'; check which version is available with `brew info gcc`
+# (here 'g++-11' is assumed). Alternatively, use an appropriate alias.
+CXX ?= $(shell brew --prefix gcc)/bin/g++-11
+
+# Use LLVM compiler from Homebrew (installed with formula 'llvm').
+# CXX ?= $(shell brew --prefix llvm)/bin/clang++
+
+# Others: GNU compiler by default. [modify]
+else  # uname -s
+
+CXX ?= g++
+
+endif  # uname -s
 
 
 # -- Options -------------------------------------------------------------
@@ -62,7 +75,7 @@ INCLUDES := -I${DIR_PKG_INCLUDE}
 CFLAGS := -O3 -Wall $(shell pkg-config --cflags gsl fftw3)
 LDFLAGS := $(if $(shell pkg-config --libs gsl fftw3),\
                 $(shell pkg-config --libs gsl fftw3),\
-								$(-lgsl -lgslcblas -lm -lfftw3))
+                $(-lgsl -lgslcblas -lm -lfftw3))
 
 
 # ------------------------------------------------------------------------
@@ -98,16 +111,24 @@ ifdef useomp
 
 ifeq ($(strip ${useomp}), $(filter $(strip ${useomp}), true 1))
 
-# Linux: use GNU OpenMP. [modify]
+# Linux: GNU OpenMP by default. [modify]
 ifeq ($(shell uname -s), Linux)
-LDFLAG_OMP += -lgomp
-# macOS: use LLVM OpenMP. [modify]
+
+LDFLAG_OMP = -lgomp
+
+# macOS: GNU OpenMP by default. [modify]
 else ifeq ($(shell uname -s), Darwin)
-LDFLAG_OMP += -lomp
-# Default: use GNU OpenMP. [modify]
-else
-LDFLAG_OMP += -lgomp
-endif  # `uname -s`
+
+# Use LLVM OpenMP from Homebrew (installed with formula 'libomp').
+# CFLAGS += -Xpreprocessor
+# LDFLAG_OMP = -L$(shell brew --prefix libomp)/lib -lomp
+
+# Others: GNU OpenMP by default. [modify]
+else  # uname -s
+
+LDFLAG_OMP = -lgomp
+
+endif  # uname -s
 
 CFLAGS += -fopenmp -DTRV_USE_OMP -DTRV_USE_FFTWOMP
 LDFLAGS += -lfftw3_omp ${LDFLAG_OMP}
@@ -116,13 +137,14 @@ endif  # useomp=(true|1)
 
 else  # useomp
 
-undefine useomp
+# NOTE: Not `undefine` for GitHub runner macOS `make` compatibility.
+unexport useomp
 
 endif  # useomp
 
 ifdef useomp
 WOMP=with
-else
+else  # useomp
 WOMP=without
 endif  # useomp
 
@@ -156,7 +178,7 @@ export PY_LDFLAGS=${LDFLAGS}
 export PY_LDOMP=${LDFLAG_OMP}
 ifndef useomp
 export PY_NO_OMP
-endif  # useomp
+endif  # !useomp
 
 
 # ========================================================================
@@ -231,13 +253,6 @@ ${MODULEOBJ}: ${DIR_BUILDOBJ}/%.o: ${DIR_PKG_SRCMODULES}/%.cpp
 # ========================================================================
 # Clean
 # ========================================================================
-
-# Ensure deletion safety by limiting the top directory.
-DIR_PKG := $(or ${DIR_PKG}, '.')
-DIR_BUILD := $(or ${DIR_BUILD}, '.')
-DIR_TESTS := $(or ${DIR_TESTS}, '.')
-DIR_TESTBUILD := $(or ${DIR_TESTBUILD}, '.')
-DIR_TESTOUT := $(or ${DIR_TESTOUT}, '.')
 
 clean: cppclean pyclean
 
