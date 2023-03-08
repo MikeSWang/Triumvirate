@@ -330,7 +330,7 @@ void display_prog_notice() {
     "    //  \\        |  |__) | |  | |\\/| \\  / | |__)  /\\   |  |__    \n"
     "   //    \\       |  |  \\ | \\__/ |  |  \\/  | |  \\ /~~\\  |  |___ \n"
     "  //      \\                                                         \n"
-    " //________\\    (C) 2022 Mike S Wang & Naonori Sugiyama [GPLv3]     \n"
+    " //________\\    (C) 2023 Mike S Wang & Naonori Sugiyama [GPLv3]     \n"
     "                                                                     \n"
     "  •••  Three-Point Clustering Measurements in LSS  •••             \n\n"
   );
