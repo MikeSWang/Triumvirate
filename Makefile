@@ -71,9 +71,9 @@ endif  # uname -s
 
 # -- Options -------------------------------------------------------------
 
-INCLUDES := -I${DIR_PKG_INCLUDE}
-CFLAGS := -O3 -Wall $(shell pkg-config --cflags gsl fftw3)
-LDFLAGS := $(if $(shell pkg-config --libs gsl fftw3),\
+INCLUDES += -I${DIR_PKG_INCLUDE}
+CFLAGS += -O3 -Wall $(shell pkg-config --cflags gsl fftw3)
+LDFLAGS += $(if $(shell pkg-config --libs gsl fftw3),\
                 $(shell pkg-config --libs gsl fftw3),\
                 $(-lgsl -lgslcblas -lm -lfftw3))
 

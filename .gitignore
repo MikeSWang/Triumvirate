@@ -62,7 +62,9 @@ sandbox/
 **/triumvirate/*.cpp
 
 # Files: docs/source/_static/params_template.*
+# Files: docs/source/_static/Makefile
 docs/source/_static/params_template.*
+docs/source/_static/Makefile
 
 # Files: publication/supplements/*.npy
 publication/supplements/**/*.npy
