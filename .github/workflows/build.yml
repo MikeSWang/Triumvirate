@@ -26,28 +26,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Python 3
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.x
 
-      - name: Install C/C++ libraries
+      - name: Install Python build system requirements
+        run: python -m pip install --upgrade pip setuptools wheel cython
+
+      - name: Install C++ build required dependencies
         uses: knicknic/os-specific-run@v1.0.3
         with:
           linux: |
             sudo apt-get update
             sudo apt-get install -y libgsl-dev libfftw3-dev libgomp1
           macos: |
-            brew install pkg-config
+            brew update
             brew install gsl fftw libomp
-
-      - name: Install Python setup dependencies
-        run: python -m pip install --upgrade pip setuptools wheel cython
 
       - name: Build and install
         run: |
-          sed -i "s/undefine/unexport/g" Makefile
+          if [ "${RUNNER_OS}" == macOS ]; then
+            CXX_DIR=$(brew --prefix gcc)/bin
+            CXX_FILE=$(ls ${CXX_DIR} | grep '^g++')
+            export CXX=${CXX_DIR}/${CXX_FILE}
+          fi
           make clean; make -j -l install useomp=true
 
-      - name: Test Python package import
+      - name: Validate build/installation
         run: python -c "import triumvirate.threept"

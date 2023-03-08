@@ -99,13 +99,13 @@ class BuildClib(build_clib):
 COMPILER_CHOICES = {
     'default': 'g++',
     'linux': 'g++',
-    'darwin': 'clang++',
+    'darwin': 'g++',
 }
 
 OPENMP_LIB_CHOICES = {
-    'default': 'gomp',
-    'linux': 'gomp',
-    'darwin': 'omp',
+    'default': 'gomp',  # ''
+    'linux': 'gomp',  # ''
+    'darwin': '',  # 'omp'
 }
 
 build_platform = platform.system().lower()
@@ -139,8 +139,9 @@ disable_omp = os.environ.get('PY_NO_OMP')
 if disable_omp is None:
     # Enforce platform-dependent default OpenMP library choice.
     default_libomp = OPENMP_LIB_CHOICES[build_platform]
+    default_ldflags_omp = '-l' + default_libomp if default_libomp else ''
 
-    ldflag_omp = os.environ.get('PY_LDOMP', '-l' + default_libomp)
+    ldflags_omp = os.environ.get('PY_LDOMP', default_ldflags_omp).split()
 
     # Ensure OpenMP options are enabled (by default).
     for _cflag in ['-fopenmp', '-DTRV_USE_OMP', '-DTRV_USE_FFTWOMP']:
@@ -148,7 +149,7 @@ if disable_omp is None:
             cflags.append(_cflag)
 
     # Ensure OpenMP-related libraries are linked (by default).
-    for _ldflag in ['-lfftw3_omp', ldflag_omp]:
+    for _ldflag in ['-lfftw3_omp',] + ldflags_omp:  # noqa: E231
         if _ldflag not in ldflags:
             ldflags.append(_ldflag)
 
