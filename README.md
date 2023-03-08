@@ -69,9 +69,9 @@ To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to
 the end of the second line as shown above.
 
 > :warning: Ensure your C++ compiler has OpenMP support and is configured
-  accordingly. See the [Installation](
-  https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
-  page in the documentation.
+> accordingly. See the [Installation](
+> https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
+> page in the documentation.
 
 The latest release is on the
 [``main``](https://github.com/MikeSWang/Triumvirate/tree/main) branch.
