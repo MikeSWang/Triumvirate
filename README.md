@@ -125,4 +125,4 @@ https://www.gnu.org/licenses/gpl-3.0.en.html). Please see
 [``LICENCE``](LICENCE) (located at the repository directory root) for
 full terms and conditions.
 
-&copy; 2023 MS Wang & NS Sugiyama
+&copy; 2023 Mike S Wang & Naonori S Sugiyama
