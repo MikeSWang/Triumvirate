@@ -17,6 +17,9 @@ PROJ_NAME=triumvirate
 # Set the ``docs`` directory (the working directory).
 DOCS_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
+# Set the project repository directory.
+ROOT_DIR=${DOCS_DIR}/..
+
 # Set Doxygen configuration file.
 DOXYFILE=./source/Doxyfile.conf
 DOXYFILE_SPHINX=./source/Doxyfile
@@ -105,6 +108,7 @@ fi
 
 # Prepare static assets.
 cp -r ${PKG_RESOURCES_DIR}/* ${STAT_DIR}
+cp ${ROOT_DIR}/Makefile ${STAT_DIR}
 
 # Build Doxygen docs.
 if [[ "$excl" != 'doxy' ]]; then

@@ -62,7 +62,7 @@ Then to compile, run:
 Here ``cppinstall`` builds both a static library and a binary executable,
 ``cpplibinstall`` only the former and ``cppappbuild`` only the latter.
 To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to
-the end of the second line as shown above.
+the end of the second line as shown above; see also '`OpenMP support`_' below.
 
 By default, the static library is compiled to ``build/lib/libtrv.a`` and the
 binary executable is compiled to ``build/bin/triumvirate`` in the repository
@@ -93,17 +93,76 @@ where ``install`` builds both and ``pyinstall``/``cppinstall`` is for
 Python/C++ build only; you may also replace this with ``cpplibinstall`` or
 ``cppappbuild`` as above to compile the C++ static library or binary executable
 only. Again, to enable OpenMP parallelisation, append ``useomp=true`` or
-``useomp=1`` to the end of the second line as shown above.
+``useomp=1`` to the end of the second line as shown above; see also
+'`OpenMP support`_' below.
 
-The latest release is on the ``main`` branch. The default ``Makefile``
+The latest release is on the |main|_ branch. The default |Makefile|_
 (located at the repository diretory root) suits most use cases, but you may
 modify it as appropriate for your need.
+
+
+OpenMP support
+==============
+
+.. attention::
+
+    Building the C++ program, and the Python package in development mode,
+    requires a C++ compiler with OpenMP support. On Linux platforms,
+    the GNU compiler with libgomp should suffice; by contrast, macOS
+    systems may not come with OpenMP-supported compilers.
+
+On Linux platforms, we recommend setting the following environmental variables
+for building with OpenMP:
+
+.. code-block:: console
+    :caption: Linux
+
+    # Optional: only if `CXX` previously set to a non-GNU compiler.
+    $ export CXX=g++
+    $ export CFLAGS="$CFLAGS -fopenmp"
+    # Optional: only if `-fopenmp` alone does not link properly.
+    $ export LDFLAGS="$LDFLAGS -lgomp"
+
+On macOS systems, we recommend one first installs using Homebrew either
+the GNU compiler or the LLVM compiler plus libomp,
+
+.. code-block:: console
+    :caption: macOS
+
+    $ brew install gcc          # GNU compiler; or
+    $ brew install llvm libomp  # LLVM compiler with libomp
+
+and then set the environmental variables,
+
+.. tabs::
+
+    .. code-tab:: console macOS with GNU compiler
+
+        # HINT: assuming version 11 for brew formula 'gcc'
+        $ export CXX=$(brew --prefix gcc)/bin/g++-11
+        $ export CFLAGS="$CFLAGS -fopenmp"
+
+    .. code-tab:: console macOS with LLVM compiler plus libomp
+
+        $ export CXX=$(brew --prefix llvm)/bin/clang++
+        $ export CFLAGS="$CFLAGS -Xpreprocessor -fopenmp"
+        $ export LDFLAGS="$LDFLAGS -L$(brew --prefix libomp)/lib -lomp"
+
+These are the instructions for general OpenMP compilation; for the OpenMP
+build of |Triumvirate|, see the corresponding full instructions in the
+default |Makefile|_ (located at the repository diretory root).
 
 
 .. |Triumvirate| raw:: html
 
     <span style="font-variant: small-caps">Triumvirate</span>
 
+
+.. |main| replace:: ``main``
+.. _main: https://github.com/MikeSWang/Triumvirate/tree/main
+
+.. |Makefile| replace:: ``Makefile``
+.. _Makefile: _static/Makefile
 
 .. |br| raw:: html
 

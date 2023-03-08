@@ -68,9 +68,15 @@ Python/C++ build only; you may also replace this with ``cpplibinstall`` or
 To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to
 the end of the second line as shown above.
 
-The latest release is on the ``main`` branch. The default ``Makefile``
-(located at the repository directory root) suits most use cases, but you may
-modify it as appropriate for your need.
+> :warning: Ensure your C++ compiler has OpenMP support and is configured
+  accordingly. See the [Installation](
+  https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
+  page in the documentation.
+
+The latest release is on the
+[``main``](https://github.com/MikeSWang/Triumvirate/tree/main) branch.
+The default [``Makefile``](Makefile) (located at the repository directory root)
+suits most use cases, but you may modify it as appropriate for your need.
 
 
 ## Attribution
@@ -116,7 +122,7 @@ Changes in current and past releases are listed in the
 
 ``Triumvirate`` is made freely available under the [GPL-3.0 licence](
 https://www.gnu.org/licenses/gpl-3.0.en.html). Please see
-``LICENCE`` (located at the repository directory root) for full terms
-and conditions.
+[``LICENCE``](LICENCE) (located at the repository directory root) for
+full terms and conditions.
 
 &copy; 2023 MS Wang & NS Sugiyama
