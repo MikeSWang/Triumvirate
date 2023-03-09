@@ -15,9 +15,7 @@ def logger():
     return setup_logger()
 
 
-@pytest.mark.skip(
-    reason="Only succeeds when `pytest` is run with ``-s`` or ``--capture=no``"
-)
+@pytest.mark.no_capture
 def test_setup_logger_formatter(logger, capfd):
     # Test logging formatter with C++ code state indication.
     logger.info("Test log entry.", cpp_state=True)
