@@ -7,14 +7,18 @@ assignees: MikeSWang
 
 ---
 
-**Is the requested feature related to an issue?**
+## Is the requested feature related to an issue?
+
 If so, please give a clear and concise description of what the problem is, e.g. "I'm always frustrated when...".
 
-**Describe the feature**
+## Describe the feature
+
 A clear and concise description of what you want to happen.
 
-**Describe alternatives**
+## Describe alternatives
+
 A clear and concise description of any alternative solutions or features you've considered.
 
-**Additional context**
+## Additional context
+
 Add any other context about the feature request here.
