@@ -3,6 +3,7 @@
 """
 import os
 import platform
+from multiprocessing import cpu_count
 from setuptools import setup
 from setuptools.command.build_clib import build_clib
 
@@ -56,6 +57,15 @@ class BuildExt(build_ext):
     """Modified :class:`Cython.Distutils.build_ext`.
 
     """
+    def finalize_options(self):
+
+        build_ext.finalize_options(self)
+
+        # Set unset parallel option to integer `num_procs` through
+        # the environmental variable 'PY_BUILD_PARALLEL'.
+        if self.parallel is None and num_procs is not None:
+            self.parallel = num_procs
+
     def build_extensions(self):
         """Modify compiler and compilation configuration in
         :meth:`Cython.Distutils.build_ext.build_extensions`.
@@ -68,11 +78,14 @@ class BuildExt(build_ext):
         if '-Wstrict-prototypes' in self.compiler.compiler_so:
             self.compiler.compiler_so.remove('-Wstrict-prototypes')
 
+        if isinstance(self.parallel, int):
+            print(f"running build_ext with {num_procs} processes")
+
         super().build_extensions()
 
 
 class BuildClib(build_clib):
-    """Modified :class:`setuptools.command.build_clib`.
+    """Modified :class:`setuptools.command.build_clib.build_clib`.
 
     """
     def build_libraries(self, libraries):
@@ -152,6 +165,18 @@ if disable_omp is None:
     for _ldflag in ['-lfftw3_omp',] + ldflags_omp:  # noqa: E231
         if _ldflag not in ldflags:
             ldflags.append(_ldflag)
+
+# Add optional parallelisation for build jobs.
+flag_parallel = os.environ.get('PY_BUILD_PARALLEL', '').strip()
+if '-j' == flag_parallel:
+    num_procs = cpu_count()
+elif '-j' in flag_parallel:
+    try:
+        num_procs = int(flag_parallel.lstrip('-j'))
+    except ValueError:
+        num_procs = None
+else:
+    num_procs = None
 
 
 # ========================================================================
@@ -285,7 +310,8 @@ cython_ext_modules = cythonize(
         define_extension(name, **cfg)
         for name, cfg in ext_module_configs.items()
     ],
-    compiler_directives=cython_directives
+    compiler_directives=cython_directives,
+    nthreads=num_procs,
 )
 
 

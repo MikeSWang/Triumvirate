@@ -211,7 +211,7 @@ cdef class ParameterSet:
             Top-level parameter names as dictionary keys.
 
         """
-        return self._params.items()
+        return self._params.keys()
 
     def items(self):
         """Return the set of entries like a :meth:`dict.items`.
