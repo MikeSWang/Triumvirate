@@ -270,7 +270,7 @@ cdef class ParameterSet:
         if filepath is None:
             filepath = Path(
                 self._params['directories']['measurements'],
-                "parameters_used{}".format(self._params['tags']['output'])
+                "parameters_used{}.yml".format(self._params['tags']['output'])
             )
 
         with open(filepath, 'w') as printout_file:
@@ -300,6 +300,7 @@ cdef class ParameterSet:
         # Attribute string parameters.
         try:
             if self._params['directories']['catalogues'] is None:
+                self._params['directories']['catalogues'] = ""
                 self.thisptr.catalogue_dir = "".encode('utf-8')
             else:
                 self.thisptr.catalogue_dir = \
@@ -309,6 +310,7 @@ cdef class ParameterSet:
 
         try:
             if self._params['directories']['measurements'] is None:
+                self._params['directories']['measurements'] = ""
                 self.thisptr.measurement_dir = "".encode('utf-8')
             else:
                 self.thisptr.measurement_dir = \
@@ -318,6 +320,7 @@ cdef class ParameterSet:
 
         try:
             if self._params['files']['data_catalogue'] is None:
+                self._params['files']['data_catalogue'] = ""
                 self.thisptr.data_catalogue_file = "".encode('utf-8')
             else:
                 self.thisptr.data_catalogue_file = \
@@ -327,6 +330,7 @@ cdef class ParameterSet:
 
         try:
             if self._params['files']['rand_catalogue'] is None:
+                self._params['files']['rand_catalogue'] = ""
                 self.thisptr.rand_catalogue_file = "".encode('utf-8')
             else:
                 self.thisptr.rand_catalogue_file = \
@@ -336,6 +340,7 @@ cdef class ParameterSet:
 
         try:
             if self._params['tags']['output'] is None:
+                self._params['tags']['output'] = ''
                 self.thisptr.output_tag = ''.encode('utf-8')
             else:
                 self.thisptr.output_tag = \

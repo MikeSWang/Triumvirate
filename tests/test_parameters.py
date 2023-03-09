@@ -7,6 +7,7 @@ from copy import deepcopy
 from pprint import pformat
 
 import pytest
+import yaml
 
 from triumvirate.parameters import InvalidParameterError
 from triumvirate.parameters import ParameterSet
@@ -407,3 +408,16 @@ def test_ParameterSet_print(valid_paramset, capsys):
     valid_paramset.print()
     assert pformat(dict(valid_paramset.items()), sort_dicts=False) \
         in capsys.readouterr().out, "Parameter set misprinted."
+
+
+def test_ParameterSet_save(valid_paramset, tmp_path):
+
+    param_filepath = tmp_path/"params_saved.yml"
+
+    valid_paramset.save(filepath=param_filepath)
+
+    with open(param_filepath, 'r') as param_file:
+        valid_param_dict = yaml.load(param_file, Loader=yaml.Loader)
+
+    assert dict(valid_paramset.items()) == valid_param_dict, \
+        "Loaded parameter set does not match the saved one."
