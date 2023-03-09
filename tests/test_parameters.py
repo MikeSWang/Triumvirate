@@ -4,6 +4,7 @@
 import warnings
 from collections.abc import Collection, Sequence
 from copy import deepcopy
+from pprint import pformat
 
 import pytest
 
@@ -158,7 +159,7 @@ def test_fetch_paramset_template(source, ret_defaults, default_parameters):
     # Check `template` agrees with an independent, private template
     # parameter dictionary.
     assert template == _TMPL_PARAM_DICT, \
-        "Fetched template parameters do not match records."
+        "Fetched template parameters do not match internal records."
 
     # Check `defaults`` are pre-set default parameters.
     assert defaults == default_parameters, (
@@ -194,7 +195,7 @@ def test_fetch_paramset_template(source, ret_defaults, default_parameters):
 
 
 @pytest.mark.parametrize(
-    'param_filepath, param_dict',
+    "param_filepath, param_dict",
     [
         ("src/triumvirate/resources/params_template.yml", None),
         (None, 'template_parameters_dict'),
@@ -243,7 +244,7 @@ def test_ParameterSet___init__(param_filepath, param_dict, request, tmp_path):
 
 
 @pytest.mark.parametrize(
-    'template_parameter_source',
+    "template_parameter_source",
     [
         'template_parameters_text',
         'template_parameters_dict',
@@ -287,3 +288,122 @@ def test_ParameterSet___getitem__(valid_paramset, default_parameters):
                 .format(key, valid_paramset[key], val),
                 category=RuntimeWarning
             )
+
+
+@pytest.mark.parametrize(
+    "param_name, param_value",
+    [
+        ('degrees', {'ell1': 2, 'ell2': 0, 'ELL': 2}),
+        ('interlace', True),
+    ]
+)
+def test_ParameterSet___setitem__(param_name, param_value, valid_paramset):
+
+    # Recreate mutable fixture `valid_paramset`.
+    _valid_paramset = ParameterSet(param_dict=dict(valid_paramset.items()))
+
+    # Parameter setting should not work when enabling interlacing
+    # for three-point statistics.
+    if _valid_paramset.npoint == '3pt' and param_name == 'interlace':
+        _valid_paramset[param_name] = param_value
+        with pytest.raises(AssertionError):
+            assert _valid_paramset[param_name] == param_value, \
+                "Parameter setting overriden."
+        _valid_paramset['statistic_type'] = 'powspec'
+
+    # Otherwise, parameter setting should work.
+    _valid_paramset[param_name] = param_value
+    assert _valid_paramset[param_name] == param_value, \
+        "Parameter set value setting failed."
+
+
+# Use default parameters to test the valid parameter set.
+def test_ParameterSet__getattr__(valid_paramset, default_parameters):
+    for attr, val in default_parameters.items():
+        # This is three tests in one: TypeError, KeyError and value comparison.
+        if getattr(valid_paramset, attr) != val:
+            warnings.warn(
+                "`valid_paramset` fixture does not match default parameters "
+                "for attribute '{}': {} != {}."
+                .format(attr, getattr(valid_paramset, attr), val),
+                category=RuntimeWarning
+            )
+
+
+@pytest.mark.parametrize(
+    "param_name, param_value",
+    [
+        ('degrees', {'ell1': 2, 'ell2': 0, 'ELL': 2}),
+        ('interlace', True),
+    ]
+)
+def test_ParameterSet___setattr__(param_name, param_value, valid_paramset):
+
+    # Recreate mutable fixture `valid_paramset`.
+    _valid_paramset = ParameterSet(param_dict=dict(valid_paramset.items()))
+
+    # Parameter setting should not work when enabling interlacing
+    # for three-point statistics.
+    if _valid_paramset.npoint == '3pt' and param_name == 'interlace':
+        setattr(_valid_paramset, param_name, param_value)
+        with pytest.raises(AssertionError):
+            assert getattr(_valid_paramset, param_name) == param_value, \
+                "Parameter setting overriden."
+        _valid_paramset.statistic_type = 'powspec'
+
+    # Otherwise, parameter setting should work.
+    setattr(_valid_paramset, param_name, param_value)
+    assert getattr(_valid_paramset, param_name) == param_value, \
+        "Parameter set value setting failed."
+
+
+def test_ParameterSet_names(valid_paramset):
+    # There are two derived parameters after validation, 'npoint' and 'space'.
+    assert (
+        set(valid_paramset.names()) - set(_TMPL_PARAM_DICT.keys())
+        == {'npoint', 'space'}
+    ), "Parameter set names do not match internal records."
+
+
+def test_ParameterSet_items(valid_paramset):
+    # There are two derived parameters after validation, 'npoint' and 'space'.
+    assert valid_paramset.items(), "Parameter set items not returned."
+
+
+@pytest.mark.parametrize(
+    "param_name, param_value",
+    [
+        ('npoint', '3pt'),
+        ('free_lunch', None),
+    ]
+)
+def test_ParameterSet_get(param_name, param_value, valid_paramset):
+    assert valid_paramset.get(param_name) == param_value, \
+        "Parameter set parameter not returned correctly."
+
+
+@pytest.mark.parametrize(
+    "update_args, update_kwargs",
+    [
+        ([dict(verbose=0)], {'catalogue_type': 'random'}),
+    ]
+)
+def test_ParameterSet_update(update_args, update_kwargs, valid_paramset):
+
+    # Recreate mutable fixture `valid_paramset`.
+    _valid_paramset = ParameterSet(param_dict=dict(valid_paramset.items()))
+    _valid_paramset.update(*update_args, **update_kwargs)
+
+    for update_arg in update_args:
+        for _name, _value in update_arg.items():
+            assert _valid_paramset.get(_name) == _value, \
+                "Parameter set update by positional argument failed."
+    for _name, _value in update_kwargs.items():
+        assert _valid_paramset.get(_name) == _value, \
+            "Parameter set update by keyword argument failed."
+
+
+def test_ParameterSet_print(valid_paramset, capsys):
+    valid_paramset.print()
+    assert pformat(dict(valid_paramset.items()), sort_dicts=False) \
+        in capsys.readouterr().out, "Parameter set misprinted."
