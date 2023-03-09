@@ -26,10 +26,10 @@ Steps to reproduce the behaviour, e.g.
 If applicable, append the traceback in _text_ format (not as screenshots) to help explain your problem.
 
 **Environment**
- - package version (e.g. 1.0.0)
+ - Package version (e.g. 1.0.0)
  - OS (e.g. Linux, macOS)
  - Python version (e.g. 3.8) and environment (e.g. conda)
  - C++ compiler version (e.g. GCC g++, LLVM clang++) and dependency libraries (e.g. ``libgomp``, ``libomp``)
 
 **Additional context**
-Add any other context about the problem here.
+Add any other context about the issue here.
