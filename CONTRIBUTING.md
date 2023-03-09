@@ -11,12 +11,13 @@ if you would like to contribute, please refer to
 Before reporting a new issue, please check it has not already been reported
 in [Issues](https://github.com/MikeSWang/Triumvirate/issues).
 
-If so, [open a new issue](https://github.com/MikeSWang/Triumvirate/issues/new)
-with a title and description including any relevant information. If possible,
-show a minimum (non-)working example as well as expected code behaviour.
+If so,
+[open a new issue](https://github.com/MikeSWang/Triumvirate/issues/new/choose)
+with one of the templates including any relevant information. If applicable,
+show a minimum (non-)working example as well as expected behaviour.
 
 If the issue relates to build/installation, please also include the
-information about your OS environment.
+information about your build environment.
 
 
 ## <a name="contribution"></a> Contributing
@@ -24,8 +25,8 @@ information about your OS environment.
 To make a contribution such as a bug fix or a feature, please fork
 ``Triumvirate`` into your GitHub repositories and clone it to your local
 machine. Always create a new branch for your edits and once complete,
-commit and push it to your forked repository. Finally, open a pull
-request.
+commit and push it to your forked repository. Finally, [open a pull
+request](https://github.com/MikeSWang/Triumvirate/pulls/compare).
 
 If ``Triumvirate`` has been updated while you are editing your forked copy,
 please merge the updated
