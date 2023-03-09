@@ -165,6 +165,7 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         params_default=defaults, ret_defaults=True
     )
 
+    # Implicitly validate parameters.
     paramset.update(type_kwargs)
 
     if defaults:

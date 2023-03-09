@@ -466,7 +466,17 @@ cdef class ParameterSet:
         # Transmuted I/O paths are not fetched.
         self._params['npoint'] = self.thisptr.npoint.decode('utf-8')
         self._params['space'] = self.thisptr.space.decode('utf-8')
-        self._params['interlace'] = self.thisptr.interlace.decode('utf-8')
+
+        _interlace = self.thisptr.interlace.decode('utf-8')
+        if _interlace.lower() == 'true':
+            self._params['interlace'] = True
+        elif _interlace.lower() == 'false':
+            self._params['interlace'] = False
+        else:
+            raise RuntimeError(
+                "C++ instance of trv::ParameterSet did not return "
+                "a recognised 'interlace' string in {'true', 'false'}."
+            )
 
         self._validity = True
 
