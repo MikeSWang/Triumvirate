@@ -169,15 +169,15 @@ cdef class Binning:
         self.bin_min, self.bin_max = bin_edges[0], bin_edges[-1]
         self.num_bins = len(bin_edges) - 1
 
-        self.bin_edges = bin_edges
+        self.bin_edges = np.array(bin_edges)
         self.bin_centres = np.add(bin_edges[:-1], bin_edges[1:]) / 2.
         self.bin_widths = np.subtract(bin_edges[1:], bin_edges[:-1])
 
         self.scheme = 'custom'
 
-        self.thisptr.bin_edges = self.bin_edges
-        self.thisptr.bin_centres = self.bin_centres
-        self.thisptr.bin_widths = self.bin_widths
+        self.thisptr.bin_min = self.bin_min
+        self.thisptr.bin_max = self.bin_max
+        self.thisptr.num_bins = self.num_bins
         self.thisptr.bin_edges = self.bin_edges
         self.thisptr.bin_centres = self.bin_centres
         self.thisptr.bin_widths = self.bin_widths
