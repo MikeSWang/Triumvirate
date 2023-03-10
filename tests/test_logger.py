@@ -1,9 +1,13 @@
+"""Test :mod:`~triumvirate.logger`.
+
+"""
 import re
 
 import pytest
 
 from triumvirate.logger import setup_logger
 
+# Define the RegEx expression for logging format.
 _LOG_FORMAT = (
     r"\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\s\(\+\d+:\d{2}:\d{2}\)\s\w{4}\]"
     r"\s.*\(in C\+\+\)"
@@ -24,7 +28,7 @@ def test_setup_logger_formatter(logger, capfd):
 
 
 def test_setup_logger_adapter(logger, caplog):
-    # Test logger C++ code state indication.
+    # Test logger C++ code state indication only.
     logger.info("Test log entry with C++ indication.", cpp_state=True)
     assert re.match(r'.*\(in C\+\+\)', caplog.text) is not None, \
         "No C++ indication shown by logger."
