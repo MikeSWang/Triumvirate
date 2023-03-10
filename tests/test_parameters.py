@@ -77,6 +77,11 @@ def make_template_parameters_valid(tmpl_params):
                 "num_bins:",
                 "num_bins: 10"
             ),
+            # Not necessary, but suppresses logging.
+            (
+                "verbose: 20",
+                "verbose: 60"
+            ),
         ]
 
         for _replacement in parameter_replacements:
@@ -97,6 +102,7 @@ def make_template_parameters_valid(tmpl_params):
             'degrees': {'ell1': 0, 'ell2': 0, 'ELL': 0},
             'range': [0.005, 0.105],
             'num_bins': 10,
+            'verbose': 60,  # unnecessary but suppresses logging
         })
 
         return param_dict
@@ -127,13 +133,6 @@ def template_parameters_text():
 @pytest.fixture(scope='module')
 def template_parameters_dict():
     return fetch_paramset_template('dict')
-
-
-@pytest.fixture(scope='module')
-def valid_paramset(template_parameters_dict):
-    return ParameterSet(
-        param_dict=make_template_parameters_valid(template_parameters_dict)
-    )
 
 
 @pytest.mark.parametrize(
@@ -206,7 +205,7 @@ def test_fetch_paramset_template(source, ret_defaults, default_parameters):
         ),
     ]
 )
-def test_ParameterSet___init__(param_filepath, param_dict, request, tmp_path):
+def test_ParameterSet___cinit__(param_filepath, param_dict, request, tmp_path):
 
     # Convert parametrized parameters to fixtures.
     if param_dict is not None:
@@ -280,7 +279,12 @@ def test_ParameterSet___str__(template_parameter_source, request, tmp_path):
 
 # Use default parameters to test the valid parameter set.
 def test_ParameterSet___getitem__(valid_paramset, default_parameters):
-    for key, val in default_parameters.items():
+
+    # Modify 'verbose' to suppress logging.
+    _default_parameters = dict(default_parameters.items())
+    _default_parameters.update(verbose=60)
+
+    for key, val in _default_parameters.items():
         # This is three tests in one: TypeError, KeyError and value comparison.
         if valid_paramset[key] != val:
             warnings.warn(
@@ -320,7 +324,12 @@ def test_ParameterSet___setitem__(param_name, param_value, valid_paramset):
 
 # Use default parameters to test the valid parameter set.
 def test_ParameterSet__getattr__(valid_paramset, default_parameters):
-    for attr, val in default_parameters.items():
+
+    # Modify 'verbose' to suppress logging.
+    _default_parameters = dict(default_parameters.items())
+    _default_parameters.update(verbose=60)
+
+    for attr, val in _default_parameters.items():
         # This is three tests in one: TypeError, KeyError and value comparison.
         if getattr(valid_paramset, attr) != val:
             warnings.warn(
@@ -386,7 +395,7 @@ def test_ParameterSet_get(param_name, param_value, valid_paramset):
 @pytest.mark.parametrize(
     "update_args, update_kwargs",
     [
-        ([dict(verbose=0)], {'catalogue_type': 'random'}),
+        ([dict(verbose=60)], {'catalogue_type': 'random'}),
     ]
 )
 def test_ParameterSet_update(update_args, update_kwargs, valid_paramset):
