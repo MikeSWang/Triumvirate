@@ -2,6 +2,7 @@
 # @brief `make` instructions for building and testing Triumvirate.
 # @authors Mike S Wang (https://github.com/MikeSWang)
 #
+
 # ========================================================================
 # Configuration
 # ========================================================================
@@ -146,7 +147,7 @@ endif  # useomp=(true|1)
 
 else  # useomp
 
-# NOTE: Not `undefine` for GitHub runner macOS `make` compatibility.
+# NOTE: Use `undefine` for make>=3.82.
 unexport useomp
 
 endif  # useomp
