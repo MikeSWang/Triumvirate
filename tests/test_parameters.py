@@ -9,10 +9,12 @@ from pprint import pformat
 import pytest
 import yaml
 
-from triumvirate.parameters import InvalidParameterError
-from triumvirate.parameters import ParameterSet
-from triumvirate.parameters import fetch_paramset_template
-from triumvirate.parameters import _TMPL_PARAM_DICT
+from triumvirate.parameters import (
+    InvalidParameterError,
+    ParameterSet,
+    fetch_paramset_template,
+    _TMPL_PARAM_DICT,
+)
 
 
 def make_template_parameters_valid(tmpl_params):
@@ -102,7 +104,7 @@ def make_template_parameters_valid(tmpl_params):
             'degrees': {'ell1': 0, 'ell2': 0, 'ELL': 0},
             'range': [0.005, 0.105],
             'num_bins': 10,
-            'verbose': 60,  # unnecessary but suppresses logging
+            'verbose': 60,  # not necessary but suppresses logging
         })
 
         return param_dict
@@ -277,7 +279,7 @@ def test_ParameterSet___str__(template_parameter_source, request, tmp_path):
     )
 
 
-# Use default parameters to test the valid parameter set.
+# Use `default_parameters` fixture to test the valid parameter set.
 def test_ParameterSet___getitem__(valid_paramset, default_parameters):
 
     # Modify 'verbose' to suppress logging.
@@ -322,7 +324,7 @@ def test_ParameterSet___setitem__(param_name, param_value, valid_paramset):
         "Parameter set value setting failed."
 
 
-# Use default parameters to test the valid parameter set.
+# Use `default_parameters` fixture to test the valid parameter set.
 def test_ParameterSet__getattr__(valid_paramset, default_parameters):
 
     # Modify 'verbose' to suppress logging.
