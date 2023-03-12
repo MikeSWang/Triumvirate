@@ -31,11 +31,11 @@ https://triumvirate.readthedocs.io/en/latest/).
 ### Python package
 
 [![PyPI](https://img.shields.io/pypi/v/Triumvirate?logo=PyPI&color=informational)](https://pypi.org/project/Triumvirate)
-[![conda](https://img.shields.io/conda/vn/conda-forge/triumvirate?logo=conda-forge)](https://anaconda.org/conda-forge/triumvirate)
+[![conda](https://img.shields.io/conda/vn/msw/triumvirate?logo=Anaconda&color=informational)](https://anaconda.org/msw/triumvirate)
 
 ``Triumvirate`` as a Python package is distributed through [PyPI](
-https://pypi.org/project/Triumvirate) and [conda-forge](
-https://anaconda.org/conda-forge/triumvirate). Instructions for installation
+https://pypi.org/project/Triumvirate) and [conda](
+https://anaconda.org/msw/triumvirate). Instructions for installation
 can be found on the [Installation](
 https://triumvirate.readthedocs.io/en/latest/installation.html#python-package)
 page in the documentation.
@@ -51,13 +51,14 @@ page in the documentation.
 ### Development mode
 
 Both the Python package and the C++ library/program can be set up in
-development mode with `make`. First `git clone` this repository and
-`git checkout` the branch/release you would like to edit:
+development mode with `make`. First check the required dependencies,
+namely the GSL and FFTW3 libraries, are installed. Then `git clone` the
+GitHub repository and `git checkout` the branch/release to be edited:
 ```console
 $ git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
 $ cd Triumvirate
 ```
-Then at the repository directory root run
+Then at the repository directory root, run
 ```console
 $ make clean
 $ make [py|cpp]install [useomp=(true|1)]
@@ -68,10 +69,19 @@ Python/C++ build only; you may also replace this with ``cpplibinstall`` or
 To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to
 the end of the second line as shown above.
 
+> :point-right: See the [Installation](
+> https://triumvirate.readthedocs.io/en/latest/installation.html#dependencies)
+> page in the documentation for more details about the required dependencies.
+
 > :warning: Ensure your C++ compiler has OpenMP support and is configured
-> accordingly. See the [Installation](
+> accordingly. The default [``Makefile``](Makefile) (located at the repository
+> directory root) assumes the GNU compiler. See the [Installation](
 > https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
-> page in the documentation.
+> page in the documentation for more details.
+
+> :point-right: Pass option ``-j[N] -O`` to `make` to run multiple concurrent
+> jobs (optional ``N`` is the number of parallel jobs; see
+> [GNU Make Manual](https://www.gnu.org/software/make/manual/html_node/Options-Summary.html)).
 
 The latest release is on the
 [``main``](https://github.com/MikeSWang/Triumvirate/tree/main) branch.
