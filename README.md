@@ -69,7 +69,7 @@ Python/C++ build only; you may also replace this with ``cpplibinstall`` or
 To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to
 the end of the second line as shown above.
 
-> :point-right: See the [Installation](
+> :bulb: See the [Installation](
 > https://triumvirate.readthedocs.io/en/latest/installation.html#dependencies)
 > page in the documentation for more details about the required dependencies.
 
@@ -79,7 +79,7 @@ the end of the second line as shown above.
 > https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
 > page in the documentation for more details.
 
-> :point-right: Pass option ``-j[N] -O`` to `make` to run multiple concurrent
+> :bulb: Pass option ``-j[N] -O`` to `make` to run multiple concurrent
 > jobs (optional ``N`` is the number of parallel jobs; see
 > [GNU Make Manual](https://www.gnu.org/software/make/manual/html_node/Options-Summary.html)).
 
