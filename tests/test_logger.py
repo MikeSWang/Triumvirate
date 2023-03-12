@@ -15,20 +15,20 @@ _LOG_FORMAT = (
 
 
 @pytest.fixture(scope='module')
-def logger():
+def test_logger():
     return setup_logger()
 
 
 @pytest.mark.no_capture
-def test_setup_logger_formatter(logger, capfd):
+def test_setup_logger_formatter(test_logger, capfd):
     # Test logging formatter with C++ code state indication.
-    logger.info("Test log entry.", cpp_state=True)
+    test_logger.info("Test log entry.", cpp_state=True)
     assert re.match(_LOG_FORMAT, capfd.readouterr().out) is not None, \
         "Misformatted logging."
 
 
-def test_setup_logger_adapter(logger, caplog):
+def test_setup_logger_adapter(test_logger, caplog):
     # Test logger C++ code state indication only.
-    logger.info("Test log entry with C++ indication.", cpp_state=True)
+    test_logger.info("Test log entry with C++ indication.", cpp_state=True)
     assert re.match(r'.*\(in C\+\+\)', caplog.text) is not None, \
         "No C++ indication shown by logger."

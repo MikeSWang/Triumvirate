@@ -51,7 +51,7 @@ jobs:
             CXX_FILE=$(ls ${CXX_DIR} | grep '^g++')
             export CXX=${CXX_DIR}/${CXX_FILE}
           fi
-          make clean; make -j -l install useomp=true
+          make clean; make -j -O install useomp=true
 
       - name: Validate build/installation
         run: python -c "import triumvirate.threept"

@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from triumvirate.logger import setup_logger
 from triumvirate.parameters import ParameterSet
 
 
@@ -64,6 +65,11 @@ def test_param_dir(test_input_dir):
 @pytest.fixture(scope='session')
 def test_ctlg_dir(test_input_dir):
     return test_input_dir/"catalogues"
+
+
+@pytest.fixture(scope='session')
+def logger():
+    return setup_logger()
 
 
 @pytest.fixture(scope='session')

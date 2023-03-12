@@ -42,8 +42,9 @@ DIR_PKG_SRCMODULES := ${DIR_PKG_SRC}/modules
 # Make Options
 # ------------------------------------------------------------------------
 
-# Extract the '-j' or '--jobs' option (possibly empty).
-MAKEFLAGS_JOBS=$(shell echo "${MAKEFLAGS} " | grep -Eo "\-j[[:digit:][:space:]]")
+# Extract the '-j' or '--jobs' option (possibly empty). Note the space
+# added after ``${MAKEFLAGS}``.
+MAKEFLAGS_JOBS=$(shell echo "${MAKEFLAGS} " | grep -Eo "\-j[[:digit:][:space:]]*[^a-z[:punct:]]")
 
 
 # ------------------------------------------------------------------------
