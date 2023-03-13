@@ -90,7 +90,6 @@ class ParticleCatalogue:
     def __init__(self, x, y, z, nz=None, ws=1., wc=1., logger=None):
 
         self._logger = logger
-        self._source = 'extdata'
 
         # Initialise particle data (with 'astropy').
         if nz is None:
@@ -114,6 +113,8 @@ class ParticleCatalogue:
             self._backend = 'nbodykit'
         else:
             self._backend = 'astropy'
+
+        self._source = 'extdata:{}'.format(id(self._pdata))
 
         # Compute catalogue properties.
         self._calc_bounds(init=True)
@@ -143,11 +144,11 @@ class ParticleCatalogue:
             catalogue file; else if 'nbodykit', child classes of
             |FileCatalogBase| is used (if :mod:`nbodykit` is available).
         names : sequence of str, list of tuple or :class:`numpy.dtype`, \
-                int or str, optional
+                optional
             Catalogue file field names or data types.  If `None`
             (default), the header in the file may be used to infer the
-            field names or data types.  Cannot be `None` if
-            ``reader='nbodykit'``.  See the note below for more details.
+            field names or data types.  See the note below for
+            more details.
         format : str, optional
             File format specifier (default is 'ascii.no_header' for
             default `reader` value 'astropy').  See the note below for
@@ -155,8 +156,7 @@ class ParticleCatalogue:
         name_mapping : dict of {str: str}, optional
             Mapping between any of the default column names 'x', 'y', 'z',
             'nz', 'ws' and 'wc' (keys) and the corresponding field names
-            (values) in `names` (default is `None`). Used only
-            when ``reader='astropy'``.
+            (values) in `names` (default is `None`).
         table_kwargs : dict, optional
             Keyword arguments to be passed to
             :attr:`astropy.table.Table.read` (default is `None`).
@@ -174,8 +174,6 @@ class ParticleCatalogue:
         >>> ParticleCatalogue.read_from_file(
         ...     filepath,
         ...     reader='astropy',
-        ...     # Original data column names in file
-        ...     names=['X', 'Y', 'Z', 'NZ', 'WEIGHT_SYS', 'WEIGHT_FKP'],
         ...     format='fits',
         ...     # Match original data column names to the default names.
         ...     name_mapping={
@@ -186,11 +184,9 @@ class ParticleCatalogue:
         >>> ParticleCatalogue.read_from_file(
         ...     filepath,
         ...     reader='nbodykit',
-        ...     # `names` as the `root` argument passed to `HDFCatalog`
-        ...     names='particles',
-        ...     format='hdf',
-        ...     # `exclude` keyword argument passed to `HDFCatalog`
-        ...     file_kwargs={'exclude': 'irrelevant_data'}
+        ...     format='hdf5',
+        ...     # `root` keyword argument is passed to `HDFCatalog`.
+        ...     file_kwargs={root='particles'}
         ... )
 
 
@@ -199,22 +195,21 @@ class ParticleCatalogue:
 
             For ``reader='astropy'``, supported `format` can be found in
             `'Built-In Table Readers/Writers'`_, and `names` correspond to
-            the ``names`` argument (sequence of str) in
-            :attr:`astropy.table.Table.read`.  See |Table| for more
-            details.
+            the ``names`` keyword argument (sequence of str) in
+            :attr:`astropy.table.Table.read` for a subset of formats.
+            See |Table| for more details including appropriate
+            `table_kwargs`.
 
             For ``reader='nbodykit'``, supported `format` and the
             argument corresponding to `names` are---
 
             - ``'text'`` and ``names`` (sequence of str): plain-text files
               read in by |CSVCatalog|;
-            - ``'fits'`` and ``ext`` (int or str): FITS files read in
-              by |FITSCatalog|;
             - ``'binary'`` and ``dtype`` (list of tuple or
               :class:`numpy.dtype`): binary files read in
               by |BinaryCatalog|;
-            - ``'hdf'`` and ``root`` (str): HDF files read in
-              by |HDFCatalog|.
+            - ``'hdf5'`` and not applicable: HDF files read in
+              by |HDFCatalog| (pass `file_kwargs` as appropriate).
 
             See `'Reading Catalogs from Disk'`_ for more details.
 
@@ -283,24 +278,37 @@ class ParticleCatalogue:
             if format == 'text':
                 self._pdata = CSVCatalog(filepath, names, **file_kwargs)
             elif format == 'fits':
-                self._pdata = FITSCatalog(filepath, ext=names, **file_kwargs)
+                raise ValueError(
+                    "'nbodykit' FITS reader is broken. "
+                    "Use 'astropy' FITS reader instead."
+                )
             elif format == 'binary':
                 self._pdata = \
                     BinaryCatalog(filepath, dtype=names, **file_kwargs)
-            elif format == 'hdf':
-                self._pdata = HDFCatalog(filepath, root=names, **file_kwargs)
+            elif format == 'hdf5':
+                self._pdata = HDFCatalog(filepath, **file_kwargs)
             else:
                 raise ValueError(
                     "Unsupported `format` for ``reader='nbodykit'``: {}."
                     .format(filepath)
                 )
 
+            if name_mapping:
+                for name_, name_alt_ in name_mapping.items():
+                    self._pdata[name_] = self._pdata[name_alt_]
+                    try:
+                        del self._pdata[name_alt_]
+                    except ValueError:
+                        pass
+
         if self._backend == 'astropy':
             if table_kwargs is None:
                 table_kwargs = {}
+            if format.startswith('ascii'):
+                table_kwargs.update(names=names)
 
             self._pdata = Table.read(
-                filepath, format=format, names=names, **table_kwargs
+                filepath, format=format, **table_kwargs
             )
 
             if name_mapping:
@@ -359,6 +367,9 @@ class ParticleCatalogue:
                 object.__str__(self).split()[-1].lstrip().rstrip('>')
             )
 
+    def __len__(self):
+        return len(self._pdata)
+
     def __getitem__(self, key):
         """Return data entry.
 
@@ -390,15 +401,6 @@ class ParticleCatalogue:
             self._pdata[key] = val
         else:
             raise ValueError('Cannot set values for non-string-type key.')
-
-    def __len__(self):
-        return len(self._pdata)
-
-    def __iter__(self):
-        return self._pdata.__iter__()
-
-    def __next__(self):
-        return self._pdata.__next__()
 
     def compute_los(self):
         """Compute the line of sight to each particle.
