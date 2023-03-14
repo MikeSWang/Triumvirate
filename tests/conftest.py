@@ -66,12 +66,12 @@ def test_param_dir(test_input_dir):
 
 @pytest.fixture(scope='session')
 def test_ctlg_dir(test_input_dir):
-    return test_input_dir/"catalogues"
+    return test_input_dir/"ctlgs"
 
 
 @pytest.fixture(scope='session')
 def test_stats_dir(test_input_dir):
-    return test_input_dir/"statistics"
+    return test_input_dir/"stats"
 
 
 @pytest.fixture(scope='session')
@@ -99,7 +99,7 @@ def valid_paramset():
 
 
 @pytest.fixture(scope='session')
-def test_paramset():
+def test_paramset(test_param_dir):
     return ParameterSet(param_filepath=test_param_dir/"test_params.yml")
 
 
@@ -114,7 +114,13 @@ def test_catalogue_properties():
 
 
 @pytest.fixture(scope='session')
-def test_data_catalogue(test_catalogue_properties):
+def test_data_catalogue(test_ctlg_dir, test_catalogue_properties):
+
+    if (test_ctlg_dir/"test_data_catalogue.txt").exists():
+        return ParticleCatalogue.read_from_file(
+            test_ctlg_dir/"test_data_catalogue.txt",
+            names=['x', 'y', 'z', 'nz']
+        )
 
     R = test_catalogue_properties['separation']
     L = test_catalogue_properties['boxsize']
@@ -128,7 +134,13 @@ def test_data_catalogue(test_catalogue_properties):
     return ParticleCatalogue(x, y, z, nz=nz)
 
 
-def test_rand_catalogue(test_catalogue_properties):
+def test_rand_catalogue(test_ctlg_dir, test_catalogue_properties):
+
+    if (test_ctlg_dir/"test_rand_catalogue.txt").exists():
+        return ParticleCatalogue.read_from_file(
+            test_ctlg_dir/"test_rand_catalogue.txt",
+            names=['x', 'y', 'z', 'nz']
+        )
 
     alpha = test_catalogue_properties['contrast']
     L = test_catalogue_properties['boxsize']
