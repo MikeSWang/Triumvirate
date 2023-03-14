@@ -117,7 +117,6 @@ def test_ParticleCatalogue___init__(x, y, z, nz, ws, wc, logger):
             }
         ),
     ]
-
 )
 def test_ParticleCatalogue_read_from_file(filename, reader, format,
                                           names, name_mapping, test_ctlg_dir):
@@ -132,10 +131,14 @@ def test_ParticleCatalogue_read_from_file(filename, reader, format,
         reader=reader, names=names, format=format, name_mapping=name_mapping
     )
     for axis in ['x', 'y', 'z']:
-        assert catalogue[axis] == SAMPLE_COORDS[axis]
-    assert catalogue['nz'] == np.ones(CONST_LEN) * SAMPLE_NZ
-    assert catalogue['ws'] == np.ones(CONST_LEN) * SAMPLE_WSYS
-    assert catalogue['wc'] == np.ones(CONST_LEN) * SAMPLE_WFKP
+        assert catalogue[axis] == SAMPLE_COORDS[axis], \
+            "Loaded catalogue particle coordinates do not match."
+    assert catalogue['nz'] == np.ones(CONST_LEN) * SAMPLE_NZ, \
+        "Loaded catalogue particle number density column does not match."
+    assert catalogue['ws'] == np.ones(CONST_LEN) * SAMPLE_WSYS, \
+        "Loaded catalogue particle sample weight column does not match."
+    assert catalogue['wc'] == np.ones(CONST_LEN) * SAMPLE_WFKP, \
+        "Loaded catalogue particle clustering weight column does not match."
 
 
 def test_ParticleCatalogue___str__(minimal_catalogue):
@@ -206,7 +209,7 @@ def test_ParticleCatalogue_centre(boxsize, ref_catalogue, extents,
     assert all([
         np.allclose(minimal_catalogue.bounds[axis], extents[axis])
         for axis in ['x', 'y', 'z']
-    ])
+    ]), "Catalogue particles are not centred correctly in the box."
 
 
 @pytest.mark.parametrize(
@@ -255,7 +258,7 @@ def test_ParticleCatalogue_pad(boxsize, ngrid, boxsize_pad, ngrid_pad,
     assert all([
         np.allclose(minimal_catalogue.bounds[axis], extents[axis])
         for axis in ['x', 'y', 'z']
-    ])
+    ]), "Catalogue particles are not padded correctly in the box."
 
 
 @pytest.mark.parametrize(
@@ -277,7 +280,7 @@ def test_ParticleCatalogue_periodise(boxsize, extents, minimal_catalogue):
     assert all([
         np.allclose(minimal_catalogue.bounds[axis], extents[axis])
         for axis in ['x', 'y', 'z']
-    ])
+    ]), "Catalogue particle coordinates do not satisfy periodicity."
 
 
 @pytest.mark.parametrize(
@@ -294,7 +297,7 @@ def test_ParticleCatalogue_offset_coords(origin, extents, minimal_catalogue):
     assert all([
         np.allclose(minimal_catalogue.bounds[axis], extents[axis])
         for axis in ['x', 'y', 'z']
-    ])
+    ]), "Catalogue particle coordinates are not offset correctly."
 
 
 @pytest.mark.parametrize(

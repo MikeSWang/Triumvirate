@@ -36,7 +36,6 @@ def test_Binning_from_parameter_set(valid_paramset):
     ]
 )
 def test_Binning_set_bins(bin_min, bin_max, num_bins, default_binning):
-
     default_binning.set_bins(bin_min, bin_max, num_bins)
     assert np.allclose(
         default_binning.bin_edges,
