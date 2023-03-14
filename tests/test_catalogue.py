@@ -73,14 +73,14 @@ def test_ParticleCatalogue___init__(x, y, z, nz, ws, wc, logger):
             'astropy',
             'ascii.no_header',
             ['x', 'y', 'z', 'nz', 'ws', 'wc'],
-            None
+            None,
         ),
         (
             "sample_catalogue.txt",
             'nbodykit',
             'text',
             ['x', 'y', 'z', 'nz', 'ws', 'wc'],
-            None
+            None,
         ),
         (
             "sample_catalogue.fits",
@@ -90,7 +90,7 @@ def test_ParticleCatalogue___init__(x, y, z, nz, ws, wc, logger):
             {
                 'x': 'X', 'y': 'Y', 'z': 'Z',
                 'nz': 'NZ', 'ws': 'WEIGHT_SYS', 'wc': 'WEIGHT_FKP'
-            }
+            },
         ),
         (
             "sample_catalogue.dat",
@@ -104,7 +104,7 @@ def test_ParticleCatalogue___init__(x, y, z, nz, ws, wc, logger):
             {
                 'x': 'X', 'y': 'Y', 'z': 'Z',
                 'nz': 'NZ', 'ws': 'WEIGHT_SYS', 'wc': 'WEIGHT_FKP'
-            }
+            },
         ),
         (
             "sample_catalogue.h5",
@@ -114,7 +114,7 @@ def test_ParticleCatalogue___init__(x, y, z, nz, ws, wc, logger):
             {
                 'x': 'X', 'y': 'Y', 'z': 'Z',
                 'nz': 'NZ', 'ws': 'WEIGHT_SYS', 'wc': 'WEIGHT_FKP'
-            }
+            },
         ),
     ]
 )
@@ -167,11 +167,11 @@ def test_ParticleCatalogue_compute_los(minimal_catalogue):
 
 @pytest.mark.parametrize(
     "volume, boxsize, nz",
-    (
-        [1.e3, None, CONST_NZ],
-        [None, 10., CONST_NZ],
-        [None, [10.,]*3, CONST_NZ],  # noqa: E231
-    )
+    [
+        (1.e3, None, CONST_NZ),
+        (None, 10., CONST_NZ),
+        (None, [10.,]*3, CONST_NZ),  # noqa: E231
+    ]
 )
 def test_ParticleCatalogue_compute_mean_density(
     volume, boxsize, nz, minimal_catalogue
@@ -271,7 +271,7 @@ def test_ParticleCatalogue_pad(boxsize, ngrid, boxsize_pad, ngrid_pad,
                     ['x', 'y', 'z'],
                     [[CONST_COORDS % 0.3,]*2]*3  # noqa: E231
                 )
-            )
+            ),
         ),
     ]
 )
@@ -304,7 +304,7 @@ def test_ParticleCatalogue_offset_coords(origin, extents, minimal_catalogue):
     "ref_catalogue",
     [
         'minimal_catalogue_paired',
-        None
+        None,
     ]
 )
 def test_ParticleCatalogue_write_attrs_as_header(ref_catalogue,

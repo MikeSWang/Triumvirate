@@ -29,9 +29,9 @@ boxsize:
 
 # Grid cell number in each dimension. [mandatory]
 ngrid:
-  x: 64
-  y: 64
-  z: 64
+  x: 384
+  y: 384
+  z: 384
 
 # Box alignment: {'centre' (default), 'pad'}.
 alignment: centre
@@ -43,7 +43,7 @@ padscale: box
 padfactor: ~
 
 # Mesh assignment scheme: {'ngp', 'cic', 'tsc' (default), 'pcs'}.
-assignment: cic
+assignment: tsc
 
 # Interlacing switch: {true/on, false/off (default))}.
 # The switch is overriden to `false` when measuring three-point statistics.
@@ -62,17 +62,17 @@ statistic_type:
 
 # Degrees of the multipoles. [optional, optional, mandatory]
 degrees:
-  ell1: 0
-  ell2: 0
+  ell1:
+  ell2:
   ELL: 0
 
 # Orders of wide-angle corrections.
 wa_orders:
-  i: 1
-  j: 0
+  i:
+  j:
 
 # Form of the three-point statistic measurements: {'full', 'diag' (default)}.
-form: diag
+form:
 
 # Normalisation convention: {'particle' (default), 'mesh'}.
 norm_convention: particle
@@ -84,14 +84,14 @@ binning: lin
 # as a list.
 # The binning coordinate is either wavenumbers (in h/Mpc) in Fourier space,
 # or separations (in Mpc/h) in configuration space. [mandatory]
-range: [~, ~]
+range: [0.005, 0.105]
 
 # Number of measurement bins (i.e. data vector dimension).
 # Must be >=2, or >=7 if padding is used in binning. [mandatory]
-num_bins: 10
+num_bins: 4
 
 # Fixed bin index in the full (2-d) three-point statistics measurements.
-idx_bin: 0
+idx_bin:
 
 
 # -- Misc ----------------------------------------------------------------
@@ -101,6 +101,6 @@ idx_bin: 0
 #   0 (NSET, unset), 10 (DBUG, debug), 20 (STAT, status) (default),
 #   30 (INFO, info), 40 (WARN, warning), 50 (ERRO, error)
 # }.
-verbose: 10
+verbose: 20
 
 ...

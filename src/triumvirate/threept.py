@@ -113,7 +113,7 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
     """
     if paramset is None and params_sampling is None:
         raise ValueError(
-            "Either `paramset` or `params_sampling` must be provided."
+            "Either `paramset` or `sampling_params` must be provided."
         )
     if paramset is None and None in [degrees, binning, form]:
         raise ValueError(

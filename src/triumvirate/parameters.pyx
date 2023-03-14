@@ -420,17 +420,17 @@ cdef class ParameterSet:
         if self._params['catalogue_type'] is not None:
             self.thisptr.catalogue_type = \
                 self._params['catalogue_type'].lower().encode('utf-8')
-        else:
-            raise InvalidParameterError(
-                "`catalogue_type` parameter must be set."
-            )
+        # else:
+        #     raise InvalidParameterError(
+        #         "`catalogue_type` parameter must be set."
+        #     )
         if self._params['statistic_type'] is not None:
             self.thisptr.statistic_type = \
                 self._params['statistic_type'].lower().encode('utf-8')
-        else:
-            raise InvalidParameterError(
-                "`statistic_type` parameter must be set."
-            )
+        # else:
+        #     raise InvalidParameterError(
+        #         "`statistic_type` parameter must be set."
+        #     )
 
         if self._params['form'] is not None:
             self.thisptr.form = \

@@ -354,6 +354,7 @@ int ParameterSet::validate() {
     }
     this->rand_catalogue_file = "";  // transmutation
   } else {
+#ifndef TRV_EXTCALL
     if (trvs::currTask == 0) {
       trvs::logger.error(
         "Catalogue type must be 'survey', 'random' or 'sim': "
@@ -366,6 +367,7 @@ int ParameterSet::validate() {
         this->catalogue_type.c_str()
       );
     }
+#endif  // !TRV_EXTCALL
   }
 
   if (!(this->alignment == "centre" || this->alignment == "pad")) {
@@ -450,6 +452,7 @@ int ParameterSet::validate() {
   ) {
     this->npoint = "3pt"; this->space = "config";  // derivation
   } else {
+#ifndef TRV_EXTCALL
     if (trvs::currTask == 0) {
       trvs::logger.error(
         "Statistic type is not recognised: `statistic_type` = '%s'.",
@@ -460,6 +463,7 @@ int ParameterSet::validate() {
         this->statistic_type.c_str()
       );
     }
+#endif  // !TRV_EXTCALL
   }
   if (!(this->form == "diag" || this->form == "full")) {
     if (trvs::currTask == 0) {

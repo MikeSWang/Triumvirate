@@ -52,12 +52,11 @@ interlace: off
 
 # -- Measurements --------------------------------------------------------
 
-# Type of catalogue(s): {'survey', 'random', 'sim'}. [mandatory]
+# Type of catalogue(s): {'survey', 'random', 'sim'}.
 catalogue_type:
 
 # Type of measurement:
 # {'powspec', '2pcf', '2pcf-win', 'bispec', '3pcf', '3pcf-win', '3pcf-win-wa'}.
-# [mandatory]
 statistic_type:
 
 # Degrees of the multipoles. [optional, optional, mandatory]
