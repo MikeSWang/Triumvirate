@@ -9,7 +9,7 @@ import pytest
 
 from triumvirate.catalogue import ParticleCatalogue
 from triumvirate.logger import setup_logger
-from triumvirate.parameters import ParameterSet
+from triumvirate.parameters import ParameterSet, fetch_paramset_template
 
 
 # ========================================================================
@@ -80,8 +80,27 @@ def logger():
 
 
 @pytest.fixture(scope='session')
-def valid_paramset(test_param_dir):
-    return ParameterSet(param_filepath=test_param_dir/"valid_params.yml")
+def valid_paramset():
+    param_dict = fetch_paramset_template('dict')
+
+    for ax_name in ['x', 'y', 'z']:
+        param_dict['boxsize'][ax_name] = 1000.
+        param_dict['ngrid'][ax_name] = 64.
+
+    param_dict.update({
+        'statistic_type': 'bispec',
+        'degrees': {'ell1': 0, 'ell2': 0, 'ELL': 0},
+        'range': [0.005, 0.105],
+        'num_bins': 10,
+        'verbose': 60,
+    })
+
+    return ParameterSet(param_dict=param_dict)
+
+
+@pytest.fixture(scope='session')
+def test_paramset():
+    return ParameterSet(param_filepath=test_param_dir/"test_params.yml")
 
 
 @pytest.fixture(scope='session')

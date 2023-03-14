@@ -94,7 +94,28 @@ cdef class Binning:
         paramset : :class:`~triumvirate.parameters.ParameterSet`
             Parameter set.
 
+        Raises
+        ------
+        ValueError
+            When the 'space' parameter is unset or unrecognised in
+            `paramset`.
+
+
+        .. attention::
+
+            If `paramset` is initialised without an accepted
+            'statistic_type' parameter value, the derived 'space'
+            parameter is unset and must be specified in
+            {'fourier', 'config'} before passing `paramset` to this
+            method. See also
+            :class:`~triumvirate.parameters.ParameterSet`.
+
         """
+        if paramset['space'] not in ['fourier', 'config']:
+            raise ValueError(
+                "'space' parameter is unset or unrecognised in `paramset`."
+            )
+
         self = cls(
             paramset['space'], paramset['binning'],
             bin_min=paramset['range'][0],
