@@ -62,58 +62,58 @@ def configure():
 
     cfg.add_argument(
         '-blf', dest='run_bispec_lpp', action='store_true',
-        help="Benchmark local plane-parallel bispectrum performance."
+        help="benchmark local plane-parallel bispectrum performance"
     )
     cfg.add_argument(
         '-bgf', dest='run_bispec_gpp', action='store_true',
-        help="Benchmark global plane-parallel bispectrum performance."
+        help="benchmark global plane-parallel bispectrum performance"
     )
     cfg.add_argument(
         '-blc', dest='run_3pcf_lpp', action='store_true',
-        help="Benchmark local plane-parallel 3PCF performance."
+        help="benchmark local plane-parallel 3PCF performance"
     )
     cfg.add_argument(
         '-bgc', dest='run_3pcf_gpp', action='store_true',
-        help="Benchmark global plane-parallel 3PCF performance."
+        help="benchmark global plane-parallel 3PCF performance"
     )
 
     cfg.add_argument(
         '-plf', dest='run_powspec_lpp', action='store_true',
-        help="Benchmark local plane-parallel power spectrum performance."
+        help="benchmark local plane-parallel power spectrum performance"
     )
     cfg.add_argument(
         '-pgf', dest='run_powspec_gpp', action='store_true',
-        help="Benchmark global plane-parallel power spectrum performance."
+        help="benchmark global plane-parallel power spectrum performance"
     )
     cfg.add_argument(
         '-plc', dest='run_2pcf_lpp', action='store_true',
-        help="Benchmark local plane-parallel 2PCF performance."
+        help="benchmark local plane-parallel 2PCF performance"
     )
     cfg.add_argument(
         '-pgc', dest='run_2pcf_gpp', action='store_true',
-        help="Benchmark global plane-parallel 2PCF performance."
+        help="benchmark global plane-parallel 2PCF performance"
     )
 
     cfg.add_argument(
         '-a', '--aniso', action='store_true',
-        help="Benchmark parameter: "
-             "if used, compute the anisotropic quadrupole."
+        help="benchmark parameter: "
+             "if used, compute the anisotropic quadrupole"
     )
     cfg.add_argument(
         '-g', '--ngrid', dest='ngrid', type=int, nargs='+',
-        help="Benchmark parameter: grid number per dimension."
+        help="benchmark parameter: grid number per dimension"
     )
     cfg.add_argument(
         '-n', '--niter', dest='niter', type=int,
-        help="Benchmark parameter: number of iterations."
+        help="benchmark parameter: number of iterations"
     )
     cfg.add_argument(
         '--output-tag', default='',
-        help="Output file tag for saved benchmarking results."
+        help="output file tag for saved benchmarking results"
     )
     cfg.add_argument(
         '--output-dir', default="",
-        help="Output directory to save benchmarking results to."
+        help="output directory to save benchmarking results to"
     )
 
     return cfg.parse_args()

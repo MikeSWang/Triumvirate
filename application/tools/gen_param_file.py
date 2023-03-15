@@ -62,7 +62,7 @@ def configure():
 
     parser.add_argument(
         '-p', '--modify', action='append', nargs=2,
-        metavar=('param_name', 'param_value'),
+        metavar=('PARAM_NAME', 'PARAM_VALUE'),
         help="pairwise modified parameter names and values"
     )
 
