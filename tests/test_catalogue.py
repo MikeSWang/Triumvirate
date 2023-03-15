@@ -49,7 +49,7 @@ def minimal_catalogue_paired():
         (np.arange(5), -np.arange(5), np.arange(5) / 2., None, None, None),
     ]
 )
-def test_ParticleCatalogue___init__(x, y, z, nz, ws, wc, logger):
+def test_ParticleCatalogue___init__(x, y, z, nz, ws, wc):
 
     weight_kwargs = {}
     if ws is not None:
@@ -60,9 +60,9 @@ def test_ParticleCatalogue___init__(x, y, z, nz, ws, wc, logger):
     if nz is None:
         # Check warning is raised for missing the 'nz' field.
         with pytest.warns(DefaultValueWarning):
-            ParticleCatalogue(x, y, z, nz=nz, logger=logger, **weight_kwargs)
+            ParticleCatalogue(x, y, z, nz=nz, **weight_kwargs)
     else:
-        ParticleCatalogue(x, y, z, nz=nz, logger=logger, **weight_kwargs)
+        ParticleCatalogue(x, y, z, nz=nz, **weight_kwargs)
 
 
 @pytest.mark.parametrize(
@@ -206,10 +206,9 @@ def test_ParticleCatalogue_centre(boxsize, ref_catalogue, extents,
         ref_catalogue = request.getfixturevalue(ref_catalogue)
 
     minimal_catalogue.centre(boxsize, catalogue_ref=ref_catalogue)
-    assert all([
-        np.allclose(minimal_catalogue.bounds[axis], extents[axis])
-        for axis in ['x', 'y', 'z']
-    ]), "Catalogue particles are not centred correctly in the box."
+    for axis in ['x', 'y', 'z']:
+        assert np.allclose(minimal_catalogue.bounds[axis], extents[axis]), \
+            "Catalogue particles are not centred correctly in the box."
 
 
 @pytest.mark.parametrize(
@@ -255,10 +254,9 @@ def test_ParticleCatalogue_pad(boxsize, ngrid, boxsize_pad, ngrid_pad,
         boxsize, ngrid=ngrid, boxsize_pad=boxsize_pad, ngrid_pad=ngrid_pad,
         catalogue_ref=ref_catalogue
     )
-    assert all([
-        np.allclose(minimal_catalogue.bounds[axis], extents[axis])
-        for axis in ['x', 'y', 'z']
-    ]), "Catalogue particles are not padded correctly in the box."
+    for axis in ['x', 'y', 'z']:
+        assert np.allclose(minimal_catalogue.bounds[axis], extents[axis]), \
+            "Catalogue particles are not padded correctly in the box."
 
 
 @pytest.mark.parametrize(
@@ -269,7 +267,7 @@ def test_ParticleCatalogue_pad(boxsize, ngrid, boxsize_pad, ngrid_pad,
             dict(
                 zip(
                     ['x', 'y', 'z'],
-                    [[CONST_COORDS % 0.3,]*2]*3  # noqa: E231
+                    [[0.3/2.,]*2]*3  # noqa: E231
                 )
             ),
         ),
@@ -277,10 +275,9 @@ def test_ParticleCatalogue_pad(boxsize, ngrid, boxsize_pad, ngrid_pad,
 )
 def test_ParticleCatalogue_periodise(boxsize, extents, minimal_catalogue):
     minimal_catalogue.periodise(boxsize)
-    assert all([
-        np.allclose(minimal_catalogue.bounds[axis], extents[axis])
-        for axis in ['x', 'y', 'z']
-    ]), "Catalogue particle coordinates do not satisfy periodicity."
+    for axis in ['x', 'y', 'z']:
+        assert np.allclose(minimal_catalogue.bounds[axis], extents[axis]), \
+            "Catalogue particle coordinates do not satisfy periodicity."
 
 
 @pytest.mark.parametrize(
@@ -294,10 +291,9 @@ def test_ParticleCatalogue_periodise(boxsize, extents, minimal_catalogue):
 )
 def test_ParticleCatalogue_offset_coords(origin, extents, minimal_catalogue):
     minimal_catalogue.offset_coords(origin)
-    assert all([
-        np.allclose(minimal_catalogue.bounds[axis], extents[axis])
-        for axis in ['x', 'y', 'z']
-    ]), "Catalogue particle coordinates are not offset correctly."
+    for axis in ['x', 'y', 'z']:
+        assert np.allclose(minimal_catalogue.bounds[axis], extents[axis]), \
+            "Catalogue particle coordinates are not offset correctly."
 
 
 @pytest.mark.parametrize(

@@ -2,6 +2,7 @@
 
 """
 import inspect
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -75,7 +76,7 @@ def test_stats_dir(test_input_dir):
 
 
 @pytest.fixture(scope='session')
-def logger():
+def test_logger():
     return setup_logger()
 
 
@@ -114,12 +115,15 @@ def test_catalogue_properties():
 
 
 @pytest.fixture(scope='session')
-def test_data_catalogue(test_ctlg_dir, test_catalogue_properties):
+def test_data_catalogue(test_ctlg_dir, test_logger, test_catalogue_properties):
+
+    warnings.filterwarnings('ignore', message=".*field is not provided.*")
 
     if (test_ctlg_dir/"test_data_catalogue.txt").exists():
         return ParticleCatalogue.read_from_file(
             test_ctlg_dir/"test_data_catalogue.txt",
-            names=['x', 'y', 'z', 'nz']
+            names=['x', 'y', 'z', 'nz'],
+            logger=test_logger
         )
 
     R = test_catalogue_properties['separation']
@@ -131,15 +135,18 @@ def test_data_catalogue(test_ctlg_dir, test_catalogue_properties):
     z = [0., 0., 0.]
     nz = N / L**3
 
-    return ParticleCatalogue(x, y, z, nz=nz)
+    return ParticleCatalogue(x, y, z, nz=nz, logger=test_logger)
 
 
-def test_rand_catalogue(test_ctlg_dir, test_catalogue_properties):
+def test_rand_catalogue(test_ctlg_dir, test_logger, test_catalogue_properties):
+
+    warnings.filterwarnings('ignore', message=".*field is not provided.*")
 
     if (test_ctlg_dir/"test_rand_catalogue.txt").exists():
         return ParticleCatalogue.read_from_file(
             test_ctlg_dir/"test_rand_catalogue.txt",
-            names=['x', 'y', 'z', 'nz']
+            names=['x', 'y', 'z', 'nz'],
+            logger=test_logger
         )
 
     alpha = test_catalogue_properties['contrast']
@@ -151,4 +158,4 @@ def test_rand_catalogue(test_ctlg_dir, test_catalogue_properties):
     x, y, z = generator.uniform(-L/2., L/2., size=(3, int(alpha*N)))
     nz = N / L**3
 
-    return ParticleCatalogue(x, y, z, nz=nz)
+    return ParticleCatalogue(x, y, z, nz=nz, logger=test_logger)

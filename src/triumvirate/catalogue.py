@@ -604,7 +604,14 @@ class ParticleCatalogue:
             boxsize = [boxsize, boxsize, boxsize]
 
         for iaxis, axis in enumerate(['x', 'y', 'z']):
-            self._pdata[axis] %= boxsize[iaxis]
+            # Also centre.
+            self._pdata[axis] = (
+                boxsize[iaxis] - (
+                    self.bounds[axis][1] - self.bounds[axis][0]
+                ) % boxsize[iaxis]
+            ) / 2. + (
+                self._pdata[axis] - self.bounds[axis][0]
+            ) % boxsize[iaxis]
 
         self._calc_bounds()
 
