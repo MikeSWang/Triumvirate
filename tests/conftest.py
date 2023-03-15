@@ -26,7 +26,18 @@ test_dir = Path(conftest_file).parent.resolve()
 # Configuration
 # ========================================================================
 
+def pytest_addoption(parser):
+    # Add '--runslow' option for slow test functions.
+    parser.addoption(
+        '--runslow', action='store_true', default=False, help="run slow tests"
+    )
+
+
 def pytest_configure(config):
+    # Add 'slow' marker for tests to run only when running slow tests
+    # is enabled.
+    config.addinivalue_line('markers', "slow: mark test as slow to run")
+
     # Add 'no_capture' marker for tests to run only when output capturing
     # is disabled.
     config.addinivalue_line(
@@ -37,12 +48,19 @@ def pytest_configure(config):
 
 def pytest_collection_modifyitems(config, items):
     # Skip tests marked with 'no_capture' when capturing is not disabled.
+    if not config.getoption('--runslow'):
+        skip_slow = pytest.mark.skip(
+            reason="need '--runslow' option to run slow tests"
+        )
+        for item in items:
+            if 'slow' in item.keywords:
+                item.add_marker(skip_slow)
     if config.getoption('--capture') != 'no':
         skip_captured = pytest.mark.skip(
             reason="need '--capture=no' or '-s' option to run"
         )
         for item in items:
-            if "no_capture" in item.keywords:
+            if 'no_capture' in item.keywords:
                 item.add_marker(skip_captured)
 
 
@@ -138,6 +156,7 @@ def test_data_catalogue(test_ctlg_dir, test_logger, test_catalogue_properties):
     return ParticleCatalogue(x, y, z, nz=nz, logger=test_logger)
 
 
+@pytest.fixture(scope='session')
 def test_rand_catalogue(test_ctlg_dir, test_logger, test_catalogue_properties):
 
     warnings.filterwarnings('ignore', message=".*field is not provided.*")
@@ -154,6 +173,31 @@ def test_rand_catalogue(test_ctlg_dir, test_logger, test_catalogue_properties):
     N = test_catalogue_properties['nparticle']
 
     generator = np.random.default_rng(seed=42)
+
+    x, y, z = generator.uniform(-L/2., L/2., size=(3, int(alpha*N)))
+    nz = N / L**3
+
+    return ParticleCatalogue(x, y, z, nz=nz, logger=test_logger)
+
+
+@pytest.fixture(scope='session')
+def test_uniform_catalogue(test_ctlg_dir, test_logger,
+                           test_catalogue_properties):
+
+    warnings.filterwarnings('ignore', message=".*field is not provided.*")
+
+    if (test_ctlg_dir/"test_uniform_catalogue.txt").exists():
+        return ParticleCatalogue.read_from_file(
+            test_ctlg_dir/"test_uniform_catalogue.txt",
+            names=['x', 'y', 'z', 'nz'],
+            logger=test_logger
+        )
+
+    alpha = test_catalogue_properties['contrast'] / 10.
+    L = test_catalogue_properties['boxsize']
+    N = test_catalogue_properties['nparticle']
+
+    generator = np.random.default_rng(seed=69)
 
     x, y, z = generator.uniform(-L/2., L/2., size=(3, int(alpha*N)))
     nz = N / L**3
