@@ -113,7 +113,7 @@ def make_template_parameters_valid(tmpl_params):
 
 
 # Returns the subset of default parameters from the template.
-@pytest.fixture(scope='module')
+@pytest.fixture
 def default_parameters():
     return {
         'alignment': 'centre',
@@ -127,12 +127,12 @@ def default_parameters():
     }
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def template_parameters_text():
     return fetch_paramset_template('text')
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def template_parameters_dict():
     return fetch_paramset_template('dict')
 
@@ -283,10 +283,9 @@ def test_ParameterSet___str__(template_parameter_source, request, tmp_path):
 def test_ParameterSet___getitem__(valid_paramset, default_parameters):
 
     # Modify 'verbose' to suppress logging.
-    _default_parameters = dict(default_parameters.items())
-    _default_parameters.update(verbose=60)
+    default_parameters.update(verbose=60)
 
-    for key, val in _default_parameters.items():
+    for key, val in default_parameters.items():
         # This is three tests in one: TypeError, KeyError and value comparison.
         if valid_paramset[key] != val:
             warnings.warn(
@@ -306,21 +305,18 @@ def test_ParameterSet___getitem__(valid_paramset, default_parameters):
 )
 def test_ParameterSet___setitem__(param_name, param_value, valid_paramset):
 
-    # Recreate mutable fixture `valid_paramset`.
-    _valid_paramset = ParameterSet(param_dict=dict(valid_paramset.items()))
-
     # Parameter setting should not work when enabling interlacing
     # for three-point statistics.
-    if _valid_paramset.npoint == '3pt' and param_name == 'interlace':
-        _valid_paramset[param_name] = param_value
+    if valid_paramset.npoint == '3pt' and param_name == 'interlace':
+        valid_paramset[param_name] = param_value
         with pytest.raises(AssertionError):
-            assert _valid_paramset[param_name] == param_value, \
+            assert valid_paramset[param_name] == param_value, \
                 "Parameter setting overriden."
-        _valid_paramset['statistic_type'] = 'powspec'
+        valid_paramset['statistic_type'] = 'powspec'
 
     # Otherwise, parameter setting should work.
-    _valid_paramset[param_name] = param_value
-    assert _valid_paramset[param_name] == param_value, \
+    valid_paramset[param_name] = param_value
+    assert valid_paramset[param_name] == param_value, \
         "Parameter set value setting failed."
 
 
@@ -328,10 +324,9 @@ def test_ParameterSet___setitem__(param_name, param_value, valid_paramset):
 def test_ParameterSet__getattr__(valid_paramset, default_parameters):
 
     # Modify 'verbose' to suppress logging.
-    _default_parameters = dict(default_parameters.items())
-    _default_parameters.update(verbose=60)
+    default_parameters.update(verbose=60)
 
-    for attr, val in _default_parameters.items():
+    for attr, val in default_parameters.items():
         # This is three tests in one: TypeError, KeyError and value comparison.
         if getattr(valid_paramset, attr) != val:
             warnings.warn(
@@ -351,21 +346,18 @@ def test_ParameterSet__getattr__(valid_paramset, default_parameters):
 )
 def test_ParameterSet___setattr__(param_name, param_value, valid_paramset):
 
-    # Recreate mutable fixture `valid_paramset`.
-    _valid_paramset = ParameterSet(param_dict=dict(valid_paramset.items()))
-
     # Parameter setting should not work when enabling interlacing
     # for three-point statistics.
-    if _valid_paramset.npoint == '3pt' and param_name == 'interlace':
-        setattr(_valid_paramset, param_name, param_value)
+    if valid_paramset.npoint == '3pt' and param_name == 'interlace':
+        setattr(valid_paramset, param_name, param_value)
         with pytest.raises(AssertionError):
-            assert getattr(_valid_paramset, param_name) == param_value, \
+            assert getattr(valid_paramset, param_name) == param_value, \
                 "Parameter setting overriden."
-        _valid_paramset.statistic_type = 'powspec'
+        valid_paramset.statistic_type = 'powspec'
 
     # Otherwise, parameter setting should work.
-    setattr(_valid_paramset, param_name, param_value)
-    assert getattr(_valid_paramset, param_name) == param_value, \
+    setattr(valid_paramset, param_name, param_value)
+    assert getattr(valid_paramset, param_name) == param_value, \
         "Parameter set value setting failed."
 
 
@@ -402,16 +394,14 @@ def test_ParameterSet_get(param_name, param_value, valid_paramset):
 )
 def test_ParameterSet_update(update_args, update_kwargs, valid_paramset):
 
-    # Recreate mutable fixture `valid_paramset`.
-    _valid_paramset = ParameterSet(param_dict=dict(valid_paramset.items()))
-    _valid_paramset.update(*update_args, **update_kwargs)
+    valid_paramset.update(*update_args, **update_kwargs)
 
     for update_arg in update_args:
         for _name, _value in update_arg.items():
-            assert _valid_paramset.get(_name) == _value, \
+            assert valid_paramset.get(_name) == _value, \
                 "Parameter set update by positional argument failed."
     for _name, _value in update_kwargs.items():
-        assert _valid_paramset.get(_name) == _value, \
+        assert valid_paramset.get(_name) == _value, \
             "Parameter set update by keyword argument failed."
 
 

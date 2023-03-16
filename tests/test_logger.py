@@ -14,7 +14,7 @@ _LOG_FORMAT = (
 )
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def default_logger():
     return setup_logger()
 
