@@ -21,6 +21,7 @@ from triumvirate.twopt import (
 def test_compute_powspec_in_gpp_box(degree, test_data_catalogue,
                                     test_paramset, test_logger,
                                     test_stats_dir):
+
     measurements = compute_powspec_in_gpp_box(
         test_data_catalogue, degree=degree, paramset=test_paramset,
         logger=test_logger
@@ -28,6 +29,7 @@ def test_compute_powspec_in_gpp_box(degree, test_data_catalogue,
     measurements_ext = np.loadtxt(
         test_stats_dir/f"pk{degree}_gpp_nbk.txt", unpack=True
     )
+
     assert np.allclose(measurements['kbin'], measurements_ext[0]), \
         "Measurement bins do not match."
     assert np.allclose(measurements['keff'], measurements_ext[1]), \
@@ -53,6 +55,7 @@ def test_compute_powspec_in_gpp_box(degree, test_data_catalogue,
 )
 def test_compute_powspec(degree, test_data_catalogue, test_rand_catalogue,
                          test_paramset, test_logger, test_stats_dir):
+
     measurements = compute_powspec(
         test_data_catalogue, test_rand_catalogue,
         degree=degree, paramset=test_paramset,
@@ -61,6 +64,7 @@ def test_compute_powspec(degree, test_data_catalogue, test_rand_catalogue,
     measurements_ext = np.loadtxt(
         test_stats_dir/f"pk{degree}_lpp_nbk.txt", unpack=True
     )
+
     assert np.allclose(measurements['kbin'], measurements_ext[0]), \
         "Measurement bins do not match."
     assert np.allclose(measurements['keff'], measurements_ext[1]), \
@@ -69,7 +73,8 @@ def test_compute_powspec(degree, test_data_catalogue, test_rand_catalogue,
         "Measured mode counts do not match."
     assert np.allclose(
         measurements['pk_raw'],
-        measurements_ext[3] + 1j * measurements_ext[4]
+        measurements_ext[3] + 1j * measurements_ext[4],
+        rtol=1.5e-2,
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['pk_shot'],

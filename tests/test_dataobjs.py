@@ -7,7 +7,7 @@ import pytest
 from triumvirate.dataobjs import Binning
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def default_binning(valid_paramset):
     binning = Binning.from_parameter_set(valid_paramset)
     return binning

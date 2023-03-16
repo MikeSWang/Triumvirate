@@ -120,9 +120,11 @@ def test_ParticleCatalogue___init__(x, y, z, nz, ws, wc):
 )
 def test_ParticleCatalogue_read_from_file(filename, reader, format,
                                           names, name_mapping, test_ctlg_dir):
+
     if reader == 'nbodykit':
+        import importlib
         try:
-            import nbodykit  # noqa: F401
+            importlib.import_module(reader)
         except ImportError:
             return
 
@@ -130,6 +132,7 @@ def test_ParticleCatalogue_read_from_file(filename, reader, format,
         test_ctlg_dir/filename,
         reader=reader, names=names, format=format, name_mapping=name_mapping
     )
+
     for axis in ['x', 'y', 'z']:
         assert catalogue[axis] == SAMPLE_COORDS[axis], \
             "Loaded catalogue particle coordinates do not match."
@@ -152,7 +155,6 @@ def test_ParticleCatalogue___len__(minimal_catalogue):
 
 
 def test_ParticleCatalogue___getitem__(minimal_catalogue):
-
     assert np.allclose(minimal_catalogue['x'], CONST_COORDS), \
         "Catalogue column not returned correctly."
 
@@ -202,6 +204,7 @@ def test_ParticleCatalogue_compute_mean_density(
 )
 def test_ParticleCatalogue_centre(boxsize, ref_catalogue, extents,
                                   minimal_catalogue, request):
+
     if ref_catalogue is not None:
         ref_catalogue = request.getfixturevalue(ref_catalogue)
 
@@ -247,6 +250,7 @@ def test_ParticleCatalogue_centre(boxsize, ref_catalogue, extents,
 def test_ParticleCatalogue_pad(boxsize, ngrid, boxsize_pad, ngrid_pad,
                                ref_catalogue, extents,
                                minimal_catalogue, request):
+
     if ref_catalogue is not None:
         ref_catalogue = request.getfixturevalue(ref_catalogue)
 
@@ -254,6 +258,7 @@ def test_ParticleCatalogue_pad(boxsize, ngrid, boxsize_pad, ngrid_pad,
         boxsize, ngrid=ngrid, boxsize_pad=boxsize_pad, ngrid_pad=ngrid_pad,
         catalogue_ref=ref_catalogue
     )
+
     for axis in ['x', 'y', 'z']:
         assert np.allclose(minimal_catalogue.bounds[axis], extents[axis]), \
             "Catalogue particles are not padded correctly in the box."
@@ -305,6 +310,7 @@ def test_ParticleCatalogue_offset_coords(origin, extents, minimal_catalogue):
 )
 def test_ParticleCatalogue_write_attrs_as_header(ref_catalogue,
                                                  minimal_catalogue, request):
+
     if ref_catalogue is not None:
         ref_catalogue = request.getfixturevalue(ref_catalogue)
 

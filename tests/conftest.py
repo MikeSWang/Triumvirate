@@ -93,12 +93,12 @@ def test_stats_dir(test_input_dir):
     return test_input_dir/"stats"
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def test_logger():
     return setup_logger()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def valid_paramset():
     param_dict = fetch_paramset_template('dict')
 
@@ -117,12 +117,12 @@ def valid_paramset():
     return ParameterSet(param_dict=param_dict)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def test_paramset(test_param_dir):
     return ParameterSet(param_filepath=test_param_dir/"test_params.yml")
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def test_catalogue_properties():
     return {
         'separation': 100.,
@@ -132,7 +132,7 @@ def test_catalogue_properties():
     }
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def test_data_catalogue(test_ctlg_dir, test_logger, test_catalogue_properties):
 
     warnings.filterwarnings('ignore', message=".*field is not provided.*")
@@ -156,7 +156,7 @@ def test_data_catalogue(test_ctlg_dir, test_logger, test_catalogue_properties):
     return ParticleCatalogue(x, y, z, nz=nz, logger=test_logger)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def test_rand_catalogue(test_ctlg_dir, test_logger, test_catalogue_properties):
 
     warnings.filterwarnings('ignore', message=".*field is not provided.*")
@@ -180,7 +180,7 @@ def test_rand_catalogue(test_ctlg_dir, test_logger, test_catalogue_properties):
     return ParticleCatalogue(x, y, z, nz=nz, logger=test_logger)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def test_uniform_catalogue(test_ctlg_dir, test_logger,
                            test_catalogue_properties):
 
