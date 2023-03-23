@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 
 from triumvirate.catalogue import ParticleCatalogue
+from triumvirate.dataobjs import Binning
 from triumvirate.logger import setup_logger
 from triumvirate.parameters import ParameterSet, fetch_paramset_template
 
@@ -120,6 +121,16 @@ def valid_paramset():
 @pytest.fixture
 def test_paramset(test_param_dir):
     return ParameterSet(param_filepath=test_param_dir/"test_params.yml")
+
+
+@pytest.fixture
+def test_binning_fourier():
+    return Binning('fourier', 'lin', bin_min=0.005, bin_max=0.105, num_bins=4)
+
+
+@pytest.fixture
+def test_binning_config():
+    return Binning('config', 'lin', bin_min=50., bin_max=150., num_bins=4)
 
 
 @pytest.fixture

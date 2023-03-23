@@ -16,7 +16,7 @@ files:
 
 # Tags to be substituted into input/output paths.
 tags:
-  output: ~
+  output:
 
 
 # -- Sampling ------------------------------------------------------------
@@ -64,7 +64,7 @@ statistic_type:
 degrees:
   ell1:
   ell2:
-  ELL: 0
+  ELL: 0  # placeholder
 
 # Orders of wide-angle corrections.
 wa_orders:
@@ -72,7 +72,7 @@ wa_orders:
   j:
 
 # Form of the three-point statistic measurements: {'full', 'diag' (default)}.
-form:
+form: diag
 
 # Normalisation convention: {'particle' (default), 'mesh'}.
 norm_convention: particle
@@ -84,7 +84,7 @@ binning: lin
 # as a list.
 # The binning coordinate is either wavenumbers (in h/Mpc) in Fourier space,
 # or separations (in Mpc/h) in configuration space. [mandatory]
-range: [0.005, 0.105]
+range: [0.005, 0.105]  # placeholder
 
 # Number of measurement bins (i.e. data vector dimension).
 # Must be >=2, or >=7 if padding is used in binning. [mandatory]
