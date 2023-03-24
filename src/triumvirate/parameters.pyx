@@ -435,6 +435,10 @@ cdef class ParameterSet:
         if self._params['form'] is not None:
             self.thisptr.form = \
                 self._params['form'].lower().encode('utf-8')
+        if self._params['form'] == 'full' and self._params['idx_bin'] is None:
+            raise InvalidParameterError(
+                "`idx_bin` parameter must be set when `form` is 'full'."
+            )
 
         if self._params['norm_convention'] is not None:
             self.thisptr.norm_convention = \

@@ -6,8 +6,8 @@
 # The paths can be either absolute or relative to the working directory.
 # If unset, the current working directory is assumed.
 directories:
-  catalogues: triumvirate/tests/test_input/catalogues
-  measurements: triumvirate/tests/test_output/
+  catalogues: tests/test_input/ctlgs
+  measurements: tests/test_output/
 
 # Filenames (with extensions) for input/output sources.
 files:
