@@ -511,14 +511,14 @@ trv::BispecMeasurements compute_bispec(
   trv::BispecMeasurements bispec_out;
   for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     if (params.form == "diag") {
-      bispec_out.k1bin.push_back(kbinning.bin_centres[ibin]);
+      bispec_out.k1_bin.push_back(kbinning.bin_centres[ibin]);
     } else
     if (params.form == "full") {
-      bispec_out.k1bin.push_back(kbinning.bin_centres[params.idx_bin]);
+      bispec_out.k1_bin.push_back(kbinning.bin_centres[params.idx_bin]);
     }
-    bispec_out.k1eff.push_back(k1_save[ibin]);
-    bispec_out.k2bin.push_back(kbinning.bin_centres[ibin]);
-    bispec_out.k2eff.push_back(k2_save[ibin]);
+    bispec_out.k1_eff.push_back(k1_save[ibin]);
+    bispec_out.k2_bin.push_back(kbinning.bin_centres[ibin]);
+    bispec_out.k2_eff.push_back(k2_save[ibin]);
     bispec_out.nmodes.push_back(nmodes_save[ibin]);
     bispec_out.bk_raw.push_back(norm_factor * bk_save[ibin]);
     bispec_out.bk_shot.push_back(norm_factor * sn_save[ibin]);
@@ -788,14 +788,14 @@ trv::ThreePCFMeasurements compute_3pcf(
   trv::ThreePCFMeasurements threepcf_out;
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     if (params.form == "diag") {
-      threepcf_out.r1bin.push_back(rbinning.bin_centres[ibin]);
+      threepcf_out.r1_bin.push_back(rbinning.bin_centres[ibin]);
     } else
     if (params.form == "full") {
-      threepcf_out.r1bin.push_back(rbinning.bin_centres[params.idx_bin]);
+      threepcf_out.r1_bin.push_back(rbinning.bin_centres[params.idx_bin]);
     }
-    threepcf_out.r1eff.push_back(r1_save[ibin]);
-    threepcf_out.r2bin.push_back(rbinning.bin_centres[ibin]);
-    threepcf_out.r2eff.push_back(r2_save[ibin]);
+    threepcf_out.r1_eff.push_back(r1_save[ibin]);
+    threepcf_out.r2_bin.push_back(rbinning.bin_centres[ibin]);
+    threepcf_out.r2_eff.push_back(r2_save[ibin]);
     threepcf_out.npairs.push_back(npairs_save[ibin]);
     threepcf_out.zeta_raw.push_back(norm_factor * zeta_save[ibin]);
     threepcf_out.zeta_shot.push_back(norm_factor * sn_save[ibin]);
@@ -1076,14 +1076,14 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   trv::BispecMeasurements bispec_out;
   for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     if (params.form == "diag") {
-      bispec_out.k1bin.push_back(kbinning.bin_centres[ibin]);
+      bispec_out.k1_bin.push_back(kbinning.bin_centres[ibin]);
     } else
     if (params.form == "full") {
-      bispec_out.k1bin.push_back(kbinning.bin_centres[params.idx_bin]);
+      bispec_out.k1_bin.push_back(kbinning.bin_centres[params.idx_bin]);
     }
-    bispec_out.k1eff.push_back(k1_save[ibin]);
-    bispec_out.k2bin.push_back(kbinning.bin_centres[ibin]);
-    bispec_out.k2eff.push_back(k2_save[ibin]);
+    bispec_out.k1_eff.push_back(k1_save[ibin]);
+    bispec_out.k2_bin.push_back(kbinning.bin_centres[ibin]);
+    bispec_out.k2_eff.push_back(k2_save[ibin]);
     bispec_out.nmodes.push_back(nmodes_save[ibin]);
     bispec_out.bk_raw.push_back(norm_factor * bk_save[ibin]);
     bispec_out.bk_shot.push_back(norm_factor * sn_save[ibin]);
@@ -1328,14 +1328,14 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   trv::ThreePCFMeasurements threepcf_out;
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     if (params.form == "diag") {
-      threepcf_out.r1bin.push_back(rbinning.bin_centres[ibin]);
+      threepcf_out.r1_bin.push_back(rbinning.bin_centres[ibin]);
     } else
     if (params.form == "full") {
-      threepcf_out.r1bin.push_back(rbinning.bin_centres[params.idx_bin]);
+      threepcf_out.r1_bin.push_back(rbinning.bin_centres[params.idx_bin]);
     }
-    threepcf_out.r1eff.push_back(r1_save[ibin]);
-    threepcf_out.r2bin.push_back(rbinning.bin_centres[ibin]);
-    threepcf_out.r2eff.push_back(r2_save[ibin]);
+    threepcf_out.r1_eff.push_back(r1_save[ibin]);
+    threepcf_out.r2_bin.push_back(rbinning.bin_centres[ibin]);
+    threepcf_out.r2_eff.push_back(r2_save[ibin]);
     threepcf_out.npairs.push_back(npairs_save[ibin]);
     threepcf_out.zeta_raw.push_back(norm_factor * zeta_save[ibin]);
     threepcf_out.zeta_shot.push_back(norm_factor * sn_save[ibin]);
@@ -1604,14 +1604,14 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   trv::ThreePCFWindowMeasurements threepcfwin_out;
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     if (params.form == "diag") {
-      threepcfwin_out.r1bin.push_back(rbinning.bin_centres[ibin]);
+      threepcfwin_out.r1_bin.push_back(rbinning.bin_centres[ibin]);
     } else
     if (params.form == "full") {
-      threepcfwin_out.r1bin.push_back(rbinning.bin_centres[params.idx_bin]);
+      threepcfwin_out.r1_bin.push_back(rbinning.bin_centres[params.idx_bin]);
     }
-    threepcfwin_out.r1eff.push_back(r1_save[ibin]);
-    threepcfwin_out.r2bin.push_back(rbinning.bin_centres[ibin]);
-    threepcfwin_out.r2eff.push_back(r2_save[ibin]);
+    threepcfwin_out.r1_eff.push_back(r1_save[ibin]);
+    threepcfwin_out.r2_bin.push_back(rbinning.bin_centres[ibin]);
+    threepcfwin_out.r2_eff.push_back(r2_save[ibin]);
     threepcfwin_out.npairs.push_back(npairs_save[ibin]);
     threepcfwin_out.zeta_raw.push_back(norm_factor * zeta_save[ibin]);
     threepcfwin_out.zeta_shot.push_back(norm_factor * sn_save[ibin]);
@@ -2010,14 +2010,14 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   trv::BispecMeasurements bispec_out;
   for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
     if (params.form == "diag") {
-      bispec_out.k1bin.push_back(kbinning.bin_centres[ibin]);
+      bispec_out.k1_bin.push_back(kbinning.bin_centres[ibin]);
     } else
     if (params.form == "full") {
-      bispec_out.k1bin.push_back(kbinning.bin_centres[params.idx_bin]);
+      bispec_out.k1_bin.push_back(kbinning.bin_centres[params.idx_bin]);
     }
-    bispec_out.k1eff.push_back(k1_save[ibin]);
-    bispec_out.k2bin.push_back(kbinning.bin_centres[ibin]);
-    bispec_out.k2eff.push_back(k2_save[ibin]);
+    bispec_out.k1_eff.push_back(k1_save[ibin]);
+    bispec_out.k2_bin.push_back(kbinning.bin_centres[ibin]);
+    bispec_out.k2_eff.push_back(k2_save[ibin]);
     bispec_out.nmodes.push_back(nmodes_save[ibin]);
     bispec_out.bk_raw.push_back(norm_factor * bk_save[ibin]);
     bispec_out.bk_shot.push_back(norm_factor * sn_save[ibin]);

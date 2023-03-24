@@ -29,9 +29,9 @@ boxsize:
 
 # Grid cell number in each dimension. [mandatory]
 ngrid:
-  x: 384
-  y: 384
-  z: 384
+  x: 64
+  y: 64
+  z: 64
 
 # Box alignment: {'centre' (default), 'pad'}.
 alignment: centre

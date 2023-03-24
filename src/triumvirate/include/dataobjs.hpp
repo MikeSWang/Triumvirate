@@ -221,10 +221,10 @@ struct TwoPCFWindowMeasurements {
  *
  */
 struct BispecMeasurements {
-  std::vector<double> k1bin;  ///< first central wavenumber in bins
-  std::vector<double> k2bin;  ///< second central wavenumber in bins
-  std::vector<double> k1eff;  ///< first effective wavenumber in bins
-  std::vector<double> k2eff;  ///< second effective wavenumber in bins
+  std::vector<double> k1_bin;  ///< first central wavenumber in bins
+  std::vector<double> k2_bin;  ///< second central wavenumber in bins
+  std::vector<double> k1_eff;  ///< first effective wavenumber in bins
+  std::vector<double> k2_eff;  ///< second effective wavenumber in bins
   std::vector<int> nmodes;    ///< number of wavevectors in bins
   /// bispectrum raw measurements
   std::vector< std::complex<double> > bk_raw;
@@ -237,10 +237,10 @@ struct BispecMeasurements {
  *
  */
 struct ThreePCFMeasurements {
-  std::vector<double> r1bin;  ///< first central separation in bins
-  std::vector<double> r2bin;  ///< second central separation in bins
-  std::vector<double> r1eff;  ///< first effective separation in bins
-  std::vector<double> r2eff;  ///< second effective separation in bins
+  std::vector<double> r1_bin;  ///< first central separation in bins
+  std::vector<double> r2_bin;  ///< second central separation in bins
+  std::vector<double> r1_eff;  ///< first effective separation in bins
+  std::vector<double> r2_eff;  ///< second effective separation in bins
   std::vector<int> npairs;    ///< number of separation vectors in bins
   /// three-point correlation function raw measurements
   std::vector< std::complex<double> > zeta_raw;
@@ -253,10 +253,10 @@ struct ThreePCFMeasurements {
  *
  */
 struct ThreePCFWindowMeasurements {
-  std::vector<double> r1bin;  ///< first central separation in bins
-  std::vector<double> r2bin;  ///< second central separation in bins
-  std::vector<double> r1eff;  ///< first effective separation in bins
-  std::vector<double> r2eff;  ///< second effective separation in bins
+  std::vector<double> r1_bin;  ///< first central separation in bins
+  std::vector<double> r2_bin;  ///< second central separation in bins
+  std::vector<double> r1_eff;  ///< first effective separation in bins
+  std::vector<double> r2_eff;  ///< second effective separation in bins
   std::vector<int> npairs;    ///< number of pairwise separations
   /// three-point correlation function window raw measurements
   std::vector< std::complex<double> > zeta_raw;

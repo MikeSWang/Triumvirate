@@ -160,10 +160,10 @@ def _compute_bispec(
     free(los_data_cpp); free(los_rand_cpp)
 
     return {
-        'k1bin': np.array(results.k1bin),
-        'k2bin': np.array(results.k2bin),
-        'k1eff': np.array(results.k1eff),
-        'k2eff': np.array(results.k2eff),
+        'k1_bin': np.array(results.k1_bin),
+        'k2_bin': np.array(results.k2_bin),
+        'k1_eff': np.array(results.k1_eff),
+        'k2_eff': np.array(results.k2_eff),
         'nmodes': np.array(results.nmodes),
         'bk_raw': np.array(results.bk_raw),
         'bk_shot': np.array(results.bk_shot),
@@ -208,10 +208,10 @@ def _compute_3pcf(
     free(los_data_cpp); free(los_rand_cpp)
 
     return {
-        'r1bin': np.array(results.r1bin),
-        'r2bin': np.array(results.r2bin),
-        'r1eff': np.array(results.r1eff),
-        'r2eff': np.array(results.r2eff),
+        'r1_bin': np.array(results.r1_bin),
+        'r2_bin': np.array(results.r2_bin),
+        'r1_eff': np.array(results.r1_eff),
+        'r2_eff': np.array(results.r2_eff),
         'npairs': np.array(results.npairs),
         'zeta_raw': np.array(results.zeta_raw),
         'zeta_shot': np.array(results.zeta_shot),
@@ -232,10 +232,10 @@ def _compute_bispec_in_gpp_box(
     )
 
     return {
-        'k1bin': np.array(results.k1bin),
-        'k2bin': np.array(results.k2bin),
-        'k1eff': np.array(results.k1eff),
-        'k2eff': np.array(results.k2eff),
+        'k1_bin': np.array(results.k1_bin),
+        'k2_bin': np.array(results.k2_bin),
+        'k1_eff': np.array(results.k1_eff),
+        'k2_eff': np.array(results.k2_eff),
         'nmodes': np.array(results.nmodes),
         'bk_raw': np.array(results.bk_raw),
         'bk_shot': np.array(results.bk_shot),
@@ -256,10 +256,10 @@ def _compute_3pcf_in_gpp_box(
     )
 
     return {
-        'r1bin': np.array(results.r1bin),
-        'r2bin': np.array(results.r2bin),
-        'r1eff': np.array(results.r1eff),
-        'r2eff': np.array(results.r2eff),
+        'r1_bin': np.array(results.r1_bin),
+        'r2_bin': np.array(results.r2_bin),
+        'r1_eff': np.array(results.r1_eff),
+        'r2_eff': np.array(results.r2_eff),
         'npairs': np.array(results.npairs),
         'zeta_raw': np.array(results.zeta_raw),
         'zeta_shot': np.array(results.zeta_shot),
@@ -296,10 +296,10 @@ def _compute_3pcf_window(
     free(los_rand_cpp)
 
     return {
-        'r1bin': np.array(results.r1bin),
-        'r2bin': np.array(results.r2bin),
-        'r1eff': np.array(results.r1eff),
-        'r2eff': np.array(results.r2eff),
+        'r1_bin': np.array(results.r1_bin),
+        'r2_bin': np.array(results.r2_bin),
+        'r1_eff': np.array(results.r1_eff),
+        'r2_eff': np.array(results.r2_eff),
         'npairs': np.array(results.npairs),
         'zeta_raw': np.array(results.zeta_raw),
         'zeta_shot': np.array(results.zeta_shot),
@@ -345,10 +345,10 @@ def _compute_3pcf_window(
 #     free(los_data_cpp); free(los_rand_cpp)
 
 #     return {
-#         'k1bin': np.array(results.k1bin),
-#         'k2bin': np.array(results.k2bin),
-#         'k1eff': np.array(results.k1eff),
-#         'k2eff': np.array(results.k2eff),
+#         'k1_bin': np.array(results.k1_bin),
+#         'k2_bin': np.array(results.k2_bin),
+#         'k1_eff': np.array(results.k1_eff),
+#         'k2_eff': np.array(results.k2_eff),
 #         'nmodes': np.array(results.nmodes),
 #         'bk_raw': np.array(results.bk_raw),
 #         'bk_shot': np.array(results.bk_shot),
