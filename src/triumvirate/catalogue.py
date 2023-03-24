@@ -486,17 +486,16 @@ class ParticleCatalogue:
         else:
             catalogue_ref_ = catalogue_ref
 
-        for iaxis, axis in enumerate(['x', 'y', 'z']):
-            if (
-                boxsize[iaxis] <= np.abs(np.diff(self.bounds[axis]))
-                or
-                boxsize[iaxis] <= np.abs(np.diff(catalogue_ref_.bounds[axis]))
-            ):
-                warnings.warn(
-                    "`boxsize` is smaller than the particle extents "
-                    f"in {axis} axis. Some particles will lie outside "
-                    "the box after centring."
-                )
+        _axes_overflow = []
+        _axes_overflow.extend(self._check_bounds_in_boxsize(boxsize))
+        _axes_overflow.extend(catalogue_ref_._check_bounds_in_boxsize(boxsize))
+        if _axes_overflow:
+            warnings.warn(
+                "Box size is smaller than particle coordinate extents "
+                "along axis: {}. "
+                "Some partcles may lie outside the box after centring."
+                .format(set(_axes_overflow))
+            )
 
         origin = np.array([
             np.mean(catalogue_ref_.bounds[axis]) - boxsize[iaxis]/2.
@@ -569,6 +568,17 @@ class ParticleCatalogue:
         else:
             catalogue_ref_ = catalogue_ref
 
+        _axes_overflow = []
+        _axes_overflow.extend(self._check_bounds_in_boxsize(boxsize))
+        _axes_overflow.extend(catalogue_ref_._check_bounds_in_boxsize(boxsize))
+        if _axes_overflow:
+            warnings.warn(
+                "Box size is smaller than particle coordinate extents "
+                "along axis: {}. "
+                "Some partcles may lie outside the box after padding."
+                .format(set(_axes_overflow))
+            )
+
         origin = np.array([
             catalogue_ref_.bounds[axis][0] for axis in ['x', 'y', 'z']
         ])
@@ -603,14 +613,20 @@ class ParticleCatalogue:
         if np.isscalar(boxsize):
             boxsize = [boxsize, boxsize, boxsize]
 
+        _axes_overflow = self._check_bounds_in_boxsize(boxsize)
+        if _axes_overflow:
+            warnings.warn(
+                "Box size is smaller than particle coordinate extents "
+                "along axis: {}."
+                .format(_axes_overflow)
+            )
+
         for iaxis, axis in enumerate(['x', 'y', 'z']):
             # Also centre.
             self._pdata[axis] = (
-                boxsize[iaxis] - (
-                    self.bounds[axis][1] - self.bounds[axis][0]
-                ) % boxsize[iaxis]
-            ) / 2. + (
-                self._pdata[axis] - self.bounds[axis][0]
+                self._pdata[axis] + boxsize[iaxis] / 2. - (
+                    self.bounds[axis][1] + self.bounds[axis][0]
+                ) / 2.
             ) % boxsize[iaxis]
 
         self._calc_bounds()
@@ -667,6 +683,29 @@ class ParticleCatalogue:
                     *self.bounds['x'], *self.bounds['y'], *self.bounds['z'],
                     self
                 )
+
+    def _check_bounds_in_boxsize(self, boxsize):
+        """Check if partice coordinate extents are covered by the box size
+        in all dimensions, and return the axis name(s) if not.
+
+        Parameters
+        ----------
+        boxsize : sequence of float
+            Box size in all dimensions.
+
+        Returns
+        -------
+        list of str
+            Axis if and where box size is smaller than the particle
+            coordinate extent.
+
+        """
+        _axes = []
+        for iaxis, axis in enumerate(['x', 'y', 'z']):
+            if np.abs(np.diff(self.bounds[axis])) > boxsize[iaxis]:
+                _axes.append(axis)
+
+        return _axes
 
     def _convert_to_cpp_catalogue(self, verbose=-1):
         """Convert to a C++-wrapped catalogue.
