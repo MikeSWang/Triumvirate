@@ -1,0 +1,13 @@
+# Catalogue source: extfile:tests/test_input/ctlgs/test_data_catalogue.txt
+# Catalogue size: 3 particles of total sample weight 3.000
+# Catalogue particle extents: ([450.000, 550.000], [456.699, 543.301], [500.000, 500.000])
+# Box size: (1000.000, 1000.000, 1000.000)
+# Box alignment: centre
+# Mesh number: (384, 384, 384)
+# Mesh assignment and interlacing: tsc, False
+# Normalisation factor: 3.703703704e+16 (particle-based, used), 2.205388771e+03 (mesh-based, alternative)
+# [0] k1_cen, [1] k1_eff, [2] k2_cen, [3] k2_eff, [4] nmodes, [5] Re{bk000_raw}, [6] Im{bk000_raw}, [7] Re{bk000_shot}, [8] Im{bk000_shot}
+1.750000000e-02	2.258782336e-02	1.750000000e-02	2.258782336e-02	       460	 3.130227232e+17	 6.282404756e+01	 2.860787170e+17	 4.630616300e+00
+1.750000000e-02	2.258782336e-02	4.250000000e-02	4.488283313e-02	      2340	 1.243230987e+17	 1.804337722e+01	 1.331562741e+17	 3.551290869e+00
+1.750000000e-02	2.258782336e-02	6.750000000e-02	6.912253858e-02	      5908	 2.088660782e+17	 2.483546504e+01	 2.064143377e+17	 3.362113335e+00
+1.750000000e-02	2.258782336e-02	9.250000000e-02	9.369454264e-02	     10840	 1.899594315e+17	 2.296152446e+01	 1.891521586e+17	 2.368939809e+00

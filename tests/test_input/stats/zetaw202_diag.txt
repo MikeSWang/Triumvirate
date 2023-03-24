@@ -1,0 +1,13 @@
+# Catalogue source: extfile:tests/test_input/ctlgs/test_rand_catalogue.txt
+# Catalogue size: 30000 particles of total sample weight 30000.000
+# Catalogue particle extents: ([0.015, 999.985], [0.017, 999.983], [0.031, 999.969])
+# Box size: (1000.000, 1000.000, 1000.000)
+# Box alignment: centre
+# Mesh number: (384, 384, 384)
+# Mesh assignment and interlacing: tsc, False
+# Normalisation factor: 3.703703704e+12 (particle-based, used), 2.567472542e-01 (mesh-based, alternative)
+# [0] r1_cen, [1] r1_eff, [2] r2_cen, [3] r2_eff, [4] npairs, [5] Re{zeta202_raw}, [6] Im{zeta202_raw}, [7] Re{zeta202_shot}, [8] Im{zeta202_shot}
+6.250000000e+01	6.512823467e+01	6.250000000e+01	6.512823467e+01	     72760	 4.517609131e+05	 6.432736821e+05	 9.068253113e+03	 6.893171771e-12
+8.750000000e+01	8.965573676e+01	8.750000000e+01	8.965573676e+01	    139914	 2.559989631e+05	-3.761916814e+04	 2.410860660e+03	 8.616464714e-13
+1.125000000e+02	1.144154493e+02	1.125000000e+02	1.144154493e+02	    230656	-1.948116990e+05	-8.773248315e+04	 1.746325000e+03	-4.966434523e-13
+1.375000000e+02	1.392419229e+02	1.375000000e+02	1.392419229e+02	    341250	-2.975939441e+04	-5.950258172e+04	 2.598850258e+03	-1.507881325e-12
