@@ -1,5 +1,16 @@
+# Data catalogue source: extfile:tests/test_input/ctlgs/test_data_catalogue.txt
+# Data catalogue size: 3 particles of total sample weight 3.000
+# Data-source particle extents: ([450.002, 550.002], [471.122, 557.724], [500.017, 500.017])
+# Random catalogue source: extfile:tests/test_input/ctlgs/test_rand_catalogue.txt
+# Random catalogue size: 30000 particles of total sample weight 30000.000
+# Random-source particle extents: ([0.015, 999.985], [0.017, 999.983], [0.031, 999.969])
+# Box size: (1000.000, 1000.000, 1000.000)
+# Box alignment: centre
+# Mesh number: (64, 64, 64)
+# Mesh assignment and interlacing: tsc, False
+# Normalisation factor: 1.111111111e+08 (particle-based, used), 4.538831600e+07 (mesh-based, alternative)
 # [0] k_cen, [1] k_eff, [2] nmodes, [3] Re{pk2_raw}, [4] Im{pk2_raw}, [5] Re{pk2_shot}, [6] Im{pk2_shot}
-1.750000000e-02	2.258782336e-02	       460	-4.007314354e+08	 8.167656366e-09	 1.079383945e-08	-7.792281133e-16
-4.250000000e-02	4.488283313e-02	      2340	-4.077568041e+08	-5.896855149e-09	-1.064887137e-08	-3.532603243e-15
-6.750000000e-02	6.912253858e-02	      5908	 2.093248799e+08	 7.780656424e-09	-9.923152880e-09	 9.558733760e-15
-9.250000000e-02	9.369454264e-02	     10840	-3.956272199e+07	-7.679765388e-10	-6.412576057e-09	 2.833237736e-15
+1.750000000e-02	2.258782336e-02	       460	-4.007902088e+08	-5.758318205e-09	 1.267102916e-08	-1.730286016e-15
+4.250000000e-02	4.488283313e-02	      2340	-4.082509462e+08	 2.987579320e-09	-7.960295043e-09	 3.652791879e-17
+6.750000000e-02	6.912253858e-02	      5908	 2.082121800e+08	 4.389512962e-09	-1.526251893e-08	-2.528196367e-15
+9.250000000e-02	9.369454264e-02	     10840	-4.552175403e+07	 4.568707488e-09	-9.312048714e-09	-1.158527664e-15

@@ -719,6 +719,10 @@ def _modify_measurement_parameters(paramset, params_measure=None,
             paramset['wa_orders'][waorder_label.rstrip('_wa')] = \
                 params_measure[waorder_label]
 
+    # Update 'idx_bin' before 'form' owing to dependency.
+    if 'idx_bin' in params_measure.keys():
+        paramset['idx_bin'] = params_measure['idx_bin']
+        if params_default: params_default.pop('idx_bin', None)
     if 'form' in params_measure.keys():
         paramset['form'] = params_measure['form']
         if params_default: params_default.pop('form', None)
@@ -730,10 +734,6 @@ def _modify_measurement_parameters(paramset, params_measure=None,
     if 'num_bins' in params_measure.keys():
         paramset['num_bins'] = params_measure['num_bins']
         if params_default: params_default.pop('num_bins', None)
-
-    if 'idx_bin' in params_measure.keys():
-        paramset['idx_bin'] = params_measure['idx_bin']
-        if params_default: params_default.pop('idx_bin', None)
 
     if ret_defaults:
         return paramset, params_default

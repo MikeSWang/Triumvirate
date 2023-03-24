@@ -203,7 +203,7 @@ def _get_measurement_filename(paramset):
     if paramset['form'] == 'diag':
         binform = "_diag"
     if paramset['form'] == 'full':
-        binform = "_bin{:02d}".format(paramset['idx_bin'])
+        binform = "_bin{:d}".format(paramset['idx_bin'])
 
     output_tag = paramset['tags']['output'] or ""
 
@@ -333,16 +333,16 @@ def _assemble_measurement_datatab(measurements, paramset):
         )
     if paramset['space'] == 'fourier':
         datatab = np.transpose([
-            measurements['k1bin'], measurements['k1eff'],
-            measurements['k2bin'], measurements['k2eff'],
+            measurements['k1_bin'], measurements['k1_eff'],
+            measurements['k2_bin'], measurements['k2_eff'],
             measurements['nmodes'],
             measurements['bk_raw'].real, measurements['bk_raw'].imag,
             measurements['bk_shot'].real, measurements['bk_shot'].imag,
         ])
     if paramset['space'] == 'config':
         datatab = np.transpose([
-            measurements['r1bin'], measurements['r1eff'],
-            measurements['r2bin'], measurements['r2eff'],
+            measurements['r1_bin'], measurements['r1_eff'],
+            measurements['r2_bin'], measurements['r2_eff'],
             measurements['npairs'],
             measurements['zeta_raw'].real, measurements['zeta_raw'].imag,
             measurements['zeta_shot'].real, measurements['zeta_shot'].imag,

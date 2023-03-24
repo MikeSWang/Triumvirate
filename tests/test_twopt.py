@@ -48,8 +48,7 @@ def test_compute_powspec(degree,
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['pk_shot'],
-        measurements_ext[5] + 1j * measurements_ext[6],
-        atol=1.e-6
+        measurements_ext[5] + 1j * measurements_ext[6]
     ), "Measured shot noise contributions do not match."
 
 
@@ -91,7 +90,7 @@ def test_compute_corrfunc(degree,
     ), "Measured statistics do not match."
 
 
-# @pytest.mark.slow
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "degree",
     [0, 2,]  # noqa: E231
@@ -108,7 +107,6 @@ def test_compute_powspec_in_gpp_box(degree,
         degree=degree,
         binning=test_binning_fourier,
         paramset=test_paramset,
-        save='.txt',
         logger=test_logger
     )
     measurements_ext = np.loadtxt(
@@ -127,8 +125,7 @@ def test_compute_powspec_in_gpp_box(degree,
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['pk_shot'],
-        measurements_ext[5] + 1j * measurements_ext[6],
-        atol=1.e-6
+        measurements_ext[5] + 1j * measurements_ext[6]
     ), "Measured shot noise contributions do not match."
 
 

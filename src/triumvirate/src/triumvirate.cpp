@@ -503,7 +503,7 @@ int main(int argc, char* argv[]) {
   if (params.statistic_type == "bispec") {
     if (params.form == "full") {
       std::sprintf(
-        save_filepath, "%s/bk%d%d%d_bin%02d%s",
+        save_filepath, "%s/bk%d%d%d_bin%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL, params.idx_bin,
         params.output_tag.c_str()
@@ -547,7 +547,7 @@ int main(int argc, char* argv[]) {
   if (params.statistic_type == "3pcf") {
     if (params.form == "full") {
       std::sprintf(
-        save_filepath, "%s/zeta%d%d%d_bin%02d%s",
+        save_filepath, "%s/zeta%d%d%d_bin%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL, params.idx_bin,
         params.output_tag.c_str()
@@ -591,7 +591,7 @@ int main(int argc, char* argv[]) {
   if (params.statistic_type == "3pcf-win") {
     if (params.form == "full") {
       std::sprintf(
-        save_filepath, "%s/zetaw%d%d%d_bin%02d%s",
+        save_filepath, "%s/zetaw%d%d%d_bin%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL, params.idx_bin,
         params.output_tag.c_str()
@@ -622,7 +622,7 @@ int main(int argc, char* argv[]) {
   if (params.statistic_type == "3pcf-win-wa") {
     if (params.form == "full") {
       std::sprintf(
-        save_filepath, "%s/zetaw%d%d%d_wa%d%d_bin%02d%s",
+        save_filepath, "%s/zetaw%d%d%d_wa%d%d_bin%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL, params.i_wa, params.j_wa,
         params.idx_bin,

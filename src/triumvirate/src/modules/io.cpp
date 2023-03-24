@@ -354,8 +354,8 @@ void print_measurement_datatab_to_file(
     std::fprintf(
       fileptr,
       "%.9e\t%.9e\t%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
-      meas_bispec.k1bin[ibin], meas_bispec.k1eff[ibin],
-      meas_bispec.k2bin[ibin], meas_bispec.k2eff[ibin],
+      meas_bispec.k1_bin[ibin], meas_bispec.k1_eff[ibin],
+      meas_bispec.k2_bin[ibin], meas_bispec.k2_eff[ibin],
       meas_bispec.nmodes[ibin],
       meas_bispec.bk_raw[ibin].real(), meas_bispec.bk_raw[ibin].imag(),
       meas_bispec.bk_shot[ibin].real(), meas_bispec.bk_shot[ibin].imag()
@@ -386,8 +386,8 @@ void print_measurement_datatab_to_file(
     std::fprintf(
       fileptr,
       "%.9e\t%.9e\t%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
-      meas_3pcf.r1bin[ibin], meas_3pcf.r1eff[ibin],
-      meas_3pcf.r2bin[ibin], meas_3pcf.r2eff[ibin],
+      meas_3pcf.r1_bin[ibin], meas_3pcf.r1_eff[ibin],
+      meas_3pcf.r2_bin[ibin], meas_3pcf.r2_eff[ibin],
       meas_3pcf.npairs[ibin],
       meas_3pcf.zeta_raw[ibin].real(), meas_3pcf.zeta_raw[ibin].imag(),
       meas_3pcf.zeta_shot[ibin].real(), meas_3pcf.zeta_shot[ibin].imag()
@@ -418,8 +418,8 @@ void print_measurement_datatab_to_file(
     std::fprintf(
       fileptr,
       "%.9e\t%.9e\t%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
-      meas_3pcf_win.r1bin[ibin], meas_3pcf_win.r1eff[ibin],
-      meas_3pcf_win.r2bin[ibin], meas_3pcf_win.r2eff[ibin],
+      meas_3pcf_win.r1_bin[ibin], meas_3pcf_win.r1_eff[ibin],
+      meas_3pcf_win.r2_bin[ibin], meas_3pcf_win.r2_eff[ibin],
       meas_3pcf_win.npairs[ibin],
       meas_3pcf_win.zeta_raw[ibin].real(),
       meas_3pcf_win.zeta_raw[ibin].imag(),

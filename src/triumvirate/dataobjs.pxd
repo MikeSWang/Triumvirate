@@ -64,28 +64,28 @@ cdef extern from "include/dataobjs.hpp":
     # -- Three-point statistics ------------------------------------------
 
     struct BispecMeasurements "trv::BispecMeasurements":
-        vector[double] k1bin
-        vector[double] k2bin
-        vector[double] k1eff
-        vector[double] k2eff
+        vector[double] k1_bin
+        vector[double] k2_bin
+        vector[double] k1_eff
+        vector[double] k2_eff
         vector[int] nmodes
         vector[np.complex128_t] bk_raw
         vector[np.complex128_t] bk_shot
 
     struct ThreePCFMeasurements "trv::ThreePCFMeasurements":
-        vector[double] r1bin
-        vector[double] r2bin
-        vector[double] r1eff
-        vector[double] r2eff
+        vector[double] r1_bin
+        vector[double] r2_bin
+        vector[double] r1_eff
+        vector[double] r2_eff
         vector[int] npairs
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
 
     struct ThreePCFWindowMeasurements "trv::ThreePCFWindowMeasurements":
-        vector[double] r1bin
-        vector[double] r2bin
-        vector[double] r1eff
-        vector[double] r2eff
+        vector[double] r1_bin
+        vector[double] r2_bin
+        vector[double] r1_eff
+        vector[double] r2_eff
         vector[int] npairs
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
