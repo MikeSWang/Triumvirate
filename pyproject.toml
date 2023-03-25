@@ -51,4 +51,7 @@ build-backend = 'setuptools.build_meta'
 # namespaces = false
 
 # [tool.setuptools.package-data]
+# 'triumvirate' = ["*.pxd", "*.pyx"]
+# 'triumvirate.include' = ["*.hpp"]
+# 'triumvirate.src' = ["*.cpp"]
 # 'triumvirate.resources' = ["*.ini", "*.yml"]

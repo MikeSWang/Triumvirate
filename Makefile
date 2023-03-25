@@ -230,8 +230,11 @@ cpplibinstall: ${PROGLIB}
 unittest: cpptest pytest
 
 cpptest:
+	if [ ! -d ${DIR_TESTBUILD} ]; then mkdir -p ${DIR_TESTBUILD}; fi
+	if [ ! -d ${DIR_TESTOUT} ]; then mkdir -p ${DIR_TESTOUT}; fi
 
 pytest:
+	if [ ! -d ${DIR_TESTOUT} ]; then mkdir -p ${DIR_TESTOUT}; fi
 
 testit:
 	@echo "Performing integration tests... (see ${DIR_TESTOUT}/$@.log)"
