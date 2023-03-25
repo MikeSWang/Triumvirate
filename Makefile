@@ -274,7 +274,7 @@ cppclean:
 
 pyclean:
 	@echo "Cleaning up Triumvirate Python/Cython build..."
-	rm -rf *.egg-info
+	rm -rf **/*.egg-info
 	find ${DIR_PKG} -maxdepth 1 \( -name "*.cpp" -or -name "*.so" \) -exec rm {} +
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type d -name ".ipynb_checkpoints" -exec rm -rf {} +
