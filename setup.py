@@ -327,5 +327,12 @@ if __name__ == '__main__':
             'build_ext': BuildExt,
         },
         ext_modules=cython_ext_modules,
-        libraries=[pkg_library,]  # noqa: E231
+        libraries=[pkg_library,],  # noqa: E231
+        package_data={
+            'triumvirate': [
+                ".pxd", ".pyx",
+                "include/*.hpp", "src/**/*.cpp",
+                "resources/*.ini", "resources/*.yml",
+            ],
+        },
     )
