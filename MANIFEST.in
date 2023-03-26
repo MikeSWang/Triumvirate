@@ -8,6 +8,4 @@ recursive-include src/triumvirate/resources *.ini *.yml
 
 recursive-include tests *.py
 
-graft tests/test_input/ctlgs
-graft tests/test_input/params
-graft tests/test_input/stats
+graft tests/test_input/
