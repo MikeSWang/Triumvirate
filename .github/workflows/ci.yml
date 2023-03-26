@@ -1,20 +1,25 @@
-name: build
+name: ci
 
 on:
   push:
     branches:
       - main
-      - dev
+      - "v[0-9]+"
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
     paths:
       - src/**
+      - tests/**
       - setup.py
       - setup.cfg
       - pyproject.toml
+      - MANIFEST.in
       - Makefile
-      - .github/workflows/build.yml
+      - .github/workflows/ci.yml
 
 jobs:
-  build-dev:
+  build-test-dev:
     strategy:
       fail-fast: false
       matrix:
@@ -29,7 +34,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.x
+          python-version: '3.x'
+          cache: 'pip'
 
       - name: Install Python build system requirements
         run: python -m pip install --upgrade pip setuptools wheel cython
@@ -46,12 +52,36 @@ jobs:
 
       - name: Build and install
         run: |
+          # Specify GNU C++ compiler on macOS.
           if [ "${RUNNER_OS}" == macOS ]; then
             CXX_DIR=$(brew --prefix gcc)/bin
-            CXX_FILE=$(ls ${CXX_DIR} | grep '^g++')
-            export CXX=${CXX_DIR}/${CXX_FILE}
+            CXX_BIN=$(ls ${CXX_DIR} | grep '^g++')
+            export CXX=${CXX_DIR}/${CXX_BIN}
           fi
           make clean; make -j install useomp=true
 
-      - name: Validate build/installation
-        run: python -c "import triumvirate.threept"
+      - name: Install Python test required dependencies
+        run: python -m pip install pytest tox
+
+      - name: Test
+        run: tox -e py
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Python linting dependencies
+        run: python -m pip install flake8
+
+      - name: Lint
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --statistics
