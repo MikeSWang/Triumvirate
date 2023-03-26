@@ -1,4 +1,4 @@
-name: ci
+name: tox
 
 on:
   push:
@@ -16,10 +16,10 @@ on:
       - pyproject.toml
       - MANIFEST.in
       - Makefile
-      - .github/workflows/ci.yml
+      - tox.ini
 
 jobs:
-  build-test-dev:
+  test-tox:
     strategy:
       fail-fast: false
       matrix:
@@ -60,27 +60,7 @@ jobs:
           make clean; make -j install useomp=true
 
       - name: Install Python test required dependencies
-        run: python -m pip install pytest
+        run: python -m pip install tox
 
       - name: Test
-        run: pytest tests/ --capture=no --runslow
-
-  lint:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set up Python 3
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      - name: Install Python linting dependencies
-        run: python -m pip install flake8
-
-      - name: Lint
-        run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --statistics
+        run: tox -v
