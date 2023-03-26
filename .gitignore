@@ -58,9 +58,6 @@ storage/
 sandbox/
 
 # Exclusions
-# Directory: tests/test_input/extras
-tests/test_input/extras
-
 # Files: triumvirate/*.cpp
 **/triumvirate/*.cpp
 
