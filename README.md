@@ -4,7 +4,7 @@
 
 # Three-Point Clustering Measurements in LSS
 
-[![CI](https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/ci.yml?branch=main&logo=GitHub%20Actions)](https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml)
+[![CI](https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml/badge.svg)](https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/readthedocs/triumvirate/latest?logo=Read%20the%20Docs)](https://triumvirate.readthedocs.io/en/latest/)
 [![Release](https://img.shields.io/github/v/release/MikeSWang/Triumvirate?display_name=tag&sort=semver&logo=Git)](https://github.com/MikeSWang/Triumvirate/releases/latest)
 
