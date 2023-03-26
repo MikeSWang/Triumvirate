@@ -25,9 +25,13 @@ cosmological analyses.
     with this program.  If not, see `<https://www.gnu.org/licenses/>`_.
 
 """
-# Only string variables should be defined in this module.  No other
-# definition or statement is allowed.
+from importlib.metadata import PackageNotFoundError, version
+
 __copyright__ = "Copyright 2023, Mike S Wang & Naonori S Sugiyama"
-__date__ = "2023-03-01"
+__date__ = "2023-03-27"
 __license__ = "GPL-3.0"
-__version__ = "0.0.0-rc.0"
+
+try:
+    __version__ = version('triumvirate')
+except PackageNotFoundError:
+    __version__ = "0.1"
