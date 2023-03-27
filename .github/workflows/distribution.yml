@@ -7,13 +7,10 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
 
 jobs:
-  test-pypi:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
+  build_sdist:
+    name: Build source-distribution tarball
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -25,26 +22,41 @@ jobs:
           python-version: '3.x'
 
       - name: Install Python packaging system requirements
-        run: python -m pip install --upgrade build auditwheel
-
-      - name: Install C++ build required dependencies
-        uses: knicknic/os-specific-run@v1.0.3
-        with:
-          linux: |
-            sudo apt-get update
-            sudo apt-get install -y libgsl-dev libfftw3-dev libgomp1
-          macos: |
-            brew update
-            brew install gsl fftw libomp
+        run: python -m pip install --upgrade build
 
       - name: Build distribution(s)
-        run: python -m build --sdist --wheel --outdir dist/ .
+        run: python -m build --sdist --outdir dist/ .
 
-      - name: Forge wheels
-        run: auditwheel -v repair dist/*.whl
-
-      - name: Upload distribution(s) to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Save tarball
+        uses: actions/upload-artifact@v3
         with:
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository-url: https://test.pypi.org/legacy/
+          name: sdist_tarball
+          path: dist/*.tar.gz
+
+  build_bdist:
+    name: Build built-distribution wheel
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Use oldest supported OS for backward compatibility.
+        os: [ubuntu-20.04, windows-2019, macos-11]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build wheel
+        uses: pypa/cibuildwheel@v2.12.1
+        with:
+          package-dir: .
+          output-dir: dist/
+          config-file: pyproject.toml
+
+      - name: Save wheel
+        uses: actions/upload-artifact@v3
+        with:
+          name: bdist_wheel
+          path: dist/*.whl
