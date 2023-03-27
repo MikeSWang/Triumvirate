@@ -1,0 +1,41 @@
+name: distribution
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
+
+jobs:
+  test-pypi:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Python build system requirements
+        run: python -m pip install --upgrade pip setuptools cython
+
+      - name: Install C++ build required dependencies
+        uses: knicknic/os-specific-run@v1.0.3
+        with:
+          linux: |
+            sudo apt-get update
+            sudo apt-get install -y libgsl-dev libfftw3-dev libgomp1
+          macos: |
+            brew update
+            brew install gsl fftw libomp
+
+      - name: Build source and built distributions
+        run: bash tools/pkg/autotest_release
