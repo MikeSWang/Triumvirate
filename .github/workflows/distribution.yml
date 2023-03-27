@@ -24,8 +24,8 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install Python build system requirements
-        run: python -m pip install --upgrade pip setuptools cython
+      - name: Install Python packaging system requirements
+        run: python -m pip install --upgrade build
 
       - name: Install C++ build required dependencies
         uses: knicknic/os-specific-run@v1.0.3
@@ -37,5 +37,11 @@ jobs:
             brew update
             brew install gsl fftw libomp
 
-      - name: Build source and built distributions
-        run: bash tools/pkg/autotest_release
+      - name: Build distribution(s)
+        run: python -m build --sdist --wheel --outdir dist/ .
+
+      - name: Upload distribution(s) to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
