@@ -22,6 +22,8 @@ on:
 
 jobs:
   build-test-dev:
+    name: Build and test in development mode
+
     strategy:
       fail-fast: false
       matrix:
@@ -68,6 +70,8 @@ jobs:
         run: pytest
 
   lint:
+    name: Lint code
+
     runs-on: ubuntu-latest
 
     steps:
