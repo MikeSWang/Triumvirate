@@ -63,3 +63,10 @@ build-backend = 'setuptools.build_meta'
 # 'triumvirate.resources' = ["*.ini", "*.yml"]
 
 [tool.setuptools_scm]
+
+[tool.pytest.ini_options]
+minversion = '6.0'
+addopts = "--full-trace --verbose --capture=no --runslow"
+testpaths = [
+    "tests",
+]

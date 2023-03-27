@@ -97,6 +97,9 @@ cd ${DOCS_DIR}
 # Clean up.
 make clean excl=$excl
 
+# Backup Doxyfile.
+cp ${DOXYFILE} ${DOXYFILE}.bak
+
 # Pre-configure Doxygen-related docs.
 replace_in_doxyfile "PROJECT_NUMBER         = $(get_version_release)"
 
@@ -181,6 +184,9 @@ if [[ "${READTHEDOCS}" != "True" ]]; then
     echo -e "RewriteEngine On\nRewriteRule (.*)\$ index.html" \
         > ${BUILD_HTML_PUBLIC_DIR}.htaccess
 fi
+
+# Restore backed-up files.
+mv ${DOXYFILE}.bak ${DOXYFILE}
 
 # Return to original directory.
 cd -
