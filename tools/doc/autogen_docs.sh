@@ -15,7 +15,8 @@ excl=${1#"excl_"}  # exclusion case: {"doxy", "sphinx"}
 PROJ_NAME=triumvirate
 
 # Set the ``docs`` directory (the working directory).
-DOCS_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+THIS_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+DOCS_DIR=${THIS_DIR}/../../docs
 
 # Set the project repository directory.
 ROOT_DIR=${DOCS_DIR}/..
