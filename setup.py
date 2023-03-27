@@ -32,23 +32,6 @@ pkg_include_dir = os.path.join(pkg_dir, "include")
 pkg_src_dir = os.path.join(pkg_dir, "src/modules")
 
 
-# -- Info ----------------------------------------------------------------
-
-# # Extract package information.
-# pkg_info = {}
-# with open(os.path.join(pkg_dir, "__init__.py")) as pkg_pyfile:
-#     exec(pkg_pyfile.read(), pkg_info)
-
-# # Determine repository branch.
-# version = pkg_info.get('__version__')
-# if any([segment in version for segment in ['a', 'b', 'rc']]):
-#     branch = 'main'
-# elif 'dev' in version:
-#     branch = 'dev'
-# else:
-#     branch = 'stable'
-
-
 # ========================================================================
 # Commands
 # ========================================================================
@@ -321,7 +304,7 @@ cython_ext_modules = cythonize(
 
 if __name__ == '__main__':
     setup(
-        # license=pkg_info.get('__license__'),
+        use_scm_version=True,
         cmdclass={
             'build_clib': BuildClib,
             'build_ext': BuildExt,
