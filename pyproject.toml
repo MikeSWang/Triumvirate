@@ -31,7 +31,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
 ]
 dynamic = [
-  'version',
+  # 'version',
   'readme',
 ]
 
@@ -43,23 +43,23 @@ repository = "https://github.com/MikeSWang/Triumvirate"
 documentation = "https://mikeswang.github.io/Triumvirate"
 
 [tool.setuptools.dynamic]
-version = {attr = 'triumvirate.__version__'}
+# version = {attr = 'triumvirate.__version__'}
 readme = {file = ["README.md", "CHANGELOG.md"]}
 
-# [tool.setuptools.packages.find]
-# where = ['src']
-# exclude = [
-#     'triumvirate.include*',
-#     'triumvirate.src*',
-#     'triumvirate.resources*',
-# ]
-# namespaces = false
+[tool.setuptools.packages.find]
+where = ['src']
+exclude = [
+    'triumvirate.include*',
+    'triumvirate.src*',
+    'triumvirate.resources*',
+]
+namespaces = false
 
-# [tool.setuptools.package-data]
-# 'triumvirate' = ["*.pxd", "*.pyx"]
-# 'triumvirate.include' = ["*.hpp"]
-# 'triumvirate.src' = ["*.cpp"]
-# 'triumvirate.resources' = ["*.ini", "*.yml"]
+[tool.setuptools.package-data]
+'triumvirate' = ["*.pxd", "*.pyx"]
+'triumvirate.include' = ["*.hpp"]
+'triumvirate.src' = ["*.cpp"]
+'triumvirate.resources' = ["*.ini", "*.yml"]
 
 [tool.setuptools_scm]
 
