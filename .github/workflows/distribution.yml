@@ -40,13 +40,23 @@ jobs:
       fail-fast: false
       matrix:
         # Use oldest supported OS for backward compatibility.
-        os: [ubuntu-20.04, windows-2019, macos-11]
+        os: [ubuntu-20.04, macos-11]
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Install C++ build required dependencies
+        uses: knicknic/os-specific-run@v1.0.3
+        with:
+          linux: |
+            sudo apt-get update
+            sudo apt-get install -y libgsl-dev libfftw3-dev libgomp1
+          macos: |
+            brew update
+            brew install gsl fftw libomp
 
       - name: Build wheel
         uses: pypa/cibuildwheel@v2.12.1
