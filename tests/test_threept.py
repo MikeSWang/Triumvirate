@@ -67,7 +67,8 @@ def test_compute_bispec(degrees, form, idx_bin,
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['bk_shot'],
-        measurements_ext[7] + 1j * measurements_ext[8]
+        measurements_ext[7] + 1j * measurements_ext[8],
+        atol=1.e-8
     ), "Measured shot noise contributions do not match."
 
 
@@ -129,7 +130,8 @@ def test_compute_3pcf(degrees, form, idx_bin,
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['zeta_shot'],
-        measurements_ext[7] + 1j * measurements_ext[8]
+        measurements_ext[7] + 1j * measurements_ext[8],
+        atol=1.e-8
     ), "Measured shot noise contributions do not match."
 
 
@@ -186,7 +188,8 @@ def test_compute_bispec_in_gpp_box(degrees, form, idx_bin,
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['bk_shot'],
-        measurements_ext[7] + 1j * measurements_ext[8]
+        measurements_ext[7] + 1j * measurements_ext[8],
+        atol=1.e-8
     ), "Measured shot noise contributions do not match."
 
 
@@ -248,7 +251,8 @@ def test_compute_3pcf_in_gpp_box(degrees, form, idx_bin,
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['zeta_shot'],
-        measurements_ext[7] + 1j * measurements_ext[8]
+        measurements_ext[7] + 1j * measurements_ext[8],
+        atol=1.e-8
     ), "Measured shot noise contributions do not match."
 
 
@@ -310,5 +314,6 @@ def test_compute_3pcf_window(degrees, form, idx_bin,
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['zeta_shot'],
-        measurements_ext[7] + 1j * measurements_ext[8]
+        measurements_ext[7] + 1j * measurements_ext[8],
+        atol=1.e-8
     ), "Measured shot noise contributions do not match."

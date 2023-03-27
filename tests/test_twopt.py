@@ -48,7 +48,8 @@ def test_compute_powspec(degree,
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['pk_shot'],
-        measurements_ext[5] + 1j * measurements_ext[6]
+        measurements_ext[5] + 1j * measurements_ext[6],
+        atol=1.e-8
     ), "Measured shot noise contributions do not match."
 
 
@@ -125,7 +126,8 @@ def test_compute_powspec_in_gpp_box(degree,
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['pk_shot'],
-        measurements_ext[5] + 1j * measurements_ext[6]
+        measurements_ext[5] + 1j * measurements_ext[6],
+        atol=1.e-8
     ), "Measured shot noise contributions do not match."
 
 
