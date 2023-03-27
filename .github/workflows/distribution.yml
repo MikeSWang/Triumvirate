@@ -25,7 +25,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install Python packaging system requirements
-        run: python -m pip install --upgrade build
+        run: python -m pip install --upgrade build auditwheel
 
       - name: Install C++ build required dependencies
         uses: knicknic/os-specific-run@v1.0.3
@@ -39,6 +39,9 @@ jobs:
 
       - name: Build distribution(s)
         run: python -m build --sdist --wheel --outdir dist/ .
+
+      - name: Forge wheels
+        run: auditwheel -v repair dist/*.whl
 
       - name: Upload distribution(s) to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1

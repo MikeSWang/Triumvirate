@@ -2,7 +2,6 @@
 requires = [
     'setuptools',
     'setuptools_scm',
-    'wheel',
     'Cython',
     'oldest-supported-numpy',
 ]

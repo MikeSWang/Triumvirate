@@ -6,7 +6,7 @@
 #
 
 rm -rf dist/
-python -m pip install --upgrade wheel build auditwheel twine
+python -m pip install --upgrade build auditwheel twine
 python -m build --sdist --wheel --outdir dist/ .
 auditwheel -v repair dist/Triumvirate-*.whl
 python -m twine upload --verbose --repository testpypi dist/*
