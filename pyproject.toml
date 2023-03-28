@@ -42,24 +42,27 @@ nbk = ['nbodykit']
 repository = "https://github.com/MikeSWang/Triumvirate"
 documentation = "https://mikeswang.github.io/Triumvirate"
 
+[tool.setuptools]
+include-package-data = false
+
 [tool.setuptools.dynamic]
 # version = {attr = 'triumvirate.__version__'}
 readme = {file = ["README.md", "CHANGELOG.md"]}
 
-# [tool.setuptools.packages.find]
-# where = ['src']
+[tool.setuptools.packages.find]
+where = ['src']
+namespaces = false
 # exclude = [
 #     'triumvirate.include*',
 #     'triumvirate.src*',
 #     'triumvirate.resources*',
 # ]
-# namespaces = false
 
-# [tool.setuptools.package-data]
-# 'triumvirate' = ["*.pxd", "*.pyx"]
-# 'triumvirate.include' = ["*.hpp"]
-# 'triumvirate.src' = ["*.cpp"]
-# 'triumvirate.resources' = ["*.ini", "*.yml"]
+[tool.setuptools.package-data]
+'triumvirate' = ["*.pxd", "*.pyx"]
+'triumvirate.include' = ["*.hpp"]
+'triumvirate.src' = ["*.cpp"]
+'triumvirate.resources' = ["*.ini", "*.yml"]
 
 [tool.setuptools_scm]
 
@@ -69,3 +72,12 @@ addopts = "--full-trace --verbose --capture=no --runslow"
 testpaths = [
     "tests",
 ]
+
+[tool.cibuildwheel]
+environment = { PIP_GLOBAL_OPTION="build_ext -j4" }
+
+[tool.cibuildwheel.linux]
+before-all = "apt-get install -y libfftw3-3"
+
+[tool.cibuildwheel.macos]
+before-all = "brew install fftw"
