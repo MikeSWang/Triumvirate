@@ -1,10 +1,17 @@
-name: distribution
+name: continuous-delivery
 
 on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
       - "v[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DIST_DIR: dist/
 
 jobs:
   build_sdist:
@@ -21,17 +28,17 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install Python packaging system requirements
+      - name: Install Python packaging requirements
         run: python -m pip install --upgrade build
 
-      - name: Build distribution(s)
-        run: python -m build --sdist --outdir dist/ .
+      - name: Build distribution
+        run: python -m build --sdist --outdir ${DIST_DIR} .
 
       - name: Save tarball
         uses: actions/upload-artifact@v3
         with:
           name: sdist_tarball
-          path: dist/*.tar.gz
+          path: ${DIST_DIR}/*.tar.gz
 
   build_bdist:
     name: Build built-distribution wheel
@@ -48,25 +55,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install C++ build required dependencies
-        uses: knicknic/os-specific-run@v1.0.3
-        with:
-          linux: |
-            sudo apt-get update
-            sudo apt-get install -y libgsl-dev libfftw3-dev libgomp1
-          macos: |
-            brew update
-            brew install gsl fftw libomp
-
-      - name: Build wheel
+      - name: Build distribution
         uses: pypa/cibuildwheel@v2.12.1
         with:
           package-dir: .
-          output-dir: dist/
+          output-dir: ${DIST_DIR}
           config-file: pyproject.toml
 
       - name: Save wheel
         uses: actions/upload-artifact@v3
         with:
           name: bdist_wheel
-          path: dist/*.whl
+          path: ${DIST_DIR}/*.whl

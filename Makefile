@@ -216,7 +216,7 @@ cppinstall: cpplibinstall cppappbuild
 
 pyinstall:
 	@echo "Installing Triumvirate Python package ${WOMP} OpenMP (in development mode)..."
-	python -m pip install --verbose --user --editable .
+	python -m pip install --upgrade --user --editable . --verbose
 
 cppappbuild: ${PROGEXE}
 
