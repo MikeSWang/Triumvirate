@@ -1,6 +1,7 @@
 """Set up Triumvirate and its Cythonised extension modules.
 
 """
+import logging
 import os
 import platform
 from multiprocessing import cpu_count
@@ -41,8 +42,11 @@ class BuildExt(build_ext):
 
     """
     def finalize_options(self):
+        """Modify parallelisation option in
+        :meth:`Cython.Distutils.build_ext.build_ext.build_extensions`.
 
-        build_ext.finalize_options(self)
+        """
+        super().finalize_options()
 
         # Set unset parallel option to integer `num_procs` through
         # the environmental variable 'PY_BUILD_PARALLEL'.
@@ -51,18 +55,22 @@ class BuildExt(build_ext):
 
     def build_extensions(self):
         """Modify compiler and compilation configuration in
-        :meth:`Cython.Distutils.build_ext.build_extensions`.
+        :meth:`Cython.Distutils.build_ext.build_ext.build_extensions`.
 
         """
-        # self.compiler.set_executable('compiler_cxx', default_compiler)
-        # self.compiler.set_executable('compiler_so', default_compiler)
-        # self.compiler.set_executable('linker_so', default_compiler)
-
         if '-Wstrict-prototypes' in self.compiler.compiler_so:
             self.compiler.compiler_so.remove('-Wstrict-prototypes')
 
         if isinstance(self.parallel, int):
-            print(f"running build_ext with {num_procs} processes")
+            _num_procs = num_procs
+        else:
+            _num_procs = 1
+
+        disutils_logger = logging.getLogger()
+        disutils_logger.info(
+            "running build_ext on %d processes with %s compiler",
+            _num_procs, self.compiler.compiler_type
+        )
 
         super().build_extensions()
 
@@ -73,15 +81,17 @@ class BuildClib(build_clib):
     """
     def build_libraries(self, libraries):
         """Modify compiler and compilation configuration in
-        :meth:`setuptools.command.build_clib.build_libraries`.
+        :meth:`setuptools.command.build_clib.build_clib.build_libraries`.
 
         """
-        # self.compiler.set_executable('compiler_cxx', default_compiler)
-        # self.compiler.set_executable('compiler_so', default_compiler)
-        # self.compiler.set_executable('linker_so', default_compiler)
-
         if '-Wstrict-prototypes' in self.compiler.compiler_so:
             self.compiler.compiler_so.remove('-Wstrict-prototypes')
+
+        disutils_logger = logging.getLogger()
+        disutils_logger.info(
+            "running build_clib with %s compiler",
+            self.compiler.compiler_type
+        )
 
         super().build_libraries(libraries)
 
@@ -115,10 +125,10 @@ if build_platform not in ['linux', 'darwin']:
 language = 'c++'
 
 # Enforce platform-dependent default compiler choice.
-default_compiler = COMPILER_CHOICES[build_platform]
+compiler = os.environ.get('PY_CXX', COMPILER_CHOICES[build_platform])
 
-os.environ['CC'] = os.environ.get('PY_CXX', default_compiler)
-os.environ['CXX'] = os.environ.get('PY_CXX', default_compiler)
+os.environ['CC'] = compiler
+os.environ['CXX'] = compiler
 
 
 # -- Options -------------------------------------------------------------
