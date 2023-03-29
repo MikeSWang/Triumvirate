@@ -13,6 +13,7 @@ from Cython.Distutils import build_ext, Extension
 
 import numpy
 from extension_helpers._openmp_helpers import check_openmp_support
+from extension_helpers._setup_helpers import pkg_config
 
 
 # ========================================================================
@@ -104,6 +105,8 @@ class BuildClib(build_clib):
 # ========================================================================
 
 # -- Platform choices ----------------------------------------------------
+
+# Assume GNU compiler as default with matching OpenMP implementation.
 
 COMPILER_CHOICES = {
     'default': 'g++',
@@ -206,6 +209,8 @@ ext_includes = [
 includes = [pkg_include_dir, npy_include,] + ext_includes  # noqa: E231
 
 # Set libraries.
+libdirs = []
+
 pkg_lib = 'trv'
 pkg_library = (
     pkg_lib,
@@ -225,6 +230,18 @@ ext_libs = ['gsl', 'gslcblas', 'm', 'fftw3',]  # noqa: E231
 # The linking order matters, and to ensure that, `-ltrv` is duplicated
 # also in `libraries` keyword argument in :meth:`setuptools.setup`.
 libs = [pkg_lib,] + ext_libs  # noqa: E231
+
+# Use :mod:`extension_helpers` to catch missing options.
+checked_options = pkg_config(ext_libs, default_libraries=[])
+for incl_ in checked_options['include_dirs']:
+    if incl_ not in includes:
+        includes.append(incl_)
+for lib_ in checked_options['library_dirs']:
+    if lib_ not in libdirs:
+        libdirs.append(lib_)
+for flag_ in checked_options['extra_compile_args']:
+    if flag_ not in cflags and flag_ not in ldflags:
+        cflags.append(flag_)
 
 
 # ========================================================================
@@ -261,6 +278,7 @@ def define_extension(module_name,
     ext_module_kwargs = {
         'define_macros': macros,
         'include_dirs': includes,
+        'library_dirs': libdirs,
         'libraries': libs,
         'extra_compile_args': cflags,
         'extra_link_args': ldflags,
