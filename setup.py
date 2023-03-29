@@ -69,8 +69,9 @@ class BuildExt(build_ext):
 
         disutils_logger = logging.getLogger()
         disutils_logger.info(
-            "running build_ext on %d processes with %s compiler",
-            _num_procs, self.compiler.compiler_so[0]
+            "running build_ext on %d processes with %s compiler (PY_CXX=%s)",
+            _num_procs, self.compiler.compiler_so[0],
+            os.environ.get('PY_CXX', '\'\'')
         )
 
         super().build_extensions()
@@ -90,8 +91,9 @@ class BuildClib(build_clib):
 
         disutils_logger = logging.getLogger()
         disutils_logger.info(
-            "running build_clib with %s compiler",
-            self.compiler.compiler_so[0]
+            "running build_clib with %s compiler (PY_CXX=%s)",
+            self.compiler.compiler_so[0],
+            os.environ.get('PY_CXX', '\'\'')
         )
 
         super().build_libraries(libraries)
