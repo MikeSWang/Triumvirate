@@ -3,17 +3,18 @@ name: continuous-integration
 on:
   push:
     branches:
+      - main
       - 'v[0-9]+'
-    paths:
-      - src/**
-      - tests/**
-      - setup.py
-      - setup.cfg
-      - pyproject.toml
-      - MANIFEST.in
-      - Makefile
-      - .github/workflows/ci.yml
-      - .gitignore
+    # paths:
+    #   - src/**
+    #   - tests/**
+    #   - setup.py
+    #   - setup.cfg
+    #   - pyproject.toml
+    #   - MANIFEST.in
+    #   - Makefile
+    #   - .github/workflows/ci.yml
+    #   - .gitignore
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

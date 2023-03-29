@@ -4,6 +4,7 @@ requires = [
     'setuptools_scm>=6.4.0',
     'Cython>=0.25',
     'oldest-supported-numpy',
+    'extension-helpers',
 ]
 build-backend = 'setuptools.build_meta'
 
@@ -89,7 +90,7 @@ before-all = "yum install fftw3-devel"
 [tool.cibuildwheel.macos]
 before-all = [
     "brew install fftw",
-    "brew install gcc",
+    "brew install gcc libomp",
 ]
 before-build = [
     "export PY_CXX_DIR=$(brew --prefix gcc)/bin",

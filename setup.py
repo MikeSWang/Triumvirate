@@ -12,6 +12,7 @@ from Cython.Build import cythonize
 from Cython.Distutils import build_ext, Extension
 
 import numpy
+from extension_helpers._openmp_helpers import check_openmp_support
 
 
 # ========================================================================
@@ -69,7 +70,7 @@ class BuildExt(build_ext):
         disutils_logger = logging.getLogger()
         disutils_logger.info(
             "running build_ext on %d processes with %s compiler",
-            _num_procs, self.compiler.compiler_type
+            _num_procs, self.compiler.compiler_so[0]
         )
 
         super().build_extensions()
@@ -90,7 +91,7 @@ class BuildClib(build_clib):
         disutils_logger = logging.getLogger()
         disutils_logger.info(
             "running build_clib with %s compiler",
-            self.compiler.compiler_so
+            self.compiler.compiler_so[0]
         )
 
         super().build_libraries(libraries)
@@ -143,7 +144,7 @@ ldflags = [
 
 # Add optional flags for OpenMP support (enabled by default).
 disable_omp = os.environ.get('PY_NO_OMP')
-if disable_omp is None:
+if disable_omp is None and check_openmp_support():
     # Enforce platform-dependent default OpenMP library choice.
     default_libomp = OPENMP_LIB_CHOICES[build_platform]
     default_ldflags_omp = '-l' + default_libomp if default_libomp else ''
@@ -293,6 +294,11 @@ ext_module_configs = {
     '_fftlog': {},
 }
 
+extensions = [
+    define_extension(name, **cfg)
+    for name, cfg in ext_module_configs.items()
+]
+
 cython_directives = {
    'language_level': '3',
    'c_string_encoding': 'utf-8',
@@ -300,10 +306,7 @@ cython_directives = {
 }
 
 cython_ext_modules = cythonize(
-    [
-        define_extension(name, **cfg)
-        for name, cfg in ext_module_configs.items()
-    ],
+    extensions,
     compiler_directives=cython_directives,
     nthreads=num_procs,
 )
