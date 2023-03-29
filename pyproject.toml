@@ -74,10 +74,24 @@ testpaths = [
 ]
 
 [tool.cibuildwheel]
-environment = { PIP_GLOBAL_OPTION="build_ext -j4" }
+skip = [
+    'pp*',
+    '*-manylinux_i686',
+    '*_ppc64le',
+    '*_s390x',
+]
+manylinux-x86_64-image = 'manylinux_2_28'
+manylinux-aarch64-image = 'manylinux_2_28'
 
 [tool.cibuildwheel.linux]
-before-all = "apt-get install -y libfftw3-3"
+before-all = "yum install fftw3-devel"
 
 [tool.cibuildwheel.macos]
-before-all = "brew install fftw"
+before-all = [
+    "brew install fftw",
+    "brew install gcc",
+]
+before-build = [
+    "export PY_CXX=\"$(brew --prefix gcc)/bin/$(ls ${CXX_DIR} | grep '^g++')\"",
+    "echo \"Python setup C++ compiler set to ${PY_CXX}\""
+]
