@@ -24,6 +24,7 @@ lib/
 lib64/
 sdist/
 var/
+wheelhouse/
 wheels/
 
 # Executables

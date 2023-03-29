@@ -1,8 +1,8 @@
 [build-system]
 requires = [
     'setuptools>=61.0.0',
-    'setuptools_scm',
-    'Cython',
+    'setuptools_scm>=6.4.0',
+    'Cython>=0.25',
     'oldest-supported-numpy',
 ]
 build-backend = 'setuptools.build_meta'
@@ -16,8 +16,8 @@ requires-python = '>=3.8'
 dependencies = [
     'numpy',
     'scipy',
-    'astropy',
-    'pyyaml',
+    'astropy>=4.2',
+    'pyyaml>4',
 ]
 description = "Three-point clustering measurements in large-scale structure analyses."
 classifiers = [
