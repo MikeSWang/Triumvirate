@@ -90,7 +90,7 @@ class BuildClib(build_clib):
         disutils_logger = logging.getLogger()
         disutils_logger.info(
             "running build_clib with %s compiler",
-            self.compiler.compiler_type
+            self.compiler.compiler_so
         )
 
         super().build_libraries(libraries)
@@ -129,6 +129,7 @@ compiler = os.environ.get('PY_CXX', COMPILER_CHOICES[build_platform])
 
 os.environ['CC'] = compiler
 os.environ['CXX'] = compiler
+os.environ['CPP'] = compiler
 
 
 # -- Options -------------------------------------------------------------
