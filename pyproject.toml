@@ -92,6 +92,7 @@ before-all = [
     "brew install gcc",
 ]
 before-build = [
-    "export PY_CXX=\"$(brew --prefix gcc)/bin/$(ls ${CXX_DIR} | grep '^g++')\"",
-    "echo \"Python setup C++ compiler set to ${PY_CXX}\""
+    "export PY_CXX_DIR=$(brew --prefix gcc)/bin",
+    "export PY_CXX_BIN=$(ls ${PY_CXX_DIR} | grep '^g++')",
+    "export PY_CXX=${PY_CXX_DIR}/${PY_CXX_BIN}",
 ]
