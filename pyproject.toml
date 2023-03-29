@@ -75,17 +75,24 @@ testpaths = [
 ]
 
 [tool.cibuildwheel]
+build-frontend = 'build'
 skip = [
     'pp*',
     '*-manylinux_i686',
-    '*_ppc64le',
-    '*_s390x',
+    '*-musllinux*',
+    '*-macosx_universal2',
+    # '*_ppc64le',
+    # '*_s390x',
 ]
-manylinux-x86_64-image = 'manylinux_2_28'
-manylinux-aarch64-image = 'manylinux_2_28'
+# manylinux-x86_64-image = 'manylinux_2_24'
+# manylinux-aarch64-image = 'manylinux_2_24'
 
 [tool.cibuildwheel.linux]
 before-all = "yum install fftw3-devel"
+
+[[tool.cibuildwheel.overrides]]
+select = '*manylinux_2_24*'
+before-all = "apt-get install -y libfftw3-dev"
 
 [tool.cibuildwheel.macos]
 before-all = [
@@ -96,4 +103,5 @@ before-build = [
     "export PY_CXX_DIR=$(brew --prefix gcc)/bin",
     "export PY_CXX_BIN=$(ls ${PY_CXX_DIR} | grep '^g++')",
     "export PY_CXX=${PY_CXX_DIR}/${PY_CXX_BIN}",
+    "echo $(ls ${PY_CXX_DIR})",
 ]

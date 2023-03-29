@@ -318,7 +318,9 @@ cython_ext_modules = cythonize(
 
 if __name__ == '__main__':
     setup(
-        use_scm_version=True,
+        use_scm_version={
+            'version_scheme': 'post-release',
+        },
         cmdclass={
             'build_clib': BuildClib,
             'build_ext': BuildExt,

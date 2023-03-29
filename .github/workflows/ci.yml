@@ -5,16 +5,16 @@ on:
     branches:
       - main
       - 'v[0-9]+'
-    # paths:
-    #   - src/**
-    #   - tests/**
-    #   - setup.py
-    #   - setup.cfg
-    #   - pyproject.toml
-    #   - MANIFEST.in
-    #   - Makefile
-    #   - .github/workflows/ci.yml
-    #   - .gitignore
+    paths:
+      - src/**
+      - tests/**
+      - setup.py
+      - setup.cfg
+      - pyproject.toml
+      - MANIFEST.in
+      - Makefile
+      - .github/workflows/ci.yml
+      - .gitignore
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -43,9 +43,9 @@ jobs:
           python-version: '3.x'
 
       - name: Install Python build system requirements
-        run: >
+        run: >-
           python -m pip install --upgrade
-            pip setuptools setuptools_scm cython
+          pip setuptools setuptools_scm cython
 
       - name: Install C++ build dependency requirements
         uses: knicknic/os-specific-run@v1.0.3
