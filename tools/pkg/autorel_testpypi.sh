@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 #
 # @file autorel_pypi.sh
+#
+# Require docker to run `cibuildwheel`.
+#
 # @author Mike S Wang
 # @brief Build and upload release distributions to the PyPI index.
 #
@@ -12,13 +15,11 @@ DIST_DIR=dist/
 rm -rf ${DIST_DIR}
 
 # Install distribution tools.
-python -m pip install --upgrade build auditwheel twine
+python -m pip install --upgrade build cibuildwheel twine
 
 # Build both source and built distributions.
-python -m build --sdist --wheel --outdir ${DIST_DIR} .
-
-# Repair built wheels.
-auditwheel -v repair ${DIST_DIR}/Triumvirate-*.whl
+python -m build --sdist --outdir ${DIST_DIR} .
+python -m cibuildwheel --platform linux --output-dir ${DIST_DIR} .
 
 # Upload to PyPI.
-python -m twine upload --verbose ${DIST_DIR}/*
+python -m twine upload --repository testpypi --verbose ${DIST_DIR}/*
