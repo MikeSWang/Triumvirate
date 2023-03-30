@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         # Use oldest supported OS for backward compatibility.
-        os: [ubuntu-20.04, macos-11, macos-12]
+        os: [ubuntu-20.04, macos-11]
 
     runs-on: ${{ matrix.os }}
 
@@ -64,7 +64,8 @@ jobs:
           config-file: pyproject.toml
         env:
           # Hard-code macOS C++ compilation settings which must match the OS.
-          CIBW_ARCHS_MACOS: "x86_64 arm64 universal2"
+          # Skip arm64 and universal2 architecture for now.
+          CIBW_ARCHS_MACOS: "x86_64"
           CIBW_ENVIRONMENT_MACOS: >-
             PY_CXX=$(brew --prefix gcc)/bin/g++-12
             PY_CFLAGS="-I$(brew --prefix)/include -I$(brew --prefix)/opt/fftw3/include"

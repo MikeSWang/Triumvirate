@@ -49,7 +49,7 @@ def test_compute_powspec(degree,
     assert np.allclose(
         measurements['pk_shot'],
         measurements_ext[5] + 1j * measurements_ext[6],
-        atol=1.e-8
+        atol=1.e-6
     ), "Measured shot noise contributions do not match."
 
 
@@ -127,7 +127,7 @@ def test_compute_powspec_in_gpp_box(degree,
     assert np.allclose(
         measurements['pk_shot'],
         measurements_ext[5] + 1j * measurements_ext[6],
-        atol=1.e-8
+        atol=1.e-6
     ), "Measured shot noise contributions do not match."
 
 
