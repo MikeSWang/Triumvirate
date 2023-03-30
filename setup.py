@@ -211,28 +211,10 @@ includes = [pkg_include_dir, npy_include,] + ext_includes  # noqa: E231
 # Set libraries.
 libdirs = []
 
-pkg_lib = 'trv'
-pkg_library = (
-    pkg_lib,
-    {
-        'sources': [
-            os.path.join(pkg_src_dir, _cpp_source)
-            for _cpp_source in os.listdir(pkg_src_dir)
-        ],
-        'macros': pkg_macros,
-        'cflags': cflags,
-        'include_dirs': [pkg_include_dir,],  # noqa: E231
-    }
-)
+libs = ['gsl', 'gslcblas', 'm', 'fftw3',]  # noqa: E231
 
-ext_libs = ['gsl', 'gslcblas', 'm', 'fftw3',]  # noqa: E231
-
-# The linking order matters, and to ensure that, `-ltrv` is duplicated
-# also in `libraries` keyword argument in :meth:`setuptools.setup`.
-libs = [pkg_lib,] + ext_libs  # noqa: E231
-
-# Use :mod:`extension_helpers` to catch missing options.
-checked_options = pkg_config(ext_libs, default_libraries=[])
+# Check for missing options using :mod:`extension_helpers`.
+checked_options = pkg_config(libs, default_libraries=[])
 for incl_ in checked_options['include_dirs']:
     if incl_ not in includes:
         includes.append(incl_)
@@ -242,6 +224,25 @@ for lib_ in checked_options['library_dirs']:
 for flag_ in checked_options['extra_compile_args']:
     if flag_ not in cflags and flag_ not in ldflags:
         cflags.append(flag_)
+
+# Set and prepend internal static library/libraries.
+pkg_lib = 'trv'
+pkg_library = (
+    pkg_lib,
+    {
+        'sources': [
+            os.path.join(pkg_src_dir, _cpp_source)
+            for _cpp_source in os.listdir(pkg_src_dir)
+        ],
+        'macros': macros,
+        'cflags': cflags,
+        'include_dirs': includes,
+    }
+)
+
+# The linking order matters, and to ensure that, `-ltrv` is duplicated
+# also in `libraries` keyword argument in :meth:`setuptools.setup`.
+libs = [pkg_lib,] + libs  # noqa: E231
 
 
 # ========================================================================
