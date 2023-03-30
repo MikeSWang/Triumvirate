@@ -5,6 +5,8 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
       - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
+    paths:
+      - .github/workflows/cd.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -33,10 +35,16 @@ jobs:
       - name: Build source distribution
         run: python -m build --sdist --outdir dist/ .
 
-      - name: Save tarball
+      - name: Save tarball to sdist
         uses: actions/upload-artifact@v3
         with:
-          name: sdist_tarball_${{ github.ref_name }}
+          name: sdist_tar_${{ github.ref_name }}
+          path: dist/*.tar.gz
+
+      - name: Save tarball to dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist_${{ github.ref_name }}
           path: dist/*.tar.gz
 
   build_bdist:
@@ -72,8 +80,14 @@ jobs:
             PY_CFLAGS="-I$(brew --prefix)/include"
             PY_LDFLAGS="-L$(brew --prefix)/lib"
 
-      - name: Save wheel
+      - name: Save wheel to bdist
         uses: actions/upload-artifact@v3
         with:
           name: bdist_wheel_${{ github.ref_name }}
+          path: dist/*.whl
+
+      - name: Save wheel to dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist_${{ github.ref_name }}
           path: dist/*.whl
