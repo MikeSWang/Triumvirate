@@ -42,9 +42,9 @@ coverage.xml
 
 # Sphinx documentation
 docs/build/
+docs/source/**/*.rst
 docs/source/api*/
 docs/source/tutorials/**
-*.rst
 
 # Jupyter Notebook
 .ipynb_checkpoints

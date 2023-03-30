@@ -64,9 +64,14 @@ $ make [py|cpp]install [useomp=(true|1)]
 ```
 where ``install`` builds both and ``pyinstall``/``cppinstall`` is for
 Python/C++ build only; you may also replace this with ``cpplibinstall`` or
-``cppappbuild`` to compile the C++ static library or binary executable only.
-To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to
-the end of the second line as shown above.
+``cppappbuild`` above to compile the C++ static library or binary executable
+only. To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1``
+to the end of the second line as shown above.
+
+The latest release is on the
+[``main``](https://github.com/MikeSWang/Triumvirate/tree/main) branch.
+The default [``Makefile``](Makefile) (located at the repository directory root)
+suits most use cases, but you may modify it as appropriate for your need.
 
 > :bulb: See the [Installation](
 > https://triumvirate.readthedocs.io/en/latest/installation.html#dependencies)
@@ -81,11 +86,6 @@ the end of the second line as shown above.
 > :bulb: Pass option ``-j[N] -O`` to `make` to run multiple concurrent
 > jobs (optional ``N`` is the number of parallel jobs; see
 > [GNU Make Manual](https://www.gnu.org/software/make/manual/html_node/Options-Summary.html)).
-
-The latest release is on the
-[``main``](https://github.com/MikeSWang/Triumvirate/tree/main) branch.
-The default [``Makefile``](Makefile) (located at the repository directory root)
-suits most use cases, but you may modify it as appropriate for your need.
 
 
 ## Attribution
