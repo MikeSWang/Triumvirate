@@ -20,8 +20,6 @@ from triumvirate.parameters import ParameterSet, fetch_paramset_template
 
 conftest_file = inspect.getframeinfo(inspect.currentframe()).filename
 
-test_dir = Path(conftest_file).parent.resolve()
-
 
 # ========================================================================
 # Configuration
@@ -70,12 +68,17 @@ def pytest_collection_modifyitems(config, items):
 # ========================================================================
 
 @pytest.fixture(scope='session')
-def test_input_dir():
+def test_dir():
+    return Path(conftest_file).parent.resolve()
+
+
+@pytest.fixture(scope='session')
+def test_input_dir(test_dir):
     return test_dir/"test_input"
 
 
 @pytest.fixture(scope='session')
-def test_output_dir():
+def test_output_dir(test_dir):
     return test_dir/"test_output"
 
 

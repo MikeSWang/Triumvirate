@@ -208,11 +208,12 @@ def test_fetch_paramset_template(source, ret_defaults, default_parameters):
         ),
     ]
 )
-def test_ParameterSet___cinit__(param_filepath, param_dict, request, tmp_path):
+def test_ParameterSet___cinit__(param_filepath, param_dict, test_dir,
+                                request, tmp_path):
 
     # Patch paths for wheel testing.
-    if param_filepath is not None and not os.path.isfile(param_filepath):
-        param_filepath = '/project/' + param_filepath
+    if param_filepath is not None:
+        param_filepath = os.path.join(test_dir, '..', param_filepath)
 
     # Convert parametrized parameters to fixtures.
     if param_dict is not None:
