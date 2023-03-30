@@ -341,6 +341,7 @@ if __name__ == '__main__':
     setup(
         use_scm_version={
             'version_scheme': 'post-release',
+            # 'local_scheme': 'no-local-version',
         },
         cmdclass={
             'build_clib': BuildClib,
