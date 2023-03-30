@@ -13,8 +13,8 @@ on:
       - pyproject.toml
       - MANIFEST.in
       - Makefile
-      - .github/workflows/ci.yml
       - .gitignore
+      - .github/workflows/ci.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
