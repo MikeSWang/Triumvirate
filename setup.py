@@ -8,10 +8,9 @@ from multiprocessing import cpu_count
 from setuptools import setup
 from setuptools.command.build_clib import build_clib
 
+import numpy
 from Cython.Build import cythonize
 from Cython.Distutils import build_ext, Extension
-
-import numpy
 from extension_helpers._openmp_helpers import check_openmp_support
 from extension_helpers._setup_helpers import pkg_config
 
@@ -104,16 +103,14 @@ class BuildClib(build_clib):
 # Compilation
 # ========================================================================
 
-# -- Platform choices ----------------------------------------------------
+# -- Environment choices -------------------------------------------------
 
 # Assume GNU compiler as default with matching OpenMP implementation.
-
 COMPILER_CHOICES = {
     'default': 'g++',
     'linux': 'g++',
     'darwin': 'g++',
 }
-
 OPENMP_LIB_CHOICES = {
     'default': 'gomp',  # ''
     'linux': 'gomp',  # ''
@@ -166,23 +163,6 @@ if disable_omp is None and check_openmp_support():
         if _ldflag not in ldflags:
             ldflags.append(_ldflag)
 
-# Add optional parallelisation for build jobs.
-flag_parallel = os.environ.get('PY_BUILD_PARALLEL', '').strip()
-if '-j' == flag_parallel:
-    num_procs = cpu_count()
-elif '-j' in flag_parallel:
-    try:
-        num_procs = int(flag_parallel.lstrip('-j'))
-    except ValueError:
-        num_procs = None
-else:
-    num_procs = None
-
-
-# ========================================================================
-# Build
-# ========================================================================
-
 # Set macros.
 pkg_macros = [
     ('TRV_EXTCALL', None),
@@ -225,8 +205,14 @@ for flag_ in checked_options['extra_compile_args']:
     if flag_ not in cflags and flag_ not in ldflags:
         cflags.append(flag_)
 
-# Set and prepend internal static library/libraries.
+
+# ========================================================================
+# Build
+# ========================================================================
+
+# Set and prepend package as (a) static library/libraries.
 pkg_lib = 'trv'
+
 pkg_library = (
     pkg_lib,
     {
@@ -243,6 +229,18 @@ pkg_library = (
 # The linking order matters, and to ensure that, `-ltrv` is duplicated
 # also in `libraries` keyword argument in :meth:`setuptools.setup`.
 libs = [pkg_lib,] + libs  # noqa: E231
+
+# Add optional parallelisation for build jobs.
+flag_parallel = os.environ.get('PY_BUILD_PARALLEL', '').strip()
+if '-j' == flag_parallel:
+    num_procs = cpu_count()
+elif '-j' in flag_parallel:
+    try:
+        num_procs = int(flag_parallel.lstrip('-j'))
+    except ValueError:
+        num_procs = None
+else:
+    num_procs = None
 
 
 # ========================================================================

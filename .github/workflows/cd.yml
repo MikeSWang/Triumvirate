@@ -36,7 +36,7 @@ jobs:
       - name: Save tarball
         uses: actions/upload-artifact@v3
         with:
-          name: sdist_tarball
+          name: sdist_tarball_${{ github.ref_name }}
           path: dist/*.tar.gz
 
   build_bdist:
@@ -63,16 +63,17 @@ jobs:
           output-dir: dist/
           config-file: pyproject.toml
         env:
-          # Hard-code macOS C++ compilation settings which must match the OS.
-          # Skip arm64 and universal2 architecture for now.
+          # Hard-code macOS C++ compilation settings which must
+          # match the OS environment. Skip arm64 arch for now
+          # until native GitHub runner becomes available.
           CIBW_ARCHS_MACOS: "x86_64"
           CIBW_ENVIRONMENT_MACOS: >-
             PY_CXX=$(brew --prefix gcc)/bin/g++-12
-            PY_CFLAGS="-I$(brew --prefix)/include -I$(brew --prefix)/opt/fftw3/include"
-            PY_LDFLAGS="-L$(brew --prefix)/lib -L$(brew --prefix)/opt/fftw3/lib"
+            PY_CFLAGS="-I$(brew --prefix)/include"
+            PY_LDFLAGS="-L$(brew --prefix)/lib"
 
       - name: Save wheel
         uses: actions/upload-artifact@v3
         with:
-          name: bdist_wheel
+          name: bdist_wheel_${{ github.ref_name }}
           path: dist/*.whl
