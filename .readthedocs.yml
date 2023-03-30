@@ -11,7 +11,7 @@ build:
   jobs:
     pre_build:
       - pip install --verbose --editable .
-      - bash tools/doc/autogen_docs.sh
+      - bash deploy/doc/autogen_docs.sh
     post_build:
       - rm docs/source/Doxyfile
       - >
