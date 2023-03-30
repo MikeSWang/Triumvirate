@@ -66,8 +66,11 @@ jobs:
           output-dir: ${DIST_DIR}
           config-file: pyproject.toml
         env:
-          # Hard-code macOS C++ compiler which must match the OS.
-          CIBW_ENVIRONMENT_MACOS: PY_CXX=/usr/local/opt/gcc/bin/g++-12
+          # Hard-code macOS C++ compilation settings which must match the OS.
+          CIBW_ENVIRONMENT_MACOS: >-
+            PY_CXX=/usr/local/opt/gcc/bin/g++-12
+            PY_CFLAGS="-I/usr/local/opt/fftw3/include"
+            PY_LDFLAGS="-I/usr/local/opt/fftw3/lib"
 
       - name: Save wheel
         uses: actions/upload-artifact@v3
