@@ -10,10 +10,10 @@ graft tests/test_input/
 prune .github
 prune application
 prune build
+prune deploy
 prune docs
 prune examples
 prune publication
-prune tools
 exclude .gitattributes
 exclude .gitignore
 exclude .readthedocs.yml

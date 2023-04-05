@@ -22,12 +22,16 @@ concurrency:
 
 jobs:
   build-test-dev:
-    name: Build & test in dev mode
+    name: Build & test (in dev mode)
 
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
+        compiler: [gcc, llvm]
+        exclude:
+          - os: ubuntu-latest
+            compiler: llvm
 
     runs-on: ${{ matrix.os }}
 
@@ -43,28 +47,39 @@ jobs:
           python-version: '3.x'
 
       - name: Install Python build system requirements
-        run: >-
-          python -m pip install --upgrade
-          pip setuptools setuptools_scm cython
+        run: python -m pip install --upgrade pip
 
       - name: Install C++ build dependency requirements
         uses: knicknic/os-specific-run@v1.0.3
         with:
           linux: |
             sudo apt-get update
-            sudo apt-get install -y libgsl-dev libfftw3-dev libgomp1
+            sudo apt-get install -y libgsl-dev libfftw3-dev
           macos: |
-            brew update
-            brew install gsl fftw libomp
+            # brew update
+            brew install gsl fftw
 
-      - name: Build and install
+      - name: Build and install (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: make clean; make -j -O install useomp=true
+
+      - name: Build and install (macOS with GCC)
+        if: matrix.os == 'macos-latest' && matrix.compiler == 'gcc'
         run: |
-          # Enforce GNU C++ compiler on macOS.
-          if [ "${RUNNER_OS}" == macOS ]; then
-            CXX_DIR=$(brew --prefix gcc)/bin
-            CXX_BIN=$(ls ${CXX_DIR} | grep '^g++')
-            export CXX=${CXX_DIR}/${CXX_BIN}
-          fi
+          CXX_DIR=$(brew --prefix gcc)/bin
+          CXX_BIN=$(ls ${CXX_DIR} | grep '^g++')
+          export CXX=${CXX_DIR}/${CXX_BIN}
+          make clean; make -j install useomp=true
+
+      - name: Build and install (macOS with LLVM)
+        if: matrix.os == 'macos-latest' && matrix.compiler == 'llvm'
+        run: |
+          CXX_DIR=$(brew --prefix llvm)/bin
+          CXX_BIN=clang++
+          export CXX=${CXX_DIR}/${CXX_BIN}
+          export CXXFLAGS="${CXXFLAGS} -Xpreprocessor"
+          export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
+          export ARCHFLAGS="-arch x86_64"
           make clean; make -j install useomp=true
 
       - name: Install Python test requirements
@@ -74,7 +89,7 @@ jobs:
         run: pytest
 
   lint:
-    name: Lint code
+    name: Lint
 
     runs-on: ubuntu-latest
 
