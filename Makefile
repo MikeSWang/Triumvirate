@@ -54,24 +54,21 @@ MAKEFLAGS_JOBS=$(shell echo "${MAKEFLAGS} " | grep -Eo "\-j[[:digit:][:space:]]*
 
 # -- Compiler ------------------------------------------------------------
 
-# Linux: GNU compiler by default. [modify]
+# Assume GCC compiler by default. [modify]
 ifeq ($(shell uname -s), Linux)
 
 CXX ?= g++
 
-# macOS: GNU compiler by default. [modify]
 else ifeq ($(shell uname -s), Darwin)
 
-# Use GNU compiler from Homebrew (installed with formula 'gcc').
-# The compiler binary provided with a full path must have the suffix
-# '-<version>'; check which version is available with `brew info gcc`
-# (here 'g++-11' is assumed). Alternatively, use an appropriate alias.
-CXX ?= $(shell brew --prefix gcc)/bin/g++-11
+# Use GCC compiler from Homebrew (brew formula 'gcc').
+# The compiler binary provided may have the suffix '-<version>';
+# check the version number with `brew info gcc` (here 'g++-11' is assumed).
+CXX_DIR = $(shell brew --prefix gcc)/bin
+CXX_BIN = $(ls ${CXX_DIR} | grep '^g++')
+CXX ?= ${CXX_DIR}/${CXX_BIN}
 
-# Use LLVM compiler from Homebrew (installed with formula 'llvm').
-# CXX ?= $(shell brew --prefix llvm)/bin/clang++
-
-# Others: GNU compiler by default. [modify]
+# Others: GCC compiler by default. [modify]
 else  # uname -s
 
 CXX ?= g++
@@ -82,7 +79,7 @@ endif  # uname -s
 # -- Options -------------------------------------------------------------
 
 INCLUDES += -I${DIR_PKG_INCLUDE}
-CFLAGS += -O3 -Wall $(shell pkg-config --cflags gsl fftw3)
+CXXFLAGS += -O3 -Wall $(shell pkg-config --cflags gsl fftw3)
 LDFLAGS += $(if $(shell pkg-config --libs gsl fftw3),\
                 $(shell pkg-config --libs gsl fftw3),\
                 $(-lgsl -lgslcblas -lm -lfftw3))
@@ -100,13 +97,13 @@ FFTW_DIR = ${FFTW_ROOT}
 # GSL library
 ifdef GSL_DIR
 INCLUDES += -I${GSL_DIR}/include
-LDFLAGS += -L${GSL_DIR}/lib
+LDFLAGS = -L${GSL_DIR}/lib ${LDFLAGS}
 endif  # GSL_DIR
 
 # FFTW library
 ifdef FFTW_DIR
 INCLUDES += -I${FFTW_DIR}/include
-LDFLAGS += -L${FFTW_DIR}/lib
+LDFLAGS = -L${FFTW_DIR}/lib ${LDFLAGS}
 endif  # FFTW_DIR
 
 endif  # NERSC_HOST
@@ -121,27 +118,28 @@ ifdef useomp
 
 ifeq ($(strip ${useomp}), $(filter $(strip ${useomp}), true 1))
 
-# Linux: GNU OpenMP by default. [modify]
+# Assume GCC OpenMP implementation by default. [modify]
 ifeq ($(shell uname -s), Linux)
 
-LDFLAG_OMP = -lgomp
+# Pass...
 
-# macOS: GNU OpenMP by default. [modify]
 else ifeq ($(shell uname -s), Darwin)
 
-# Use LLVM OpenMP from Homebrew (installed with formula 'libomp').
-# CFLAGS += -Xpreprocessor
-# LDFLAG_OMP = -L$(shell brew --prefix libomp)/lib -lomp
+# For LLVM OpenMP implementation, use 'libomp' from Homebrew
+# (brew formula 'libomp'). Set also the following flags.
+# CXXFLAGS += -Xpreprocessor
+# LDFLAGS_OMP = -L$(shell brew --prefix libomp)/lib -lomp
 
-# Others: GNU OpenMP by default. [modify]
+# Pass...
+
 else  # uname -s
 
-LDFLAG_OMP = -lgomp
+# Pass...
 
 endif  # uname -s
 
-CFLAGS += -fopenmp -DTRV_USE_OMP -DTRV_USE_FFTWOMP
-LDFLAGS += -lfftw3_omp ${LDFLAG_OMP}
+CXXFLAGS += -fopenmp -DTRV_USE_OMP -DTRV_USE_FFTWOMP
+LDFLAGS += -lfftw3_omp ${LDFLAGS_OMP}
 
 endif  # useomp=(true|1)
 
@@ -161,14 +159,14 @@ endif  # useomp
 # Visual enhancements: enabled with `uselogo=(true|1)`; disabled otherwise.
 ifdef uselogo
 ifeq ($(strip ${uselogo}), $(filter $(strip ${uselogo}), true 1))
-CFLAGS += -DTRV_USE_LOGO
+CXXFLAGS += -DTRV_USE_LOGO
 endif  # uselogo=(true|1)
 endif  # uselogo
 
 # Parameter debugging: enabled with `dbgpars=(true|1)`; disabled otherwise.
 ifdef dbgpars
 ifeq ($(strip ${dbgpars}), $(filter $(strip ${dbgpars}), true 1))
-CFLAGS += -DDBG_MODE -DDBG_PARS
+CXXFLAGS += -DDBG_MODE -DDBG_PARS
 endif  # dbgpars=(true|1)
 endif  # dbgpars
 
@@ -182,10 +180,10 @@ endif  # dbgpars
 
 # Python: export CXX compilation options as environmental variables.
 export PY_CXX=${CXX}
-export PY_INCLUDES=${INCLUDES}
-export PY_CFLAGS=${CFLAGS}
+export PY_CXXFLAGS=${CXXFLAGS}
 export PY_LDFLAGS=${LDFLAGS}
-export PY_LDOMP=${LDFLAG_OMP}
+export PY_INCLUDES=${INCLUDES}
+# export PY_OPTS_OMP=${LDFLAGS_OMP}
 ifndef useomp
 export PY_NO_OMP
 endif  # !useomp
@@ -242,7 +240,7 @@ pytest:
 ${PROGEXE}: ${PROGOBJ} ${MODULEOBJ}
 	@echo "Compiling Triumvirate C++ program ${WOMP} OpenMP..."
 	if [ ! -d build/bin ]; then mkdir -p build/bin; fi
-	$(CXX) $(CFLAGS) -o $(addprefix $(DIR_BUILDBIN)/, $(notdir $@)) $^ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $(addprefix $(DIR_BUILDBIN)/, $(notdir $@)) $^ $(LDFLAGS)
 
 ${PROGLIB}: ${MODULEOBJ}
 	@echo "Building Triumvirate C++ library ${WOMP} OpenMP..."
@@ -251,11 +249,11 @@ ${PROGLIB}: ${MODULEOBJ}
 
 ${PROGOBJ}: ${PROGSRC}
 	if [ ! -d build/obj ]; then mkdir -p build/obj; fi
-	$(CXX) $(CFLAGS) -o $@ -c $< $(INCLUDES)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 ${MODULEOBJ}: ${DIR_BUILDOBJ}/%.o: ${DIR_PKG_SRCMODULES}/%.cpp
 	if [ ! -d build/obj ]; then mkdir -p build/obj; fi
-	$(CXX) $(CFLAGS) -o $@ -c $< $(INCLUDES)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 
 # ========================================================================

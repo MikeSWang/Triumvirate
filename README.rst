@@ -115,7 +115,7 @@ modify it as appropriate for your need.
 
     Ensure your C++ compiler has OpenMP support and is configured
     accordingly. The default |Makefile|_ (located at the repository
-    directory root) assumes the GNU compiler. See the `Installation
+    directory root) assumes the GCC compiler. See the `Installation
     <https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support>`__
     page in the documentation for more details.
 

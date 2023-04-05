@@ -166,7 +166,7 @@ OpenMP support
 
     Building the C++ program, or the Python package in development mode,
     requires a C++ compiler with OpenMP support. On Linux platforms,
-    the GNU compiler with libgomp should suffice; by contrast, macOS
+    the GCC compiler with libgomp should suffice; by contrast, macOS
     systems may not come with OpenMP-supported compilers.
 
 On Linux platforms, we recommend setting the following environmental variables
@@ -175,42 +175,42 @@ for building with OpenMP:
 .. code-block:: console
     :caption: Linux
 
-    # Optional: only if `CXX` previously set to a non-GNU compiler.
+    # Optional: only if `CXX` previously set to a non-GCC compiler.
     $ export CXX=g++
-    $ export CFLAGS="${CFLAGS} -fopenmp"
+    $ export CXXFLAGS="${CXXFLAGS} -fopenmp"
     # Optional: only if `-fopenmp` alone does not link properly.
     $ export LDFLAGS="${LDFLAGS} -lgomp"
 
-On macOS systems, we recommend one first installs either the GNU compiler or
+On macOS systems, we recommend one first installs either the GCC compiler or
 the LLVM compiler plus libomp using Homebrew,
 
 .. code-block:: console
     :caption: macOS
 
-    $ brew install gcc          # GNU compiler; or
+    $ brew install gcc          # GCC compiler; or
     $ brew install llvm libomp  # LLVM compiler with libomp
 
 and then set the relevant environmental variables,
 
 .. tabs::
 
-    .. code-tab:: console macOS with GNU compiler
+    .. code-tab:: console macOS with GCC compiler
 
         # HINT: assuming version 11 for brew formula 'gcc'
         $ export CXX=$(brew --prefix gcc)/bin/g++-11
-        $ export CFLAGS="${CFLAGS} -fopenmp"
+        $ export CXXFLAGS="${CXXFLAGS} -fopenmp"
 
     .. code-tab:: console macOS with LLVM compiler plus libomp
 
         $ export CXX=$(brew --prefix llvm)/bin/clang++
-        $ export CFLAGS="${CFLAGS} -Xpreprocessor -fopenmp"
+        $ export CXXFLAGS="${CXXFLAGS} -Xpreprocessor -fopenmp"
         $ export LDFLAGS="${LDFLAGS} -L$(brew --prefix libomp)/lib -lomp"
 
 These are the instructions for general OpenMP compilation; for the OpenMP
 build of |Triumvirate|, the default |Makefile|_ (located at the repository
-diretory root) assumes the GNU compiler and automatically sets the
+diretory root) assumes the GCC compiler and automatically sets the
 appropriate comliation options; if you would like to use the LLVM compiler
-on macOS, simply comment out the instructions for the GNU compiler and
+on macOS, simply comment out the instructions for the GCC compiler and
 uncomment the corresponding lines for the LLVM compiler.
 
 
