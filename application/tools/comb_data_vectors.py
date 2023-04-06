@@ -150,7 +150,7 @@ def read_measurements(stat, directory, fnpattern, sn_range=None):
     # Match files.
     paths_found = []
     for _, _, filenames in os.walk(directory):
-        for filename in filenames:
+        for filename in sorted(filenames):
             if re.match(fnpattern, filename):
                 paths_found.append(os.path.join(directory, filename))
 
