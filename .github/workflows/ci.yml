@@ -56,7 +56,10 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y libgsl-dev libfftw3-dev
           macos: |
+            # Optional command: Homebrew update is slow.
             # brew update
+            # Optional command: GitHub runner runtime exceptions.
+            brew reinstall llvm libomp
             brew install gsl fftw
 
       - name: Build and install (Ubuntu)
