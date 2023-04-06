@@ -41,7 +41,7 @@ dynamic = [
 nbk = ['nbodykit']
 
 [project.urls]
-Home = "https://mikeswang.github.io/Triumvirate"
+# Home = "https://mikeswang.github.io/Triumvirate"
 Documentation = "https://triumvirate.readthedocs.io/"
 Source = "https://github.com/MikeSWang/Triumvirate"
 Changelog = "https://github.com/MikeSWang/Triumvirate/blob/main/CHANGELOG.md"
