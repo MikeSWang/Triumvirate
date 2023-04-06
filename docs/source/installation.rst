@@ -5,10 +5,12 @@ Installation
 .. warning::
 
     On ARM-based operating systems such as macOS with Apple silicon,
-    installation from built distributions (e.g. Python wheels) is
-    not possible at the moment. Please consult other relevant sources for
-    help with compilation dependencies for installation from a source
-    distribution. This issue may be resolved in future releases.
+    installation from built distributions (e.g. Python wheels) may be
+    unavailable at the moment. Please install from a source distribution
+    instead (e.g. `pip` install from the distributed tarball or in
+    editable mode). Also consult other resources for help with
+    architecture compatibility of dependencies. This issue should be
+    resolved in future releases.
 
 
 Dependencies
