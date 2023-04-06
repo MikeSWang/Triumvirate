@@ -1,0 +1,106 @@
+# This is a copy of ``src/triumvirate/resources/params_template.yml".
+---
+
+# -- I/O -----------------------------------------------------------------
+
+# Directories for input/output.
+# The paths can be either absolute or relative to the working directory.
+# If unset, the current working directory is assumed.
+directories:
+  catalogues:
+  measurements:
+
+# Filenames (with extensions) for input/output sources.
+files:
+  data_catalogue:
+  rand_catalogue:
+
+# Tags to be substituted into input/output paths.
+tags:
+  output: ~
+
+
+# -- Mesh sampling -------------------------------------------------------
+
+# Box size in each dimension (in Mpc/h). [mandatory]
+boxsize:
+  x:
+  y:
+  z:
+
+# Grid cell number in each dimension. [mandatory]
+ngrid:
+  x:
+  y:
+  z:
+
+# Box alignment: {'centre' (default), 'pad'}.
+alignment: centre
+
+# Padding scale: {'box' (default), 'grid'}.
+padscale: box
+
+# Padding factor (as a multiple of the size of padding scale).
+padfactor: ~
+
+# Mesh assignment scheme: {'ngp', 'cic', 'tsc' (default), 'pcs'}.
+assignment: tsc
+
+# Interlacing switch: {true/on, false/off (default))}.
+# The switch is overriden to `false` when measuring three-point statistics.
+interlace: off
+
+
+# -- Measurements --------------------------------------------------------
+
+# Type of catalogue(s): {'survey', 'random', 'sim'}.
+catalogue_type:
+
+# Type of measurement:
+# {'powspec', '2pcf', '2pcf-win', 'bispec', '3pcf', '3pcf-win', '3pcf-win-wa'}.
+statistic_type:
+
+# Degrees of the multipoles. [optional, optional, mandatory]
+degrees:
+  ell1:
+  ell2:
+  ELL:
+
+# Orders of wide-angle corrections.
+wa_orders:
+  i:
+  j:
+
+# Form of three-point statistic measurements: {'full', 'diag' (default)}.
+form: diag
+
+# Normalisation convention: {'particle' (default), 'mesh'}.
+norm_convention: particle
+
+# Binning scheme: {'lin' (default), 'log', 'linpad', 'logpad', 'custom'}.
+binning: lin
+
+# Minimum and maximum of the binning range (i.e. range of measurement scales)
+# as a list.
+# The binning coordinate is either wavenumbers (in h/Mpc) in Fourier space,
+# or separations (in Mpc/h) in configuration space. [mandatory]
+range: [~, ~]
+
+# Number of measurement bins (i.e. data vector dimension).
+# Must be >=2, or >=7 if padding is used in binning. [mandatory]
+num_bins:
+
+# Fixed bin index in the full (2-d) three-point statistics measurements.
+idx_bin:
+
+
+# -- Misc ----------------------------------------------------------------
+
+# Logging verbosity level: a non-negative integer.
+# Typical values are: {
+#   0 (NSET, unset), 10 (DBUG, debug), 20 (STAT, status) (default),
+#   30 (INFO, info), 40 (WARN, warning), 50 (ERRO, error)
+# }.
+verbose: 20
+
+...
