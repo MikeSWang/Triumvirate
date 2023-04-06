@@ -200,20 +200,20 @@ def test_fetch_paramset_template(source, ret_defaults, default_parameters):
 @pytest.mark.parametrize(
     "param_filepath, param_dict",
     [
-        ("src/triumvirate/resources/params_template.yml", None),
+        ("tmpl_params.yml", None),
         (None, 'template_parameters_dict'),
         (
-            "src/triumvirate/resources/params_template.yml",
+            "tmpl_params.yml",
             'template_parameters_dict',
         ),
     ]
 )
-def test_ParameterSet___cinit__(param_filepath, param_dict, test_dir,
+def test_ParameterSet___cinit__(param_filepath, param_dict, test_param_dir,
                                 request, tmp_path):
 
     # Patch paths for wheel testing.
     if param_filepath is not None:
-        param_filepath = os.path.join(test_dir, '..', param_filepath)
+        param_filepath = os.path.join(test_param_dir, param_filepath)
 
     # Convert parametrized parameters to fixtures.
     if param_dict is not None:
