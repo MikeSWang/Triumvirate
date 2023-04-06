@@ -65,7 +65,7 @@ else ifeq ($(shell uname -s), Darwin)
 # The compiler binary provided may have the suffix '-<version>';
 # check the version number with `brew info gcc` (here 'g++-11' is assumed).
 CXX_DIR = $(shell brew --prefix gcc)/bin
-CXX_BIN = $(ls ${CXX_DIR} | grep '^g++')
+CXX_BIN = $(shell ls ${CXX_DIR} | grep '^g++')
 CXX ?= ${CXX_DIR}/${CXX_BIN}
 
 # Others: GCC compiler by default. [modify]

@@ -237,12 +237,12 @@ EXT_LANG = 'c++'
 COMPILERS = {
     'default': 'g++',
     'linux': 'g++',
-    'darwin': 'g++',  # 'clang++'
+    'darwin': 'g++',  # alternatively 'clang++'
 }
 OPENMP_LIBS = {
-    'default': 'gomp',
-    'linux': '',  # 'gomp'
-    'darwin': '',  # 'omp'
+    'default': 'gomp',  # alternatively 'omp'
+    'linux': '',  # set by ``-fopenmp``
+    'darwin': '',  # set by ``-fopenmp``
 }
 
 
@@ -526,11 +526,18 @@ def add_options_openmp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
             cflags.append(cflag_)
 
     # Adapt `ldflags`, `libs` and `lib_dirs`.
+    LIBS_OMP_BASED = [
+        'fftw3_omp',
+    ]  # noqa: E231
+    for lib_ in LIBS_OMP_BASED:
+        if lib_ and lib_ not in libs:
+            libs.append(lib_)
+
     try:
         ldflags_omp, libs_omp, lib_dirs_omp = parse_cli_opts_omp()
     except TypeError:
         ldflags_omp = ['-fopenmp',]  # noqa: E231
-        libs_omp = ['fftw3_omp', OPENMP_LIBS[get_platform()],]  # noqa: E231
+        libs_omp = [OPENMP_LIBS[get_platform()],]  # noqa: E231
         lib_dirs_omp = []  # noqa: E231
 
     for ldflag_ in ldflags_omp:

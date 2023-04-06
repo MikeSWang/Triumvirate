@@ -25,7 +25,7 @@ shift $((OPTIND - 1))
 DIST_DIR=dist/
 
 # Clean distribution directory.
-# rm -rf ${DIST_DIR}
+rm -rf ${DIST_DIR}
 
 # Install/upgrade distribution tools.
 python -m pip install --upgrade build cibuildwheel twine

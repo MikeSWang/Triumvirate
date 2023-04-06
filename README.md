@@ -41,51 +41,59 @@ page in the documentation.
 
 ### C++ library & program
 
-``Triumvirate`` as either a C++ library or a 'black-box' C++ program can be
+``Triumvirate`` as either a static library or a binary executable can be
 built using `make`. Instructions for compilation can be found on the
 [Installation](
-https://triumvirate.readthedocs.io/en/latest/installation.html#c-program)
+https://triumvirate.readthedocs.io/en/latest/installation.html#c-library-program)
 page in the documentation.
 
 ### Development mode
 
 Both the Python package and the C++ library/program can be set up in
-development mode with `make`. First check the required dependencies,
-namely the GSL and FFTW3 libraries, are installed. Then `git clone` the
-GitHub repository and `git checkout` the branch/release to be edited:
+development mode with `make`, provided that dependency requirements are
+satisfied (GSL and FFTW3 libraries are mandatory while an OpenMP library
+is optional).
+
+First `git clone` the desired branch/release from the GitHub repository and
+change into the repository directory path:
+
 ```console
 $ git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
 $ cd Triumvirate
 ```
-Then at the repository directory root, run
+
+Then, execute in terminal:
+
 ```console
 $ make clean
-$ make [py|cpp]install [useomp=(true|1)]
+$ make ([py|cpp]install)|(cpp[libinstall|appbuild]) [useomp=(true|1)]
 ```
-where ``install`` builds both and ``pyinstall``/``cppinstall`` is for
-Python/C++ build only; you may also replace this with ``cpplibinstall`` or
-``cppappbuild`` above to compile the C++ static library or binary executable
-only. To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1``
-to the end of the second line as shown above.
 
-The latest release is on the
-[``main``](https://github.com/MikeSWang/Triumvirate/tree/main) branch.
-The default [``Makefile``](Makefile) (located at the repository directory root)
-suits most use cases, but you may modify it as appropriate for your need.
+where ``cpplibinstall`` or ``cppappbuild`` respectively builds the C++
+static library or binary executable only, ``cppinstall`` builds both,
+``pyinstall`` builds the Python package only, and ``install`` builds
+all of the above. To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to the end of the second line as shown above.
+
+> :bulb: The latest release is on the [``main``](
+> https://github.com/MikeSWang/Triumvirate/tree/main) branch. The default
+> [``Makefile``](Makefile) (located at the repository directory root) should
+> work in most build environments, but may need to be modified as appropriate.
 
 > :bulb: See the [Installation](
 > https://triumvirate.readthedocs.io/en/latest/installation.html#dependencies)
-> page in the documentation for more details about the required dependencies.
+> page in the documentation for more details about dependency requirements.
 
-> :warning: Ensure your C++ compiler has OpenMP support and is configured
+> :warning: Ensure the C++ compiler used supports OpenMP and is configured
 > accordingly. The default [``Makefile``](Makefile) (located at the repository
-> directory root) assumes the GCC compiler. See the [Installation](
+> directory root) assumes the GCC compiler and OpenMP library. See the
+> [Installation](
 > https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
 > page in the documentation for more details.
 
-> :bulb: Pass option ``-j[N] -O`` to `make` to run multiple concurrent
-> jobs (optional ``N`` is the number of parallel jobs; see
-> [GNU Make Manual](https://www.gnu.org/software/make/manual/html_node/Options-Summary.html)).
+> :bulb: Pass option ``-j[N] -O`` to `make` to run multiple concurrent jobs
+> for parallel building (optional parameter ``N`` is the number of
+> parallel jobs; see [GNU Make Manual](
+> https://www.gnu.org/software/make/manual/html_node/Options-Summary.html)).
 
 
 ## Attribution
