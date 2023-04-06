@@ -8,8 +8,12 @@
 # @brief Get version number of the latest release from git tags.
 #
 get_latest_release () {
-    releases=$(git tag -l --sort=-v:refname | grep -E "^v[[:digit:]]+")
-    release_latest=$(printf ${releases} | cut -d ' ' -f 1)
+    # release_tags=$(git tag -l --sort=-v:refname | grep -E "^v[[:digit:]]+")
+    release_local=$(git describe --tag)
+
+    # release_latest=$(printf ${release_tags} | cut -d ' ' -f 1)
+    release_latest=$(printf ${release_local} | cut -d '-' -f 1)
+
     printf $(printf ${release_latest} | sed -e "s/^v//")
 }
 
