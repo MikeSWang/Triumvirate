@@ -2,7 +2,7 @@
 Three-Point Correlator Algorithms (:mod:`~triumvirate._threept`)
 ==========================================================================
 
-Declaration and wrapping of three-point correlator algorithms.
+Declare and interface with three-point correlator algorithms.
 
 """
 from cython.operator cimport dereference as deref
