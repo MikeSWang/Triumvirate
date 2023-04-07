@@ -1,8 +1,6 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For a full list of options, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+"""Configure the Sphinx documentation builder.
 
+"""
 import inspect
 import os
 import sys

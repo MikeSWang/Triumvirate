@@ -2,7 +2,7 @@
 FAQ
 ***
 
-Got a question? See if it has been asked before and answered below.
+Have you got a question? See if it has been asked before and answered below.
 
 - *Can I specify multiple clustering statistic multipoles in one parameter
   file or one function call?*
