@@ -93,7 +93,7 @@ before-build = [
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
 
-# Use images that support `apt` as `yum` hangs in CentOS.
+# BUG: Use images that support `apt` as `yum` hangs in CentOS.
 manylinux-x86_64-image = 'manylinux_2_24'
 manylinux-aarch64-image = 'manylinux_2_24'
 

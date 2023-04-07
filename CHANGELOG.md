@@ -7,8 +7,8 @@ publish to the PyPI index and Anaconda repository.
 
 ### Bug fixes
 
-Sort loaded measurements files in [``application/tools/comb_data_files.py``](
-application/tools/comb_data_files).
+Sort loaded measurements files in [``application/tools/comb_data_vectors.py``](
+application/tools/comb_data_vectors.py).
 
 ### Documentation
 
