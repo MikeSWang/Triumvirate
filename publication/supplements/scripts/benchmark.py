@@ -297,8 +297,8 @@ if __name__ == '__main__':
         for ngrid in cfg.ngrid:
             timer = Timer(partial(func, ngrid))
             print(
-                f"Benchmarking: algo={algo}, aniso={cfg.aniso}, "
-                f"ngrid={ngrid}, niter={cfg.niter}"
+                f"Benchmarking: {algo=}, aniso={cfg.aniso}, "
+                f"{ngrid=}, niter={cfg.niter}"
             )
             runtimes[ngrid] = timer.repeat(repeat=cfg.niter, number=1)
 
