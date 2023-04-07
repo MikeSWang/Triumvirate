@@ -106,6 +106,24 @@ html_theme_options = {
             'url': "https://github.com/MikeSWang/Triumvirate",
             'icon': 'fa-brands fa-github',
         },
+        {
+            'name': 'PyPI',
+            'url': "https://pypi.org/project/Triumvirate",
+            'icon': (
+                "https://img.shields.io/pypi/v/Triumvirate"
+                "?logo=PyPI&color=informational"
+            ),
+            'type': 'url',
+        },
+        {
+            'name': 'conda',
+            'url': "https://anaconda.org/msw/triumvirate",
+            'icon': (
+                "https://img.shields.io/conda/vn/msw/triumvirate"
+                "?logo=Anaconda&color=informational"
+            ),
+            'type': 'url'
+        },
     ]
 }
 
