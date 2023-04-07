@@ -2,7 +2,7 @@
 Two-Point Correlator Algorithms (:mod:`~triumvirate._twopt`)
 ==========================================================================
 
-Declaration and wrapping of two-point correlator algorithms.
+Declare and interface with two-point correlator algorithms.
 
 """
 from cython.operator cimport dereference as deref

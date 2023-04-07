@@ -1,4 +1,4 @@
-"""Declaration of data objects.
+"""Declare data objects.
 
 """
 from libcpp.string cimport string

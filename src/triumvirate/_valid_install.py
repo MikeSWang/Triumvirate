@@ -1,9 +1,12 @@
-"""Validate installation.
+"""
+Installation Validation (:mod:`~triumvirate._valid_install`)
+==========================================================================
 
-This private module checks whether the Cython extensions have been
-compiled correctly by performing test computations.  It is not meant to
-replace the full `pytest` suite, and does not check the correctness
-of the computed results.
+Check whether the Cython extensions have been compiled correctly by
+performing test computations.
+
+It is not meant to replace the full `pytest` suite, and does not check the
+correctness of the computed results.
 
 """
 import warnings

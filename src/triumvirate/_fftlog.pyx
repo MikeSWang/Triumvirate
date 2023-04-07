@@ -2,7 +2,7 @@
 FFTLog algorithm (:mod:`~triumvirate._fftlog`)
 ==========================================================================
 
-Implementation of the FFTLog algorithm for Hankel-related transforms.
+Implement the FFTLog algorithm for Hankel-related transforms.
 
 """
 import numpy as np

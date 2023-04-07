@@ -1,4 +1,4 @@
-"""Declaration of :cpp:class:`trv::ParticleCatalogue` and its
+"""Declare :cpp:class:`trv::ParticleCatalogue` and its
 data-loading method.
 
 """
