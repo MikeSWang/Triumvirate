@@ -17,7 +17,7 @@ from extension_helpers._openmp_helpers import check_openmp_support
 from extension_helpers._setup_helpers import pkg_config
 
 
-distutils_logger = logging.getLogger()  # recycled from :mod:`distutils`
+distutils_logger = logging.getLogger()  # recycled from :mod:`distutils._log`
 
 
 # ========================================================================
@@ -91,7 +91,7 @@ def get_pkg_src_dir(subdir="src/modules"):
 
 
 # ========================================================================
-# Commands
+# Build
 # ========================================================================
 
 class BuildExt(build_ext):
@@ -499,7 +499,7 @@ def add_options_openmp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
         )
         return macros, cflags, ldflags, libs, lib_dirs, include_dirs
 
-    # Otherwise, enabled OpenMP by default.
+    # Otherwise, enable OpenMP by default.
     prioprint("OpenMP is enabled by default.")
 
     # Adapt macros, with the removal of duplicate options from `cflags`.
@@ -620,12 +620,7 @@ def add_options_pkgs(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
 
 
 # ========================================================================
-# Build
-# ========================================================================
-
-
-# ========================================================================
-# Extensions
+# Targets
 # ========================================================================
 
 CYTHON_DIRECTIVES = {
