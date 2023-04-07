@@ -8,7 +8,6 @@ on:
     paths:
       # Append publications
       - publication/joss/**
-      # Include workflow files
       - .github/workflows/publication.yml
 
 jobs:
@@ -19,18 +18,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      # By default, the source .md and product .pdf are both named 'paper'
+      # and reside in the same directory.
       - name: Build draft PDF
         uses: openjournals/openjournals-draft-action@master
         with:
           journal: joss
-          # Set input path to the draft file 'paper.md' within the repo.
           paper-path: publication/joss/paper.md
 
       - name: Upload draft PDF
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: paper
-          # Set output path to the PDF file 'paper.pdf', which should be
-          # in the same directory as the draft .md file and is
-          # where Pandoc writes the compiled PDF.
           path: publication/joss/paper.pdf
