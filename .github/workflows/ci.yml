@@ -35,7 +35,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -56,9 +56,9 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y libgsl-dev libfftw3-dev
           macos: |
-            # Optional command: Homebrew update is slow.
+            # Optional: Homebrew update is slow.
             # brew update
-            # Optional command: GitHub runner runtime exceptions.
+            # BUG: GitHub macOS runner runtime exceptions.
             brew reinstall llvm libomp
             brew install gsl fftw
 
@@ -69,20 +69,25 @@ jobs:
       - name: Build and install (macOS with GCC)
         if: matrix.os == 'macos-latest' && matrix.compiler == 'gcc'
         run: |
+          # Override default compiler to GCC.
           CXX_DIR=$(brew --prefix gcc)/bin
           CXX_BIN=$(ls ${CXX_DIR} | grep '^g++')
           export CXX=${CXX_DIR}/${CXX_BIN}
+          # Build.
           make clean; make -j install useomp=true
 
       - name: Build and install (macOS with LLVM)
         if: matrix.os == 'macos-latest' && matrix.compiler == 'llvm'
         run: |
+          # Override default compiler to LLVM.
           CXX_DIR=$(brew --prefix llvm)/bin
           CXX_BIN=clang++
           export CXX=${CXX_DIR}/${CXX_BIN}
+          # Configure compilation flags.
           export CXXFLAGS="${CXXFLAGS} -Xpreprocessor"
           export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
           export ARCHFLAGS="-arch x86_64"
+          # Build.
           make clean; make -j install useomp=true
 
       - name: Install Python test requirements
