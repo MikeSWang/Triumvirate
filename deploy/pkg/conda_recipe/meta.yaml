@@ -1,0 +1,57 @@
+{% set name = 'Triumvirate' %}
+{% set version = environ.get('GIT_DESCRIBE_TAG') %}
+
+package:
+  name: "{{ name|lower }}"
+  version: {{ version|trim('v') }}
+
+source:
+  git_url: ../../../
+
+build:
+  number: 0
+  script: "{{ PYTHON }} -m pip install . -vv"
+  script_env:
+    - PY_CXX
+    - PY_BUILD_PARALLEL="-j"
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+  host:
+    - python
+    - pip >=19.1
+    - gsl >=2.7
+    - fftw >=3
+    - setuptools >=61.0.0
+    - setuptools_scm >=6.4.0
+    - cython >=0.25
+    - extension-helpers
+    - numpy
+  run:
+    - python >=3.8
+    - numpy
+    - scipy
+    - astropy >=4.2
+    - pyyaml >4
+
+test:
+  requires:
+    - pytest
+  source_files:
+    - tests/
+  commands:
+    - pytest --full-trace --verbose --capture=no --runslow tests/
+
+about:
+  home: https://mikeswang.github.io/Triumvirate
+  license: "GNU General Public v3 (GPLv3)"
+  license_family: GPL3
+  license_file: LICENCE
+  summary: "Three-point clustering measurements in large-scale structure analyses."
+  doc_url: https://triumvirate.readthedocs.io
+  dev_url: https://github.com/MikeSWang/Triumvirate
+
+extra:
+  recipe-maintainers:
+    - MikeSWang

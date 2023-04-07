@@ -5,7 +5,9 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
       - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+.post[0-9]+'
     paths:
+      - deploy/pkg/conda_recipe/**
       - .github/workflows/cd.yml
 
 concurrency:
@@ -18,7 +20,7 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -29,11 +31,14 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install Python packaging requirements
-        run: python -m pip install --upgrade build
+      - name: Install packaging requirements
+        run: python -m pip install --upgrade build twine
 
       - name: Build source distribution
         run: python -m build --sdist --outdir dist/ .
+
+      - name: Verify source distribution
+        run: python -m twine check --strict dist/*
 
       - name: Save tarball to sdist
         uses: actions/upload-artifact@v3
@@ -44,7 +49,7 @@ jobs:
       - name: Save tarball to dist
         uses: actions/upload-artifact@v3
         with:
-          name: dist_${{ github.ref_name }}
+          name: pypi_dist_${{ github.ref_name }}
           path: dist/*.tar.gz
 
   build_bdist:
@@ -58,11 +63,14 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Install packaging requirements
+        run: python -m pip install --upgrade twine  # build
 
       - name: Build built distribution
         uses: pypa/cibuildwheel@v2.12.1
@@ -79,6 +87,13 @@ jobs:
             PY_CXXFLAGS=-I$(brew --prefix)/include
             PY_LDFLAGS=-L$(brew --prefix)/lib
 
+      - name: Verify built distribution
+        uses: knicknic/os-specific-run@v1.0.3
+        with:
+          # BUG: ``twine check`` fails to recognise ``--strict`` on macOS.
+          linux: python -m twine check --strict dist/*
+          macos: python -m twine check dist/*
+
       - name: Save wheel to bdist
         uses: actions/upload-artifact@v3
         with:
@@ -88,5 +103,64 @@ jobs:
       - name: Save wheel to dist
         uses: actions/upload-artifact@v3
         with:
-          name: dist_${{ github.ref_name }}
+          name: pypi_dist_${{ github.ref_name }}
           path: dist/*.whl
+
+  build_conda:
+    name: Build conda package
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Use oldest supported OS for backward compatibility.
+        os: [ubuntu-20.04, macos-11]
+
+    runs-on: ${{ matrix.os }}
+
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up (Mini)conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: deploy
+          channels: conda-forge
+          channel-priority: flexible
+
+      - name: Install packaging requirements
+        run: conda install -y conda-build conda-verify
+
+      - name: Prepare build environment
+        run: |
+          conda config --set anaconda_upload no
+
+      - name: Build conda package
+        id: conda_build
+        env:
+          recipe_dir: deploy/pkg/conda_recipe
+          output_dir: dist/
+          variants: "{'python': ['3.8', '3.9', '3.10']}"
+        run: |
+          # Create output directory if non-existent.
+          if [[ ! -d ${output_dir} ]]; then mkdir -p ${output_dir}; fi
+          # Override default compiler to GCC on macOS.
+          if [[ "$RUNNER_OS" == macOS ]]; then
+            CXX_DIR=$(brew --prefix gcc)/bin
+            CXX_BIN=$(ls ${CXX_DIR} | grep '^g++')
+            export PY_CXX=${CXX_DIR}/${CXX_BIN}
+          fi
+          # Build.
+          conda build ${recipe_dir} \
+            --variants "${variants}" --output-folder ${output_dir}
+
+      - name: Verify conda package
+        run: conda verify dist/
+
+      - name: Save conda package
+        uses: actions/upload-artifact@v3
+        with:
+          name: conda_bld_${{ github.ref_name }}
+          path: dist/*
