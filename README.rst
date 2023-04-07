@@ -15,8 +15,8 @@ Three-Point Clustering Measurements in LSS
     :target: https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml
     :alt: CI
 
-.. image:: https://img.shields.io/readthedocs/triumvirate/latest?logo=ReadtheDocs
-    :target: https://triumvirate.readthedocs.io/en/latest/
+.. image:: https://img.shields.io/readthedocs/triumvirate/stable?logo=ReadtheDocs
+    :target: https://triumvirate.readthedocs.io/en/stable/
     :alt: Docs
 
 .. image:: https://img.shields.io/github/v/release/MikeSWang/Triumvirate?display_name=tag&sort=semver&logo=Git
@@ -32,15 +32,15 @@ Documentation
 =============
 
 Comprehensive documentation including the `scientific background
-<https://triumvirate.readthedocs.io/en/latest/background.html>`_,
+<https://triumvirate.readthedocs.io/en/stable/background.html>`_,
 `installation instructions
-<https://triumvirate.readthedocs.io/en/latest/installation.html>`_,
+<https://triumvirate.readthedocs.io/en/stable/installation.html>`_,
 `tutorials
-<https://triumvirate.readthedocs.io/en/latest/tutorials.html>`_
+<https://triumvirate.readthedocs.io/en/stable/tutorials.html>`_
 and `API reference
-<https://triumvirate.readthedocs.io/en/latest/apiref.html>`_
+<https://triumvirate.readthedocs.io/en/stable/apiref.html>`_
 can be found at `triumvirate.readthedocs.io
-<https://triumvirate.readthedocs.io/en/latest/>`_.
+<https://triumvirate.readthedocs.io/en/stable/>`_.
 
 
 Installation
@@ -61,7 +61,7 @@ Python package
 `PyPI <https://pypi.org/project/Triumvirate>`_ and
 `conda <https://anaconda.org/msw/triumvirate>`_. Instructions for installation
 can be found on the `Installation
-<https://triumvirate.readthedocs.io/en/latest/installation.html#python-package>`__
+<https://triumvirate.readthedocs.io/en/stable/installation.html#python-package>`__
 page in the documentation.
 
 
@@ -71,7 +71,7 @@ C++ library & program
 |Triumvirate| as either a static library or a binary executable can be
 built using `make`. Instructions for compilation can be found on the
 `Installation
-<https://triumvirate.readthedocs.io/en/latest/installation.html#c-program>`__
+<https://triumvirate.readthedocs.io/en/stable/installation.html#c-program>`__
 page in the documentation.
 
 
@@ -112,7 +112,7 @@ all of the above. To enable OpenMP parallelisation, append ``useomp=true`` or ``
 .. note::
 
     See the `Installation
-    <https://triumvirate.readthedocs.io/en/latest/installation.html#dependencies>`__
+    <https://triumvirate.readthedocs.io/en/stable/installation.html#dependencies>`__
     page in the documentation for more details about dependency requirements.
 
 .. warning::
@@ -121,7 +121,7 @@ all of the above. To enable OpenMP parallelisation, append ``useomp=true`` or ``
     accordingly. The default |Makefile|_ (located at the repository
     directory root) assumes the GCC compiler and OpenMP library. See the
     `Installation
-    <https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support>`__
+    <https://triumvirate.readthedocs.io/en/stable/installation.html#openmp-support>`__
     page in the documentation for more details.
 
 .. note::

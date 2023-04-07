@@ -5,7 +5,7 @@
 # Three-Point Clustering Measurements in LSS
 
 [![CI](https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/ci.yml?label=ci&logo=GitHubActions)](https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml)
-[![Docs](https://img.shields.io/readthedocs/triumvirate/latest?logo=ReadtheDocs)](https://triumvirate.readthedocs.io/en/latest/)
+[![Docs](https://img.shields.io/readthedocs/triumvirate/stable?logo=ReadtheDocs)](https://triumvirate.readthedocs.io/en/stable/)
 [![Release](https://img.shields.io/github/v/release/MikeSWang/Triumvirate?display_name=tag&sort=semver&logo=Git)](https://github.com/MikeSWang/Triumvirate/releases/latest)
 
 ``Triumvirate`` is a Python/C++ software package for measuring three-point (and
@@ -16,13 +16,13 @@ analyses.
 ## Documentation
 
 Comprehensive documentation including the [scientific background](
-https://triumvirate.readthedocs.io/en/latest/background.html),
+https://triumvirate.readthedocs.io/en/stable/background.html),
 [installation instructions](
-https://triumvirate.readthedocs.io/en/latest/installation.html),
-[tutorials](https://triumvirate.readthedocs.io/en/latest/tutorials.html) and
-[API reference](https://triumvirate.readthedocs.io/en/latest/apiref.html) can
+https://triumvirate.readthedocs.io/en/stable/installation.html),
+[tutorials](https://triumvirate.readthedocs.io/en/stable/tutorials.html) and
+[API reference](https://triumvirate.readthedocs.io/en/stable/apiref.html) can
 be found at [triumvirate.readthedocs.io](
-https://triumvirate.readthedocs.io/en/latest/).
+https://triumvirate.readthedocs.io/en/stable/).
 
 
 ## Installation
@@ -36,7 +36,7 @@ https://triumvirate.readthedocs.io/en/latest/).
 https://pypi.org/project/Triumvirate) and [conda](
 https://anaconda.org/msw/triumvirate). Instructions for installation
 can be found on the [Installation](
-https://triumvirate.readthedocs.io/en/latest/installation.html#python-package)
+https://triumvirate.readthedocs.io/en/stable/installation.html#python-package)
 page in the documentation.
 
 ### C++ library & program
@@ -44,7 +44,7 @@ page in the documentation.
 ``Triumvirate`` as either a static library or a binary executable can be
 built using `make`. Instructions for compilation can be found on the
 [Installation](
-https://triumvirate.readthedocs.io/en/latest/installation.html#c-library-program)
+https://triumvirate.readthedocs.io/en/stable/installation.html#c-library-program)
 page in the documentation.
 
 ### Development mode
@@ -80,14 +80,14 @@ all of the above. To enable OpenMP parallelisation, append ``useomp=true`` or ``
 > work in most build environments, but may need to be modified as appropriate.
 
 > :bulb: See the [Installation](
-> https://triumvirate.readthedocs.io/en/latest/installation.html#dependencies)
+> https://triumvirate.readthedocs.io/en/stable/installation.html#dependencies)
 > page in the documentation for more details about dependency requirements.
 
 > :warning: Ensure the C++ compiler used supports OpenMP and is configured
 > accordingly. The default [``Makefile``](Makefile) (located at the repository
 > directory root) assumes the GCC compiler and OpenMP library. See the
 > [Installation](
-> https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
+> https://triumvirate.readthedocs.io/en/stable/installation.html#openmp-support)
 > page in the documentation for more details.
 
 > :bulb: Pass option ``-j[N] -O`` to `make` to run multiple concurrent jobs
