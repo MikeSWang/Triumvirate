@@ -1,7 +1,7 @@
 ---
 name: Documentation Feedback
-about: Provide feedback to help us improve the documentation
-title: "[DOC] Documentation title"
+about: Provide feedback to improve the documentation
+title: "[DOC] <insert-issue-title>"
 labels: documentation
 assignees: MikeSWang
 
@@ -12,12 +12,12 @@ assignees: MikeSWang
 A concise description of what the concerned documentation relates to.
 
 
-## Describe the location
+## Location
 
 Describe where the suggested documentation modification should be.
 
 
-## Describe the content
+## Content
 
 Describe what content should be added or modified in the documentation.
 
