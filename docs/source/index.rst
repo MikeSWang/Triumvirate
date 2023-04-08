@@ -64,6 +64,14 @@ User feedback and contributions are very welcome. Please refer to the
 <https://github.com/MikeSWang/Triumvirate/blob/main/CONTRIBUTING.md>`_.
 
 
+Discussions
+===========
+
+A `community forum <https://github.com/MikeSWang/Triumvirate/discussions>`_
+for users and developers is hosted on GitHub, where you can receive
+announcements, post questions, share ideas and get updates.
+
+
 Releases
 ========
 

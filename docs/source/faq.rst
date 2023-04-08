@@ -2,7 +2,8 @@
 FAQ
 ***
 
-Have you got a question? See if it has been asked before and answered below.
+Have you got a question? See if it has been asked before and answered below
+or on the `GitHub wiki <https://github.com/MikeSWang/Triumvirate/wiki>`_.
 
 - *Can I specify multiple clustering statistic multipoles in one parameter
   file or one function call?*
