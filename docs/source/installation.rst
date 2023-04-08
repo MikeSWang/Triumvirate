@@ -2,7 +2,7 @@
 Installation
 ************
 
-.. warning::
+.. attention::
 
     On ARM-based operating systems such as macOS with Apple silicon,
     installation from built distributions (e.g. Python wheels) may be
@@ -141,6 +141,23 @@ To install using |conda-repo|, execute in terminal:
     $ conda install -c msw triumvirate
 
 By default, the package is installed with OpenMP enabled if it is supported.
+
+.. hint::
+
+    `conda` packages are built with dependencies such as ``numpy`` and
+    ``scipy`` sourced from the ``conda-forge`` channel. For consistency
+    and avoidance of dependency conflicts, it is recommended that
+    ``conda-forge`` should be as the highest-priority channel,
+
+    .. code-block:: console
+
+        $ conda config --prepend channels conda-forge
+
+    and optionally, it is good practice to use ``strict`` channel priority,
+
+    .. code-block:: console
+
+        $ conda config --set channel_priority strict
 
 
 C++ library & program
