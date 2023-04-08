@@ -101,7 +101,8 @@ Then, execute in terminal:
 where ``cpplibinstall`` or ``cppappbuild`` respectively builds the C++
 static library or binary executable only, ``cppinstall`` builds both,
 ``pyinstall`` builds the Python package only, and ``install`` builds
-all of the above. To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to the end of the second line as shown above.
+all of the above. To enable OpenMP parallelisation, append ``useomp=true``
+or ``useomp=1`` to the end of the second line as shown above.
 
 .. note::
 
@@ -115,10 +116,10 @@ all of the above. To enable OpenMP parallelisation, append ``useomp=true`` or ``
     <https://triumvirate.readthedocs.io/en/latest/installation.html#dependencies>`__
     page in the documentation for more details about dependency requirements.
 
-.. warning::
+.. note::
 
-    Ensure your C++ compiler used supports OpenMP and is configured
-    accordingly. The default |Makefile|_ (located at the repository
+    If enabling OpenMP, ensure your C++ compiler used supports it and is
+    configured accordingly. The default |Makefile|_ (located at the repository
     directory root) assumes the GCC compiler and OpenMP library. See the
     `Installation
     <https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support>`__
