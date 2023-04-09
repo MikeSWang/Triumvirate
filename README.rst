@@ -36,8 +36,8 @@ Comprehensive documentation including the `scientific background
 `installation instructions
 <https://triumvirate.readthedocs.io/en/latest/installation.html>`_,
 `tutorials
-<https://triumvirate.readthedocs.io/en/latest/tutorials.html>`_
-and `API reference
+<https://triumvirate.readthedocs.io/en/latest/tutorials.html>`_ and
+`API reference
 <https://triumvirate.readthedocs.io/en/latest/apiref.html>`_
 can be found at `triumvirate.readthedocs.io
 <https://triumvirate.readthedocs.io/en/latest/>`_.
@@ -118,7 +118,7 @@ or ``useomp=1`` to the end of the second line as shown above.
 
 .. note::
 
-    If enabling OpenMP, ensure your C++ compiler used supports it and is
+    If enabling OpenMP, ensure the C++ compiler used supports it and is
     configured accordingly. The default |Makefile|_ (located at the repository
     directory root) assumes the GCC compiler and OpenMP library. See the
     `Installation
@@ -202,7 +202,7 @@ Licence
 &copy; 2023 Mike S Wang & Naonori S Sugiyama
 
 
-.. |Triumvirate| replace:: Triumvirate
+.. |Triumvirate| replace:: ``Triumvirate``
 
 .. |hitomi| replace:: ``hitomi``
 .. _hitomi: https://github.com/naonori/hitomi
