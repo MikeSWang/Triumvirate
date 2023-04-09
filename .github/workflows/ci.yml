@@ -62,12 +62,12 @@ jobs:
             brew reinstall llvm libomp
             brew install gsl fftw
 
-      - name: Build and install (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Build and install (Linux)
+        if: runner.os == 'Linux'
         run: make clean; make -j -O install useomp=true
 
       - name: Build and install (macOS with GCC)
-        if: matrix.os == 'macos-latest' && matrix.compiler == 'gcc'
+        if: runner.os == 'macOS' && matrix.compiler == 'gcc'
         run: |
           # Override default compiler to GCC.
           CXX_DIR=$(brew --prefix gcc)/bin
@@ -77,16 +77,16 @@ jobs:
           make clean; make -j install useomp=true
 
       - name: Build and install (macOS with LLVM)
-        if: matrix.os == 'macos-latest' && matrix.compiler == 'llvm'
+        if: runner.os == 'macOS' && matrix.compiler == 'llvm'
         run: |
           # Override default compiler to LLVM.
           CXX_DIR=$(brew --prefix llvm)/bin
           CXX_BIN=clang++
           export CXX=${CXX_DIR}/${CXX_BIN}
           # Configure compilation flags.
-          export CXXFLAGS="${CXXFLAGS} -Xpreprocessor"
-          export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
           export ARCHFLAGS="-arch x86_64"
+          export CXXFLAGS_OMP="-Xpreprocessor -fopenmp"
+          export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
           # Build.
           make clean; make -j install useomp=true
 

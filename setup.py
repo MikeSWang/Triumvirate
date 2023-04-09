@@ -198,8 +198,9 @@ def display_py_environs():
         'PY_CXXFLAGS',
         'PY_LDFLAGS',
         'PY_INCLUDES',
-        'PY_OPTS_OMP',
         'PY_NO_OMP',
+        'PY_CXXFLAGS_OMP',
+        'PY_LDFLAGS_OMP',
         'PY_BUILD_PARALLEL',
     ]
     for env_var in PY_ENV_VARS:
@@ -226,25 +227,10 @@ def display_py_options():
 # Compilation
 # ========================================================================
 
-# -- Language ------------------------------------------------------------
-
 EXT_LANG = 'c++'
 
 
 # -- Environment ---------------------------------------------------------
-
-# Default to GCC compiler and OpenMP implementation.
-COMPILERS = {
-    'default': 'g++',
-    'linux': 'g++',
-    'darwin': 'g++',  # alternatively 'clang++'
-}
-OPENMP_LIBS = {
-    'default': 'gomp',  # alternatively 'omp'
-    'linux': '',  # set by ``-fopenmp``
-    'darwin': '',  # set by ``-fopenmp``
-}
-
 
 def get_platform():
     """Get the build platform.
@@ -261,12 +247,23 @@ def get_platform():
     return build_platform
 
 
+# -- Compiler ------------------------------------------------------------
+
+# List default compilers (GCC assumed).
+COMPILERS = {
+    'default': 'g++',
+    'linux': 'g++',
+    'darwin': 'g++',
+}
+
+
 def get_compiler():
     """Get the build compiler.
 
     Returns
     -------
     str
+        Build compiler.
 
     """
     compiler = os.environ.get('PY_CXX', COMPILERS[get_platform()])
@@ -275,18 +272,25 @@ def get_compiler():
 
 
 def set_cli_compiler(compiler=None):
-    """Set command-line compiler through the ``CC``, ``CXX`` and ``CPP``
+    """Set command-line compiler through the ``CC``and ``CXX``
     environmental variables.
 
     """
-    compiler = compiler or get_compiler()
+    _compiler = compiler or get_compiler()
 
-    os.environ['CC'] = compiler
-    os.environ['CXX'] = compiler
-    os.environ['CPP'] = compiler
+    os.environ['CC'] = _compiler
+    os.environ['CXX'] = _compiler
 
 
 # -- Dependencies --------------------------------------------------------
+
+# Default to GCC OpenMP implementation.
+OPENMP_LIBS = {
+    'default': 'gomp',  # 'omp'
+    'linux': '',  # set by ``-fopenmp`` or environment
+    'darwin': '',  # set by ``-fopenmp`` or environment
+}
+
 
 LIBS_CORE = ['gsl', 'fftw3',]  # noqa: E231
 LIBS_FULL = ['gsl', 'gslcblas', 'm', 'fftw3',]  # noqa: E231
@@ -295,6 +299,30 @@ PKG_LIB_NAME = 'trv'
 
 
 # -- Options -------------------------------------------------------------
+
+def convert_macro(macro):
+    """Convert a macro flag to a tuple.
+
+    Parameters
+    ----------
+    macro : str
+        Macro as a flag
+
+    Returns
+    -------
+    tuple (str, Union[str, None])
+        Macro as a tuple
+
+    """
+    macro_ = macro.lstrip('-D').split('=')
+    if len(macro_) == 1:
+        return (macro_.pop(), None)
+    if len(macro_) == 2:
+        return tuple(macro_)
+    raise ValueError(
+        "Invalid macro to convert: {}.".format(macro_)
+    )
+
 
 def parse_cli_cflags():
     """Parse command-line ``PY_CXXFLAGS`` components for extension
@@ -311,15 +339,7 @@ def parse_cli_cflags():
     parsed_macros, parsed_cflags = [], []
     for cflag_ in cli_cflags:
         if cflag_.startswith('-D'):
-            macro_ = cflag_.lstrip('-D').split('=')
-            if len(macro_) == 1:
-                parsed_macros.append((macro_.pop(), None))
-            elif len(macro_) == 2:
-                parsed_macros.append(tuple(macro_))
-            else:
-                raise ValueError(
-                    "Invalid macro in CXXFLAGS: {}.".format(cflag_)
-                )
+            parsed_macros.append(convert_macro(cflag_))
         else:
             parsed_cflags.append(cflag_)
 
@@ -366,13 +386,40 @@ def parse_cli_includes():
     return parsed_include_dirs
 
 
-def parse_cli_opts_omp():
-    """Parse command-line ``PY_OPTS_OMP`` components for extension
+def parse_cli_cflags_omp():
+    """Parse command-line ``PY_CFLAGS_OMP`` components for extension
     keyword arguments.
 
     """
-    cli_ldflags_omp = os.environ.get('PY_OPTS_OMP')
-    if cli_ldflags_omp is None:
+    cli_cflags_omp = os.environ.get('PY_CFLAGS_OMP', '').split()
+    if not cli_cflags_omp:
+        return None
+
+    parsed_macros_omp, parsed_cflags_omp = [], []
+    for cflag_ in cli_cflags_omp:
+        if cflag_.startswith('-D'):
+            macro_ = cflag_.lstrip('-D').split('=')
+            if len(macro_) == 1:
+                parsed_macros_omp.append((macro_.pop(), None))
+            elif len(macro_) == 2:
+                parsed_macros_omp.append(tuple(macro_))
+            else:
+                raise ValueError(
+                    "Invalid macro in CXXFLAG_OMP: {}.".format(cflag_)
+                )
+        else:
+            parsed_cflags_omp.append(cflag_)
+
+    return parsed_macros_omp, parsed_cflags_omp
+
+
+def parse_cli_ldflags_omp():
+    """Parse command-line ``PY_LDFLAGS_OMP`` components for extension
+    keyword arguments.
+
+    """
+    cli_ldflags_omp = os.environ.get('PY_LDFLAGS_OMP', '').split()
+    if not cli_ldflags_omp:
         return None
 
     parsed_ldflags_omp, parsed_libs_omp, parsed_lib_dirs_omp = [], [], []
@@ -426,8 +473,8 @@ def add_options_nonomp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
 
     for lib_ in libs:
         if lib_ not in libs_full:
-            libs_full.append(lib_)
             libs_core.append(lib_)
+            libs_full.append(lib_)
 
     checked_options = pkg_config(libs_core, default_libraries=libs_full)
 
@@ -452,8 +499,10 @@ def add_options_nonomp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
     return macros, cflags, ldflags, libs, lib_dirs, include_dirs
 
 
-def add_options_openmp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
+def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
     """Add OpenMP options, if enabled.
+
+    By default, GCC OpenMP is assumed.
 
     Parameters
     ----------
@@ -477,7 +526,7 @@ def add_options_openmp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
     cflags : list of str
         Processed ``CXXFLAGS`` components.
     ldflags : list of str
-        Processed ``LDFLAGS`` components without '-l' prefix.
+        Processed ``LDFLAGS`` components non-'-l' prefix.
     libs : list of str
         Libraries without the '-l' prefix.
     lib_dirs : list of str
@@ -499,29 +548,29 @@ def add_options_openmp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
         )
         return macros, cflags, ldflags, libs, lib_dirs, include_dirs
 
-    # Otherwise, enable OpenMP by default.
+    # Enable OpenMP by default otherwise.
     prioprint("OpenMP is enabled by default.")
 
-    # Adapt macros, with the removal of duplicate options from `cflags`.
-    MACROS_OMP = [
+    # Adapt macros and `cflags`.
+    MACROS_OMP_RELATED = [
         ('TRV_USE_OMP', None),
         ('TRV_USE_FFTWOMP', None),
     ]
-
-    for macro_ in MACROS_OMP:
+    for macro_ in MACROS_OMP_RELATED:
         if macro_ not in macros:
             macros.append(macro_)
 
-        macro_cflag_ = '-D' + macro_[0]
-        if macro_cflag_ in cflags:
-            cflags.remove(macro_cflag_)
+    try:
+        macros_omp, cflags_omp = parse_cli_cflags_omp()
+    except TypeError:
+        macros_omp = []
+        cflags_omp = ['-fopenmp',]  # noqa: E231
 
-    # Adapt `cflags`.
-    CXXFLAGS_OMP = [
-        '-fopenmp',
-    ]
-
-    for cflag_ in CXXFLAGS_OMP:
+    for macro_ in macros_omp:
+        macro_ = convert_macro(macro_)
+        if macro_ not in macros:
+            macros.append(macro_)
+    for cflag_ in cflags_omp:
         if cflag_ not in cflags:
             cflags.append(cflag_)
 
@@ -534,7 +583,7 @@ def add_options_openmp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
             libs.append(lib_)
 
     try:
-        ldflags_omp, libs_omp, lib_dirs_omp = parse_cli_opts_omp()
+        ldflags_omp, libs_omp, lib_dirs_omp = parse_cli_ldflags_omp()
     except TypeError:
         ldflags_omp = ['-fopenmp',]  # noqa: E231
         libs_omp = [OPENMP_LIBS[get_platform()],]  # noqa: E231
@@ -578,7 +627,7 @@ def add_options_pkgs(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
     cflags : list of str
         Processed ``CXXFLAGS`` components.
     ldflags : list of str
-        Processed ``LDFLAGS`` components without '-l' prefix.
+        Processed ``LDFLAGS`` components non-'-l' prefix.
     libs : list of str
         Libraries without the '-l' prefix.
     lib_dirs : list of str
@@ -665,10 +714,7 @@ def define_pkg_library(lib_name=PKG_LIB_NAME):
         for cfg_opt in ['macros', 'cflags', 'include_dirs',]  # noqa: E231
     }
 
-    pkg_library = (
-        lib_name,
-        dict(sources=pkg_sources, **pkg_cfg)
-    )
+    pkg_library = (lib_name, dict(sources=pkg_sources, **pkg_cfg))
 
     return pkg_library
 
@@ -761,7 +807,7 @@ if __name__ == '__main__':
     macros, cflags, ldflags, libs, lib_dirs, include_dirs = add_options_nonomp(
         macros, cflags, ldflags, libs, lib_dirs, include_dirs
     )
-    macros, cflags, ldflags, libs, lib_dirs, include_dirs = add_options_openmp(
+    macros, cflags, ldflags, libs, lib_dirs, include_dirs = add_options_omp(
         macros, cflags, ldflags, libs, lib_dirs, include_dirs
     )
     macros, cflags, ldflags, libs, lib_dirs, include_dirs = add_options_pkgs(

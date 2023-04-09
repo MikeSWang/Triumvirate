@@ -54,7 +54,7 @@ MAKEFLAGS_JOBS=$(shell echo "${MAKEFLAGS} " | grep -Eo "\-j[[:digit:][:space:]]*
 
 # -- Compiler ------------------------------------------------------------
 
-# Assume GCC compiler by default. [modify]
+# Assume GCC compiler by default. [adapt]
 ifeq ($(shell uname -s), Linux)
 
 CXX ?= g++
@@ -68,7 +68,6 @@ CXX_DIR = $(shell brew --prefix gcc)/bin
 CXX_BIN = $(shell ls ${CXX_DIR} | grep '^g++')
 CXX ?= ${CXX_DIR}/${CXX_BIN}
 
-# Others: GCC compiler by default. [modify]
 else  # uname -s
 
 CXX ?= g++
@@ -118,27 +117,30 @@ ifdef useomp
 
 ifeq ($(strip ${useomp}), $(filter $(strip ${useomp}), true 1))
 
-# Assume GCC OpenMP implementation by default. [modify]
+# Assume GCC OpenMP implementation by default. [adapt]
 ifeq ($(shell uname -s), Linux)
 
-# Pass...
+CXXFLAGS_OMP ?= -fopenmp
+LDFLAGS_OMP ?= -fopenmp
 
 else ifeq ($(shell uname -s), Darwin)
 
-# For LLVM OpenMP implementation, use 'libomp' from Homebrew
-# (brew formula 'libomp'). Set also the following flags.
-# CXXFLAGS += -Xpreprocessor
-# LDFLAGS_OMP = -L$(shell brew --prefix libomp)/lib -lomp
+CXXFLAGS_OMP ?= -fopenmp
+LDFLAGS_OMP ?= -fopenmp
 
-# Pass...
+# For LLVM OpenMP implementation, set the following flags to use the
+# '-Xpreprocessor' option and 'libomp' from Homebrew (brew formula 'libomp').
+# CXXFLAGS_OMP ?= -Xpreprocessor -fopenmp
+# LDFLAGS_OMP ?= -L$(shell brew --prefix libomp)/lib -lomp
 
 else  # uname -s
 
-# Pass...
+CXXFLAGS_OMP ?= -fopenmp
+LDFLAGS_OMP ?= -fopenmp
 
 endif  # uname -s
 
-CXXFLAGS += -fopenmp -DTRV_USE_OMP -DTRV_USE_FFTWOMP
+CXXFLAGS += -DTRV_USE_OMP -DTRV_USE_FFTWOMP ${CXXFLAGS_OMP}
 LDFLAGS += -lfftw3_omp ${LDFLAGS_OMP}
 
 endif  # useomp=(true|1)
@@ -183,7 +185,6 @@ export PY_CXX=${CXX}
 export PY_CXXFLAGS=${CXXFLAGS}
 export PY_LDFLAGS=${LDFLAGS}
 export PY_INCLUDES=${INCLUDES}
-# export PY_OPTS_OMP=${LDFLAGS_OMP}
 ifndef useomp
 export PY_NO_OMP
 endif  # !useomp

@@ -20,8 +20,8 @@ https://triumvirate.readthedocs.io/en/latest/background.html),
 [installation instructions](
 https://triumvirate.readthedocs.io/en/latest/installation.html),
 [tutorials](https://triumvirate.readthedocs.io/en/latest/tutorials.html) and
-[API reference](https://triumvirate.readthedocs.io/en/latest/apiref.html) can
-be found at [triumvirate.readthedocs.io](
+[API reference](https://triumvirate.readthedocs.io/en/latest/apiref.html)
+can be found at [triumvirate.readthedocs.io](
 https://triumvirate.readthedocs.io/en/latest/).
 
 
@@ -83,10 +83,10 @@ all of the above. To enable OpenMP parallelisation, append ``useomp=true`` or ``
 > https://triumvirate.readthedocs.io/en/latest/installation.html#dependencies)
 > page in the documentation for more details about dependency requirements.
 
-> :warning: Ensure the C++ compiler used supports OpenMP and is configured
-> accordingly. The default [``Makefile``](Makefile) (located at the repository
-> directory root) assumes the GCC compiler and OpenMP library. See the
-> [Installation](
+> :warning: If enabling OpenMP, ensure the C++ compiler used supports it and is
+> configured accordingly. The default [``Makefile``](Makefile) (located at the
+> repository directory root) assumes the GCC compiler and OpenMP library. See
+> the [Installation](
 > https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
 > page in the documentation for more details.
 

@@ -267,10 +267,9 @@ environmental variables as shown in the following examples for macOS:
 
         # Set LLVM compiler.
         $ export CXX=$(brew --prefix llvm)/bin/clang++
-        # Add compilation flag(s) required for OpenMP
-        # (before the ``-fopenmp`` flag set in Makefile).
-        $ export CXXFLAGS="${CXXFLAGS} -Xpreprocessor"
-        # Set LLVM OpenMP linker flags.
+        # Set OpenMP compilation flags.
+        $ export CXXFLAGS_OMP="-Xpreprocessor -fopenmp"
+        # Set OpenMP linker flags.
         $ export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
 
 These commands are also included in the default |Makefile|_ (though possibly
@@ -298,11 +297,10 @@ environmental variables as shown in the following examples for macOS:
 
         # Set LLVM compiler.
         $ export PY_CXX=$(brew --prefix llvm)/bin/clang++
-        # Set compilation flag(s) required for OpenMP
-        # (before the ``-fopenmp`` flag set in ``setup.py``).
-        $ export PY_CXXFLAGS="${CXXFLAGS} -Xpreprocessor"
-        # Set LLVM OpenMP linker flags.
-        $ export PY_OPTS_OMP="-L$(brew --prefix libomp)/lib -lomp"
+        # Set OpenMP compilation flags.
+        $ export PY_CXXFLAGS_OMP="-Xpreprocessor -fopenmp"
+        # Set OpenMP linker flags.
+        $ export PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
 
 
 Parallelised building

@@ -105,11 +105,7 @@ before-all = [
 
 [tool.cibuildwheel.macos]
 before-all = [
+    # Optional: Homebrew update is slow.
     # "brew update",
     "brew install gsl fftw",
-]
-before-build = [
-    "export PY_CXX_DIR=$(brew --prefix gcc)/bin",
-    "export PY_CXX_BIN=$(ls ${PY_CXX_DIR} | grep '^g++')",
-    "export PY_CXX=${PY_CXX_DIR}/${PY_CXX_BIN}",
 ]
