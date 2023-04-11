@@ -98,8 +98,8 @@ all of the above. To enable OpenMP parallelisation, append ``useomp=true`` or ``
 
 ## Attribution
 
-[![JOSS](https://img.shields.io/badge/JOSS-doi-brightgreen)](https://joss.theoj.org/papers/?/status.svg)
-[![arXiv](https://img.shields.io/badge/arXiv-yymm.%3F-b31b1b)](https://arxiv.org/abs/?.?)
+[![JOSS](https://joss.theoj.org/papers/a8325e3897dd726d9df42286bf72d19f/status.svg)](https://joss.theoj.org/papers/a8325e3897dd726d9df42286bf72d19f)
+[![arXiv](https://img.shields.io/badge/arXiv-2304.03643-b31b1b)](https://arxiv.org/abs/2304.03643)
 [![MNRAS](https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-informational)](https://doi.org/10.1093/mnras/sty3249)
 [![MNRAS](https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-informational)](https://doi.org/10.1093/mnras/stx2333)
 
