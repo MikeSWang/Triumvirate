@@ -22,12 +22,12 @@ cosmological analyses.
 Attribution
 ===========
 
-.. image:: https://img.shields.io/badge/JOSS-doi-brightgreen
-    :target: https://joss.theoj.org/papers/?/status.svg
+.. image:: https://joss.theoj.org/papers/a8325e3897dd726d9df42286bf72d19f/status.svg
+    :target: https://joss.theoj.org/papers/a8325e3897dd726d9df42286bf72d19f
     :alt: JOSS
 
-.. image:: https://img.shields.io/badge/arXiv-yymm.%3F-b31b1b
-    :target: https://arxiv.org/abs/?.?
+.. image:: https://img.shields.io/badge/arXiv-2304.03643-b31b1b
+    :target: https://arxiv.org/abs/2304.03643
     :alt: arXiv
 
 .. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-informational
