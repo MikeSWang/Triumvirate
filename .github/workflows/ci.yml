@@ -69,24 +69,28 @@ jobs:
       - name: Build and install (macOS with GCC)
         if: runner.os == 'macOS' && matrix.compiler == 'gcc'
         run: |
-          # Override default compiler to GCC.
+          # Override default compiler and OpenMP to GCC on macOS.
           CXX_DIR=$(brew --prefix gcc)/bin
           CXX_BIN=$(ls ${CXX_DIR} | grep '^g++')
           export CXX=${CXX_DIR}/${CXX_BIN}
+          # Override ``-arch`` flags to exclude non-native architectures.
+          export ARCHFLAGS="-arch x86_64"
+          # # Optional: Eliminate linker version warning.
+          # export MACOSX_DEPLOYMENT_TARGET=10.9
           # Build.
           make clean; make -j install useomp=true
 
       - name: Build and install (macOS with LLVM)
         if: runner.os == 'macOS' && matrix.compiler == 'llvm'
         run: |
-          # Override default compiler to LLVM.
-          CXX_DIR=$(brew --prefix llvm)/bin
-          CXX_BIN=clang++
-          export CXX=${CXX_DIR}/${CXX_BIN}
-          # Configure compilation flags.
-          export ARCHFLAGS="-arch x86_64"
+          # Override default compiler and OpenMP to LLVM on macOS.
+          export CXX=$(brew --prefix llvm)/bin/clang++
           export CXXFLAGS_OMP="-Xpreprocessor -fopenmp"
           export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
+          # Override ``-arch`` flags to exclude non-native architectures.
+          export ARCHFLAGS="-arch x86_64"
+          # # Optional: Eliminate linker version warning.
+          # export MACOSX_DEPLOYMENT_TARGET=10.9
           # Build.
           make clean; make -j install useomp=true
 
