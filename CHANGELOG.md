@@ -1,5 +1,24 @@
 # Change Log
 
+## v0.1.2 (2023-04-10)
+
+### Bug fixes
+
+Parse build environmental variable in [``setup.py``](setup.py).
+
+### Improvements
+
+Upgrade build and packaging processes.
+
+### Maintenance
+
+Update syntax and fix typos.
+
+### Documentation
+
+Update installation guide based on the enhanced build process.
+
+
 ## v0.1.1 (2023-04-07)
 
 Initial full public release ([major version 0](https://semver.org/#spec-item-4)):
@@ -10,13 +29,13 @@ publish to the PyPI index and Anaconda repository.
 Sort loaded measurements files in [``application/tools/comb_data_vectors.py``](
 application/tools/comb_data_vectors.py).
 
-### Documentation
-
-Update installation guide.
-
 ### Improvements
 
 Upgrade build and packaging processes.
+
+### Documentation
+
+Update installation guide.
 
 
 ## v0.1.0 (2023-03-30)

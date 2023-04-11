@@ -13,11 +13,19 @@ build:
   script: "{{ PYTHON }} -m pip install . -vv"
   script_env:
     - PY_CXX                  # [osx]
+    - PY_CXXFLAGS             # [osx]
+    - PY_LDFLAGS              # [osx]
+    - PY_CXXFLAGS_OMP         # [osx]
+    - PY_LDFLAGS_OMP          # [osx]
     - PY_BUILD_PARALLEL="-j"
 
 requirements:
   build:
     - {{ compiler('cxx') }}
+    - python                              # [build_platform != target_platform]
+    - cross-python_{{ target_platform }}  # [build_platform != target_platform]
+    - cython                              # [build_platform != target_platform]
+    - numpy                               # [build_platform != target_platform]
   host:
     - python
     - pip >=19.1
@@ -37,11 +45,11 @@ requirements:
 
 test:
   requires:
-    - pytest
+    - pytest  # [build_platform == target_platform]
   source_files:
     - tests/
   commands:
-    - pytest --full-trace --verbose --capture=no --runslow tests/
+    - pytest --full-trace --verbose --capture=no --runslow tests/  # [build_platform == target_platform]
 
 about:
   home: https://mikeswang.github.io/Triumvirate

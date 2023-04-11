@@ -15,13 +15,10 @@ rm -rf ${DIST_DIR}
 if [[ ! -d ${DIST_DIR} ]]; then mkdir -p ${DIST_DIR}; fi
 
 # Install/upgrade distribution tools.
-# conda update conda-build
+# conda update -y conda-build
 
-# Build built-distribution.
+# Build and verify built-distribution.
 conda build purge
-conda build ${RECIPE_DIR} \
+conda build --strict-verify --no-anaconda-upload ${RECIPE_DIR} \
   --output-folder ${DIST_DIR} \
   --variants "{'python': ['3.8', '3.9', '3.10']}"
-
-# Check.
-conda verify ${DIST_DIR}
