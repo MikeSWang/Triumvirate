@@ -51,7 +51,7 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: Install C++ build dependency requirements
-        uses: knicknic/os-specific-run@v1.0.3
+        uses: knicknic/os-specific-run@v1.0.4
         with:
           linux: |
             sudo apt-get update

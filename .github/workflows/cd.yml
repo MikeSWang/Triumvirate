@@ -111,7 +111,7 @@ jobs:
             PY_LDFLAGS=-L$(brew --prefix)/lib
 
       - name: Verify built distribution
-        uses: knicknic/os-specific-run@v1.0.3
+        uses: knicknic/os-specific-run@v1.0.4
         with:
           # BUG: ``twine check`` fails to recognise ``--strict`` on macOS.
           linux: python -m twine check --strict dist/*
