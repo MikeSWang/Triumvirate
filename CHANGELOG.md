@@ -1,10 +1,10 @@
 # Change Log
 
-## v0.1.2 (2023-04-10)
+## v0.1.2 (2023-04-12)
 
 ### Bug fixes
 
-Parse build environmental variable in [``setup.py``](setup.py).
+Fix parsing of build environmental variables in [``setup.py``](setup.py).
 
 ### Improvements
 

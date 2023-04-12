@@ -110,11 +110,18 @@ jobs:
           activate-environment: conda_bld
           channels: conda-forge
           channel-priority: strict
-          # Specify arm64 architecture.
-          architecture: ARM64
+          # # Specify arm64 architecture.
+          # architecture: ARM64
+
+      # - name: Configure conda environment
+      #   uses: knicknic/os-specific-run@v1.0.3
+      #   with:
+      #     # Specify arm64 architecture.
+      #     linux: conda config --env --set subdir linux-aarch64
+      #     macos: conda config --env --set subdir osx-arm64
 
       - name: Install packaging requirements
-        run: conda install -y conda-build
+        run: conda install -y conda-build conda-verify
 
       - name: Build conda package
         env:
