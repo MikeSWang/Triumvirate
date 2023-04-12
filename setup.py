@@ -387,11 +387,11 @@ def parse_cli_includes():
 
 
 def parse_cli_cflags_omp():
-    """Parse command-line ``PY_CFLAGS_OMP`` components for extension
+    """Parse command-line ``PY_CXXFLAGS_OMP`` components for extension
     keyword arguments.
 
     """
-    cli_cflags_omp = os.environ.get('PY_CFLAGS_OMP', '').split()
+    cli_cflags_omp = os.environ.get('PY_CXXFLAGS_OMP', '').split()
     if not cli_cflags_omp:
         return None
 
