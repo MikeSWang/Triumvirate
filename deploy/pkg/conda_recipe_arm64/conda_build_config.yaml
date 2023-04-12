@@ -1,3 +1,3 @@
 target_platform:
   - linux-aarch64  # [linux]
-  - macos-arm64    # [macos]
+  - osx-arm64      # [macos]
