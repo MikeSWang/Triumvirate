@@ -1,0 +1,31 @@
+# See documentation for all Dependabot configuration options:
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "[pip] "
+    labels:
+      - "maintenance"
+    assignees:
+      - "MikeSWang"
+    reviewers:
+      - "MikeSWang"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "[gh-actions] "
+    labels:
+      - "workflows"
+    assignees:
+      - "MikeSWang"
+    reviewers:
+      - "MikeSWang"
