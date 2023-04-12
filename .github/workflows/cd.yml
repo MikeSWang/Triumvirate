@@ -130,7 +130,7 @@ jobs:
           channel-priority: strict
 
       - name: Install packaging requirements
-        run: conda install -y conda-build
+        run: conda install -y conda-build conda-verify
 
       - name: Build conda package
         env:
