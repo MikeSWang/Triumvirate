@@ -7,21 +7,22 @@ package:
 
 source:
   git_url: ../../../
+  # path: ../../../
 
 build:
   number: 0
-  script: "{{ PYTHON }} -m pip install . -vv"
+  script:
+    - export PY_CXX=$CXX
+    - export PY_CXXFLAGS_OMP="-Xpreprocessor -fopenmp"  # [osx]
+    - export PY_LDFLAGS_OMP="-lomp"                     # [osx]
+    - {{ PYTHON }} -m pip install . -vvv
   script_env:
-    - PY_CXX                  # [osx]
-    - PY_CXXFLAGS             # [osx]
-    - PY_LDFLAGS              # [osx]
-    - PY_CXXFLAGS_OMP         # [osx]
-    - PY_LDFLAGS_OMP          # [osx]
     - PY_BUILD_PARALLEL="-j"
 
 requirements:
   build:
     - {{ compiler('cxx') }}
+    - llvm-openmp                         # [osx]
     - python                              # [build_platform != target_platform]
     - cross-python_{{ target_platform }}  # [build_platform != target_platform]
     - cython                              # [build_platform != target_platform]
@@ -31,12 +32,15 @@ requirements:
     - pip >=19.1
     - gsl >=2.7
     - fftw >=3
+    - libgomp                 # [linux]
+    - llvm-openmp             # [osx]
     - setuptools >=61.0.0
     - setuptools_scm >=6.4.0
     - cython >=0.25
     - extension-helpers
     - numpy
   run:
+    - llvm-openmp                    # [osx]
     - python >=3.8
     - {{ pin_compatible("numpy") }}
     - scipy

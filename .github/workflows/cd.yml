@@ -140,12 +140,6 @@ jobs:
         run: |
           # Create output directory if non-existent.
           if [[ ! -d ${output_dir} ]]; then mkdir -p ${output_dir}; fi
-          # Default to GCC compiler and OpenMP on macOS.
-          if [[ "$RUNNER_OS" == macOS ]]; then
-            CXX_DIR=$(brew --prefix gcc)/bin
-            CXX_BIN=$(ls ${CXX_DIR} | grep '^g++')
-            export PY_CXX=${CXX_DIR}/${CXX_BIN}
-          fi
           # Build.
           conda build --strict-verify --no-anaconda-upload ${recipe_dir} \
             --variants "${variants}" --output-folder ${output_dir}

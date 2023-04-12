@@ -124,14 +124,6 @@ jobs:
         run: |
           # Create output directory if non-existent.
           if [[ ! -d ${output_dir} ]]; then mkdir -p ${output_dir}; fi
-          # Default to LLVM compiler and OpenMP on macOS.
-          if [[ "$RUNNER_OS" == macOS ]]; then
-            export PY_CXX=$(brew --prefix llvm)/bin/clang++
-            export PY_CXXFLAGS="-I$(brew --prefix)/include"
-            export PY_LDFLAGS="-L$(brew --prefix)/lib"
-            export PY_CXXFLAGS_OMP="-Xpreprocessor -fopenmp"
-            export PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
-          fi
           # Build.
           conda build --strict-verify --no-anaconda-upload ${recipe_dir} \
             --variants "${variants}" --output-folder ${output_dir}
