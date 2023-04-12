@@ -9,6 +9,7 @@ on:
     paths:
       - deploy/pkg/conda_recipe_arm64/**
       - .github/workflows/cd_arm64.yml
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -135,8 +136,14 @@ jobs:
           conda build --strict-verify --no-anaconda-upload ${recipe_dir} \
             --variants "${variants}" --output-folder ${output_dir}
 
-      - name: Save conda package
+      - name: Save build to conda_bld
+        uses: actions/upload-artifact@v3
+        with:
+          name: conda_bld_arm64_${{ github.ref_name }}
+          path: dist_arm64/*
+
+      - name: Save build to conda_dist
         uses: actions/upload-artifact@v3
         with:
           name: conda_dist_arm64_${{ github.ref_name }}
-          path: dist_arm64/*
+          path: dist_arm64/**/*.tar.bz2
