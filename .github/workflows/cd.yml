@@ -10,6 +10,22 @@ on:
       - deploy/pkg/conda_recipe/**
       - .github/workflows/cd.yml
   workflow_dispatch:
+    inputs:
+      run_build_sdist:
+        description: 'Run job build_sdist'
+        type: boolean
+        default: false
+        required: false
+      run_build_bdist:
+        description: 'Run job build_bdist'
+        type: boolean
+        default: false
+        required: false
+      run_build_conda:
+        description: 'Run job build_conda'
+        type: boolean
+        default: false
+        required: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,6 +38,10 @@ jobs:
     runs-on: ubuntu-latest
 
     timeout-minutes: 20
+
+    if: >
+      github.event_name != 'workflow_dispatch' ||
+      github.event.inputs.run_build_sdist == 'true'
 
     steps:
       - name: Checkout
@@ -65,6 +85,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     timeout-minutes: 60
+
+    if: >
+      github.event_name != 'workflow_dispatch' ||
+      github.event.inputs.run_build_bdist == 'true'
 
     steps:
       - name: Checkout
@@ -118,6 +142,14 @@ jobs:
 
     timeout-minutes: 60
 
+    if: >
+      github.event_name != 'workflow_dispatch' ||
+      github.event.inputs.run_build_conda == 'true'
+
+    defaults:
+      run:
+        shell: bash -el {0}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -130,19 +162,27 @@ jobs:
           channel-priority: strict
 
       - name: Install packaging requirements
-        run: conda install -y conda-build conda-verify
+        run: |
+          conda install -y conda-build conda-verify conda-package-handling
+          # `cph` not found otherwise.
+          conda_root=$(conda config --show root_prefix | sed 's/root_prefix: //')
+          conda_env=${conda_root}/envs/conda_bld
+          export PATH=$PATH:${conda_root}/bin:${conda_env}/bin
 
       - name: Build conda package
         env:
           recipe_dir: deploy/pkg/conda_recipe
           output_dir: dist/
-          variants: "{'python': ['3.8', '3.9', '3.10']}"
+          variants: "{'python': ['3.10']}"
         run: |
           # Create output directory if non-existent.
           if [[ ! -d ${output_dir} ]]; then mkdir -p ${output_dir}; fi
           # Build.
           conda build --strict-verify --no-anaconda-upload ${recipe_dir} \
             --variants "${variants}" --output-folder ${output_dir}
+          # Transmute.
+          find ${output_dir} -name "*.tar.bz2" \
+            -exec cph transmute {} .conda --out-folder ${output_dir} \;
 
       - name: Save build to conda_bld
         uses: actions/upload-artifact@v3
@@ -154,4 +194,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: conda_dist_${{ github.ref_name }}
-          path: dist/**/*.tar.bz2
+          path: |
+            dist/**/*.tar.bz2
+            dist/*.conda

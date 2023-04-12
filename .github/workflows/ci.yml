@@ -15,6 +15,7 @@ on:
       - Makefile
       - .gitignore
       - .github/workflows/ci.yml
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -10,6 +10,17 @@ on:
       - deploy/pkg/conda_recipe_arm64/**
       - .github/workflows/cd_arm64.yml
   workflow_dispatch:
+    inputs:
+      run_build_bdist_arm64:
+        description: 'Run job build_bdist_arm64'
+        type: boolean
+        default: false
+        required: false
+      run_build_conda_arm64:
+        description: 'Run job build_conda_arm64'
+        type: boolean
+        default: false
+        required: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -31,6 +42,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     timeout-minutes: 180
+
+    if: >
+      github.event_name != 'workflow_dispatch' ||
+      github.event.inputs.run_build_bdist_arm64 == 'true'
 
     steps:
       - name: Checkout
@@ -87,9 +102,6 @@ jobs:
   build_conda_arm64:
     name: Build conda package (arm64)
 
-    # Skip as no native arm64 runner exists.
-    if: false
-
     strategy:
       fail-fast: false
       matrix:
@@ -99,6 +111,15 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     timeout-minutes: 180
+
+    # Skip as no native arm64 runner exists.
+    if: >
+      github.event_name != 'workflow_dispatch' && false ||
+      github.event.inputs.run_build_conda_arm64 == 'true'
+
+    defaults:
+      run:
+        shell: bash -el {0}
 
     steps:
       - name: Checkout
@@ -113,15 +134,20 @@ jobs:
           # # Specify arm64 architecture.
           # architecture: ARM64
 
-      # - name: Configure conda environment
-      #   uses: knicknic/os-specific-run@v1.0.3
-      #   with:
-      #     # Specify arm64 architecture.
-      #     linux: conda config --env --set subdir linux-aarch64
-      #     macos: conda config --env --set subdir osx-arm64
+      - name: Configure conda environment
+        uses: knicknic/os-specific-run@v1.0.3
+        with:
+          # Specify arm64 architecture.
+          linux: conda config --env --set subdir linux-aarch64
+          macos: conda config --env --set subdir osx-arm64
 
       - name: Install packaging requirements
-        run: conda install -y conda-build conda-verify
+        run: |
+          conda install -y conda-build conda-verify conda-package-handling
+          # `cph` not found otherwise.
+          conda_root=$(conda config --show root_prefix | sed 's/root_prefix: //')
+          conda_env=${conda_root}/envs/conda_bld
+          export PATH=$PATH:${conda_root}/bin:${conda_env}/bin
 
       - name: Build conda package
         env:
@@ -132,8 +158,11 @@ jobs:
           # Create output directory if non-existent.
           if [[ ! -d ${output_dir} ]]; then mkdir -p ${output_dir}; fi
           # Build.
-          conda build --strict-verify --no-anaconda-upload ${recipe_dir} \
+          conda-build --strict-verify --no-anaconda-upload ${recipe_dir} \
             --variants "${variants}" --output-folder ${output_dir}
+          # Transmute.
+          find ${output_dir} -name "*.tar.bz2" \
+            -exec cph transmute {} .conda --out-folder ${output_dir} \;
 
       - name: Save build to conda_bld
         uses: actions/upload-artifact@v3
@@ -145,4 +174,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: conda_dist_arm64_${{ github.ref_name }}
-          path: dist_arm64/**/*.tar.bz2
+          path: |
+            dist_arm64/**/*.tar.bz2
+            dist_arm64/*.conda
