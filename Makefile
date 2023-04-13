@@ -96,13 +96,13 @@ FFTW_DIR = ${FFTW_ROOT}
 # GSL library
 ifdef GSL_DIR
 INCLUDES += -I${GSL_DIR}/include
-LDFLAGS = -L${GSL_DIR}/lib ${LDFLAGS}
+LDFLAGS := -L${GSL_DIR}/lib ${LDFLAGS}
 endif  # GSL_DIR
 
 # FFTW library
 ifdef FFTW_DIR
 INCLUDES += -I${FFTW_DIR}/include
-LDFLAGS = -L${FFTW_DIR}/lib ${LDFLAGS}
+LDFLAGS := -L${FFTW_DIR}/lib ${LDFLAGS}
 endif  # FFTW_DIR
 
 endif  # NERSC_HOST
