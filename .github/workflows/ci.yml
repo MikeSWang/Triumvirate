@@ -1,3 +1,10 @@
+# Perform continuous integration (CI) checks.
+#
+# CI tasks include but are not limited to:
+# - development builds (on all supported OS);
+# - unit/integration tests;
+# - code linting.
+#
 name: continuous-integration
 
 on:

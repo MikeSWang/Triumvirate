@@ -1,12 +1,17 @@
+# Automate publication manuscripts.
+#
+# Publications currently include:
+# - J. Open Source Softw.
+#
 name: publication
 
 on:
   push:
     branches:
-      # Host publications on branch 'main' only
+      # Host publications on branch 'main'.
       - main
     paths:
-      # Append publications
+      # Append publications.
       - publication/joss/**
       - .github/workflows/publication.yml
 
@@ -20,6 +25,7 @@ jobs:
 
       # By default, the source .md and product .pdf are both named 'paper'
       # and reside in the same directory.
+
       - name: Build draft PDF
         uses: openjournals/openjournals-draft-action@master
         with:

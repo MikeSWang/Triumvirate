@@ -1,0 +1,23 @@
+# Automatically label new pull requests based on the files changed.
+#
+# See: https://github.com/actions/labeler
+#
+name: labeller
+on: [pull_request_target]
+
+jobs:
+  label:
+    name: Label
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+    - uses: actions/labeler@v4
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        configuration-path: .github/autolabels.yml
+        sync-labels: true

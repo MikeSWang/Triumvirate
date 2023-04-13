@@ -1,31 +1,33 @@
-# See documentation for all Dependabot configuration options:
+# Deploy Dependabot for dependency update checks.
+#
+# See documentation for all configuration options:
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-
+#
 version: 2
 
 updates:
-  - package-ecosystem: "pip"
+  - package-ecosystem: pip
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: weekly
     commit-message:
       prefix: "[pip] "
     labels:
       - "maintenance"
     assignees:
-      - "MikeSWang"
+      - MikeSWang
     reviewers:
-      - "MikeSWang"
+      - MikeSWang
 
-  - package-ecosystem: "github-actions"
+  - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: daily
     commit-message:
       prefix: "[gh-actions] "
     labels:
       - "workflows"
     assignees:
-      - "MikeSWang"
+      - MikeSWang
     reviewers:
-      - "MikeSWang"
+      - MikeSWang

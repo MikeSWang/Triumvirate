@@ -1,3 +1,10 @@
+# Provide continuous delivery (CD) for arm64-based target platforms
+# from (non-native) build platforms.
+#
+# CD deliverables currently include:
+# - (non-natively) built Python wheel distributions (for PyPI);
+# - (non-natively) built conda packages (for Anaconda).
+#
 name: continuous-delivery-arm64
 
 on:

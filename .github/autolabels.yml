@@ -1,0 +1,28 @@
+# List automatically applied labels by GitHub Labeler.
+#
+# See configuration in ``.github/workflows/labeller.yml``.
+#
+build:
+- setup.py
+- setup.cfg
+- pyproject.toml
+- Makefile
+- MANIFEST.in
+- .github/workflows/ci*.yml
+- .github/workflows/cd*.yml
+
+documentation:
+- docs/**/*
+- deploy/doc/**/*
+- README.*
+- .readthedocs.yml
+
+maintenance:
+- .github/**/*.md
+- CHANGELOG.md
+- CONTRIBUTING.md
+- NOTES.md
+
+workflows:
+- .github/**/*.yml
+- deploy/**/*

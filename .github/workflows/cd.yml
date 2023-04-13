@@ -1,3 +1,10 @@
+# Provide continuous delivery (CD).
+#
+# CD deliverables currently include:
+# - source distributions (for PyPI);
+# - (natively) built Python wheel distributions (for PyPI);
+# - (natively) built conda packages (for Anaconda).
+#
 name: continuous-delivery
 
 on:
