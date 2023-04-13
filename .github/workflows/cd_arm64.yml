@@ -81,7 +81,7 @@ jobs:
             PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
 
       - name: Verify built distribution
-        uses: knicknic/os-specific-run@v1.0.3
+        uses: knicknic/os-specific-run@v1.0.4
         with:
           # BUG: ``twine check`` fails to recognise ``--strict`` on macOS.
           linux: python -m twine check --strict dist_arm64/*
@@ -135,7 +135,7 @@ jobs:
           # architecture: ARM64
 
       - name: Configure conda environment
-        uses: knicknic/os-specific-run@v1.0.3
+        uses: knicknic/os-specific-run@v1.0.4
         with:
           # Specify arm64 architecture.
           linux: conda config --env --set subdir linux-aarch64
