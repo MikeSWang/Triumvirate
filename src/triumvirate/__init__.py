@@ -35,4 +35,4 @@ __license__ = 'GPL-3.0'
 try:
     __version__ = version('triumvirate')
 except PackageNotFoundError:
-    __version__ = '0.1'  # fallback version number
+    __version__ = '0.1.2'  # fallback version number

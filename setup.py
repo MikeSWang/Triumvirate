@@ -1,11 +1,11 @@
 """Set up Triumvirate and its Cythonised extension modules.
 
 """
-import logging
 import os
 import platform
 import sys
 from copy import deepcopy
+from distutils.log import _global_log as distutils_logger
 from multiprocessing import cpu_count
 from setuptools import setup
 from setuptools.command.build_clib import build_clib
@@ -15,9 +15,6 @@ from Cython.Build import cythonize
 from Cython.Distutils import build_ext, Extension
 from extension_helpers._openmp_helpers import check_openmp_support
 from extension_helpers._setup_helpers import pkg_config
-
-
-distutils_logger = logging.getLogger()  # recycled from :mod:`distutils._log`
 
 
 # ========================================================================
@@ -45,7 +42,8 @@ def get_pkg_dir(topdir="src"):
     Parameters
     ----------
     topdir : str, optional
-        Top directory.
+        Top-level (sub-)directory containing the package at the
+        repository root.
 
     Returns
     -------
@@ -62,7 +60,7 @@ def get_pkg_include_dir(subdir="include"):
     Parameters
     ----------
     subdir : str, optional
-        Subdirectory of C++ headers in the package directory.
+        Subdirectory containing C++ headers in the package directory.
 
     Returns
     -------
@@ -73,13 +71,13 @@ def get_pkg_include_dir(subdir="include"):
     return os.path.join(get_pkg_dir(), subdir)
 
 
-def get_pkg_src_dir(subdir="src/modules"):
+def get_pkg_src_dir(subdir="src"):
     """Get package C++ source directory.
 
     Parameters
     ----------
     subdir : str, optional
-        Subdirectory of C++ sources in the package directory.
+        Subdirectory containing C++ sources in the package directory.
 
     Returns
     -------
@@ -98,9 +96,10 @@ class BuildExt(build_ext):
     """Modified :class:`Cython.Distutils.build_ext`.
 
     """
+
     def finalize_options(self):
         """Modify parallelisation option in
-        :meth:`Cython.Distutils.build_ext.build_ext.build_extensions`.
+        :meth:`Cython.Distutils.build_ext.finalize_options`.
 
         """
         super().finalize_options()
@@ -111,7 +110,7 @@ class BuildExt(build_ext):
 
     def build_extensions(self):
         """Modify compiler and compilation configuration in
-        :meth:`Cython.Distutils.build_ext.build_ext.build_extensions`.
+        :meth:`Cython.Distutils.build_ext.build_extensions`.
 
         """
         OPTS_TO_REMOVE = ['-Wstrict-prototypes',]  # noqa: E231
@@ -138,6 +137,7 @@ class BuildClib(build_clib):
     """Modified :class:`setuptools.command.build_clib.build_clib`.
 
     """
+
     def build_libraries(self, libraries):
         """Modify compiler and compilation configuration in
         :meth:`setuptools.command.build_clib.build_clib.build_libraries`.
@@ -159,7 +159,7 @@ class BuildClib(build_clib):
 
 
 def get_build_num_procs():
-    """Get build parallel processes.
+    """Get the number of build parallel processes.
 
     Returns
     -------
@@ -183,7 +183,7 @@ def get_build_num_procs():
 
 
 def prioprint(*args, **kwargs):
-    """`print` in high priority.
+    """`print` with high priority.
 
     """
     print(*args, file=sys.stderr, **kwargs)
@@ -195,9 +195,9 @@ def display_py_environs():
     """
     PY_ENV_VARS = [
         'PY_CXX',
-        'PY_CXXFLAGS',
-        'PY_LDFLAGS',
-        'PY_INCLUDES',
+        'PY_INCLUDES',  # typically included in 'CPPFLAGS'
+        'PY_CXXFLAGS',  # untypically includes macros in 'CPPFLAGS'
+        'PY_LDFLAGS',  # untypically includes 'LDLIBS'
         'PY_NO_OMP',
         'PY_CXXFLAGS_OMP',
         'PY_LDFLAGS_OMP',
@@ -230,7 +230,7 @@ def display_py_options():
 EXT_LANG = 'c++'
 
 
-# -- Environment ---------------------------------------------------------
+# -- OS ------------------------------------------------------------------
 
 def get_platform():
     """Get the build platform.
@@ -238,6 +238,7 @@ def get_platform():
     Returns
     -------
     {'linux', 'darwin', 'default'}
+        Build platform.
 
     """
     build_platform = platform.system().lower()
@@ -284,18 +285,17 @@ def set_cli_compiler(compiler=None):
 
 # -- Dependencies --------------------------------------------------------
 
-# Default to GCC OpenMP implementation.
-OPENMP_LIBS = {
-    'default': 'gomp',  # 'omp'
-    'linux': '',  # set by ``-fopenmp`` or environment
-    'darwin': '',  # set by ``-fopenmp`` or environment
-}
-
+PKG_LIB_NAME = 'trv'
 
 LIBS_CORE = ['gsl', 'fftw3',]  # noqa: E231
 LIBS_FULL = ['gsl', 'gslcblas', 'm', 'fftw3',]  # noqa: E231
 
-PKG_LIB_NAME = 'trv'
+# Default to GCC OpenMP implementation.
+OPENMP_LIBS = {
+    'default': 'gomp',  # or LLVM 'omp'
+    'linux': '',  # set by ``-fopenmp`` or environment
+    'darwin': '',  # set by ``-fopenmp`` or environment
+}
 
 
 # -- Options -------------------------------------------------------------
@@ -306,12 +306,12 @@ def convert_macro(macro):
     Parameters
     ----------
     macro : str
-        Macro as a flag
+        Macro as a flag with '-D' prefix.
 
     Returns
     -------
-    tuple (str, Union[str, None])
-        Macro as a tuple
+    tuple[str, Union[str, None]]
+        Macro as a 2-tuple.
 
     """
     macro_ = macro.lstrip('-D').split('=')
@@ -319,9 +319,7 @@ def convert_macro(macro):
         return (macro_.pop(), None)
     if len(macro_) == 2:
         return tuple(macro_)
-    raise ValueError(
-        "Invalid macro to convert: {}.".format(macro_)
-    )
+    raise ValueError("Invalid macro to convert: {}.".format(macro_))
 
 
 def parse_cli_cflags():
@@ -339,7 +337,8 @@ def parse_cli_cflags():
     parsed_macros, parsed_cflags = [], []
     for cflag_ in cli_cflags:
         if cflag_.startswith('-D'):
-            parsed_macros.append(convert_macro(cflag_))
+            macro_ = convert_macro(cflag_)
+            parsed_macros.append(macro_)
         else:
             parsed_cflags.append(cflag_)
 
@@ -353,7 +352,7 @@ def parse_cli_ldflags():
     Returns
     -------
     list of str, list of str, list of str
-        Parsed `ldflags`, `libs` and `libdirs`.
+        Parsed `ldflags`, `libs` and `lib_dirs`.
 
     """
     cli_ldflags = os.environ.get('PY_LDFLAGS', '').split()
@@ -361,9 +360,11 @@ def parse_cli_ldflags():
     parsed_ldflags, parsed_libs, parsed_lib_dirs = [], [], []
     for ldflag_ in cli_ldflags:
         if ldflag_.startswith('-l'):
-            parsed_libs.append(ldflag_.lstrip('-l'))
+            lib_ = ldflag_.lstrip('-l')
+            parsed_libs.append(lib_)
         elif ldflag_.startswith('-L'):
-            parsed_lib_dirs.append(ldflag_.lstrip('-L'))
+            ldflag_L = ldflag_.lstrip('-L')
+            parsed_lib_dirs.append(ldflag_L)
         else:
             parsed_ldflags.append(ldflag_)
 
@@ -377,7 +378,7 @@ def parse_cli_includes():
     Returns
     -------
     list of str
-        Parsed `ldflags`.
+        Parsed `include_dirs`.
 
     """
     parsed_include_dirs = \
@@ -389,6 +390,11 @@ def parse_cli_includes():
 def parse_cli_cflags_omp():
     """Parse command-line ``PY_CXXFLAGS_OMP`` components for extension
     keyword arguments.
+
+    Returns
+    -------
+    list of str, list of str
+        Parsed `macros` and `include_dirs` for OpenMP.
 
     """
     cli_cflags_omp = os.environ.get('PY_CXXFLAGS_OMP', '').split()
@@ -417,6 +423,11 @@ def parse_cli_ldflags_omp():
     """Parse command-line ``PY_LDFLAGS_OMP`` components for extension
     keyword arguments.
 
+    Returns
+    -------
+    list of str, list of str
+        Parsed `ldflags`, `libs` and `lib_dirs` for OpenMP.
+
     """
     cli_ldflags_omp = os.environ.get('PY_LDFLAGS_OMP', '').split()
     if not cli_ldflags_omp:
@@ -435,16 +446,16 @@ def parse_cli_ldflags_omp():
 
 
 def add_options_nonomp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
-    """Add any missing non-OpenMP compilation options.
+    """Add non-OpenMP compilation options.
 
     Parameters
     ----------
-    macros : list of tuple (str, Union[str, None])
-        Macros without '-D' prefix.
+    macros : list of tuple[str, Union[str, None]]
+        Macros without the '-D' prefix.
     cflags : list of str
-        ``CXXFLAGS`` components.
+        ``CXXFLAGS`` components with non-'-D' and non-'-I' prefixes.
     ldflags : list of str
-        ``LDFLAGS`` components with non-'-l' prefixes.
+        ``LDFLAGS`` components with non-'-l' and non-'-L' prefixes.
     libs : list of str
         Libraries without the '-l' prefix.
     lib_dirs : list of str
@@ -454,18 +465,20 @@ def add_options_nonomp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
 
     Returns
     -------
-    macros : list of tuple (str, Union[str, None])
-        Macros without '-D' prefix.
+    macros : list of tuple[str, Union[str, None]]
+        Extended macros without the '-D' prefix.
     cflags : list of str
-        ``CXXFLAGS`` components.
+        Extended ``CXXFLAGS`` components with non-'-D' and
+        non-'-I' prefixes.
     ldflags : list of str
-        ``LDFLAGS`` components with non-'-l' prefixes.
+        Extended ``LDFLAGS`` components with non-'-l' and
+        non-'-L' prefixes.
     libs : list of str
-        Libraries without the '-l' prefix.
+        Extended libraries without the '-l' prefix.
     lib_dirs : list of str
-        Library directories without the '-L' prefix.
+        Extended library directories without the '-L' prefix.
     include_dirs :list of str
-        ``INCLUDES`` directories without the '-I' prefix.
+        Extended ``INCLUDES`` directories without the '-I' prefix.
 
     """
     libs_core = deepcopy(LIBS_CORE)
@@ -478,23 +491,20 @@ def add_options_nonomp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
 
     checked_options = pkg_config(libs_core, default_libraries=libs_full)
 
+    libs = checked_options['libraries']
+
     for macro_ in checked_options['define_macros']:
-        if macro_ not in macros:
-            macros.append(macro_)
-    for macro_ in checked_options['undef_macros']:
         if macro_ not in macros:
             macros.append(macro_)
     for flag in checked_options['extra_compile_args']:
         if flag not in cflags + ldflags:
             cflags.append(flag)
-    for include_dir_ in checked_options['include_dirs']:
-        if include_dir_ not in include_dirs:
-            include_dirs.append(include_dir_)
     for lib_dir_ in checked_options['library_dirs']:
         if lib_dir_ not in lib_dirs:
             lib_dirs.append(lib_dir_)
-
-    libs = checked_options['libraries']
+    for include_dir_ in checked_options['include_dirs']:
+        if include_dir_ not in include_dirs:
+            include_dirs.append(include_dir_)
 
     return macros, cflags, ldflags, libs, lib_dirs, include_dirs
 
@@ -506,12 +516,12 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
 
     Parameters
     ----------
-    macros : list of tuple (str, Union[str, None])
-        Macros without '-D' prefix.
+    macros : list of tuple[str, Union[str, None]]
+        Macros without the '-D' prefix.
     cflags : list of str
-        ``CXXFLAGS`` components.
+        ``CXXFLAGS`` components with non-'-D' and non-'-I' prefixes.
     ldflags : list of str
-        ``LDFLAGS`` components with non-'-l' prefixes.
+        ``LDFLAGS`` components with non-'-l' and non-'-L' prefixes.
     libs : list of str
         Libraries without the '-l' prefix.
     lib_dirs : list of str
@@ -521,18 +531,20 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
 
     Returns
     -------
-    macros : list of tuple (str, Union[str, None])
-        Processed macros without '-D' prefix.
+    macros : list of tuple[str, Union[str, None]]
+        Extended macros without the '-D' prefix.
     cflags : list of str
-        Processed ``CXXFLAGS`` components.
+        Extended ``CXXFLAGS`` components with non-'-D' and
+        non-'-I' prefixes.
     ldflags : list of str
-        Processed ``LDFLAGS`` components non-'-l' prefix.
+        Extended ``LDFLAGS`` components with non-'-l' and
+        non-'-L' prefixes.
     libs : list of str
-        Libraries without the '-l' prefix.
+        Extended libraries without the '-l' prefix.
     lib_dirs : list of str
-        Library directories without the '-L' prefix.
+        Extended library directories without the '-L' prefix.
     include_dirs :list of str
-        ``INCLUDES`` directories without the '-I' prefix.
+        Extended ``INCLUDES`` directories without the '-I' prefix.
 
     """
     # Check if OpenMP is explicitly disabled.
@@ -551,7 +563,7 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
     # Enable OpenMP by default otherwise.
     prioprint("OpenMP is enabled by default.")
 
-    # Adapt macros and `cflags`.
+    # Adapt `macros` and `cflags`.
     MACROS_OMP_RELATED = [
         ('TRV_USE_OMP', None),
         ('TRV_USE_FFTWOMP', None),
@@ -607,12 +619,12 @@ def add_options_pkgs(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
 
     Parameters
     ----------
-    macros : list of tuple (str, Union[str, None])
-        Macros without '-D' prefix.
+    macros : list of tuple[str, Union[str, None]]
+        Macros without the '-D' prefix.
     cflags : list of str
-        ``CXXFLAGS`` components.
+        ``CXXFLAGS`` components with non-'-D' and non-'-I' prefixes.
     ldflags : list of str
-        ``LDFLAGS`` components with non-'-l' prefixes.
+        ``LDFLAGS`` components with non-'-l' and non-'-L' prefixes.
     libs : list of str
         Libraries without the '-l' prefix.
     lib_dirs : list of str
@@ -622,18 +634,20 @@ def add_options_pkgs(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
 
     Returns
     -------
-    macros : list of tuple (str, Union[str, None])
-        Processed macros without '-D' prefix.
+    macros : list of tuple[str, Union[str, None]]
+        Extended macros without the '-D' prefix.
     cflags : list of str
-        Processed ``CXXFLAGS`` components.
+        Extended ``CXXFLAGS`` components with non-'-D' and
+        non-'-I' prefixes.
     ldflags : list of str
-        Processed ``LDFLAGS`` components non-'-l' prefix.
+        Extended ``LDFLAGS`` components with non-'-l' and
+        non-'-L' prefixes.
     libs : list of str
-        Libraries without the '-l' prefix.
+        Extended libraries without the '-l' prefix.
     lib_dirs : list of str
-        Library directories without the '-L' prefix.
+        Extended library directories without the '-L' prefix.
     include_dirs : list of str
-        ``INCLUDES`` directories without the '-I' prefix.
+        Extended ``INCLUDES`` directories without the '-I' prefix.
 
     """
     # Adapt `macros`.
@@ -698,7 +712,7 @@ def define_pkg_library(lib_name=PKG_LIB_NAME):
 
     Returns
     -------
-    tuple (str, dict)
+    tuple[str, dict]
         Package library and corresponding configurations.
 
     """

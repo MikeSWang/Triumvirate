@@ -180,7 +180,7 @@ jobs:
         env:
           recipe_dir: deploy/pkg/conda_recipe
           output_dir: dist/
-          variants: "{'python': ['3.10']}"
+          variants: "{'python': ['3.8', '3.9', '3.10']}"
         run: |
           # Create output directory if non-existent.
           if [[ ! -d ${output_dir} ]]; then mkdir -p ${output_dir}; fi

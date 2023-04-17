@@ -39,7 +39,7 @@ if $build_wheel; then
 fi
 
 # Check
-python -m twine check --strict ${DIST_DIR}/*
+python -m twine check --strict ${DIST_DIR}/*.tar.gz ${DIST_DIR}/*.whl
 
 # Optionally upload to [Test]PyPI.
 if $upload_flag; then
