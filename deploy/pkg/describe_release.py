@@ -25,7 +25,7 @@ def parse_options():
         help="Git root relative path to the script"
     )
     parser.add_argument(
-        '--scheme', type=str,
+        '--version-scheme', type=str,
         help="version scheme (see ``setuptools_scm``)"
     )
     parser.add_argument(
