@@ -88,18 +88,18 @@ def get_pkg_src_dir(subdir="src"):
     return os.path.join(get_pkg_dir(), subdir)
 
 
-def get_pkg_version_scheme(default_ver_scheme='post-release',
-                           default_loc_scheme='no-local-scheme'):
+def get_pkg_version_scheme(default_ver_scheme='no-guess-dev',
+                           default_loc_scheme='node-and-date'):
     """Get package version scheme from the environment.
 
     Parameters
     ----------
     default_ver_scheme : str, optional
         Fallback default version scheme for the package
-        (default is 'post-release').
+        (default is 'no-guess-dev').
     default_loc_scheme : str, optional
         Fallback default local scheme for the package
-        (default is 'no-local-scheme').
+        (default is 'node-and-date').
 
     Returns
     -------
@@ -121,6 +121,8 @@ def get_pkg_version_scheme(default_ver_scheme='post-release',
         'version_scheme': ver_scheme,
         'local_scheme': loc_scheme,
     }
+
+    prioprint("Versioning scheme: {}".format(scheme))
 
     return scheme
 

@@ -37,7 +37,7 @@ def parse_options():
 
 
 def describe_version(cd="../../",
-                     version_scheme='post-release',
+                     version_scheme='no-guess-dev',
                      local_scheme='node-and-date'):
     """Describe the version of the current repository as a release.
 

@@ -10,6 +10,7 @@
 get_latest_release () {
     # release_tags=$(git tag -l --sort=-v:refname | grep -E "^v[[:digit:]]+")
     release_local=$(git describe --tag)
+    # release_local=$(python deploy/pkg/describe_release.py)
 
     # release_latest=$(printf ${release_tags} | cut -d ' ' -f 1)
     release_latest=$(printf ${release_local} | cut -d '-' -f 1)

@@ -54,7 +54,7 @@ EXCL_APIDOC_FILES=${APIDOC_PY_DIR}/${PROJ_NAME}.rst
 # @brief Get the project release number.
 #
 get_version_release () {
-    echo $(python -c "import ${PROJ_NAME}; print(${PROJ_NAME}.__version__)")
+    echo $(python ${ROOT_DIR}/deploy/pkg/describe_release.py)
 }
 
 # @brief Replace strings in file.
