@@ -88,6 +88,43 @@ def get_pkg_src_dir(subdir="src"):
     return os.path.join(get_pkg_dir(), subdir)
 
 
+def get_pkg_version_scheme(default_ver_scheme='post-release',
+                           default_loc_scheme='no-local-scheme'):
+    """Get package version scheme from the environment.
+
+    Parameters
+    ----------
+    default_ver_scheme : str, optional
+        Fallback default version scheme for the package
+        (default is 'post-release').
+    default_loc_scheme : str, optional
+        Fallback default local scheme for the package
+        (default is 'no-local-scheme').
+
+    Returns
+    -------
+    dict
+        Package version scheme(s).
+
+    See Also
+    --------
+    :pkg:`setuptools_scm`
+        For available version schemes.
+
+    """
+    ver_scheme = os.environ.get('PY_SCM_VER_SCHEME', '').strip() \
+        or default_ver_scheme
+    loc_scheme = os.environ.get('PY_SCM_LOC_SCHEME', '').strip() \
+        or default_loc_scheme
+
+    scheme = {
+        'version_scheme': ver_scheme,
+        'local_scheme': loc_scheme,
+    }
+
+    return scheme
+
+
 # ========================================================================
 # Build
 # ========================================================================
@@ -202,6 +239,8 @@ def display_py_environs():
         'PY_CXXFLAGS_OMP',
         'PY_LDFLAGS_OMP',
         'PY_BUILD_PARALLEL',
+        'PY_SCM_VER_SCHEME',
+        'PY_SCM_LOC_SCHEME',
     ]
     for env_var in PY_ENV_VARS:
         prioprint("{}={}".format(env_var, os.environ.get(env_var)))
@@ -846,15 +885,14 @@ if __name__ == '__main__':
         nthreads=get_build_num_procs(),
     )
 
+    setup_commands = {
+        'build_clib': BuildClib,
+        'build_ext': BuildExt,
+    }
+
     setup(
-        use_scm_version={
-            'version_scheme': 'post-release',
-            # 'local_scheme': 'no-local-version',
-        },
-        cmdclass={
-            'build_clib': BuildClib,
-            'build_ext': BuildExt,
-        },
+        use_scm_version=get_pkg_version_scheme(),
+        cmdclass=setup_commands,
         ext_modules=cython_ext_modules,
         libraries=pkg_libraries,
     )

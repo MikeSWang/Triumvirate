@@ -10,6 +10,9 @@
 PROGNAME := triumvirate
 LIBNAME := trv
 
+SCM_VER_SCHEME ?= no-guess-dev
+SCM_LOC_SCHEME ?= node-and-date
+
 
 # ------------------------------------------------------------------------
 # Directories
@@ -48,6 +51,7 @@ DIR_TESTOUT := ${DIR_TESTS}/test_output
 PATTERN_JOBS = "\-j[[:digit:][:space:]]*[^a-z[:punct:]]"
 MAKEFLAGS_JOBS = $(shell echo "${MAKEFLAGS} " | grep -Eo ${PATTERN_JOBS})
 
+
 # ------------------------------------------------------------------------
 # Compilation
 # ------------------------------------------------------------------------
@@ -83,8 +87,11 @@ CXX ?= g++
 endif  # OS
 
 # Assume default achiver. [adapt]
-AR = ar
-ARFLAGS = -rcsv
+AR ?= ar
+ARFLAGS ?= -rcsv
+
+# Assume default remover. [adapt]
+RM ?= rm -f
 
 
 # -- Dependencies --------------------------------------------------------
@@ -202,7 +209,7 @@ endif  # dbgpars
 
 # -- Parsing -------------------------------------------------------------
 
-# Python: export compilation options as environmental variables.
+# Python: export build options as environmental variables.
 export PY_CXX=${CXX}
 export PY_INCLUDES=${INCLUDES}
 export PY_CXXFLAGS=${CXXFLAGS}
@@ -216,6 +223,9 @@ export PY_LDFLAGS_OMP=${LDFLAGS_OMP}
 endif  # !useomp
 
 export PY_BUILD_PARALLEL=${MAKEFLAGS_JOBS}
+
+export PY_SCM_VER_SCHEME=${SCM_VER_SCHEME}
+export PY_SCM_LOC_SCHEME=${SCM_LOC_SCHEME}
 
 # C++: strip whitespace.
 CPPFLAGS := $(strip ${CPPFLAGS}) $(strip ${INCLUDES})
@@ -283,6 +293,30 @@ $(OBJS): ${DIR_BUILDOBJ}/%.o: ${DIR_PKG_SRC}/%.cpp
 -include $(DEPS)
 
 
+# -- Configuration -------------------------------------------------------
+
+.PHONY: checkopts
+
+checkopts:
+	@echo "Checking options parsed by Makefile..."
+	@echo "MAKEFLAGS: ${MAKEFLAGS}"
+	@echo "MAKEFLAGS_JOBS: ${MAKEFLAGS_JOBS}"
+	@echo "SCM_VER_SCHEME: ${SCM_VER_SCHEME}"
+	@echo "SCM_LOC_SCHEME: ${SCM_LOC_SCHEME}"
+	@echo "CXX: ${CXX}"
+	@echo "INCLUDES: ${INCLUDES}"
+	@echo "CPPFLAGS: ${CPPFLAGS}"
+	@echo "CXXFLAGS: ${CXXFLAGS}"
+	@echo "LDFLAGS: ${LDFLAGS}"
+	@echo "LDLIBS: ${LDLIBS}"
+	@echo "CXXFLAGS_OMP: ${CXXFLAGS_OMP}"
+	@echo "LDFLAGS_OMP: ${LDFLAGS_OMP}"
+	@echo "LDLIBS_OMP: ${LDLIBS_OMP}"
+	@echo "AR: ${AR}"
+	@echo "ARFLAGS: ${ARFLAGS}"
+	@echo "RM: ${RM}"
+
+
 # ------------------------------------------------------------------------
 # Testing
 # ------------------------------------------------------------------------
@@ -301,12 +335,13 @@ pytest:
 # Cleaning
 # ------------------------------------------------------------------------
 
+.PHONY: clean cppclean pyclean testclean distclean
+
 clean: cppclean pyclean testclean distclean
 
 cppclean:
 	@echo "Cleaning up Triumvirate C++ build..."
-	@echo JOBS=${MAKEFLAGS_JOBS}
-	rm -rf core
+	$(RM) -r core
 	find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".gitignore" -exec rm -r {} +
 
 pyclean:
@@ -317,12 +352,12 @@ pyclean:
 
 testclean:
 	@echo "Cleaning up Triumvirate tests..."
-	rm -rf ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/*
-	rm -rf core
+	$(RM) -r ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/*
+	$(RM) -r core
 	find . -type d -name ".pytest_cache" -exec rm -r {} +
 
 distclean:
 	@echo "Cleaning up Triumvirate distributions..."
-	rm -rf ${DIR_DIST}/
-	rm -rf wheelhouse/
+	$(RM) -r ${DIR_DIST}/
+	$(RM) -r wheelhouse/
 	find . -name ".egg-info" -exec rm -r {} +
