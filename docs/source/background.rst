@@ -2,6 +2,10 @@
 Background
 **********
 
+.. seealso::
+
+    :cite:t:`Wang:2023` for the companion journal article.
+
 Given a catalogue of discrete particles (such as galaxies) with their spatial
 coordinates, |Triumvirate| computes estimators of the multipoles of the
 three-point correlation function, also known as the bispectrum in Fourier

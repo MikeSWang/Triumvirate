@@ -127,10 +127,16 @@ User feedback and contributions are very welcome. Please refer to the
 [contribution guidelines](CONTRIBUTING.md).
 
 
+## Discussions
+
+A [community forum](https://github.com/MikeSWang/Triumvirate/discussions)
+for users and developers exists, where you can receive
+announcements, post questions, share ideas and get updates.
+
+
 ## Releases
 
-Changes in current and past releases are listed in the
-[change log](CHANGELOG.md).
+Release notes are included in the [change log](CHANGELOG.md).
 
 
 ## Licence

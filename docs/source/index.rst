@@ -39,8 +39,9 @@ Attribution
     :alt: MNRAS
 
 |br| To acknowledge the use of |Triumvirate| in your published research, please
-cite the publications :cite:p:`Sugiyama:2018,Sugiyama:2019` linked above which
-contain the relevant information in the BibTeX format.
+cite the companion journal article :cite:p:`Wang:2023` and related publications
+:cite:p:`Sugiyama:2018,Sugiyama:2019` with links above containing the
+relevant information in the BibTeX format.
 
 
 Acknowledgement
@@ -78,7 +79,7 @@ announcements, post questions, share ideas and get updates.
 Releases
 ========
 
-Changes in current and past releases are listed in the `change log
+Release notes are included in the `change log
 <https://github.com/MikeSWang/Triumvirate/blob/main/CHANGELOG.md>`_.
 
 

@@ -100,7 +100,7 @@ html_static_path = ['', '_static/']
 
 html_title = 'Triumvirate Documentation'  # u'\u200c'
 
-html_last_updated_fmt = '%Y-%m-%d at %H:%M:%S. Version {}'.format(release)
+html_last_updated_fmt = "%a, %Y-%m-%dT%H:%M:%S%z. Version {}".format(release)
 
 html_theme = 'sphinx_book_theme'
 html_theme_options = {
