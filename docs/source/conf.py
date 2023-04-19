@@ -10,38 +10,50 @@ from datetime import datetime
 from importlib import import_module
 from pathlib import Path
 
+
 sys.path.insert(0, os.path.abspath("../../src"))
 
 
 # -- Project information -------------------------------------------------
 
+# Directories and paths.
+root_dir = Path(
+    inspect.getframeinfo(inspect.currentframe()).filename
+).parent.parent.parent
+
+docs_dir = root_dir/"docs"
+
 # Parse ``setup.cfg``.
 setup_cfg_parser = ConfigParser()
-setup_cfg_path = Path(
-    inspect.getframeinfo(inspect.currentframe()).filename
-).parent.parent.parent/"setup.cfg"
+setup_cfg_path = root_dir/"setup.cfg"
 
 setup_cfg_parser.read(setup_cfg_path)
 setup_cfg = dict(setup_cfg_parser.items('metadata'))
 
 # Extract information from package.
 pkg_name = setup_cfg.get('name').lower()
-pkg_author = setup_cfg.get('author')
+pkg_author = ' &'.join(setup_cfg.get('author').split(',', 1))
 
 import_module(pkg_name)
 pkg = sys.modules[pkg_name]
 
-pkg_version = pkg.__version__
 pkg_date = pkg.__date__.split('-').pop(0)
+if os.environ.get('READTHEDOCS') == 'True':
+    with open(docs_dir/"RTD_VERSION.tmp", 'r') as vers_file:
+        pkg_version = vers_file.readline().strip()
+else:
+    pkg_version = pkg.__version__
 
 # Set fields.
 project = pkg_name
-author = pkg_author
+# author = pkg_author
 release = pkg_version
 if datetime.now().year == int(pkg_date):
-    copyright = pkg_date
+    copyright = '{0}, {1}'.format(pkg_date, pkg_author)
 else:
-    copyright = u'{0}\u2013{1}'.format(pkg_date, datetime.now().year)
+    copyright = u'{0}\u2013{1}, {2}'.format(
+        pkg_date, datetime.now().year, pkg_author
+    )
 
 
 # -- General configuration -----------------------------------------------
@@ -88,12 +100,15 @@ html_static_path = ['', '_static/']
 
 html_title = 'Triumvirate Documentation'  # u'\u200c'
 
+html_last_updated_fmt = '%Y-%m-%d at %H:%M:%S. Version {}'.format(release)
+
 html_theme = 'sphinx_book_theme'
 html_theme_options = {
-    'home_page_in_toc': False,
     'path_to_docs': "docs/source",
     'repository_url': 'https://github.com/MikeSWang/Triumvirate',
     'toc_title': 'On this page',
+    # 'extra_footer': "<div>{}</div>".format(None),
+    'home_page_in_toc': False,
     'use_download_button': False,
     'use_fullscreen_button': False,
     'use_repository_button': False,

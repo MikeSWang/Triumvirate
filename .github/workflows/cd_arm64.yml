@@ -163,6 +163,7 @@ jobs:
           export PATH=$PATH:${conda_root}/bin:${conda_env}/bin
 
       - name: Override version
+        if: github.event_name == 'workflow_dispatch'
         uses: knicknic/os-specific-run@v1.0.4
         env:
           recipe_file: deploy/pkg/conda_recipe_arm64/meta.yaml
@@ -170,12 +171,12 @@ jobs:
           linux: |
             vers_tag=${{ github.event.inputs.version_tag }}
             if [[ ! -z ${vers_tag} ]]; then
-              sed -i "s/# git_rev: v.*/git_rev: ${vers_tag}/g" ${recipe_file}
+              sed -i "s/# git_rev:.*/git_rev: ${vers_tag}/g" ${recipe_file}
             fi
           macos: |
             vers_tag=${{ github.event.inputs.version_tag }}
             if [[ ! -z ${vers_tag} ]]; then
-              sed -i '' "s/# git_rev: v.*/git_rev: ${vers_tag}/g" ${recipe_file}
+              sed -i '' "s/# git_rev:.*/git_rev: ${vers_tag}/g" ${recipe_file}
             fi
 
       - name: Build conda package

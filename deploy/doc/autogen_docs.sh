@@ -97,11 +97,17 @@ cd ${DOCS_DIR}
 # Clean up.
 make clean excl=$excl
 
+# Extract version number.
+vers=$(get_version_release)
+if [[ "${READTHEDOCS}" == "True" ]]; then
+    echo ${vers} > RTD_VERSION.tmp
+fi
+
 # Backup Doxyfile.
 cp ${DOXYFILE} ${DOXYFILE}.bak
 
 # Pre-configure Doxygen-related docs.
-replace_in_doxyfile "PROJECT_NUMBER         = $(get_version_release)"
+replace_in_doxyfile "PROJECT_NUMBER         = ${vers}"
 
 # HACK: Ensure RTD Doxygen backward compatibility.
 if [[ "${READTHEDOCS}" == "True" ]]; then

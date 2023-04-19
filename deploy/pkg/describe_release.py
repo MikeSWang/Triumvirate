@@ -69,5 +69,4 @@ def describe_version(cd="../../",
 
 if __name__ == '__main__':
 
-    opts = parse_options()
-    vers = describe_version(**opts)
+    describe_version(**parse_options())
