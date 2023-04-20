@@ -61,10 +61,10 @@ void make_write_dir(std::string dirstr) {
   }
   if (mkdir(dirstr.c_str(), 0777) && errno != EEXIST) {
     trv::sys::logger.error(
-      "Failed to create output measurement directory."
+      "Failed to create output measurement directory: %s.", dirstr.c_str()
     );
     throw trv::sys::IOError(
-      "Failed to create output measurement directory.\n"
+      "Failed to create output measurement directory: %s.\n", dirstr.c_str()
     );
   }
 }
