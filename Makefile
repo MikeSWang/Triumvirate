@@ -7,6 +7,8 @@
 # Configuration
 # ========================================================================
 
+REPONAME := Triumvirate
+PKGNAME := triumvirate
 PROGNAME := triumvirate
 LIBNAME := trv
 
@@ -22,7 +24,7 @@ SCM_LOC_SCHEME ?= node-and-date
 DIR_ROOT := $(shell pwd)
 
 # Package, build, test and dist directories
-DIR_PKG := ${DIR_ROOT}/src/${PROGNAME}
+DIR_PKG := ${DIR_ROOT}/src/${PKGNAME}
 DIR_BUILD := ${DIR_ROOT}/build
 DIR_TESTS := ${DIR_ROOT}/tests
 DIR_DIST := ${DIR_ROOT}/dist
@@ -111,6 +113,8 @@ CPPFLAGS += -MMD -MP
 CXXFLAGS += -O3 -Wall ${DEP_CXXFLAGS}
 LDFLAGS += ${DEP_LDFLAGS}
 LDLIBS += $(if ${DEP_LDLIBS},${DEP_LDLIBS},$(-lgsl -lgslcblas -lm -lfftw3))
+
+PIPOPTS ?= --user
 
 
 # -- Environment ---------------------------------------------------------
@@ -255,7 +259,8 @@ PROGLIB := ${DIR_BUILDLIB}/lib${LIBNAME}.a
 
 # -- Installation --------------------------------------------------------
 
-.PHONY: install cppinstall pyinstall cpplibinstall cppappbuild
+.PHONY: install cppinstall pyinstall cpplibinstall cppappbuild \
+        uninstall cppuninstall pyuninstall
 
 install: cppinstall pyinstall
 
@@ -266,8 +271,18 @@ cpplibinstall: ${PROGLIB}
 cppappbuild: ${PROGEXE}
 
 pyinstall:
-	@echo "Installing Triumvirate Python package ${WOMP} OpenMP (in dev mode)..."
-	python -m pip install --user --editable . -vvv
+	@echo "Installing Triumvirate Python package ${WOMP} OpenMP (in pip dev mode)..."
+	python -m pip install ${PIPOPTS} --editable . -vvv
+
+uninstall: cppuninstall pyuninstall
+
+cppuninstall:
+	@echo "Uninstalling Triumvirate C++ library/program..."
+	find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".gitignore" -exec rm -r {} +
+
+pyuninstall:
+	@echo "Uninstalling Triumvirate Python package (in pip mode)..."
+	python -m pip uninstall -y ${PKGNAME}
 
 
 # -- Components ----------------------------------------------------------
