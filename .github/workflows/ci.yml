@@ -22,6 +22,30 @@ on:
       - Makefile
       - .gitignore
       - .github/workflows/ci.yml
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - src/**
+      - tests/**
+      - setup.py
+      - setup.cfg
+      - pyproject.toml
+      - MANIFEST.in
+      - Makefile
+      - .gitignore
+      - .github/workflows/ci.yml
+  pull_request_review:
+    types: [submitted, edited]
+    paths:
+      - src/**
+      - tests/**
+      - setup.py
+      - setup.cfg
+      - pyproject.toml
+      - MANIFEST.in
+      - Makefile
+      - .gitignore
+      - .github/workflows/ci.yml
   workflow_dispatch:
 
 concurrency:
