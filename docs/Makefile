@@ -1,51 +1,60 @@
+# @file docs/Makefile
+#
 # Makefile for Sphinx documentation
 #
+# @maintainer Mike S Wang (https://github.com/MikeSWang)
+#
 
-# You can set these variables from the command line, and also
-# from the environment for the first two.
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = source
-BUILDDIR      = build/sphinx
+# ========================================================================
+# Configuration
+# ========================================================================
 
-# Parse command-line arguments.
+# Define executables explicitly. [MSW]
+RM ?= rm -f
+
+# Define build variables.
+SPHINXBUILD ?= sphinx-build
+SPHINXOPTS  ?=
+SOURCEDIR   := source/
+BUILDDIR    := build/
+
+# Add separate build directories. [MSW]
+BUILDDIR_SPHINX := build/sphinx
+BUILDDIR_DOXY   := build/doxygen
+
+# Exclude individual build types. [MSW]
 ifdef excl
 ifeq ($(strip ${excl}), $(filter $(strip ${excl}), doxy))
 export excl_doxy=true
-endif
+endif  # excl_doxy
 ifeq ($(strip ${excl}), $(filter $(strip ${excl}), sphinx))
 export excl_sphinx=true
-endif
-endif
+endif  # excl_sphinx
+endif  # excl*
+
+
+# ========================================================================
+# Recipes
+# ========================================================================
+
+.PHONY: help Makefile clean
 
 # Put it first so that `make` without argument is like ``make help``.
 help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR_SPHINX)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile
-
-# Catch-all target: route all unknown targets to Sphinx using the new
-# 'make mode' option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
+# Route all unknown targets to Sphinx using the new 'make mode' option.
+# $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR_SPHINX)" $(SPHINXOPTS) $(O)
 
+# Clean generated documentation artifacts. [MSW]
 clean:
-	if [ "${excl_doxy}" != "true" ]; then rm -rf build/doxygen; fi
-	if [ "${excl_sphinx}" != "true" ]; then rm -rf build/sphinx; fi
+	if [ "${excl_doxy}" != "true" ]; then $(RM) -r ${BUILDDIR_DOXY}; fi
+	if [ "${excl_sphinx}" != "true" ]; then $(RM) -r ${BUILDDIR_SPHINX}; fi
 
-	find build/ -mindepth 1 -maxdepth 1 -type f \
-		-not -name ".gitignore" \
-		-exec rm -rf {} +
-	find build/ -mindepth 1 -maxdepth 1 -type d \
+	find ${BUILDDIR} -mindepth 1 -maxdepth 1 -type d \
 	  -not \( -name "doxygen" -or -name "sphinx" \) \
-		-exec rm -rf {} +
+	  -exec $(RM) -r {} +
 
-	if [ -d source/apidoc_cpp ]; then \
-	  find source/apidoc_cpp -mindepth 1 -exec rm -rf {} +; \
-	fi
-	if [ -d source/apidoc_py ]; then \
-	  find source/apidoc_py -mindepth 1 -exec rm -rf {} +; \
-	fi
-	if [ -d source/apiref_doxy ]; then \
-	  find source/apiref_doxy -mindepth 1 -exec rm -rf {} +; \
-	fi
+	for apidir in ${SOURCEDIR}/api*/; do $(RM) -r $$apidir; done
