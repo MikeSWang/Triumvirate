@@ -1,8 +1,11 @@
+# Build artifacts
+build/
+
 # Byte-compiled
 __pycache__/
 *.py[cod]
 
-# C extensions
+# C/C++ extensions
 *.so
 
 # Compiled objects
@@ -11,40 +14,48 @@ __pycache__/
 # Compiled static libraries
 *.a
 
-# Distribution/packaging
-build/
-develop-eggs/
+# Distributions
+bdist/
 dist/
+sdist/
 downloads/
+
+## Eggs
+develop-eggs/
 eggs/
 .eggs/
 *.egg-info/
 *.egg
-lib/
-lib64/
-sdist/
-var/
+
+## Wheels
 wheelhouse/
 wheels/
 
 # Executables
 *.out
 
-# Unit test/coverage reports
+# Tests/test coverage
+.tox
+**/test_build/**
+**/test_output/
+
+## Cache
+.cache/
+.pytest_cache/
+
+## Coverage
 cover/
+*.cover
 coverage.xml
 .coverage
 .coverage.*
-.cache
-*.cover
-.pytest_cache/
-.tox
 
-# Sphinx documentation
+# Documentation
 docs/build/
-docs/source/**/*.rst
 docs/source/api*/
 docs/source/tutorials/**
+docs/source/Doxyfile
+docs/source/Doxyfile.conf.bak
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -59,46 +70,23 @@ storage/
 sandbox/
 
 # Exclusions
-# Files: triumvirate/*.cpp
-**/triumvirate/*.cpp
+## Files: src/triumvirate/*.cpp (Cythonised code)
+src/triumvirate/*.cpp
 
-# Files: docs/source/_static/params_template.*
-# Files: docs/source/_static/Makefile
-docs/source/_static/params_template.*
+## Files: docs/source/_static/** (duplicated assets)
 docs/source/_static/Makefile
+docs/source/_static/params_template.*
 
-# Files: publication/supplements/*.npy
+## Files: publication/supplements/** (generated data)
 publication/supplements/**/*.npy
 
 # Exceptions
-# File: build/.gitignore
-!build/.gitignore
+## Directories: .gitignore (empty directories)
+!**/build/.gitignore
+!**/test_build/.gitignore
 
-# File: docs/source/index.rst
-# File: docs/source/background.rst
-# File: docs/source/installation.rst
-# File: docs/source/tutorials.rst
-# File: docs/source/apiref.rst
-# File: docs/source/apidoc_py.rst
-# File: docs/source/faq.rst
-!docs/source/index.rst
-!docs/source/background.rst
-!docs/source/installation.rst
-!docs/source/tutorials.rst
-!docs/source/apiref.rst
-!docs/source/apidoc_py.rst
-!docs/source/faq.rst
+## Files: docs/source/*.rst (non-generated documentation)
+!docs/source/*.rst
 
-# Files: docs/source/tutorials/*.ipynb
+## Files: docs/source/tutorials/*.ipynb (notebook documentation)
 !docs/source/tutorials/*.ipynb
-
-# File: docs/build/.ignore
-!docs/build/.gitignore
-
-# File: tests/test_build/.gitignore
-**/tests/test_build/**
-!**/tests/test_build/.gitignore
-
-# File: tests/test_output/.gitignore
-**/tests/test_output/**
-!**/tests/test_output/.gitignore
