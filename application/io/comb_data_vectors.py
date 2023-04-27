@@ -1,5 +1,19 @@
 """Combine two-point and three-point clustering multipole data vectors.
 
+Three-point clustering multipoles are assumed to take the diagonal form.
+
+Examples
+--------
+
+.. code-block:: console
+
+    $ python comb_data_vectors.py
+    > --tag _DR12SGC-COMPSAM_V6C_(.*)_0.50z0.75
+    > --range 1 256
+    > --components pk0 pk2 pk4
+    > --input-dir storage/output/measurements/BOSS_DR12v5/Mocks/
+    > --output-dir storage/output/measurements/BOSS_DR12v5
+
 """
 import argparse
 import os
@@ -25,11 +39,9 @@ def configure():
 
     parser.add_argument(
         '--tag', type=str, default="(.*)",
-        help="data vector file common tag "
-             "(with support for a single RegEx pattern "
-             "matching a serial number, "
-             "e.g. '_BOSS_PatchyMocks_(.*)_0.50z0.75' "
-             "where '(.*)' should match a serial number) "
+        help="data vector file common tag including a single RegEx pattern "
+             "matching a serial number, e.g. '_BOSS_PatchyMocks_(.*)' "
+             "where '(.*)' should match a serial number"
     )
     parser.add_argument(
         '--range', type=int, nargs='*', default=None,
@@ -52,15 +64,7 @@ def configure():
         help="output directory of the combined data vector"
     )
 
-    config = parser.parse_args(
-        # """
-        # --tag _DR12SGC-COMPSAM_V6C_(.*)_0.50z0.75
-        # --range 1 256
-        # --components pk0 pk2 pk4
-        # --input-dir storage/output/measurements/BOSS_DR12v5/Mocks/
-        # --output-dir storage/output/comb_data
-        # """.split()
-    )
+    config = parser.parse_args()
 
     return config
 

@@ -1,10 +1,10 @@
 """Generate parameter files from a template.
 
-For C++, the parameter files are assumed to use '#' as the comment
-delimiter, and each parameter assignment is in the form
-``<param_name> = <param_value>`` on a single line.
+For C++, the INI parameter files use '#' as the comment delimiter, and
+each parameter is specified by a single-line assignment in the form
+``<param_name> = <param_value>``.
 
-For Python, YAML files are used.
+For Python, YAML parameter files are used.
 
 """
 import argparse
@@ -12,7 +12,6 @@ import warnings
 from copy import deepcopy
 from functools import reduce
 from operator import getitem
-from os.path import splitext
 from pathlib import Path
 
 import yaml
@@ -41,39 +40,35 @@ def configure():
     )
 
     parser.add_argument(
-        'template', type=str,
-        help="(path to the) template parameter file"
+        'template_path', type=str,
+        help="template parameter file path"
     )
 
     parser.add_argument(
-        '-i', '--cpp', action='store_true',
-        help="if not in conflict, generate INI parameter file for C++"
+        '--fmt', type=str, choices=['ini', 'yaml'], default=None,
+        help="parameter file format (default inferred from extension)"
     )
 
     parser.add_argument(
-        '-y', '--python', action='store_true',
-        help="if not in conflict, generate YAML parameter file for Python"
-    )
-
-    parser.add_argument(
-        '-o', '--output', type=str,
-        help="(path to the) output parameter file"
+        '-o', '--output', type=str, default=None,
+        help="output parameter file path"
     )
 
     parser.add_argument(
         '-p', '--modify', action='append', nargs=2,
         metavar=('PARAM_NAME', 'PARAM_VALUE'),
-        help="pairwise modified parameter names and values"
+        help="pairwise modified parameter name(s) and value(s)"
     )
 
     config = parser.parse_args()
 
-    if (config.cpp and config.python) \
-            or (not config.cpp and not config.python):
-        raise ValueError(
-            "One and only one of '-i' (or '--cpp') and '-y' (or '--python') "
-            "flags must be set."
-        )
+    if config.fmt is None:
+        config.file_ext = Path(config.template_path).suffix
+        config.fmt = config.file_ext.lstrip('.')
+    else:
+        config.file_ext = f".{config.fmt}"
+
+    config.output = config.output or f"{config.file_stem}_new{config.file_ext}"
 
     return config
 
@@ -194,34 +189,73 @@ def gen_python_params(params_template, params_to_modify):
     return params
 
 
+def read_param_file(input_path, fmt):
+    """Read parameters from a file.
+
+    Parameters
+    ----------
+    input_path : str
+        Input file path.
+    fmt : {'ini', 'yaml'}
+        Input file format.
+
+    Returns
+    -------
+    params : list[str] or dict
+        Parameters read from the file.
+
+    """
+    if fmt == 'ini':
+        with open(input_path, 'r') as input_file:
+            params = input_file.readlines()
+    elif fmt == 'yaml':
+        with open(input_path, 'r') as input_file:
+            params = yaml.load(input_file, Loader=yaml.Loader)
+    else:
+        raise ValueError(f"Unsupported file format: {fmt}.")
+
+    return params
+
+
+def write_param_file(params, output_path, fmt):
+    """Write parameters to a file.
+
+    Parameters
+    ----------
+    params : str or dict
+        Parameters to write.
+    output_path : str
+        Output file path.
+    fmt : str
+        Output file format.
+
+    """
+    # Ensure the output directory exists.
+    Path(output_path).parent.mkdir(exist_ok=True, parents=True)
+
+    if fmt == 'ini':
+        with open(output_path, 'w') as output_file:
+            output_file.write(params)
+    elif fmt == 'yaml':
+        with open(output_path, 'w') as output_file:
+            yaml.dump(
+                params, output_file, sort_keys=False, default_flow_style=False
+            )
+    else:
+        raise ValueError(f"Unsupported file format: {fmt}.")
+
+
 if __name__ == '__main__':
 
     # Configure.
     config = configure()
 
-    if config.output:
-        # Use specified output path.
-        output_path = config.output
-    else:
-        # Use the template path with '_new' tag.
-        template_file_base, template_file_ext = splitext(config.template)
-        output_path = "".join([template_file_base, '_new', template_file_ext])
-    # Ensure the output directory exists.
-    Path(output_path).parent.mkdir(exist_ok=True, parents=True)
+    # Load, generate and write anew.
+    pars_template = read_param_file(config.template_path, config.fmt)
 
-    # Load and generate.
-    if config.cpp:
-        with open(config.template, 'r') as template_file:
-            pars_template = template_file.readlines()
-            pars = gen_cpp_params(pars_template, config.modify)
-        with open(output_path, 'w') as output_file:
-            output_file.write(pars)
+    if config.fmt == 'ini':
+        pars_modified = gen_cpp_params(pars_template, config.modify)
+    if config.fmt == 'yaml':
+        pars_modified = gen_python_params(pars_template, config.modify)
 
-    if config.python:
-        with open(config.template, 'r') as template_file:
-            pars_template = yaml.load(template_file, Loader=yaml.Loader)
-            pars = gen_python_params(pars_template, config.modify)
-        with open(output_path, 'w') as output_file:
-            yaml.dump(
-                pars, output_file, sort_keys=False, default_flow_style=False
-            )
+    write_param_file(pars_modified, config.output, config.fmt)
