@@ -214,6 +214,8 @@ def read_param_file(input_path, fmt):
     else:
         raise ValueError(f"Unsupported file format: {fmt}.")
 
+    print("Read parameter file {}.".format(input_path))
+
     return params
 
 
@@ -243,6 +245,8 @@ def write_param_file(params, output_path, fmt):
             )
     else:
         raise ValueError(f"Unsupported file format: {fmt}.")
+
+    print("Generated parameter file {}.".format(output_path))
 
 
 if __name__ == '__main__':
