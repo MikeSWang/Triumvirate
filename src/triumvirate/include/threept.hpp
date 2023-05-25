@@ -86,6 +86,17 @@ void validate_multipole_coupling(trv::ParameterSet& params);
 // ***********************************************************************
 
 /**
+ * @brief Calculate particle-based bispectrum normalisation.
+ *
+ * @param particles Particle catalogue.
+ * @param alpha Alpha contrast.
+ * @returns Bispectrum normalisation factor.
+ */
+double calc_bispec_normalisation_from_particles(
+  ParticleCatalogue& particles, double alpha=1.
+);
+
+/**
  * @brief Calculate mesh-based bispectrum normalisation.
  *
  * @param particles Particle catalogue.
@@ -95,17 +106,6 @@ void validate_multipole_coupling(trv::ParameterSet& params);
  */
 double calc_bispec_normalisation_from_mesh(
   ParticleCatalogue& particles, trv::ParameterSet& params, double alpha=1.
-);
-
-/**
- * @brief Calculate particle-based bispectrum normalisation.
- *
- * @param particles Particle catalogue.
- * @param alpha Alpha contrast.
- * @returns Bispectrum normalisation factor.
- */
-double calc_bispec_normalisation_from_particles(
-  ParticleCatalogue& particles, double alpha=1.
 );
 
 

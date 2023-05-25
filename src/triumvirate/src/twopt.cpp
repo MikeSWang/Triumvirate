@@ -51,21 +51,6 @@ double calc_coupling_coeff_2pt(int ell, int ELL, int m, int M) {
 // Normalisation
 // ***********************************************************************
 
-double calc_powspec_normalisation_from_mesh(
-  trv::ParticleCatalogue& particles, trv::ParameterSet& params, double alpha
-) {
-  trv::MeshField catalogue_mesh(params);
-
-  double norm_factor =
-    catalogue_mesh.calc_grid_based_powlaw_norm(particles, 2);
-
-  catalogue_mesh.finalise_density_field();  // likely redundant but safe
-
-  norm_factor /= std::pow(alpha, 2);
-
-  return norm_factor;
-}
-
 double calc_powspec_normalisation_from_particles(
   ParticleCatalogue& particles, double alpha
 ) {
@@ -100,6 +85,82 @@ double calc_powspec_normalisation_from_particles(
   }
 
   double norm_factor = 1. / (alpha * norm);  // 1/I₂
+
+  return norm_factor;
+}
+
+double calc_powspec_normalisation_from_mesh(
+  trv::ParticleCatalogue& particles, trv::ParameterSet& params, double alpha
+) {
+  trv::MeshField catalogue_mesh(params);
+
+  double norm_factor =
+    catalogue_mesh.calc_grid_based_powlaw_norm(particles, 2);
+
+  catalogue_mesh.finalise_density_field();  // likely redundant but safe
+
+  norm_factor /= std::pow(alpha, 2);
+
+  return norm_factor;
+}
+
+double calc_powspec_normalisation_from_meshes(
+  trv::ParticleCatalogue& particles_data,
+  trv::ParticleCatalogue& particles_rand,
+  trv::ParameterSet& params, double alpha
+) {
+  // Assign particles to mesh.
+  trv::MeshField mesh_data(params);
+  trv::MeshField mesh_rand(params);
+
+  fftw_complex* weight_data = nullptr;
+  weight_data = fftw_alloc_complex(particles_data.ntotal);
+
+  fftw_complex* weight_rand = nullptr;
+  weight_rand = fftw_alloc_complex(particles_rand.ntotal);
+
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
+  trv::sys::update_maxmem();
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for
+#endif  // TRV_USE_OMP
+  for (int pid = 0; pid < particles_data.ntotal; pid++) {
+    weight_data[pid][0] = particles_data[pid].w;
+    weight_data[pid][1] = 0.;
+  }
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for
+#endif  // TRV_USE_OMP
+  for (int pid = 0; pid < particles_rand.ntotal; pid++) {
+    weight_rand[pid][0] = particles_rand[pid].w;
+    weight_rand[pid][1] = 0.;
+  }
+
+  mesh_data.assign_weighted_field_to_mesh(particles_data, weight_data);
+  mesh_rand.assign_weighted_field_to_mesh(particles_rand, weight_rand);
+
+  fftw_free(weight_data); weight_data = nullptr;
+  fftw_free(weight_rand); weight_rand = nullptr;
+
+  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
+  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
+
+  // Calculate normalisation.
+  double norm = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:norm)
+#endif  // TRV_USE_OMP
+  for (int gid = 0; gid < params.nmesh; gid++) {
+    norm += mesh_data.field[gid][0] * mesh_rand.field[gid][0];
+  }
+
+  double vol_cell = params.volume / double(params.nmesh);
+
+  double norm_factor = 1. / (alpha * vol_cell * norm);  // 1/I₂
 
   return norm_factor;
 }

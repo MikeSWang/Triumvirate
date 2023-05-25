@@ -368,49 +368,72 @@ int main(int argc, char* argv[]) {
   trv::ParticleCatalogue& catalogue_for_norm =
     (flag_rand == "true") ? catalogue_rand : catalogue_data;
   double alpha_for_norm = (flag_rand == "true") ? alpha : 1.;
-  double norm_factor = 0., norm_factor_alt = 0.;  // normalisation factors
+  double norm_factor_part = 0., norm_factor_mesh = 0., norm_factor_meshes = 0.;
+
+  if (params.npoint == "2pt") {
+    norm_factor_part = trv::calc_powspec_normalisation_from_particles(
+      catalogue_for_norm, alpha_for_norm
+    );
+    norm_factor_mesh = trv::calc_powspec_normalisation_from_mesh(
+      catalogue_for_norm, params, alpha_for_norm
+    );
+    // Mixed-mesh normalisation is only implemented for
+    // paired survey-like catalogues.
+    if (params.catalogue_type == "survey") {
+      norm_factor_meshes = trv::calc_powspec_normalisation_from_meshes(
+        catalogue_data, catalogue_rand, params, alpha
+      );
+    }
+  } else
+  if (params.npoint == "3pt") {
+    norm_factor_part = trv::calc_bispec_normalisation_from_particles(
+      catalogue_for_norm, alpha_for_norm
+    );
+    norm_factor_mesh = trv::calc_bispec_normalisation_from_mesh(
+      catalogue_for_norm, params, alpha_for_norm
+    );
+  }
+
+  double norm_factor = 0.;
+  if (params.norm_convention == "none") {
+    norm_factor = 1.;
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.info(
+        "Normalisation factors: "
+        "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed) (none used).",
+        norm_factor_part, norm_factor_mesh, norm_factor_meshes
+      );
+    }
+  } else
   if (params.norm_convention == "particle") {
-    if (params.npoint == "2pt") {
-      norm_factor = trv::calc_powspec_normalisation_from_particles(
-        catalogue_for_norm, alpha_for_norm
-      );
-      norm_factor_alt = trv::calc_powspec_normalisation_from_mesh(
-        catalogue_for_norm, params, alpha_for_norm
-      );
-    } else
-    if (params.npoint == "3pt") {
-      norm_factor = trv:: calc_bispec_normalisation_from_particles(
-        catalogue_for_norm, alpha_for_norm
-      );
-      norm_factor_alt = trv::calc_bispec_normalisation_from_mesh(
-        catalogue_for_norm, params, alpha_for_norm
+    norm_factor = norm_factor_part;
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.info(
+        "Normalisation factors: "
+        "%.6e (particle; used), %.6e (mesh), %.6e (mesh-mixed).",
+        norm_factor, norm_factor_mesh, norm_factor_meshes
       );
     }
   } else
   if (params.norm_convention == "mesh") {
-    if (params.npoint == "2pt") {
-      norm_factor = trv::calc_powspec_normalisation_from_mesh(
-        catalogue_for_norm, params, alpha_for_norm
-      );
-      norm_factor_alt = trv::calc_powspec_normalisation_from_particles(
-        catalogue_for_norm, alpha_for_norm
-      );
-    } else
-    if (params.npoint == "3pt") {
-      norm_factor = trv::calc_bispec_normalisation_from_mesh(
-        catalogue_for_norm, params, alpha_for_norm
-      );
-      norm_factor_alt = trv:: calc_bispec_normalisation_from_particles(
-        catalogue_for_norm, alpha_for_norm
+    norm_factor = norm_factor_mesh;
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.info(
+        "Normalisation factors: "
+        "%.6e (particle), %.6e (mesh; used), %.6e (mesh-mixed).",
+        norm_factor_part, norm_factor, norm_factor_meshes
       );
     }
-  }
-
-  if (trv::sys::currTask == 0) {
-    trv::sys::logger.info(
-      "Normalisation factors: %.6e (used), %.6e (alternative).",
-      norm_factor, norm_factor_alt
-    );
+  } else
+  if (params.norm_convention == "mesh-mixed") {
+    norm_factor = norm_factor_meshes;
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.info(
+        "Normalisation factors: "
+        "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; used).",
+        norm_factor_part, norm_factor_mesh, norm_factor
+      );
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -433,7 +456,7 @@ int main(int argc, char* argv[]) {
       save_fileptr = std::fopen(save_filepath, "w");
       trv::io::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, catalogue_rand,
-        norm_factor, norm_factor_alt
+        norm_factor_part, norm_factor_mesh, norm_factor_meshes
       );
     } else
     if (params.catalogue_type == "sim") {
@@ -442,7 +465,8 @@ int main(int argc, char* argv[]) {
       );
       save_fileptr = std::fopen(save_filepath, "w");
       trv::io::print_measurement_header_to_file(
-        save_fileptr, params, catalogue_data, norm_factor, norm_factor_alt
+        save_fileptr, params, catalogue_data,
+        norm_factor_part, norm_factor_mesh, norm_factor_meshes
       );
     }
     trv::io::print_measurement_datatab_to_file(
@@ -465,7 +489,7 @@ int main(int argc, char* argv[]) {
       save_fileptr = std::fopen(save_filepath, "w");
       trv::io::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, catalogue_rand,
-        norm_factor, norm_factor_alt
+        norm_factor_part, norm_factor_mesh, norm_factor_meshes
       );
     } else
     if (params.catalogue_type == "sim") {
@@ -474,7 +498,8 @@ int main(int argc, char* argv[]) {
       );
       save_fileptr = std::fopen(save_filepath, "w");
       trv::io::print_measurement_header_to_file(
-        save_fileptr, params, catalogue_data, norm_factor, norm_factor_alt
+        save_fileptr, params, catalogue_data,
+        norm_factor_part, norm_factor_mesh, norm_factor_meshes
       );
     }
     trv::io::print_measurement_datatab_to_file(
@@ -493,7 +518,8 @@ int main(int argc, char* argv[]) {
     );
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     trv::io::print_measurement_header_to_file(
-      save_fileptr, params, catalogue_rand, norm_factor, norm_factor_alt
+      save_fileptr, params, catalogue_rand,
+      norm_factor_part, norm_factor_mesh, norm_factor_meshes
     );
     trv::io::print_measurement_datatab_to_file(
       save_fileptr, params, meas_2pcf_win
@@ -527,7 +553,7 @@ int main(int argc, char* argv[]) {
       save_fileptr = std::fopen(save_filepath, "w");
       trv::io::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, catalogue_rand,
-        norm_factor, norm_factor_alt
+        norm_factor_part, norm_factor_mesh, norm_factor_meshes
       );
     } else
     if (params.catalogue_type == "sim") {
@@ -536,7 +562,8 @@ int main(int argc, char* argv[]) {
       );
       save_fileptr = std::fopen(save_filepath, "w");
       trv::io::print_measurement_header_to_file(
-        save_fileptr, params, catalogue_data, norm_factor, norm_factor_alt
+        save_fileptr, params, catalogue_data,
+        norm_factor_part, norm_factor_mesh, norm_factor_meshes
       );
     }
     trv::io::print_measurement_datatab_to_file(
@@ -571,7 +598,7 @@ int main(int argc, char* argv[]) {
       save_fileptr = std::fopen(save_filepath, "w");
       trv::io::print_measurement_header_to_file(
         save_fileptr, params, catalogue_data, catalogue_rand,
-        norm_factor, norm_factor_alt
+        norm_factor_part, norm_factor_mesh, norm_factor_meshes
       );
     } else
     if (params.catalogue_type == "sim") {
@@ -580,7 +607,8 @@ int main(int argc, char* argv[]) {
       );
       save_fileptr = std::fopen(save_filepath, "w");
       trv::io::print_measurement_header_to_file(
-        save_fileptr, params, catalogue_data, norm_factor, norm_factor_alt
+        save_fileptr, params, catalogue_data,
+        norm_factor_part, norm_factor_mesh, norm_factor_meshes
       );
     }
     trv::io::print_measurement_datatab_to_file(
@@ -612,7 +640,8 @@ int main(int argc, char* argv[]) {
     );
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     trv::io::print_measurement_header_to_file(
-      save_fileptr, params, catalogue_rand, norm_factor, norm_factor_alt
+      save_fileptr, params, catalogue_rand,
+      norm_factor_part, norm_factor_mesh, norm_factor_meshes
     );
     trv::io::print_measurement_datatab_to_file(
       save_fileptr, params, meas_3pcf_win
@@ -645,7 +674,8 @@ int main(int argc, char* argv[]) {
       );
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     trv::io::print_measurement_header_to_file(
-      save_fileptr, params, catalogue_rand, norm_factor, norm_factor_alt
+      save_fileptr, params, catalogue_rand,
+      norm_factor_part, norm_factor_mesh, norm_factor_meshes
     );
     trv::io::print_measurement_datatab_to_file(
       save_fileptr, params, meas_3pcf_win_wa

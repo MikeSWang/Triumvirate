@@ -86,7 +86,7 @@ void print_measurement_header_to_file(
   std::FILE* fileptr, trv::ParameterSet& params,
   trv::ParticleCatalogue& catalogue_data,
   trv::ParticleCatalogue& catalogue_rand,
-  double norm_factor, double norm_factor_alt
+  double norm_factor_part, double norm_factor_mesh, double norm_factor_meshes
 ) {
   std::fprintf(
     fileptr,
@@ -152,30 +152,48 @@ void print_measurement_header_to_file(
     params.assignment.c_str(), params.interlace.c_str()
   );
 
+  if (params.norm_convention == "none") {
+    std::fprintf(
+      fileptr,
+      "%s Normalisation factor: %.9e (%s)\n",
+      comment_delimiter, 1., params.norm_convention.c_str()
+    );
+  } else
   if (params.norm_convention == "particle") {
     std::fprintf(
       fileptr,
-      "%s Normalisation factor: "
-      "%.9e (particle-based, used), %.9e (mesh-based, alternative)\n",
-      comment_delimiter,
-      norm_factor, norm_factor_alt
+      "%s Normalisation factor: %.9e (%s)\n",
+      comment_delimiter, norm_factor_part, params.norm_convention.c_str()
     );
   } else
   if (params.norm_convention == "mesh") {
     std::fprintf(
       fileptr,
-      "%s Normalisation factor: "
-      "%.9e (mesh-based, used), %.9e (particle-based, alternative)\n",
-      comment_delimiter,
-      norm_factor, norm_factor_alt
+      "%s Normalisation factor: %.9e (%s)\n",
+      comment_delimiter, norm_factor_mesh, params.norm_convention.c_str()
+    );
+  } else
+  if (params.norm_convention == "mesh-mixed") {
+    std::fprintf(
+      fileptr,
+      "%s Normalisation factor: %.9e (%s)\n",
+      comment_delimiter, norm_factor_meshes, params.norm_convention.c_str()
     );
   }
+
+  std::fprintf(
+    fileptr,
+    "%s Normalisation factor alternatives: "
+    "%.9e (particle), %.9e (mesh), %.9e (mesh-mixed)\n",
+    comment_delimiter,
+    norm_factor_part, norm_factor_mesh, norm_factor_meshes
+  );
 }
 
 void print_measurement_header_to_file(
   std::FILE* fileptr,
   trv::ParameterSet& params, trv::ParticleCatalogue& catalogue,
-  double norm_factor, double norm_factor_alt
+  double norm_factor_part, double norm_factor_mesh, double norm_factor_meshes
 ) {
   std::fprintf(
     fileptr,
@@ -222,24 +240,42 @@ void print_measurement_header_to_file(
     params.assignment.c_str(), params.interlace.c_str()
   );
 
+  if (params.norm_convention == "none") {
+    std::fprintf(
+      fileptr,
+      "%s Normalisation factor: %.9e (%s)\n",
+      comment_delimiter, 1., params.norm_convention.c_str()
+    );
+  } else
   if (params.norm_convention == "particle") {
     std::fprintf(
       fileptr,
-      "%s Normalisation factor: "
-      "%.9e (particle-based, used), %.9e (mesh-based, alternative)\n",
-      comment_delimiter,
-      norm_factor, norm_factor_alt
+      "%s Normalisation factor: %.9e (%s)\n",
+      comment_delimiter, norm_factor_part, params.norm_convention.c_str()
     );
   } else
   if (params.norm_convention == "mesh") {
     std::fprintf(
       fileptr,
-      "%s Normalisation factor: "
-      "%.9e (mesh-based, used), %.9e (particle-based, alternative)\n",
-      comment_delimiter,
-      norm_factor, norm_factor_alt
+      "%s Normalisation factor: %.9e (%s)\n",
+      comment_delimiter, norm_factor_mesh, params.norm_convention.c_str()
+    );
+  } else
+  if (params.norm_convention == "mesh-mixed") {
+    std::fprintf(
+      fileptr,
+      "%s Normalisation factor: %.9e (%s)\n",
+      comment_delimiter, norm_factor_meshes, params.norm_convention.c_str()
     );
   }
+
+  std::fprintf(
+    fileptr,
+    "%s Normalisation factor alternatives: "
+    "%.9e (particle), %.9e (mesh), %.9e (mesh-mixed)\n",
+    comment_delimiter,
+    norm_factor_part, norm_factor_mesh, norm_factor_meshes
+  );
 }
 
 

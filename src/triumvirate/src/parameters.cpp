@@ -478,7 +478,10 @@ int ParameterSet::validate() {
     }
   }
   if (!(
-    this->norm_convention == "mesh" || this->norm_convention == "particle"
+    this->norm_convention == "none"
+    || this->norm_convention == "particle"
+    || this->norm_convention == "mesh"
+    || this->norm_convention == "mesh-mixed"
   )) {
     if (trvs::currTask == 0) {
       trvs::logger.error(
@@ -490,6 +493,20 @@ int ParameterSet::validate() {
         "Normalisation convention must be "
         "'mesh' or 'particle': `norm_convention` = '%s'.\n",
         this->norm_convention.c_str()
+      );
+    }
+  }
+  if (this->norm_convention == "mesh-mixed" && this->npoint != "2pt") {
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Normalisation convention 'mesh-mixed' only applies to "
+        "two-point statistics: `npoint` = '%s'.",
+        this->npoint.c_str()
+      );
+      throw trvs::InvalidParameterError(
+        "Normalisation convention 'mesh-mixed' only applies to "
+        "two-point statistics: `npoint` = '%s'.\n",
+        this->npoint.c_str()
       );
     }
   }

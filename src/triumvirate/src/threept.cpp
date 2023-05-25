@@ -66,21 +66,6 @@ void validate_multipole_coupling(trv::ParameterSet& params) {
 // Normalisation
 // ***********************************************************************
 
-double calc_bispec_normalisation_from_mesh(
-  ParticleCatalogue& particles, trv::ParameterSet& params, double alpha
-) {
-  MeshField catalogue_mesh(params);
-
-  double norm_factor =
-    catalogue_mesh.calc_grid_based_powlaw_norm(particles, 3);
-
-  catalogue_mesh.finalise_density_field();  // likely redundant but safe
-
-  norm_factor /= std::pow(alpha, 3);
-
-  return norm_factor;
-}
-
 double calc_bispec_normalisation_from_particles(
   ParticleCatalogue& particles, double alpha
 ) {
@@ -115,6 +100,21 @@ double calc_bispec_normalisation_from_particles(
   }
 
   double norm_factor = 1. / (alpha * norm);  // 1/I₃
+
+  return norm_factor;
+}
+
+double calc_bispec_normalisation_from_mesh(
+  ParticleCatalogue& particles, trv::ParameterSet& params, double alpha
+) {
+  MeshField catalogue_mesh(params);
+
+  double norm_factor =
+    catalogue_mesh.calc_grid_based_powlaw_norm(particles, 3);
+
+  catalogue_mesh.finalise_density_field();  // likely redundant but safe
+
+  norm_factor /= std::pow(alpha, 3);
 
   return norm_factor;
 }

@@ -85,14 +85,15 @@ const char comment_delimiter[] = "#";  ///< header comment delimiter
  * @param params Parameter set.
  * @param catalogue_data (Data-source) particle catalogue.
  * @param catalogue_rand (Random-source) particle catalogue.
- * @param norm_factor Normalisation factor.
- * @param norm_factor_alt Alternative normalisation factor.
+ * @param norm_factor_part Particle-based normalisation factor.
+ * @param norm_factor_mesh Mesh-based normalisation factor.
+ * @param norm_factor_meshes Normalisation factor based on mixed meshes.
  */
 void print_measurement_header_to_file(
   std::FILE* fileptr, trv::ParameterSet& params,
   trv::ParticleCatalogue& catalogue_data,
   trv::ParticleCatalogue& catalogue_rand,
-  double norm_factor, double norm_factor_alt
+  double norm_factor_part, double norm_factor_mesh, double norm_factor_meshes
 );
 
 /**
@@ -102,15 +103,16 @@ void print_measurement_header_to_file(
  * @param fileptr File to print to.
  * @param params Parameter set.
  * @param catalogue Particle catalogue.
- * @param norm_factor Normalisation factor.
- * @param norm_factor_alt Alternative normalisation factor.
+ * @param norm_factor_part Particle-based normalisation factor.
+ * @param norm_factor_mesh Mesh-based normalisation factor.
+ * @param norm_factor_meshes Normalisation factor based on mixed meshes.
  *
  * @overload
  */
 void print_measurement_header_to_file(
   std::FILE* fileptr,
   trv::ParameterSet& params, trv::ParticleCatalogue& catalogue,
-  double norm_factor, double norm_factor_alt
+  double norm_factor_part, double norm_factor_mesh, double norm_factor_meshes
 );
 
 

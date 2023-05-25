@@ -128,7 +128,8 @@ class ParameterSet {
   /// form of the bispectrum measurement: {"diag" (default), "full"}
   std::string form = "diag";
 
-  /// normalisation convention: {"particle" (default), "mesh"}
+  /// normalisation convention: {"none", "particle" (default), "mesh",
+  ///                            "mesh-mixed"}
   std::string norm_convention = "particle";
 
   // Measurement parameters.

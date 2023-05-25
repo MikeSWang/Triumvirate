@@ -75,6 +75,17 @@ double calc_coupling_coeff_2pt(int ell, int ELL, int m, int M);
 // ***********************************************************************
 
 /**
+ * @brief Calculate particle-based power spectrum normalisation.
+ *
+ * @param particles Particle catalogue.
+ * @param alpha Alpha contrast.
+ * @returns Power spectrum normalisation factor.
+ */
+double calc_powspec_normalisation_from_particles(
+  ParticleCatalogue& particles, double alpha=1.
+);
+
+/**
  * @brief Calculate mesh-based power spectrum normalisation.
  *
  * @param particles Particle catalogue.
@@ -87,14 +98,25 @@ double calc_powspec_normalisation_from_mesh(
 );
 
 /**
- * @brief Calculate particle-based power spectrum normalisation.
+ * @brief Calculate power spectrum normalisation from mixed meshes.
  *
- * @param particles Particle catalogue.
+ * This normalisation convention is used for paired survey-type catalogues
+ * only, where the two meshes come from separate data- and random-source
+ * particle catalogues.
+ *
+ * @see <a href="https://pypower.rtfd.io/en/latest/api/api.html
+ * #pypower.fft_power.normalization">@c pypower documentation</a>.
+ *
+ * @param particles_data Data-source particle catalogue.
+ * @param particles_rand Random-source particle catalogue.
+ * @param params Parameter set.
  * @param alpha Alpha contrast.
  * @returns Power spectrum normalisation factor.
  */
-double calc_powspec_normalisation_from_particles(
-  ParticleCatalogue& particles, double alpha=1.
+double calc_powspec_normalisation_from_meshes(
+  trv::ParticleCatalogue& particles_data,
+  trv::ParticleCatalogue& particles_rand,
+  trv::ParameterSet& params, double alpha
 );
 
 

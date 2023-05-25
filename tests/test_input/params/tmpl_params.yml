@@ -74,7 +74,10 @@ wa_orders:
 # Form of three-point statistic measurements: {'full', 'diag' (default)}.
 form: diag
 
-# Normalisation convention: {'particle' (default), 'mesh'}.
+# Normalisation convention: {
+#   'none', 'particle' (default), 'mesh',
+#   'mesh-mixed' (two-point statistics only)
+# }.
 norm_convention: particle
 
 # Binning scheme: {'lin' (default), 'log', 'linpad', 'logpad', 'custom'}.
