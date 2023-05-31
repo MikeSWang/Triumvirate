@@ -193,6 +193,7 @@ double calc_powspec_normalisation_from_meshes(
 
   params_norm.validate();
 
+  // Reuse existing overloaded method.
   double norm_factor = calc_powspec_normalisation_from_meshes(
     particles_data, particles_rand, params_norm, alpha
   );
