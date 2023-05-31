@@ -102,9 +102,7 @@ jobs:
         if: runner.os == 'macOS' && matrix.compiler == 'gcc'
         run: |
           # Override default compiler and OpenMP to GCC on macOS.
-          CXX_DIR=$(brew --prefix gcc)/bin
-          CXX_BIN=$(ls ${CXX_DIR} | grep '^g++')
-          export CXX=${CXX_DIR}/${CXX_BIN}
+          export CXX=$(find $(brew --prefix gcc)/bin -type f -name 'g++*')
           # Override ``-arch`` flags to exclude non-native architectures.
           export ARCHFLAGS="-arch x86_64"
           # # Optional: Eliminate linker version warning.

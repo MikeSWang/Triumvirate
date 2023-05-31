@@ -75,9 +75,7 @@ else ifeq (${OS}, Darwin)
 # Use GCC compiler from Homebrew (brew formula 'gcc').
 # The compiler binary may have suffix '-<version>';
 # check the version number with ``brew info gcc``.
-CXX_DIR := $(shell brew --prefix gcc)/bin
-CXX_BIN := $(shell ls ${CXX_DIR} | grep '^g++')
-CXX ?= ${CXX_DIR}/${CXX_BIN}
+CXX ?= $(shell find $(brew --prefix gcc)/bin -type f -name 'g++*')
 
 # # Use alternatively LLVM compiler from Homebrew (brew formula 'llvm').
 # CXX ?= $(shell brew --prefix llvm)/bin/clang++
