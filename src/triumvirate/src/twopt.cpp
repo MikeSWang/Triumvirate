@@ -180,7 +180,9 @@ double calc_powspec_normalisation_from_meshes(
   );
 
   int ngrid_norm = std::ceil(boxsize_norm / cellsize);
+
   ngrid_norm += ngrid_norm % 2;  // ensure even
+  boxsize_norm = ngrid_norm * cellsize;  // enforce cell size
 
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     params_norm.boxsize[iaxis] = boxsize_norm;

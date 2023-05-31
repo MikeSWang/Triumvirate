@@ -231,11 +231,11 @@ def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
         ]
 
     text_lines = [
-        "Box size: ({:.3f}, {:.3f}, {:.3f})".format(
+        "Box size: [{:.3f}, {:.3f}, {:.3f}]".format(
             *[paramset['boxsize'][ax] for ax in ['x', 'y', 'z']]
         ),
         "Box alignment: {}".format(paramset['alignment']),
-        "Mesh number: ({:d}, {:d}, {:d})".format(
+        "Mesh number: [{:d}, {:d}, {:d}]".format(
             *[paramset['ngrid'][ax] for ax in ['x', 'y', 'z']]
         ),
         "Mesh assignment and interlacing: {}, {}".format(

@@ -131,7 +131,7 @@ void print_measurement_header_to_file(
 
   std::fprintf(
     fileptr,
-    "%s Box size: (%.3f, %.3f, %.3f)\n",
+    "%s Box size: [%.3f, %.3f, %.3f]\n",
     comment_delimiter,
     params.boxsize[0], params.boxsize[1], params.boxsize[2]
   );
@@ -143,7 +143,7 @@ void print_measurement_header_to_file(
   );
   std::fprintf(
     fileptr,
-    "%s Mesh number: (%d, %d, %d)\n",
+    "%s Mesh number: [%d, %d, %d]\n",
     comment_delimiter,
     params.ngrid[0], params.ngrid[1], params.ngrid[2]
   );
@@ -219,7 +219,7 @@ void print_measurement_header_to_file(
 
   std::fprintf(
     fileptr,
-    "%s Box size: (%.3f, %.3f, %.3f)\n",
+    "%s Box size: [%.3f, %.3f, %.3f]\n",
     comment_delimiter,
     params.boxsize[0], params.boxsize[1], params.boxsize[2]
   );
@@ -231,7 +231,7 @@ void print_measurement_header_to_file(
   );
   std::fprintf(
     fileptr,
-    "%s Mesh number: (%d, %d, %d)\n",
+    "%s Mesh number: [%d, %d, %d]\n",
     comment_delimiter,
     params.ngrid[0], params.ngrid[1], params.ngrid[2]
   );
