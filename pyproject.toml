@@ -93,21 +93,15 @@ before-build = [
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
 
-# BUG: Use images that support `apt` as `yum` hangs in CentOS.
 manylinux-x86_64-image = 'manylinux_2_28'
 manylinux-aarch64-image = 'manylinux_2_28'
 
 [tool.cibuildwheel.linux]
 before-all = [
-    # Optional: Debian-based images only.
-    # "apt-get update",
-    # "apt-get install -y libgsl-dev libfftw3-dev",
     "yum install -y gsl-devel fftw3-devel",
 ]
 
 [tool.cibuildwheel.macos]
 before-all = [
-    # Optional: Homebrew update is slow.
-    # "brew update",
     "brew install gsl fftw",
 ]

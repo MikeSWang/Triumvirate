@@ -7,7 +7,7 @@ package:
 
 source:
   git_url: ../../../
-  # git_rev: v0.1.2
+  # git_rev: v0.2.0
   # path: ../../../
 
 build:
