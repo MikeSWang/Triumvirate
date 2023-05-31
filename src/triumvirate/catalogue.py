@@ -73,14 +73,17 @@ class ParticleCatalogue:
     ntotal : int
         Total particle number.
     wtotal : float
-        Total sample weight.
+        Total particle overall weight.
+    wstotal : float
+        Total particle sample weight.
 
 
     .. attention::
 
         There are two types of weights: sample weights ``ws``
         (e.g. completeness weights) and clustering weights ``wc``
-        (e.g. Feldman--Kaiser--Peacock weights).
+        (e.g. Feldman--Kaiser--Peacock weights). The overall weight
+        is the product of the two for each particle.
 
         Note the naming convention above: in particular, ``wc`` is not
         the completeness weight (which is a component of ``ws`` instead).
@@ -120,13 +123,16 @@ class ParticleCatalogue:
         self._calc_bounds(init=True)
 
         self.ntotal = len(self)
-        self.wtotal = self._compute(self._pdata['ws'].sum())
+        self.wtotal = self._compute(
+            (self._pdata['ws'] * self._pdata['wc']).sum()
+        )
+        self.wstotal = self._compute(self._pdata['ws'].sum())
 
         if self._logger:
             self._logger.info(
-                "Catalogue initialised: %d particles with "
-                "total sample weight %.3f (%s).",
-                self.ntotal, self.wtotal, self
+                "Catalogue initialised: "
+                "ntotal = %d, wtotal = %.3f, wstotal = %.3f (%s).",
+                self.ntotal, self.wtotal, self.wstotal, self
             )
 
     @classmethod
@@ -348,13 +354,16 @@ class ParticleCatalogue:
         self._calc_bounds(init=True)
 
         self.ntotal = len(self._pdata)
-        self.wtotal = self._compute(self._pdata['ws'].sum())
+        self.wtotal = self._compute(
+            (self._pdata['ws'] * self._pdata['wc']).sum()
+        )
+        self.wstotal = self._compute(self._pdata['ws'].sum())
 
         if self._logger:
             self._logger.info(
-                "Catalogue loaded: %d particles with "
-                "total sample weight %.3f (%s).",
-                self.ntotal, self.wtotal, self
+                "Catalogue loaded: "
+                "ntotal = %d, wtotal = %.3f, wstotal = %.3f (%s).",
+                self.ntotal, self.wtotal, self.wstotal, self
             )
 
         return self
@@ -771,8 +780,9 @@ class ParticleCatalogue:
             text_lines = [
                 "Catalogue source: {}"
                     .format(self._source),  # noqa: E131
-                "Catalogue size: {:d} particles of total sample weight {:.3f}"
-                    .format(self.ntotal, self.wtotal),
+                "Catalogue size: "
+                "ntotal = {:d}, wtotal = {:.3f}, wstotal = {:.3f}"
+                    .format(self.ntotal, self.wtotal, self.wstotal),
                 "Catalogue particle extents: "
                 "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"
                     .format(
@@ -784,8 +794,8 @@ class ParticleCatalogue:
                 "Data catalogue source: {}"
                     .format(self._source),  # noqa: E131
                 "Data catalogue size: "
-                "{:d} particles of total sample weight {:.3f}"
-                    .format(self.ntotal, self.wtotal),
+                "ntotal = {:d}, wtotal = {:.3f}, wstotal = {:.3f}"
+                    .format(self.ntotal, self.wtotal, self.wstotal),
                 "Data-source particle extents: "
                 "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"
                     .format(
@@ -794,9 +804,11 @@ class ParticleCatalogue:
                 "Random catalogue source: {}"
                     .format(catalogue_ref._source),  # noqa: E131
                 "Random catalogue size: "
-                "{:d} particles of total sample weight {:.3f}"
+                "ntotal = {:d}, wtotal = {:.3f}, wstotal = {:.3f}"
                     .format(  # noqa: E131
-                        catalogue_ref.ntotal, catalogue_ref.wtotal
+                        catalogue_ref.ntotal,
+                        catalogue_ref.wtotal,
+                        catalogue_ref.wstotal,
                     ),
                 "Random-source particle extents: "
                 "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"

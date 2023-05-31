@@ -356,7 +356,7 @@ int main(int argc, char* argv[]) {
 
   double alpha;  // alpha contrast
   if (flag_data == "true" && flag_rand == "true") {
-    alpha = catalogue_data.wtotal / catalogue_rand.wtotal;
+    alpha = catalogue_data.wstotal / catalogue_rand.wstotal;
   } else {
     alpha = 1.;
   }
@@ -380,8 +380,12 @@ int main(int argc, char* argv[]) {
     // Mixed-mesh normalisation is only implemented for
     // paired survey-like catalogues.
     if (params.catalogue_type == "survey") {
+      // Use default parameters for mixed-mesh normalisation in `pypower`.
+      const double PAD = .10;
+      const double CELLSIZE = 10.;
+      const std::string RESAMPLER = "cic";
       norm_factor_meshes = trv::calc_powspec_normalisation_from_meshes(
-        catalogue_data, catalogue_rand, params, alpha
+        catalogue_data, catalogue_rand, params, alpha, PAD, CELLSIZE, RESAMPLER
       );
     }
   } else

@@ -165,6 +165,39 @@ double calc_powspec_normalisation_from_meshes(
   return norm_factor;
 }
 
+double calc_powspec_normalisation_from_meshes(
+  trv::ParticleCatalogue& particles_data,
+  trv::ParticleCatalogue& particles_rand,
+  trv::ParameterSet& params, double alpha,
+  double padding, double cellsize, std::string assignment
+) {
+  // Modify parameter set for normalisation.
+  trv::ParameterSet params_norm(params);
+
+  double boxsize_norm = (1. + padding) * std::max(
+    *std::max_element(particles_data.pos_span, particles_data.pos_span + 3),
+    *std::max_element(particles_rand.pos_span, particles_rand.pos_span + 3)
+  );
+
+  int ngrid_norm = std::ceil(boxsize_norm / cellsize);
+  ngrid_norm += ngrid_norm % 2;  // ensure even
+
+  for (int iaxis = 0; iaxis < 3; iaxis++) {
+    params_norm.boxsize[iaxis] = boxsize_norm;
+    params_norm.ngrid[iaxis] = ngrid_norm;
+  }
+
+  params_norm.assignment = assignment;
+
+  params_norm.validate();
+
+  double norm_factor = calc_powspec_normalisation_from_meshes(
+    particles_data, particles_rand, params_norm, alpha
+  );
+
+  return norm_factor;
+}
+
 
 // ***********************************************************************
 // Shot noise
@@ -302,7 +335,7 @@ trv::PowspecMeasurements compute_powspec(
   // ---------------------------------------------------------------------
 
   // Set up input.
-  double alpha = catalogue_data.wtotal / catalogue_rand.wtotal;
+  double alpha = catalogue_data.wstotal / catalogue_rand.wstotal;
   int ell1 = params.ELL;
 
   // Set up output.
@@ -421,7 +454,7 @@ trv::TwoPCFMeasurements compute_corrfunc(
   // ---------------------------------------------------------------------
 
   // Set up input.
-  double alpha = catalogue_data.wtotal / catalogue_rand.wtotal;
+  double alpha = catalogue_data.wstotal / catalogue_rand.wstotal;
   int ell1 = params.ELL;
 
   // Set up output.

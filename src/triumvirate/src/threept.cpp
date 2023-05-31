@@ -237,7 +237,7 @@ trv::BispecMeasurements compute_bispec(
   // Set up/check input.
   validate_multipole_coupling(params);
 
-  double alpha = catalogue_data.wtotal / catalogue_rand.wtotal;
+  double alpha = catalogue_data.wstotal / catalogue_rand.wstotal;
 
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
@@ -558,7 +558,7 @@ trv::ThreePCFMeasurements compute_3pcf(
   // Set up/check input.
   validate_multipole_coupling(params);
 
-  double alpha = catalogue_data.wtotal / catalogue_rand.wtotal;
+  double alpha = catalogue_data.wstotal / catalogue_rand.wstotal;
 
   double parity = std::pow(-1, params.ell1 + params.ell2);
 
@@ -1656,7 +1656,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   // Set up/check input.
   validate_multipole_coupling(params);
 
-  double alpha = catalogue_data.wtotal / catalogue_rand.wtotal;
+  double alpha = catalogue_data.wstotal / catalogue_rand.wstotal;
 
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 

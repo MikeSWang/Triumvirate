@@ -95,13 +95,14 @@ void print_measurement_header_to_file(
   );
   std::fprintf(
     fileptr,
-    "%s Data catalogue size: %d particles of total sample weight %.3f\n",
-    comment_delimiter, catalogue_data.ntotal, catalogue_data.wtotal
+    "%s Data catalogue size: ntotal = %d, wtotal = %.3f, wstotal = %.3f\n",
+    comment_delimiter,
+    catalogue_data.ntotal, catalogue_data.wtotal, catalogue_data.wstotal
   );
   std::fprintf(
     fileptr,
     "%s Data-source particle extents: "
-    "([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
+    "[(%.3f, %.3f), (%.3f, %.3f), (%.3f, %.3f)]\n",
     comment_delimiter,
     catalogue_data.pos_min[0], catalogue_data.pos_max[0],
     catalogue_data.pos_min[1], catalogue_data.pos_max[1],
@@ -114,13 +115,14 @@ void print_measurement_header_to_file(
   );
   std::fprintf(
     fileptr,
-    "%s Random catalogue size: %d particles of total sample weight %.3f\n",
-    comment_delimiter, catalogue_rand.ntotal, catalogue_rand.wtotal
+    "%s Random catalogue size: ntotal = %d, wtotal = %.3f, wstotal = %.3f\n",
+    comment_delimiter,
+    catalogue_rand.ntotal, catalogue_rand.wtotal, catalogue_rand.wstotal
   );
   std::fprintf(
     fileptr,
     "%s Random-source particle extents: "
-    "([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
+    "[(%.3f, %.3f), (%.3f, %.3f), (%.3f, %.3f)]\n",
     comment_delimiter,
     catalogue_rand.pos_min[0], catalogue_rand.pos_max[0],
     catalogue_rand.pos_min[1], catalogue_rand.pos_max[1],
@@ -202,13 +204,13 @@ void print_measurement_header_to_file(
   );
   std::fprintf(
     fileptr,
-    "%s Catalogue size: %d particles of total sample weight %.3f\n",
-    comment_delimiter, catalogue.ntotal, catalogue.wtotal
+    "%s Catalogue size: ntotal = %d, wtotal = %.3f, wstotal = %.3f\n",
+    comment_delimiter, catalogue.ntotal, catalogue.wtotal, catalogue.wstotal
   );
   std::fprintf(
     fileptr,
     "%s Catalogue particle extents: "
-    "([%.3f, %.3f], [%.3f, %.3f], [%.3f, %.3f])\n",
+    "[(%.3f, %.3f), (%.3f, %.3f), (%.3f, %.3f)]\n",
     comment_delimiter,
     catalogue.pos_min[0], catalogue.pos_max[0],
     catalogue.pos_min[1], catalogue.pos_max[1],

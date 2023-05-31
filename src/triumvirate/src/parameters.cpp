@@ -30,6 +30,50 @@ namespace trvs = trv::sys;
 
 namespace trv {
 
+ParameterSet::ParameterSet(const ParameterSet& other) {
+  // Copy I/O parameters.
+  this->catalogue_dir = other.catalogue_dir;
+  this->measurement_dir = other.measurement_dir;
+  this->data_catalogue_file = other.data_catalogue_file;
+  this->rand_catalogue_file = other.rand_catalogue_file;
+  this->catalogue_columns = other.catalogue_columns;
+  this->output_tag = other.output_tag;
+
+  // Copy mesh sampling parameters.
+  for (int i = 0; i < 3; i++) {
+    this->boxsize[i] = other.boxsize[i];
+    this->ngrid[i] = other.ngrid[i];
+  }
+  this->volume = other.volume;
+  this->nmesh = other.nmesh;
+  this->alignment = other.alignment;
+  this->padscale = other.padscale;
+  this->padfactor = other.padfactor;
+  this->assignment = other.assignment;
+  this->interlace = other.interlace;
+
+  // Copy measurement parameters.
+  this->catalogue_type = other.catalogue_type;
+  this->statistic_type = other.statistic_type;
+  this->npoint = other.npoint;
+  this->space = other.space;
+  this->ell1 = other.ell1;
+  this->ell2 = other.ell2;
+  this->ELL = other.ELL;
+  this->i_wa = other.i_wa;
+  this->j_wa = other.j_wa;
+  this->form = other.form;
+  this->norm_convention = other.norm_convention;
+  this->binning = other.binning;
+  this->bin_min = other.bin_min;
+  this->bin_max = other.bin_max;
+  this->num_bins = other.num_bins;
+  this->idx_bin = other.idx_bin;
+
+  // Copy misc parameters.
+  this->verbose = other.verbose;
+}
+
 int ParameterSet::read_from_file(char* parameter_filepath) {
   // ---------------------------------------------------------------------
   // Initialisation
@@ -529,7 +573,12 @@ int ParameterSet::validate() {
     }
   }
 
-  // Validate numerical parameters.
+  // Validate and derive numerical parameters.
+  this->volume =
+    this->boxsize[0] * this->boxsize[1] * this->boxsize[2];  // derivation
+  this->nmesh =
+    this->ngrid[0] * this->ngrid[1] * this->ngrid[2];  // derivation
+
   if (this->volume <= 0.) {
     if (trvs::currTask == 0) {
       trvs::logger.error(

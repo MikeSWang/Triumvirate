@@ -43,9 +43,11 @@ ParticleCatalogue::ParticleCatalogue(int verbose) {
   this->pdata = nullptr;
   this->ntotal = 0;
   this->wtotal = 0.;
+  this->wstotal = 0.;
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     this->pos_min[iaxis] = 0.;
     this->pos_max[iaxis] = 0.;
+    this->pos_span[iaxis] = 0.;
   }
 }
 
@@ -245,11 +247,11 @@ int ParticleCatalogue::load_catalogue_file(
   // Catalogue properties
   // ---------------------------------------------------------------------
 
-  // Calculate sample weight sum.
-  this->calc_wtotal();
+  // Calculate total weights.
+  this->calc_total_weights();
 
-  // Calculate the extents of particles.
-  this->calc_pos_min_and_max();
+  // Calculate particle extents.
+  this->calc_pos_extents();
 
   return 0;
 }
@@ -298,10 +300,10 @@ int ParticleCatalogue::load_particle_data(
   }
 
   // Calculate sample weight sum.
-  this->calc_wtotal();
+  this->calc_total_weights();
 
   // Calculate the extents of particles.
-  this->calc_pos_min_and_max();
+  this->calc_pos_extents();
 
   return 0;
 }
@@ -311,7 +313,7 @@ int ParticleCatalogue::load_particle_data(
 // Catalogue properties
 // ***********************************************************************
 
-void ParticleCatalogue::calc_wtotal() {
+void ParticleCatalogue::calc_total_weights() {
   if (this->pdata == nullptr) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Particle data are uninitialised.");
@@ -319,27 +321,29 @@ void ParticleCatalogue::calc_wtotal() {
     }
   }
 
-  double wtotal = 0.;
+  double wtotal = 0., wstotal = 0.;
 
 #ifdef TRV_USE_OMP
-#pragma omp parallel for reduction(+:wtotal)
+#pragma omp parallel for reduction(+:wtotal, wstotal)
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < this->ntotal; pid++) {
-    wtotal += this->pdata[pid].ws;
+    wtotal += this->pdata[pid].w;
+    wstotal += this->pdata[pid].ws;
   }
 
   this->wtotal = wtotal;
+  this->wstotal = wstotal;
 
   if (trvs::currTask == 0) {
     trvs::logger.info(
-      "Catalogue loaded: %d particles with "
-      "total sample weight %.3f (source=%s).",
-      this->ntotal, this->wtotal, this->source.c_str()
+      "Catalogue loaded: "
+      "ntotal = %d, wtotal = %.3f, wstotal = %.3f (source=%s).",
+      this->ntotal, this->wtotal, this->wstotal, this->source.c_str()
     );
   }
 }
 
-void ParticleCatalogue::calc_pos_min_and_max() {
+void ParticleCatalogue::calc_pos_extents() {
   if (this->pdata == nullptr) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Particle data are uninitialised.");
@@ -370,16 +374,19 @@ void ParticleCatalogue::calc_pos_min_and_max() {
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     this->pos_min[iaxis] = pos_min[iaxis];
     this->pos_max[iaxis] = pos_max[iaxis];
+    this->pos_span[iaxis] = pos_max[iaxis] - pos_min[iaxis];
   }
 
   if (trvs::currTask == 0) {
     trvs::logger.info(
       "Extents of particle coordinates: "
-      "{'x': (%.3f, %.3f), 'y': (%.3f, %.3f), 'z': (%.3f, %.3f)} "
+      "{'x': (%.3f, %.3f | %.3f),"
+      " 'y': (%.3f, %.3f | %.3f),"
+      " 'z': (%.3f, %.3f | %.3f)} "
       "(source=%s).",
-      this->pos_min[0], this->pos_max[0],
-      this->pos_min[1], this->pos_max[1],
-      this->pos_min[2], this->pos_max[2],
+      this->pos_min[0], this->pos_max[0], this->pos_span[0],
+      this->pos_min[1], this->pos_max[1], this->pos_span[1],
+      this->pos_min[2], this->pos_max[2], this->pos_span[2],
       this->source.c_str()
     );
   }
@@ -407,7 +414,7 @@ void ParticleCatalogue::offset_coords(const double dpos[3]) {
     }
   }
 
-  this->calc_pos_min_and_max();
+  this->calc_pos_extents();
 }
 
 void ParticleCatalogue::\
@@ -426,14 +433,14 @@ offset_coords_for_periodicity(const double boxsize[3]) {
     }
   }
 
-  this->calc_pos_min_and_max();
+  this->calc_pos_extents();
 }
 
 void ParticleCatalogue::centre_in_box(
   ParticleCatalogue& catalogue,
   const double boxsize[3]
 ) {
-  catalogue.calc_pos_min_and_max();  // likely redundant but safe
+  catalogue.calc_pos_extents();  // likely redundant but safe
 
   double xmid = (catalogue.pos_min[0] + catalogue.pos_max[0]) / 2.;
   double ymid = (catalogue.pos_min[1] + catalogue.pos_max[1]) / 2.;
@@ -450,7 +457,7 @@ void ParticleCatalogue::centre_in_box(
   ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
   const double boxsize[3]
 ) {
-  catalogue_ref.calc_pos_min_and_max();  // likely redundant but safe
+  catalogue_ref.calc_pos_extents();  // likely redundant but safe
 
   double xmid = (catalogue_ref.pos_min[0] + catalogue_ref.pos_max[0]) / 2.;
   double ymid = (catalogue_ref.pos_min[1] + catalogue_ref.pos_max[1]) / 2.;
@@ -468,7 +475,7 @@ void ParticleCatalogue::pad_in_box(
   ParticleCatalogue& catalogue,
   const double boxsize[3], const double boxsize_pad[3]
 ) {
-  catalogue.calc_pos_min_and_max();  // likely redundant but safe
+  catalogue.calc_pos_extents();  // likely redundant but safe
 
   double dvec[3] = {
     catalogue.pos_min[0] - boxsize_pad[0] * boxsize[0],
@@ -483,7 +490,7 @@ void ParticleCatalogue::pad_in_box(
     ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
     const double boxsize[3], const double boxsize_pad[3]
 ) {
-  catalogue_ref.calc_pos_min_and_max();  // likely redundant but safe
+  catalogue_ref.calc_pos_extents();  // likely redundant but safe
 
   double dvec[3] = {
     catalogue_ref.pos_min[0] - boxsize_pad[0] * boxsize[0],
@@ -499,7 +506,7 @@ void ParticleCatalogue::pad_grids(
   ParticleCatalogue& catalogue,
   const double boxsize[3], const int ngrid[3], const double ngrid_pad[3]
 ) {
-  catalogue.calc_pos_min_and_max();  // likely redundant but safe
+  catalogue.calc_pos_extents();  // likely redundant but safe
 
   double dvec[3] = {
     catalogue.pos_min[0], catalogue.pos_min[1], catalogue.pos_min[2]
@@ -516,7 +523,7 @@ void ParticleCatalogue::pad_grids(
     ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
     const double boxsize[3], const int ngrid[3], const double ngrid_pad[3]
 ) {
-  catalogue_ref.calc_pos_min_and_max();  // likely redundant but safe
+  catalogue_ref.calc_pos_extents();  // likely redundant but safe
 
   double dvec[3] = {
     catalogue_ref.pos_min[0] - ngrid_pad[0] * boxsize[0] / double(ngrid[0]),

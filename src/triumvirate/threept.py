@@ -516,7 +516,7 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         )
 
     # Set up constants.
-    alpha = catalogue_data.wtotal / catalogue_rand.wtotal
+    alpha = catalogue_data.wstotal / catalogue_rand.wstotal
 
     if logger:
         logger.info("Alpha contrast: %.6e.", alpha)
@@ -957,7 +957,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         )
 
 #     # Set up constants.
-#     alpha = catalogue_data.wtotal / catalogue_rand.wtotal
+#     alpha = catalogue_data.wstotal / catalogue_rand.wstotal
 
 #     if logger:
 #         logger.info("Alpha contrast: %.6e.", alpha)

@@ -37,6 +37,7 @@
 #ifndef TRIUMVIRATE_INCLUDE_TWOPT_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_TWOPT_HPP_INCLUDED_
 
+#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <cstdio>
@@ -117,6 +118,35 @@ double calc_powspec_normalisation_from_meshes(
   trv::ParticleCatalogue& particles_data,
   trv::ParticleCatalogue& particles_rand,
   trv::ParameterSet& params, double alpha
+);
+
+/**
+ * @brief Calculate power spectrum normalisation from mixed meshes.
+ *
+ * The box size per dimension is internally determined by the particle
+ * coordinate extents, with a padding factor applied. The mesh number in
+ * each dimension is determined by the box size and the cell size.
+ *
+ * @param particles_data Data-source particle catalogue.
+ * @param particles_rand Random-source particle catalogue.
+ * @param params Parameter set.
+ * @param alpha Alpha contrast.
+ * @param padding Padding factor for the box size in each dimension.
+ *                This overrides the box size set in the parameter set.
+ * @param cellsize Cell size of the mesh grid in each dimension.  This
+ *                 overrides the mesh number set in the parameter set.
+ * @param assignment Assignment scheme for particles to mesh.  This
+ *                   overrides the assignment scheme set in the
+ *                   parameter set.
+ * @returns Power spectrum normalisation factor.
+ *
+ * @overload
+ */
+double calc_powspec_normalisation_from_meshes(
+  trv::ParticleCatalogue& particles_data,
+  trv::ParticleCatalogue& particles_rand,
+  trv::ParameterSet& params, double alpha,
+  double padding, double cellsize, std::string assignment
 );
 
 

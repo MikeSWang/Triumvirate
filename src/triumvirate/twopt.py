@@ -458,7 +458,7 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         )
 
     # Set up constants.
-    alpha = catalogue_data.wtotal / catalogue_rand.wtotal
+    alpha = catalogue_data.wstotal / catalogue_rand.wstotal
 
     if logger:
         logger.info("Alpha contrast: %.6e.", alpha)

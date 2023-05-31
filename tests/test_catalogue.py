@@ -323,8 +323,12 @@ def test_ParticleCatalogue_write_attrs_as_header(ref_catalogue,
             "Catalogue source: {}".format(minimal_catalogue._source)
         ) in header
         assert (
-            "Catalogue size: {:d} particles of total sample weight {:.3f}"
-            .format(minimal_catalogue.ntotal, minimal_catalogue.wtotal)
+            "Catalogue size: ntotal = {:d}, wtotal = {:.3f}, wstotal = {:.3f}"
+            .format(
+                minimal_catalogue.ntotal,
+                minimal_catalogue.wtotal,
+                minimal_catalogue.wstotal,
+            )
         ) in header
         assert (
             "Catalogue particle extents: "
@@ -345,8 +349,11 @@ def test_ParticleCatalogue_write_attrs_as_header(ref_catalogue,
             ) in header
             assert (
                 "{} catalogue size: "
-                "{:d} particles of total sample weight {:.3f}"
-                .format(_source_type, _catalogue.ntotal, _catalogue.wtotal)
+                "ntotal = {:d}, wtotal = {:.3f}, wstotal = {:.3f}"
+                .format(
+                    _source_type,
+                    _catalogue.ntotal, _catalogue.wtotal, _catalogue.wstotal,
+                )
             ) in header
             assert (
                 "{}-source particle extents: "

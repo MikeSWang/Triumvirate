@@ -154,6 +154,24 @@ class ParameterSet {
   int verbose = 20;
 
   /**
+   * @brief Construct a parameter set.
+   */
+  ParameterSet() = default;
+
+  /**
+   * @brief Destroy the parameter set.
+   *
+   */
+  ~ParameterSet() = default;
+
+  /**
+   * @brief Construct a copied parameter set.
+   *
+   * @param other Parameter set to be copied.
+   */
+  ParameterSet(const ParameterSet& other);
+
+  /**
    * @brief Read parameters from a file.
    *
    * @param parameter_filepath Parameter file path.

@@ -68,11 +68,13 @@ class ParticleCatalogue {
     double w;       ///< particle overall weight
   }* pdata;         ///< particle data
 
-  int ntotal;     ///< total number of particles
-  double wtotal;  ///< total sample weight of particles
+  int ntotal;      ///< total number of particles
+  double wtotal;   ///< total overall weight of particles
+  double wstotal;  ///< total sample weight of particles
 
-  double pos_min[3];  ///< minimum values of particle positions
-  double pos_max[3];  ///< maximum values of particle positions
+  double pos_min[3];   ///< minimum values of particle coordinates
+  double pos_max[3];   ///< maximum values of particle coordinates
+  double pos_span[3];  ///< span of particle coordinates
 
   // ---------------------------------------------------------------------
   // Life cycle
@@ -100,8 +102,10 @@ class ParticleCatalogue {
    * @attention This method does not set the values of
    *            @ref trv::ParticleCatalogue.ParticleData,
    *            @ref trv::ParticleCatalogue.wtotal,
+   *            @ref trv::ParticleCatalogue.wstotal,
    *            @ref trv::ParticleCatalogue.pos_min or
-   *            @ref trv::ParticleCatalogue.pos_max.
+   *            @ref trv::ParticleCatalogue.pos_max, or
+   *            @ref trv::ParticleCatalogue.pos_span.
    *
    * @param num Number of data units (i.e. particles).
    */
@@ -164,19 +168,21 @@ class ParticleCatalogue {
   // ---------------------------------------------------------------------
 
   /**
-   * @brief Calculate total sample weight of particles.
+   * @brief Calculate total overall weight of particles.
    *
-   * @attention This method resets @ref trv::ParticleCatalogue::wtotal.
+   * @attention This method resets @ref trv::ParticleCatalogue::wtotal
+   *            and @ref trv::ParticleCatalogue::wstotal.
    */
-  void calc_wtotal();
+  void calc_total_weights();
 
   /**
    * @brief Calculate the extents of particle positions.
    *
-   * @attention This method resets @ref trv::ParticleCatalogue::pos_min
-   *            and @ref trv::ParticleCatalogue::pos_max.
+   * @attention This method resets @ref trv::ParticleCatalogue::pos_min,
+   *            @ref trv::ParticleCatalogue::pos_max and
+   *            @ref trv::ParticleCatalogue::pos_span.
    */
-  void calc_pos_min_and_max();
+  void calc_pos_extents();
 
   // ---------------------------------------------------------------------
   // Catalogue operations

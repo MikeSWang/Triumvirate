@@ -115,7 +115,7 @@ class Binning {
    * @brief Construct binning from a mesh grid.
    *
    * The bin width is given by the grid resolution in configuration
-   * space or the fundamental wavenumber in Fourier space. The bin
+   * space or the fundamental wavenumber in Fourier space.  The bin
    * minimum is zero and the bin maximum is half the boxsize in
    * configuration space or the Nyquist wavenumber in Fourier space.
    *
