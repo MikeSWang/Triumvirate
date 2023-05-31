@@ -29,10 +29,10 @@ from importlib.metadata import PackageNotFoundError, version
 
 
 __copyright__ = 'Copyright 2023, Mike S Wang & Naonori S Sugiyama'
-__date__ = '2023-03-27'
+__date__ = '2023-05-31'
 __license__ = 'GPL-3.0'
 
 try:
     __version__ = version('triumvirate')
 except PackageNotFoundError:
-    __version__ = '0.1.2'  # fallback version number
+    __version__ = '0.2.0'  # fallback version number
