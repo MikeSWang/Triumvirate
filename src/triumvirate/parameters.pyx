@@ -448,6 +448,14 @@ cdef class ParameterSet:
             self.thisptr.binning = \
                 self._params['binning'].lower().encode('utf-8')
 
+        # Attribute otherwise-derived parameters.
+        space_ = self._params.get('space', '').lower()
+        npoint_ = self._params.get('npoint', '').lower()
+        if space_ in {'fourier', 'config'}:
+            self.thisptr.space = space_.encode('utf-8')
+        if npoint_ in {'2pt', '3pt'}:
+            self.thisptr.npoint = npoint_.encode('utf-8')
+
         # -- Misc --------------------------------------------------------
 
         if self._params['verbose'] is not None:
