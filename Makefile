@@ -328,6 +328,7 @@ checkopts:
 	@echo "AR: ${AR}"
 	@echo "ARFLAGS: ${ARFLAGS}"
 	@echo "RM: ${RM}"
+	@echo "PIPOPTS: ${PIPOPTS}"
 
 
 # ------------------------------------------------------------------------
