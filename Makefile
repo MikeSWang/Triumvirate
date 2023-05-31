@@ -341,7 +341,7 @@ test: pytest
 
 pytest:
 	@echo "Peforming Triumvirate Python tests..."
-	if [[ ! -d ${DIR_TESTOUT} ]]; then mkdir -p ${DIR_TESTOUT}; fi
+	if [ ! -d ${DIR_TESTOUT} ]; then mkdir -p ${DIR_TESTOUT}; fi
 	pytest
 
 
