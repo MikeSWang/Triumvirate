@@ -1,5 +1,37 @@
 # Change Log
 
+## v0.2.0 (2023-05-31)
+
+### Bug fixes
+
+Fix updating of derived parameters ``npoint`` and ``space`` in
+[``parameters.pyx``](src/triumvirate/parameters.pyx).
+
+### Features
+
+- Add ``pypower``-like normalisation for two-point statistics with
+  the new value option 'mesh-mixed' for the ``norm_convention`` parameter.
+
+- Separate ``wtotal`` and ``wstotal`` attributed for particle catalogues.
+  This is also reflected in logging and output file headers.
+
+- Add particle position span as a new member ``pos_span``
+  in ``trv::ParticleCatalogue`` as this is used for ``pypower``-like
+  normalisation calculations.
+
+### Improvements
+
+Enhance logging and build and packaging processes.
+
+### Maintenance
+
+Update syntax and fix typos.
+
+### Documentation
+
+Rerun tutorial notebooks.
+
+
 ## v0.1.2 (2023-04-12)
 
 ### Bug fixes
