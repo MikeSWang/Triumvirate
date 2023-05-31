@@ -158,6 +158,9 @@ double calc_powspec_normalisation_from_meshes(
     norm += mesh_data.field[gid][0] * mesh_rand.field[gid][0];
   }
 
+  mesh_data.finalise_density_field();  // likely redundant but safe
+  mesh_rand.finalise_density_field();  // likely redundant but safe
+
   double vol_cell = params.volume / double(params.nmesh);
 
   double norm_factor = 1. / (alpha * vol_cell * norm);  // 1/I₂

@@ -384,6 +384,9 @@ int main(int argc, char* argv[]) {
       const double PAD = .10;
       const double CELLSIZE = 10.;
       const std::string RESAMPLER = "cic";
+      // Box size for normalisation is internally set and as such,
+      // the current alignment of the catalogues is not applicable, but
+      // this should have no effect on the normalisation.
       norm_factor_meshes = trv::calc_powspec_normalisation_from_meshes(
         catalogue_data, catalogue_rand, params, alpha, PAD, CELLSIZE, RESAMPLER
       );
