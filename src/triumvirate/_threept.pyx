@@ -28,13 +28,13 @@ cdef extern from "include/threept.hpp":
 
     double calc_bispec_normalisation_from_particles_cpp \
         "trv::calc_bispec_normalisation_from_particles" (
-            CppParticleCatalogue& catalogue,
+            CppParticleCatalogue& particles,
             double alpha
         ) except +
 
     double calc_bispec_normalisation_from_mesh_cpp \
         "trv::calc_bispec_normalisation_from_mesh" (
-            CppParticleCatalogue& catalogue,
+            CppParticleCatalogue& particles,
             CppParameterSet& params,
             double alpha
         )
@@ -45,8 +45,8 @@ cdef extern from "include/threept.hpp":
     # --------------------------------------------------------------------
 
     BispecMeasurements compute_bispec_cpp "trv::compute_bispec" (
-        CppParticleCatalogue& particles_data,
-        CppParticleCatalogue& particles_rand,
+        CppParticleCatalogue& catalogue_data,
+        CppParticleCatalogue& catalogue_rand,
         LineOfSight* los_data,
         LineOfSight* los_rand,
         CppParameterSet& params,
@@ -55,8 +55,8 @@ cdef extern from "include/threept.hpp":
     )
 
     ThreePCFMeasurements compute_3pcf_cpp "trv::compute_3pcf" (
-        CppParticleCatalogue& particles_data,
-        CppParticleCatalogue& particles_rand,
+        CppParticleCatalogue& catalogue_data,
+        CppParticleCatalogue& catalogue_rand,
         LineOfSight* los_data,
         LineOfSight* los_rand,
         CppParameterSet& params,
@@ -66,7 +66,7 @@ cdef extern from "include/threept.hpp":
 
     BispecMeasurements compute_bispec_in_gpp_box_cpp \
         "trv::compute_bispec_in_gpp_box" (
-            CppParticleCatalogue& particles_data,
+            CppParticleCatalogue& catalogue_data,
             CppParameterSet& params,
             CppBinning& kbinning,
             double norm_factor
@@ -74,7 +74,7 @@ cdef extern from "include/threept.hpp":
 
     ThreePCFMeasurements compute_3pcf_in_gpp_box_cpp \
         "trv::compute_3pcf_in_gpp_box" (
-            CppParticleCatalogue& particles_data,
+            CppParticleCatalogue& catalogue_data,
             CppParameterSet& params,
             CppBinning& rbinning,
             double norm_factor
@@ -82,7 +82,7 @@ cdef extern from "include/threept.hpp":
 
     ThreePCFWindowMeasurements compute_3pcf_window_cpp \
         "trv::compute_3pcf_window" (
-            CppParticleCatalogue& particles_rand,
+            CppParticleCatalogue& catalogue_rand,
             LineOfSight* los_rand,
             CppParameterSet& params,
             CppBinning& rbinning,
@@ -93,8 +93,8 @@ cdef extern from "include/threept.hpp":
 
     # BispecMeasurements compute_bispec_for_los_choice_cpp \
     #     "trv::compute_bispec_for_los_choice" (
-    #         CppParticleCatalogue& particles_data,
-    #         CppParticleCatalogue& particles_rand,
+    #         CppParticleCatalogue& catalogue_data,
+    #         CppParticleCatalogue& catalogue_rand,
     #         LineOfSight* los_data,
     #         LineOfSight* los_rand,
     #         int los_choice,
@@ -104,27 +104,27 @@ cdef extern from "include/threept.hpp":
     #     )
 
 
+def _calc_bispec_normalisation_from_particles(
+        _ParticleCatalogue particles not None, double alpha
+    ):
+    return calc_bispec_normalisation_from_particles_cpp(
+        deref(particles.thisptr), alpha
+    )
+
+
 def _calc_bispec_normalisation_from_mesh(
-        _ParticleCatalogue catalogue not None,
+        _ParticleCatalogue particles not None,
         ParameterSet params not None,
         double alpha
     ):
     return calc_bispec_normalisation_from_mesh_cpp(
-        deref(catalogue.thisptr), deref(params.thisptr), alpha
-    )
-
-
-def _calc_bispec_normalisation_from_particles(
-        _ParticleCatalogue catalogue not None, double alpha
-    ):
-    return calc_bispec_normalisation_from_particles_cpp(
-        deref(catalogue.thisptr), alpha
+        deref(particles.thisptr), deref(params.thisptr), alpha
     )
 
 
 def _compute_bispec(
-        _ParticleCatalogue particles_data not None,
-        _ParticleCatalogue particles_rand not None,
+        _ParticleCatalogue catalogue_data not None,
+        _ParticleCatalogue catalogue_rand not None,
         np.ndarray[double, ndim=2, mode='c'] los_data not None,
         np.ndarray[double, ndim=2, mode='c'] los_rand not None,
         ParameterSet params not None,
@@ -151,7 +151,7 @@ def _compute_bispec(
     # Run algorithm.
     cdef BispecMeasurements results
     results = compute_bispec_cpp(
-        deref(particles_data.thisptr), deref(particles_rand.thisptr),
+        deref(catalogue_data.thisptr), deref(catalogue_rand.thisptr),
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr), deref(kbinning.thisptr),
         norm_factor
@@ -171,8 +171,8 @@ def _compute_bispec(
 
 
 def _compute_3pcf(
-        _ParticleCatalogue particles_data not None,
-        _ParticleCatalogue particles_rand not None,
+        _ParticleCatalogue catalogue_data not None,
+        _ParticleCatalogue catalogue_rand not None,
         np.ndarray[double, ndim=2, mode='c'] los_data not None,
         np.ndarray[double, ndim=2, mode='c'] los_rand not None,
         ParameterSet params not None,
@@ -199,7 +199,7 @@ def _compute_3pcf(
     # Run algorithm.
     cdef ThreePCFMeasurements results
     results = compute_3pcf_cpp(
-        deref(particles_data.thisptr), deref(particles_rand.thisptr),
+        deref(catalogue_data.thisptr), deref(catalogue_rand.thisptr),
         los_data_cpp, los_rand_cpp,
         deref(params.thisptr), deref(rbinning.thisptr),
         norm_factor
@@ -219,14 +219,14 @@ def _compute_3pcf(
 
 
 def _compute_bispec_in_gpp_box(
-        _ParticleCatalogue particles_data not None,
+        _ParticleCatalogue catalogue_data not None,
         ParameterSet params not None,
         Binning kbinning not None,
         double norm_factor
     ):
     cdef BispecMeasurements results
     results = compute_bispec_in_gpp_box_cpp(
-        deref(particles_data.thisptr),
+        deref(catalogue_data.thisptr),
         deref(params.thisptr), deref(kbinning.thisptr),
         norm_factor
     )
@@ -243,14 +243,14 @@ def _compute_bispec_in_gpp_box(
 
 
 def _compute_3pcf_in_gpp_box(
-        _ParticleCatalogue particles_data not None,
+        _ParticleCatalogue catalogue_data not None,
         ParameterSet params not None,
         Binning rbinning not None,
         double norm_factor
     ):
     cdef ThreePCFMeasurements results
     results = compute_3pcf_in_gpp_box_cpp(
-        deref(particles_data.thisptr),
+        deref(catalogue_data.thisptr),
         deref(params.thisptr), deref(rbinning.thisptr),
         norm_factor
     )
@@ -267,7 +267,7 @@ def _compute_3pcf_in_gpp_box(
 
 
 def _compute_3pcf_window(
-        _ParticleCatalogue particles_rand not None,
+        _ParticleCatalogue catalogue_rand not None,
         np.ndarray[double, ndim=2, mode='c'] los_rand not None,
         ParameterSet params not None,
         Binning rbinning not None,
@@ -287,7 +287,7 @@ def _compute_3pcf_window(
     # Run algorithm.
     cdef ThreePCFWindowMeasurements results
     results = compute_3pcf_window_cpp(
-        deref(particles_rand.thisptr), los_rand_cpp,
+        deref(catalogue_rand.thisptr), los_rand_cpp,
         deref(params.thisptr), deref(rbinning.thisptr),
         alpha, norm_factor,
         wide_angle
@@ -307,8 +307,8 @@ def _compute_3pcf_window(
 
 
 # def _compute_bispec_for_los_choice(
-#         _ParticleCatalogue particles_data not None,
-#         _ParticleCatalogue particles_rand not None,
+#         _ParticleCatalogue catalogue_data not None,
+#         _ParticleCatalogue catalogue_rand not None,
 #         np.ndarray[double, ndim=2, mode='c'] los_data not None,
 #         np.ndarray[double, ndim=2, mode='c'] los_rand not None,
 #         int los_choice,
@@ -336,7 +336,7 @@ def _compute_3pcf_window(
 #     # Run algorithm.
 #     cdef BispecMeasurements results
 #     results = compute_bispec_for_los_choice_cpp(
-#         deref(particles_data.thisptr), deref(particles_rand.thisptr),
+#         deref(catalogue_data.thisptr), deref(catalogue_rand.thisptr),
 #         los_data_cpp, los_rand_cpp, los_choice,
 #         deref(params.thisptr), deref(kbinning.thisptr),
 #         norm_factor

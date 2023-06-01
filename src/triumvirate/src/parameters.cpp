@@ -675,7 +675,7 @@ int ParameterSet::validate() {
       / *std::max_element(this->boxsize, this->boxsize + 3);
     if (this->bin_min > wavenum_nyquist) {
       trvs::logger.warn(
-        "Lower wavenumber limit exceeds the Nyquist wavenumber %.3e.",
+        "Lower wavenumber limit exceeds the Nyquist wavenumber %.4f.",
         wavenum_nyquist
       );
     }
@@ -686,7 +686,7 @@ int ParameterSet::validate() {
       / *std::min_element(this->ngrid, this->ngrid + 3);
     if (this->bin_max < separation_nyquist) {
       trvs::logger.warn(
-        "Upper separation limit undershoots the Nyquist scale %.3f.",
+        "Upper separation limit undershoots the Nyquist scale %.4f.",
         separation_nyquist
       );
     }
@@ -793,9 +793,9 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
   print_par_str("catalogue_columns = %s\n", this->catalogue_columns);
   print_par_str("output_tag = %s\n", this->output_tag);
 
-  print_par_double("boxsize_x = %.2f\n", this->boxsize[0]);
-  print_par_double("boxsize_y = %.2f\n", this->boxsize[1]);
-  print_par_double("boxsize_z = %.2f\n", this->boxsize[2]);
+  print_par_double("boxsize_x = %.3f\n", this->boxsize[0]);
+  print_par_double("boxsize_y = %.3f\n", this->boxsize[1]);
+  print_par_double("boxsize_z = %.3f\n", this->boxsize[2]);
   print_par_int("ngrid_x = %d\n", this->ngrid[0]);
   print_par_int("ngrid_y = %d\n", this->ngrid[1]);
   print_par_int("ngrid_z = %d\n", this->ngrid[2]);
