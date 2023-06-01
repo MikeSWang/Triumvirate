@@ -24,8 +24,8 @@ cdef extern from "include/dataobjs.hpp":
 
         CppBinning(string space, string scheme) except +
 
-        void set_bins(double bin_min, double bin_max, int nbins)
-        void set_bins(double boxsize_max, int ngrid_min)
+        void set_bins(double bin_min, double bin_max, int nbins) except +
+        void set_bins(double boxsize_max, int ngrid_min) except +
 
 
     # --------------------------------------------------------------------
@@ -52,13 +52,13 @@ cdef extern from "include/dataobjs.hpp":
     struct TwoPCFMeasurements "trv::TwoPCFMeasurements":
         vector[double] rbin
         vector[double] reff
-        vector[int] npairs;
+        vector[int] npairs
         vector[np.complex128_t] xi
 
     struct TwoPCFWindowMeasurements "trv::TwoPCFWindowMeasurements":
         vector[double] rbin
         vector[double] reff
-        vector[int] npairs;
+        vector[int] npairs
         vector[np.complex128_t] xi
 
     # -- Three-point statistics ------------------------------------------

@@ -26,18 +26,18 @@ cdef extern from "include/threept.hpp":
     # Normalisation
     # --------------------------------------------------------------------
 
+    double calc_bispec_normalisation_from_particles_cpp \
+        "trv::calc_bispec_normalisation_from_particles" (
+            CppParticleCatalogue& catalogue,
+            double alpha
+        ) except +
+
     double calc_bispec_normalisation_from_mesh_cpp \
         "trv::calc_bispec_normalisation_from_mesh" (
             CppParticleCatalogue& catalogue,
             CppParameterSet& params,
             double alpha
         )
-
-    double calc_bispec_normalisation_from_particles_cpp \
-        "trv::calc_bispec_normalisation_from_particles" (
-            CppParticleCatalogue& catalogue,
-            double alpha
-        ) except +
 
 
     # --------------------------------------------------------------------
