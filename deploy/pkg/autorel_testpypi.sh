@@ -8,9 +8,9 @@
 # Require docker to run `cibuildwheel`.
 #
 
-# Parse `-u` option for uploading.
-upload_flag=false
+# Parse options.
 build_wheel=false
+upload_flag=false
 while getopts :wu opt; do
     case $opt in
         w) build_wheel=true;;
@@ -19,7 +19,7 @@ while getopts :wu opt; do
        \?) echo "Unknown option -$OPTARG"; exit 1;;
     esac
 done
-shift $((OPTIND - 1))
+shift "$((OPTIND-1))"
 
 # Set directories and paths.
 DIST_DIR=dist/
@@ -28,7 +28,7 @@ DIST_DIR=dist/
 rm -rf ${DIST_DIR}
 
 # Install/upgrade distribution tools.
-python -m pip install --upgrade build cibuildwheel twine
+# python -m pip install --upgrade build cibuildwheel twine
 
 # Build source-distribution.
 python -m build --sdist --outdir ${DIST_DIR} .

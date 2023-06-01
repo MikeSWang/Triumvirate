@@ -7,6 +7,17 @@
 # @arg Non-native architecture case, {"", "arm64"}.
 #
 
+# Parse options.
+upload_flag=false
+while getopts :u opt; do
+    case $opt in
+        u) upload_flag=true;;
+        :) echo "Missing argument for option -$OPTARG"; exit 1;;
+       \?) echo "Unknown option -$OPTARG"; exit 1;;
+    esac
+done
+shift "$((OPTIND-1))"
+
 # Parse command-line arguments.
 if [[ -z "${1}" ]]; then
   arch_suffix=
@@ -34,3 +45,8 @@ conda build --strict-verify --no-anaconda-upload ${RECIPE_DIR} \
 # Transmute compression formats.
 find ${DIST_DIR} -name "*.tar.bz2" \
   -exec cph transmute {} .conda --out-folder ${DIST_DIR} \;
+
+# Optionally upload to Anaconda.
+if $upload_flag; then
+    anaconda upload ${DIST_DIR}/**/*.tar.bz2
+fi
