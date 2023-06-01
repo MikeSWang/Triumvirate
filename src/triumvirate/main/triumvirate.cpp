@@ -381,14 +381,15 @@ int main(int argc, char* argv[]) {
     // paired survey-like catalogues.
     if (params.catalogue_type == "survey") {
       // Use default parameters for mixed-mesh normalisation in `pypower`.
-      const double PAD = .10;
+      const double PADDING = .10;
       const double CELLSIZE = 10.;
-      const std::string RESAMPLER = "cic";
+      const std::string ASSIGNMENT = "cic";
       // Box size for normalisation is internally set and as such,
       // the current alignment of the catalogues is not applicable, but
       // this should have no effect on the normalisation.
       norm_factor_meshes = trv::calc_powspec_normalisation_from_meshes(
-        catalogue_data, catalogue_rand, params, alpha, PAD, CELLSIZE, RESAMPLER
+        catalogue_data, catalogue_rand, params, alpha,
+        PADDING, CELLSIZE, ASSIGNMENT
       );
     }
   } else

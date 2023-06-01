@@ -223,7 +223,8 @@ def _get_measurement_filename(paramset):
     )
 
 
-def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
+def _print_measurement_header(paramset, norm_factor_part, norm_factor_mesh,
+                              norm_factor_meshes):
     """Print three-point statistic measurement header including
     sampling parameters, normalisation factors and data table columns.
 
@@ -246,12 +247,14 @@ def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
         three-point statistics.
 
     """
+    if paramset['norm_convention'] == 'none':
+        norm_factor = 1.
     if paramset['norm_convention'] == 'particle':
-        norm_convention = 'particle'
-        norm_convention_alt = 'mesh'
+        norm_factor = norm_factor_part
     if paramset['norm_convention'] == 'mesh':
-        norm_convention = 'mesh'
-        norm_convention_alt = 'particle'
+        norm_factor = norm_factor_mesh
+    # if paramset['norm_convention'] == 'meshes':
+    #     norm_factor = norm_factor_meshes
 
     if paramset['npoint'] != '3pt':
         raise ValueError(
@@ -288,10 +291,12 @@ def _print_measurement_header(paramset, norm_factor, norm_factor_alt):
         "Mesh assignment and interlacing: {}, {}".format(
             paramset['assignment'], paramset['interlace']
         ),
-        "Normalisation factor: "
-        "{:.9e} ({}-based, used), {:.9e} ({}-based, alternative)".format(
-            norm_factor, norm_convention,
-            norm_factor_alt, norm_convention_alt
+        "Normalisation factor: {:.9e} ({})".format(
+            norm_factor, paramset['norm_convention']
+        ),
+        "Normalisation factor alternatives: "
+        "{:.9e} (particle), {:.9e} (mesh), {:.9e} (mesh-mixed; n/a)".format(
+            norm_factor_part, norm_factor_mesh, norm_factor_meshes
         ),
         ", ".join([
             "[{:d}] {}".format(colidx, colname)
@@ -521,25 +526,43 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
     if logger:
         logger.info("Alpha contrast: %.6e.", alpha)
 
-    if paramset['norm_convention'] == 'particle':
-        norm_factor = _calc_bispec_normalisation_from_particles(
-            particles_rand, alpha
+    norm_factor_part = _calc_bispec_normalisation_from_particles(
+        particles_rand, alpha
+    )
+    norm_factor_mesh = _calc_bispec_normalisation_from_mesh(
+        particles_rand, paramset, alpha
+    )
+    norm_factor_meshes = 0.
+
+    if paramset['norm_convention'] == 'none':
+        norm_factor = 1.
+        norm_log_mesg = (
+            "Normalisation factors: "
+            "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; n/a) (none used)."
         )
-        norm_factor_alt = _calc_bispec_normalisation_from_mesh(
-            particles_rand, paramset, alpha
+    if paramset['norm_convention'] == 'particle':
+        norm_factor = norm_factor_part
+        norm_log_mesg = (
+            "Normalisation factors: "
+            "%.6e (particle; used), %.6e (mesh), %.6e (mesh-mixed; n/a)."
         )
     if paramset['norm_convention'] == 'mesh':
-        norm_factor = _calc_bispec_normalisation_from_mesh(
-            particles_rand, paramset, alpha
+        norm_factor = norm_factor_mesh
+        norm_log_mesg = (
+            "Normalisation factors: "
+            "%.6e (particle), %.6e (mesh; used), %.6e (mesh-mixed; n/a)."
         )
-        norm_factor_alt = _calc_bispec_normalisation_from_particles(
-            particles_rand, alpha
-        )
+    # if paramset['norm_convention'] == 'mesh-mixed':
+    #     norm_factor = norm_factor_meshes
+    #     norm_log_mesg = (
+    #         "Normalisation factors: "
+    #         "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; used)."
+    #     )
 
     if logger:
         logger.info(
-            "Normalisation factors: %.6e (used), %.6e (alternative).",
-            norm_factor, norm_factor_alt
+            norm_log_mesg,
+            norm_factor_part, norm_factor_mesh, norm_factor_meshes
         )
 
     # Perform measurement.
@@ -558,7 +581,10 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         odirpath = paramset['directories']['measurements'] or ""
         header = "\n".join([
             catalogue_data.write_attrs_as_header(catalogue_ref=catalogue_rand),
-            _print_measurement_header(paramset, norm_factor, norm_factor_alt),
+            _print_measurement_header(
+                paramset,
+                norm_factor_part, norm_factor_mesh, norm_factor_meshes
+            ),
         ])
         if save.lower() == '.txt':
             datatab = _assemble_measurement_datatab(results, paramset)
@@ -962,26 +988,38 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #     if logger:
 #         logger.info("Alpha contrast: %.6e.", alpha)
 
-#     if paramset['norm_convention'] == 'particle':
-#         norm_factor = _calc_bispec_normalisation_from_particles(
-#             particles_rand, alpha
+#     norm_factor_part = _calc_bispec_normalisation_from_particles(
+#         particles_rand, alpha
+#     )
+#     norm_factor_mesh = _calc_bispec_normalisation_from_mesh(
+#         particles_rand, paramset, alpha
+#     )
+#     norm_factor_meshes = 0.
+
+#     if paramset['norm_convention'] == 'none':
+#         norm_factor = 1.
+#         norm_log_mesg = (
+#             "Normalisation factors: "
+#             "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; n/a) (none used)."  # noqa: E501
 #         )
-#         norm_factor_alt = _calc_bispec_normalisation_from_mesh(
-#             particles_rand, paramset, alpha
+#     if paramset['norm_convention'] == 'particle':
+#         norm_factor = norm_factor_part
+#         norm_log_mesg = (
+#             "Normalisation factors: "
+#             "%.6e (particle; used), %.6e (mesh), %.6e (mesh-mixed; n/a)."
 #         )
 #     if paramset['norm_convention'] == 'mesh':
-#         norm_factor = _calc_bispec_normalisation_from_mesh(
-#             particles_rand, paramset, alpha
-#         )
-#         norm_factor_alt = _calc_bispec_normalisation_from_particles(
-#             particles_rand, alpha
+#         norm_factor = norm_factor_mesh
+#         norm_log_mesg = (
+#             "Normalisation factors: "
+#             "%.6e (particle), %.6e (mesh; used), %.6e (mesh-mixed; n/a)."
 #         )
 
 #     if logger:
 #         logger.info(
-#             "Normalisation factors: %.6e (used), %.6e (alternative).",
-#             norm_factor, norm_factor_alt
-#         )
+#             norm_log_mesg,
+#             norm_factor_part, norm_factor_mesh, norm_factor_meshes
+#     )
 
 #     # Perform measurement.
 #     if logger:
@@ -999,7 +1037,10 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         odirpath = paramset['directories']['measurements'] or ""
 #         header = "\n".join([
 #             catalogue_data.write_attrs_as_header(catalogue_ref=catalogue_rand),  # noqa: E501
-#             _print_measurement_header(paramset, norm_factor, norm_factor_alt),  # noqa: E501
+#             _print_measurement_header(
+#                 paramset,
+#                 norm_factor_part, norm_factor_mesh, norm_factor_meshes
+#             ),
 #         ])
 #         if save.lower() == '.txt':
 #             datatab = _assemble_measurement_datatab(results, paramset)
@@ -1163,25 +1204,43 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         )
 
     # Set up constants.
-    if paramset['norm_convention'] == 'particle':
-        norm_factor = _calc_bispec_normalisation_from_particles(
-            particles_data, alpha=1.
+    norm_factor_part = _calc_bispec_normalisation_from_particles(
+        particles_data, alpha=1.
+    )
+    norm_factor_mesh = _calc_bispec_normalisation_from_mesh(
+        particles_data, paramset, alpha=1.
+    )
+    norm_factor_meshes = 0.
+
+    if paramset['norm_convention'] == 'none':
+        norm_factor = 1.
+        norm_log_mesg = (
+            "Normalisation factors: "
+            "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; n/a) (none used)."
         )
-        norm_factor_alt = _calc_bispec_normalisation_from_mesh(
-            particles_data, paramset, alpha=1.
+    if paramset['norm_convention'] == 'particle':
+        norm_factor = norm_factor_part
+        norm_log_mesg = (
+            "Normalisation factors: "
+            "%.6e (particle; used), %.6e (mesh), %.6e (mesh-mixed; n/a)."
         )
     if paramset['norm_convention'] == 'mesh':
-        norm_factor = _calc_bispec_normalisation_from_mesh(
-            particles_data, paramset, alpha=1.
+        norm_factor = norm_factor_mesh
+        norm_log_mesg = (
+            "Normalisation factors: "
+            "%.6e (particle), %.6e (mesh; used), %.6e (mesh-mixed; n/a)."
         )
-        norm_factor_alt = _calc_bispec_normalisation_from_particles(
-            particles_data, alpha=1.
-        )
+    # if paramset['norm_convention'] == 'mesh-mixed':
+    #     norm_factor = norm_factor_meshes
+    #     norm_log_mesg = (
+    #         "Normalisation factors: "
+    #         "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; used)."
+    #     )
 
     if logger:
         logger.info(
-            "Normalisation factors: %.6e (used), %.6e (alternative).",
-            norm_factor, norm_factor_alt
+            norm_log_mesg,
+            norm_factor_part, norm_factor_mesh, norm_factor_meshes
         )
 
     # Perform measurement.
@@ -1197,7 +1256,10 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         odirpath = paramset['directories']['measurements'] or ""
         header = "\n".join([
             catalogue_data.write_attrs_as_header(),
-            _print_measurement_header(paramset, norm_factor, norm_factor_alt),
+            _print_measurement_header(
+                paramset,
+                norm_factor_part, norm_factor_mesh, norm_factor_meshes
+            ),
         ])
         if save.lower() == '.txt':
             datatab = _assemble_measurement_datatab(results, paramset)
@@ -1547,25 +1609,43 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         catalogue_rand._convert_to_cpp_catalogue(verbose=paramset['verbose'])
 
     # Set up constants.
-    if paramset['norm_convention'] == 'particle':
-        norm_factor = _calc_bispec_normalisation_from_particles(
-            particles_rand, alpha=1.
+    norm_factor_part = _calc_bispec_normalisation_from_particles(
+        particles_rand, alpha=1.
+    )
+    norm_factor_mesh = _calc_bispec_normalisation_from_mesh(
+        particles_rand, paramset, alpha=1.
+    )
+    norm_factor_meshes = 0.
+
+    if paramset['norm_convention'] == 'none':
+        norm_factor = 1.
+        norm_log_mesg = (
+            "Normalisation factors: "
+            "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; n/a) (none used)."
         )
-        norm_factor_alt = _calc_bispec_normalisation_from_mesh(
-            particles_rand, paramset, alpha=1.
+    if paramset['norm_convention'] == 'particle':
+        norm_factor = norm_factor_part
+        norm_log_mesg = (
+            "Normalisation factors: "
+            "%.6e (particle; used), %.6e (mesh), %.6e (mesh-mixed; n/a)."
         )
     if paramset['norm_convention'] == 'mesh':
-        norm_factor = _calc_bispec_normalisation_from_mesh(
-            particles_rand, paramset, alpha=1.
+        norm_factor = norm_factor_mesh
+        norm_log_mesg = (
+            "Normalisation factors: "
+            "%.6e (particle), %.6e (mesh; used), %.6e (mesh-mixed; n/a)."
         )
-        norm_factor_alt = _calc_bispec_normalisation_from_particles(
-            particles_rand, alpha=1.
-        )
+    # if paramset['norm_convention'] == 'mesh-mixed':
+    #     norm_factor = norm_factor_meshes
+    #     norm_log_mesg = (
+    #         "Normalisation factors: "
+    #         "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; used)."
+    #     )
 
     if logger:
         logger.info(
-            "Normalisation factors: %.6e (used), %.6e (alternative).",
-            norm_factor, norm_factor_alt
+            norm_log_mesg,
+            norm_factor_part, norm_factor_mesh, norm_factor_meshes
         )
 
     # Perform measurement.
@@ -1589,7 +1669,10 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         odirpath = paramset['directories']['measurements'] or ""
         header = "\n".join([
             catalogue_rand.write_attrs_as_header(),
-            _print_measurement_header(paramset, norm_factor, norm_factor_alt),
+            _print_measurement_header(
+                paramset,
+                norm_factor_part, norm_factor_mesh, norm_factor_meshes
+            ),
         ])
         if save.lower() == '.txt':
             datatab = _assemble_measurement_datatab(results, paramset)
