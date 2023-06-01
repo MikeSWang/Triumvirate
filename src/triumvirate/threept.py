@@ -232,8 +232,8 @@ def _print_measurement_header(paramset, norm_factor_part, norm_factor_mesh,
     ----------
     paramset : :class:`~triumvirate.parameters.ParameterSet`
         Parameter set.
-    norm_factor, norm_factor_alt : float
-        Normalisation factor used and the alternative.
+    norm_factor_part, norm_factor_mesh, norm_factor_meshes : float
+        Normalisation factors.
 
     Returns
     -------
@@ -253,8 +253,8 @@ def _print_measurement_header(paramset, norm_factor_part, norm_factor_mesh,
         norm_factor = norm_factor_part
     if paramset['norm_convention'] == 'mesh':
         norm_factor = norm_factor_mesh
-    # if paramset['norm_convention'] == 'meshes':
-    #     norm_factor = norm_factor_meshes
+    if paramset['norm_convention'] == 'mesh-mixed':
+        norm_factor = norm_factor_meshes
 
     if paramset['npoint'] != '3pt':
         raise ValueError(
@@ -552,12 +552,12 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
             "Normalisation factors: "
             "%.6e (particle), %.6e (mesh; used), %.6e (mesh-mixed; n/a)."
         )
-    # if paramset['norm_convention'] == 'mesh-mixed':
-    #     norm_factor = norm_factor_meshes
-    #     norm_log_mesg = (
-    #         "Normalisation factors: "
-    #         "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; used)."
-    #     )
+    if paramset['norm_convention'] == 'mesh-mixed':
+        norm_factor = norm_factor_meshes
+        norm_log_mesg = (
+            "Normalisation factors: "
+            "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; used)."
+        )
 
     if logger:
         logger.info(
@@ -1014,6 +1014,12 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #             "Normalisation factors: "
 #             "%.6e (particle), %.6e (mesh; used), %.6e (mesh-mixed; n/a)."
 #         )
+#     if paramset['norm_convention'] == 'mesh-mixed':
+#         norm_factor = norm_factor_meshes
+#         norm_log_mesg = (
+#             "Normalisation factors: "
+#             "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; used)."
+#         )
 
 #     if logger:
 #         logger.info(
@@ -1230,12 +1236,6 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
             "Normalisation factors: "
             "%.6e (particle), %.6e (mesh; used), %.6e (mesh-mixed; n/a)."
         )
-    # if paramset['norm_convention'] == 'mesh-mixed':
-    #     norm_factor = norm_factor_meshes
-    #     norm_log_mesg = (
-    #         "Normalisation factors: "
-    #         "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; used)."
-    #     )
 
     if logger:
         logger.info(
@@ -1635,12 +1635,6 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
             "Normalisation factors: "
             "%.6e (particle), %.6e (mesh; used), %.6e (mesh-mixed; n/a)."
         )
-    # if paramset['norm_convention'] == 'mesh-mixed':
-    #     norm_factor = norm_factor_meshes
-    #     norm_log_mesg = (
-    #         "Normalisation factors: "
-    #         "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; used)."
-    #     )
 
     if logger:
         logger.info(

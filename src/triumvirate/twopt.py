@@ -217,7 +217,7 @@ def _print_measurement_header(paramset, norm_factor_part, norm_factor_mesh,
         norm_factor = norm_factor_part
     if paramset['norm_convention'] == 'mesh':
         norm_factor = norm_factor_mesh
-    if paramset['norm_convention'] == 'meshes':
+    if paramset['norm_convention'] == 'mesh-mixed':
         norm_factor = norm_factor_meshes
 
     if paramset['npoint'] != '2pt':
