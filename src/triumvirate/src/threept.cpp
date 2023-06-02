@@ -305,7 +305,7 @@ trv::BispecMeasurements compute_bispec(
       std::vector< std::complex<double> > ylm_r_a(params.nmesh);
       std::vector< std::complex<double> > ylm_r_b(params.nmesh);
       trvs::gbytesMem +=
-        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
       trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
@@ -491,7 +491,7 @@ trv::BispecMeasurements compute_bispec(
       }
 
       trvs::gbytesMem -=
-        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
 
@@ -627,7 +627,7 @@ trv::ThreePCFMeasurements compute_3pcf(
       std::vector< std::complex<double> > ylm_k_a(params.nmesh);
       std::vector< std::complex<double> > ylm_k_b(params.nmesh);
       trvs::gbytesMem +=
-        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
       trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
@@ -768,7 +768,7 @@ trv::ThreePCFMeasurements compute_3pcf(
       }
 
       trvs::gbytesMem -=
-        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
 
@@ -899,7 +899,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       std::vector< std::complex<double> > ylm_r_a(params.nmesh);
       std::vector< std::complex<double> > ylm_r_b(params.nmesh);
       trvs::gbytesMem +=
-        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
       trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
@@ -1056,7 +1056,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       }
 
       trvs::gbytesMem -=
-        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
 
@@ -1185,7 +1185,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       std::vector< std::complex<double> > ylm_k_a(params.nmesh);
       std::vector< std::complex<double> > ylm_k_b(params.nmesh);
       trvs::gbytesMem +=
-        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
       trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
@@ -1308,7 +1308,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       }
 
       trvs::gbytesMem -=
-        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
 
@@ -1442,7 +1442,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
       std::vector< std::complex<double> > ylm_k_a(params.nmesh);
       std::vector< std::complex<double> > ylm_k_b(params.nmesh);
       trvs::gbytesMem +=
-        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
       trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
@@ -1584,7 +1584,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
       }
 
       trvs::gbytesMem -=
-        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
 
@@ -1721,7 +1721,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
       std::vector< std::complex<double> > ylm_r_a(params.nmesh);
       std::vector< std::complex<double> > ylm_r_b(params.nmesh);
       trvs::gbytesMem +=
-        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
       trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
@@ -1990,7 +1990,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
       delete[] ylm_r_a; ylm_r_a = nullptr;
       delete[] ylm_r_b; ylm_r_b = nullptr;
       trvs::gbytesMem -=
-        trvs::size_in_gb< std::complex<double> >(4 * params.nmesh);
+        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
 
