@@ -1225,7 +1225,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
           sn_save[ibin] += coupling * stats_sn.xi[ibin];
         } else
         if (params.form == "full") {
-            // Enforce the Kronecker delta in eq. (51) in the Paper.
+          // Enforce the Kronecker delta in eq. (51) in the Paper.
           if (ibin == params.idx_bin) {
             sn_save[ibin] += coupling * stats_sn.xi[ibin];
           }
