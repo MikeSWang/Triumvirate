@@ -203,7 +203,7 @@ def save_results(results, config):
 
     """
     # Get data table.
-    norm = 1. / results.poles.wnorm if not config.nonorm else 1.
+    norm = 1. / results.poles.wnorm if not config.no_norm else 1.
 
     k_cen = 1./2 * np.add(
         results.poles.edges[0][:-1], results.poles.edges[0][1:]
