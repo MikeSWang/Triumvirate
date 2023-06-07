@@ -1225,7 +1225,7 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
         double k_ = trvm::get_vec3d_magnitude(kv);
 
         // Determine the grid cell contribution to the band.
-        if (k_lower < k_ && k_ <= k_upper) {
+        if (k_lower <= k_ && k_ < k_upper) {
           std::complex<double> fk(
             field_fourier[idx_grid][0], field_fourier[idx_grid][1]
           );
@@ -1610,7 +1610,7 @@ OMP_ATOMIC
     double k_upper = kbinning.bin_edges[ibin + 1];
     for (int i = 0; i < n_sample; i++) {
       double k_ = i * dk_sample;
-      if (k_lower < k_ && k_ <= k_upper) {
+      if (k_lower <= k_ && k_ < k_upper) {
         this->nmodes[ibin] += nmodes_sample[i];
         this->k[ibin] += k_sample[i];
         this->pk[ibin] += pk_sample[i];
