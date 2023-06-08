@@ -1,16 +1,17 @@
 # Data catalogue source: extfile:tests/test_input/ctlgs/test_data_catalogue.txt
-# Data catalogue size: 3 particles of total sample weight 3.000
+# Data catalogue size: ntotal = 3, wtotal = 3.000, wstotal = 3.000
 # Data-source particle extents: ([450.002, 550.002], [471.122, 557.724], [500.017, 500.017])
 # Random catalogue source: extfile:tests/test_input/ctlgs/test_rand_catalogue.txt
-# Random catalogue size: 30000 particles of total sample weight 30000.000
+# Random catalogue size: ntotal = 30000, wtotal = 30000.000, wstotal = 30000.000
 # Random-source particle extents: ([0.015, 999.985], [0.017, 999.983], [0.031, 999.969])
-# Box size: (1000.000, 1000.000, 1000.000)
+# Box size: [1000.000, 1000.000, 1000.000]
 # Box alignment: centre
-# Mesh number: (64, 64, 64)
+# Mesh number: [64, 64, 64]
 # Mesh assignment and interlacing: tsc, False
-# Normalisation factor: 3.703703704e+16 (particle-based, used), 4.417104020e+15 (mesh-based, alternative)
+# Normalisation factor: 3.703703704e+16 (particle)
+# Normalisation factor alternatives: 3.703703704e+16 (particle), 4.417104020e+15 (mesh), 0.000000000e+00 (mesh-mixed; n/a)
 # [0] k1_cen, [1] k1_eff, [2] k2_cen, [3] k2_eff, [4] nmodes, [5] Re{bk000_raw}, [6] Im{bk000_raw}, [7] Re{bk000_shot}, [8] Im{bk000_shot}
-1.750000000e-02	2.258782336e-02	1.750000000e-02	2.258782336e-02	       460	 3.129296339e+17	 0.000000000e+00	 2.860393289e+17	 1.316406503e-02
-4.250000000e-02	4.488283313e-02	4.250000000e-02	4.488283313e-02	      2340	 4.930747041e+16	 0.000000000e+00	 4.721358074e+16	-1.635827352e-03
-6.750000000e-02	6.912253858e-02	6.750000000e-02	6.912253858e-02	      5908	 1.410887484e+17	 0.000000000e+00	 1.424394978e+17	 2.264202605e-03
-9.250000000e-02	9.369454264e-02	9.250000000e-02	9.369454264e-02	     10840	 1.225673312e+17	 0.000000000e+00	 1.287321375e+17	-2.883315433e-03
+1.750000000e-02	2.258782336e-02	1.750000000e-02	2.258782336e-02	       460	 3.129296339e+17	 0.000000000e+00	 2.860393289e+17	-3.037861160e-03
+4.250000000e-02	4.488283313e-02	4.250000000e-02	4.488283313e-02	      2340	 4.930747041e+16	 0.000000000e+00	 4.721358074e+16	 7.128054406e-04
+6.750000000e-02	6.912253858e-02	6.750000000e-02	6.912253858e-02	      5908	 1.410887484e+17	 0.000000000e+00	 1.424394978e+17	-1.824596775e-03
+9.250000000e-02	9.369454264e-02	9.250000000e-02	9.369454264e-02	     10840	 1.225673312e+17	 0.000000000e+00	 1.287321375e+17	 1.568811057e-03

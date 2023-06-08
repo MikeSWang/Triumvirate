@@ -1,16 +1,17 @@
 # Data catalogue source: extfile:tests/test_input/ctlgs/test_data_catalogue.txt
-# Data catalogue size: 3 particles of total sample weight 3.000
+# Data catalogue size: ntotal = 3, wtotal = 3.000, wstotal = 3.000
 # Data-source particle extents: ([450.002, 550.002], [471.122, 557.724], [500.017, 500.017])
 # Random catalogue source: extfile:tests/test_input/ctlgs/test_rand_catalogue.txt
-# Random catalogue size: 30000 particles of total sample weight 30000.000
+# Random catalogue size: ntotal = 30000, wtotal = 30000.000, wstotal = 30000.000
 # Random-source particle extents: ([0.015, 999.985], [0.017, 999.983], [0.031, 999.969])
-# Box size: (1000.000, 1000.000, 1000.000)
+# Box size: [1000.000, 1000.000, 1000.000]
 # Box alignment: centre
-# Mesh number: (64, 64, 64)
+# Mesh number: [64, 64, 64]
 # Mesh assignment and interlacing: tsc, False
-# Normalisation factor: 1.111111111e+08 (particle-based, used), 4.538831600e+07 (mesh-based, alternative)
+# Normalisation factor: 1.111111111e+08 (particle)
+# Normalisation factor alternatives: 1.111111111e+08 (particle), 4.538831600e+07 (mesh), 8.158928783e+07 (mesh-mixed)
 # [0] k_cen, [1] k_eff, [2] nmodes, [3] Re{pk2_raw}, [4] Im{pk2_raw}, [5] Re{pk2_shot}, [6] Im{pk2_shot}
-1.750000000e-02	2.258782336e-02	       460	-4.007902088e+08	-5.830598350e-09	 1.086088278e-08	-4.699344929e-15
-4.250000000e-02	4.488283313e-02	      2340	-4.082509462e+08	 3.252606517e-09	-8.210703777e-09	-6.820508707e-16
-6.750000000e-02	6.912253858e-02	      5908	 2.082121800e+08	 5.122855265e-09	-1.148913893e-08	-1.553647179e-15
-9.250000000e-02	9.369454264e-02	     10840	-4.552175403e+07	 4.439205562e-09	-9.369927536e-09	-9.914127616e-16
+1.750000000e-02	2.258782336e-02	       460	-4.007902088e+08	-7.203921102e-09	 1.186652035e-08	-5.230818463e-15
+4.250000000e-02	4.488283313e-02	      2340	-4.082509462e+08	 2.047937437e-10	-7.538559397e-09	 4.446193986e-16
+6.750000000e-02	6.912253858e-02	      5908	 2.082121800e+08	 5.538466098e-09	-1.533625115e-08	 2.430383645e-15
+9.250000000e-02	9.369454264e-02	     10840	-4.552175403e+07	 5.020458393e-09	-8.616453826e-09	 1.499625204e-15

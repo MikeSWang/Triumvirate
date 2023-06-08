@@ -1,16 +1,17 @@
 # Data catalogue source: extfile:tests/test_input/ctlgs/test_data_catalogue.txt
-# Data catalogue size: 3 particles of total sample weight 3.000
+# Data catalogue size: ntotal = 3, wtotal = 3.000, wstotal = 3.000
 # Data-source particle extents: ([450.002, 550.002], [471.122, 557.724], [500.017, 500.017])
 # Random catalogue source: extfile:tests/test_input/ctlgs/test_rand_catalogue.txt
-# Random catalogue size: 30000 particles of total sample weight 30000.000
+# Random catalogue size: ntotal = 30000, wtotal = 30000.000, wstotal = 30000.000
 # Random-source particle extents: ([0.015, 999.985], [0.017, 999.983], [0.031, 999.969])
-# Box size: (1000.000, 1000.000, 1000.000)
+# Box size: [1000.000, 1000.000, 1000.000]
 # Box alignment: centre
-# Mesh number: (64, 64, 64)
+# Mesh number: [64, 64, 64]
 # Mesh assignment and interlacing: tsc, False
-# Normalisation factor: 3.703703704e+16 (particle-based, used), 4.417104020e+15 (mesh-based, alternative)
+# Normalisation factor: 3.703703704e+16 (particle)
+# Normalisation factor alternatives: 3.703703704e+16 (particle), 4.417104020e+15 (mesh), 0.000000000e+00 (mesh-mixed; n/a)
 # [0] r1_cen, [1] r1_eff, [2] r2_cen, [3] r2_eff, [4] npairs, [5] Re{zeta202_raw}, [6] Im{zeta202_raw}, [7] Re{zeta202_shot}, [8] Im{zeta202_shot}
-6.250000000e+01	6.431962465e+01	6.250000000e+01	6.431962465e+01	       157	 3.150294433e+04	 8.623696294e+02	 3.436193163e+04	 1.353572097e-13
-8.750000000e+01	8.777591768e+01	8.750000000e+01	8.777591768e+01	       292	-1.576434791e+03	-6.080253566e+02	 8.918398668e+04	 1.515635535e-12
-1.125000000e+02	1.122315212e+02	1.125000000e+02	1.122315212e+02	       529	-1.120966787e+04	 4.076174762e+02	 4.965661784e+04	-1.217986629e-12
-1.375000000e+02	1.381486607e+02	1.375000000e+02	1.381486607e+02	       820	 3.688257823e+02	 4.803109669e+02	 1.478206285e+03	 1.967587096e-13
+6.250000000e+01	6.431962465e+01	6.250000000e+01	6.431962465e+01	       157	 3.150294433e+04	 8.623696294e+02	 1.718096582e+04	 1.307692166e-12
+8.750000000e+01	8.777591768e+01	8.750000000e+01	8.777591768e+01	       292	-1.576434791e+03	-6.080253566e+02	 4.459199334e+04	-8.118693483e-12
+1.125000000e+02	1.122315212e+02	1.125000000e+02	1.122315212e+02	       529	-1.120966787e+04	 4.076174762e+02	 2.482830892e+04	-1.564711084e-12
+1.375000000e+02	1.381486607e+02	1.375000000e+02	1.381486607e+02	       820	 3.688257823e+02	 4.803109669e+02	 7.391031427e+02	-8.285778605e-14
