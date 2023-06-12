@@ -60,8 +60,9 @@ docs/source/Doxyfile.conf.bak
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Editors
+# Editors/explorers
 .vscode/
+.DS_Store
 
 # Storage
 storage/
