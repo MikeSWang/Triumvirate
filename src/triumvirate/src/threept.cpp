@@ -560,7 +560,7 @@ trv::ThreePCFMeasurements compute_3pcf(
 
   double alpha = catalogue_data.wstotal / catalogue_rand.wstotal;
 
-  double parity = std::pow(-1, params.ell1 + params.ell2);
+  std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   // Set up output.
   int* npairs_save = new int[rbinning.num_bins];
@@ -1124,7 +1124,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   // Set up/check input.
   validate_multipole_coupling(params);
 
-  double parity = std::pow(-1, params.ell1 + params.ell2);
+  std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   // Set up output.
   int* npairs_save = new int[rbinning.num_bins];
@@ -1379,7 +1379,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   // Set up/check input.
   validate_multipole_coupling(params);
 
-  double parity = std::pow(-1, params.ell1 + params.ell2);
+  std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   // Set up output.
   int* npairs_save = new int[rbinning.num_bins];
