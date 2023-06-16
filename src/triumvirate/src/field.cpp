@@ -1828,7 +1828,7 @@ OMP_ATOMIC
     if (this->npairs[ibin] != 0) {
       this->r[ibin] /= double(this->npairs[ibin]);
       this->xi[ibin] /= double(this->npairs[ibin]);
-      this->npairs[ibin] /= 2;  // reality condition
+      // this->npairs[ibin] /= 2;  // reality condition
     } else {
       this->r[ibin] = rbinning.bin_centres[ibin];
       this->xi[ibin] = 0.;
@@ -2045,7 +2045,7 @@ OMP_ATOMIC
   for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
     if (this->npairs[ibin] != 0) {
       this->xi[ibin] *= norm_factors / double(this->npairs[ibin]);
-      this->npairs[ibin] /= 2;  // reality condition
+      // this->npairs[ibin] /= 2;  // reality condition
     }
   }
 
