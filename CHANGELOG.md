@@ -1,5 +1,23 @@
 # Change Log
 
+## v0.2.1 (2023-06-20)
+
+### Bug fixes
+
+Fix parity factor in three-point correlation functions in
+[``threept.cpp``](src/triumvirate/src/threept.cpp).
+
+### Maintenance
+
+- Remove reality-condition division in mode/pair counts for generality.
+- Update test data.
+- Update syntax.
+
+### Documentation
+
+Rerun tutorial notebooks.
+
+
 ## v0.2.0 (2023-06-01)
 
 ### Bug fixes
