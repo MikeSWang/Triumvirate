@@ -237,7 +237,8 @@ def display_py_environs():
         'PY_INCLUDES',  # typically included in 'CPPFLAGS'
         'PY_CXXFLAGS',  # untypically includes macros in 'CPPFLAGS'
         'PY_LDFLAGS',  # untypically includes 'LDLIBS'
-        'PY_NO_OMP',
+        'PY_NO_OMP',  # disable OpenMP explicitly
+        'PY_OMP',  # enable OpenMP explicitly unless overriden by `PY_NO_OMP`
         'PY_CXXFLAGS_OMP',
         'PY_LDFLAGS_OMP',
         'PY_BUILD_PARALLEL',
@@ -594,7 +595,7 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
         return macros, cflags, ldflags, libs, lib_dirs, include_dirs
 
     # Check if OpenMP is unsupported.
-    if not check_openmp_support():
+    if os.environ.get('PY_OMP') is None and not check_openmp_support():
         prioprint(
             "OpenMP is disabled as "
             "it is not supported in this build enviromnent."
@@ -602,7 +603,7 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
         return macros, cflags, ldflags, libs, lib_dirs, include_dirs
 
     # Enable OpenMP by default otherwise.
-    prioprint("OpenMP is enabled by default.")
+    prioprint("OpenMP is enabled.")
 
     # Adapt `macros` and `cflags`.
     MACROS_OMP_RELATED = [
