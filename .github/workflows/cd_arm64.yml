@@ -1,9 +1,9 @@
-# Provide continuous delivery (CD) for arm64-based target platforms
+# Provide continuous delivery (CD) for ARM64-based target platforms
 # from (non-native) build platforms.
 #
 # CD deliverables currently include:
 # - (non-natively) built Python wheel distributions (for PyPI);
-# - (non-natively) built conda packages (for Anaconda).
+# - (non-natively) built Conda packages (for Anaconda).
 #
 name: continuous-delivery-arm64
 
@@ -39,14 +39,14 @@ concurrency:
 
 jobs:
   build_bdist_arm64:
-    name: Build bdist wheel (arm64)
+    name: Build bdist wheel (ARM64)
 
     strategy:
       fail-fast: false
       matrix:
         # Use oldest supported OS for backward compatibility.
         os: [ubuntu-20.04, macos-11]
-        # Skip non-arm64 macOS runner (as cross compilation is not working).
+        # Skip non-ARM64 macOS runner (as cross compilation is not working).
         exclude:
           - os: macos-11
 
@@ -62,12 +62,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      # Use QEMU for non-arm64 Linux runner.
+      # Use QEMU for non-ARM64 Linux runner.
       - name: Set up QEMU (Linux)
         if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@v2
         with:
-          # Specify arm64 architecture.
+          # Specify ARM64 architecture.
           platforms: linux/arm64
 
       - name: Install packaging requirements
@@ -80,16 +80,16 @@ jobs:
           output-dir: dist_arm64/
           config-file: pyproject.toml
         env:
-          # Optional: Specify arm64 architecture (as non-native).
+          # Optional: Specify ARM64 architecture (as non-native).
           CIBW_ARCHS_LINUX: aarch64
           CIBW_ARCHS_MACOS: arm64
           # Default to LLVM compiler and OpenMP on macOS.
           CIBW_ENVIRONMENT_MACOS: >-
             PY_CXX=$(brew --prefix llvm)/bin/clang++
-            PY_CXXFLAGS="-I$(brew --prefix)/include"
-            PY_LDFLAGS="-L$(brew --prefix)/lib"
-            PY_CXXFLAGS_OMP="-Xpreprocessor -fopenmp"
-            PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
+            PY_CXXFLAGS=-I$(brew --prefix)/include
+            PY_LDFLAGS=-L$(brew --prefix)/lib
+            PY_CXXFLAGS_OMP='-Xpreprocessor -fopenmp'
+            PY_LDFLAGS_OMP='-L$(brew --prefix libomp)/lib -lomp'
 
       - name: Verify built distribution
         uses: knicknic/os-specific-run@v1.0.4
@@ -111,7 +111,7 @@ jobs:
           path: dist_arm64/*.whl
 
   build_conda_arm64:
-    name: Build conda package (arm64)
+    name: Build Conda package (ARM64)
 
     strategy:
       fail-fast: false
@@ -123,7 +123,7 @@ jobs:
 
     timeout-minutes: 180
 
-    # Skip as no native arm64 runner exists.
+    # Skip as no native ARM64 runner exists.
     if: >
       github.event_name != 'workflow_dispatch' && false ||
       github.event.inputs.run_build_conda_arm64 == 'true'
@@ -144,13 +144,13 @@ jobs:
           activate-environment: conda_bld
           channels: conda-forge
           channel-priority: strict
-          # # Specify arm64 architecture.
+          # # Specify ARM64 architecture.
           # architecture: ARM64
 
-      - name: Configure conda environment
+      - name: Configure Conda environment
         uses: knicknic/os-specific-run@v1.0.4
         with:
-          # Specify arm64 architecture.
+          # Specify ARM64 architecture.
           linux: conda config --env --set subdir linux-aarch64
           macos: conda config --env --set subdir osx-arm64
 
@@ -179,7 +179,7 @@ jobs:
               sed -i '' "s/# git_rev:.*/git_rev: ${vers_tag}/g" ${recipe_file}
             fi
 
-      - name: Build conda package
+      - name: Build Conda package
         env:
           recipe_dir: deploy/pkg/conda_recipe_arm64
           output_dir: dist_arm64/

@@ -30,7 +30,7 @@ from the installation process.
 
 - Package version (e.g. 1.0.0)
 - OS (e.g. Linux, macOS)
-- Python version (e.g. 3.8) and environment (e.g. conda)
+- Python version (e.g. 3.8) and environment (e.g. Conda)
 - C++ compiler version (e.g. GCC g++, LLVM clang++) and dependency
   libraries (e.g. ``libgomp``, ``libomp``)
 

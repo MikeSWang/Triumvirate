@@ -129,7 +129,7 @@ html_theme_options = {
             'type': 'url',
         },
         {
-            'name': 'conda',
+            'name': 'Conda',
             'url': "https://anaconda.org/msw/triumvirate",
             'icon': (
                 "https://img.shields.io/conda/vn/msw/triumvirate"

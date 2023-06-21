@@ -3,7 +3,7 @@
 # CD deliverables currently include:
 # - source distributions (for PyPI);
 # - (natively) built Python wheel distributions (for PyPI);
-# - (natively) built conda packages (for Anaconda).
+# - (natively) built Conda packages (for Anaconda).
 #
 name: continuous-delivery
 
@@ -141,7 +141,7 @@ jobs:
           path: dist/*.whl
 
   build_conda:
-    name: Build conda package
+    name: Build Conda package
 
     strategy:
       fail-fast: false

@@ -26,13 +26,13 @@ GSL & FFTW3
 The GSL and FFTW3 libraries are required dependencies. If they have already
 been installed on your system, please ignore this subsection.
 
-In a `conda` environment, both libraries can be installed with
+In a Conda environment, both libraries can be installed with
 
 .. code-block:: console
 
     $ conda install -c conda-forge gsl fftw
 
-Outside `conda` environments, they can be installed using a package manager:
+Outside Conda environments, they can be installed using a package manager:
 
 .. tabs::
 
@@ -81,14 +81,14 @@ please ignore this subsection.
 
 For GCC compilers, the relevant library is ``libgomp`` (typically distributed
 with the compiler). On Linux systems, it can be additionally installed either
-in a `conda` environment with
+in a Conda environment with
 
 .. code-block:: console
     :caption: Linux
 
     $ conda install -c conda-forge libgomp
 
-or outside `conda` environments using a package manager:
+or outside Conda environments using a package manager:
 
 .. code-block:: console
     :caption: Linux
@@ -99,13 +99,13 @@ or outside `conda` environments using a package manager:
     $ [sudo] yum install [-y] libgomp
 
 For LLVM compilers, the relevant library is ``libomp``. It can be installed
-either in a `conda` environment with
+either in a Conda environment with
 
 .. code-block:: console
 
     $ conda install -c conda-forge llvm-openmp
 
-or outside `conda` environments using the Homebrew package manager:
+or outside Conda environments using the Homebrew package manager:
 
 .. code-block:: console
 
@@ -120,12 +120,12 @@ Python package
     :alt: PyPI
 .. image:: https://img.shields.io/conda/vn/msw/triumvirate?logo=Anaconda&color=informational
     :target: https://anaconda.org/msw/triumvirate
-    :alt: conda
+    :alt: Conda
 
 |br| |Triumvirate| as a Python package is distributed through |PyPI-repo|
 and |conda-repo|. For dependency management, it is recommended that a
 virtual environment should be created for installing and using the package
-(e.g. a `conda` environment created with ``conda create -n <env>`` and
+(e.g. a Conda environment created with ``conda create -n <env>`` and
 activated with ``conda activate <env>``).
 
 To install from |PyPI-repo|, execute in terminal:
@@ -144,7 +144,7 @@ By default, the package is installed with OpenMP enabled if it is supported.
 
 .. hint::
 
-    `conda` packages are built with dependencies such as ``numpy`` and
+    Conda packages are built with dependencies such as ``numpy`` and
     ``scipy`` sourced from the ``conda-forge`` channel. For consistency
     and avoidance of dependency conflicts, it is recommended that
     ``conda-forge`` should be as the highest-priority channel,

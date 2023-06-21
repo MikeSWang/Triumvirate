@@ -55,11 +55,11 @@ Python package
 
 .. image:: https://img.shields.io/conda/vn/msw/triumvirate?logo=Anaconda&color=informational
     :target: https://anaconda.org/msw/triumvirate
-    :alt: conda
+    :alt: Conda
 
 |Triumvirate| as a Python package is distributed through
 `PyPI <https://pypi.org/project/Triumvirate>`_ and
-`conda <https://anaconda.org/msw/triumvirate>`_. Instructions for installation
+`Conda <https://anaconda.org/msw/triumvirate>`_. Instructions for installation
 can be found on the `Installation
 <https://triumvirate.readthedocs.io/en/latest/installation.html#python-package>`__
 page in the documentation.

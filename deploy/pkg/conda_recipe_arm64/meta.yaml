@@ -13,7 +13,7 @@ source:
 build:
   number: 0
   script:
-    # Use conda-provided compiler.
+    # Use Conda-provided compiler.
     - export PY_CXX=$CXX
     # Default to LLVM compiler and OpenMP on macOS.
     - export PY_CXXFLAGS_OMP="-Xpreprocessor -fopenmp"  # [osx]
@@ -33,7 +33,7 @@ requirements:
   host:
     - python
     - pip >=19.1
-    # Use conda-provided libraries.
+    # Use Conda-provided libraries.
     - gsl >=2.7
     - fftw >=3
     - libgomp                 # [linux]
