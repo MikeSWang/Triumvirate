@@ -120,6 +120,14 @@ jobs:
             PY_CXX=$(find $(brew --prefix gcc)/bin -type f -name 'g++*')
             PY_CXXFLAGS=-I$(brew --prefix)/include
             PY_LDFLAGS=-L$(brew --prefix)/lib
+          # # Switch to LLVM compiler and OpenMP on macOS.
+          # CIBW_ENVIRONMENT_MACOS: >-
+          #   PY_CXX=$(brew --prefix llvm@15)/bin/clang++
+          #   PY_CXXFLAGS=-I$(brew --prefix)/include
+          #   PY_LDFLAGS=-L$(brew --prefix)/lib
+          #   PY_OMP=1
+          #   PY_CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
+          #   PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
 
       - name: Verify built distribution
         uses: knicknic/os-specific-run@v1.0.4

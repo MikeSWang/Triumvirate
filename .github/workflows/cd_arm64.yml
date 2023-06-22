@@ -85,11 +85,12 @@ jobs:
           CIBW_ARCHS_MACOS: arm64
           # Default to LLVM compiler and OpenMP on macOS.
           CIBW_ENVIRONMENT_MACOS: >-
-            PY_CXX=$(brew --prefix llvm)/bin/clang++
+            PY_CXX=$(brew --prefix llvm@15)/bin/clang++
             PY_CXXFLAGS=-I$(brew --prefix)/include
             PY_LDFLAGS=-L$(brew --prefix)/lib
-            PY_CXXFLAGS_OMP='-Xpreprocessor -fopenmp'
-            PY_LDFLAGS_OMP='-L$(brew --prefix libomp)/lib -lomp'
+            PY_OMP=1
+            PY_CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
+            PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
 
       - name: Verify built distribution
         uses: knicknic/os-specific-run@v1.0.4
