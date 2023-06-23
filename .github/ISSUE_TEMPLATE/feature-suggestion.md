@@ -2,7 +2,7 @@
 name: Feature Suggestion
 about: Suggest a feature to extend the code
 title: "[FEAT] <insert-issue-title>"
-labels: enhancement
+labels: feature
 assignees: MikeSWang
 
 ---
