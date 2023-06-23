@@ -160,16 +160,19 @@ jobs:
           # # Specify ARM64 architecture.
           # architecture: ARM64
 
-      - name: Configure Conda environment
-        uses: knicknic/os-specific-run@v1.0.4
-        with:
-          # Specify ARM64 architecture.
-          linux: conda config --env --set subdir linux-aarch64
-          macos: conda config --env --set subdir osx-arm64
+      # - name: Configure Conda environment
+      #   uses: knicknic/os-specific-run@v1.0.4
+      #   with:
+      #     # Specify ARM64 architecture.
+      #     linux: conda config --env --set subdir linux-aarch64
+      #     macos: conda config --env --set subdir osx-arm64
 
       - name: Install packaging requirements
         run: |
           conda install -y conda-build conda-verify conda-package-handling
+          # Check builds.
+          echo $(which python)
+          echo $(conda list | grep python)
           # `cph` not found otherwise.
           conda_root=$(conda config --show root_prefix | sed 's/root_prefix: //')
           conda_env=${conda_root}/envs/conda_bld
