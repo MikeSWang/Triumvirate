@@ -145,7 +145,7 @@ jobs:
 
     # Allow manual trigger from inputs (skip with ``&& false``).
     if: >
-      github.event_name != 'workflow_dispatch' ||
+      github.event_name != 'workflow_dispatch' && false ||
       github.event.inputs.run_build_conda_xplat == 'true'
 
     defaults:
