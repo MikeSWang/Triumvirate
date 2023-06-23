@@ -1,5 +1,5 @@
 {% set name = 'Triumvirate' %}
-{% set version = environ.get('GIT_DESCRIBE_TAG', 'v0.2.0') %}
+{% set version = environ.get('GIT_DESCRIBE_TAG', 'v0.2.1') %}
 
 package:
   name: "{{ name|lower }}"
@@ -7,7 +7,7 @@ package:
 
 source:
   git_url: ../../../
-  # git_rev: v0.2.0
+  # git_rev: v0.2.1
   # path: ../../../
 
 build:
@@ -25,11 +25,12 @@ build:
 requirements:
   build:
     - {{ compiler('cxx') }}
+    - libgomp                             # [linux]
     - llvm-openmp                         # [osx]
     - cross-python_{{ target_platform }}  # [build_platform != target_platform]
     - python                              # [build_platform != target_platform]
     - cython                              # [build_platform != target_platform]
-    - numpy >=1.17                       # [build_platform != target_platform]
+    - numpy >=1.17                        # [build_platform != target_platform]
   host:
     - python
     - pip >=19.1
@@ -44,6 +45,7 @@ requirements:
     - extension-helpers
     - numpy >=1.17
   run:
+    - libgomp                        # [linux]
     - llvm-openmp                    # [osx]
     - python >=3.8
     - {{ pin_compatible("numpy") }}

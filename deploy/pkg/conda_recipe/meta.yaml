@@ -1,5 +1,5 @@
 {% set name = 'Triumvirate' %}
-{% set version = environ.get('GIT_DESCRIBE_TAG', 'v0.2.0') %}
+{% set version = environ.get('GIT_DESCRIBE_TAG', 'v0.2.1') %}
 
 package:
   name: "{{ name|lower }}"
@@ -7,7 +7,7 @@ package:
 
 source:
   git_url: ../../../
-  # git_rev: v0.2.0
+  # git_rev: v0.2.1
   # path: ../../../
 
 build:
