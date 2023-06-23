@@ -29,7 +29,7 @@ requirements:
     - cross-python_{{ target_platform }}  # [build_platform != target_platform]
     - python                              # [build_platform != target_platform]
     - cython                              # [build_platform != target_platform]
-    - numpy                               # [build_platform != target_platform]
+    - numpy >=1.17                       # [build_platform != target_platform]
   host:
     - python
     - pip >=19.1
@@ -42,7 +42,7 @@ requirements:
     - setuptools_scm >=6.4.0
     - cython >=0.25
     - extension-helpers
-    - numpy
+    - numpy >=1.17
   run:
     - llvm-openmp                    # [osx]
     - python >=3.8

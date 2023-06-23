@@ -38,7 +38,7 @@ requirements:
     - setuptools_scm >=6.4.0
     - cython >=0.25
     - extension-helpers
-    - numpy
+    - numpy >=1.17
   run:
     - llvm-openmp                    # [osx]
     - python >=3.8

@@ -130,8 +130,8 @@ jobs:
           name: pypi_dist_arm64_${{ github.ref_name }}
           path: dist_arm64/*.whl
 
-  build_conda_arm64_xplat:
-    name: Build Conda package (ARM64)
+  build_conda_xplat:
+    name: Build Conda package
 
     strategy:
       fail-fast: false

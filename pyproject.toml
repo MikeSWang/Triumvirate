@@ -15,7 +15,7 @@ maintainers = [{name = 'Mike S Wang', email = "mikeshengbo.wang@ed.ac.uk"}]
 license = {file = "LICENCE"}
 requires-python = '>=3.8'
 dependencies = [
-    'numpy',
+    'numpy>=1.17',
     'scipy',
     'astropy>=4.2',
     'pyyaml>4',
