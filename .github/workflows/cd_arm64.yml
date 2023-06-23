@@ -46,9 +46,6 @@ jobs:
       matrix:
         # Use oldest supported OS for backward compatibility.
         os: [ubuntu-20.04, macos-11]
-        # Skip non-ARM64 macOS runner (as cross compilation is not working).
-        exclude:
-          - os: macos-11
 
     runs-on: ${{ matrix.os }}
 
@@ -69,6 +66,21 @@ jobs:
         with:
           # Specify ARM64 architecture.
           platforms: linux/arm64
+
+      # Adapt Homebrew for non-ARM64 macOS runner.
+      - name: Set up Homebrew (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          # Install dependency formulae to match runner platform.
+          for formula in gsl fftw; do
+            brew fetch --force --bottle-tag=arm64_big_sur $formula
+            brew install $(brew --cache --bottle-tag=arm64_big_sur $formula)
+          done
+          # Reinstall OpenMP-dependency formulae to match runner platform.
+          for formula in gcc libomp; do
+            brew fetch --force --bottle-tag=arm64_big_sur $formula
+            brew reinstall $(brew --cache --bottle-tag=arm64_big_sur $formula)
+          done
 
       - name: Install packaging requirements
         run: python -m pip install --upgrade twine
