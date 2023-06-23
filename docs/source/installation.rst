@@ -113,13 +113,6 @@ Python package
     :target: https://anaconda.org/msw/triumvirate
     :alt: Conda
 
-.. attention::
-
-    On ARM64-based platforms such as macOS with Apple silicon, compatible
-    Conda packages are currently unavailable owing to the lack of
-    ARM64-based GitHub runners and difficulty with cross-compilation.
-    Please install from PyPI instead for now.
-
 |br| |Triumvirate| as a Python package is distributed through |PyPI-repo|
 and |conda-repo|. For dependency management, it is recommended that a
 virtual environment should be created for installing and using the package
