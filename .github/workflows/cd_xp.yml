@@ -1,11 +1,11 @@
-# Provide continuous delivery (CD) for ARM64-based target platforms
-# from (non-native) build platforms.
+# Provide continuous delivery (CD) for target platforms
+# from non-native build platforms.
 #
-# CD deliverables currently include:
+# CD deliverables for target platforms (ARM64-based):
 # - (non-natively) built Python wheel distributions (for PyPI);
 # - (non-natively) built Conda packages (for Anaconda).
 #
-name: continuous-delivery-arm64
+name: continuous-delivery-xplatform
 
 on:
   push:
@@ -14,17 +14,17 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+.post[0-9]+'
       - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
     paths:
-      - deploy/pkg/conda_recipe_arm64/**
-      - .github/workflows/cd_arm64.yml
+      - deploy/pkg/conda_recipe_xp/**
+      - .github/workflows/cd_xp.yml
   workflow_dispatch:
     inputs:
-      run_build_bdist_arm64:
-        description: 'Run job build_bdist_arm64'
+      run_build_bdist_xplat:
+        description: 'Run job build_bdist_xplat'
         type: boolean
         default: false
         required: false
-      run_build_conda_arm64:
-        description: 'Run job build_conda_arm64'
+      run_build_conda_xplat:
+        description: 'Run job build_conda_xplat'
         type: boolean
         default: false
         required: false
@@ -38,8 +38,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_bdist_arm64:
-    name: Build bdist wheel (ARM64)
+  build_bdist_xplat:
+    name: Build bdist wheel
 
     strategy:
       fail-fast: false
@@ -49,37 +49,39 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    timeout-minutes: 180
+    timeout-minutes: 60
 
+    # Allow manual trigger from inputs.
     if: >
       github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.run_build_bdist_arm64 == 'true'
+      github.event.inputs.run_build_bdist_xplat == 'true'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      # Use QEMU for non-ARM64 Linux runner.
+      # Use QEMU for non-native Linux runner.
       - name: Set up QEMU (Linux)
         if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@v2
         with:
-          # Specify ARM64 architecture.
+          # Specify target architecture (ARM64).
           platforms: linux/arm64
 
-      # Adapt Homebrew for non-ARM64 macOS runner.
+      # Adapt Homebrew for non-native macOS runner.
       - name: Set up Homebrew (macOS)
         if: runner.os == 'macOS'
         run: |
-          # Install dependency formulae to match runner platform.
+          # (Re-)install (OpenMP) dependency formulae
+          # to match target platform (ARM64-based).
+          TARG_PLAT=arm64_big_sur
           for formula in gsl fftw; do
-            brew fetch --force --bottle-tag=arm64_big_sur $formula
-            brew install $(brew --cache --bottle-tag=arm64_big_sur $formula)
+            brew fetch --force --bottle-tag=${TARG_PLAT} $formula
+            brew install $(brew --cache --bottle-tag=${TARG_PLAT} $formula)
           done
-          # Reinstall OpenMP-dependency formulae to match runner platform.
           for formula in gcc libomp; do
-            brew fetch --force --bottle-tag=arm64_big_sur $formula
-            brew reinstall $(brew --cache --bottle-tag=arm64_big_sur $formula)
+            brew fetch --force --bottle-tag=${TARG_PLAT} $formula
+            brew reinstall $(brew --cache --bottle-tag=${TARG_PLAT} $formula)
           done
 
       - name: Install packaging requirements
@@ -92,7 +94,7 @@ jobs:
           output-dir: dist_arm64/
           config-file: pyproject.toml
         env:
-          # Optional: Specify ARM64 architecture (as non-native).
+          # Specify target architecture (ARM64).
           CIBW_ARCHS_LINUX: aarch64
           CIBW_ARCHS_MACOS: arm64
           # Default to LLVM compiler and OpenMP on macOS.
@@ -103,6 +105,11 @@ jobs:
             PY_OMP=1
             PY_CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
             PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
+          # # Switch to GCC compiler and OpenMP on macOS.
+          # CIBW_ENVIRONMENT_MACOS: >-
+          #   PY_CXX=$(find $(brew --prefix gcc)/bin -type f -name 'g++*')
+          #   PY_CXXFLAGS=-I$(brew --prefix)/include
+          #   PY_LDFLAGS=-L$(brew --prefix)/lib
 
       - name: Verify built distribution
         uses: knicknic/os-specific-run@v1.0.4
@@ -123,7 +130,7 @@ jobs:
           name: pypi_dist_arm64_${{ github.ref_name }}
           path: dist_arm64/*.whl
 
-  build_conda_arm64:
+  build_conda_arm64_xplat:
     name: Build Conda package (ARM64)
 
     strategy:
@@ -134,12 +141,12 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    timeout-minutes: 180
+    timeout-minutes: 120
 
-    # Skip as no native ARM64 runner exists.
+    # Allow manual trigger from inputs (skip with ``&& false``).
     if: >
-      github.event_name != 'workflow_dispatch' && false ||
-      github.event.inputs.run_build_conda_arm64 == 'true'
+      github.event_name != 'workflow_dispatch' ||
+      github.event.inputs.run_build_conda_xplat == 'true'
 
     defaults:
       run:
@@ -157,22 +164,12 @@ jobs:
           activate-environment: conda_bld
           channels: conda-forge
           channel-priority: strict
-          # # Specify ARM64 architecture.
-          # architecture: ARM64
-
-      # - name: Configure Conda environment
-      #   uses: knicknic/os-specific-run@v1.0.4
-      #   with:
-      #     # Specify ARM64 architecture.
-      #     linux: conda config --env --set subdir linux-aarch64
-      #     macos: conda config --env --set subdir osx-arm64
+          # # Specify architecture.
+          # architecture: ${{ matrix.arch }}
 
       - name: Install packaging requirements
         run: |
           conda install -y conda-build conda-verify conda-package-handling
-          # Check builds.
-          echo $(which python)
-          echo $(conda list | grep python)
           # `cph` not found otherwise.
           conda_root=$(conda config --show root_prefix | sed 's/root_prefix: //')
           conda_env=${conda_root}/envs/conda_bld
@@ -182,7 +179,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         uses: knicknic/os-specific-run@v1.0.4
         env:
-          recipe_file: deploy/pkg/conda_recipe_arm64/meta.yaml
+          recipe_file: deploy/pkg/conda_recipe_xp/meta.yaml
         with:
           linux: |
             vers_tag=${{ github.event.inputs.version_tag }}
@@ -197,9 +194,9 @@ jobs:
 
       - name: Build Conda package
         env:
-          recipe_dir: deploy/pkg/conda_recipe_arm64
+          recipe_dir: deploy/pkg/conda_recipe_xp
           output_dir: dist_arm64/
-          variants: "{'python': ['3.8', '3.9', '3.10']}"
+          variants: "{'python': ['3.8', '3.9', '3.10', '3.11']}"
         run: |
           # Create output directory if non-existent.
           if [[ ! -d ${output_dir} ]]; then mkdir -p ${output_dir}; fi

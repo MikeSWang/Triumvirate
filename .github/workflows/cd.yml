@@ -97,6 +97,7 @@ jobs:
 
     timeout-minutes: 60
 
+    # Allow manual trigger from inputs.
     if: >
       github.event_name != 'workflow_dispatch' ||
       github.event.inputs.run_build_bdist == 'true'
@@ -159,7 +160,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    timeout-minutes: 60
+    timeout-minutes: 120
 
     if: >
       github.event_name != 'workflow_dispatch' ||
@@ -207,11 +208,11 @@ jobs:
               sed -i '' "s/# git_rev:.*/git_rev: ${vers_tag}/g" ${recipe_file}
             fi
 
-      - name: Build conda package
+      - name: Build Conda package
         env:
           recipe_dir: deploy/pkg/conda_recipe
           output_dir: dist/
-          variants: "{'python': ['3.8', '3.9', '3.10']}"
+          variants: "{'python': ['3.8', '3.9', '3.10', '3.11']}"
         run: |
           # Create output directory if non-existent.
           if [[ ! -d ${output_dir} ]]; then mkdir -p ${output_dir}; fi

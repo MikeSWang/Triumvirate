@@ -18,11 +18,6 @@ build:
     # Default to LLVM compiler and OpenMP on macOS.
     - export PY_CXXFLAGS_OMP="-Xpreprocessor -fopenmp"  # [osx]
     - export PY_LDFLAGS_OMP="-lomp"                     # [osx]
-    - echo $(which {{ PYTHON }})
-    - echo $(which python)
-    - echo $(conda list | grep python)
-    - echo $({{ PYTHON }} --version)
-    - echo $(python --version)
     - {{ PYTHON }} -m pip install . -vvv
   script_env:
     - PY_BUILD_PARALLEL="-j"
