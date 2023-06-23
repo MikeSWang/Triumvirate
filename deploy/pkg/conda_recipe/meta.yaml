@@ -27,6 +27,7 @@ build:
 requirements:
   build:
     - {{ compiler('cxx') }}
+    - libgomp                # [linux]
     - llvm-openmp            # [osx]
   host:
     - python
@@ -42,7 +43,6 @@ requirements:
     - extension-helpers
     - numpy >=1.17
   run:
-    - llvm-openmp                    # [osx]
     - python >=3.8
     - {{ pin_compatible("numpy") }}
     - scipy
