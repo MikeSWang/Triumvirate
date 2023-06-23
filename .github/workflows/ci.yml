@@ -78,10 +78,8 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y libgsl-dev libfftw3-dev
           macos: |
-            # Optional: Homebrew update is slow.
+            # # Optional: Homebrew update is slow.
             # brew update
-            # BUG: GitHub macOS runner runtime exceptions.
-            brew reinstall llvm libomp
             brew install gsl fftw
 
       - name: Build and install (Linux)
@@ -104,8 +102,8 @@ jobs:
         if: runner.os == 'macOS' && matrix.compiler == 'llvm'
         run: |
           # Override default compiler and OpenMP to LLVM on macOS.
-          export CXX=$(brew --prefix llvm)/bin/clang++
-          export CXXFLAGS_OMP="-Xpreprocessor -fopenmp"
+          export CXX=$(brew --prefix llvm@15)/bin/clang++
+          export CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
           export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
           # Override ``-arch`` flags to exclude non-native architectures.
           export ARCHFLAGS="-arch x86_64"

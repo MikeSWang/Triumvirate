@@ -98,6 +98,9 @@ RM ?= rm -f
 
 DEPS := gsl fftw3
 
+# Dependencies are searched for by `pkg-config`.  Ensure the set-up of
+# `pkg-config` matches that of the dependencies (e.g. both are installed
+# by Conda in the same Conda environment).
 DEP_INCLUDES := $(shell pkg-config --cflags-only-I ${DEPS})
 DEP_CXXFLAGS := $(shell pkg-config --cflags-only-other ${DEPS})
 DEP_LDFLAGS := $(shell pkg-config --libs-only-other --libs-only-L ${DEPS})
@@ -159,7 +162,7 @@ LDFLAGS_OMP ?= -fopenmp
 
 # # Use alternatively LLVM OpenMP implementation from Homebrew
 # # (brew formula 'libomp').
-# CXXFLAGS_OMP ?= -Xpreprocessor -fopenmp
+# CXXFLAGS_OMP ?= -I$(shell brew --prefix libomp)/include -Xpreprocessor -fopenmp
 # LDFLAGS_OMP ?= -L$(shell brew --prefix libomp)/lib
 # LDLIBS_OMP ?= -lomp
 

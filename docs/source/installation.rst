@@ -2,17 +2,6 @@
 Installation
 ************
 
-.. attention::
-
-    On ARM-based operating systems such as macOS with Apple silicon,
-    installation from built distributions (e.g. Python wheels) may be
-    unavailable at the moment. Please install from a source distribution
-    instead (e.g. `pip` install from the distributed tarball or in
-    editable mode). Also consult other resources for help with
-    architecture compatibility of dependencies. This issue should be
-    resolved in future releases.
-
-
 Dependencies
 ============
 
@@ -63,7 +52,9 @@ may be of help:
     $ pkg-config --cflags --libs gsl fftw3
 
 However, it is not guaranteed that `pkg-config` always detects the
-relevant settings, and it may emit irrelevant warnings.
+relevant settings, and it is important to ensure the set-up of `pkg-config`
+matches that of the dependencies (e.g. both are installed by Conda in the
+same Conda environment).
 
 .. hint::
 
@@ -265,10 +256,10 @@ environmental variables as shown in the following examples for macOS:
 
     .. code-tab:: console LLVM
 
-        # Set LLVM compiler.
+        # Assume Homebrew LLVM compiler and OpenMP library instead here.
         $ export CXX=$(brew --prefix llvm)/bin/clang++
         # Set OpenMP compilation flags.
-        $ export CXXFLAGS_OMP="-Xpreprocessor -fopenmp"
+        $ export CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
         # Set OpenMP linker flags.
         $ export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
 
@@ -279,9 +270,11 @@ commented out).
 Python setup
 ------------
 
-By default, OpenMP is *enabled*. To *disable* OpenMP parallelisation, set
-the environmental variable ``PY_NO_OMP`` with :code:`export PY_NO_OMP=''`
-(and unset with :code:`unset PY_NO_OMP` to re-enable it).
+By default, OpenMP support is automatically detected. To *disable* OpenMP
+parallelisation explicitly, set the environmental variable ``PY_NO_OMP``
+with :code:`export PY_NO_OMP=''` (and unset with :code:`unset PY_NO_OMP`
+to re-enable it); similarly, to *enforce* OpenMP parallelisation
+explicitly, set the environmental variable ``PY_OMP``.
 
 To override the compilation settings used by ``setup.py``, set the
 environmental variables as shown in the following examples for macOS:
@@ -298,7 +291,7 @@ environmental variables as shown in the following examples for macOS:
         # Set LLVM compiler.
         $ export PY_CXX=$(brew --prefix llvm)/bin/clang++
         # Set OpenMP compilation flags.
-        $ export PY_CXXFLAGS_OMP="-Xpreprocessor -fopenmp"
+        $ export PY_CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
         # Set OpenMP linker flags.
         $ export PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
 
