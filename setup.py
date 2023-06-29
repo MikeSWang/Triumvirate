@@ -152,7 +152,7 @@ class BuildExt(build_ext):
         :meth:`Cython.Distutils.build_ext.build_extensions`.
 
         """
-        OPTS_TO_REMOVE = ['-Wstrict-prototypes',]  # noqa: E231
+        OPTS_TO_REMOVE = ['-Wstrict-prototypes', '-Wl,-pie',]  # noqa: E231
         for opt in OPTS_TO_REMOVE:
             try:
                 self.compiler.compiler_so.remove(opt)
@@ -182,7 +182,7 @@ class BuildClib(build_clib):
         :meth:`setuptools.command.build_clib.build_clib.build_libraries`.
 
         """
-        OPTS_TO_REMOVE = ['-Wstrict-prototypes',]  # noqa: E231
+        OPTS_TO_REMOVE = ['-Wstrict-prototypes', '-Wl,-pie',]  # noqa: E231
         for opt in OPTS_TO_REMOVE:
             try:
                 self.compiler.compiler_so.remove(opt)

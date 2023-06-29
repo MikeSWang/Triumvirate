@@ -373,8 +373,11 @@ void print_measurement_datatab_to_file(
   std::FILE* fileptr,
   trv::ParameterSet& params, trv::BispecMeasurements& meas_bispec
 ) {
-  char multipole_str[4];
-  std::sprintf(multipole_str, "%d%d%d", params.ell1, params.ell2, params.ELL);
+  char multipole_str[8];
+  std::snprintf(
+    multipole_str, sizeof(multipole_str), "%d%d%d",
+    params.ell1, params.ell2, params.ELL
+  );
 
   // Print data table columns.
   std::fprintf(
@@ -405,8 +408,11 @@ void print_measurement_datatab_to_file(
   std::FILE* fileptr,
   trv::ParameterSet& params, trv::ThreePCFMeasurements& meas_3pcf
 ) {
-  char multipole_str[4];
-  std::sprintf(multipole_str, "%d%d%d", params.ell1, params.ell2, params.ELL);
+  char multipole_str[8];
+  std::snprintf(
+    multipole_str, sizeof(multipole_str), "%d%d%d",
+    params.ell1, params.ell2, params.ELL
+  );
 
   // Print data table columns.
   std::fprintf(
@@ -437,8 +443,11 @@ void print_measurement_datatab_to_file(
   std::FILE* fileptr,
   trv::ParameterSet& params, trv::ThreePCFWindowMeasurements& meas_3pcf_win
 ) {
-  char multipole_str[4];
-  std::sprintf(multipole_str, "%d%d%d", params.ell1, params.ell2, params.ELL);
+  char multipole_str[8];
+  std::snprintf(
+    multipole_str, sizeof(multipole_str), "%d%d%d",
+    params.ell1, params.ell2, params.ELL
+  );
 
   // Print data table columns.
   std::fprintf(

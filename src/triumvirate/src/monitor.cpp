@@ -110,8 +110,8 @@ std::string show_timestamp() {
 
   // Format the timestamp.
   char timestamp_[128];
-  std::sprintf(
-    timestamp_, "%s (+%s)",
+  std::snprintf(
+    timestamp_, sizeof(timestamp_), "%s (+%s)",
     show_current_datetime().c_str(), show_elapsed_time(elapsed_time).c_str()
   );
 
@@ -140,7 +140,7 @@ void Logger::emit(
   std::string log_type, const char* fmt_string, std::va_list args
 ) {
   char log_mesg_buf[4096];
-  std::vsprintf(log_mesg_buf, fmt_string, args);
+  std::vsnprintf(log_mesg_buf, sizeof(log_mesg_buf), fmt_string, args);
 
   std::printf(
     "[%s %s %s] %s\n",
@@ -258,7 +258,7 @@ UnimplementedError::UnimplementedError(const char* fmt_string, ...):
 
   char err_mesg_buf[4096];
   va_start(args, fmt_string);
-  std::vsprintf(err_mesg_buf, fmt_string, args);
+  std::vsnprintf(err_mesg_buf, sizeof(err_mesg_buf), fmt_string, args);
   va_end(args);
 
   this->err_mesg = std::string(err_mesg_buf);
@@ -275,7 +275,7 @@ IOError::IOError(const char* fmt_string, ...): std::runtime_error(
 
   char err_mesg_buf[4096];
   va_start(args, fmt_string);
-  std::vsprintf(err_mesg_buf, fmt_string, args);
+  std::vsnprintf(err_mesg_buf, sizeof(err_mesg_buf), fmt_string, args);
   va_end(args);
 
   this->err_mesg = std::string(err_mesg_buf);
@@ -291,7 +291,7 @@ std::invalid_argument(
 
   char err_mesg_buf[4096];
   va_start(args, fmt_string);
-  std::vsprintf(err_mesg_buf, fmt_string, args);
+  std::vsnprintf(err_mesg_buf, sizeof(err_mesg_buf), fmt_string, args);
   va_end(args);
 
   this->err_mesg = std::string(err_mesg_buf);
@@ -309,7 +309,7 @@ std::runtime_error(
 
   char err_mesg_buf[4096];
   va_start(args, fmt_string);
-  std::vsprintf(err_mesg_buf, fmt_string, args);
+  std::vsnprintf(err_mesg_buf, sizeof(err_mesg_buf), fmt_string, args);
   va_end(args);
 
   this->err_mesg = std::string(err_mesg_buf);

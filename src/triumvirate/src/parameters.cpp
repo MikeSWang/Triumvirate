@@ -847,8 +847,8 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
 int ParameterSet::print_to_file() {
   // Set output file path to default.
   char ofilepath[1024];
-  std::sprintf(
-    ofilepath, "%s/parameters_used%s",
+  std::snprintf(
+    ofilepath, sizeof(ofilepath), "%s/parameters_used%s",
     this->measurement_dir.c_str(), this->output_tag.c_str()
   );
 

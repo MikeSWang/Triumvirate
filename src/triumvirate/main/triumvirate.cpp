@@ -450,8 +450,8 @@ int main(int argc, char* argv[]) {
 
   char save_filepath[1024];
   if (params.statistic_type == "powspec") {
-    std::sprintf(
-      save_filepath, "%s/pk%d%s",
+    std::snprintf(
+      save_filepath, sizeof(save_filepath), "%s/pk%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
     std::FILE* save_fileptr = nullptr;
@@ -483,8 +483,8 @@ int main(int argc, char* argv[]) {
     std::fclose(save_fileptr);
   } else
   if (params.statistic_type == "2pcf") {
-    std::sprintf(
-      save_filepath, "%s/xi%d%s",
+    std::snprintf(
+      save_filepath, sizeof(save_filepath), "%s/xi%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
     std::FILE* save_fileptr = nullptr;
@@ -516,8 +516,8 @@ int main(int argc, char* argv[]) {
     std::fclose(save_fileptr);
   } else
   if (params.statistic_type == "2pcf-win") {
-    std::sprintf(
-      save_filepath, "%s/xiw%d%s",
+    std::snprintf(
+      save_filepath, sizeof(save_filepath), "%s/xiw%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
     // two-point correlation function window
@@ -536,16 +536,16 @@ int main(int argc, char* argv[]) {
   } else
   if (params.statistic_type == "bispec") {
     if (params.form == "full") {
-      std::sprintf(
-        save_filepath, "%s/bk%d%d%d_bin%d%s",
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/bk%d%d%d_bin%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL, params.idx_bin,
         params.output_tag.c_str()
       );
     } else
     if (params.form == "diag") {
-      std::sprintf(
-        save_filepath, "%s/bk%d%d%d_diag%s",
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/bk%d%d%d_diag%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
         params.output_tag.c_str()
@@ -581,16 +581,16 @@ int main(int argc, char* argv[]) {
   } else
   if (params.statistic_type == "3pcf") {
     if (params.form == "full") {
-      std::sprintf(
-        save_filepath, "%s/zeta%d%d%d_bin%d%s",
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/zeta%d%d%d_bin%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL, params.idx_bin,
         params.output_tag.c_str()
       );
     } else
     if (params.form == "diag") {
-      std::sprintf(
-        save_filepath, "%s/zeta%d%d%d_diag%s",
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/zeta%d%d%d_diag%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
         params.output_tag.c_str()
@@ -626,16 +626,16 @@ int main(int argc, char* argv[]) {
   } else
   if (params.statistic_type == "3pcf-win") {
     if (params.form == "full") {
-      std::sprintf(
-        save_filepath, "%s/zetaw%d%d%d_bin%d%s",
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/zetaw%d%d%d_bin%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL, params.idx_bin,
         params.output_tag.c_str()
       );
     } else
     if (params.form == "diag") {
-      std::sprintf(
-        save_filepath, "%s/zetaw%d%d%d_diag%s",
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/zetaw%d%d%d_diag%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
         params.output_tag.c_str()
@@ -658,8 +658,8 @@ int main(int argc, char* argv[]) {
   } else
   if (params.statistic_type == "3pcf-win-wa") {
     if (params.form == "full") {
-      std::sprintf(
-        save_filepath, "%s/zetaw%d%d%d_wa%d%d_bin%d%s",
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/zetaw%d%d%d_wa%d%d_bin%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL, params.i_wa, params.j_wa,
         params.idx_bin,
@@ -667,8 +667,8 @@ int main(int argc, char* argv[]) {
       );
     } else
     if (params.form == "diag") {
-      std::sprintf(
-        save_filepath, "%s/zetaw%d%d%d_wa%d%d_diag%s",
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/zetaw%d%d%d_wa%d%d_diag%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL, params.i_wa, params.j_wa,
         params.output_tag.c_str()

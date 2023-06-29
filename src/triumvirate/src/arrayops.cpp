@@ -41,7 +41,7 @@ ExtrapError::ExtrapError(const char* fmt_string, ...): std::runtime_error(
 
   char err_mesg_buf[4096];
   va_start(args, fmt_string);
-  std::vsprintf(err_mesg_buf, fmt_string, args);
+  std::vsnprintf(err_mesg_buf, sizeof(err_mesg_buf), fmt_string, args);
   va_end(args);
 
   this->err_mesg = std::string(err_mesg_buf);
