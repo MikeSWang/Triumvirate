@@ -1,5 +1,16 @@
 # Change Log
 
+## v0.2.2 (2023-07-04)
+
+### Improvements
+
+Enhance build process and update syntax.
+
+### Documentation
+
+Update installation guide after build enhancement.
+
+
 ## v0.2.1 (2023-06-20)
 
 ### Bug fixes
