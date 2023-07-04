@@ -51,7 +51,8 @@ jobs:
 
     timeout-minutes: 120
 
-    # Allow manual trigger from inputs.
+    # Allow manual trigger from inputs
+    # (skip automatic trigger with ``&& false``).
     if: >
       github.event_name != 'workflow_dispatch' ||
       github.event.inputs.run_build_bdist_xplat == 'true'
@@ -143,9 +144,10 @@ jobs:
 
     timeout-minutes: 120
 
-    # Allow manual trigger from inputs (skip with ``&& false``).
+    # Allow manual trigger from inputs
+    # (skip automatic trigger with ``&& false``).
     if: >
-      github.event_name != 'workflow_dispatch' && false ||
+      github.event_name != 'workflow_dispatch' ||
       github.event.inputs.run_build_conda_xplat == 'true'
 
     defaults:
