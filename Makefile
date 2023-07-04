@@ -23,7 +23,7 @@ SCM_LOC_SCHEME ?= node-and-date
 # Repository root
 DIR_ROOT := $(shell pwd)
 
-# Package, build, test and dist directories
+# Package, build, test and distribution directories
 DIR_PKG := ${DIR_ROOT}/src/${PKGNAME}
 DIR_BUILD := ${DIR_ROOT}/build
 DIR_TESTS := ${DIR_ROOT}/tests
@@ -86,7 +86,7 @@ CXX ?= g++
 
 endif  # OS
 
-# Assume default achiver. [adapt]
+# Assume default archiver. [adapt]
 AR ?= ar
 ARFLAGS ?= -rcsv
 
@@ -265,11 +265,14 @@ PROGLIB := ${DIR_BUILDLIB}/lib${LIBNAME}.a
 
 install: cppinstall pyinstall
 
-cppinstall: cpplibinstall cppappbuild
+cppinstall: cppinstall_ cpplibinstall cppappbuild
 
-cpplibinstall: ${PROGLIB}
+cppinstall_:
+	@echo "Installing Triumvirate C++ library/program..."
 
-cppappbuild: ${PROGEXE}
+cpplibinstall: library
+
+cppappbuild: executable
 
 pyinstall:
 	@echo "Installing Triumvirate Python package ${WOMP} OpenMP (in pip dev mode)..."
@@ -279,7 +282,8 @@ uninstall: cppuninstall pyuninstall
 
 cppuninstall:
 	@echo "Uninstalling Triumvirate C++ library/program..."
-	find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".gitignore" -exec rm -r {} +
+	@echo "  ... removing builds..."
+	@find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".gitignore" -exec rm -r {} +
 
 pyuninstall:
 	@echo "Uninstalling Triumvirate Python package (in pip mode)..."
@@ -288,22 +292,39 @@ pyuninstall:
 
 # -- Components ----------------------------------------------------------
 
-${PROGEXE}: ${PROGOBJ} $(OBJS)
+.PHONY: executable library OBJS_
+
+executable: OBJS_ ${PROGEXE}
+
+${PROGEXE}: $(OBJS) ${PROGOBJ}
 	@echo "Compiling Triumvirate C++ program ${WOMP} OpenMP..."
-	if [ ! -d ${DIR_BUILDBIN} ]; then mkdir -p ${DIR_BUILDBIN}; fi
+	@if [ ! -d ${DIR_BUILDBIN} ]; then \
+	    echo "  making bin subdirectory in build directory..."; \
+	    mkdir -p ${DIR_BUILDBIN}; \
+	fi
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) $(LDLIBS)
+
+library: OBJS_ ${PROGLIB}
 
 ${PROGLIB}: $(OBJS)
 	@echo "Creating Triumvirate C++ library ${WOMP} OpenMP..."
-	if [ ! -d ${DIR_BUILDLIB} ]; then mkdir -p ${DIR_BUILDLIB}; fi
+	@if [ ! -d ${DIR_BUILDLIB} ]; then \
+	    echo "  making lib subdirectory in build directory..."; \
+	    mkdir -p ${DIR_BUILDLIB}; \
+	fi
 	$(AR) $(ARFLAGS) $@ $^
 
+OBJS_:
+	@echo "Creating Triumvirate C++ object files..."
+	@if [ ! -d ${DIR_BUILDOBJ} ]; then \
+	    echo "  making obj subdirectory in build directory..."; \
+	    mkdir -p ${DIR_BUILDOBJ}; \
+	fi
+
 ${PROGOBJ}: ${PROGSRC}
-	if [ ! -d ${DIR_BUILDOBJ} ]; then mkdir -p ${DIR_BUILDOBJ}; fi
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
 $(OBJS): ${DIR_BUILDOBJ}/%.o: ${DIR_PKG_SRC}/%.cpp
-	if [ ! -d ${DIR_BUILDOBJ} ]; then mkdir -p ${DIR_BUILDOBJ}; fi
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
 -include $(DEPS)
@@ -315,23 +336,23 @@ $(OBJS): ${DIR_BUILDOBJ}/%.o: ${DIR_PKG_SRC}/%.cpp
 
 checkopts:
 	@echo "Checking options parsed by Makefile..."
-	@echo "MAKEFLAGS: ${MAKEFLAGS}"
-	@echo "MAKEFLAGS_JOBS: ${MAKEFLAGS_JOBS}"
-	@echo "SCM_VER_SCHEME: ${SCM_VER_SCHEME}"
-	@echo "SCM_LOC_SCHEME: ${SCM_LOC_SCHEME}"
-	@echo "CXX: ${CXX}"
-	@echo "INCLUDES: ${INCLUDES}"
-	@echo "CPPFLAGS: ${CPPFLAGS}"
-	@echo "CXXFLAGS: ${CXXFLAGS}"
-	@echo "LDFLAGS: ${LDFLAGS}"
-	@echo "LDLIBS: ${LDLIBS}"
-	@echo "CXXFLAGS_OMP: ${CXXFLAGS_OMP}"
-	@echo "LDFLAGS_OMP: ${LDFLAGS_OMP}"
-	@echo "LDLIBS_OMP: ${LDLIBS_OMP}"
-	@echo "AR: ${AR}"
-	@echo "ARFLAGS: ${ARFLAGS}"
-	@echo "RM: ${RM}"
-	@echo "PIPOPTS: ${PIPOPTS}"
+	@echo "  MAKEFLAGS=${MAKEFLAGS}"
+	@echo "  MAKEFLAGS_JOBS=${MAKEFLAGS_JOBS}"
+	@echo "  SCM_VER_SCHEME=${SCM_VER_SCHEME}"
+	@echo "  SCM_LOC_SCHEME=${SCM_LOC_SCHEME}"
+	@echo "  CXX=${CXX}"
+	@echo "  INCLUDES=${INCLUDES}"
+	@echo "  CPPFLAGS=${CPPFLAGS}"
+	@echo "  CXXFLAGS=${CXXFLAGS}"
+	@echo "  LDFLAGS=${LDFLAGS}"
+	@echo "  LDLIBS=${LDLIBS}"
+	@echo "  CXXFLAGS_OMP=${CXXFLAGS_OMP}"
+	@echo "  LDFLAGS_OMP=${LDFLAGS_OMP}"
+	@echo "  LDLIBS_OMP=${LDLIBS_OMP}"
+	@echo "  AR=${AR}"
+	@echo "  ARFLAGS={ARFLAGS}"
+	@echo "  RM=${RM}"
+	@echo "  PIPOPTS=${PIPOPTS}"
 
 
 # ------------------------------------------------------------------------
@@ -344,7 +365,10 @@ test: pytest
 
 pytest:
 	@echo "Peforming Triumvirate Python tests..."
-	if [ ! -d ${DIR_TESTOUT} ]; then mkdir -p ${DIR_TESTOUT}; fi
+	@if [ ! -d ${DIR_TESTOUT} ]; then \
+	    echo "  making output subdirectory in test directory..."; \
+	    mkdir -p ${DIR_TESTOUT}; \
+	fi
 	pytest
 
 
@@ -352,29 +376,47 @@ pytest:
 # Cleaning
 # ------------------------------------------------------------------------
 
-.PHONY: clean cppclean pyclean testclean distclean
+.PHONY: clean buildclean testclean distclean runclean cppclean pyclean
 
-clean: cppclean pyclean testclean distclean
+clean: buildclean testclean distclean runclean
+
+buildclean: cppclean pyclean
 
 cppclean:
 	@echo "Cleaning up Triumvirate C++ build..."
-	$(RM) -r core
-	find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".gitignore" -exec rm -r {} +
+	@echo "  removing builds..."
+	@find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".gitignore" -exec rm -r {} +
 
 pyclean:
-	@echo "Cleaning up Triumvirate Python/Cython build..."
-	find ${DIR_PKG} -maxdepth 1 \( -name "*.cpp" -or -name "*.so" \) -exec rm {} +
-	find . -type d -name "__pycache__" -exec rm -r {} +
-	find . -type d -name ".ipynb_checkpoints" -exec rm -r {} +
+	@echo "Cleaning up Triumvirate Python build..."
+	@echo "  removing Cythonised C/C++ scripts..."
+	@find ${DIR_PKG} -maxdepth 1 -name "*.cpp" -exec rm {} +
+	@echo "  removing Cythonised extensions..."
+	@find ${DIR_PKG} -maxdepth 1 -name "*.so" -exec rm {} +
+	@echo "  removing compiled bytecode..."
+	@find . -type d -name "__pycache__" -exec rm -r {} +
+	@echo "  removing Jupyter notebook checkpoints..."
+	@find . -type d -name ".ipynb_checkpoints" -exec rm -r {} +
 
 testclean:
 	@echo "Cleaning up Triumvirate tests..."
-	$(RM) -r ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/*
-	$(RM) -r core
-	find . -type d -name ".pytest_cache" -exec rm -r {} +
+	@echo "  removing test builds and outputs..."
+	@$(RM) -r ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/*
+	@echo "  removing pytest cache..."
+	@find . -type d -name ".pytest_cache" -exec rm -r {} +
+	@echo "  removing core dumps..."
+	@$(RM) -r core
 
 distclean:
 	@echo "Cleaning up Triumvirate distributions..."
-	$(RM) -r ${DIR_DIST}/
-	$(RM) -r wheelhouse/
-	find . -name ".egg-info" -exec rm -r {} +
+	@echo "  removing distribution outputs..."
+	@$(RM) -r ${DIR_DIST}/
+	@echo "  removing wheels..."
+	@find . -type d -name "wheelhouse" -exec rm -r {} +
+	@echo "  removing eggs..."
+	@find . -name "*.egg-info" -exec rm -r {} +
+
+runclean:
+	@echo "Cleaning up Triumvirate runs..."
+	@echo "  removing core dumps..."
+	@$(RM) -r core
