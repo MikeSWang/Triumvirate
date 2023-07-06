@@ -381,7 +381,7 @@ int main(int argc, char* argv[]) {
     // paired survey-like catalogues.
     if (params.catalogue_type == "survey") {
       // Use default parameters for mixed-mesh normalisation in `pypower`.
-      const double PADDING = .10;
+      const double PADDING = 0.1;
       const double CELLSIZE = 10.;
       const std::string ASSIGNMENT = "cic";
       // Box size for normalisation is internally set and as such,

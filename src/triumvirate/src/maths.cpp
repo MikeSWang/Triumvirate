@@ -299,15 +299,17 @@ store_reduced_spherical_harmonic_in_config_space(
 // ***********************************************************************
 
 SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
+  // Declare order of the spherical Bessel function.
+  this->order = ell;
+
   // Set up sampling range and number.
-  // CAVEAT: Discretionary choices such that max(kr) > 4096π, Δ(kr) = 0.01.
-  const double xmin = 0.;       // minimum of interpolation range
-  const double xmax = 15000.;   // maximum of interpolation range
-  const int nsample = 1500000;  // interpolation sample number
+  const double xmin = 0.;           // minimum of interpolation range
+  const double xmax = this->bound;  // maximum of interpolation range
+  const double dx = this->step;     // interpolation step size
+
+  int nsample = int((xmax - xmin)/dx) + 1;  // interpolation sample number
 
   // Initialise and evaluate at sample points.
-  double dx = (xmax - xmin) / (nsample - 1);
-
   double* x = new double[nsample];
   double* j_ell = new double[nsample];
 
@@ -316,7 +318,7 @@ SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
 #endif  // TRV_USE_OMP
   for (int i = 0; i < nsample; i++) {
     x[i] = xmin + dx * i;
-    j_ell[i] = gsl_sf_bessel_jl(ell, x[i]);
+    j_ell[i] = gsl_sf_bessel_jl(this->order, x[i]);
   }
 
   // Initialise the interpolator using cubic spline and the accelerator.
@@ -339,6 +341,13 @@ SphericalBesselCalculator::~SphericalBesselCalculator() {
 }
 
 double SphericalBesselCalculator::eval(double x) {
+  if (x > this->bound) {
+    trvs::logger.warn(
+      "Spherical Bessel function is being evaluated "
+      "beyond the interpolation bound: x = %.3f > %.1f.",
+      x, this->bound
+    );
+  }
   return gsl_spline_eval(this->spline, x, this->accel);
 }
 

@@ -247,6 +247,12 @@ class SphericalHarmonicCalculator {
  */
 class SphericalBesselCalculator {
  public:
+  int order;              ///< order @f$ \ell @f$
+
+  // CAVEAT: Discretionary choices such that max(kr) > 2048π, Δ(kr) = 0.05.
+  double bound = 10000.;  ///< upper bound of @f$ x @f$
+  double step = 0.05;     ///< step size of @f$ x @f$ for interpolation
+
   /**
    * @brief Construct the interpolated function.
    *
