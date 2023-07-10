@@ -109,7 +109,7 @@ Python package
 .. image:: https://img.shields.io/pypi/v/Triumvirate?logo=PyPI&color=informational
     :target: https://pypi.org/project/Triumvirate
     :alt: PyPI
-.. image:: https://img.shields.io/conda/vn/msw/triumvirate?logo=Anaconda&color=informational
+.. image:: https://img.shields.io/conda/v/msw/triumvirate?logo=Anaconda&color=informational
     :target: https://anaconda.org/msw/triumvirate
     :alt: Conda
 

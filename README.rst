@@ -31,6 +31,10 @@ analyses.
 Documentation
 =============
 
+.. image:: https://img.shields.io/badge/Read%20the%20Docs-latest-informational?logo=ReadtheDocs
+    :target: https://triumvirate.readthedocs.io/en/latest/
+    :alt: Documentation
+
 Comprehensive documentation including the `scientific background
 <https://triumvirate.readthedocs.io/en/latest/background.html>`_,
 `installation instructions
@@ -53,7 +57,7 @@ Python package
     :target: https://pypi.org/project/Triumvirate
     :alt: PyPI
 
-.. image:: https://img.shields.io/conda/vn/msw/triumvirate?logo=Anaconda&color=informational
+.. image:: https://img.shields.io/conda/v/msw/triumvirate?logo=Anaconda&color=informational
     :target: https://anaconda.org/msw/triumvirate
     :alt: Conda
 
@@ -144,11 +148,11 @@ Attribution
     :target: https://arxiv.org/abs/2304.03643
     :alt: arXiv
 
-.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-informational
+.. image:: https://img.shields.io/badge/10.1093%2Fmnras%2Fsty3249-grey?logo=doi
     :target: https://doi.org/10.1093/mnras/sty3249
     :alt: MNRAS
 
-.. image:: https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-informational
+.. image:: https://img.shields.io/badge/10.1093%2Fmnras%2Fstx2333-grey?logo=doi
     :target: https://doi.org/10.1093/mnras/stx2333
     :alt: MNRAS
 
@@ -183,6 +187,10 @@ User feedback and contributions are very welcome. Please refer to the
 
 Discussions
 ===========
+
+.. image:: https://img.shields.io/github/discussions/MikeSWang/Triumvirate
+    :target: https://github.com/MikeSWang/Triumvirate/discussions
+    :alt: Discussions
 
 A `community forum <https://github.com/MikeSWang/Triumvirate/discussions>`_
 for users and developers is hosted on GitHub, where you can receive

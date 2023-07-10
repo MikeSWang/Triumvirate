@@ -15,6 +15,8 @@ analyses.
 
 ## Documentation
 
+[![Documentation](https://img.shields.io/badge/Read%20the%20Docs-latest-informational?logo=ReadtheDocs)](https://triumvirate.readthedocs.io/en/latest/)
+
 Comprehensive documentation including the [scientific background](
 https://triumvirate.readthedocs.io/en/latest/background.html),
 [installation instructions](
@@ -30,7 +32,7 @@ https://triumvirate.readthedocs.io/en/latest/).
 ### Python package
 
 [![PyPI](https://img.shields.io/pypi/v/Triumvirate?logo=PyPI&color=informational)](https://pypi.org/project/Triumvirate)
-[![conda](https://img.shields.io/conda/vn/msw/triumvirate?logo=Anaconda&color=informational)](https://anaconda.org/msw/triumvirate)
+[![conda](https://img.shields.io/conda/v/msw/triumvirate?logo=Anaconda&color=informational)](https://anaconda.org/msw/triumvirate)
 
 ``Triumvirate`` as a Python package is distributed through [PyPI](
 https://pypi.org/project/Triumvirate) and [conda](
@@ -72,7 +74,8 @@ $ make ([py|cpp]install)|(cpp[libinstall|appbuild]) [useomp=(true|1)]
 where ``cpplibinstall`` or ``cppappbuild`` respectively builds the C++
 static library or binary executable only, ``cppinstall`` builds both,
 ``pyinstall`` builds the Python package only, and ``install`` builds
-all of the above. To enable OpenMP parallelisation, append ``useomp=true`` or ``useomp=1`` to the end of the second line as shown above.
+all of the above. To enable OpenMP parallelisation, append ``useomp=true``
+or ``useomp=1`` to the end of the second line as shown above.
 
 > :bulb: The latest release is on the [``main``](
 > https://github.com/MikeSWang/Triumvirate/tree/main) branch. The default
@@ -100,8 +103,8 @@ all of the above. To enable OpenMP parallelisation, append ``useomp=true`` or ``
 
 [![JOSS](https://joss.theoj.org/papers/a8325e3897dd726d9df42286bf72d19f/status.svg)](https://joss.theoj.org/papers/a8325e3897dd726d9df42286bf72d19f)
 [![arXiv](https://img.shields.io/badge/arXiv-2304.03643-b31b1b)](https://arxiv.org/abs/2304.03643)
-[![MNRAS](https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fsty3249-informational)](https://doi.org/10.1093/mnras/sty3249)
-[![MNRAS](https://img.shields.io/badge/doi-10.1093%2Fmnras%2Fstx2333-informational)](https://doi.org/10.1093/mnras/stx2333)
+[![MNRAS](https://img.shields.io/badge/10.1093%2Fmnras%2Fsty3249-grey?logo=doi)](https://doi.org/10.1093/mnras/sty3249)
+[![MNRAS](https://img.shields.io/badge/10.1093%2Fmnras%2Fstx2333-grey?logo=doi)](https://doi.org/10.1093/mnras/stx2333)
 
 To acknowledge the use of ``Triumvirate`` in your published research, please
 cite the publications linked above which contain the relevant information
@@ -121,13 +124,25 @@ Naonori S Sugiyama, and are available in the GitHub repository [``hitomi``](
 https://github.com/naonori/hitomi).
 
 
-## Contributing
+## Development/Contributing
+
+![Platforms](https://img.shields.io/conda/pn/msw/triumvirate)
+
+[![ReleaseDate](https://img.shields.io/github/release-date-pre/MikeSWang/Triumvirate)](https://github.com/MikeSWang/Triumvirate/releases/latest)
+![CommitsSince](https://img.shields.io/github/commits-since/MikeSWang/Triumvirate/latest/main)
+
+[![Build-Issues](https://img.shields.io/github/issues/MikeSWang/Triumvirate/build)](https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Abuild)
+[![Bug-Issues](https://img.shields.io/github/issues/MikeSWang/Triumvirate/bug)](https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
+[![Feature-Issues](https://img.shields.io/github/issues/MikeSWang/Triumvirate/feature)](https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Afeature)
+[![PullRequests](https://img.shields.io/github/issues-pr/MikeSWang/Triumvirate)](https://github.com/MikeSWang/Triumvirate/pulls)
 
 User feedback and contributions are very welcome. Please refer to the
 [contribution guidelines](CONTRIBUTING.md).
 
 
 ## Discussions
+
+[![Discussions](https://img.shields.io/github/discussions/MikeSWang/Triumvirate)](https://github.com/MikeSWang/Triumvirate/discussions)
 
 A [community forum](https://github.com/MikeSWang/Triumvirate/discussions)
 for users and developers exists, where you can receive
