@@ -75,7 +75,7 @@ Discussions
     :target: https://github.com/MikeSWang/Triumvirate/discussions
     :alt: Discussions
 
-A `community forum <https://github.com/MikeSWang/Triumvirate/discussions>`_
+|br| A `community forum <https://github.com/MikeSWang/Triumvirate/discussions>`_
 for users and developers is hosted on GitHub, where you can receive
 announcements, post questions, share ideas and get updates.
 
