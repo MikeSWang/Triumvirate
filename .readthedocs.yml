@@ -10,7 +10,7 @@ build:
     - graphviz
   jobs:
     pre_build:
-      - pip install --verbose --editable .
+      - pip install --editable . -vvv
       - bash deploy/doc/autogen_docs.sh
     post_build:
       - rm docs/source/Doxyfile
@@ -24,7 +24,7 @@ build:
         {} ${READTHEDOCS_OUTPUT}/html/apiref_doxy/docs/source/_static/ \;
 
 sphinx:
-   configuration: docs/source/conf.py
+  configuration: docs/source/conf.py
 
 python:
   install:
