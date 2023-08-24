@@ -123,19 +123,17 @@ PIPOPTS ?= --user
 # NERSC computer cluster: an example environment [adapt]
 ifdef NERSC_HOST
 
-FFTW_DIR = ${FFTW_ROOT}
-
 # GSL library
-ifdef GSL_DIR
-INCLUDES += -I${GSL_DIR}/include
-LDFLAGS += -L${GSL_DIR}/lib
-endif  # GSL_DIR
+ifdef GSL_ROOT
+INCLUDES += -I${GSL_ROOT}/include
+LDFLAGS += -L${GSL_ROOT}/lib
+endif  # GSL_ROOT
 
 # FFTW library
-ifdef FFTW_DIR
-INCLUDES += -I${FFTW_DIR}/include
-LDFLAGS += -L${FFTW_DIR}/lib
-endif  # FFTW_DIR
+ifdef FFTW_ROOT
+INCLUDES += -I${FFTW_INC}
+LDFLAGS += -L${FFTW_DIR}
+endif  # FFTW_ROOT
 
 endif  # NERSC_HOST
 
