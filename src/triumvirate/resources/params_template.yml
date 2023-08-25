@@ -1,46 +1,61 @@
 ---
 
+# @file params_template.yml
+# @brief Template parameter file for the Triumvirate Python package.
+# @seealso https://triumvirate.readthedocs.org
+
+
 # -- I/O -----------------------------------------------------------------
 
-# Directories for input/output.
+# Directories for input catalogue(s) and output measurement(s).
 # The paths can be either absolute or relative to the working directory.
 # If unset, the current working directory is assumed.
 directories:
   catalogues:
   measurements:
 
-# Filenames (with extensions) for input/output sources.
+# Filenames (with extension) of input catalogues.
 files:
   data_catalogue:
   rand_catalogue:
 
-# Tags to be substituted into input/output paths.
+# Field names of catalogue data columns as a list in the order of
+# appearance.  If unset, the catalogue files are assumed to contain
+# an approriate header.
+catalogue_columns: []
+
+# Tags to be appended as an input/output filename suffix.
 tags:
-  output: ~
+  output:
 
 
 # -- Mesh sampling -------------------------------------------------------
 
-# Box size in each dimension (in Mpc/h). [mandatory]
+# Box size in each dimension (in length units).
 boxsize:
   x:
   y:
   z:
 
-# Grid cell number in each dimension. [mandatory]
+# Grid cell number in each dimension.
 ngrid:
   x:
   y:
   z:
 
 # Box alignment: {'centre' (default), 'pad'}.
+# The catalogues are either centred or padded from the
+# mininum-coordinate corner.
 alignment: centre
 
 # Padding scale: {'box' (default), 'grid'}.
+# The padding scale is either the box size or the grid cell size.
+# Only applicable if `alignment` is set to 'pad'.
 padscale: box
 
-# Padding factor (as a multiple of the size of padding scale).
-padfactor: ~
+# Padding factor as a multiple of the size of padding scale.
+# Only applicable if `alignment` is set to 'pad'.
+padfactor:
 
 # Mesh assignment scheme: {'ngp', 'cic', 'tsc' (default), 'pcs'}.
 assignment: tsc
@@ -53,13 +68,15 @@ interlace: off
 # -- Measurements --------------------------------------------------------
 
 # Type of catalogue(s): {'survey', 'random', 'sim'}.
+# If of type 'sim', global-plane-parallel measurements are made;
+# otherwise, local-plane-parallel measurements are made.
 catalogue_type:
 
 # Type of measurement:
 # {'powspec', '2pcf', '2pcf-win', 'bispec', '3pcf', '3pcf-win', '3pcf-win-wa'}.
 statistic_type:
 
-# Degrees of the multipoles. [optional, optional, mandatory]
+# Degrees of the multipoles.
 degrees:
   ell1:
   ell2:
@@ -82,14 +99,13 @@ norm_convention: particle
 # Binning scheme: {'lin' (default), 'log', 'linpad', 'logpad', 'custom'}.
 binning: lin
 
-# Minimum and maximum of the binning range (i.e. range of measurement scales)
-# as a list.
+# Range of measurement scales.
 # The binning coordinate is either wavenumbers (in h/Mpc) in Fourier space,
-# or separations (in Mpc/h) in configuration space. [mandatory]
+# or separations (in Mpc/h) in configuration space.
 range: [~, ~]
 
 # Number of measurement bins (i.e. data vector dimension).
-# Must be >=2, or >=7 if padding is used in binning. [mandatory]
+# Must be >=2, or >=7 if padding is used in binning.
 num_bins:
 
 # Fixed bin index in the full (2-d) three-point statistics measurements.
