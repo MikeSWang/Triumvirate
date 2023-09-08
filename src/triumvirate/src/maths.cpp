@@ -303,8 +303,11 @@ SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
   this->order = ell;
 
   // Set up sampling range and number.
+  this->split = (this->split >= this->order ** this->order) ?
+    this->split : this->order ** this->order
+
   const double xmin = 0.;           // minimum of interpolation range
-  const double xmax = this->bound;  // maximum of interpolation range
+  const double xmax = this->split;  // maximum of interpolation range
   const double dx = this->step;     // interpolation step size
 
   int nsample = int((xmax - xmin)/dx) + 1;  // interpolation sample number
@@ -330,6 +333,21 @@ SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
   delete[] x; delete[] j_ell;
 }
 
+SphericalBesselCalculator::SphericalBesselCalculator(
+  const SphericalBesselCalculator& other
+) {
+  this->order = other.order;
+  this->split = other.split;
+  this->step = other.step;
+
+  this->accel = gsl_interp_accel_alloc();
+  this->spline = gsl_spline_alloc(gsl_interp_cspline, other.spline->size);
+
+  gsl_spline_init(
+    this->spline, other.spline->x, other.spline->y, other.spline->size
+  );
+}
+
 SphericalBesselCalculator::~SphericalBesselCalculator() {
   if (this->accel != nullptr) {
     gsl_interp_accel_free(this->accel); this->accel = nullptr;
@@ -341,14 +359,11 @@ SphericalBesselCalculator::~SphericalBesselCalculator() {
 }
 
 double SphericalBesselCalculator::eval(double x) {
-  if (x > this->bound) {
-    trvs::logger.warn(
-      "Spherical Bessel function is being evaluated "
-      "beyond the interpolation bound: x = %.3f > %.1f.",
-      x, this->bound
-    );
+  if (x >= this->split) {
+    return gsl_sf_bessel_jl(this->order, x);
+  } else {
+    return gsl_spline_eval(this->spline, x, this->accel);
   }
-  return gsl_spline_eval(this->spline, x, this->accel);
 }
 
 }  // namespace trv::maths
