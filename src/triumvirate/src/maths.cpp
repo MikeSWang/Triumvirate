@@ -303,8 +303,8 @@ SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
   this->order = ell;
 
   // Set up sampling range and number.
-  this->split = (this->split >= this->order ** this->order) ?
-    this->split : this->order ** this->order
+  this->split = (this->split >= this->order * this->order) ?
+    this->split : this->order * this->order;
 
   const double xmin = 0.;           // minimum of interpolation range
   const double xmax = this->split;  // maximum of interpolation range
