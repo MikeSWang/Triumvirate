@@ -390,13 +390,24 @@ trv::BispecMeasurements compute_bispec(
             k1_save[ibin] = k_eff_a_;
           }
 
-          std::complex<double> bk_component = 0.;  // B_{l₁ l₂ L}^{m₁ m₂ M}
+          // B_{l₁ l₂ L}^{m₁ m₂ M}
+          double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
           for (int gid = 0; gid < params.nmesh; gid++) {
             std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
             std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
             std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
-            bk_component += F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+            std::complex<double> bk_gridpt =
+              F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+
+            bk_comp_real += bk_gridpt.real();
+            bk_comp_imag += bk_gridpt.imag();
           }
+
+          std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
           bk_save[ibin] += coupling * vol_cell * bk_component;
         }
@@ -747,13 +758,24 @@ trv::ThreePCFMeasurements compute_3pcf(
             );
           }
 
-          std::complex<double> zeta_component = 0.;
+          // ζ_{l₁ l₂ L}^{m₁ m₂ M}
+          double zeta_comp_real = 0., zeta_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:zeta_comp_real, zeta_comp_imag)
+#endif  // TRV_USE_OMP
           for (int gid = 0; gid < params.nmesh; gid++) {
             std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
             std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
             std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
-            zeta_component += F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+            std::complex<double> zeta_gridpt =
+              F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+
+            zeta_comp_real += zeta_gridpt.real();
+            zeta_comp_imag += zeta_gridpt.imag();
           }
+
+          std::complex<double> zeta_component(zeta_comp_real, zeta_comp_imag);
 
           zeta_save[ibin] += parity * coupling * vol_cell * zeta_component;
         }
@@ -973,13 +995,24 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           k1_save[ibin] = k_eff_a_;
         }
 
-        std::complex<double> bk_component = 0.;  // B_{l₁ l₂ L}^{m₁ m₂ M}
+        // B_{l₁ l₂ L}^{m₁ m₂ M}
+        double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
         for (int gid = 0; gid < params.nmesh; gid++) {
           std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
           std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
           std::complex<double> G_00_gridpt(G_00[gid][0], G_00[gid][1]);
-          bk_component += F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
+          std::complex<double> bk_gridpt =
+            F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
+
+          bk_comp_real += bk_gridpt.real();
+          bk_comp_imag += bk_gridpt.imag();
         }
+
+        std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
         bk_save[ibin] += coupling * vol_cell * bk_component;
       }
@@ -1288,13 +1321,24 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
           );
         }
 
-        std::complex<double> zeta_component = 0.;
+        // ζ_{l₁ l₂ L}^{m₁ m₂ M}
+        double zeta_comp_real = 0., zeta_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:zeta_comp_real, zeta_comp_imag)
+#endif  // TRV_USE_OMP
         for (int gid = 0; gid < params.nmesh; gid++) {
           std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
           std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
           std::complex<double> G_00_gridpt(G_00[gid][0], G_00[gid][1]);
-          zeta_component += F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
+          std::complex<double> zeta_gridpt =
+            F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
+
+          zeta_comp_real += zeta_gridpt.real();
+          zeta_comp_imag += zeta_gridpt.imag();
         }
+
+        std::complex<double> zeta_component(zeta_comp_real, zeta_comp_imag);
 
         zeta_save[ibin] += parity * coupling * vol_cell * zeta_component;
       }
@@ -1563,13 +1607,24 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
             );
           }
 
-          std::complex<double> zeta_component = 0.;
+          // ζ_{l₁ l₂ L}^{m₁ m₂ M}
+          double zeta_comp_real = 0., zeta_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:zeta_comp_real, zeta_comp_imag)
+#endif  // TRV_USE_OMP
           for (int gid = 0; gid < params.nmesh; gid++) {
             std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
             std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
             std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
-            zeta_component += F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+            std::complex<double> zeta_gridpt =
+              F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+
+            zeta_comp_real += zeta_gridpt.real();
+            zeta_comp_imag += zeta_gridpt.imag();
           }
+
+          std::complex<double> zeta_component(zeta_comp_real, zeta_comp_imag);
 
           zeta_save[ibin] += parity * coupling * vol_cell * zeta_component;
         }
@@ -1833,13 +1888,24 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             k1_save[ibin] = k_eff_a_;
           }
 
-          std::complex<double> bk_component = 0.;  // B_{l₁ l₂ L}^{m₁ m₂ M}
+          // B_{l₁ l₂ L}^{m₁ m₂ M}
+          double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
           for (int gid = 0; gid < params.nmesh; gid++) {
             std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
             std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
             std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
-            bk_component += F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+            std::complex<double> bk_gridpt =
+              F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+
+            bk_comp_real += bk_gridpt.real();
+            bk_comp_imag += bk_gridpt.imag();
           }
+
+          std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
           bk_save[ibin] += coupling * vol_cell * bk_component;
         }

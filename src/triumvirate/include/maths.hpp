@@ -247,18 +247,21 @@ class SphericalHarmonicCalculator {
  */
 class SphericalBesselCalculator {
  public:
-  int order;              ///< order @f$ \ell @f$
-
-  // CAVEAT: Discretionary choices such that max(kr) > 2048π, Δ(kr) = 0.05.
-  double bound = 10000.;  ///< upper bound of @f$ x @f$
-  double step = 0.05;     ///< step size of @f$ x @f$ for interpolation
+  int order;  ///< order @f$ \ell @f$
 
   /**
-   * @brief Construct the interpolated function.
+   * @brief Construct the interpolated function calculator.
    *
    * @param ell Order @f$ \ell @f$.
    */
   SphericalBesselCalculator(const int ell);
+
+  /**
+   * @brief Copy an interpolated function calculator.
+   *
+   * @param other Interpolated function to be copied.
+   */
+  SphericalBesselCalculator(const SphericalBesselCalculator& other);
 
   /**
    * @brief Destruct the interpolated function.
@@ -274,6 +277,14 @@ class SphericalBesselCalculator {
   double eval(double x);
 
  private:
+  // CAVEAT: This calculator is designed for the range of @f$ x = kr @f$
+  // such that max(kr) > 2048π.  For @f$ x <= \max\{1000, \ell^2\} @f$,
+  // cubic spline interpolation is used with Δ(kr) = 0.05;
+  // for @f$ x > \max\{1000, \ell^2\} @f$, direct evaluation via
+  // asymptotic expansion is used.
+  double split = 1000.;    ///< minimum split value of @f$ x @f$
+  double step = 0.05;      ///< step size of @f$ x @f$ for interpolation
+
   gsl_interp_accel* accel;  ///< interpolation accelerator
   gsl_spline* spline;       ///< interpolation scheme
 };

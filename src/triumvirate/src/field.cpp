@@ -1285,7 +1285,14 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
   // Compute the field weighted by the spherical Bessel function and
   // reduced spherical harmonics.
 #ifdef TRV_USE_OMP
-#pragma omp parallel for collapse(3)
+#pragma omp parallel
+#endif  // TRV_USE_OMP
+{
+  // Create thread-private copies of the spherical Bessel function calculator.
+  trvm::SphericalBesselCalculator sjl_thread(sjl);
+
+#ifdef TRV_USE_OMP
+#pragma omp for collapse(3)
 #endif  // TRV_USE_OMP
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
@@ -1308,12 +1315,13 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
         // Weight the field including the volume normalisation,
         // where ∫d³k/(2π)³ ↔ (1/V) Σᵢ, V =: `vol`.
         this->field[idx_grid][0] =
-          sjl.eval(k_ * r) * (ylm[idx_grid] * fk).real() / this->vol;
+          sjl_thread.eval(k_ * r) * (ylm[idx_grid] * fk).real() / this->vol;
         this->field[idx_grid][1] =
-          sjl.eval(k_ * r) * (ylm[idx_grid] * fk).imag() / this->vol;
+          sjl_thread.eval(k_ * r) * (ylm[idx_grid] * fk).imag() / this->vol;
       }
     }
   }
+}
 
   // Perform inverse FFT.
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
@@ -2172,7 +2180,15 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   double S_ij_k_real = 0., S_ij_k_imag = 0.;
 
 #ifdef TRV_USE_OMP
-#pragma omp parallel for collapse(3) reduction(+:S_ij_k_real, S_ij_k_imag)
+#pragma omp parallel reduction(+:S_ij_k_real, S_ij_k_imag)
+#endif  // TRV_USE_OMP
+{
+  // Create thread-private copies of the spherical Bessel function calculator.
+  trvm::SphericalBesselCalculator sj_a_thread(sj_a);
+  trvm::SphericalBesselCalculator sj_b_thread(sj_b);
+
+#ifdef TRV_USE_OMP
+#pragma omp for collapse(3)
 #endif  // TRV_USE_OMP
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
@@ -2184,8 +2200,8 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
 
         double r_ = trvm::get_vec3d_magnitude(rv);
 
-        double ja = sj_a.eval(k_a * r_);
-        double jb = sj_b.eval(k_b * r_);
+        double ja = sj_a_thread.eval(k_a * r_);
+        double jb = sj_b_thread.eval(k_b * r_);
 
         std::complex<double> S_ij_k_3d(
           twopt_3d[idx_grid][0], twopt_3d[idx_grid][1]
@@ -2201,6 +2217,7 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
       }
     }
   }
+}
 
   std::complex<double> S_ij_k(S_ij_k_real, S_ij_k_imag);
 
