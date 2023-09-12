@@ -404,10 +404,11 @@ class MeshField {
    * @param i, j, k Grid index in each dimension.
    * @returns Grid cell index.
    */
-  long long get_grid_index(int i, int j, int k);
+  long long ret_grid_index(int i, int j, int k);
 
   /**
-   * @brief Return the grid cell position vector.
+  /**
+   * @brief Get the grid cell position vector.
    *
    * @param[in] i, j, k Grid index in each dimension.
    * @param[out] rvec Position vector to the grid cell centre.
@@ -415,7 +416,7 @@ class MeshField {
   void get_grid_pos_vector(int i, int j, int k, double rvec[3]);
 
   /**
-   * @brief Return the grid cell wavevector.
+   * @brief Get the grid cell wavevector.
    *
    * @param[in] i, j, k Grid index in each dimension.
    * @param[out] kvec Position vector to the grid cell centre.

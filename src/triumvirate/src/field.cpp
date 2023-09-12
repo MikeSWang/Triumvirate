@@ -121,7 +121,7 @@ const fftw_complex& MeshField::operator[](int gid) {return this->field[gid];}
 // Mesh grid properties
 // -----------------------------------------------------------------------
 
-long long MeshField::get_grid_index(int i, int j, int k) {
+long long MeshField::ret_grid_index(int i, int j, int k) {
   long long idx_grid =
     (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
   return idx_grid;
@@ -234,7 +234,7 @@ void MeshField::assign_weighted_field_to_mesh_ngp(
     for (int iloc = 0; iloc < order; iloc++) {
       for (int jloc = 0; jloc < order; jloc++) {
         for (int kloc = 0; kloc < order; kloc++) {
-          gid = this->get_grid_index(
+          gid = this->ret_grid_index(
             ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
           );
           if (0 <= gid && gid < this->params.nmesh) {
@@ -283,7 +283,7 @@ OMP_ATOMIC
       for (int iloc = 0; iloc < order; iloc++) {
         for (int jloc = 0; jloc < order; jloc++) {
           for (int kloc = 0; kloc < order; kloc++) {
-            gid = this->get_grid_index(
+            gid = this->ret_grid_index(
               ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
             );
             if (0 <= gid && gid < this->params.nmesh) {
@@ -346,7 +346,7 @@ void MeshField::assign_weighted_field_to_mesh_cic(
     for (int iloc = 0; iloc < order; iloc++) {
       for (int jloc = 0; jloc < order; jloc++) {
         for (int kloc = 0; kloc < order; kloc++) {
-          gid = this->get_grid_index(
+          gid = this->ret_grid_index(
             ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
           );
           if (0 <= gid && gid < this->params.nmesh) {
@@ -395,7 +395,7 @@ OMP_ATOMIC
       for (int iloc = 0; iloc < order; iloc++) {
         for (int jloc = 0; jloc < order; jloc++) {
           for (int kloc = 0; kloc < order; kloc++) {
-            gid = this->get_grid_index(
+            gid = this->ret_grid_index(
               ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
             );
             if (0 <= gid && gid < this->params.nmesh) {
@@ -475,7 +475,7 @@ void MeshField::assign_weighted_field_to_mesh_tsc(
     for (int iloc = 0; iloc < order; iloc++) {
       for (int jloc = 0; jloc < order; jloc++) {
         for (int kloc = 0; kloc < order; kloc++) {
-          gid = this->get_grid_index(
+          gid = this->ret_grid_index(
             ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
           );
           if (0 <= gid && gid < this->params.nmesh) {
@@ -543,7 +543,7 @@ OMP_ATOMIC
       for (int iloc = 0; iloc < order; iloc++) {
         for (int jloc = 0; jloc < order; jloc++) {
           for (int kloc = 0; kloc < order; kloc++) {
-            gid = this->get_grid_index(
+            gid = this->ret_grid_index(
               ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
             );
             if (0 <= gid && gid < this->params.nmesh) {
@@ -613,7 +613,7 @@ void MeshField::assign_weighted_field_to_mesh_pcs(
     for (int iloc = 0; iloc < order; iloc++) {
       for (int jloc = 0; jloc < order; jloc++) {
         for (int kloc = 0; kloc < order; kloc++) {
-          gid = this->get_grid_index(
+          gid = this->ret_grid_index(
             ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
           );
           if (0 <= gid && gid < this->params.nmesh) {
@@ -670,7 +670,7 @@ OMP_ATOMIC
       for (int iloc = 0; iloc < order; iloc++) {
         for (int jloc = 0; jloc < order; jloc++) {
           for (int kloc = 0; kloc < order; kloc++) {
-            gid = this->get_grid_index(
+            gid = this->ret_grid_index(
               ijk[iloc][0], ijk[jloc][1], ijk[kloc][2]
             );
             if (0 <= gid && gid < this->params.nmesh) {
@@ -1078,7 +1078,7 @@ void MeshField::fourier_transform() {
     for (int i = 0; i < this->params.ngrid[0]; i++) {
       for (int j = 0; j < this->params.ngrid[1]; j++) {
         for (int k = 0; k < this->params.ngrid[2]; k++) {
-          long long idx_grid = this->get_grid_index(i, j, k);
+          long long idx_grid = this->ret_grid_index(i, j, k);
 
           // Calculate the index vector representing the grid cell.
           double m[3];
@@ -1154,7 +1154,7 @@ void MeshField::apply_wide_angle_pow_law_kernel() {
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
-        long long idx_grid = this->get_grid_index(i, j, k);
+        long long idx_grid = this->ret_grid_index(i, j, k);
 
         double rv[3];
         this->get_grid_pos_vector(i, j, k, rv);
@@ -1182,7 +1182,7 @@ void MeshField::apply_assignment_compensation() {
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
-        long long idx_grid = this->get_grid_index(i, j, k);
+        long long idx_grid = this->ret_grid_index(i, j, k);
 
         double win = this->calc_assignment_window_in_fourier(i, j, k);
 
@@ -1217,7 +1217,7 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
-        long long idx_grid = this->get_grid_index(i, j, k);
+        long long idx_grid = this->ret_grid_index(i, j, k);
 
         double kv[3];
         this->get_grid_wavevector(i, j, k, kv);
@@ -1297,7 +1297,7 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
   for (int i = 0; i < this->params.ngrid[0]; i++) {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
-        long long idx_grid = this->get_grid_index(i, j, k);
+        long long idx_grid = this->ret_grid_index(i, j, k);
 
         double kv[3];
         this->get_grid_wavevector(i, j, k, kv);
@@ -1496,7 +1496,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
   }
 
   auto ret_grid_index = [&field_a](int i, int j, int k) {
-    return field_a.get_grid_index(i, j, k);
+    return field_a.ret_grid_index(i, j, k);
   };
 
   auto ret_grid_wavevector = [&field_a](int i, int j, int k, double kvec[3]) {
@@ -1665,7 +1665,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   }
 
   auto ret_grid_index = [&field_a](int i, int j, int k) {
-    return field_a.get_grid_index(i, j, k);
+    return field_a.ret_grid_index(i, j, k);
   };
 
   auto ret_grid_pos_vector = [&field_a](int i, int j, int k, double rvec[3]) {
@@ -1875,7 +1875,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   }
 
   auto ret_grid_index = [&field_a](int i, int j, int k) {
-    return field_a.get_grid_index(i, j, k);
+    return field_a.ret_grid_index(i, j, k);
   };
 
   auto ret_grid_pos_vector = [&field_a](int i, int j, int k, double rvec[3]) {
@@ -2089,7 +2089,7 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   }
 
   auto ret_grid_index = [&field_a](int i, int j, int k) {
-    return field_a.get_grid_index(i, j, k);
+    return field_a.ret_grid_index(i, j, k);
   };
 
   auto ret_grid_pos_vector = [&field_a](int i, int j, int k, double rvec[3]) {
