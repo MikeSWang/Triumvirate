@@ -64,7 +64,7 @@ jobs:
       # Use QEMU for non-native Linux runner.
       - name: Set up QEMU (Linux)
         if: runner.os == 'Linux'
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         with:
           # Specify target architecture (ARM64).
           platforms: linux/arm64
