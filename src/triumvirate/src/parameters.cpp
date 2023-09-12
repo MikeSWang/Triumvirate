@@ -44,13 +44,14 @@ ParameterSet::ParameterSet(const ParameterSet& other) {
     this->boxsize[i] = other.boxsize[i];
     this->ngrid[i] = other.ngrid[i];
   }
-  this->volume = other.volume;
-  this->nmesh = other.nmesh;
   this->alignment = other.alignment;
   this->padscale = other.padscale;
   this->padfactor = other.padfactor;
   this->assignment = other.assignment;
   this->interlace = other.interlace;
+  this->volume = other.volume;
+  this->nmesh = other.nmesh;
+  this->assignment_order = other.assignment_order;
 
   // Copy measurement parameters.
   this->catalogue_type = other.catalogue_type;
@@ -439,12 +440,18 @@ int ParameterSet::validate() {
     }
   }
 
-  if (!(
-    this->assignment == "ngp"
-    || this->assignment == "cic"
-    || this->assignment == "tsc"
-    || this->assignment == "pcs"
-  )) {
+  if (this->assignment == "ngp") {
+    this->assignment_order = 1;
+  } else
+  if (this->assignment == "cic") {
+    this->assignment_order = 2;
+  } else
+  if (this->assignment == "tsc") {
+    this->assignment_order = 3;
+  } else
+  if (this->assignment == "pcs") {
+    this->assignment_order = 4;
+  } else {
     if (trvs::currTask == 0) {
       trvs::logger.error(
         "Mesh assignment scheme must be "
@@ -809,6 +816,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
 
   print_par_str("assignment = %s\n", this->assignment);
   print_par_str("interlace = %s\n", this->interlace);
+  print_par_int("assignment_order = %d\n", this->assignment_order);
 
   print_par_str("catalogue_type = %s\n", this->catalogue_type);
   print_par_str("statistic_type = %s\n", this->statistic_type);

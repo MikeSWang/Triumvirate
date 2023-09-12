@@ -79,11 +79,6 @@ class ParameterSet {
   /// grid number in each dimension
   int ngrid[3] = {0, 0, 0};
 
-  // Derived mesh quantities.
-  double volume;  ///< box volume (in Mpc^3/h^3)
-  int nmesh;      ///< number of mesh grid cells
-                  // RFE: change to @c long long and take care of int()
-
   // Mesh alignment.
   /// box alignment: {"centre" (default), "pad"}
   std::string alignment = "centre";
@@ -97,6 +92,13 @@ class ParameterSet {
   std::string assignment = "tsc";
   /// interlacing switch: {"true"/"on", "false"/"off" (default)}
   std::string interlace = "false";
+
+  // Derived mesh quantities.
+  double volume;         ///< box volume (in Mpc^3/h^3)
+  int nmesh;             ///< number of mesh grid cells
+                         // RFE: change to @c long long and take care of int()
+
+  int assignment_order = 0;  ///< order of the assignment scheme
 
   // ---------------------------------------------------------------------
   // Measurement

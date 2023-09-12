@@ -41,6 +41,7 @@
 
 #include <cmath>
 #include <complex>
+#include <functional>
 #include <vector>
 
 #include "monitor.hpp"
@@ -407,6 +408,12 @@ class MeshField {
   long long ret_grid_index(int i, int j, int k);
 
   /**
+   * @brief Shift the grid indices on a discrete Fourier mesh grid.
+   *
+   * @param i, j, k Grid index in each dimension.
+   */
+  void shift_grid_indices_fourier(int& i, int& j, int& k);
+
   /**
    * @brief Get the grid cell position vector.
    *
@@ -476,9 +483,10 @@ class MeshField {
    *        in Fourier space for different assignment schemes.
    *
    * @param i, j, k Grid cell indices.
+   * @param order Order of the assignment scheme.
    * @returns Window value.
    */
-  double calc_assignment_window_in_fourier(int i, int j, int k);
+  double calc_assignment_window_in_fourier(int i, int j, int k, int order);
 };
 
 
@@ -708,7 +716,7 @@ class FieldStats {
   // ---------------------------------------------------------------------
 
   /**
-   * @brief Calculate the shot-noise aliasing scale-dependence function
+   * @brief Return the shot-noise aliasing scale-dependence function
    *        @f$ C_1(\vec{k}) @f$ at each mesh grid.
    *
    * @see Eqs. (45) and (46) in Sugiyama et al. (2019)
@@ -716,10 +724,20 @@ class FieldStats {
    *      and Jing (2004)
    *      [<a href="https://arxiv.org/abs/astro-ph/0409240">astro-ph/0409240</a>].
    *
-   * @param i, j, k Grid indices.
-   * @returns Value of the aliasing function.
+   * @returns Aliasing function.
    */
-  double calc_shotnoise_aliasing(int i, int j, int k);
+  std::function<double(int, int, int)> ret_calc_shotnoise_aliasing();
+
+  /**
+   * @brief Get the square-sine arguments for the shot-noise aliasing
+   *        function.
+   *
+   * @param i, j, k Grid index in each dimension.
+   * @param cx2, cy2, cz2 Square-sine arguments.
+   */
+  void get_shotnoise_aliasing_sin2(
+    int i, int j, int k, double& cx2, double& cy2, double& cz2
+  );
 
   /**
    * Calculate the shot-noise aliasing function for the

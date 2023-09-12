@@ -127,6 +127,12 @@ long long MeshField::ret_grid_index(int i, int j, int k) {
   return idx_grid;
 }
 
+void MeshField::shift_grid_indices_fourier(int& i, int& j, int& k) {
+  i = (i < this->params.ngrid[0]/2) ? i : i - this->params.ngrid[0];
+  j = (j < this->params.ngrid[1]/2) ? j : j - this->params.ngrid[1];
+  k = (k < this->params.ngrid[2]/2) ? k : k - this->params.ngrid[2];
+}
+
 void MeshField::get_grid_pos_vector(int i, int j, int k, double rvec[3]) {
   rvec[0] = (i < this->params.ngrid[0]/2) ?
     i * this->dr[0] : (i - this->params.ngrid[0]) * this->dr[0];
@@ -688,26 +694,10 @@ OMP_ATOMIC
   }
 }
 
-double MeshField::calc_assignment_window_in_fourier(int i, int j, int k) {
-  int order = 0;
-  if (this->params.assignment == "ngp") {
-    order = 1;
-  } else
-  if (this->params.assignment == "cic") {
-    order = 2;
-  } else
-  if (this->params.assignment == "tsc") {
-    order = 3;
-  } else
-  if (this->params.assignment == "pcs") {
-    order = 4;
-  } else {
-    order = 0;
-  }
-
-  i = (i < this->params.ngrid[0]/2) ? i : i - this->params.ngrid[0];
-  j = (j < this->params.ngrid[1]/2) ? j : j - this->params.ngrid[1];
-  k = (k < this->params.ngrid[2]/2) ? k : k - this->params.ngrid[2];
+double MeshField::calc_assignment_window_in_fourier(
+  int i, int j, int k, int order=0
+) {
+  this->shift_grid_indices_fourier(i, j, k);
 
   double u_x = M_PI * i / double(this->params.ngrid[0]);
   double u_y = M_PI * j / double(this->params.ngrid[1]);
@@ -1184,7 +1174,9 @@ void MeshField::apply_assignment_compensation() {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
         long long idx_grid = this->ret_grid_index(i, j, k);
 
-        double win = this->calc_assignment_window_in_fourier(i, j, k);
+        double win = this->calc_assignment_window_in_fourier(
+          i, j, k, this->params.assignment_order
+        );
 
         this->field[idx_grid][0] /= win;
         this->field[idx_grid][1] /= win;
@@ -1231,7 +1223,9 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
           );
 
           // Apply assignment compensation.
-          double win = this->calc_assignment_window_in_fourier(i, j, k);
+          double win = this->calc_assignment_window_in_fourier(
+            i, j, k, this->params.assignment_order
+          );
           fk /= win;
 
           // Weight the field.
@@ -1309,7 +1303,9 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
           field_fourier[idx_grid][0], field_fourier[idx_grid][1]
         );
 
-        double win = this->calc_assignment_window_in_fourier(i, j, k);
+        double win = this->calc_assignment_window_in_fourier(
+          i, j, k, this->params.assignment_order
+        );
         fk /= win;
 
         // Weight the field including the volume normalisation,
@@ -1503,6 +1499,9 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
     field_a.get_grid_wavevector(i, j, k, kvec);
   };
 
+  std::function<double(int, int, int)> calc_shotnoise_aliasing =
+    this->ret_calc_shotnoise_aliasing();
+
   // Perform fine binning.
   // NOTE: Dynamically allocate owing to size.
   // CAVEAT: Discretionary choices such that 0.0 < k < 10.0.
@@ -1554,13 +1553,16 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
 
           std::complex<double> pk_mode = fa * std::conj(fb);
           std::complex<double> sn_mode =
-            shotnoise_amp * this->calc_shotnoise_aliasing(i, j, k);
+            shotnoise_amp * calc_shotnoise_aliasing(i, j, k);
 
           // Apply grid corrections.
           double win_pk = 1., win_sn = 1.;
           if (this->params.interlace == "true") {
-            win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
-              field_b.calc_assignment_window_in_fourier(i, j, k);
+            win_pk = field_a.calc_assignment_window_in_fourier(
+                i, j, k, this->params.assignment_order
+              ) * field_b.calc_assignment_window_in_fourier(
+                i, j, k, this->params.assignment_order
+              );
             win_sn = win_pk;
           } else
           if (this->params.interlace == "false") {
@@ -1568,8 +1570,11 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
             win_sn = calc_shotnoise_aliasing(i, j, k);
             win_pk = win_sn;
 #else   // !DBG_FLAG_NOAC
-            win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
-              field_b.calc_assignment_window_in_fourier(i, j, k);
+            win_pk = field_a.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            ) * field_b.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            );
             win_sn = calc_shotnoise_aliasing(i, j, k);
 #endif  // !DBG_FLAG_NOAC
           }
@@ -1672,6 +1677,9 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
     field_a.get_grid_pos_vector(i, j, k, rvec);
   };
 
+  std::function<double(int, int, int)> calc_shotnoise_aliasing =
+    this->ret_calc_shotnoise_aliasing();
+
   // auto ret_grid_wavevector = [&field_a](
   //   int i, int j, int k, double kvec[3]
   // ) {
@@ -1704,13 +1712,16 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
 
         std::complex<double> pk_mode = fa * std::conj(fb);
         std::complex<double> sn_mode =
-          shotnoise_amp * this->calc_shotnoise_aliasing(i, j, k);
+          shotnoise_amp * calc_shotnoise_aliasing(i, j, k);
 
         // Apply grid corrections.
         double win_pk = 1., win_sn = 1.;
         if (this->params.interlace == "true") {
-          win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
-            field_b.calc_assignment_window_in_fourier(i, j, k);
+          win_pk = field_a.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            ) * field_b.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            );
           win_sn = win_pk;
         } else
         if (this->params.interlace == "false") {
@@ -1718,8 +1729,11 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
           win_sn = calc_shotnoise_aliasing(i, j, k);
           win_pk = win_sn;
 #else   // !DBG_FLAG_NOAC
-          win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
-            field_b.calc_assignment_window_in_fourier(i, j, k);
+          win_pk = field_a.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            ) * field_b.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            );
           win_sn = calc_shotnoise_aliasing(i, j, k);
 #endif  // !DBG_FLAG_NOAC
         }
@@ -1882,6 +1896,9 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
     field_a.get_grid_pos_vector(i, j, k, rvec);
   };
 
+  std::function<double(int, int, int)> calc_shotnoise_aliasing =
+    this->ret_calc_shotnoise_aliasing();
+
   // auto ret_grid_wavevector = [&field_a](
   //   int i, int j, int k, double kvec[3]
   // ) {
@@ -1917,13 +1934,16 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
 
         std::complex<double> pk_mode = fa * std::conj(fb);
         std::complex<double> sn_mode =
-          shotnoise_amp * this->calc_shotnoise_aliasing(i, j, k);
+          shotnoise_amp * calc_shotnoise_aliasing(i, j, k);
 
         // Apply grid corrections.
         double win_pk = 1., win_sn = 1.;
         if (this->params.interlace == "true") {
-          win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
-            field_b.calc_assignment_window_in_fourier(i, j, k);
+          win_pk = field_a.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            ) * field_b.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            );
           win_sn = win_pk;
         } else
         if (this->params.interlace == "false") {
@@ -1931,8 +1951,11 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
           win_sn = calc_shotnoise_aliasing(i, j, k);
           win_pk = win_sn;
 #else   // !DBG_FLAG_NOAC
-          win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
-            field_b.calc_assignment_window_in_fourier(i, j, k);
+          win_pk = field_a.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            ) * field_b.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            );
           win_sn = calc_shotnoise_aliasing(i, j, k);
 #endif  // !DBG_FLAG_NOAC
         }
@@ -2096,6 +2119,9 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
     field_a.get_grid_pos_vector(i, j, k, rvec);
   };
 
+  std::function<double(int, int, int)> calc_shotnoise_aliasing =
+    this->ret_calc_shotnoise_aliasing();
+
   // auto ret_grid_wavevector = [&field_a](
   //   int i, int j, int k, double kvec[3]
   // ) {
@@ -2131,13 +2157,16 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
 
         std::complex<double> pk_mode = fa * std::conj(fb);
         std::complex<double> sn_mode =
-          shotnoise_amp * this->calc_shotnoise_aliasing(i, j, k);
+          shotnoise_amp * calc_shotnoise_aliasing(i, j, k);
 
         // Apply grid corrections.
         double win_pk = 1., win_sn = 1.;
         if (this->params.interlace == "true") {
-          win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
-            field_b.calc_assignment_window_in_fourier(i, j, k);
+          win_pk = field_a.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            ) * field_b.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            );
           win_sn = win_pk;
         } else
         if (this->params.interlace == "false") {
@@ -2145,8 +2174,11 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
           win_sn = calc_shotnoise_aliasing(i, j, k);
           win_pk = win_sn;
 #else   // !DBG_FLAG_NOAC
-          win_pk = field_a.calc_assignment_window_in_fourier(i, j, k) *
-            field_b.calc_assignment_window_in_fourier(i, j, k);
+          win_pk = field_a.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            ) * field_b.calc_assignment_window_in_fourier(
+              i, j, k, this->params.assignment_order
+            );
           win_sn = calc_shotnoise_aliasing(i, j, k);
 #endif  // !DBG_FLAG_NOAC
         }
@@ -2235,25 +2267,51 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
 // Sampling corrections
 // -----------------------------------------------------------------------
 
-double FieldStats::calc_shotnoise_aliasing(int i, int j, int k) {
+std::function<double(int, int, int)> FieldStats::ret_calc_shotnoise_aliasing()
+{
+  if (this->params.assignment == "ngp") {
+    return [this](int i, int j, int k) {
+      return calc_shotnoise_aliasing_ngp(i, j, k);
+    };
+  }
+  if (this->params.assignment == "cic") {
+    return [this](int i, int j, int k) {
+      return calc_shotnoise_aliasing_cic(i, j, k);
+    };
+  }
+  if (this->params.assignment == "tsc") {
+    return [this](int i, int j, int k) {
+      return calc_shotnoise_aliasing_tsc(i, j, k);
+    };
+  }
+  if (this->params.assignment == "pcs") {
+    return [this](int i, int j, int k) {
+      return calc_shotnoise_aliasing_pcs(i, j, k);
+    };
+  }
+
+  trvs::logger.error(
+    "Invalid assignment scheme: '%s'.", this->params.assignment.c_str()
+  );
+  throw trvs::InvalidParameterError(
+    "Invalid assignment scheme: '%s'.\n", this->params.assignment.c_str()
+  );
+}
+
+void FieldStats::get_shotnoise_aliasing_sin2(
+  int i, int j, int k, double& cx2, double& cy2, double& cz2
+) {
   i = (i < this->params.ngrid[0]/2) ? i : i - this->params.ngrid[0];
   j = (j < this->params.ngrid[1]/2) ? j : j - this->params.ngrid[1];
   k = (k < this->params.ngrid[2]/2) ? k : k - this->params.ngrid[2];
 
-  if (this->params.assignment == "ngp") {
-    return this->calc_shotnoise_aliasing_ngp(i, j, k);
-  }
-  if (this->params.assignment == "cic") {
-    return this->calc_shotnoise_aliasing_cic(i, j, k);
-  }
-  if (this->params.assignment == "tsc") {
-    return this->calc_shotnoise_aliasing_tsc(i, j, k);
-  }
-  if (this->params.assignment == "pcs") {
-    return this->calc_shotnoise_aliasing_pcs(i, j, k);
-  }
+  double u_x = M_PI * i / double(this->params.ngrid[0]);
+  double u_y = M_PI * j / double(this->params.ngrid[1]);
+  double u_z = M_PI * k / double(this->params.ngrid[2]);
 
-  return 1.;  // default
+  cx2 = (i != 0) ? std::sin(u_x) * std::sin(u_x) : 0.;
+  cy2 = (j != 0) ? std::sin(u_y) * std::sin(u_y) : 0.;
+  cz2 = (k != 0) ? std::sin(u_z) * std::sin(u_z) : 0.;
 }
 
 double FieldStats::calc_shotnoise_aliasing_ngp(int i, int j, int k) {
@@ -2261,25 +2319,15 @@ double FieldStats::calc_shotnoise_aliasing_ngp(int i, int j, int k) {
 }
 
 double FieldStats::calc_shotnoise_aliasing_cic(int i, int j, int k) {
-  double u_x = M_PI * i / double(this->params.ngrid[0]);
-  double u_y = M_PI * j / double(this->params.ngrid[1]);
-  double u_z = M_PI * k / double(this->params.ngrid[2]);
-
-  double cx2 = (i != 0) ? std::sin(u_x) * std::sin(u_x) : 0.;
-  double cy2 = (j != 0) ? std::sin(u_y) * std::sin(u_y) : 0.;
-  double cz2 = (k != 0) ? std::sin(u_z) * std::sin(u_z) : 0.;
+  double cx2, cy2, cz2;
+  this->get_shotnoise_aliasing_sin2(i, j, k, cx2, cy2, cz2);
 
   return (1. - 2./3. * cx2) * (1. - 2./3. * cy2) * (1. - 2./3. * cz2);
 }
 
 double FieldStats::calc_shotnoise_aliasing_tsc(int i, int j, int k) {
-  double u_x = M_PI * i / double(this->params.ngrid[0]);
-  double u_y = M_PI * j / double(this->params.ngrid[1]);
-  double u_z = M_PI * k / double(this->params.ngrid[2]);
-
-  double cx2 = (i != 0) ? std::sin(u_x) * std::sin(u_x) : 0.;
-  double cy2 = (j != 0) ? std::sin(u_y) * std::sin(u_y) : 0.;
-  double cz2 = (k != 0) ? std::sin(u_z) * std::sin(u_z) : 0.;
+  double cx2, cy2, cz2;
+  this->get_shotnoise_aliasing_sin2(i, j, k, cx2, cy2, cz2);
 
   return (1. - cx2 + 2./15. * cx2 * cx2)
     * (1. - cy2 + 2./15. * cy2 * cy2)
@@ -2287,13 +2335,8 @@ double FieldStats::calc_shotnoise_aliasing_tsc(int i, int j, int k) {
 }
 
 double FieldStats::calc_shotnoise_aliasing_pcs(int i, int j, int k) {
-  double u_x = M_PI * i / double(this->params.ngrid[0]);
-  double u_y = M_PI * j / double(this->params.ngrid[1]);
-  double u_z = M_PI * k / double(this->params.ngrid[2]);
-
-  double cx2 = (i != 0) ? std::sin(u_x) * std::sin(u_x) : 0.;
-  double cy2 = (j != 0) ? std::sin(u_y) * std::sin(u_y) : 0.;
-  double cz2 = (k != 0) ? std::sin(u_z) * std::sin(u_z) : 0.;
+  double cx2, cy2, cz2;
+  this->get_shotnoise_aliasing_sin2(i, j, k, cx2, cy2, cz2);
 
   return (1. - 4./3. * cx2 + 2./5. * cx2 * cx2 - 4./315. * cx2 * cx2 * cx2)
     * (1. - 4./3. * cy2 + 2./5. * cy2 * cy2 - 4./315. * cy2 * cy2 * cy2)
