@@ -202,7 +202,7 @@ endif  # uselogo
 
 # Profiler flags: enabled with `useprof=(true|1)`; disabled otherwise
 ifdef useprof
-ifeq ($(strip ${usemap}), $(filter $(strip ${useprof}), true 1))
+ifeq ($(strip ${useprof}), $(filter $(strip ${useprof}), true 1))
 # Linaro MAP profiler
 CXXFLAGS += -g1 -O3 -fno-inline -fno-optimize-sibling-calls
 endif  # useprof==(true|1)
