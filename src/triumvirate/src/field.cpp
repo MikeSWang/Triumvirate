@@ -1502,6 +1502,34 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
   std::function<double(int, int, int)> calc_shotnoise_aliasing =
     this->ret_calc_shotnoise_aliasing();
 
+  std::function<double(int, int, int)> calc_win_pk, calc_win_sn;
+  int assignment_order = this->params.assignment_order;
+  if (this->params.interlace == "true") {
+    calc_win_pk = [&field_a, &field_b, &assignment_order](
+      int i, int j, int k
+    ) {
+      return
+        field_a.calc_assignment_window_in_fourier(i, j, k, assignment_order)
+        * field_b.calc_assignment_window_in_fourier(i, j, k, assignment_order);
+    };
+    calc_win_sn = calc_win_pk;
+  } else
+  if (this->params.interlace == "false") {
+#ifndef DBG_FLAG_NOAC
+    calc_win_sn = calc_shotnoise_aliasing;
+    calc_win_pk = calc_win_sn;
+#else   // !DBG_FLAG_NOAC
+    calc_win_pk = [&field_a, &field_b, &assignment_order](
+      int i, int j, int k
+    ) {
+      return
+        field_a.calc_assignment_window_in_fourier(i, j, k, assignment_order)
+        * field_b.calc_assignment_window_in_fourier(i, j, k, assignment_order);
+    };
+    calc_win_sn = calc_shotnoise_aliasing;
+#endif  // !DBG_FLAG_NOAC
+  }
+
   // Perform fine binning.
   // NOTE: Dynamically allocate owing to size.
   // CAVEAT: Discretionary choices such that 0.0 < k < 10.0.
@@ -1556,28 +1584,8 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
             shotnoise_amp * calc_shotnoise_aliasing(i, j, k);
 
           // Apply grid corrections.
-          double win_pk = 1., win_sn = 1.;
-          if (this->params.interlace == "true") {
-            win_pk = field_a.calc_assignment_window_in_fourier(
-                i, j, k, this->params.assignment_order
-              ) * field_b.calc_assignment_window_in_fourier(
-                i, j, k, this->params.assignment_order
-              );
-            win_sn = win_pk;
-          } else
-          if (this->params.interlace == "false") {
-#ifndef DBG_FLAG_NOAC
-            win_sn = calc_shotnoise_aliasing(i, j, k);
-            win_pk = win_sn;
-#else   // !DBG_FLAG_NOAC
-            win_pk = field_a.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            ) * field_b.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            );
-            win_sn = calc_shotnoise_aliasing(i, j, k);
-#endif  // !DBG_FLAG_NOAC
-          }
+          double win_pk = calc_win_pk(i, j, k);
+          double win_sn = calc_win_sn(i, j, k);
 
           pk_mode /= win_pk;
           sn_mode /= win_sn;
@@ -1680,11 +1688,33 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   std::function<double(int, int, int)> calc_shotnoise_aliasing =
     this->ret_calc_shotnoise_aliasing();
 
-  // auto ret_grid_wavevector = [&field_a](
-  //   int i, int j, int k, double kvec[3]
-  // ) {
-  //   field_a.get_grid_wavevector(i, j, k, kvec);
-  // };
+  std::function<double(int, int, int)> calc_win_pk, calc_win_sn;
+  int assignment_order = this->params.assignment_order;
+  if (this->params.interlace == "true") {
+    calc_win_pk = [&field_a, &field_b, &assignment_order](
+      int i, int j, int k
+    ) {
+      return
+        field_a.calc_assignment_window_in_fourier(i, j, k, assignment_order)
+        * field_b.calc_assignment_window_in_fourier(i, j, k, assignment_order);
+    };
+    calc_win_sn = calc_win_pk;
+  } else
+  if (this->params.interlace == "false") {
+#ifndef DBG_FLAG_NOAC
+    calc_win_sn = calc_shotnoise_aliasing;
+    calc_win_pk = calc_win_sn;
+#else   // !DBG_FLAG_NOAC
+    calc_win_pk = [&field_a, &field_b, &assignment_order](
+      int i, int j, int k
+    ) {
+      return
+        field_a.calc_assignment_window_in_fourier(i, j, k, assignment_order)
+        * field_b.calc_assignment_window_in_fourier(i, j, k, assignment_order);
+    };
+    calc_win_sn = calc_shotnoise_aliasing;
+#endif  // !DBG_FLAG_NOAC
+  }
 
   // Set up 3-d two-point statistics mesh grids (before inverse
   // Fourier transform).
@@ -1715,28 +1745,8 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
           shotnoise_amp * calc_shotnoise_aliasing(i, j, k);
 
         // Apply grid corrections.
-        double win_pk = 1., win_sn = 1.;
-        if (this->params.interlace == "true") {
-          win_pk = field_a.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            ) * field_b.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            );
-          win_sn = win_pk;
-        } else
-        if (this->params.interlace == "false") {
-#ifndef DBG_FLAG_NOAC
-          win_sn = calc_shotnoise_aliasing(i, j, k);
-          win_pk = win_sn;
-#else   // !DBG_FLAG_NOAC
-          win_pk = field_a.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            ) * field_b.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            );
-          win_sn = calc_shotnoise_aliasing(i, j, k);
-#endif  // !DBG_FLAG_NOAC
-        }
+        double win_pk = calc_win_pk(i, j, k);
+        double win_sn = calc_win_sn(i, j, k);
 
         pk_mode /= win_pk;
         sn_mode /= win_sn;
@@ -1899,11 +1909,33 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   std::function<double(int, int, int)> calc_shotnoise_aliasing =
     this->ret_calc_shotnoise_aliasing();
 
-  // auto ret_grid_wavevector = [&field_a](
-  //   int i, int j, int k, double kvec[3]
-  // ) {
-  //   field_a.get_grid_wavevector(i, j, k, kvec);
-  // };
+  std::function<double(int, int, int)> calc_win_pk, calc_win_sn;
+  int assignment_order = this->params.assignment_order;
+  if (this->params.interlace == "true") {
+    calc_win_pk = [&field_a, &field_b, &assignment_order](
+      int i, int j, int k
+    ) {
+      return
+        field_a.calc_assignment_window_in_fourier(i, j, k, assignment_order)
+        * field_b.calc_assignment_window_in_fourier(i, j, k, assignment_order);
+    };
+    calc_win_sn = calc_win_pk;
+  } else
+  if (this->params.interlace == "false") {
+#ifndef DBG_FLAG_NOAC
+    calc_win_sn = calc_shotnoise_aliasing;
+    calc_win_pk = calc_win_sn;
+#else   // !DBG_FLAG_NOAC
+    calc_win_pk = [&field_a, &field_b, &assignment_order](
+      int i, int j, int k
+    ) {
+      return
+        field_a.calc_assignment_window_in_fourier(i, j, k, assignment_order)
+        * field_b.calc_assignment_window_in_fourier(i, j, k, assignment_order);
+    };
+    calc_win_sn = calc_shotnoise_aliasing;
+#endif  // !DBG_FLAG_NOAC
+  }
 
   // Set up 3-d two-point statistics mesh grids (before inverse
   // Fourier transform).
@@ -1937,28 +1969,8 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
           shotnoise_amp * calc_shotnoise_aliasing(i, j, k);
 
         // Apply grid corrections.
-        double win_pk = 1., win_sn = 1.;
-        if (this->params.interlace == "true") {
-          win_pk = field_a.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            ) * field_b.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            );
-          win_sn = win_pk;
-        } else
-        if (this->params.interlace == "false") {
-#ifndef DBG_FLAG_NOAC
-          win_sn = calc_shotnoise_aliasing(i, j, k);
-          win_pk = win_sn;
-#else   // !DBG_FLAG_NOAC
-          win_pk = field_a.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            ) * field_b.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            );
-          win_sn = calc_shotnoise_aliasing(i, j, k);
-#endif  // !DBG_FLAG_NOAC
-        }
+        double win_pk = calc_win_pk(i, j, k);
+        double win_sn = calc_win_sn(i, j, k);
 
         pk_mode /= win_pk;
         sn_mode /= win_sn;
@@ -2122,11 +2134,33 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   std::function<double(int, int, int)> calc_shotnoise_aliasing =
     this->ret_calc_shotnoise_aliasing();
 
-  // auto ret_grid_wavevector = [&field_a](
-  //   int i, int j, int k, double kvec[3]
-  // ) {
-  //   field_a.get_grid_wavevector(i, j, k, kvec);
-  // };
+  std::function<double(int, int, int)> calc_win_pk, calc_win_sn;
+  int assignment_order = this->params.assignment_order;
+  if (this->params.interlace == "true") {
+    calc_win_pk = [&field_a, &field_b, &assignment_order](
+      int i, int j, int k
+    ) {
+      return
+        field_a.calc_assignment_window_in_fourier(i, j, k, assignment_order)
+        * field_b.calc_assignment_window_in_fourier(i, j, k, assignment_order);
+    };
+    calc_win_sn = calc_win_pk;
+  } else
+  if (this->params.interlace == "false") {
+#ifndef DBG_FLAG_NOAC
+    calc_win_sn = calc_shotnoise_aliasing;
+    calc_win_pk = calc_win_sn;
+#else   // !DBG_FLAG_NOAC
+    calc_win_pk = [&field_a, &field_b, &assignment_order](
+      int i, int j, int k
+    ) {
+      return
+        field_a.calc_assignment_window_in_fourier(i, j, k, assignment_order)
+        * field_b.calc_assignment_window_in_fourier(i, j, k, assignment_order);
+    };
+    calc_win_sn = calc_shotnoise_aliasing;
+#endif  // !DBG_FLAG_NOAC
+  }
 
   // Set up 3-d two-point statistics mesh grids (before inverse
   // Fourier transform).
@@ -2160,28 +2194,8 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
           shotnoise_amp * calc_shotnoise_aliasing(i, j, k);
 
         // Apply grid corrections.
-        double win_pk = 1., win_sn = 1.;
-        if (this->params.interlace == "true") {
-          win_pk = field_a.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            ) * field_b.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            );
-          win_sn = win_pk;
-        } else
-        if (this->params.interlace == "false") {
-#ifndef DBG_FLAG_NOAC
-          win_sn = calc_shotnoise_aliasing(i, j, k);
-          win_pk = win_sn;
-#else   // !DBG_FLAG_NOAC
-          win_pk = field_a.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            ) * field_b.calc_assignment_window_in_fourier(
-              i, j, k, this->params.assignment_order
-            );
-          win_sn = calc_shotnoise_aliasing(i, j, k);
-#endif  // !DBG_FLAG_NOAC
-        }
+        double win_pk = calc_win_pk(i, j, k);
+        double win_sn = calc_win_sn(i, j, k);
 
         pk_mode /= win_pk;
         sn_mode /= win_sn;
