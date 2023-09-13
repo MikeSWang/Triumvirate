@@ -368,10 +368,11 @@ def test_ParameterSet___setattr__(param_name, param_value, valid_paramset):
 
 
 def test_ParameterSet_names(valid_paramset):
-    # There are two derived parameters after validation, 'npoint' and 'space'.
+    # There are three derived parameters after validation:
+    # 'assignment_order', 'npoint', 'space'.
     assert (
         set(valid_paramset.names()) - set(_TMPL_PARAM_DICT.keys())
-        == {'npoint', 'space'}
+        == {'assignment_order', 'npoint', 'space'}
     ), "Parameter set names do not match internal records."
 
 

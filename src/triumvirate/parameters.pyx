@@ -30,6 +30,7 @@ _TMPL_PARAM_DICT = {
         'data_catalogue': None,
         'rand_catalogue': None,
     },
+    'catalogue_columns': [],
     'tags': {
         'output': None,
     },
@@ -449,8 +450,11 @@ cdef class ParameterSet:
                 self._params['binning'].lower().encode('utf-8')
 
         # Attribute otherwise-derived parameters.
+        assignment_order_ = self._params.get('assignment_order', 0)
         space_ = self._params.get('space', '').lower()
         npoint_ = self._params.get('npoint', '').lower()
+        if assignment_order_ in {1, 2, 3, 4}:
+            self.thisptr.assignment_order = assignment_order_
         if space_ in {'fourier', 'config'}:
             self.thisptr.space = space_.encode('utf-8')
         if npoint_ in {'2pt', '3pt'}:
@@ -481,6 +485,7 @@ cdef class ParameterSet:
 
         # Fetch validated parameters that have been derived or transmuted.
         # Transmuted I/O paths are not fetched.
+        self._params['assignment_order'] = self.thisptr.assignment_order
         self._params['npoint'] = self.thisptr.npoint.decode('utf-8')
         self._params['space'] = self.thisptr.space.decode('utf-8')
 

@@ -34,6 +34,7 @@ cdef extern from "include/parameters.hpp":
 
         string assignment
         string interlace
+        int assignment_order
 
         # -- Measurement -------------------------------------------------
 
