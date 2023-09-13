@@ -200,6 +200,14 @@ CPPFLAGS += -DTRV_USE_LOGO
 endif  # uselogo==(true|1)
 endif  # uselogo
 
+# Profiler flags: enabled with `useprof=(true|1)`; disabled otherwise
+ifdef useprof
+ifeq ($(strip ${usemap}), $(filter $(strip ${useprof}), true 1))
+# Linaro MAP profiler
+CXXFLAGS += -g1 -O3 -fno-inline -fno-optimize-sibling-calls
+endif  # useprof==(true|1)
+endif  # useprof
+
 # Parameter debugging: enabled with `dbgpars=(true|1)`; disabled otherwise
 ifdef dbgpars
 ifeq ($(strip ${dbgpars}), $(filter $(strip ${dbgpars}), true 1))
