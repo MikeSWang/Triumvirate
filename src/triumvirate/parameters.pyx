@@ -436,9 +436,11 @@ cdef class ParameterSet:
         if self._params['form'] is not None:
             self.thisptr.form = \
                 self._params['form'].lower().encode('utf-8')
-        if self._params['form'] == 'full' and self._params['idx_bin'] is None:
+        if self._params['form'] in {'off-diag', 'row'} \
+                and self._params['idx_bin'] is None:
             raise InvalidParameterError(
-                "`idx_bin` parameter must be set when `form` is 'full'."
+                "`idx_bin` parameter must be set "
+                "when `form` is 'off-diag' or 'row'."
             )
 
         if self._params['norm_convention'] is not None:
@@ -683,7 +685,7 @@ def _modify_measurement_parameters(paramset, params_measure=None,
 
             * 'ell1', 'ell2', 'ELL': int;
             * 'i_wa', 'j_wa': int;
-            * 'form': {'diag', 'full'};
+            * 'form': {'full', 'diag', 'off-diag', 'row'};
             * 'bin_min', 'bin_max': float;
             * 'num_bins': int;
             * 'idx_bin': int.

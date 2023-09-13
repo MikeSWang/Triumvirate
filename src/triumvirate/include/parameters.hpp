@@ -127,7 +127,9 @@ class ParameterSet {
   int j_wa = 0;  ///< second order of the wide-angle correction term
 
   // Measurement choices.
-  /// form of the bispectrum measurement: {"diag" (default), "full"}
+  /// form of the bispectrum measurement: {"full",
+  ///                                      "diag" (default), "off-diag",
+  ///                                      "row"}
   std::string form = "diag";
 
   /// normalisation convention: {"none", "particle" (default), "mesh",
@@ -144,7 +146,7 @@ class ParameterSet {
 
   /// number of measurement bins
   int num_bins = 0;
-  /// fixed bin index in "full" @c form bispectrum measurements
+  /// fixed bin index in "off-fiag"/"row" @c form three-point measurements
   int idx_bin = 0;
 
   // ---------------------------------------------------------------------

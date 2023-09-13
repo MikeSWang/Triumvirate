@@ -516,14 +516,19 @@ int ParameterSet::validate() {
     }
 #endif  // !TRV_EXTCALL
   }
-  if (!(this->form == "diag" || this->form == "full")) {
+  if (!(
+    this->form == "full"
+    || this->form == "diag"
+    || this->form == "off-diag"
+    || this->form == "row"
+  )) {
     if (trvs::currTask == 0) {
       trvs::logger.error(
-        "`form` must be either 'full' or 'diag': `form` = '%s'.",
+        "Three-point statistic form is not recognised: `form` = '%s'.",
         this->form.c_str()
       );
       throw trvs::InvalidParameterError(
-        "`form` must be either 'full' or 'diag': `form` = '%s'.\n",
+        "Three-point statistic form is not recognised: `form` = '%s'.\n",
         this->form.c_str()
       );
     }
@@ -708,7 +713,11 @@ int ParameterSet::validate() {
     }
   }
 
-  if (this->idx_bin < 0 && this->npoint == "3pt" && this->form == "full") {
+  if (
+    this->idx_bin < 0
+    && this->npoint == "3pt"
+    && (this->form == "off-diag" || this->form == "row")
+  ) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Fixed bin index `idx_bin` must be >= 0.");
       throw trvs::InvalidParameterError(
