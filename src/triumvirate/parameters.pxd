@@ -63,6 +63,7 @@ cdef extern from "include/parameters.hpp":
 
         # -- Misc --------------------------------------------------------
 
+        # string save_binned_vectors
         int verbose
 
         # ----------------------------------------------------------------

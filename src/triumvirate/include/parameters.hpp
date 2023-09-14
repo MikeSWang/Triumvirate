@@ -105,14 +105,14 @@ class ParameterSet {
   // ---------------------------------------------------------------------
 
   // Measurement type.
-  /// catalogue type: {"survey", "random", "sim"}
+  /// catalogue type: {"survey", "random", "sim", "none"}
   std::string catalogue_type;
   /// statistic type: {"powspec", "2pcf", "2pcf-win", "bispec", "3pcf",
-  ///                  "3pcf-win", "3pcf-win-wa"}
+  ///                  "3pcf-win", "3pcf-win-wa", "modes", "seps"}
   std::string statistic_type;
 
   // Derived measurement type.
-  std::string npoint;  ///< <i>N</i>-point case: {"2pt", "3pt"}
+  std::string npoint;  ///< <i>N</i>-point case: {"2pt", "3pt", "none"}
   std::string space;   ///< coordinte space: {"fourier", "config"}
 
   // Measurement indexing.
@@ -152,6 +152,11 @@ class ParameterSet {
   // ---------------------------------------------------------------------
   // Misc
   // ---------------------------------------------------------------------
+
+  /// save flag/path for detailed binning of vectors: {"true",
+  ///                                                  "false" (default),
+  ///                                                  <relpath-to-file>}
+  std::string save_binned_vectors = "false";
 
   /// logging verbosity level: {0  (NSET), 10 (DBUG), 20 (STAT) (default),
   ///                           30 (INFO), 40 (WARN), 50 (ERRO)}

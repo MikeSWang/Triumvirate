@@ -14,7 +14,8 @@ directories:
   catalogues:
   measurements:
 
-# Filenames (with extension) of input catalogues.
+# Filenames (with extension) of input catalogues.  These are relative
+# to the catalogue directory.
 files:
   data_catalogue:
   rand_catalogue:
@@ -67,13 +68,16 @@ interlace: off
 
 # -- Measurements --------------------------------------------------------
 
-# Type of catalogue(s): {'survey', 'random', 'sim'}.
+# Type of catalogue(s): {'survey', 'random', 'sim', 'none'}.
 # If of type 'sim', global-plane-parallel measurements are made;
 # otherwise, local-plane-parallel measurements are made.
 catalogue_type:
 
-# Type of measurement:
-# {'powspec', '2pcf', '2pcf-win', 'bispec', '3pcf', '3pcf-win', '3pcf-win-wa'}.
+# Type of measurement: {
+#   'powspec', '2pcf', '2pcf-win',
+#   'bispec', '3pcf', '3pcf-win', '3pcf-win-wa',
+#   'modes', 'seps'
+# }. [mandatory]
 statistic_type:
 
 # Degrees of the multipoles.
@@ -117,6 +121,12 @@ idx_bin:
 
 
 # -- Misc ----------------------------------------------------------------
+
+# Save binning details to file:
+# {true/on, false/off (default), <relpath-to-file>}.
+# If a path is provided, it is relative to the measurement directory.
+# An empty path is equivalent to false/off.
+save_binned_vectors: false
 
 # Logging verbosity level: a non-negative integer.
 # Typical values are: {

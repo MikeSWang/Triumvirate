@@ -30,6 +30,7 @@
 #ifndef TRIUMVIRATE_INCLUDE_ARRAYOPS_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_ARRAYOPS_HPP_INCLUDED_
 
+#include <algorithm>
 #include <cmath>
 #include <cstdarg>
 #include <stdexcept>
@@ -130,6 +131,14 @@ void extrap2d_bizeros(
   int N, int N_ext,
   std::vector< std::vector<double> >& a_ext
 );
+
+/**
+ * @brief Get the sorted indices.
+ *
+ * @param sorting_vector Sorting vector.
+ * @return Sorted indices.
+ */
+std::vector<int> get_sorted_indices(std::vector<int> sorting_vector);
 
 }  // namespace trv::array
 }  // namespace trv

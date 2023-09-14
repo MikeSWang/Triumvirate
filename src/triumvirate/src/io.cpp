@@ -79,7 +79,7 @@ void make_write_dir(std::string dirstr) {
 namespace io {
 
 // -----------------------------------------------------------------------
-// Measurement header
+// Pre-measurement header
 // -----------------------------------------------------------------------
 
 void print_measurement_header_to_file(
@@ -278,6 +278,61 @@ void print_measurement_header_to_file(
     comment_delimiter,
     norm_factor_part, norm_factor_mesh, norm_factor_meshes
   );
+}
+
+
+// -----------------------------------------------------------------------
+// Binning details
+// -----------------------------------------------------------------------
+
+void print_binned_vectors_to_file(
+  std::FILE* fileptr, trv::ParameterSet& params,
+  trv::BinnedVectors& binned_vectors
+) {
+  // Print header.
+  std::fprintf(
+    fileptr,
+    "%s Box size: [%.3f, %.3f, %.3f]\n",
+    comment_delimiter,
+    params.boxsize[0], params.boxsize[1], params.boxsize[2]
+  );
+  std::fprintf(
+    fileptr,
+    "%s Mesh number: [%d, %d, %d]\n",
+    comment_delimiter,
+    params.ngrid[0], params.ngrid[1], params.ngrid[2]
+  );
+  std::fprintf(
+    fileptr,
+    "%s Vector count: %d\n", comment_delimiter, binned_vectors.count
+  );
+  std::fprintf(
+    fileptr,
+    "%s Bin number: %d\n", comment_delimiter, binned_vectors.num_bins
+  );
+
+  // Print data table columns.
+  std::fprintf(
+    fileptr,
+    "%s "
+    "[0] bin_index, [1] bin_lower, [2] bin_upper, "
+    "[3] vec_x, [4] vec_y, [5] vec_z\n",
+    comment_delimiter
+  );
+
+  // Print data table.
+  for (int ivec = 0; ivec < binned_vectors.count; ivec++) {
+    std::fprintf(
+      fileptr,
+      "%d\t%.9e\t%.9e\t% .9e\t% .9e\t% .9e\n",
+      binned_vectors.indices[ivec],
+      binned_vectors.lower_edges[ivec],
+      binned_vectors.upper_edges[ivec],
+      binned_vectors.vecx[ivec],
+      binned_vectors.vecy[ivec],
+      binned_vectors.vecz[ivec]
+    );
+  }
 }
 
 

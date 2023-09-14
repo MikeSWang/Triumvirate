@@ -361,8 +361,10 @@ int main(int argc, char* argv[]) {
     alpha = 1.;
   }
 
-  if (trv::sys::currTask == 0) {
-    trv::sys::logger.info("Alpha contrast: %.6e.", alpha);
+  if (params.catalogue_type != "none") {
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.info("Alpha contrast: %.6e.", alpha);
+    }
   }
 
   trv::ParticleCatalogue& catalogue_for_norm =
@@ -403,44 +405,46 @@ int main(int argc, char* argv[]) {
   }
 
   double norm_factor = 0.;
-  if (params.norm_convention == "none") {
-    norm_factor = 1.;
-    if (trv::sys::currTask == 0) {
-      trv::sys::logger.info(
-        "Normalisation factors: "
-        "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed) (none used).",
-        norm_factor_part, norm_factor_mesh, norm_factor_meshes
-      );
-    }
-  } else
-  if (params.norm_convention == "particle") {
-    norm_factor = norm_factor_part;
-    if (trv::sys::currTask == 0) {
-      trv::sys::logger.info(
-        "Normalisation factors: "
-        "%.6e (particle; used), %.6e (mesh), %.6e (mesh-mixed).",
-        norm_factor, norm_factor_mesh, norm_factor_meshes
-      );
-    }
-  } else
-  if (params.norm_convention == "mesh") {
-    norm_factor = norm_factor_mesh;
-    if (trv::sys::currTask == 0) {
-      trv::sys::logger.info(
-        "Normalisation factors: "
-        "%.6e (particle), %.6e (mesh; used), %.6e (mesh-mixed).",
-        norm_factor_part, norm_factor, norm_factor_meshes
-      );
-    }
-  } else
-  if (params.norm_convention == "mesh-mixed") {
-    norm_factor = norm_factor_meshes;
-    if (trv::sys::currTask == 0) {
-      trv::sys::logger.info(
-        "Normalisation factors: "
-        "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; used).",
-        norm_factor_part, norm_factor_mesh, norm_factor
-      );
+  if (params.npoint != "none") {
+    if (params.norm_convention == "none") {
+      norm_factor = 1.;
+      if (trv::sys::currTask == 0) {
+        trv::sys::logger.info(
+          "Normalisation factors: "
+          "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed) (none used).",
+          norm_factor_part, norm_factor_mesh, norm_factor_meshes
+        );
+      }
+    } else
+    if (params.norm_convention == "particle") {
+      norm_factor = norm_factor_part;
+      if (trv::sys::currTask == 0) {
+        trv::sys::logger.info(
+          "Normalisation factors: "
+          "%.6e (particle; used), %.6e (mesh), %.6e (mesh-mixed).",
+          norm_factor, norm_factor_mesh, norm_factor_meshes
+        );
+      }
+    } else
+    if (params.norm_convention == "mesh") {
+      norm_factor = norm_factor_mesh;
+      if (trv::sys::currTask == 0) {
+        trv::sys::logger.info(
+          "Normalisation factors: "
+          "%.6e (particle), %.6e (mesh; used), %.6e (mesh-mixed).",
+          norm_factor_part, norm_factor, norm_factor_meshes
+        );
+      }
+    } else
+    if (params.norm_convention == "mesh-mixed") {
+      norm_factor = norm_factor_meshes;
+      if (trv::sys::currTask == 0) {
+        trv::sys::logger.info(
+          "Normalisation factors: "
+          "%.6e (particle), %.6e (mesh), %.6e (mesh-mixed; used).",
+          norm_factor_part, norm_factor_mesh, norm_factor
+        );
+      }
     }
   }
 
@@ -520,10 +524,10 @@ int main(int argc, char* argv[]) {
       save_filepath, sizeof(save_filepath), "%s/xiw%d%s",
       params.measurement_dir.c_str(), params.ELL, params.output_tag.c_str()
     );
-    // two-point correlation function window
+
     trv::TwoPCFWindowMeasurements meas_2pcf_win = trv::compute_corrfunc_window(
       catalogue_rand, los_rand, params, binning, alpha, norm_factor
-    );
+    );  // two-point correlation function window
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     trv::io::print_measurement_header_to_file(
       save_fileptr, params, catalogue_rand,
@@ -537,9 +541,9 @@ int main(int argc, char* argv[]) {
   if (params.statistic_type == "bispec") {
     if (params.form == "full") {
       std::snprintf(
-        save_filepath, sizeof(save_filepath), "%s/bk%d%d%d_bin%d%s",
+        save_filepath, sizeof(save_filepath), "%s/bk%d%d%d_%s",
         params.measurement_dir.c_str(),
-        params.ell1, params.ell2, params.ELL, params.idx_bin,
+        params.ell1, params.ell2, params.ELL,
         params.output_tag.c_str()
       );
     } else
@@ -548,6 +552,22 @@ int main(int argc, char* argv[]) {
         save_filepath, sizeof(save_filepath), "%s/bk%d%d%d_diag%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
+        params.output_tag.c_str()
+      );
+    } else
+    if (params.form == "off-diag") {
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/bk%d%d%d_offdiag%d%s",
+        params.measurement_dir.c_str(),
+        params.ell1, params.ell2, params.ELL, params.idx_bin,
+        params.output_tag.c_str()
+      );
+    } else
+    if (params.form == "row") {
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/bk%d%d%d_bin%d%s",
+        params.measurement_dir.c_str(),
+        params.ell1, params.ell2, params.ELL, params.idx_bin,
         params.output_tag.c_str()
       );
     }
@@ -582,9 +602,9 @@ int main(int argc, char* argv[]) {
   if (params.statistic_type == "3pcf") {
     if (params.form == "full") {
       std::snprintf(
-        save_filepath, sizeof(save_filepath), "%s/zeta%d%d%d_bin%d%s",
+        save_filepath, sizeof(save_filepath), "%s/zeta%d%d%d_%s",
         params.measurement_dir.c_str(),
-        params.ell1, params.ell2, params.ELL, params.idx_bin,
+        params.ell1, params.ell2, params.ELL,
         params.output_tag.c_str()
       );
     } else
@@ -593,6 +613,22 @@ int main(int argc, char* argv[]) {
         save_filepath, sizeof(save_filepath), "%s/zeta%d%d%d_diag%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
+        params.output_tag.c_str()
+      );
+    } else
+    if (params.form == "off-diag") {
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/zeta%d%d%d_off-diag%d%s",
+        params.measurement_dir.c_str(),
+        params.ell1, params.ell2, params.ELL, params.idx_bin,
+        params.output_tag.c_str()
+      );
+    } else
+    if (params.form == "row") {
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/zeta%d%d%d_bin%d%s",
+        params.measurement_dir.c_str(),
+        params.ell1, params.ell2, params.ELL, params.idx_bin,
         params.output_tag.c_str()
       );
     }
@@ -627,9 +663,9 @@ int main(int argc, char* argv[]) {
   if (params.statistic_type == "3pcf-win") {
     if (params.form == "full") {
       std::snprintf(
-        save_filepath, sizeof(save_filepath), "%s/zetaw%d%d%d_bin%d%s",
+        save_filepath, sizeof(save_filepath), "%s/zetaw%d%d%d_%s",
         params.measurement_dir.c_str(),
-        params.ell1, params.ell2, params.ELL, params.idx_bin,
+        params.ell1, params.ell2, params.ELL,
         params.output_tag.c_str()
       );
     } else
@@ -640,12 +676,28 @@ int main(int argc, char* argv[]) {
         params.ell1, params.ell2, params.ELL,
         params.output_tag.c_str()
       );
+    } else
+    if (params.form == "off-diag") {
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/zetaw%d%d%d_offdiag%d%s",
+        params.measurement_dir.c_str(),
+        params.ell1, params.ell2, params.ELL, params.idx_bin,
+        params.output_tag.c_str()
+      );
+    } else
+    if (params.form == "row") {
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s/zetaw%d%d%d_bin%d%s",
+        params.measurement_dir.c_str(),
+        params.ell1, params.ell2, params.ELL, params.idx_bin,
+        params.output_tag.c_str()
+      );
     }
     bool wa = false;
-    // three-point correlation function window
+
     trv::ThreePCFWindowMeasurements meas_3pcf_win = trv::compute_3pcf_window(
       catalogue_rand, los_rand, params, binning, alpha, norm_factor, wa
-    );
+    );  // three-point correlation function window
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     trv::io::print_measurement_header_to_file(
       save_fileptr, params, catalogue_rand,
@@ -675,11 +727,11 @@ int main(int argc, char* argv[]) {
       );
     }
     bool wa = true;
-    // three-point correlation function window wide-angle corrections
+
     trv::ThreePCFWindowMeasurements meas_3pcf_win_wa =
       trv::compute_3pcf_window(
         catalogue_rand, los_rand, params, binning, alpha, norm_factor, wa
-      );
+      );  // three-point correlation function window wide-angle corrections
     std::FILE* save_fileptr = std::fopen(save_filepath, "w");
     trv::io::print_measurement_header_to_file(
       save_fileptr, params, catalogue_rand,
@@ -689,6 +741,19 @@ int main(int argc, char* argv[]) {
       save_fileptr, params, meas_3pcf_win_wa
     );
     std::fclose(save_fileptr);
+  }
+
+  if (params.save_binned_vectors != "") {
+    trv::FieldStats binning_meshgrid(params);
+    trv::BinnedVectors binned_vectors = binning_meshgrid.record_binned_vectors(
+      binning, params.save_binned_vectors
+    );
+    if (params.statistic_type == "modes" || params.statistic_type == "seps") {
+      std::snprintf(
+        save_filepath, sizeof(save_filepath), "%s",
+        params.save_binned_vectors.c_str()
+      );
+    }
   }
 
   if (trv::sys::currTask == 0) {

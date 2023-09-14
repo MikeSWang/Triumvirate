@@ -51,6 +51,7 @@ _TMPL_PARAM_DICT = {
     'range': [None, None],
     'num_bins': None,
     'idx_bin': None,
+    'save_binned_vectors': False,
     'verbose': 20,
 }
 

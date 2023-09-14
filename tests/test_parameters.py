@@ -124,6 +124,7 @@ def default_parameters():
         'form': 'diag',
         'norm_convention': 'particle',
         'binning': 'lin',
+        'save_binned_vectors': False,
         'verbose': 20,
     }
 

@@ -117,12 +117,28 @@ void print_measurement_header_to_file(
 
 
 // -----------------------------------------------------------------------
-// Two-point measurement header
+// Binning details
 // -----------------------------------------------------------------------
 
 /**
- * @brief Print measurements to a file including the normalisation
- *        factors and data table columns.
+ * @brief Print binned vectors to a file.
+ *
+ * @param fileptr File to print to.
+ * @param params Parameter set.
+ * @param binned_vectors Binned vectors.
+ */
+void print_binned_vectors_to_file(
+  std::FILE* fileptr, trv::ParameterSet& params,
+  trv::BinnedVectors& binned_vectors
+);
+
+
+// -----------------------------------------------------------------------
+// Two-point measurement data table
+// -----------------------------------------------------------------------
+
+/**
+ * @brief Print measurements as a data table to a file.
  *
  * @param fileptr File to print to.
  * @param params Parameter set.
@@ -134,8 +150,7 @@ void print_measurement_datatab_to_file(
 );
 
 /**
- * @brief Print measurements to a file including the normalisation
- *        factors and data table columns.
+ * @brief Print measurements as a data table to a file.
  *
  * @param fileptr File to print to.
  * @param params Parameter set.
@@ -149,8 +164,7 @@ void print_measurement_datatab_to_file(
 );
 
 /**
- * @brief Print measurements to a file including the normalisation
- *        factors and data table columns.
+ * @brief Print measurements as a data table to a file.
  *
  * @param fileptr File to print to.
  * @param params Parameter set.
@@ -165,12 +179,11 @@ void print_measurement_datatab_to_file(
 
 
 // -----------------------------------------------------------------------
-// Three-point measurement header
+// Three-point measurement data table
 // -----------------------------------------------------------------------
 
 /**
- * @brief Print measurements to a file including the normalisation
- *        factors and data table columns.
+ * @brief Print measurements as a data table to a file.
  *
  * @param fileptr File to print to.
  * @param params Parameter set.
@@ -184,8 +197,7 @@ void print_measurement_datatab_to_file(
 );
 
 /**
- * @brief Print measurements to a file including the normalisation
- *        factors and data table columns.
+ * @brief Print measurements as a data table to a file.
  *
  * @param fileptr File to print to.
  * @param params Parameter set.
@@ -199,8 +211,7 @@ void print_measurement_datatab_to_file(
 );
 
 /**
- * @brief Print measurements to a file including the normalisation
- *        factors and data table columns.
+ * @brief Print measurements as a data table to a file.
  *
  * @param fileptr File to print to.
  * @param params Parameter set.

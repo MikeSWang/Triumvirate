@@ -72,6 +72,7 @@ ParameterSet::ParameterSet(const ParameterSet& other) {
   this->idx_bin = other.idx_bin;
 
   // Copy misc parameters.
+  this->save_binned_vectors = other.save_binned_vectors;
   this->verbose = other.verbose;
 }
 
@@ -107,9 +108,12 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   char norm_convention_[16];
   char binning_[16];
 
+  char save_binned_vectors_[16];
+
   // ---------------------------------------------------------------------
   // Extraction
   // ---------------------------------------------------------------------
+
   std::string line_str;
   char dummy_str[1024], dummy_equal[1024];
   while (std::getline(fin, line_str)) {
@@ -250,14 +254,16 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
         line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->idx_bin
       );
     }
-  }
 
-  // -- Misc -------------------------------------------------------------
+    // -- Misc -------------------------------------------------------------
 
-  if (line_str.find("verbose") != std::string::npos) {
-    std::sscanf(
-      line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->verbose
-    );
+    scan_par_str("save_binned_vectors", "%s %s %s", save_binned_vectors_);
+
+    if (line_str.find("verbose") != std::string::npos) {
+      std::sscanf(
+        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->verbose
+      );
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -284,6 +290,8 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   this->form = form_;
   this->norm_convention = norm_convention_;
   this->binning = binning_;
+
+  this->save_binned_vectors = save_binned_vectors_;
 
   // Attribute derived parameters.
   this->boxsize[0] = boxsize_x;
@@ -331,6 +339,8 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   debug_par_str("form", this->form);
   debug_par_str("norm_convention", this->norm_convention);
   debug_par_str("binning", this->binning);
+
+  debug_par_str("save_binned_vectors", this->save_binned_vectors);
 
   debug_par_int("ngrid[0]", this->ngrid[0]);
   debug_par_int("ngrid[1]", this->ngrid[1]);
@@ -398,16 +408,19 @@ int ParameterSet::validate() {
         + this->data_catalogue_file;  // transmutation
     }
     this->rand_catalogue_file = "";  // transmutation
+  } else
+  if (this->catalogue_type == "none") {
+    // Nothing should happen.
   } else {
 #ifndef TRV_EXTCALL
     if (trvs::currTask == 0) {
       trvs::logger.error(
-        "Catalogue type must be 'survey', 'random' or 'sim': "
+        "Catalogue type must be 'survey', 'random', 'sim' or 'none: "
         "`catalogue_type` = '%s'.",
         this->catalogue_type.c_str()
       );
       throw trvs::InvalidParameterError(
-        "Catalogue type must be 'survey', 'random' or 'sim': "
+        "Catalogue type must be 'survey', 'random', 'sim' or 'none': "
         "`catalogue_type` = '%s'.\n",
         this->catalogue_type.c_str()
       );
@@ -502,6 +515,12 @@ int ParameterSet::validate() {
     || this->statistic_type == "3pcf-win-wa"
   ) {
     this->npoint = "3pt"; this->space = "config";  // derivation
+  } else
+  if (this->statistic_type == "modes") {
+    this->npoint = "none"; this->space = "fourier";  // derivation
+  } else
+  if (this->statistic_type == "seps") {
+    this->npoint = "none"; this->space = "config";  // derivation
   } else {
 #ifndef TRV_EXTCALL
     if (trvs::currTask == 0) {
@@ -583,6 +602,23 @@ int ParameterSet::validate() {
         this->binning.c_str()
       );
     }
+  }
+
+  char default_bvec_sfilepath[1024];
+  std::snprintf(
+    default_bvec_sfilepath, sizeof(default_bvec_sfilepath),
+    "%s/binned_vectors%s",
+    this->measurement_dir.c_str(), this->output_tag.c_str()
+  );
+  if (this->save_binned_vectors == "false") {
+    this->save_binned_vectors = "";  // transmutation
+  } else
+  if (this->save_binned_vectors == "true") {
+    this->save_binned_vectors = default_bvec_sfilepath;  // transmutation
+  } else
+  if (this->save_binned_vectors != "") {
+    this->save_binned_vectors = this->measurement_dir
+      + this->save_binned_vectors;  // transmutation
   }
 
   // Validate and derive numerical parameters.
@@ -767,6 +803,20 @@ int ParameterSet::validate() {
     }
   }
 
+  if (
+    (this->statistic_type == "modes" || this->statistic_type == "seps")
+    && this->save_binned_vectors == ""
+  ) {
+    this->save_binned_vectors = default_bvec_sfilepath;  // transmutation
+  }
+  if (trvs::currTask == 0) {
+    trvs::logger.warn(
+      "`save_binned_vectors` is overriden, as `statistic_type` is '%s' "
+      "so binned vectors are saved as the output to the default path.",
+      this->statistic_type.c_str()
+    );
+  }
+
   if (trvs::currTask == 0) {
     trvs::logger.stat("Parameters validated.");
   }
@@ -848,6 +898,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
   print_par_int("num_bins = %d\n", this->num_bins);
   print_par_int("idx_bin = %d\n", this->idx_bin);
 
+  print_par_str("save_binned_vectors = %s\n", this->save_binned_vectors);
   print_par_int("verbose = %d\n", this->verbose);
 
   std::fclose(ofileptr);

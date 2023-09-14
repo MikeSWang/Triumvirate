@@ -260,5 +260,24 @@ void extrap2d_bizeros(
   }
 }
 
+std::vector<int> get_sorted_indices(std::vector<int> sorting_vector) {
+  // Create an index vector to store the indices of the elements.
+  std::vector<int> indices(sorting_vector.size());
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for
+#endif  // TRV_USE_OMP
+  for (int i = 0; i < sorting_vector.size(); ++i) {
+      indices[i] = i;
+  }
+
+  // Sort the index vector based on the sorting vector.
+  std::sort(indices.begin(), indices.end(), [&](int a, int b) {
+      return sorting_vector[a] < sorting_vector[b];;
+  });
+
+  return indices;
+}
+
 }  // namespace trv::array
 }  // namespace trv

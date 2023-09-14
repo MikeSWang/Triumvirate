@@ -154,6 +154,26 @@ class Binning {
 
 
 // ***********************************************************************
+// Mesh grids
+// ***********************************************************************
+
+/**
+ * @brief Binned vectors.
+ *
+ */
+struct BinnedVectors {
+  int count = 0;                    ///< number of vectors
+  int num_bins = 0;                 ///< number of bins
+  std::vector<int> indices;         ///< bin indices
+  std::vector<double> lower_edges;  ///< lower bin edges
+  std::vector<double> upper_edges;  ///< upper bin edges
+  std::vector<double> vecx;         ///< x-components
+  std::vector<double> vecy;         ///< y-components
+  std::vector<double> vecz;         ///< z-components
+};
+
+
+// ***********************************************************************
 // Line of sight
 // ***********************************************************************
 

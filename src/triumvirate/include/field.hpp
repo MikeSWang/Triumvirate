@@ -44,10 +44,12 @@
 #include <functional>
 #include <vector>
 
+#include "arrayops.hpp"
 #include "monitor.hpp"
 #include "parameters.hpp"
 #include "maths.hpp"
 #include "dataobjs.hpp"
+#include "io.hpp"
 #include "particles.hpp"
 
 namespace trvm = trv::maths;
@@ -682,6 +684,16 @@ class FieldStats {
     trvm::SphericalBesselCalculator& sj_b,
     std::complex<double> shotnoise_amp,
     double k_a, double k_b
+  );
+
+  /**
+   * @brief Record binned vectors given a binning scheme.
+   *
+   * @param binning Bins.
+   * @param save_file Saved filename if non-empty.
+   */
+  trv::BinnedVectors record_binned_vectors(
+    trv::Binning& binning, const std::string& save_file
   );
 
  private:

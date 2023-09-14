@@ -50,13 +50,13 @@ MeshField::MeshField(trv::ParameterSet& params) {
   this->field = fftw_alloc_complex(this->params.nmesh);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 
   if (this->params.interlace == "true") {
     this->field_s = fftw_alloc_complex(this->params.nmesh);
 
     trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
-    trv::sys::update_maxmem();
+    trvs::update_maxmem();
   }
 
   this->initialise_density_field();  // likely redundant but safe
@@ -724,7 +724,7 @@ void MeshField::compute_unweighted_field(ParticleCatalogue& particles) {
   unit_weight = fftw_alloc_complex(particles.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -769,7 +769,7 @@ void MeshField::compute_ylm_wgtd_field(
   weight_kern = fftw_alloc_complex(particles_data.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -796,7 +796,7 @@ void MeshField::compute_ylm_wgtd_field(
   weight_kern = fftw_alloc_complex(particles_rand.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -850,7 +850,7 @@ void MeshField::compute_ylm_wgtd_field(
   weight_kern = fftw_alloc_complex(particles.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -893,7 +893,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
   weight_kern = fftw_alloc_complex(particles_data.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -922,7 +922,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
   weight_kern = fftw_alloc_complex(particles_rand.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -978,7 +978,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
   weight_kern = fftw_alloc_complex(particles.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -1347,7 +1347,7 @@ double MeshField::calc_grid_based_powlaw_norm(
   weight = fftw_alloc_complex(particles.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -1468,6 +1468,184 @@ bool FieldStats::if_fields_compatible(
   }
 
   return flag_compatible;
+}
+
+trv::BinnedVectors FieldStats::record_binned_vectors(
+  trv::Binning& binning, const std::string& save_file={}
+) {
+  double cellsizes[3];
+  if (binning.space == "config") {
+    cellsizes[0] = this->dr[0];
+    cellsizes[1] = this->dr[1];
+    cellsizes[2] = this->dr[2];
+  } else
+  if (binning.space == "fourier") {
+    cellsizes[0] = this->dk[0];
+    cellsizes[1] = this->dk[1];
+    cellsizes[2] = this->dk[2];
+  } else {
+    trvs::logger.error(
+      "Invalid binning space: '%s'.", binning.space.c_str()
+    );
+    throw trvs::InvalidDataError(
+      "Invalid binning space: '%s'.", binning.space.c_str()
+    );
+  }
+
+  // Restrict the mesh grid index ranges.
+  double b = binning.bin_max;
+  int lrange_upper[3], rrange_lower[3];
+  if (binning.space == "config") {
+    for (int iaxis = 0; iaxis < 3; iaxis++) {
+      lrange_upper[iaxis] = std::min(
+        std::ceil(b * this->params.ngrid[iaxis] / this->params.boxsize[iaxis]),
+        std::ceil(this->params.ngrid[iaxis]/2)
+      );
+      rrange_lower[iaxis] = std::max(
+        std::floor(
+          this->params.ngrid[iaxis]
+          - b * this->params.ngrid[iaxis] / this->params.boxsize[iaxis]
+        ),
+        std::floor(this->params.ngrid[iaxis]/2)
+      );
+    }
+  } else
+  if (binning.space == "fourier") {
+    for (int iaxis = 0; iaxis < 3; iaxis++) {
+      lrange_upper[iaxis] = std::min(
+        std::ceil(b * this->params.boxsize[iaxis] / (2*M_PI)),
+        std::ceil(this->params.ngrid[iaxis]/2)
+      );
+      rrange_lower[iaxis] = std::max(
+        std::floor(
+          this->params.ngrid[iaxis]
+          - b * this->params.boxsize[iaxis] / (2*M_PI)
+        ),
+        std::floor(this->params.ngrid[iaxis]/2)
+      );
+    }
+  }
+
+  auto generate_range = [](
+    int lrange_lower, int lrange_upper, int rrange_lower, int rrange_upper
+  ) {
+      std::vector<int> range_vector;
+      for (int i = lrange_lower; i <= lrange_upper; ++i) {
+          range_vector.push_back(i);
+      }
+      for (int i = rrange_lower; i <= rrange_upper; ++i) {
+          range_vector.push_back(i);
+      }
+      return range_vector;
+  };
+
+  std::vector<int> i_range = generate_range(
+    0, lrange_upper[0], rrange_lower[0], params.ngrid[0] - 1
+  );
+  std::vector<int> j_range = generate_range(
+    0, lrange_upper[1], rrange_lower[1], params.ngrid[1] - 1
+  );
+  std::vector<int> k_range = generate_range(
+    0, lrange_upper[2], rrange_lower[2], params.ngrid[2] - 1
+  );
+
+  // Record the binned vectors.
+  trv::BinnedVectors binned_vectors;
+
+  binned_vectors.num_bins = binning.num_bins;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for collapse(3)
+#endif  // TRV_USE_OMP
+  for (int i: i_range) {
+    for (int j: j_range) {
+      for (int k: k_range) {
+        double vx = (i < this->params.ngrid[0]/2) ?
+          i * cellsizes[0] : (i - this->params.ngrid[0]) * cellsizes[0];
+        double vy = (j < this->params.ngrid[1]/2) ?
+          j * cellsizes[1] : (j - this->params.ngrid[1]) * cellsizes[1];
+        double vz = (k < this->params.ngrid[2]/2) ?
+          k * cellsizes[2] : (k - this->params.ngrid[2]) * cellsizes[2];
+
+        double scale = trvm::get_vec3d_magnitude({vx, vy, vz});
+
+OMP_CRITICAL
+        {
+          for (int ibin = 0; ibin < binning.num_bins; ibin++) {
+            double bin_lower = binning.bin_edges[ibin];
+            double bin_upper = binning.bin_edges[ibin + 1];
+            if (bin_lower <= scale && scale < bin_upper) {
+              binned_vectors.indices.push_back(ibin);
+              binned_vectors.lower_edges.push_back(bin_lower);
+              binned_vectors.upper_edges.push_back(bin_upper);
+              binned_vectors.vecx.push_back(vx);
+              binned_vectors.vecy.push_back(vy);
+              binned_vectors.vecz.push_back(vz);
+              binned_vectors.count++;
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  trvs::gbytesMem += trvs::size_in_gb<double>(6*binned_vectors.count);
+  trvs::update_maxmem();
+
+  // Sort the binned vectors.
+  trv::BinnedVectors binned_vectors_sorted;
+
+  binned_vectors_sorted.count = binned_vectors.count;
+  binned_vectors_sorted.num_bins = binned_vectors.num_bins;
+
+  binned_vectors_sorted.indices.resize(binned_vectors.count);
+  binned_vectors_sorted.lower_edges.resize(binned_vectors.count);
+  binned_vectors_sorted.upper_edges.resize(binned_vectors.count);
+  binned_vectors_sorted.vecx.resize(binned_vectors.count);
+  binned_vectors_sorted.vecy.resize(binned_vectors.count);
+  binned_vectors_sorted.vecz.resize(binned_vectors.count);
+
+  trvs::gbytesMem += trvs::size_in_gb<double>(6*binned_vectors.count);
+  trvs::update_maxmem();
+
+  std::vector<int> indices_sorted =
+    trv::array::get_sorted_indices(binned_vectors.indices);
+
+  trvs::gbytesMem += trvs::size_in_gb<double>(binned_vectors.count);
+  trvs::update_maxmem();
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for
+#endif  // TRV_USE_OMP
+  for (int i = 0; i < binned_vectors.count; i++) {
+    int idx = indices_sorted[i];
+    binned_vectors_sorted.indices[i] = binned_vectors.indices[idx];
+    binned_vectors_sorted.lower_edges[i] = binned_vectors.lower_edges[idx];
+    binned_vectors_sorted.upper_edges[i] = binned_vectors.upper_edges[idx];
+    binned_vectors_sorted.vecx[i] = binned_vectors.vecx[idx];
+    binned_vectors_sorted.vecy[i] = binned_vectors.vecy[idx];
+    binned_vectors_sorted.vecz[i] = binned_vectors.vecz[idx];
+  }
+
+  // Save the binned vectors.
+  if (save_file != "") {
+    std::FILE* save_fileptr = std::fopen(save_file.c_str(), "w");
+    trv::io::print_binned_vectors_to_file(
+      save_fileptr, this->params, binned_vectors_sorted
+    );
+    std::fclose(save_fileptr);
+
+    if (trvs::currTask == 0) {
+      trvs::logger.info(
+        "Check binned-vectors file for reference: %s.", save_file.c_str()
+      );
+    }
+  }
+
+  trvs::gbytesMem -= trvs::size_in_gb<double>((6*2+1)*binned_vectors.count);
+
+  return binned_vectors;
 }
 
 
@@ -1721,7 +1899,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -1942,7 +2120,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -2167,7 +2345,7 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
