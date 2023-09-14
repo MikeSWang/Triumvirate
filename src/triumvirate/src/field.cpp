@@ -1529,14 +1529,20 @@ trv::BinnedVectors FieldStats::record_binned_vectors(
   auto generate_range = [](
     int lrange_lower, int lrange_upper, int rrange_lower, int rrange_upper
   ) {
-      std::vector<int> range_vector;
+    std::vector<int> range_vector;
+    if (lrange_upper < rrange_lower) {
       for (int i = lrange_lower; i <= lrange_upper; ++i) {
           range_vector.push_back(i);
       }
       for (int i = rrange_lower; i <= rrange_upper; ++i) {
           range_vector.push_back(i);
       }
-      return range_vector;
+    } else {
+      for (int i = lrange_lower; i <= rrange_upper; ++i) {
+          range_vector.push_back(i);
+      }
+    }
+    return range_vector;
   };
 
   std::vector<int> i_range = generate_range(
