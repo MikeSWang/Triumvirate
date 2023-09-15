@@ -1494,19 +1494,20 @@ trv::BinnedVectors FieldStats::record_binned_vectors(
 
   // Restrict the mesh grid index ranges.
   double b = binning.bin_max;
+
   int lrange_upper[3], rrange_lower[3];
   if (binning.space == "config") {
     for (int iaxis = 0; iaxis < 3; iaxis++) {
       lrange_upper[iaxis] = std::min(
         std::ceil(b * this->params.ngrid[iaxis] / this->params.boxsize[iaxis]),
-        std::ceil(this->params.ngrid[iaxis]/2)
+        std::ceil(this->params.ngrid[iaxis]/2.)
       );
       rrange_lower[iaxis] = std::max(
         std::floor(
           this->params.ngrid[iaxis]
           - b * this->params.ngrid[iaxis] / this->params.boxsize[iaxis]
         ),
-        std::floor(this->params.ngrid[iaxis]/2)
+        std::floor(this->params.ngrid[iaxis]/2.)
       );
     }
   } else
@@ -1514,14 +1515,14 @@ trv::BinnedVectors FieldStats::record_binned_vectors(
     for (int iaxis = 0; iaxis < 3; iaxis++) {
       lrange_upper[iaxis] = std::min(
         std::ceil(b * this->params.boxsize[iaxis] / (2*M_PI)),
-        std::ceil(this->params.ngrid[iaxis]/2)
+        std::ceil(this->params.ngrid[iaxis]/2.)
       );
       rrange_lower[iaxis] = std::max(
         std::floor(
           this->params.ngrid[iaxis]
           - b * this->params.boxsize[iaxis] / (2*M_PI)
         ),
-        std::floor(this->params.ngrid[iaxis]/2)
+        std::floor(this->params.ngrid[iaxis]/2.)
       );
     }
   }
@@ -1538,6 +1539,7 @@ trv::BinnedVectors FieldStats::record_binned_vectors(
           range_vector.push_back(i);
       }
     } else {
+      // This can happen when sampling beyond the Nyquist scale.
       for (int i = lrange_lower; i <= rrange_upper; ++i) {
           range_vector.push_back(i);
       }
@@ -1576,25 +1578,26 @@ trv::BinnedVectors FieldStats::record_binned_vectors(
         double scale = trvm::get_vec3d_magnitude({vx, vy, vz});
 
 OMP_CRITICAL
-        {
-          for (int ibin = 0; ibin < binning.num_bins; ibin++) {
-            double bin_lower = binning.bin_edges[ibin];
-            double bin_upper = binning.bin_edges[ibin + 1];
-            if (bin_lower <= scale && scale < bin_upper) {
-              binned_vectors.indices.push_back(ibin);
-              binned_vectors.lower_edges.push_back(bin_lower);
-              binned_vectors.upper_edges.push_back(bin_upper);
-              binned_vectors.vecx.push_back(vx);
-              binned_vectors.vecy.push_back(vy);
-              binned_vectors.vecz.push_back(vz);
-              binned_vectors.count++;
-              break;
-            }
+{
+        for (int ibin = 0; ibin < binning.num_bins; ibin++) {
+          double bin_lower = binning.bin_edges[ibin];
+          double bin_upper = binning.bin_edges[ibin + 1];
+          if (bin_lower <= scale && scale < bin_upper) {
+            binned_vectors.indices.push_back(ibin);
+            binned_vectors.lower_edges.push_back(bin_lower);
+            binned_vectors.upper_edges.push_back(bin_upper);
+            binned_vectors.vecx.push_back(vx);
+            binned_vectors.vecy.push_back(vy);
+            binned_vectors.vecz.push_back(vz);
+            binned_vectors.count++;
+            break;
           }
         }
+}
       }
     }
   }
+
 
   trvs::gbytesMem += trvs::size_in_gb<double>(6*binned_vectors.count);
   trvs::update_maxmem();
