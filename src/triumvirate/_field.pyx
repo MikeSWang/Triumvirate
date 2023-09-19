@@ -57,11 +57,15 @@ def _record_binned_vectors(Binning binning not None,
         ]
     )
 
-    binned_vectors['index'] = np.array(binned_vectors_struct.indices)
-    binned_vectors['lower_edge'] = np.array(binned_vectors_struct.lower_edges)
-    binned_vectors['upper_edge'] = np.array(binned_vectors_struct.upper_edges)
-    binned_vectors['vecx'] = np.array(binned_vectors_struct.vecx)
-    binned_vectors['vecy'] = np.array(binned_vectors_struct.vecy)
-    binned_vectors['vecz'] = np.array(binned_vectors_struct.vecz)
+    binned_vectors['index'] = np.asarray(binned_vectors_struct.indices)
+    binned_vectors['lower_edge'] = np.asarray(
+        binned_vectors_struct.lower_edges
+    )
+    binned_vectors['upper_edge'] = np.asarray(
+        binned_vectors_struct.upper_edges
+    )
+    binned_vectors['vecx'] = np.asarray(binned_vectors_struct.vecx)
+    binned_vectors['vecy'] = np.asarray(binned_vectors_struct.vecy)
+    binned_vectors['vecz'] = np.asarray(binned_vectors_struct.vecz)
 
     return binned_vectors
