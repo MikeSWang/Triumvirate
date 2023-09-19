@@ -28,7 +28,7 @@ def _record_binned_vectors(Binning binning not None,
 
     Returns
     -------
-    :class:`numpy.ndarray`
+    binned_vectors : :class:`numpy.ndarray`
         Binned vectors as a structured array with the following fields---
 
         - ``'index'``: bin index;
