@@ -1598,7 +1598,6 @@ OMP_CRITICAL
     }
   }
 
-
   trvs::gbytesMem += trvs::size_in_gb<double>(6*binned_vectors.count);
   trvs::update_maxmem();
 

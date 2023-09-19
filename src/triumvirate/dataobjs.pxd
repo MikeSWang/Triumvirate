@@ -29,6 +29,21 @@ cdef extern from "include/dataobjs.hpp":
 
 
     # --------------------------------------------------------------------
+    # Mesh grids
+    # --------------------------------------------------------------------
+
+    struct BinnedVectors "trv::BinnedVectors":
+        int count
+        int num_bins
+        vector[int] indices
+        vector[double] lower_edges
+        vector[double] upper_edges
+        vector[double] vecx
+        vector[double] vecy
+        vector[double] vecz
+
+
+    # --------------------------------------------------------------------
     # Line of sight
     # --------------------------------------------------------------------
 
