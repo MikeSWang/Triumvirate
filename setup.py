@@ -738,6 +738,7 @@ EXT_CONFIGS = {
     'parameters': {},
     'dataobjs': {},
     '_particles': {},
+    '_field': {},
     '_twopt': {},
     '_threept': {},
     '_fftlog': {},
