@@ -398,8 +398,8 @@ cdef class ParameterSet:
             self.thisptr.ell2 = self._params['degrees']['ell2']
         if self._params['degrees']['ELL'] is not None:
             self.thisptr.ELL = self._params['degrees']['ELL']
-        else:
-            raise InvalidParameterError("`ELL` parameter must be set.")
+        # else:
+        #     raise InvalidParameterError("`ELL` parameter must be set.")
 
         if self._params['wa_orders']['i'] is not None:
             self.thisptr.i_wa = self._params['wa_orders']['i']
