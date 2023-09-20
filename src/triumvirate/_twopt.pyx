@@ -196,11 +196,11 @@ def _compute_powspec(
     free(los_data_cpp); free(los_rand_cpp)
 
     return {
-        'kbin': np.array(results.kbin),
-        'keff': np.array(results.keff),
-        'nmodes': np.array(results.nmodes),
-        'pk_raw': np.array(results.pk_raw),
-        'pk_shot': np.array(results.pk_shot),
+        'kbin': np.asarray(results.kbin),
+        'keff': np.asarray(results.keff),
+        'nmodes': np.asarray(results.nmodes),
+        'pk_raw': np.asarray(results.pk_raw),
+        'pk_shot': np.asarray(results.pk_shot),
     }
 
 
@@ -242,10 +242,10 @@ def _compute_corrfunc(
     free(los_data_cpp); free(los_rand_cpp)
 
     return {
-        'rbin': np.array(results.rbin),
-        'reff': np.array(results.reff),
-        'npairs': np.array(results.npairs),
-        'xi': np.array(results.xi),
+        'rbin': np.asarray(results.rbin),
+        'reff': np.asarray(results.reff),
+        'npairs': np.asarray(results.npairs),
+        'xi': np.asarray(results.xi),
     }
 
 
@@ -263,11 +263,11 @@ def _compute_powspec_in_gpp_box(
     )
 
     return {
-        'kbin': np.array(results.kbin),
-        'keff': np.array(results.keff),
-        'nmodes': np.array(results.nmodes),
-        'pk_raw': np.array(results.pk_raw),
-        'pk_shot': np.array(results.pk_shot),
+        'kbin': np.asarray(results.kbin),
+        'keff': np.asarray(results.keff),
+        'nmodes': np.asarray(results.nmodes),
+        'pk_raw': np.asarray(results.pk_raw),
+        'pk_shot': np.asarray(results.pk_shot),
     }
 
 
@@ -285,10 +285,10 @@ def _compute_corrfunc_in_gpp_box(
     )
 
     return {
-        'rbin': np.array(results.rbin),
-        'reff': np.array(results.reff),
-        'npairs': np.array(results.npairs),
-        'xi': np.array(results.xi),
+        'rbin': np.asarray(results.rbin),
+        'reff': np.asarray(results.reff),
+        'npairs': np.asarray(results.npairs),
+        'xi': np.asarray(results.xi),
     }
 
 
@@ -320,8 +320,8 @@ def _compute_corrfunc_window(
     free(los_rand_cpp)
 
     return {
-        'rbin': np.array(results.rbin),
-        'reff': np.array(results.reff),
-        'npairs': np.array(results.npairs),
-        'xi': np.array(results.xi),
+        'rbin': np.asarray(results.rbin),
+        'reff': np.asarray(results.reff),
+        'npairs': np.asarray(results.npairs),
+        'xi': np.asarray(results.xi),
     }

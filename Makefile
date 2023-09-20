@@ -111,7 +111,7 @@ DEP_LDLIBS := $(shell pkg-config --libs-only-l ${DEPS})
 
 INCLUDES += -I${DIR_PKG_INCLUDE} ${DEP_INCLUDES}
 CPPFLAGS += -MMD -MP
-CXXFLAGS += -O3 -Wall ${DEP_CXXFLAGS}
+CXXFLAGS += -Wall -O3 ${DEP_CXXFLAGS}
 LDFLAGS += ${DEP_LDFLAGS}
 LDLIBS += $(if ${DEP_LDLIBS},${DEP_LDLIBS},$(-lgsl -lgslcblas -lm -lfftw3))
 

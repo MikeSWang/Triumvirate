@@ -1598,7 +1598,6 @@ OMP_CRITICAL
     }
   }
 
-
   trvs::gbytesMem += trvs::size_in_gb<double>(6*binned_vectors.count);
   trvs::update_maxmem();
 
@@ -1621,7 +1620,7 @@ OMP_CRITICAL
   std::vector<int> indices_sorted =
     trv::array::get_sorted_indices(binned_vectors.indices);
 
-  trvs::gbytesMem += trvs::size_in_gb<double>(binned_vectors.count);
+  trvs::gbytesMem += trvs::size_in_gb<int>(binned_vectors.count);
   trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
@@ -1652,9 +1651,10 @@ OMP_CRITICAL
     }
   }
 
-  trvs::gbytesMem -= trvs::size_in_gb<double>((6*2+1)*binned_vectors.count);
+  trvs::gbytesMem -= trvs::size_in_gb<double>(2*6*binned_vectors.count);
+  trvs::gbytesMem -= trvs::size_in_gb<int>(binned_vectors.count);
 
-  return binned_vectors;
+  return binned_vectors_sorted;
 }
 
 

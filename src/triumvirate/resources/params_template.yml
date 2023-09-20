@@ -1,9 +1,8 @@
----
-
 # @file params_template.yml
 # @brief Template parameter file for the Triumvirate Python package.
 # @seealso https://triumvirate.readthedocs.org
 
+---
 
 # -- I/O -----------------------------------------------------------------
 
@@ -105,8 +104,8 @@ norm_convention: particle
 binning: lin
 
 # Range of measurement scales.
-# The binning coordinate is either wavenumbers (in h/Mpc) in Fourier space,
-# or separations (in Mpc/h) in configuration space.
+# The binning coordinate is either wavenumbers in Fourier space,
+# or separations in configuration space.
 range: [~, ~]
 
 # Number of measurement bins (i.e. data vector dimension).
