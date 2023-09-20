@@ -58,6 +58,7 @@ cdef extern from "include/dataobjs.hpp":
     # -- Two-point statistics --------------------------------------------
 
     struct PowspecMeasurements "trv::PowspecMeasurements":
+        int dim
         vector[double] kbin
         vector[double] keff
         vector[int] nmodes
@@ -65,12 +66,14 @@ cdef extern from "include/dataobjs.hpp":
         vector[np.complex128_t] pk_shot
 
     struct TwoPCFMeasurements "trv::TwoPCFMeasurements":
+        int dim
         vector[double] rbin
         vector[double] reff
         vector[int] npairs
         vector[np.complex128_t] xi
 
     struct TwoPCFWindowMeasurements "trv::TwoPCFWindowMeasurements":
+        int dim
         vector[double] rbin
         vector[double] reff
         vector[int] npairs
@@ -79,29 +82,35 @@ cdef extern from "include/dataobjs.hpp":
     # -- Three-point statistics ------------------------------------------
 
     struct BispecMeasurements "trv::BispecMeasurements":
+        int dim
         vector[double] k1_bin
         vector[double] k2_bin
         vector[double] k1_eff
         vector[double] k2_eff
-        vector[int] nmodes
+        vector[int] nmodes_1
+        vector[int] nmodes_2
         vector[np.complex128_t] bk_raw
         vector[np.complex128_t] bk_shot
 
     struct ThreePCFMeasurements "trv::ThreePCFMeasurements":
+        int dim
         vector[double] r1_bin
         vector[double] r2_bin
         vector[double] r1_eff
         vector[double] r2_eff
-        vector[int] npairs
+        vector[int] npairs_1
+        vector[int] npairs_2
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
 
     struct ThreePCFWindowMeasurements "trv::ThreePCFWindowMeasurements":
+        int dim
         vector[double] r1_bin
         vector[double] r2_bin
         vector[double] r1_eff
         vector[double] r2_eff
-        vector[int] npairs
+        vector[int] npairs_1
+        vector[int] npairs_2
         vector[np.complex128_t] zeta_raw
         vector[np.complex128_t] zeta_shot
 

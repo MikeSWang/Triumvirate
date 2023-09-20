@@ -356,15 +356,15 @@ void print_measurement_datatab_to_file(
   );
 
   // Print data table.
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int idx_dv = 0; idx_dv < meas_powspec.dim; idx_dv++) {
     std::fprintf(
       fileptr,
       "%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
-      meas_powspec.kbin[ibin],
-      meas_powspec.keff[ibin],
-      meas_powspec.nmodes[ibin],
-      meas_powspec.pk_raw[ibin].real(), meas_powspec.pk_raw[ibin].imag(),
-      meas_powspec.pk_shot[ibin].real(), meas_powspec.pk_shot[ibin].imag()
+      meas_powspec.kbin[idx_dv],
+      meas_powspec.keff[idx_dv],
+      meas_powspec.nmodes[idx_dv],
+      meas_powspec.pk_raw[idx_dv].real(), meas_powspec.pk_raw[idx_dv].imag(),
+      meas_powspec.pk_shot[idx_dv].real(), meas_powspec.pk_shot[idx_dv].imag()
     );
   }
 }
@@ -382,14 +382,14 @@ void print_measurement_datatab_to_file(
   );
 
   // Print data table.
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int idx_dv = 0; idx_dv < meas_2pcf.dim; idx_dv++) {
     std::fprintf(
       fileptr,
       "%.9e\t%.9e\t%10d\t% .9e\t% .9e\n",
-      meas_2pcf.rbin[ibin],
-      meas_2pcf.reff[ibin],
-      meas_2pcf.npairs[ibin],
-      meas_2pcf.xi[ibin].real(), meas_2pcf.xi[ibin].imag()
+      meas_2pcf.rbin[idx_dv],
+      meas_2pcf.reff[idx_dv],
+      meas_2pcf.npairs[idx_dv],
+      meas_2pcf.xi[idx_dv].real(), meas_2pcf.xi[idx_dv].imag()
     );
   }
 }
@@ -407,14 +407,14 @@ void print_measurement_datatab_to_file(
   );
 
   // Print data table.
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int idx_dv = 0; idx_dv < meas_2pcf_win.dim; idx_dv++) {
     std::fprintf(
       fileptr,
       "%.9e\t%.9e\t%10d\t% .9e\t% .9e\n",
-      meas_2pcf_win.rbin[ibin],
-      meas_2pcf_win.reff[ibin],
-      meas_2pcf_win.npairs[ibin],
-      meas_2pcf_win.xi[ibin].real(), meas_2pcf_win.xi[ibin].imag()
+      meas_2pcf_win.rbin[idx_dv],
+      meas_2pcf_win.reff[idx_dv],
+      meas_2pcf_win.npairs[idx_dv],
+      meas_2pcf_win.xi[idx_dv].real(), meas_2pcf_win.xi[idx_dv].imag()
     );
   }
 };
@@ -438,23 +438,25 @@ void print_measurement_datatab_to_file(
   std::fprintf(
     fileptr,
     "%s "
-    "[0] k1_cen, [1] k1_eff, [2] k2_cen, [3] k2_eff, [4] nmodes, "
-    "[5] Re{bk%s_raw}, [6] Im{bk%s_raw}, "
-    "[7] Re{bk%s_shot}, [8] Im{bk%s_shot}\n",
+    "[0] k1_cen, [1] k1_eff, [2] nmodes_1, "
+    "[3] k2_cen, [4] k2_eff, [5] nmodes_2, "
+    "[6] Re{bk%s_raw}, [7] Im{bk%s_raw}, "
+    "[8] Re{bk%s_shot}, [9] Im{bk%s_shot}\n",
     comment_delimiter,
     multipole_str, multipole_str, multipole_str, multipole_str
   );
 
   // Print data table.
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int idx_dv = 0; idx_dv < meas_bispec.dim; idx_dv++) {
     std::fprintf(
       fileptr,
-      "%.9e\t%.9e\t%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
-      meas_bispec.k1_bin[ibin], meas_bispec.k1_eff[ibin],
-      meas_bispec.k2_bin[ibin], meas_bispec.k2_eff[ibin],
-      meas_bispec.nmodes[ibin],
-      meas_bispec.bk_raw[ibin].real(), meas_bispec.bk_raw[ibin].imag(),
-      meas_bispec.bk_shot[ibin].real(), meas_bispec.bk_shot[ibin].imag()
+      "%.9e\t%.9e\t%10d\t%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
+      meas_bispec.k1_bin[idx_dv], meas_bispec.k1_eff[idx_dv],
+      meas_bispec.nmodes_1[idx_dv],
+      meas_bispec.k2_bin[idx_dv], meas_bispec.k2_eff[idx_dv],
+      meas_bispec.nmodes_2[idx_dv],
+      meas_bispec.bk_raw[idx_dv].real(), meas_bispec.bk_raw[idx_dv].imag(),
+      meas_bispec.bk_shot[idx_dv].real(), meas_bispec.bk_shot[idx_dv].imag()
     );
   }
 }
@@ -473,23 +475,25 @@ void print_measurement_datatab_to_file(
   std::fprintf(
     fileptr,
     "%s "
-    "[0] r1_cen, [1] r1_eff, [2] r2_cen, [3] r2_eff, [4] npairs, "
-    "[5] Re{zeta%s_raw}, [6] Im{zeta%s_raw}, "
-    "[7] Re{zeta%s_shot}, [8] Im{zeta%s_shot}\n",
+    "[0] r1_cen, [1] r1_eff, [2] npairs_1, "
+    "[3] r2_cen, [4] r2_eff, [5] npairs_2, "
+    "[6] Re{zeta%s_raw}, [7] Im{zeta%s_raw}, "
+    "[8] Re{zeta%s_shot}, [9] Im{zeta%s_shot}\n",
     comment_delimiter,
     multipole_str, multipole_str, multipole_str, multipole_str
   );
 
   // Print data table.
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int idx_dv = 0; idx_dv < meas_3pcf.dim; idx_dv++) {
     std::fprintf(
       fileptr,
-      "%.9e\t%.9e\t%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
-      meas_3pcf.r1_bin[ibin], meas_3pcf.r1_eff[ibin],
-      meas_3pcf.r2_bin[ibin], meas_3pcf.r2_eff[ibin],
-      meas_3pcf.npairs[ibin],
-      meas_3pcf.zeta_raw[ibin].real(), meas_3pcf.zeta_raw[ibin].imag(),
-      meas_3pcf.zeta_shot[ibin].real(), meas_3pcf.zeta_shot[ibin].imag()
+      "%.9e\t%.9e\t%10d\t%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
+      meas_3pcf.r1_bin[idx_dv], meas_3pcf.r1_eff[idx_dv],
+      meas_3pcf.npairs_1[idx_dv],
+      meas_3pcf.r2_bin[idx_dv], meas_3pcf.r2_eff[idx_dv],
+      meas_3pcf.npairs_2[idx_dv],
+      meas_3pcf.zeta_raw[idx_dv].real(), meas_3pcf.zeta_raw[idx_dv].imag(),
+      meas_3pcf.zeta_shot[idx_dv].real(), meas_3pcf.zeta_shot[idx_dv].imag()
     );
   }
 }
@@ -508,25 +512,27 @@ void print_measurement_datatab_to_file(
   std::fprintf(
     fileptr,
     "%s "
-    "[0] r1_cen, [1] r1_eff, [2] r2_cen, [3] r2_eff, [4] npairs, "
-    "[5] Re{zeta%s_raw}, [6] Im{zeta%s_raw}, "
-    "[7] Re{zeta%s_shot}, [8] Im{zeta%s_shot}\n",
+    "[0] r1_cen, [1] r1_eff, [2] npairs_1, "
+    "[3] r2_cen, [4] r2_eff, [5] npairs_2, "
+    "[6] Re{zeta%s_raw}, [7] Im{zeta%s_raw}, "
+    "[8] Re{zeta%s_shot}, [9] Im{zeta%s_shot}\n",
     comment_delimiter,
     multipole_str, multipole_str, multipole_str, multipole_str
   );
 
   // Print data table.
-  for (int ibin = 0; ibin < params.num_bins; ibin++) {
+  for (int idx_dv = 0; idx_dv < meas_3pcf_win.dim; idx_dv++) {
     std::fprintf(
       fileptr,
-      "%.9e\t%.9e\t%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
-      meas_3pcf_win.r1_bin[ibin], meas_3pcf_win.r1_eff[ibin],
-      meas_3pcf_win.r2_bin[ibin], meas_3pcf_win.r2_eff[ibin],
-      meas_3pcf_win.npairs[ibin],
-      meas_3pcf_win.zeta_raw[ibin].real(),
-      meas_3pcf_win.zeta_raw[ibin].imag(),
-      meas_3pcf_win.zeta_shot[ibin].real(),
-      meas_3pcf_win.zeta_shot[ibin].imag()
+      "%.9e\t%.9e\t%10d\t%.9e\t%.9e\t%10d\t% .9e\t% .9e\t% .9e\t% .9e\n",
+      meas_3pcf_win.r1_bin[idx_dv], meas_3pcf_win.r1_eff[idx_dv],
+      meas_3pcf_win.npairs_1[idx_dv],
+      meas_3pcf_win.r2_bin[idx_dv], meas_3pcf_win.r2_eff[idx_dv],
+      meas_3pcf_win.npairs_2[idx_dv],
+      meas_3pcf_win.zeta_raw[idx_dv].real(),
+      meas_3pcf_win.zeta_raw[idx_dv].imag(),
+      meas_3pcf_win.zeta_shot[idx_dv].real(),
+      meas_3pcf_win.zeta_shot[idx_dv].imag()
     );
   }
 }
