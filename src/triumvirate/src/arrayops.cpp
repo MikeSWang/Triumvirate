@@ -267,7 +267,7 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector) {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-  for (int i = 0; i < int(sorting_vector.size()); ++i) {
+  for (int i = 0; i < int(sorting_vector.size()); i++) {
       indices[i] = i;
   }
 
