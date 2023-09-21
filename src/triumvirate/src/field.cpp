@@ -1532,15 +1532,15 @@ trv::BinnedVectors FieldStats::record_binned_vectors(
   ) {
     std::vector<int> range_vector;
     if (lrange_upper < rrange_lower) {
-      for (int i = lrange_lower; i <= lrange_upper; ++i) {
+      for (int i = lrange_lower; i <= lrange_upper; i++) {
           range_vector.push_back(i);
       }
-      for (int i = rrange_lower; i <= rrange_upper; ++i) {
+      for (int i = rrange_lower; i <= rrange_upper; i++) {
           range_vector.push_back(i);
       }
     } else {
       // This can happen when sampling beyond the Nyquist scale.
-      for (int i = lrange_lower; i <= rrange_upper; ++i) {
+      for (int i = lrange_lower; i <= rrange_upper; i++) {
           range_vector.push_back(i);
       }
     }

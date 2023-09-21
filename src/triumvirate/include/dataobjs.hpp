@@ -198,6 +198,7 @@ struct LineOfSight {
  *
  */
 struct PowspecMeasurements {
+  int dim = 0;               ///< dimension of data vector
   std::vector<double> kbin;  ///< central wavenumber in bins
   std::vector<double> keff;  ///< effective wavenumber in bins
   std::vector<int> nmodes;   ///< number of wavevectors in bins
@@ -212,6 +213,7 @@ struct PowspecMeasurements {
  *
  */
 struct TwoPCFMeasurements {
+  int dim = 0;               ///< dimension of data vector
   std::vector<double> rbin;  ///< central separation in bins
   std::vector<double> reff;  ///< effective separation in bins
   std::vector<int> npairs;   ///< number of separation vectors in bins
@@ -224,6 +226,7 @@ struct TwoPCFMeasurements {
  *
  */
 struct TwoPCFWindowMeasurements {
+  int dim = 0;               ///< dimension of data vector
   std::vector<double> rbin;  ///< central separation in bins
   std::vector<double> reff;  ///< effective separation in bins
   std::vector<int> npairs;   ///< number of separation vectors in bins
@@ -241,11 +244,13 @@ struct TwoPCFWindowMeasurements {
  *
  */
 struct BispecMeasurements {
+  int dim = 0;                 ///< dimension of data vector
   std::vector<double> k1_bin;  ///< first central wavenumber in bins
   std::vector<double> k2_bin;  ///< second central wavenumber in bins
   std::vector<double> k1_eff;  ///< first effective wavenumber in bins
   std::vector<double> k2_eff;  ///< second effective wavenumber in bins
-  std::vector<int> nmodes;    ///< number of wavevectors in bins
+  std::vector<int> nmodes_1;   ///< number of first wavevectors in bins
+  std::vector<int> nmodes_2;   ///< number of second wavevectors in bins
   /// bispectrum raw measurements
   std::vector< std::complex<double> > bk_raw;
   /// bispectrum shot noise
@@ -257,11 +262,15 @@ struct BispecMeasurements {
  *
  */
 struct ThreePCFMeasurements {
+  int dim = 0;                 ///< dimension of data vector
   std::vector<double> r1_bin;  ///< first central separation in bins
   std::vector<double> r2_bin;  ///< second central separation in bins
   std::vector<double> r1_eff;  ///< first effective separation in bins
   std::vector<double> r2_eff;  ///< second effective separation in bins
-  std::vector<int> npairs;    ///< number of separation vectors in bins
+  /// number of first separation vectors in bins
+  std::vector<int> npairs_1;
+  /// number of second separation vectors in bins
+  std::vector<int> npairs_2;
   /// three-point correlation function raw measurements
   std::vector< std::complex<double> > zeta_raw;
   /// three-point correlation function shot noise
@@ -273,11 +282,15 @@ struct ThreePCFMeasurements {
  *
  */
 struct ThreePCFWindowMeasurements {
+  int dim = 0;                 ///< dimension of data vector
   std::vector<double> r1_bin;  ///< first central separation in bins
   std::vector<double> r2_bin;  ///< second central separation in bins
   std::vector<double> r1_eff;  ///< first effective separation in bins
   std::vector<double> r2_eff;  ///< second effective separation in bins
-  std::vector<int> npairs;    ///< number of pairwise separations
+  /// number of first separation vectors in bins
+  std::vector<int> npairs_1;
+  /// number of second separation vectors in bins
+  std::vector<int> npairs_2;
   /// three-point correlation function window raw measurements
   std::vector< std::complex<double> > zeta_raw;
   /// three-point correlation function window shot noise

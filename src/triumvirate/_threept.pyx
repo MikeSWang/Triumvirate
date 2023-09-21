@@ -164,7 +164,8 @@ def _compute_bispec(
         'k2_bin': np.asarray(results.k2_bin),
         'k1_eff': np.asarray(results.k1_eff),
         'k2_eff': np.asarray(results.k2_eff),
-        'nmodes': np.asarray(results.nmodes),
+        'nmodes_1': np.asarray(results.nmodes_1),
+        'nmodes_2': np.asarray(results.nmodes_2),
         'bk_raw': np.asarray(results.bk_raw),
         'bk_shot': np.asarray(results.bk_shot),
     }
@@ -212,7 +213,8 @@ def _compute_3pcf(
         'r2_bin': np.asarray(results.r2_bin),
         'r1_eff': np.asarray(results.r1_eff),
         'r2_eff': np.asarray(results.r2_eff),
-        'npairs': np.asarray(results.npairs),
+        'npairs_1': np.asarray(results.npairs_1),
+        'npairs_2': np.asarray(results.npairs_2),
         'zeta_raw': np.asarray(results.zeta_raw),
         'zeta_shot': np.asarray(results.zeta_shot),
     }
@@ -236,7 +238,8 @@ def _compute_bispec_in_gpp_box(
         'k2_bin': np.asarray(results.k2_bin),
         'k1_eff': np.asarray(results.k1_eff),
         'k2_eff': np.asarray(results.k2_eff),
-        'nmodes': np.asarray(results.nmodes),
+        'nmodes_1': np.asarray(results.nmodes_1),
+        'nmodes_2': np.asarray(results.nmodes_2),
         'bk_raw': np.asarray(results.bk_raw),
         'bk_shot': np.asarray(results.bk_shot),
     }
@@ -260,7 +263,8 @@ def _compute_3pcf_in_gpp_box(
         'r2_bin': np.asarray(results.r2_bin),
         'r1_eff': np.asarray(results.r1_eff),
         'r2_eff': np.asarray(results.r2_eff),
-        'npairs': np.asarray(results.npairs),
+        'npairs_1': np.asarray(results.npairs_1),
+        'npairs_2': np.asarray(results.npairs_2),
         'zeta_raw': np.asarray(results.zeta_raw),
         'zeta_shot': np.asarray(results.zeta_shot),
     }
@@ -300,7 +304,8 @@ def _compute_3pcf_window(
         'r2_bin': np.asarray(results.r2_bin),
         'r1_eff': np.asarray(results.r1_eff),
         'r2_eff': np.asarray(results.r2_eff),
-        'npairs': np.asarray(results.npairs),
+        'npairs_1': np.asarray(results.npairs_1),
+        'npairs_2': np.asarray(results.npairs_2),
         'zeta_raw': np.asarray(results.zeta_raw),
         'zeta_shot': np.asarray(results.zeta_shot),
     }
@@ -349,7 +354,8 @@ def _compute_3pcf_window(
 #         'k2_bin': np.asarray(results.k2_bin),
 #         'k1_eff': np.asarray(results.k1_eff),
 #         'k2_eff': np.asarray(results.k2_eff),
-#         'nmodes': np.asarray(results.nmodes),
+#         'nmodes_1': np.asarray(results.nmodes_1),
+#         'nmodes_2': np.asarray(results.nmodes_2),
 #         'bk_raw': np.asarray(results.bk_raw),
 #         'bk_shot': np.asarray(results.bk_shot),
 #     }

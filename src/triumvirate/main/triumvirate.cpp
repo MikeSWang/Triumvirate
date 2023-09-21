@@ -539,19 +539,12 @@ int main(int argc, char* argv[]) {
     std::fclose(save_fileptr);
   } else
   if (params.statistic_type == "bispec") {
-    if (params.form == "full") {
+    if (params.form == "full" || params.form == "diag") {
       std::snprintf(
-        save_filepath, sizeof(save_filepath), "%s/bk%d%d%d_%s",
+        save_filepath, sizeof(save_filepath), "%s/bk%d%d%d_%s%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL,
-        params.output_tag.c_str()
-      );
-    } else
-    if (params.form == "diag") {
-      std::snprintf(
-        save_filepath, sizeof(save_filepath), "%s/bk%d%d%d_diag%s",
-        params.measurement_dir.c_str(),
-        params.ell1, params.ell2, params.ELL,
+        params.form.c_str(),
         params.output_tag.c_str()
       );
     } else

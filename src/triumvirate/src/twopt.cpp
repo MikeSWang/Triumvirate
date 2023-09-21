@@ -428,6 +428,7 @@ trv::PowspecMeasurements compute_powspec(
     powspec_out.pk_raw.push_back(norm_factor * pk_save[ibin]);
     powspec_out.pk_shot.push_back(norm_factor * sn_save[ibin]);
   }
+  powspec_out.dim = kbinning.num_bins;
 
   delete[] nmodes_save; delete[] k_save; delete[] pk_save; delete[] sn_save;
 
@@ -545,6 +546,7 @@ trv::TwoPCFMeasurements compute_corrfunc(
     corrfunc_out.npairs.push_back(npairs_save[ibin]);
     corrfunc_out.xi.push_back(norm_factor * xi_save[ibin]);
   }
+  corrfunc_out.dim = rbinning.num_bins;
 
   delete[] npairs_save; delete[] r_save; delete[] xi_save;
 
@@ -645,6 +647,7 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
     powspec_out.pk_raw.push_back(norm_factor * pk_save[ibin]);
     powspec_out.pk_shot.push_back(norm_factor * sn_save[ibin]);
   }
+  powspec_out.dim = kbinning.num_bins;
 
   delete[] nmodes_save; delete[] k_save; delete[] pk_save; delete[] sn_save;
 
@@ -743,6 +746,7 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
     corrfunc_out.npairs.push_back(npairs_save[ibin]);
     corrfunc_out.xi.push_back(norm_factor * xi_save[ibin]);
   }
+  corrfunc_out.dim = rbinning.num_bins;
 
   delete[] npairs_save; delete[] r_save; delete[] xi_save;
 
@@ -859,6 +863,7 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
     corrfunc_win_out.npairs.push_back(npairs_save[ibin]);
     corrfunc_win_out.xi.push_back(norm_factor * xi_save[ibin]);
   }
+  corrfunc_win_out.dim = rbinning.num_bins;
 
   delete[] npairs_save; delete[] r_save; delete[] xi_save;
 
