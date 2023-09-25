@@ -828,7 +828,7 @@ trv::ThreePCFMeasurements compute_3pcf(
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "... computed 3-point correlation function "
+      "... computed three-point correlation function "
       "from paired survey-type catalogues."
     );
   }
@@ -1390,7 +1390,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
-      "... computed 3-point correlation function "
+      "... computed three-point correlation function "
       "from a periodic-box simulation-type catalogue "
       "in the global plane-parallel approximation."
     );
