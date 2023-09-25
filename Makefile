@@ -356,7 +356,7 @@ checkopts:
 	@echo "  LDFLAGS_OMP=${LDFLAGS_OMP}"
 	@echo "  LDLIBS_OMP=${LDLIBS_OMP}"
 	@echo "  AR=${AR}"
-	@echo "  ARFLAGS={ARFLAGS}"
+	@echo "  ARFLAGS=${ARFLAGS}"
 	@echo "  RM=${RM}"
 	@echo "  PIPOPTS=${PIPOPTS}"
 

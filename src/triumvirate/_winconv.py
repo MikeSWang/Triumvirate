@@ -60,7 +60,7 @@ class _WConvTerm(NamedTuple):
     deg_Q : str
         Window function multipole degree.
     deg_zeta : str
-        Unwindowed 3-point correlation funciton multipole degree.
+        Unwindowed three-point correlation funciton multipole degree.
     coeff : float
         Numerical factor for the convolution term.
 
@@ -74,7 +74,7 @@ class _WConvFormulae:
     """Window convolution formulae.
 
     The full formulae are encoded as a dictionary, where each key
-    corresponds to a windowed 3-point correlation function (3PCF)
+    corresponds to a windowed three-point correlation function (3PCF)
     multipole, and each value is a sequence of (named) tuples each
     corresponding to a window convolution term.
 
@@ -131,8 +131,8 @@ class _WConvFormulae:
 
 
 def wconv_3pcf_diag(formulae, Q, zeta, r_common, r_Q=None, r_zeta=None):
-    r"""Convolve multipoles of the 3-point correlation function (3PCF) and
-    the window function in diagonal form using specified formulae.
+    r"""Convolve multipoles of the three-point correlation function (3PCF)
+    and the window function in diagonal form using specified formulae.
 
     Parameters
     ----------
@@ -230,8 +230,8 @@ def wconv_3pcf_diag(formulae, Q, zeta, r_common, r_Q=None, r_zeta=None):
 
 def wconv_3pcf(formulae, Q, zeta, r1_common, r2_common,
                r1_Q=None, r2_Q=None, r1_zeta=None, r2_zeta=None):
-    r"""Convolve multipoles of the 3-point correlation function (3PCF) and
-    the window function using specified formulae.
+    r"""Convolve multipoles of the three-point correlation function (3PCF)
+    and the window function using specified formulae.
 
     Parameters
     ----------
