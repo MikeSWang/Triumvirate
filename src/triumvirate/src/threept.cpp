@@ -242,17 +242,45 @@ trv::BispecMeasurements compute_bispec(
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   // Set up output.
-  int* nmodes_save = new int[kbinning.num_bins];
-  double* k1_save = new double[kbinning.num_bins];
-  double* k2_save = new double[kbinning.num_bins];
-  std::complex<double>* bk_save = new std::complex<double>[kbinning.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[kbinning.num_bins];
-  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-    nmodes_save[ibin] = 0;
-    k1_save[ibin] = 0.;
-    k2_save[ibin] = 0.;
-    bk_save[ibin] = 0.;
-    sn_save[ibin] = 0.;
+  int dv_dim = 0;  // data vector dimension
+  if (params.form == "diag" || params.form == "row" ) {
+    dv_dim = kbinning.num_bins;
+  } else
+  if (params.form == "off-diag") {
+    dv_dim = kbinning.num_bins - params.idx_bin;
+  } else
+  if (params.form == "full") {
+    dv_dim = kbinning.num_bins * (kbinning.num_bins + 1) / 2;
+  } else {
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Three-point statistic form is not recognised: `form` = '%s'.",
+        params.form.c_str()
+      );
+      throw trvs::InvalidParameterError(
+        "Three-point statistic form is not recognised: `form` = '%s'.\n",
+        params.form.c_str()
+      );
+    }
+  }
+
+  int* nmodes1_dv = new int[dv_dim];
+  int* nmodes2_dv = new int[dv_dim];
+  double* k1bin_dv = new double[dv_dim];
+  double* k2bin_dv = new double[dv_dim];
+  double* k1eff_dv = new double[dv_dim];
+  double* k2eff_dv = new double[dv_dim];
+  std::complex<double>* bk_dv = new std::complex<double>[dv_dim];
+  std::complex<double>* sn_dv = new std::complex<double>[dv_dim];
+  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+    nmodes1_dv[idx_dv] = 0;
+    nmodes2_dv[idx_dv] = 0;
+    k1bin_dv[idx_dv] = 0.;
+    k2bin_dv[idx_dv] = 0.;
+    k1eff_dv[idx_dv] = 0.;
+    k2eff_dv[idx_dv] = 0.;
+    bk_dv[idx_dv] = 0.;
+    sn_dv[idx_dv] = 0.;
   }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
@@ -348,68 +376,238 @@ trv::BispecMeasurements compute_bispec(
 
         MeshField F_lm_a(params);  // F_lm_a
         MeshField F_lm_b(params);  // F_lm_b
-        if (params.form == "full") {
-          double k_lower = kbinning.bin_edges[params.idx_bin];
-          double k_upper = kbinning.bin_edges[params.idx_bin + 1];
+
+        if (params.form == "diag") {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin = idx_dv;
+
+            double k_lower = kbinning.bin_edges[ibin];
+            double k_upper = kbinning.bin_edges[ibin + 1];
+
+            double k_eff_a_, k_eff_b_;
+            int nmodes_a_, nmodes_b_;
+
+            F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_00, ylm_k_a, k_lower, k_upper, k_eff_a_, nmodes_a_
+            );
+            F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_00, ylm_k_b, k_lower, k_upper, k_eff_b_, nmodes_b_
+            );
+
+            // Only record the binned coordinates and counts once.
+            if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+              k1bin_dv[idx_dv] = kbinning.bin_centres[ibin];
+              k2bin_dv[idx_dv] = kbinning.bin_centres[ibin];
+              k1eff_dv[idx_dv] = k_eff_a_;
+              k2eff_dv[idx_dv] = k_eff_b_;
+              nmodes1_dv[idx_dv] = nmodes_a_;
+              nmodes2_dv[idx_dv] = nmodes_b_;
+            }
+
+            // B_{l₁ l₂ L}^{m₁ m₂ M}
+            double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
+            for (int gid = 0; gid < params.nmesh; gid++) {
+              std::complex<double> F_lm_a_gridpt(
+                F_lm_a[gid][0], F_lm_a[gid][1]
+              );
+              std::complex<double> F_lm_b_gridpt(
+                F_lm_b[gid][0], F_lm_b[gid][1]
+              );
+              std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
+              std::complex<double> bk_gridpt =
+                F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+
+              bk_comp_real += bk_gridpt.real();
+              bk_comp_imag += bk_gridpt.imag();
+            }
+
+            std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+          }
+        }
+
+        if (params.form == "off-diag") {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin_row = idx_dv;
+            int ibin_col = idx_dv + params.idx_bin;
+
+            double k_lower_a = kbinning.bin_edges[ibin_row];
+            double k_upper_a = kbinning.bin_edges[ibin_row + 1];
+            double k_lower_b = kbinning.bin_edges[ibin_col];
+            double k_upper_b = kbinning.bin_edges[ibin_col + 1];
+
+            double k_eff_a_, k_eff_b_;
+            int nmodes_a_, nmodes_b_;
+
+            F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_00, ylm_k_a, k_lower_a, k_upper_a, k_eff_a_, nmodes_a_
+            );
+            F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
+            );
+
+            // Only record the binned coordinates and counts once.
+            if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+              k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
+              k2bin_dv[idx_dv] = kbinning.bin_centres[ibin_col];
+              k1eff_dv[idx_dv] = k_eff_a_;
+              k2eff_dv[idx_dv] = k_eff_b_;
+              nmodes1_dv[idx_dv] = nmodes_a_;
+              nmodes2_dv[idx_dv] = nmodes_b_;
+            }
+
+            // B_{l₁ l₂ L}^{m₁ m₂ M}
+            double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
+            for (int gid = 0; gid < params.nmesh; gid++) {
+              std::complex<double> F_lm_a_gridpt(
+                F_lm_a[gid][0], F_lm_a[gid][1]
+              );
+              std::complex<double> F_lm_b_gridpt(
+                F_lm_b[gid][0], F_lm_b[gid][1]
+              );
+              std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
+              std::complex<double> bk_gridpt =
+                F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+
+              bk_comp_real += bk_gridpt.real();
+              bk_comp_imag += bk_gridpt.imag();
+            }
+
+            std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+          }
+        }
+
+        if (params.form == "row") {
+          int ibin_row = params.idx_bin;
+
+          double k_lower_a = kbinning.bin_edges[ibin_row];
+          double k_upper_a = kbinning.bin_edges[ibin_row + 1];
 
           double k_eff_a_;
           int nmodes_a_;
 
           F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
-            dn_00, ylm_k_a, k_lower, k_upper, k_eff_a_, nmodes_a_
+            dn_00, ylm_k_a, k_lower_a, k_upper_a, k_eff_a_, nmodes_a_
           );
 
-          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-            // nmodes1_save[ibin] = nmodes_a_ inferred from *_b_
-            k1_save[ibin] = k_eff_a_;
-          }
-        }
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin_col = idx_dv;
 
-        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-          double k_lower = kbinning.bin_edges[ibin];
-          double k_upper = kbinning.bin_edges[ibin + 1];
+            double k_lower_b = kbinning.bin_edges[ibin_col];
+            double k_upper_b = kbinning.bin_edges[ibin_col + 1];
 
-          double k_eff_b_;
-          int nmodes_b_;
+            double k_eff_b_;
+            int nmodes_b_;
 
-          F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
-            dn_00, ylm_k_b, k_lower, k_upper, k_eff_b_, nmodes_b_
-          );
-
-          k2_save[ibin] = k_eff_b_;
-          nmodes_save[ibin] = nmodes_b_;
-
-          if (params.form == "diag") {
-            double k_eff_a_;  // redundant as this is `k_eff_b_`
-            int nmodes_a_;  // redundant as this is `nmodes_b_`
-
-            F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
-              dn_00, ylm_k_a, k_lower, k_upper, k_eff_a_, nmodes_a_
+            F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
             );
 
-            k1_save[ibin] = k_eff_a_;
-          }
+            // Only record the binned coordinates and counts once.
+            if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+              k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
+              k2bin_dv[idx_dv] = kbinning.bin_centres[ibin_col];
+              k1eff_dv[idx_dv] = k_eff_a_;
+              k2eff_dv[idx_dv] = k_eff_b_;
+              nmodes1_dv[idx_dv] = nmodes_a_;
+              nmodes2_dv[idx_dv] = nmodes_b_;
+            }
 
-          // B_{l₁ l₂ L}^{m₁ m₂ M}
-          double bk_comp_real = 0., bk_comp_imag = 0.;
+            // B_{l₁ l₂ L}^{m₁ m₂ M}
+            double bk_comp_real = 0., bk_comp_imag = 0.;
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-          for (int gid = 0; gid < params.nmesh; gid++) {
-            std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
-            std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
-            std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
-            std::complex<double> bk_gridpt =
-              F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+            for (int gid = 0; gid < params.nmesh; gid++) {
+              std::complex<double> F_lm_a_gridpt(
+                F_lm_a[gid][0], F_lm_a[gid][1]
+              );
+              std::complex<double> F_lm_b_gridpt(
+                F_lm_b[gid][0], F_lm_b[gid][1]
+              );
+              std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
+              std::complex<double> bk_gridpt =
+                F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
 
-            bk_comp_real += bk_gridpt.real();
-            bk_comp_imag += bk_gridpt.imag();
+              bk_comp_real += bk_gridpt.real();
+              bk_comp_imag += bk_gridpt.imag();
+            }
+
+            std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
           }
+        }
 
-          std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+        if (params.form == "full") {
+          for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+            for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
+              int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
+                + (idx_col - idx_row);
 
-          bk_save[ibin] += coupling * vol_cell * bk_component;
+              double k_lower_a = kbinning.bin_edges[idx_row];
+              double k_upper_a = kbinning.bin_edges[idx_row + 1];
+              double k_lower_b = kbinning.bin_edges[idx_col];
+              double k_upper_b = kbinning.bin_edges[idx_col + 1];
+
+              double k_eff_a_, k_eff_b_;
+              int nmodes_a_, nmodes_b_;
+
+              F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
+                dn_00, ylm_k_a, k_lower_a, k_upper_a, k_eff_a_, nmodes_a_
+              );
+              F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+                dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
+              );
+
+              // Only record the binned coordinates and counts once.
+              if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+                k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
+                k2bin_dv[idx_dv] = kbinning.bin_centres[idx_col];
+                k1eff_dv[idx_dv] = k_eff_a_;
+                k2eff_dv[idx_dv] = k_eff_b_;
+                nmodes1_dv[idx_dv] = nmodes_a_;
+                nmodes2_dv[idx_dv] = nmodes_b_;
+              }
+
+              // B_{l₁ l₂ L}^{m₁ m₂ M}
+              double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
+              for (int gid = 0; gid < params.nmesh; gid++) {
+                std::complex<double> F_lm_a_gridpt(
+                  F_lm_a[gid][0], F_lm_a[gid][1]
+                );
+                std::complex<double> F_lm_b_gridpt(
+                  F_lm_b[gid][0], F_lm_b[gid][1]
+                );
+                std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
+                std::complex<double> bk_gridpt =
+                  F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+
+                bk_comp_real += bk_gridpt.real();
+                bk_comp_imag += bk_gridpt.imag();
+              }
+
+              std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+              bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+            }
+          }
         }
 
         // ·······························································
@@ -440,8 +638,8 @@ trv::BispecMeasurements compute_bispec(
           // When l₁ = l₂ = 0, the Wigner 3-j symbol enforces L = 0
           // and the pre-factors involving degrees and orders become 1.
           std::complex<double> S_ijk = coupling * Sbar_LM;  // S|{i = j = k}
-          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-            sn_save[ibin] += S_ijk;
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            sn_dv[idx_dv] += S_ijk;
           }
         }
 
@@ -451,18 +649,44 @@ trv::BispecMeasurements compute_bispec(
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_00_for_sn, N_LM, Sbar_LM, params.ell1, m1_, kbinning
           );
+
           if (params.form == "diag") {
-            for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-              sn_save[ibin] += coupling * (
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin = idx_dv;
+              sn_dv[idx_dv] += coupling * (
                 stats_sn.pk[ibin] - stats_sn.sn[ibin]
               );
             }
-          } else
-          if (params.form == "full") {
-            for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-              sn_save[ibin] += coupling * (
-                stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
+          }
+
+          if (params.form == "off-diag") {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin_row = idx_dv;
+              sn_dv[idx_dv] += coupling * (
+                stats_sn.pk[ibin_row] - stats_sn.sn[ibin_row]
               );
+            }
+          }
+
+          if (params.form == "row") {
+            std::complex<double> sn_row_ = coupling * (
+              stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
+            );
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              sn_dv[idx_dv] += sn_row_;
+            }
+          }
+
+          if (params.form == "full") {
+            for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+              std::complex<double> sn_row_ = coupling * (
+                stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
+              );
+              for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
+                int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
+                  + (idx_col - idx_row);
+                sn_dv[idx_dv] += sn_row_;
+              }
             }
           }
         }
@@ -473,24 +697,60 @@ trv::BispecMeasurements compute_bispec(
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_00_for_sn, N_LM, Sbar_LM, params.ell2, m2_, kbinning
           );
-          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-            sn_save[ibin] +=
-              coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
+
+          if (params.form == "diag") {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin = idx_dv;
+              sn_dv[idx_dv] += coupling * (
+                stats_sn.pk[ibin] - stats_sn.sn[ibin]
+              );
+            }
+          }
+
+          if (params.form == "off-diag") {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin_col = idx_dv + params.idx_bin;
+              sn_dv[idx_dv] += coupling * (
+                stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
+              );
+            }
+          }
+
+          if (params.form == "row") {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin_col = idx_dv;
+              sn_dv[idx_dv] += coupling * (
+                stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
+              );
+            }
+          }
+
+          if (params.form == "full") {
+            for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+              std::complex<double> sn_col_ = coupling * (
+                stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
+              );
+              for (int idx_row = 0; idx_row <= idx_col; idx_row++) {
+                int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
+                  + (idx_col - idx_row);
+                sn_dv[idx_dv] += sn_col_;
+              }
+            }
           }
         }
 
         FieldStats stats_sn(params);
-        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-          double k_a = k1_save[ibin];
-          double k_b = k2_save[ibin];
+        for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+          double k_a = k1eff_dv[idx_dv];
+          double k_b = k2eff_dv[idx_dv];
 
-          std::complex<double> S_ij_k = parity
-            * stats_sn.compute_uncoupled_shotnoise_for_bispec_per_bin(
+          std::complex<double> S_ij_k = parity *
+            stats_sn.compute_uncoupled_shotnoise_for_bispec_per_bin(
               dn_LM_for_sn, N_00, ylm_r_a, ylm_r_b, sj_a, sj_b,
               Sbar_LM, k_a, k_b
             );  // S|{i = j ≠ k}
 
-          sn_save[ibin] += coupling * S_ij_k;
+          sn_dv[idx_dv] += coupling * S_ij_k;
         }
 
         if (trvs::currTask == 0) {
@@ -520,23 +780,22 @@ trv::BispecMeasurements compute_bispec(
   // ---------------------------------------------------------------------
 
   trv::BispecMeasurements bispec_out;
-  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-    if (params.form == "diag") {
-      bispec_out.k1_bin.push_back(kbinning.bin_centres[ibin]);
-    } else
-    if (params.form == "full") {
-      bispec_out.k1_bin.push_back(kbinning.bin_centres[params.idx_bin]);
-    }
-    bispec_out.k1_eff.push_back(k1_save[ibin]);
-    bispec_out.k2_bin.push_back(kbinning.bin_centres[ibin]);
-    bispec_out.k2_eff.push_back(k2_save[ibin]);
-    bispec_out.nmodes.push_back(nmodes_save[ibin]);
-    bispec_out.bk_raw.push_back(norm_factor * bk_save[ibin]);
-    bispec_out.bk_shot.push_back(norm_factor * sn_save[ibin]);
+  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+    bispec_out.k1_bin.push_back(k1bin_dv[idx_dv]);
+    bispec_out.k1_eff.push_back(k1eff_dv[idx_dv]);
+    bispec_out.nmodes_1.push_back(nmodes1_dv[idx_dv]);
+    bispec_out.k2_bin.push_back(k2bin_dv[idx_dv]);
+    bispec_out.k2_eff.push_back(k2eff_dv[idx_dv]);
+    bispec_out.nmodes_2.push_back(nmodes2_dv[idx_dv]);
+    bispec_out.bk_raw.push_back(norm_factor * bk_dv[idx_dv]);
+    bispec_out.bk_shot.push_back(norm_factor * sn_dv[idx_dv]);
   }
+  bispec_out.dim = dv_dim;
 
-  delete[] nmodes_save; delete[] k1_save; delete[] k2_save;
-  delete[] bk_save; delete[] sn_save;
+  delete[] nmodes1_dv; delete[] nmodes2_dv;
+  delete[] k1bin_dv; delete[] k2bin_dv;
+  delete[] k1eff_dv; delete[] k2eff_dv;
+  delete[] bk_dv; delete[] sn_dv;
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
@@ -574,19 +833,45 @@ trv::ThreePCFMeasurements compute_3pcf(
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   // Set up output.
-  int* npairs_save = new int[rbinning.num_bins];
-  double* r1_save = new double[rbinning.num_bins];
-  double* r2_save = new double[rbinning.num_bins];
-  std::complex<double>* zeta_save =
-    new std::complex<double>[rbinning.num_bins];
-  std::complex<double>* sn_save =
-    new std::complex<double>[rbinning.num_bins];
-  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-    npairs_save[ibin] = 0;
-    r1_save[ibin] = 0.;
-    r2_save[ibin] = 0.;
-    zeta_save[ibin] = 0.;
-    sn_save[ibin] = 0.;
+  int dv_dim = 0;  // data vector dimension
+  if (params.form == "diag" || params.form == "row" ) {
+    dv_dim = rbinning.num_bins;
+  } else
+  if (params.form == "off-diag") {
+    dv_dim = rbinning.num_bins - params.idx_bin;
+  } else
+  if (params.form == "full") {
+    dv_dim = rbinning.num_bins * (rbinning.num_bins + 1) / 2;
+  } else {
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Three-point statistic form is not recognised: `form` = '%s'.",
+        params.form.c_str()
+      );
+      throw trvs::InvalidParameterError(
+        "Three-point statistic form is not recognised: `form` = '%s'.\n",
+        params.form.c_str()
+      );
+    }
+  }
+
+  int* npairs1_dv = new int[dv_dim];
+  int* npairs2_dv = new int[dv_dim];
+  double* r1bin_dv = new double[dv_dim];
+  double* r2bin_dv = new double[dv_dim];
+  double* r1eff_dv = new double[dv_dim];
+  double* r2eff_dv = new double[dv_dim];
+  std::complex<double>* zeta_dv = new std::complex<double>[dv_dim];
+  std::complex<double>* sn_dv = new std::complex<double>[dv_dim];
+  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+    npairs1_dv[idx_dv] = 0;
+    npairs2_dv[idx_dv] = 0;
+    r1bin_dv[idx_dv] = 0.;
+    r2bin_dv[idx_dv] = 0.;
+    r1eff_dv[idx_dv] = 0.;
+    r2eff_dv[idx_dv] = 0.;
+    zeta_dv[idx_dv] = 0.;
+    sn_dv[idx_dv] = 0.;
   }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
@@ -687,35 +972,91 @@ trv::ThreePCFMeasurements compute_3pcf(
           dn_LM_for_sn, N_00, ylm_r_a, ylm_r_b, Sbar_LM, rbinning
         );
 
-        for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-          if (params.form == "diag") {
-            sn_save[ibin] += coupling * stats_sn.xi[ibin];
-          } else
-          if (params.form == "full") {
-            // Enforce the Kronecker delta in eq. (51) in the Paper.
-            if (ibin == params.idx_bin) {
-              sn_save[ibin] += coupling * stats_sn.xi[ibin];
+        // Enforce the Kronecker delta in eq. (51) in the Paper.
+        if (params.form == "diag") {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin = idx_dv;
+            sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
+          }
+        }
+
+        if (params.form == "off-diag") {
+          if (params.idx_bin == 0) {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin = idx_dv;
+              sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
             }
-            // else {
-            //   sn_save[ibin] += 0.;
-            // }
+          }
+        }
+
+        if (params.form == "row") {
+          sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
+        }
+
+        if (params.form == "full") {
+          for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+            // int idx_col = idx_row;
+            int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2;
+            sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
           }
         }
 
         // Only record the binned coordinates and counts once.
         if (M_ == 0 && m1_ == 0 && m2_ == 0) {
-          for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-            npairs_save[ibin] = stats_sn.npairs[ibin];
-            r2_save[ibin] = stats_sn.r[ibin];
-          }
           if (params.form == "diag") {
-            for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-              r1_save[ibin] = stats_sn.r[ibin];
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin = idx_dv;
+
+              r1bin_dv[idx_dv] = rbinning.bin_centres[ibin];
+              r2bin_dv[idx_dv] = rbinning.bin_centres[ibin];
+              r1eff_dv[idx_dv] = stats_sn.r[ibin];
+              r2eff_dv[idx_dv] = stats_sn.r[ibin];
+              npairs1_dv[idx_dv] = stats_sn.npairs[ibin];
+              npairs2_dv[idx_dv] = stats_sn.npairs[ibin];
             }
-          } else
+          }
+
+          if (params.form == "off-diag") {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin_row = idx_dv;
+              int ibin_col = idx_dv + params.idx_bin;
+
+              r1bin_dv[idx_dv] = rbinning.bin_centres[ibin_row];
+              r2bin_dv[idx_dv] = rbinning.bin_centres[ibin_col];
+              r1eff_dv[idx_dv] = stats_sn.r[ibin_row];
+              r2eff_dv[idx_dv] = stats_sn.r[ibin_col];
+              npairs1_dv[idx_dv] = stats_sn.npairs[ibin_row];
+              npairs2_dv[idx_dv] = stats_sn.npairs[ibin_col];
+            }
+          }
+
+          if (params.form == "row") {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin_row = params.idx_bin;
+              int ibin_col = idx_dv;
+
+              r1bin_dv[idx_dv] = rbinning.bin_centres[ibin_row];
+              r2bin_dv[idx_dv] = rbinning.bin_centres[ibin_col];
+              r1eff_dv[idx_dv] = stats_sn.r[ibin_row];
+              r2eff_dv[idx_dv] = stats_sn.r[ibin_col];
+              npairs1_dv[idx_dv] = stats_sn.npairs[ibin_row];
+              npairs2_dv[idx_dv] = stats_sn.npairs[ibin_col];
+            }
+          }
+
           if (params.form == "full") {
-            for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-              r1_save[ibin] = stats_sn.r[params.idx_bin];
+            for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+              for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
+                int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
+                + (idx_col - idx_row);
+
+                r1bin_dv[idx_dv] = rbinning.bin_centres[idx_row];
+                r2bin_dv[idx_dv] = rbinning.bin_centres[idx_col];
+                r1eff_dv[idx_dv] = stats_sn.r[idx_row];
+                r2eff_dv[idx_dv] = stats_sn.r[idx_col];
+                npairs1_dv[idx_dv] = stats_sn.npairs[idx_row];
+                npairs2_dv[idx_dv] = stats_sn.npairs[idx_col];
+              }
             }
           }
         }
@@ -737,26 +1078,16 @@ trv::ThreePCFMeasurements compute_3pcf(
         MeshField F_lm_a(params);  // F_lm_a
         MeshField F_lm_b(params);  // F_lm_b
 
-        if (params.form == "full") {
-          double r_a = r1_save[params.idx_bin];
+        for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+          double r_a = r1eff_dv[idx_dv];
           F_lm_a.inv_fourier_transform_sjl_ylm_wgtd_field(
             dn_00, ylm_k_a, sj_a, r_a
           );
-        }
 
-        for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-          double r_b = r2_save[ibin];
-
+          double r_b = r2eff_dv[idx_dv];
           F_lm_b.inv_fourier_transform_sjl_ylm_wgtd_field(
             dn_00, ylm_k_b, sj_b, r_b
           );
-
-          if (params.form == "diag") {
-            double r_a = r_b;
-            F_lm_a.inv_fourier_transform_sjl_ylm_wgtd_field(
-              dn_00, ylm_k_a, sj_a, r_a
-            );
-          }
 
           // ζ_{l₁ l₂ L}^{m₁ m₂ M}
           double zeta_comp_real = 0., zeta_comp_imag = 0.;
@@ -777,7 +1108,7 @@ trv::ThreePCFMeasurements compute_3pcf(
 
           std::complex<double> zeta_component(zeta_comp_real, zeta_comp_imag);
 
-          zeta_save[ibin] += parity * coupling * vol_cell * zeta_component;
+          zeta_dv[idx_dv] += parity * coupling * vol_cell * zeta_component;
         }
 
         if (trvs::currTask == 0) {
@@ -808,23 +1139,22 @@ trv::ThreePCFMeasurements compute_3pcf(
   // ---------------------------------------------------------------------
 
   trv::ThreePCFMeasurements threepcf_out;
-  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-    if (params.form == "diag") {
-      threepcf_out.r1_bin.push_back(rbinning.bin_centres[ibin]);
-    } else
-    if (params.form == "full") {
-      threepcf_out.r1_bin.push_back(rbinning.bin_centres[params.idx_bin]);
-    }
-    threepcf_out.r1_eff.push_back(r1_save[ibin]);
-    threepcf_out.r2_bin.push_back(rbinning.bin_centres[ibin]);
-    threepcf_out.r2_eff.push_back(r2_save[ibin]);
-    threepcf_out.npairs.push_back(npairs_save[ibin]);
-    threepcf_out.zeta_raw.push_back(norm_factor * zeta_save[ibin]);
-    threepcf_out.zeta_shot.push_back(norm_factor * sn_save[ibin]);
+  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+    threepcf_out.r1_bin.push_back(r1bin_dv[idx_dv]);
+    threepcf_out.r1_eff.push_back(r1eff_dv[idx_dv]);
+    threepcf_out.npairs_1.push_back(npairs1_dv[idx_dv]);
+    threepcf_out.r2_bin.push_back(r2bin_dv[idx_dv]);
+    threepcf_out.r2_eff.push_back(r2eff_dv[idx_dv]);
+    threepcf_out.npairs_2.push_back(npairs2_dv[idx_dv]);
+    threepcf_out.zeta_raw.push_back(norm_factor * zeta_dv[idx_dv]);
+    threepcf_out.zeta_shot.push_back(norm_factor * sn_dv[idx_dv]);
   }
+  threepcf_out.dim = dv_dim;
 
-  delete[] npairs_save; delete[] r1_save; delete[] r2_save;
-  delete[] zeta_save; delete[] sn_save;
+  delete[] npairs1_dv; delete[] npairs2_dv;
+  delete[] r1bin_dv; delete[] r2bin_dv;
+  delete[] r1eff_dv; delete[] r2eff_dv;
+  delete[] zeta_dv; delete[] sn_dv;
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
@@ -860,17 +1190,45 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   // Set up output.
-  int* nmodes_save = new int[kbinning.num_bins];
-  double* k1_save = new double[kbinning.num_bins];
-  double* k2_save = new double[kbinning.num_bins];
-  std::complex<double>* bk_save = new std::complex<double>[kbinning.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[kbinning.num_bins];
-  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-    nmodes_save[ibin] = 0;
-    k1_save[ibin] = 0.;
-    k2_save[ibin] = 0.;
-    bk_save[ibin] = 0.;
-    sn_save[ibin] = 0.;
+  int dv_dim = 0;  // data vector dimension
+  if (params.form == "diag" || params.form == "row" ) {
+    dv_dim = kbinning.num_bins;
+  } else
+  if (params.form == "off-diag") {
+    dv_dim = kbinning.num_bins - params.idx_bin;
+  } else
+  if (params.form == "full") {
+    dv_dim = kbinning.num_bins * (kbinning.num_bins + 1) / 2;
+  } else {
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Three-point statistic form is not recognised: `form` = '%s'.",
+        params.form.c_str()
+      );
+      throw trvs::InvalidParameterError(
+        "Three-point statistic form is not recognised: `form` = '%s'.\n",
+        params.form.c_str()
+      );
+    }
+  }
+
+  int* nmodes1_dv = new int[dv_dim];
+  int* nmodes2_dv = new int[dv_dim];
+  double* k1bin_dv = new double[dv_dim];
+  double* k2bin_dv = new double[dv_dim];
+  double* k1eff_dv = new double[dv_dim];
+  double* k2eff_dv = new double[dv_dim];
+  std::complex<double>* bk_dv = new std::complex<double>[dv_dim];
+  std::complex<double>* sn_dv = new std::complex<double>[dv_dim];
+  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+    nmodes1_dv[idx_dv] = 0;
+    nmodes2_dv[idx_dv] = 0;
+    k1bin_dv[idx_dv] = 0.;
+    k2bin_dv[idx_dv] = 0.;
+    k1eff_dv[idx_dv] = 0.;
+    k2eff_dv[idx_dv] = 0.;
+    bk_dv[idx_dv] = 0.;
+    sn_dv[idx_dv] = 0.;
   }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
@@ -953,68 +1311,226 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
       MeshField F_lm_a(params);  // F_lm_a
       MeshField F_lm_b(params);  // F_lm_b
-      if (params.form == "full") {
-        double k_lower = kbinning.bin_edges[params.idx_bin];
-        double k_upper = kbinning.bin_edges[params.idx_bin + 1];
+
+      if (params.form == "diag") {
+        for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+          int ibin = idx_dv;
+
+          double k_lower = kbinning.bin_edges[ibin];
+          double k_upper = kbinning.bin_edges[ibin + 1];
+
+          double k_eff_a_, k_eff_b_;
+          int nmodes_a_, nmodes_b_;
+
+          F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
+            dn_00, ylm_k_a, k_lower, k_upper, k_eff_a_, nmodes_a_
+          );
+          F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+            dn_00, ylm_k_b, k_lower, k_upper, k_eff_b_, nmodes_b_
+          );
+
+          // Only record the binned coordinates and counts once.
+          if (m1_ == 0 && m2_ == 0) {
+            k1bin_dv[idx_dv] = kbinning.bin_centres[ibin];
+            k2bin_dv[idx_dv] = kbinning.bin_centres[ibin];
+            k1eff_dv[idx_dv] = k_eff_a_;
+            k2eff_dv[idx_dv] = k_eff_b_;
+            nmodes1_dv[idx_dv] = nmodes_a_;
+            nmodes2_dv[idx_dv] = nmodes_b_;
+          }
+
+          // B_{l₁ l₂ L}^{m₁ m₂ M}
+          double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
+          for (int gid = 0; gid < params.nmesh; gid++) {
+            std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
+            std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
+            std::complex<double> G_00_gridpt(G_00[gid][0], G_00[gid][1]);
+            std::complex<double> bk_gridpt =
+              F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
+
+            bk_comp_real += bk_gridpt.real();
+            bk_comp_imag += bk_gridpt.imag();
+          }
+
+          std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+          bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+        }
+      }
+
+      if (params.form == "off-diag") {
+        for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+          int ibin_row = idx_dv;
+          int ibin_col = idx_dv + params.idx_bin;
+
+          double k_lower_a = kbinning.bin_edges[ibin_row];
+          double k_upper_a = kbinning.bin_edges[ibin_row + 1];
+          double k_lower_b = kbinning.bin_edges[ibin_col];
+          double k_upper_b = kbinning.bin_edges[ibin_col + 1];
+
+          double k_eff_a_, k_eff_b_;
+          int nmodes_a_, nmodes_b_;
+
+          F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
+            dn_00, ylm_k_a, k_lower_a, k_upper_a, k_eff_a_, nmodes_a_
+          );
+          F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+            dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
+          );
+
+          // Only record the binned coordinates and counts once.
+          if (m1_ == 0 && m2_ == 0) {
+            k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
+            k2bin_dv[idx_dv] = kbinning.bin_centres[ibin_col];
+            k1eff_dv[idx_dv] = k_eff_a_;
+            k2eff_dv[idx_dv] = k_eff_b_;
+            nmodes1_dv[idx_dv] = nmodes_a_;
+            nmodes2_dv[idx_dv] = nmodes_b_;
+          }
+
+          // B_{l₁ l₂ L}^{m₁ m₂ M}
+          double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
+          for (int gid = 0; gid < params.nmesh; gid++) {
+            std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
+            std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
+            std::complex<double> G_00_gridpt(G_00[gid][0], G_00[gid][1]);
+            std::complex<double> bk_gridpt =
+              F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
+
+            bk_comp_real += bk_gridpt.real();
+            bk_comp_imag += bk_gridpt.imag();
+          }
+
+          std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+          bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+        }
+      }
+
+      if (params.form == "row") {
+        int ibin_row = params.idx_bin;
+
+        double k_lower_a = kbinning.bin_edges[ibin_row];
+        double k_upper_a = kbinning.bin_edges[ibin_row + 1];
 
         double k_eff_a_;
         int nmodes_a_;
 
         F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
-          dn_00, ylm_k_a, k_lower, k_upper, k_eff_a_, nmodes_a_
+          dn_00, ylm_k_a, k_lower_a, k_upper_a, k_eff_a_, nmodes_a_
         );
 
-        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-          // nmodes1_save[ibin] = nmodes_a_ inferred from *_b_
-          k1_save[ibin] = k_eff_a_;
-        }
-      }
+        for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+          int ibin_col = idx_dv;
 
-      for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-        double k_lower = kbinning.bin_edges[ibin];
-        double k_upper = kbinning.bin_edges[ibin + 1];
+          double k_lower_b = kbinning.bin_edges[ibin_col];
+          double k_upper_b = kbinning.bin_edges[ibin_col + 1];
 
-        double k_eff_b_;
-        int nmodes_b_;
+          double k_eff_b_;
+          int nmodes_b_;
 
-        F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
-          dn_00, ylm_k_b, k_lower, k_upper, k_eff_b_, nmodes_b_
-        );
-
-        k2_save[ibin] = k_eff_b_;
-        nmodes_save[ibin] = nmodes_b_;
-
-        if (params.form == "diag") {
-          double k_eff_a_;  // redundant as this is `k_eff_b_`
-          int nmodes_a_;  // redundant as this is `nmodes_b_`
-
-          F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
-            dn_00, ylm_k_a, k_lower, k_upper, k_eff_a_, nmodes_a_
+          F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+            dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
           );
 
-          k1_save[ibin] = k_eff_a_;
-        }
+          // Only record the binned coordinates and counts once.
+          if (m1_ == 0 && m2_ == 0) {
+            k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
+            k2bin_dv[idx_dv] = kbinning.bin_centres[ibin_col];
+            k1eff_dv[idx_dv] = k_eff_a_;
+            k2eff_dv[idx_dv] = k_eff_b_;
+            nmodes1_dv[idx_dv] = nmodes_a_;
+            nmodes2_dv[idx_dv] = nmodes_b_;
+          }
 
-        // B_{l₁ l₂ L}^{m₁ m₂ M}
-        double bk_comp_real = 0., bk_comp_imag = 0.;
+          // B_{l₁ l₂ L}^{m₁ m₂ M}
+          double bk_comp_real = 0., bk_comp_imag = 0.;
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-        for (int gid = 0; gid < params.nmesh; gid++) {
-          std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
-          std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
-          std::complex<double> G_00_gridpt(G_00[gid][0], G_00[gid][1]);
-          std::complex<double> bk_gridpt =
-            F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
+          for (int gid = 0; gid < params.nmesh; gid++) {
+            std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
+            std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
+            std::complex<double> G_00_gridpt(G_00[gid][0], G_00[gid][1]);
+            std::complex<double> bk_gridpt =
+              F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
 
-          bk_comp_real += bk_gridpt.real();
-          bk_comp_imag += bk_gridpt.imag();
+            bk_comp_real += bk_gridpt.real();
+            bk_comp_imag += bk_gridpt.imag();
+          }
+
+          std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+          bk_dv[idx_dv] += coupling * vol_cell * bk_component;
         }
+      }
 
-        std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+      if (params.form == "full") {
+        for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+          for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
+            int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
+              + (idx_col - idx_row);
 
-        bk_save[ibin] += coupling * vol_cell * bk_component;
+            double k_lower_a = kbinning.bin_edges[idx_row];
+            double k_upper_a = kbinning.bin_edges[idx_row + 1];
+            double k_lower_b = kbinning.bin_edges[idx_col];
+            double k_upper_b = kbinning.bin_edges[idx_col + 1];
+
+            double k_eff_a_, k_eff_b_;
+            int nmodes_a_, nmodes_b_;
+
+            F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_00, ylm_k_a, k_lower_a, k_upper_a, k_eff_a_, nmodes_a_
+            );
+            F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
+            );
+
+            // Only record the binned coordinates and counts once.
+            if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+              k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
+              k2bin_dv[idx_dv] = kbinning.bin_centres[idx_col];
+              k1eff_dv[idx_dv] = k_eff_a_;
+              k2eff_dv[idx_dv] = k_eff_b_;
+              nmodes1_dv[idx_dv] = nmodes_a_;
+              nmodes2_dv[idx_dv] = nmodes_b_;
+            }
+
+            // B_{l₁ l₂ L}^{m₁ m₂ M}
+            double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
+            for (int gid = 0; gid < params.nmesh; gid++) {
+              std::complex<double> F_lm_a_gridpt(
+                F_lm_a[gid][0], F_lm_a[gid][1]
+              );
+              std::complex<double> F_lm_b_gridpt(
+                F_lm_b[gid][0], F_lm_b[gid][1]
+              );
+              std::complex<double> G_00_gridpt(G_00[gid][0], G_00[gid][1]);
+              std::complex<double> bk_gridpt =
+                F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
+
+              bk_comp_real += bk_gridpt.real();
+              bk_comp_imag += bk_gridpt.imag();
+            }
+
+            std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+          }
+        }
       }
 
       // ·································································
@@ -1030,8 +1546,8 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
       if (params.ell1 == 0 && params.ell2 == 0) {
         std::complex<double> S_ijk = coupling * Sbar_LM;  // S|{i = j = k}
-        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-          sn_save[ibin] += coupling * S_ijk;
+        for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+          sn_dv[idx_dv] += S_ijk;
         }
       }
 
@@ -1041,17 +1557,44 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
           dn_00_for_sn, N_L0, Sbar_LM, params.ell1, m1_, kbinning
         );
+
         if (params.form == "diag") {
-          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-            sn_save[ibin] +=
-              coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
-          }
-        } else
-        if (params.form == "full") {
-          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-            sn_save[ibin] += coupling * (
-              stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin = idx_dv;
+            sn_dv[idx_dv] += coupling * (
+              stats_sn.pk[ibin] - stats_sn.sn[ibin]
             );
+          }
+        }
+
+        if (params.form == "off-diag") {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin_row = idx_dv;
+            sn_dv[idx_dv] += coupling * (
+              stats_sn.pk[ibin_row] - stats_sn.sn[ibin_row]
+            );
+          }
+        }
+
+        if (params.form == "row") {
+          std::complex<double> sn_row_ = coupling * (
+            stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
+          );
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            sn_dv[idx_dv] += sn_row_;
+          }
+        }
+
+        if (params.form == "full") {
+          for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+            std::complex<double> sn_row_ = coupling * (
+              stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
+            );
+            for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
+              int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
+                + (idx_col - idx_row);
+              sn_dv[idx_dv] += sn_row_;
+            }
           }
         }
       }
@@ -1062,15 +1605,52 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
           dn_00_for_sn, N_L0, Sbar_LM, params.ell2, m2_, kbinning
         );
-        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-          sn_save[ibin] += coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
+
+        if (params.form == "diag") {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin = idx_dv;
+            sn_dv[idx_dv] += coupling * (
+              stats_sn.pk[ibin] - stats_sn.sn[ibin]
+            );
+          }
+        }
+
+        if (params.form == "off-diag") {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin_col = idx_dv + params.idx_bin;
+            sn_dv[idx_dv] += coupling * (
+              stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
+            );
+          }
+        }
+
+        if (params.form == "row") {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin_col = idx_dv;
+            sn_dv[idx_dv] += coupling * (
+              stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
+            );
+          }
+        }
+
+        if (params.form == "full") {
+          for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+            std::complex<double> sn_col_ = coupling * (
+              stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
+            );
+            for (int idx_row = 0; idx_row <= idx_col; idx_row++) {
+              int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
+                + (idx_col - idx_row);
+              sn_dv[idx_dv] += sn_col_;
+            }
+          }
         }
       }
 
       FieldStats stats_sn(params);
-      for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-        double k_a = k1_save[ibin];
-        double k_b = k2_save[ibin];
+      for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+        double k_a = k1eff_dv[idx_dv];
+        double k_b = k2eff_dv[idx_dv];
 
         std::complex<double> S_ij_k = parity *
           stats_sn.compute_uncoupled_shotnoise_for_bispec_per_bin(
@@ -1078,7 +1658,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
             Sbar_L0, k_a, k_b
           );  // S|{i = j ≠ k}
 
-        sn_save[ibin] += coupling * S_ij_k;
+        sn_dv[idx_dv] += coupling * S_ij_k;
       }
 
       if (trvs::currTask == 0) {
@@ -1107,23 +1687,22 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   // ---------------------------------------------------------------------
 
   trv::BispecMeasurements bispec_out;
-  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-    if (params.form == "diag") {
-      bispec_out.k1_bin.push_back(kbinning.bin_centres[ibin]);
-    } else
-    if (params.form == "full") {
-      bispec_out.k1_bin.push_back(kbinning.bin_centres[params.idx_bin]);
-    }
-    bispec_out.k1_eff.push_back(k1_save[ibin]);
-    bispec_out.k2_bin.push_back(kbinning.bin_centres[ibin]);
-    bispec_out.k2_eff.push_back(k2_save[ibin]);
-    bispec_out.nmodes.push_back(nmodes_save[ibin]);
-    bispec_out.bk_raw.push_back(norm_factor * bk_save[ibin]);
-    bispec_out.bk_shot.push_back(norm_factor * sn_save[ibin]);
+  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+    bispec_out.k1_bin.push_back(k1bin_dv[idx_dv]);
+    bispec_out.k1_eff.push_back(k1eff_dv[idx_dv]);
+    bispec_out.nmodes_1.push_back(nmodes1_dv[idx_dv]);
+    bispec_out.k2_bin.push_back(k2bin_dv[idx_dv]);
+    bispec_out.k2_eff.push_back(k2eff_dv[idx_dv]);
+    bispec_out.nmodes_2.push_back(nmodes2_dv[idx_dv]);
+    bispec_out.bk_raw.push_back(norm_factor * bk_dv[idx_dv]);
+    bispec_out.bk_shot.push_back(norm_factor * sn_dv[idx_dv]);
   }
+  bispec_out.dim = dv_dim;
 
-  delete[] nmodes_save; delete[] k1_save; delete[] k2_save;
-  delete[] bk_save; delete[] sn_save;
+  delete[] nmodes1_dv; delete[] nmodes2_dv;
+  delete[] k1bin_dv; delete[] k2bin_dv;
+  delete[] k1eff_dv; delete[] k2eff_dv;
+  delete[] bk_dv; delete[] sn_dv;
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
@@ -1160,19 +1739,45 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   // Set up output.
-  int* npairs_save = new int[rbinning.num_bins];
-  double* r1_save = new double[rbinning.num_bins];
-  double* r2_save = new double[rbinning.num_bins];
-  std::complex<double>* zeta_save =
-    new std::complex<double>[rbinning.num_bins];
-  std::complex<double>* sn_save =
-    new std::complex<double>[rbinning.num_bins];
-  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-    npairs_save[ibin] = 0;
-    r1_save[ibin] = 0.;
-    r2_save[ibin] = 0.;
-    zeta_save[ibin] = 0.;
-    sn_save[ibin] = 0.;
+  int dv_dim = 0;  // data vector dimension
+  if (params.form == "diag" || params.form == "row" ) {
+    dv_dim = rbinning.num_bins;
+  } else
+  if (params.form == "off-diag") {
+    dv_dim = rbinning.num_bins - params.idx_bin;
+  } else
+  if (params.form == "full") {
+    dv_dim = rbinning.num_bins * (rbinning.num_bins + 1) / 2;
+  } else {
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Three-point statistic form is not recognised: `form` = '%s'.",
+        params.form.c_str()
+      );
+      throw trvs::InvalidParameterError(
+        "Three-point statistic form is not recognised: `form` = '%s'.\n",
+        params.form.c_str()
+      );
+    }
+  }
+
+  int* npairs1_dv = new int[dv_dim];
+  int* npairs2_dv = new int[dv_dim];
+  double* r1bin_dv = new double[dv_dim];
+  double* r2bin_dv = new double[dv_dim];
+  double* r1eff_dv = new double[dv_dim];
+  double* r2eff_dv = new double[dv_dim];
+  std::complex<double>* zeta_dv = new std::complex<double>[dv_dim];
+  std::complex<double>* sn_dv = new std::complex<double>[dv_dim];
+  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+    npairs1_dv[idx_dv] = 0;
+    npairs2_dv[idx_dv] = 0;
+    r1bin_dv[idx_dv] = 0.;
+    r2bin_dv[idx_dv] = 0.;
+    r1eff_dv[idx_dv] = 0.;
+    r2eff_dv[idx_dv] = 0.;
+    zeta_dv[idx_dv] = 0.;
+    sn_dv[idx_dv] = 0.;
   }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
@@ -1253,35 +1858,91 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         dn_L0_for_sn, N_00, ylm_r_a, ylm_r_b, Sbar_L0, rbinning
       );
 
-      for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-        if (params.form == "diag") {
-          sn_save[ibin] += coupling * stats_sn.xi[ibin];
-        } else
-        if (params.form == "full") {
-          // Enforce the Kronecker delta in eq. (51) in the Paper.
-          if (ibin == params.idx_bin) {
-            sn_save[ibin] += coupling * stats_sn.xi[ibin];
+      // Enforce the Kronecker delta in eq. (51) in the Paper.
+      if (params.form == "diag") {
+        for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+          int ibin = idx_dv;
+          sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
+        }
+      }
+
+      if (params.form == "off-diag") {
+        if (params.idx_bin == 0) {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin = idx_dv;
+            sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
           }
-          // else {
-          //   sn_save[ibin] += 0.;
-          // }
+        }
+      }
+
+      if (params.form == "row") {
+        sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
+      }
+
+      if (params.form == "full") {
+        for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+          // int idx_col = idx_row;
+          int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2;
+          sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
         }
       }
 
       // Only record the binned coordinates and counts once.
       if (m1_ == 0 && m2_ == 0) {
-        for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-          npairs_save[ibin] = stats_sn.npairs[ibin];
-          r2_save[ibin] = stats_sn.r[ibin];
-        }
         if (params.form == "diag") {
-          for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-            r1_save[ibin] = stats_sn.r[ibin];
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin = idx_dv;
+
+            r1bin_dv[idx_dv] = rbinning.bin_centres[ibin];
+            r2bin_dv[idx_dv] = rbinning.bin_centres[ibin];
+            r1eff_dv[idx_dv] = stats_sn.r[ibin];
+            r2eff_dv[idx_dv] = stats_sn.r[ibin];
+            npairs1_dv[idx_dv] = stats_sn.npairs[ibin];
+            npairs2_dv[idx_dv] = stats_sn.npairs[ibin];
           }
-        } else
+        }
+
+        if (params.form == "off-diag") {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin_row = idx_dv;
+            int ibin_col = idx_dv + params.idx_bin;
+
+            r1bin_dv[idx_dv] = rbinning.bin_centres[ibin_row];
+            r2bin_dv[idx_dv] = rbinning.bin_centres[ibin_col];
+            r1eff_dv[idx_dv] = stats_sn.r[ibin_row];
+            r2eff_dv[idx_dv] = stats_sn.r[ibin_col];
+            npairs1_dv[idx_dv] = stats_sn.npairs[ibin_row];
+            npairs2_dv[idx_dv] = stats_sn.npairs[ibin_col];
+          }
+        }
+
+        if (params.form == "row") {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin_row = params.idx_bin;
+            int ibin_col = idx_dv;
+
+            r1bin_dv[idx_dv] = rbinning.bin_centres[ibin_row];
+            r2bin_dv[idx_dv] = rbinning.bin_centres[ibin_col];
+            r1eff_dv[idx_dv] = stats_sn.r[ibin_row];
+            r2eff_dv[idx_dv] = stats_sn.r[ibin_col];
+            npairs1_dv[idx_dv] = stats_sn.npairs[ibin_row];
+            npairs2_dv[idx_dv] = stats_sn.npairs[ibin_col];
+          }
+        }
+
         if (params.form == "full") {
-          for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-            r1_save[ibin] = stats_sn.r[params.idx_bin];
+          for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+            for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
+              int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
+              + (idx_col - idx_row);
+
+              r1bin_dv[idx_dv] = rbinning.bin_centres[idx_row];
+              r2bin_dv[idx_dv] = rbinning.bin_centres[idx_col];
+              r1eff_dv[idx_dv] = stats_sn.r[idx_row];
+              r2eff_dv[idx_dv] = stats_sn.r[idx_col];
+              npairs1_dv[idx_dv] = stats_sn.npairs[idx_row];
+              npairs2_dv[idx_dv] = stats_sn.npairs[idx_col];
+            }
           }
         }
       }
@@ -1300,26 +1961,16 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       MeshField F_lm_a(params);  // F_lm_a
       MeshField F_lm_b(params);  // F_lm_b
 
-      if (params.form == "full") {
-        double r_a = r1_save[params.idx_bin];
+      for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+        double r_a = r1eff_dv[idx_dv];
         F_lm_a.inv_fourier_transform_sjl_ylm_wgtd_field(
           dn_00, ylm_k_a, sj_a, r_a
         );
-      }
 
-      for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-        double r_b = r2_save[ibin];
-
+        double r_b = r2eff_dv[idx_dv];
         F_lm_b.inv_fourier_transform_sjl_ylm_wgtd_field(
           dn_00, ylm_k_b, sj_b, r_b
         );
-
-        if (params.form == "diag") {
-          double r_a = r_b;
-          F_lm_a.inv_fourier_transform_sjl_ylm_wgtd_field(
-            dn_00, ylm_k_a, sj_a, r_a
-          );
-        }
 
         // ζ_{l₁ l₂ L}^{m₁ m₂ M}
         double zeta_comp_real = 0., zeta_comp_imag = 0.;
@@ -1340,7 +1991,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
 
         std::complex<double> zeta_component(zeta_comp_real, zeta_comp_imag);
 
-        zeta_save[ibin] += parity * coupling * vol_cell * zeta_component;
+        zeta_dv[idx_dv] += parity * coupling * vol_cell * zeta_component;
       }
 
       if (trvs::currTask == 0) {
@@ -1370,23 +2021,22 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   // ---------------------------------------------------------------------
 
   trv::ThreePCFMeasurements threepcf_out;
-  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-    if (params.form == "diag") {
-      threepcf_out.r1_bin.push_back(rbinning.bin_centres[ibin]);
-    } else
-    if (params.form == "full") {
-      threepcf_out.r1_bin.push_back(rbinning.bin_centres[params.idx_bin]);
-    }
-    threepcf_out.r1_eff.push_back(r1_save[ibin]);
-    threepcf_out.r2_bin.push_back(rbinning.bin_centres[ibin]);
-    threepcf_out.r2_eff.push_back(r2_save[ibin]);
-    threepcf_out.npairs.push_back(npairs_save[ibin]);
-    threepcf_out.zeta_raw.push_back(norm_factor * zeta_save[ibin]);
-    threepcf_out.zeta_shot.push_back(norm_factor * sn_save[ibin]);
+  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+    threepcf_out.r1_bin.push_back(r1bin_dv[idx_dv]);
+    threepcf_out.r1_eff.push_back(r1eff_dv[idx_dv]);
+    threepcf_out.npairs_1.push_back(npairs1_dv[idx_dv]);
+    threepcf_out.r2_bin.push_back(r2bin_dv[idx_dv]);
+    threepcf_out.r2_eff.push_back(r2eff_dv[idx_dv]);
+    threepcf_out.npairs_2.push_back(npairs2_dv[idx_dv]);
+    threepcf_out.zeta_raw.push_back(norm_factor * zeta_dv[idx_dv]);
+    threepcf_out.zeta_shot.push_back(norm_factor * sn_dv[idx_dv]);
   }
+  threepcf_out.dim = dv_dim;
 
-  delete[] npairs_save; delete[] r1_save; delete[] r2_save;
-  delete[] zeta_save; delete[] sn_save;
+  delete[] npairs1_dv; delete[] npairs2_dv;
+  delete[] r1bin_dv; delete[] r2bin_dv;
+  delete[] r1eff_dv; delete[] r2eff_dv;
+  delete[] zeta_dv; delete[] sn_dv;
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
@@ -1426,19 +2076,45 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   // Set up output.
-  int* npairs_save = new int[rbinning.num_bins];
-  double* r1_save = new double[rbinning.num_bins];
-  double* r2_save = new double[rbinning.num_bins];
-  std::complex<double>* zeta_save =
-    new std::complex<double>[rbinning.num_bins];
-  std::complex<double>* sn_save =
-    new std::complex<double>[rbinning.num_bins];
-  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-    npairs_save[ibin] = 0;
-    r1_save[ibin] = 0.;
-    r2_save[ibin] = 0.;
-    zeta_save[ibin] = 0.;
-    sn_save[ibin] = 0.;
+  int dv_dim = 0;  // data vector dimension
+  if (params.form == "diag" || params.form == "row" ) {
+    dv_dim = rbinning.num_bins;
+  } else
+  if (params.form == "off-diag") {
+    dv_dim = rbinning.num_bins - params.idx_bin;
+  } else
+  if (params.form == "full") {
+    dv_dim = rbinning.num_bins * (rbinning.num_bins + 1) / 2;
+  } else {
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Three-point statistic form is not recognised: `form` = '%s'.",
+        params.form.c_str()
+      );
+      throw trvs::InvalidParameterError(
+        "Three-point statistic form is not recognised: `form` = '%s'.\n",
+        params.form.c_str()
+      );
+    }
+  }
+
+  int* npairs1_dv = new int[dv_dim];
+  int* npairs2_dv = new int[dv_dim];
+  double* r1bin_dv = new double[dv_dim];
+  double* r2bin_dv = new double[dv_dim];
+  double* r1eff_dv = new double[dv_dim];
+  double* r2eff_dv = new double[dv_dim];
+  std::complex<double>* zeta_dv = new std::complex<double>[dv_dim];
+  std::complex<double>* sn_dv = new std::complex<double>[dv_dim];
+  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+    npairs1_dv[idx_dv] = 0;
+    npairs2_dv[idx_dv] = 0;
+    r1bin_dv[idx_dv] = 0.;
+    r2bin_dv[idx_dv] = 0.;
+    r1eff_dv[idx_dv] = 0.;
+    r2eff_dv[idx_dv] = 0.;
+    zeta_dv[idx_dv] = 0.;
+    sn_dv[idx_dv] = 0.;
   }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
@@ -1533,34 +2209,91 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           n_LM_for_sn, N_00, ylm_r_a, ylm_r_b, Sbar_LM, rbinning
         );
 
-        for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-          if (params.form == "diag") {
-            sn_save[ibin] += coupling * stats_sn.xi[ibin];
-          } else if (params.form == "full") {
-            // Enforce the Kronecker delta in eq. (51) in the Paper.
-            if (ibin == params.idx_bin) {
-              sn_save[ibin] += coupling * stats_sn.xi[ibin];
+        // Enforce the Kronecker delta in eq. (51) in the Paper.
+        if (params.form == "diag") {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin = idx_dv;
+            sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
+          }
+        }
+
+        if (params.form == "off-diag") {
+          if (params.idx_bin == 0) {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin = idx_dv;
+              sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
             }
-            // else {
-            //   sn_save[ibin] += 0.;
-            // }
+          }
+        }
+
+        if (params.form == "row") {
+          sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
+        }
+
+        if (params.form == "full") {
+          for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+            // int idx_col = idx_row;
+            int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2;
+            sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
           }
         }
 
         // Only record the binned coordinates and counts once.
         if (M_ == 0 && m1_ == 0 && m2_ == 0) {
-          for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-            npairs_save[ibin] = stats_sn.npairs[ibin];
-            r2_save[ibin] = stats_sn.r[ibin];
-          }
           if (params.form == "diag") {
-            for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-              r1_save[ibin] = stats_sn.r[ibin];
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin = idx_dv;
+
+              r1bin_dv[idx_dv] = rbinning.bin_centres[ibin];
+              r2bin_dv[idx_dv] = rbinning.bin_centres[ibin];
+              r1eff_dv[idx_dv] = stats_sn.r[ibin];
+              r2eff_dv[idx_dv] = stats_sn.r[ibin];
+              npairs1_dv[idx_dv] = stats_sn.npairs[ibin];
+              npairs2_dv[idx_dv] = stats_sn.npairs[ibin];
             }
-          } else
+          }
+
+          if (params.form == "off-diag") {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin_row = idx_dv;
+              int ibin_col = idx_dv + params.idx_bin;
+
+              r1bin_dv[idx_dv] = rbinning.bin_centres[ibin_row];
+              r2bin_dv[idx_dv] = rbinning.bin_centres[ibin_col];
+              r1eff_dv[idx_dv] = stats_sn.r[ibin_row];
+              r2eff_dv[idx_dv] = stats_sn.r[ibin_col];
+              npairs1_dv[idx_dv] = stats_sn.npairs[ibin_row];
+              npairs2_dv[idx_dv] = stats_sn.npairs[ibin_col];
+            }
+          }
+
+          if (params.form == "row") {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin_row = params.idx_bin;
+              int ibin_col = idx_dv;
+
+              r1bin_dv[idx_dv] = rbinning.bin_centres[ibin_row];
+              r2bin_dv[idx_dv] = rbinning.bin_centres[ibin_col];
+              r1eff_dv[idx_dv] = stats_sn.r[ibin_row];
+              r2eff_dv[idx_dv] = stats_sn.r[ibin_col];
+              npairs1_dv[idx_dv] = stats_sn.npairs[ibin_row];
+              npairs2_dv[idx_dv] = stats_sn.npairs[ibin_col];
+            }
+          }
+
           if (params.form == "full") {
-            for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-              r1_save[ibin] = stats_sn.r[params.idx_bin];
+            for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+              for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
+                int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
+                + (idx_col - idx_row);
+
+                r1bin_dv[idx_dv] = rbinning.bin_centres[idx_row];
+                r2bin_dv[idx_dv] = rbinning.bin_centres[idx_col];
+                r1eff_dv[idx_dv] = stats_sn.r[idx_row];
+                r2eff_dv[idx_dv] = stats_sn.r[idx_col];
+                npairs1_dv[idx_dv] = stats_sn.npairs[idx_row];
+                npairs2_dv[idx_dv] = stats_sn.npairs[idx_col];
+              }
             }
           }
         }
@@ -1586,26 +2319,16 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         MeshField F_lm_a(params);  // F_lm_a
         MeshField F_lm_b(params);  // F_lm_b
 
-        if (params.form == "full") {
-          double r_a = r1_save[params.idx_bin];
+        for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+          double r_a = r1eff_dv[idx_dv];
           F_lm_a.inv_fourier_transform_sjl_ylm_wgtd_field(
             n_00, ylm_k_a, sj_a, r_a
           );
-        }
 
-        for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-          double r_b = r2_save[ibin];
-
+          double r_b = r2eff_dv[idx_dv];
           F_lm_b.inv_fourier_transform_sjl_ylm_wgtd_field(
             n_00, ylm_k_b, sj_b, r_b
           );
-
-          if (params.form == "diag") {
-            double r_a = r_b;
-            F_lm_a.inv_fourier_transform_sjl_ylm_wgtd_field(
-              n_00, ylm_k_a, sj_a, r_a
-            );
-          }
 
           // ζ_{l₁ l₂ L}^{m₁ m₂ M}
           double zeta_comp_real = 0., zeta_comp_imag = 0.;
@@ -1626,7 +2349,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
 
           std::complex<double> zeta_component(zeta_comp_real, zeta_comp_imag);
 
-          zeta_save[ibin] += parity * coupling * vol_cell * zeta_component;
+          zeta_dv[idx_dv] += parity * coupling * vol_cell * zeta_component;
         }
 
         if (trvs::currTask == 0) {
@@ -1657,23 +2380,22 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   // ---------------------------------------------------------------------
 
   trv::ThreePCFWindowMeasurements threepcfwin_out;
-  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-    if (params.form == "diag") {
-      threepcfwin_out.r1_bin.push_back(rbinning.bin_centres[ibin]);
-    } else
-    if (params.form == "full") {
-      threepcfwin_out.r1_bin.push_back(rbinning.bin_centres[params.idx_bin]);
-    }
-    threepcfwin_out.r1_eff.push_back(r1_save[ibin]);
-    threepcfwin_out.r2_bin.push_back(rbinning.bin_centres[ibin]);
-    threepcfwin_out.r2_eff.push_back(r2_save[ibin]);
-    threepcfwin_out.npairs.push_back(npairs_save[ibin]);
-    threepcfwin_out.zeta_raw.push_back(norm_factor * zeta_save[ibin]);
-    threepcfwin_out.zeta_shot.push_back(norm_factor * sn_save[ibin]);
+  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+    threepcfwin_out.r1_bin.push_back(r1bin_dv[idx_dv]);
+    threepcfwin_out.r1_eff.push_back(r1eff_dv[idx_dv]);
+    threepcfwin_out.npairs_1.push_back(npairs1_dv[idx_dv]);
+    threepcfwin_out.r2_bin.push_back(r2bin_dv[idx_dv]);
+    threepcfwin_out.r2_eff.push_back(r2eff_dv[idx_dv]);
+    threepcfwin_out.npairs_2.push_back(npairs2_dv[idx_dv]);
+    threepcfwin_out.zeta_raw.push_back(norm_factor * zeta_dv[idx_dv]);
+    threepcfwin_out.zeta_shot.push_back(norm_factor * sn_dv[idx_dv]);
   }
+  threepcfwin_out.dim = dv_dim;
 
-  delete[] npairs_save; delete[] r1_save; delete[] r2_save;
-  delete[] zeta_save; delete[] sn_save;
+  delete[] npairs1_dv; delete[] npairs2_dv;
+  delete[] r1bin_dv; delete[] r2bin_dv;
+  delete[] r1eff_dv; delete[] r2eff_dv;
+  delete[] zeta_dv; delete[] sn_dv;
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
@@ -1716,17 +2438,45 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   // Set up output.
-  int* nmodes_save = new int[kbinning.num_bins];
-  double* k1_save = new double[kbinning.num_bins];
-  double* k2_save = new double[kbinning.num_bins];
-  std::complex<double>* bk_save = new std::complex<double>[kbinning.num_bins];
-  std::complex<double>* sn_save = new std::complex<double>[kbinning.num_bins];
-  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-    nmodes_save[ibin] = 0;
-    k1_save[ibin] = 0.;
-    k2_save[ibin] = 0.;
-    bk_save[ibin] = 0.;
-    sn_save[ibin] = 0.;
+  int dv_dim = 0;  // data vector dimension
+  if (params.form == "diag" || params.form == "row" ) {
+    dv_dim = kbinning.num_bins;
+  } else
+  if (params.form == "off-diag") {
+    dv_dim = kbinning.num_bins - params.idx_bin;
+  } else
+  if (params.form == "full") {
+    dv_dim = kbinning.num_bins * (kbinning.num_bins + 1) / 2;
+  } else {
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Three-point statistic form is not recognised: `form` = '%s'.",
+        params.form.c_str()
+      );
+      throw trvs::InvalidParameterError(
+        "Three-point statistic form is not recognised: `form` = '%s'.\n",
+        params.form.c_str()
+      );
+    }
+  }
+
+  int* nmodes1_dv = new int[dv_dim];
+  int* nmodes2_dv = new int[dv_dim];
+  double* k1bin_dv = new double[dv_dim];
+  double* k2bin_dv = new double[dv_dim];
+  double* k1eff_dv = new double[dv_dim];
+  double* k2eff_dv = new double[dv_dim];
+  std::complex<double>* bk_dv = new std::complex<double>[dv_dim];
+  std::complex<double>* sn_dv = new std::complex<double>[dv_dim];
+  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+    nmodes1_dv[idx_dv] = 0;
+    nmodes2_dv[idx_dv] = 0;
+    k1bin_dv[idx_dv] = 0.;
+    k2bin_dv[idx_dv] = 0.;
+    k1eff_dv[idx_dv] = 0.;
+    k2eff_dv[idx_dv] = 0.;
+    bk_dv[idx_dv] = 0.;
+    sn_dv[idx_dv] = 0.;
   }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
@@ -1737,19 +2487,19 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   fftw_init_threads();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  // Compute common field quantities.
-  MeshField dn_00(params);  // δn_00(r)
-  dn_00.compute_ylm_wgtd_field(
-    catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
-  );
+  // RFE: Not adopted until copy-assignment constructor is checked.
+  // // Compute common field quantities.
+  // MeshField dn_00(params);  // δn_00(r)
+  // dn_00.compute_ylm_wgtd_field(
+  //   catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
+  // );
 
-  double vol_cell = dn_00.vol_cell;
-  double dr[3] = {dn_00.dr[0], dn_00.dr[1], dn_00.dr[2]};
+  // double vol_cell = dn_00.vol_cell;
 
-  MeshField N_00(params);  // N_00(r)
-  N_00.compute_ylm_wgtd_quad_field(
-    catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
-  );
+  // MeshField N_00(params);  // N_00(r)
+  // N_00.compute_ylm_wgtd_quad_field(
+  //   catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
+  // );
 
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
@@ -1815,7 +2565,10 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             params.ELL, M_
           );
         } else {
-          dn_LM_a = dn_00;
+          dn_LM_a.compute_ylm_wgtd_field(
+            catalogue_data, catalogue_rand, los_data, los_rand, alpha,
+            0, 0
+          );
         }
         dn_LM_a.fourier_transform();
 
@@ -1826,7 +2579,10 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             params.ELL, M_
           );
         } else {
-          dn_LM_b = dn_00;
+          dn_LM_b.compute_ylm_wgtd_field(
+            catalogue_data, catalogue_rand, los_data, los_rand, alpha,
+            0, 0
+          );
         }
         dn_LM_b.fourier_transform();
 
@@ -1837,77 +2593,248 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             params.ELL, M_
           );
         } else {
-          G_LM = dn_00;
+          G_LM.compute_ylm_wgtd_field(
+            catalogue_data, catalogue_rand, los_data, los_rand, alpha,
+            0, 0
+          );
         }
         G_LM.fourier_transform();
         G_LM.apply_assignment_compensation();
         G_LM.inv_fourier_transform();
 
+        double vol_cell = G_LM.vol_cell;
+
         MeshField F_lm_a(params);  // F_lm_a
         MeshField F_lm_b(params);  // F_lm_b
-        if (params.form == "full") {
-          double k_lower = kbinning.bin_edges[params.idx_bin];
-          double k_upper = kbinning.bin_edges[params.idx_bin + 1];
+
+        if (params.form == "diag") {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin = idx_dv;
+
+            double k_lower = kbinning.bin_edges[ibin];
+            double k_upper = kbinning.bin_edges[ibin + 1];
+
+            double k_eff_a_, k_eff_b_;
+            int nmodes_a_, nmodes_b_;
+
+            F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_LM_a, ylm_k_a, k_lower, k_upper, k_eff_a_, nmodes_a_
+            );
+            F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_LM_b, ylm_k_b, k_lower, k_upper, k_eff_b_, nmodes_b_
+            );
+
+            // Only record the binned coordinates and counts once.
+            if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+              k1bin_dv[idx_dv] = kbinning.bin_centres[ibin];
+              k2bin_dv[idx_dv] = kbinning.bin_centres[ibin];
+              k1eff_dv[idx_dv] = k_eff_a_;
+              k2eff_dv[idx_dv] = k_eff_b_;
+              nmodes1_dv[idx_dv] = nmodes_a_;
+              nmodes2_dv[idx_dv] = nmodes_b_;
+            }
+
+            // B_{l₁ l₂ L}^{m₁ m₂ M}
+            double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
+            for (int gid = 0; gid < params.nmesh; gid++) {
+              std::complex<double> F_lm_a_gridpt(
+                F_lm_a[gid][0], F_lm_a[gid][1]
+              );
+              std::complex<double> F_lm_b_gridpt(
+                F_lm_b[gid][0], F_lm_b[gid][1]
+              );
+              std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
+              std::complex<double> bk_gridpt =
+                F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+
+              bk_comp_real += bk_gridpt.real();
+              bk_comp_imag += bk_gridpt.imag();
+            }
+
+            std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+          }
+        }
+
+        if (params.form == "off-diag") {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin_row = idx_dv;
+            int ibin_col = idx_dv + params.idx_bin;
+
+            double k_lower_a = kbinning.bin_edges[ibin_row];
+            double k_upper_a = kbinning.bin_edges[ibin_row + 1];
+            double k_lower_b = kbinning.bin_edges[ibin_col];
+            double k_upper_b = kbinning.bin_edges[ibin_col + 1];
+
+            double k_eff_a_, k_eff_b_;
+            int nmodes_a_, nmodes_b_;
+
+            F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_LM_a, ylm_k_a, k_lower_a, k_upper_a, k_eff_a_, nmodes_a_
+            );
+            F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_LM_b, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
+            );
+
+            k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
+            k2bin_dv[idx_dv] = kbinning.bin_centres[ibin_col];
+            k1eff_dv[idx_dv] = k_eff_a_;
+            k2eff_dv[idx_dv] = k_eff_b_;
+            nmodes1_dv[idx_dv] = nmodes_a_;
+            nmodes2_dv[idx_dv] = nmodes_b_;
+
+            // B_{l₁ l₂ L}^{m₁ m₂ M}
+            double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
+            for (int gid = 0; gid < params.nmesh; gid++) {
+              std::complex<double> F_lm_a_gridpt(
+                F_lm_a[gid][0], F_lm_a[gid][1]
+              );
+              std::complex<double> F_lm_b_gridpt(
+                F_lm_b[gid][0], F_lm_b[gid][1]
+              );
+              std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
+              std::complex<double> bk_gridpt =
+                F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+
+              bk_comp_real += bk_gridpt.real();
+              bk_comp_imag += bk_gridpt.imag();
+            }
+
+            std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+          }
+        }
+
+        if (params.form == "row") {
+          int ibin_row = params.idx_bin;
+
+          double k_lower_a = kbinning.bin_edges[params.idx_bin];
+          double k_upper_a = kbinning.bin_edges[params.idx_bin + 1];
 
           double k_eff_a_;
           int nmodes_a_;
 
           F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
-            dn_LM_a, ylm_k_a, k_lower, k_upper, k_eff_a_, nmodes_a_
+            dn_LM_a, ylm_k_a, k_lower_a, k_upper_a, k_eff_a_, nmodes_a_
           );
 
-          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-            // nmodes1_save[ibin] = nmodes_a_ inferred from *_b_
-            k1_save[ibin] = k_eff_a_;
-          }
-        }
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin_col = idx_dv;
 
-        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-          double k_cen = kbinning.bin_centres[ibin];
-          double k_lower = kbinning.bin_edges[ibin];
-          double k_upper = kbinning.bin_edges[ibin + 1];
+            double k_lower_b = kbinning.bin_edges[ibin_col];
+            double k_upper_b = kbinning.bin_edges[ibin_col + 1];
 
-          double k_eff_b_;
-          int nmodes_b_;
+            double k_eff_b_;
+            int nmodes_b_;
 
-          F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
-            dn_LM_b, ylm_k_b, k_lower, k_upper, k_eff_b_, nmodes_b_
-          );
-
-          k2_save[ibin] = k_eff_b_;
-          nmodes_save[ibin] = nmodes_b_;
-
-          if (params.form == "diag") {
-            double k_eff_a_;  // redundant as this is `k_eff_b_`
-            int nmodes_a_;  // redundant as this is `nmodes_b_`
-
-            F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
-              dn_LM_a, ylm_k_a, k_lower, k_upper, k_eff_a_, nmodes_a_
+            F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_LM_b, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
             );
 
-            k1_save[ibin] = k_eff_a_;
-          }
+            // Only record the binned coordinates and counts once.
+            if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+              k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
+              k2bin_dv[idx_dv] = kbinning.bin_centres[ibin];
+              k1eff_dv[idx_dv] = k_eff_a_;
+              k2eff_dv[idx_dv] = k_eff_b_;
+              nmodes1_dv[idx_dv] = nmodes_a_;
+              nmodes2_dv[idx_dv] = nmodes_b_;
+            }
 
-          // B_{l₁ l₂ L}^{m₁ m₂ M}
-          double bk_comp_real = 0., bk_comp_imag = 0.;
+            // B_{l₁ l₂ L}^{m₁ m₂ M}
+            double bk_comp_real = 0., bk_comp_imag = 0.;
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-          for (int gid = 0; gid < params.nmesh; gid++) {
-            std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
-            std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
-            std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
-            std::complex<double> bk_gridpt =
-              F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+            for (int gid = 0; gid < params.nmesh; gid++) {
+              std::complex<double> F_lm_a_gridpt(
+                F_lm_a[gid][0], F_lm_a[gid][1]
+              );
+              std::complex<double> F_lm_b_gridpt(
+                F_lm_b[gid][0], F_lm_b[gid][1]
+              );
+              std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
+              std::complex<double> bk_gridpt =
+                F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
 
-            bk_comp_real += bk_gridpt.real();
-            bk_comp_imag += bk_gridpt.imag();
+              bk_comp_real += bk_gridpt.real();
+              bk_comp_imag += bk_gridpt.imag();
+            }
+
+            std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
           }
+        }
 
-          std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+        if (params.form == "full") {
+          for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+            for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
+              int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
+                + (idx_col - idx_row);
 
-          bk_save[ibin] += coupling * vol_cell * bk_component;
+              double k_lower_a = kbinning.bin_edges[idx_row];
+              double k_upper_a = kbinning.bin_edges[idx_row + 1];
+              double k_lower_b = kbinning.bin_edges[idx_col];
+              double k_upper_b = kbinning.bin_edges[idx_col + 1];
+
+              double k_eff_a_, k_eff_b_;
+              int nmodes_a_, nmodes_b_;
+
+              F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
+                dn_LM_a, ylm_k_a, k_lower_a, k_upper_a, k_eff_a_, nmodes_a_
+              );
+              F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+                dn_LM_b, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
+              );
+
+              // Only record the binned coordinates and counts once.
+              if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+                k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
+                k2bin_dv[idx_dv] = kbinning.bin_centres[idx_col];
+                k1eff_dv[idx_dv] = k_eff_a_;
+                k2eff_dv[idx_dv] = k_eff_b_;
+                nmodes1_dv[idx_dv] = nmodes_a_;
+                nmodes2_dv[idx_dv] = nmodes_b_;
+              }
+
+              // B_{l₁ l₂ L}^{m₁ m₂ M}
+              double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
+              for (int gid = 0; gid < params.nmesh; gid++) {
+                std::complex<double> F_lm_a_gridpt(
+                  F_lm_a[gid][0], F_lm_a[gid][1]
+                );
+                std::complex<double> F_lm_b_gridpt(
+                  F_lm_b[gid][0], F_lm_b[gid][1]
+                );
+                std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
+                std::complex<double> bk_gridpt =
+                  F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+
+                bk_comp_real += bk_gridpt.real();
+                bk_comp_imag += bk_gridpt.imag();
+              }
+
+              std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+              bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+            }
+          }
         }
 
         // ·······························································
@@ -1922,7 +2849,10 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             params.ELL, M_
           );
         } else {
-          dn_LM_a_for_sn = dn_00;
+          dn_LM_a_for_sn.compute_ylm_wgtd_field(
+            catalogue_data, catalogue_rand, los_data, los_rand, alpha,
+            0, 0
+          );
         }
         dn_LM_a_for_sn.fourier_transform();
 
@@ -1933,7 +2863,10 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             params.ELL, M_
           );
         } else {
-          dn_LM_b_for_sn = dn_00;
+          dn_LM_b_for_sn.compute_ylm_wgtd_field(
+            catalogue_data, catalogue_rand, los_data, los_rand, alpha,
+            0, 0
+          );
         }
         dn_LM_b_for_sn.fourier_transform();
 
@@ -1944,24 +2877,33 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             params.ELL, M_
           );
         } else {
-          dn_LM_c_for_sn = dn_00;
+          dn_LM_c_for_sn.compute_ylm_wgtd_field(
+            catalogue_data, catalogue_rand, los_data, los_rand, alpha,
+            0, 0
+          );
         }
         dn_LM_c_for_sn.fourier_transform();
 
         MeshField N_LM_a(params);  // N_LM_a(k)
         if (los_choice == 0) {
-          N_LM_a = N_00;
+          N_LM_a.compute_ylm_wgtd_quad_field(
+            catalogue_data, catalogue_rand, los_data, los_rand, alpha,
+            0, 0
+          );
         } else {
           N_LM_a.compute_ylm_wgtd_quad_field(
-            catalogue_data, catalogue_rand, los_data, los_rand,
-            alpha, params.ELL, M_
+            catalogue_data, catalogue_rand, los_data, los_rand, alpha,
+            params.ELL, M_
           );
         }
         N_LM_a.fourier_transform();
 
         MeshField N_LM_b(params);  // N_LM_b(k)
         if (los_choice == 1) {
-          N_LM_b = N_00;
+          N_LM_b.compute_ylm_wgtd_quad_field(
+            catalogue_data, catalogue_rand, los_data, los_rand, alpha,
+            0, 0
+          );
         } else {
           N_LM_b.compute_ylm_wgtd_quad_field(
             catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -1972,7 +2914,10 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
         MeshField N_LM_c(params);  // N_LM_c(k)
         if (los_choice == 2) {
-          N_LM_c = N_00;
+          N_LM_c.compute_ylm_wgtd_quad_field(
+            catalogue_data, catalogue_rand, los_data, los_rand, alpha,
+            0, 0
+          );
         } else {
           N_LM_c.compute_ylm_wgtd_quad_field(
             catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -1990,8 +2935,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           // When l₁ = l₂ = 0, the Wigner 3-j symbol enforces L = 0
           // and the pre-factors involving degrees and orders become 1.
           std::complex<double> S_ijk = coupling * Sbar_LM;  // S|{i = j = k}
-          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-            sn_save[ibin] += S_ijk;
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            sn_dv[idx_dv] += S_ijk;
           }
         }
 
@@ -2001,17 +2946,44 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_LM_a_for_sn, N_LM_a, Sbar_LM, params.ell1, m1_, kbinning
           );
+
           if (params.form == "diag") {
-            for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-              sn_save[ibin] += coupling * (
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin = idx_dv;
+              sn_dv[idx_dv] += coupling * (
                 stats_sn.pk[ibin] - stats_sn.sn[ibin]
               );
             }
-          } else if (params.form == "full") {
-            for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-              sn_save[ibin] += coupling * (
-                stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
+          }
+
+          if (params.form == "off-diag") {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin_row = idx_dv;
+              sn_dv[idx_dv] += coupling * (
+                stats_sn.pk[ibin_row] - stats_sn.sn[ibin_row]
               );
+            }
+          }
+
+          if (params.form == "row") {
+            std::complex<double> sn_row_ = coupling * (
+              stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
+            );
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              sn_dv[idx_dv] += sn_row_;
+            }
+          }
+
+          if (params.form == "full") {
+            for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+              std::complex<double> sn_row_ = coupling * (
+                stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
+              );
+              for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
+                int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
+                  + (idx_col - idx_row);
+                sn_dv[idx_dv] += sn_row_;
+              }
             }
           }
         }
@@ -2023,24 +2995,60 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             dn_LM_b_for_sn, N_LM_b, Sbar_LM,
             params.ell2, m2_, kbinning
           );
-          for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-            sn_save[ibin] +=
-              coupling * (stats_sn.pk[ibin] - stats_sn.sn[ibin]);
+
+          if (params.form == "diag") {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin = idx_dv;
+              sn_dv[idx_dv] += coupling * (
+                stats_sn.pk[ibin] - stats_sn.sn[ibin]
+              );
+            }
+          }
+
+          if (params.form == "off-diag") {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin_col = idx_dv + params.idx_bin;
+              sn_dv[idx_dv] += coupling * (
+                stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
+              );
+            }
+          }
+
+          if (params.form == "row") {
+            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+              int ibin_col = idx_dv;
+              sn_dv[idx_dv] += coupling * (
+                stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
+              );
+            }
+          }
+
+          if (params.form == "full") {
+            for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+              std::complex<double> sn_col_ = coupling * (
+                stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
+              );
+              for (int idx_row = 0; idx_row <= idx_col; idx_row++) {
+                int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
+                  + (idx_col - idx_row);
+                sn_dv[idx_dv] += sn_col_;
+              }
+            }
           }
         }
 
         FieldStats stats_sn(params);
-        for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-          double k_a = k1_save[ibin];
-          double k_b = k2_save[ibin];
+        for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+          double k_a = k1eff_dv[idx_dv];
+          double k_b = k2eff_dv[idx_dv];
 
-          std::complex<double> S_ij_k = parity
-            * stats_sn.compute_uncoupled_shotnoise_for_bispec_per_bin(
+          std::complex<double> S_ij_k = parity *
+            stats_sn.compute_uncoupled_shotnoise_for_bispec_per_bin(
               dn_LM_c_for_sn, N_LM_c, ylm_r_a, ylm_r_b, sj_a, sj_b,
               Sbar_LM, k_a, k_b
             );  // S|{i = j ≠ k}
 
-          sn_save[ibin] += coupling * S_ij_k;
+          sn_dv[idx_dv] += coupling * S_ij_k;
         }
 
         if (trvs::currTask == 0) {
@@ -2051,17 +3059,13 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         }
       }
 
-      delete[] ylm_k_a; ylm_k_a = nullptr;
-      delete[] ylm_k_b; ylm_k_b = nullptr;
-      delete[] ylm_r_a; ylm_r_a = nullptr;
-      delete[] ylm_r_b; ylm_r_b = nullptr;
       trvs::gbytesMem -=
         trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
 
-  dn_00.finalise_density_field();  // ~dn_00 (likely redundant but safe)
-  N_00.finalise_density_field();  // ~N_00 (likely redundant but safe)
+  // dn_00.finalise_density_field();  // ~dn_00 (likely redundant but safe)
+  // N_00.finalise_density_field();  // ~N_00 (likely redundant but safe)
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_cleanup_threads();
@@ -2074,23 +3078,22 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   // ---------------------------------------------------------------------
 
   trv::BispecMeasurements bispec_out;
-  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-    if (params.form == "diag") {
-      bispec_out.k1_bin.push_back(kbinning.bin_centres[ibin]);
-    } else
-    if (params.form == "full") {
-      bispec_out.k1_bin.push_back(kbinning.bin_centres[params.idx_bin]);
-    }
-    bispec_out.k1_eff.push_back(k1_save[ibin]);
-    bispec_out.k2_bin.push_back(kbinning.bin_centres[ibin]);
-    bispec_out.k2_eff.push_back(k2_save[ibin]);
-    bispec_out.nmodes.push_back(nmodes_save[ibin]);
-    bispec_out.bk_raw.push_back(norm_factor * bk_save[ibin]);
-    bispec_out.bk_shot.push_back(norm_factor * sn_save[ibin]);
+  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+    bispec_out.k1_bin.push_back(k1bin_dv[idx_dv]);
+    bispec_out.k1_eff.push_back(k1eff_dv[idx_dv]);
+    bispec_out.nmodes_1.push_back(nmodes1_dv[idx_dv]);
+    bispec_out.k2_bin.push_back(k2bin_dv[idx_dv]);
+    bispec_out.k2_eff.push_back(k2eff_dv[idx_dv]);
+    bispec_out.nmodes_2.push_back(nmodes2_dv[idx_dv]);
+    bispec_out.bk_raw.push_back(norm_factor * bk_dv[idx_dv]);
+    bispec_out.bk_shot.push_back(norm_factor * sn_dv[idx_dv]);
   }
+  bispec_out.dim = dv_dim;
 
-  delete[] nmodes_save; delete[] k1_save; delete[] k2_save;
-  delete[] bk_save; delete[] sn_save;
+  delete[] nmodes1_dv; delete[] nmodes2_dv;
+  delete[] k1bin_dv; delete[] k2bin_dv;
+  delete[] k1eff_dv; delete[] k2eff_dv;
+  delete[] bk_dv; delete[] sn_dv;
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(

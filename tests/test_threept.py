@@ -19,7 +19,7 @@ from triumvirate.threept import (
     [
         ((0, 0, 0), 'diag', None),
         ((2, 0, 2), 'diag', None),
-        ((0, 0, 0), 'full', 0),
+        ((0, 0, 0), 'row', 0),
     ]
 )
 def test_compute_bispec(degrees, form, idx_bin,
@@ -32,7 +32,7 @@ def test_compute_bispec(degrees, form, idx_bin,
     degree_tag = ''.join(map(str, degrees))
     if form == 'diag':
         form_tag = form
-    elif form == 'full':
+    elif form == 'row':
         form_tag = 'bin{:d}'.format(idx_bin)
     else:
         raise ValueError(f"Invalid form: {form}.")
@@ -59,7 +59,7 @@ def test_compute_bispec(degrees, form, idx_bin,
         "Measurement bins do not match."
     assert np.allclose(measurements['k2_eff'], measurements_ext[3]), \
         "Measured coordinates do not match."
-    assert np.allclose(measurements['nmodes'], measurements_ext[4]), \
+    assert np.allclose(measurements['nmodes_2'], measurements_ext[4]), \
         "Measured mode counts do not match."
     assert np.allclose(
         measurements['bk_raw'],
@@ -78,7 +78,7 @@ def test_compute_bispec(degrees, form, idx_bin,
     [
         ((0, 0, 0), 'diag', None),
         ((2, 0, 2), 'diag', None),
-        ((0, 0, 0), 'full', 0),
+        ((0, 0, 0), 'row', 0),
     ]
 )
 def test_compute_3pcf(degrees, form, idx_bin,
@@ -91,7 +91,7 @@ def test_compute_3pcf(degrees, form, idx_bin,
     degree_tag = ''.join(map(str, degrees))
     if form == 'diag':
         form_tag = form
-    elif form == 'full':
+    elif form == 'row':
         form_tag = 'bin{:d}'.format(idx_bin)
     else:
         raise ValueError(f"Invalid form: {form}.")
@@ -122,7 +122,7 @@ def test_compute_3pcf(degrees, form, idx_bin,
         measurements['r2_eff'], measurements_ext[3]
     ), "Measured coordinates do not match."
     assert np.allclose(
-        measurements['npairs'], measurements_ext[4]
+        measurements['npairs_2'], measurements_ext[4]
     ), "Measured pair counts do not match."
     assert np.allclose(
         measurements['zeta_raw'],
@@ -141,7 +141,7 @@ def test_compute_3pcf(degrees, form, idx_bin,
     [
         ((0, 0, 0), 'diag', None),
         ((2, 0, 2), 'diag', None),
-        ((0, 0, 0), 'full', 0),
+        ((0, 0, 0), 'row', 0),
     ]
 )
 def test_compute_bispec_in_gpp_box(degrees, form, idx_bin,
@@ -154,7 +154,7 @@ def test_compute_bispec_in_gpp_box(degrees, form, idx_bin,
     degree_tag = ''.join(map(str, degrees))
     if form == 'diag':
         form_tag = form
-    elif form == 'full':
+    elif form == 'row':
         form_tag = 'bin{:d}'.format(idx_bin)
     else:
         raise ValueError(f"Invalid form: {form}.")
@@ -180,7 +180,7 @@ def test_compute_bispec_in_gpp_box(degrees, form, idx_bin,
         "Measurement bins do not match."
     assert np.allclose(measurements['k2_eff'], measurements_ext[3]), \
         "Measured coordinates do not match."
-    assert np.allclose(measurements['nmodes'], measurements_ext[4]), \
+    assert np.allclose(measurements['nmodes_2'], measurements_ext[4]), \
         "Measured mode counts do not match."
     assert np.allclose(
         measurements['bk_raw'],
@@ -199,7 +199,7 @@ def test_compute_bispec_in_gpp_box(degrees, form, idx_bin,
     [
         ((0, 0, 0), 'diag', None),
         ((2, 0, 2), 'diag', None),
-        ((0, 0, 0), 'full', 0),
+        ((0, 0, 0), 'row', 0),
     ]
 )
 def test_compute_3pcf_in_gpp_box(degrees, form, idx_bin,
@@ -212,7 +212,7 @@ def test_compute_3pcf_in_gpp_box(degrees, form, idx_bin,
     degree_tag = ''.join(map(str, degrees))
     if form == 'diag':
         form_tag = form
-    elif form == 'full':
+    elif form == 'row':
         form_tag = 'bin{:d}'.format(idx_bin)
     else:
         raise ValueError(f"Invalid form: {form}.")
@@ -243,7 +243,7 @@ def test_compute_3pcf_in_gpp_box(degrees, form, idx_bin,
         measurements['r2_eff'], measurements_ext[3]
     ), "Measured coordinates do not match."
     assert np.allclose(
-        measurements['npairs'], measurements_ext[4]
+        measurements['npairs_2'], measurements_ext[4]
     ), "Measured pair counts do not match."
     assert np.allclose(
         measurements['zeta_raw'],
@@ -262,7 +262,7 @@ def test_compute_3pcf_in_gpp_box(degrees, form, idx_bin,
     [
         ((0, 0, 0), 'diag', None),
         ((2, 0, 2), 'diag', None),
-        ((0, 0, 0), 'full', 0),
+        ((0, 0, 0), 'row', 0),
     ]
 )
 def test_compute_3pcf_window(degrees, form, idx_bin,
@@ -275,7 +275,7 @@ def test_compute_3pcf_window(degrees, form, idx_bin,
     degree_tag = ''.join(map(str, degrees))
     if form == 'diag':
         form_tag = form
-    elif form == 'full':
+    elif form == 'row':
         form_tag = 'bin{:d}'.format(idx_bin)
     else:
         raise ValueError(f"Invalid form: {form}.")
@@ -306,7 +306,7 @@ def test_compute_3pcf_window(degrees, form, idx_bin,
         measurements['r2_eff'], measurements_ext[3]
     ), "Measured coordinates do not match."
     assert np.allclose(
-        measurements['npairs'], measurements_ext[4]
+        measurements['npairs_2'], measurements_ext[4]
     ), "Measured pair counts do not match."
     assert np.allclose(
         measurements['zeta_raw'],
