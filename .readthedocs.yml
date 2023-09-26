@@ -31,4 +31,3 @@ python:
     - requirements: docs/dependencies.txt
     - method: pip
       path: .
-  system_packages: true
