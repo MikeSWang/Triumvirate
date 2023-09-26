@@ -312,6 +312,7 @@ trv::BispecMeasurements compute_bispec(
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
   // Compute bispectrum terms including shot noise.
+  int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
       // Check for if all Wigner-3j symbols are zero.
@@ -394,8 +395,7 @@ trv::BispecMeasurements compute_bispec(
               dn_00, ylm_k_b, k_lower, k_upper, k_eff_b_, nmodes_b_
             );
 
-            // Only record the binned coordinates and counts once.
-            if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+            if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[ibin];
               k2bin_dv[idx_dv] = kbinning.bin_centres[ibin];
               k1eff_dv[idx_dv] = k_eff_a_;
@@ -451,8 +451,7 @@ trv::BispecMeasurements compute_bispec(
               dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
             );
 
-            // Only record the binned coordinates and counts once.
-            if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+            if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
               k2bin_dv[idx_dv] = kbinning.bin_centres[ibin_col];
               k1eff_dv[idx_dv] = k_eff_a_;
@@ -514,8 +513,7 @@ trv::BispecMeasurements compute_bispec(
               dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
             );
 
-            // Only record the binned coordinates and counts once.
-            if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+            if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
               k2bin_dv[idx_dv] = kbinning.bin_centres[ibin_col];
               k1eff_dv[idx_dv] = k_eff_a_;
@@ -572,8 +570,7 @@ trv::BispecMeasurements compute_bispec(
                 dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
               );
 
-              // Only record the binned coordinates and counts once.
-              if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+              if (count_terms == 0) {
                 k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
                 k2bin_dv[idx_dv] = kbinning.bin_centres[idx_col];
                 k1eff_dv[idx_dv] = k_eff_a_;
@@ -753,6 +750,7 @@ trv::BispecMeasurements compute_bispec(
           sn_dv[idx_dv] += coupling * S_ij_k;
         }
 
+        count_terms++;
         if (trvs::currTask == 0) {
           trvs::logger.stat(
             "Bispectrum term at orders (m1, m2, M) = (%d, %d, %d) computed.",
@@ -901,6 +899,7 @@ trv::ThreePCFMeasurements compute_3pcf(
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
   // Compute 3PCF terms including shot noise.
+  int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
       // Check for vanishing cases where all Wigner-3j symbols are zero.
@@ -1002,7 +1001,7 @@ trv::ThreePCFMeasurements compute_3pcf(
         }
 
         // Only record the binned coordinates and counts once.
-        if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+        if (count_terms == 0) {
           if (params.form == "diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin = idx_dv;
@@ -1111,6 +1110,7 @@ trv::ThreePCFMeasurements compute_3pcf(
           zeta_dv[idx_dv] += parity * coupling * vol_cell * zeta_component;
         }
 
+        count_terms++;
         if (trvs::currTask == 0) {
           trvs::logger.stat(
             "Three-point correlation function term at orders "
@@ -1261,6 +1261,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
   // Compute bispectrum terms including shot noise.
+  int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
       // Under the global plane-parallel approximation, δᴰ_{M0} enforces
@@ -1329,8 +1330,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
             dn_00, ylm_k_b, k_lower, k_upper, k_eff_b_, nmodes_b_
           );
 
-          // Only record the binned coordinates and counts once.
-          if (m1_ == 0 && m2_ == 0) {
+          if (count_terms == 0) {
             k1bin_dv[idx_dv] = kbinning.bin_centres[ibin];
             k2bin_dv[idx_dv] = kbinning.bin_centres[ibin];
             k1eff_dv[idx_dv] = k_eff_a_;
@@ -1382,8 +1382,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
             dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
           );
 
-          // Only record the binned coordinates and counts once.
-          if (m1_ == 0 && m2_ == 0) {
+          if (count_terms == 0) {
             k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
             k2bin_dv[idx_dv] = kbinning.bin_centres[ibin_col];
             k1eff_dv[idx_dv] = k_eff_a_;
@@ -1441,8 +1440,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
             dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
           );
 
-          // Only record the binned coordinates and counts once.
-          if (m1_ == 0 && m2_ == 0) {
+          if (count_terms == 0) {
             k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
             k2bin_dv[idx_dv] = kbinning.bin_centres[ibin_col];
             k1eff_dv[idx_dv] = k_eff_a_;
@@ -1495,8 +1493,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
               dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
             );
 
-            // Only record the binned coordinates and counts once.
-            if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+            if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
               k2bin_dv[idx_dv] = kbinning.bin_centres[idx_col];
               k1eff_dv[idx_dv] = k_eff_a_;
@@ -1661,6 +1658,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         sn_dv[idx_dv] += coupling * S_ij_k;
       }
 
+      count_terms++;
       if (trvs::currTask == 0) {
         trvs::logger.stat(
           "Bispectrum term at orders (m1, m2, M) = (%d, %d, 0) computed.",
@@ -1805,6 +1803,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
   // Compute 3PCF terms including shot noise.
+  int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
       // Under the global plane-parallel approximation, δᴰ_{M0} enforces
@@ -1888,7 +1887,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       }
 
       // Only record the binned coordinates and counts once.
-      if (m1_ == 0 && m2_ == 0) {
+      if (count_terms == 0) {
         if (params.form == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
@@ -1994,6 +1993,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         zeta_dv[idx_dv] += parity * coupling * vol_cell * zeta_component;
       }
 
+      count_terms++;
       if (trvs::currTask == 0) {
         trvs::logger.stat(
           "Three-point correlation function term at orders "
@@ -2140,6 +2140,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
   // Compute 3PCF window terms including shot noise.
+  int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
       // Check for vanishing cases where all Wigner-3j symbols are zero.
@@ -2238,8 +2239,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           }
         }
 
-        // Only record the binned coordinates and counts once.
-        if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+        if (count_terms == 0) {
           if (params.form == "diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin = idx_dv;
@@ -2352,6 +2352,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           zeta_dv[idx_dv] += parity * coupling * vol_cell * zeta_component;
         }
 
+        count_terms++;
         if (trvs::currTask == 0) {
           trvs::logger.stat(
             "Three-point correlation function window term at orders "
@@ -2505,6 +2506,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
   // Compute bispectrum terms.
+  int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
       // Check for if all Wigner-3j symbols are zero.
@@ -2624,8 +2626,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
               dn_LM_b, ylm_k_b, k_lower, k_upper, k_eff_b_, nmodes_b_
             );
 
-            // Only record the binned coordinates and counts once.
-            if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+            if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[ibin];
               k2bin_dv[idx_dv] = kbinning.bin_centres[ibin];
               k1eff_dv[idx_dv] = k_eff_a_;
@@ -2681,12 +2682,14 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
               dn_LM_b, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
             );
 
-            k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
-            k2bin_dv[idx_dv] = kbinning.bin_centres[ibin_col];
-            k1eff_dv[idx_dv] = k_eff_a_;
-            k2eff_dv[idx_dv] = k_eff_b_;
-            nmodes1_dv[idx_dv] = nmodes_a_;
-            nmodes2_dv[idx_dv] = nmodes_b_;
+            if (count_terms == 0) {
+              k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
+              k2bin_dv[idx_dv] = kbinning.bin_centres[ibin_col];
+              k1eff_dv[idx_dv] = k_eff_a_;
+              k2eff_dv[idx_dv] = k_eff_b_;
+              nmodes1_dv[idx_dv] = nmodes_a_;
+              nmodes2_dv[idx_dv] = nmodes_b_;
+            }
 
             // B_{l₁ l₂ L}^{m₁ m₂ M}
             double bk_comp_real = 0., bk_comp_imag = 0.;
@@ -2741,10 +2744,9 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
               dn_LM_b, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
             );
 
-            // Only record the binned coordinates and counts once.
-            if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+            if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
-              k2bin_dv[idx_dv] = kbinning.bin_centres[ibin];
+              k2bin_dv[idx_dv] = kbinning.bin_centres[ibin_col];
               k1eff_dv[idx_dv] = k_eff_a_;
               k2eff_dv[idx_dv] = k_eff_b_;
               nmodes1_dv[idx_dv] = nmodes_a_;
@@ -2799,8 +2801,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
                 dn_LM_b, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
               );
 
-              // Only record the binned coordinates and counts once.
-              if (M_ == 0 && m1_ == 0 && m2_ == 0) {
+              if (count_terms == 0) {
                 k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
                 k2bin_dv[idx_dv] = kbinning.bin_centres[idx_col];
                 k1eff_dv[idx_dv] = k_eff_a_;
@@ -3051,6 +3052,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           sn_dv[idx_dv] += coupling * S_ij_k;
         }
 
+        count_terms++;
         if (trvs::currTask == 0) {
           trvs::logger.stat(
             "Bispectrum term at orders (m1, m2, M) = (%d, %d, %d) computed.",
