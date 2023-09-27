@@ -152,6 +152,11 @@ CXXFLAGS_OMP ?= -fopenmp
 LDFLAGS_OMP ?= -fopenmp
 # LDLIBS_OMP ?= -lgomp
 
+# # Use alternatively Intel OpenMP implementation.
+# CXXFLAGS_OMP ?= -qopenmp
+# LDFLAGS_OMP ?= -qopenmp
+# # LDLIBS_OMP ?= -liomp5
+
 else ifeq (${OS}, Darwin)
 
 CXXFLAGS_OMP ?= -fopenmp
