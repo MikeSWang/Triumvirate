@@ -30,12 +30,12 @@ def test_compute_bispec(degrees, form, idx_bin,
                         test_stats_dir):
 
     degree_tag = ''.join(map(str, degrees))
-    if form == 'diag':
-        form_tag = form
+    if form == 'off-diag':
+        form_tag = 'offdiag{:d}'.format(idx_bin)
     elif form == 'row':
-        form_tag = 'bin{:d}'.format(idx_bin)
+        form_tag = 'row{:d}'.format(idx_bin)
     else:
-        raise ValueError(f"Invalid form: {form}.")
+        form_tag = form
 
     measurements = compute_bispec(
         test_data_catalogue, test_rand_catalogue,
@@ -55,19 +55,21 @@ def test_compute_bispec(degrees, form, idx_bin,
         "Measurement bins do not match."
     assert np.allclose(measurements['k1_eff'], measurements_ext[1]), \
         "Measured coordinates do not match."
-    assert np.allclose(measurements['k2_bin'], measurements_ext[2]), \
+    assert np.allclose(measurements['nmodes_1'], measurements_ext[2]), \
+        "Measured mode counts do not match."
+    assert np.allclose(measurements['k2_bin'], measurements_ext[3]), \
         "Measurement bins do not match."
-    assert np.allclose(measurements['k2_eff'], measurements_ext[3]), \
+    assert np.allclose(measurements['k2_eff'], measurements_ext[4]), \
         "Measured coordinates do not match."
-    assert np.allclose(measurements['nmodes_2'], measurements_ext[4]), \
+    assert np.allclose(measurements['nmodes_2'], measurements_ext[5]), \
         "Measured mode counts do not match."
     assert np.allclose(
         measurements['bk_raw'],
-        measurements_ext[5] + 1j * measurements_ext[6]
+        measurements_ext[-4] + 1j * measurements_ext[-3]
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['bk_shot'],
-        measurements_ext[7] + 1j * measurements_ext[8],
+        measurements_ext[-2] + 1j * measurements_ext[-1],
         atol=1.e-6
     ), "Measured shot noise contributions do not match."
 
@@ -89,12 +91,12 @@ def test_compute_3pcf(degrees, form, idx_bin,
                       test_stats_dir):
 
     degree_tag = ''.join(map(str, degrees))
-    if form == 'diag':
-        form_tag = form
+    if form == 'off-diag':
+        form_tag = 'offdiag{:d}'.format(idx_bin)
     elif form == 'row':
-        form_tag = 'bin{:d}'.format(idx_bin)
+        form_tag = 'row{:d}'.format(idx_bin)
     else:
-        raise ValueError(f"Invalid form: {form}.")
+        form_tag = form
 
     measurements = compute_3pcf(
         test_data_catalogue, test_rand_catalogue,
@@ -116,21 +118,24 @@ def test_compute_3pcf(degrees, form, idx_bin,
         measurements['r1_eff'], measurements_ext[1]
     ), "Measured coordinates do not match."
     assert np.allclose(
-        measurements['r2_bin'], measurements_ext[2]
+        measurements['npairs_1'], measurements_ext[2]
+    ), "Measured pair counts do not match."
+    assert np.allclose(
+        measurements['r2_bin'], measurements_ext[3]
     ), "Measurement bins do not match."
     assert np.allclose(
-        measurements['r2_eff'], measurements_ext[3]
+        measurements['r2_eff'], measurements_ext[4]
     ), "Measured coordinates do not match."
     assert np.allclose(
-        measurements['npairs_2'], measurements_ext[4]
+        measurements['npairs_2'], measurements_ext[5]
     ), "Measured pair counts do not match."
     assert np.allclose(
         measurements['zeta_raw'],
-        measurements_ext[5] + 1j * measurements_ext[6]
+        measurements_ext[-4] + 1j * measurements_ext[-3]
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['zeta_shot'],
-        measurements_ext[7] + 1j * measurements_ext[8],
+        measurements_ext[-2] + 1j * measurements_ext[-1],
         atol=1.e-6
     ), "Measured shot noise contributions do not match."
 
@@ -152,12 +157,12 @@ def test_compute_bispec_in_gpp_box(degrees, form, idx_bin,
                                    test_stats_dir):
 
     degree_tag = ''.join(map(str, degrees))
-    if form == 'diag':
-        form_tag = form
+    if form == 'off-diag':
+        form_tag = 'offdiag{:d}'.format(idx_bin)
     elif form == 'row':
-        form_tag = 'bin{:d}'.format(idx_bin)
+        form_tag = 'row{:d}'.format(idx_bin)
     else:
-        raise ValueError(f"Invalid form: {form}.")
+        form_tag = form
 
     measurements = compute_bispec_in_gpp_box(
         test_data_catalogue,
@@ -176,19 +181,21 @@ def test_compute_bispec_in_gpp_box(degrees, form, idx_bin,
         "Measurement bins do not match."
     assert np.allclose(measurements['k1_eff'], measurements_ext[1]), \
         "Measured coordinates do not match."
-    assert np.allclose(measurements['k2_bin'], measurements_ext[2]), \
+    assert np.allclose(measurements['nmodes_1'], measurements_ext[2]), \
+        "Measured mode counts do not match."
+    assert np.allclose(measurements['k2_bin'], measurements_ext[3]), \
         "Measurement bins do not match."
-    assert np.allclose(measurements['k2_eff'], measurements_ext[3]), \
+    assert np.allclose(measurements['k2_eff'], measurements_ext[4]), \
         "Measured coordinates do not match."
-    assert np.allclose(measurements['nmodes_2'], measurements_ext[4]), \
+    assert np.allclose(measurements['nmodes_2'], measurements_ext[5]), \
         "Measured mode counts do not match."
     assert np.allclose(
         measurements['bk_raw'],
-        measurements_ext[5] + 1j * measurements_ext[6]
+        measurements_ext[-4] + 1j * measurements_ext[-3]
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['bk_shot'],
-        measurements_ext[7] + 1j * measurements_ext[8],
+        measurements_ext[-2] + 1j * measurements_ext[-1],
         atol=1.e-6
     ), "Measured shot noise contributions do not match."
 
@@ -210,12 +217,12 @@ def test_compute_3pcf_in_gpp_box(degrees, form, idx_bin,
                                  test_stats_dir):
 
     degree_tag = ''.join(map(str, degrees))
-    if form == 'diag':
-        form_tag = form
+    if form == 'off-diag':
+        form_tag = 'offdiag{:d}'.format(idx_bin)
     elif form == 'row':
-        form_tag = 'bin{:d}'.format(idx_bin)
+        form_tag = 'row{:d}'.format(idx_bin)
     else:
-        raise ValueError(f"Invalid form: {form}.")
+        form_tag = form
 
     measurements = compute_3pcf_in_gpp_box(
         test_data_catalogue,
@@ -237,21 +244,24 @@ def test_compute_3pcf_in_gpp_box(degrees, form, idx_bin,
         measurements['r1_eff'], measurements_ext[1]
     ), "Measured coordinates do not match."
     assert np.allclose(
-        measurements['r2_bin'], measurements_ext[2]
+        measurements['npairs_1'], measurements_ext[2]
+    ), "Measured pair counts do not match."
+    assert np.allclose(
+        measurements['r2_bin'], measurements_ext[3]
     ), "Measurement bins do not match."
     assert np.allclose(
-        measurements['r2_eff'], measurements_ext[3]
+        measurements['r2_eff'], measurements_ext[4]
     ), "Measured coordinates do not match."
     assert np.allclose(
-        measurements['npairs_2'], measurements_ext[4]
+        measurements['npairs_2'], measurements_ext[5]
     ), "Measured pair counts do not match."
     assert np.allclose(
         measurements['zeta_raw'],
-        measurements_ext[5] + 1j * measurements_ext[6]
+        measurements_ext[-4] + 1j * measurements_ext[-3]
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['zeta_shot'],
-        measurements_ext[7] + 1j * measurements_ext[8],
+        measurements_ext[-2] + 1j * measurements_ext[-1],
         atol=1.e-6
     ), "Measured shot noise contributions do not match."
 
@@ -273,12 +283,12 @@ def test_compute_3pcf_window(degrees, form, idx_bin,
                              test_stats_dir):
 
     degree_tag = ''.join(map(str, degrees))
-    if form == 'diag':
-        form_tag = form
+    if form == 'off-diag':
+        form_tag = 'offdiag{:d}'.format(idx_bin)
     elif form == 'row':
-        form_tag = 'bin{:d}'.format(idx_bin)
+        form_tag = 'row{:d}'.format(idx_bin)
     else:
-        raise ValueError(f"Invalid form: {form}.")
+        form_tag = form
 
     measurements = compute_3pcf_window(
         test_rand_catalogue,
@@ -300,20 +310,23 @@ def test_compute_3pcf_window(degrees, form, idx_bin,
         measurements['r1_eff'], measurements_ext[1]
     ), "Measured coordinates do not match."
     assert np.allclose(
-        measurements['r2_bin'], measurements_ext[2]
+        measurements['npairs_1'], measurements_ext[2]
+    ), "Measured pair counts do not match."
+    assert np.allclose(
+        measurements['r2_bin'], measurements_ext[3]
     ), "Measurement bins do not match."
     assert np.allclose(
-        measurements['r2_eff'], measurements_ext[3]
+        measurements['r2_eff'], measurements_ext[4]
     ), "Measured coordinates do not match."
     assert np.allclose(
-        measurements['npairs_2'], measurements_ext[4]
+        measurements['npairs_2'], measurements_ext[5]
     ), "Measured pair counts do not match."
     assert np.allclose(
         measurements['zeta_raw'],
-        measurements_ext[5] + 1j * measurements_ext[6]
+        measurements_ext[-4] + 1j * measurements_ext[-3]
     ), "Measured raw statistics do not match."
     assert np.allclose(
         measurements['zeta_shot'],
-        measurements_ext[7] + 1j * measurements_ext[8],
+        measurements_ext[-2] + 1j * measurements_ext[-1],
         atol=1.e-6
     ), "Measured shot noise contributions do not match."

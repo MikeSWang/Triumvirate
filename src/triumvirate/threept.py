@@ -202,8 +202,12 @@ def _get_measurement_filename(paramset):
 
     if paramset['form'] == 'diag':
         binform = "_diag"
+    if paramset['form'] == 'off-diag':
+        binform = "_offdiag{:d}".format(paramset['idx_bin'])
+    if paramset['form'] == 'row':
+        binform = "_row{:d}".format(paramset['idx_bin'])
     if paramset['form'] == 'full':
-        binform = "_bin{:d}".format(paramset['idx_bin'])
+        binform = "_full"
 
     output_tag = paramset['tags']['output'] or ""
 
@@ -265,7 +269,7 @@ def _print_measurement_header(paramset, norm_factor_part, norm_factor_mesh,
     multipole = "{ell1}{ell2}{ELL}".format(**paramset['degrees'])
     if paramset['space'] == 'fourier':
         datatab_colnames = [
-            "k1_cen", "k1_eff", "k2_cen", "k2_eff", "nmodes",
+            "k1_cen", "k1_eff", "nmodes_1", "k2_cen", "k2_eff", "nmodes_2",
             "Re{{bk{}_raw}}".format(multipole),
             "Im{{bk{}_raw}}".format(multipole),
             "Re{{bk{}_shot}}".format(multipole),
@@ -273,7 +277,7 @@ def _print_measurement_header(paramset, norm_factor_part, norm_factor_mesh,
         ]
     if paramset['space'] == 'config':
         datatab_colnames = [
-            "r1_cen", "r1_eff", "r2_cen", "r2_eff", "npairs",
+            "r1_cen", "r1_eff", "npairs_1", "r2_cen", "r2_eff", "npairs_2",
             "Re{{zeta{}_raw}}".format(multipole),
             "Im{{zeta{}_raw}}".format(multipole),
             "Re{{zeta{}_shot}}".format(multipole),
@@ -339,16 +343,18 @@ def _assemble_measurement_datatab(measurements, paramset):
     if paramset['space'] == 'fourier':
         datatab = np.transpose([
             measurements['k1_bin'], measurements['k1_eff'],
+            measurements['nmodes_1'],
             measurements['k2_bin'], measurements['k2_eff'],
-            measurements['nmodes'],
+            measurements['nmodes_2'],
             measurements['bk_raw'].real, measurements['bk_raw'].imag,
             measurements['bk_shot'].real, measurements['bk_shot'].imag,
         ])
     if paramset['space'] == 'config':
         datatab = np.transpose([
             measurements['r1_bin'], measurements['r1_eff'],
+            measurements['npairs_1'],
             measurements['r2_bin'], measurements['r2_eff'],
-            measurements['npairs'],
+            measurements['npairs_2'],
             measurements['zeta_raw'].real, measurements['zeta_raw'].imag,
             measurements['zeta_shot'].real, measurements['zeta_shot'].imag,
         ])
@@ -589,7 +595,8 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         if save.lower() == '.txt':
             datatab = _assemble_measurement_datatab(results, paramset)
             datafmt = '\t'.join(
-                ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
+                (['%.9e'] * 2 + ['%10d']) * 2 +
+                ['% .9e'] * (datatab.shape[-1] - 6)
             )
             ofilename = _get_measurement_filename(paramset)
             ofilepath = Path(odirpath, ofilename).with_suffix('.txt')
@@ -1051,7 +1058,8 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         if save.lower() == '.txt':
 #             datatab = _assemble_measurement_datatab(results, paramset)
 #             datafmt = '\t'.join(
-#                 ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
+#                 (['%.9e'] * 2 + ['%10d']) * 2 +
+#                 ['% .9e'] * (datatab.shape[-1] - 6)
 #             )
 #             ofilename = _get_measurement_filename(paramset)
 #             ofilepath = Path(odirpath, ofilename).with_suffix('.txt')
@@ -1264,7 +1272,8 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         if save.lower() == '.txt':
             datatab = _assemble_measurement_datatab(results, paramset)
             datafmt = '\t'.join(
-                ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
+                (['%.9e'] * 2 + ['%10d']) * 2 +
+                ['% .9e'] * (datatab.shape[-1] - 6)
             )
             ofilename = _get_measurement_filename(paramset)
             ofilepath = Path(odirpath, ofilename).with_suffix('.txt')
@@ -1671,7 +1680,8 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         if save.lower() == '.txt':
             datatab = _assemble_measurement_datatab(results, paramset)
             datafmt = '\t'.join(
-                ['%.9e'] * 4 + ['%10d'] + ['% .9e'] * (datatab.shape[-1] - 5)
+                (['%.9e'] * 2 + ['%10d']) * 2 +
+                ['% .9e'] * (datatab.shape[-1] - 6)
             )
             ofilename = _get_measurement_filename(paramset)
             ofilepath = Path(odirpath, ofilename).with_suffix('.txt')
