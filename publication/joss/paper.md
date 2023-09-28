@@ -251,5 +251,7 @@ under the European Union’s Horizon 2020 research and innovation programme
 (grant agreement 853291). FB is a Royal Society University Research
 Fellow.
 
+We thank the reviewers for their valuable feedback and suggestions, which
+have improved the functionality and documentation of this code.
 
 # References
