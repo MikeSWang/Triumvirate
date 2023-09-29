@@ -206,29 +206,38 @@ $1.5\times10^{-8} N_\mathrm{mesh}$ gibibytes[^4]); for local and global
 plane-parallel 3PCF estimators, the figures are $10 M$ and $9 M$
 respectively.
 
-In the table below, we show the run time and peak memory usage for
-bispectrum measurements of a few select multipoles and grid numbers with
-$N_\mathrm{bin} = 20$, using a single thread on one Intel Xeon E5-2697 v2
-processor with base frequency 2.70 GHz. With multithreading enabled,
-the run time should reduce accordingly (see the last column in the table).
-Here 'lpp' and 'gpp' denote local and global plane-parallel approximations
-respectively. For the global plane-parallel estimates, the catalogue used
-is a cubic box containing $N_\mathrm{part} = 10^6$ particles; for the
-local plane-parallel estimates, the data and random catalogues are spheres
-containing $N_\mathrm{part} = 5 \times 10^5$ and $5 \times 10^6$ particles
+In the table below, we show the wall time and peak memory usage for
+bispectrum and three-point correlation function measurements of a few
+select multipoles and grid numbers with $N_\mathrm{bin} = 20$, using a
+single core on one AMD EPYC 7H12 processor with base frequency 2.60 GHz.
+With multithreading enabled, the run time is reduced (see the last column
+in the table). Here 'lpp' and 'gpp' denote local and global plane-parallel
+approximations respectively. For the global plane-parallel estimates,
+the catalogue used is a cubic box containing
+$N_\mathrm{part} = 8 \times 10^6$ particles; for the local plane-parallel
+estimates, the data and random catalogues contain
+$N_\mathrm{part} = 6.6 \times 10^5$ and $1.3 \times 10^7$ particles
 respectively.
 
-------------------------------------------------------------------------------------------------------------------------------
-Multipole/$N_\mathrm{mesh}$               $128^3$                 $256^3$                  $512^3$        $512^3$ (12 threads)
---------------------------- --------------------- ----------------------- ------------------------ ---------------------------
-$B_{000}^{\mathrm{(lpp)}}$          75 s, 1.8 GiB          305 s, 4.4 GiB           2051 s, 25 GiB               668 s, 25 GiB
+--------------------------------------------------------------------------------------------------------------------------
+Multipole/$N_\mathrm{mesh}$                   $128^3$                $256^3$                $512^3$   $512^3$ (32 threads)
+------------------------------ ---------------------- ---------------------- ---------------------- ----------------------
+$B_{000}^{\mathrm{(lpp)}}$              96 s, 1.8 GiB         215 s, 4.4 GiB         1247 s, 25 GiB           85 s, 25 GiB
 
-$B_{000}^{\mathrm{(gpp)}}$          32 s, 0.7 GiB          246 s, 2.9 GiB           1910 s, 20 GiB               346 s, 20 GiB
+$B_{000}^{\mathrm{(gpp)}}$              42 s, 0.7 GiB         172 s, 2.9 GiB         1185 s, 21 GiB           59 s, 21 GiB
 
-$B_{202}^{\mathrm{(lpp)}}$         297 s, 1.8 GiB         1442 s, 4.4 GiB          10220 s, 25 GiB              2281 s, 25 GiB
+$B_{202}^{\mathrm{(lpp)}}$             320 s, 1.8 GiB        1030 s, 4.4 GiB         6449 s, 25 GiB          267 s, 25 GiB
 
-$B_{202}^{\mathrm{(gpp)}}$          30 s, 0.7 GiB          240 s, 2.9 GiB           1968 s, 20 GiB               344 s, 20 GiB
-------------------------------------------------------------------------------------------------------------------------------
+$B_{202}^{\mathrm{(gpp)}}$              42 s, 0.7 GiB         176 s, 2.9 GiB         1187 s, 21 GiB           60 s, 21 GiB
+
+$\zeta_{000}^{\mathrm{(lpp)}}$          90 s, 1.8 GiB         211 s, 4.4 GiB         1403 s, 21 GiB           83 s, 21 GiB
+
+$\zeta_{000}^{\mathrm{(gpp)}}$          43 s, 0.7 GiB         178 s, 2.9 GiB         1226 s, 19 GiB           55 s, 19 GiB
+
+$\zeta_{202}^{\mathrm{(lpp)}}$         267 s, 1.8 GiB         964 s, 4.4 GiB         6377 s, 21 GiB          266 s, 21 GiB
+
+$\zeta_{202}^{\mathrm{(gpp)}}$          43 s, 0.7 GiB         177 s, 2.9 GiB         1241 s, 19 GiB           57 s, 19 GiB
+--------------------------------------------------------------------------------------------------------------------------
 
 
 [^4]: Note that 1 gibibytes (GiB) is $2^{30}$ bytes, as opposed to
