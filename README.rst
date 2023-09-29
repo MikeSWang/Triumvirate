@@ -176,10 +176,11 @@ under the European Union's Horizon 2020 research and innovation programme
 Key underlying numerical algorithms were originally developed by
 Naonori S Sugiyama, and are available in the GitHub repository |hitomi|_.
 
-We thank the JOSS reviewers, William Coulton (@wcoulton) and
-Alfonso Veropalumbo (@alfonso-veropalumbo), for their valuable feedback and
-suggestions, which have improved the functionality and documentation
-of the code.
+We thank the JOSS reviewers, William Coulton
+(`@wcoulton <https://github.com/wcoulton>`_) and Alfonso Veropalumbo
+(`@alfonso-veropalumbo <https://github.com/alfonso-veropalumbo>`_), for
+their valuable feedback and suggestions, which have improved the
+functionality and documentation of the code.
 
 
 Contributing

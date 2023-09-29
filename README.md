@@ -123,10 +123,11 @@ Key underlying numerical algorithms were originally developed by
 Naonori S Sugiyama, and are available in the GitHub repository [``hitomi``](
 https://github.com/naonori/hitomi).
 
-We thank the JOSS reviewers, William Coulton (@wcoulton) and
-Alfonso Veropalumbo (@alfonso-veropalumbo), for their valuable feedback and
-suggestions, which have improved the functionality and documentation
-of the code.
+We thank the JOSS reviewers, William Coulton
+([@wcoulton](https://github.com/wcoulton)) and Alfonso Veropalumbo
+([@alfonso-veropalumbo](https://github.com/alfonso-veropalumbo)), for
+their valuable feedback and suggestions, which have improved the
+functionality and documentation of the code.
 
 
 ## Development/Contributing
