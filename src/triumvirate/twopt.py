@@ -892,7 +892,7 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
         if logger:
             logger.info(
                 "Inserted missing 'nz' field "
-                "based on particle count and boxsize."
+                "based on particle count and box size."
             )
 
     if logger:

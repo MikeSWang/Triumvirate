@@ -85,8 +85,8 @@ class Binning {
   /**
    * @brief Set bins.
    *
-   * @param coord_min Minimum coordinate in binning range.
-   * @param coord_max Maximum coordinate in binning range.
+   * @param coord_min Minimum coordinate in bin range.
+   * @param coord_max Maximum coordinate in bin range.
    * @param nbin Number of bins.
    * @throws trv::sys::InvalidParameterError When @p coord_min is
    *                                         negative.
@@ -96,7 +96,7 @@ class Binning {
    *       or log-linearly (i.e. exponentially) in the bin range.  If
    *       @p scheme is "linpad", "logpad", 5 linear bins are set from
    *       zero (leftmost edge) with width 1.e-3 ("fourier") or 10.
-   *       ("config") with the remaining binning range divided linearly
+   *       ("config") with the remaining bin range divided linearly
    *       or log-linearly.
    */
   void set_bins(double coord_min, double coord_max, int nbin);
@@ -202,7 +202,7 @@ struct PowspecMeasurements {
   std::vector<double> kbin;  ///< central wavenumber in bins
   std::vector<double> keff;  ///< effective wavenumber in bins
   std::vector<int> nmodes;   ///< number of wavevectors in bins
-  /// power spectrum raw measurements
+  /// power spectrum raw measurements (with normalisation and shot noise)
   std::vector< std::complex<double> > pk_raw;
   /// power spectrum shot noise
   std::vector< std::complex<double> > pk_shot;
@@ -217,7 +217,7 @@ struct TwoPCFMeasurements {
   std::vector<double> rbin;  ///< central separation in bins
   std::vector<double> reff;  ///< effective separation in bins
   std::vector<int> npairs;   ///< number of separation vectors in bins
-  /// two-point correlation function measurements
+  /// two-point correlation function measurements (with normalisation)
   std::vector< std::complex<double> > xi;
 };
 
@@ -231,6 +231,7 @@ struct TwoPCFWindowMeasurements {
   std::vector<double> reff;  ///< effective separation in bins
   std::vector<int> npairs;   ///< number of separation vectors in bins
   /// two-point correlation function window measurements
+  /// (with normalisation)
   std::vector< std::complex<double> > xi;
 };
 
@@ -251,7 +252,7 @@ struct BispecMeasurements {
   std::vector<double> k2_eff;  ///< second effective wavenumber in bins
   std::vector<int> nmodes_1;   ///< number of first wavevectors in bins
   std::vector<int> nmodes_2;   ///< number of second wavevectors in bins
-  /// bispectrum raw measurements
+  /// bispectrum raw measurements (with normalisation and shot noise)
   std::vector< std::complex<double> > bk_raw;
   /// bispectrum shot noise
   std::vector< std::complex<double> > bk_shot;
@@ -272,6 +273,7 @@ struct ThreePCFMeasurements {
   /// number of second separation vectors in bins
   std::vector<int> npairs_2;
   /// three-point correlation function raw measurements
+  /// (with normalisation and shot noise)
   std::vector< std::complex<double> > zeta_raw;
   /// three-point correlation function shot noise
   std::vector< std::complex<double> > zeta_shot;
@@ -292,6 +294,7 @@ struct ThreePCFWindowMeasurements {
   /// number of second separation vectors in bins
   std::vector<int> npairs_2;
   /// three-point correlation function window raw measurements
+  /// (with normalisation and shot noise)
   std::vector< std::complex<double> > zeta_raw;
   /// three-point correlation function window shot noise
   std::vector< std::complex<double> > zeta_shot;

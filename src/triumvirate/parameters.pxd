@@ -1,4 +1,4 @@
-"""Declare :cpp:class:`trv::ParameterSet` and its members and methods.
+"""Interface with the parameter set.
 
 """
 from libcpp cimport bool as bool_t

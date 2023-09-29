@@ -564,7 +564,7 @@ class FieldStats {
    * @param shotnoise_amp Shot-noise amplitude.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
-   * @param kbinning Wavenumber bins.
+   * @param kbinning Wavenumber binning.
    * @throws trv::sys::InvalidDataError When @p field_a and @p field_b
    *                                    have incompatible physical
    *                                    properties.
@@ -589,7 +589,7 @@ class FieldStats {
    * @param shotnoise_amp Shot-noise amplitude.
    * @param ell Degree of the spherical harmonic.
    * @param m Order of the spherical harmonic.
-   * @param rbinning Separation bins.
+   * @param rbinning Separation binning.
    *
    * @note @p field_a and @p field_b are Fourier-space fields and their
    *       entries are arranged in the FFTW convention (i.e. shifted).
@@ -629,7 +629,7 @@ class FieldStats {
    * @param ylm_a Reduced spherical harmonics over the first field mesh.
    * @param ylm_b Reduced spherical harmonics over the second field mesh.
    * @param shotnoise_amp Shot-noise amplitude.
-   * @param rbinning Separation bins.
+   * @param rbinning Separation binning.
    */
   void compute_uncoupled_shotnoise_for_3pcf(
     MeshField& field_a, MeshField& field_b,
@@ -689,7 +689,7 @@ class FieldStats {
   /**
    * @brief Record binned vectors given a binning scheme.
    *
-   * @param binning Bins.
+   * @param binning Binning.
    * @param save_file Saved filename if non-empty.
    */
   trv::BinnedVectors record_binned_vectors(

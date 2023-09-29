@@ -1724,7 +1724,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
   const double dk_sample = 1.e-5;
   if (kbinning.bin_max > n_sample * dk_sample) {
     trvs::logger.warn(
-      "Input binning range exceeds sampled range. "
+      "Input bin range exceeds sampled range. "
       "Statistics in bins beyond sampled range are uncomputed."
     );
   }
@@ -1966,7 +1966,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   const double dr_sample = 1.e-1;
   if (rbinning.bin_max > n_sample * dr_sample) {
     trvs::logger.warn(
-      "Input binning range exceeds sampled range. "
+      "Input bin range exceeds sampled range. "
       "Statistics in bins beyond sampled range are uncomputed."
     );
   }

@@ -1,5 +1,5 @@
 """
-Fields and meshes (:mod:`~triumvirate.fieldmesh`)
+Field and mesh (:mod:`~triumvirate.fieldmesh`)
 ==========================================================================
 
 Handle fields and mesh grids.
@@ -25,10 +25,10 @@ def record_binned_vectors(binning, paramset=None, boxsize=None, ngrid=None):
     Parameters
     ----------
     binning : :class:`~triumvirate.binning.Binning`
-        Binning scheme.
+        Binning.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
-        Parameters set including the mesh grid parameters.  If `None`,
-        `boxsize` and `ngrid` must be provided.
+        Parameters set including the mesh grid parameters.  If `None`
+        (default), `boxsize` and `ngrid` must be provided.
     boxsize : float or sequence of [float, float, float], optional
         Box size in each dimension (default is `None`).  Must be provided
         if `paramset` is `None`.  This will override corresponding entries
@@ -40,7 +40,7 @@ def record_binned_vectors(binning, paramset=None, boxsize=None, ngrid=None):
 
     Returns
     -------
-    :class:`numpy.ndarray`
+    binned_vectors : :class:`numpy.ndarray`
         Binned vectors as a structured array with the following fields---
 
         - ``'index'``: bin index;
@@ -81,4 +81,6 @@ def record_binned_vectors(binning, paramset=None, boxsize=None, ngrid=None):
     if isinstance(paramset, dict):  # likely redundant but safe
         paramset = ParameterSet(param_dict=paramset)
 
-    return _record_binned_vectors(binning, paramset)
+    binned_vectors = _record_binned_vectors(binning, paramset)
+
+    return binned_vectors

@@ -1,4 +1,4 @@
-"""Declare :cpp:class:`trv::FieldStats` and its vector binning method.
+"""Interface with field and mesh objects and statistics.
 
 """
 from libcpp.string cimport string

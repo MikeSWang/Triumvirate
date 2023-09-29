@@ -40,7 +40,7 @@ class MissingValueError(ValueError):
 
 class DefaultValueWarning(UserWarning):
     """Warning issued when values of a field are not provided and set
-    to default.
+    to the default.
 
     """
     pass
@@ -48,7 +48,7 @@ class DefaultValueWarning(UserWarning):
 
 class ParticleCatalogue:
     """Catalogue holding particle coordinates, weights and
-    redshift-dependent mean number densities.
+    redshift-dependent mean number density.
 
     Parameters
     ----------
@@ -56,11 +56,11 @@ class ParticleCatalogue:
         Cartesian coordinates of particles.  `x`, `y` and `z` must have
         the same length.
     nz : (1-d array of) float, optional
-        Redshift-dependent mean number density of
-        (defaults is `None`).  If an array, it must be of the same length
+        Redshift-dependent mean number density (defaults is `None`).
+        If an array, it must be of the same length
         as `x`, `y` and `z`.
     ws, wc : (1-d array of) float, optional
-        Sample weights and clustering weights of particles (defaults
+        Sample weight and clustering weight of particles (defaults
         are 1.).  If an array, it must be of the same length as
         `x`, `y` and `z`.
     logger : :class:`logging.Logger`, optional
@@ -80,9 +80,9 @@ class ParticleCatalogue:
 
     .. attention::
 
-        There are two types of weights: sample weights ``ws``
-        (e.g. completeness weights) and clustering weights ``wc``
-        (e.g. Feldman--Kaiser--Peacock weights). The overall weight
+        There are two types of weights: sample weight ``ws``
+        (e.g. completeness weights) and clustering weight ``wc``
+        (e.g. Feldman--Kaiser--Peacock weights).  The overall weight
         is the product of the two for each particle.
 
         Note the naming convention above: in particular, ``wc`` is not
@@ -207,7 +207,7 @@ class ParticleCatalogue:
             `table_kwargs`.
 
             For ``reader='nbodykit'``, supported `format` and the
-            argument corresponding to `names` are---
+            argument corresponding to `names` in the reader are---
 
             - ``'text'`` and ``names`` (sequence of str): plain-text files
               read in by |CSVCatalog|;
@@ -380,17 +380,17 @@ class ParticleCatalogue:
         return len(self._pdata)
 
     def __getitem__(self, key):
-        """Return data entry.
+        """Return one or more data entries.
 
         Parameters
         ----------
         key : (list of) str, (list of) int or slice
-            Data entry key.
+            Data entry key(s) or selectors (indices or slices).
 
         Returns
         -------
         :class:`numpy.ndarray`
-            Data entry.
+            Data entry/entries.
 
         """
         return self._compute(self._pdata[key])
@@ -402,7 +402,7 @@ class ParticleCatalogue:
         ----------
         key : str
             Data column name.
-        val : array_like
+        val : 1-d array_like
             Data column array.
 
         """

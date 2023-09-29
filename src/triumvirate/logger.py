@@ -129,6 +129,11 @@ def setup_logger(log_level=logging.INFO):
     logger : :class:`logging.LoggerAdapter`
         Customised logger.
 
+    See Also
+    --------
+    :mod:`logging`
+        For more details of the Python logging facility.
+
     """
     # Set formatter.
     formatter = _ElapsedLogFormatter(

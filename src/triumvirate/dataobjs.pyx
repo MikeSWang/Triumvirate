@@ -21,7 +21,7 @@ cdef class Binning:
     space : {'config', 'fourier'}
         Coordinate space.
     scheme : {'lin', 'log', 'linpad', 'logpad'}
-        Binning scheme.
+        Binning scheme.  See the note below for more details.
     bin_min, bin_max : float, optional
         Minimum and maximum of the bin range (defaults are `None`).
     num_bins : int, optional
@@ -32,9 +32,11 @@ cdef class Binning:
     space : {'config', 'fourier'}
         Coordinate space.
     scheme : {'lin', 'log', 'linpad', 'logpad'}
-        Binning scheme.
-    bin_min, bin_max : float or None
-        Minimum and maximum of the bin range.
+        Binning scheme.  See the note below for more details.
+    bin_min : float or None
+        Minimum of the bin range.
+    bin_max : float or None
+        Maximum of the bin range.
     num_bins : int or None
         Number of bins.
     bin_edges : list of float
@@ -45,7 +47,8 @@ cdef class Binning:
         Bin widths of length :attr:`num_bins`.
 
 
-    .. note::
+    .. admonition:: Binning `scheme`
+        :class: dropdown
 
         The bin setting method supports linear ('lin') and
         log-linear/exponential ('log') binning, with possible linear
@@ -85,7 +88,7 @@ cdef class Binning:
 
     @classmethod
     def from_parameter_set(cls, paramset):
-        """Create binning scheme from a parameter set.
+        """Create binning from a parameter set.
 
         This sets :attr:`scheme` and :attr:`space`.
 
@@ -98,17 +101,16 @@ cdef class Binning:
         ------
         ValueError
             When the 'space' parameter is unset or unrecognised in
-            `paramset`.
+            `paramset`.  See the note below for more details.
 
 
         .. attention::
 
-            If `paramset` is initialised without an accepted
+            If `paramset` has been initialised without an appropriate
             'statistic_type' parameter value, the derived 'space'
-            parameter is unset and must be specified in
-            {'fourier', 'config'} before passing `paramset` to this
-            method. See also
-            :class:`~triumvirate.parameters.ParameterSet`.
+            parameter is unset and must be specified to be the either of
+            {'fourier', 'config'} before `paramset` is to this method.
+            See also :class:`~triumvirate.parameters.ParameterSet`.
 
         """
         if paramset['space'] not in ['fourier', 'config']:
@@ -126,8 +128,10 @@ cdef class Binning:
         return self
 
     def set_bins(self, bin_min, bin_max, num_bins):
-        """Set bin quantities including recalculated bin edges, centres
-        and widths.
+        """Set binning based on the bin range and number using the
+        current binning scheme.
+
+        Bin edges, centres and widths are recalculated.
 
         Parameters
         ----------
@@ -149,10 +153,10 @@ cdef class Binning:
     def set_grid_based_bins(self, boxsize, ngrid):
         """Set linear binning based on a mesh grid.
 
-        The binning scheme is overriden to 'lin'.  The bin width is
-        given by the grid resolution in configuration space or the
+        The binning :attr:`scheme` is overriden to 'lin'.  The bin width
+        is given by the grid resolution in configuration space or the
         fundamental wavenumber in Fourier space.  The bin minimum is zero
-        and the bin maximum is half the boxsize in configuration space or
+        and the bin maximum is half the box size in configuration space or
         the Nyquist wavenumber in Fourier space.
 
         Parameters
@@ -176,10 +180,11 @@ cdef class Binning:
         self.scheme = self.thisptr.scheme
 
     def set_custom_bins(self, bin_edges):
-        """Set custom bins using bin edges.
+        """Set customised binning using bin edges.
 
-        :attr:`bin_centres` and :attr:`bin_widths` are also automatically
-        set for internal consistency. :attr:`scheme` is set to 'custom'.
+        The binning :attr:`scheme` is set to 'custom'.
+        :attr:`bin_centres` and :attr:`bin_widths` are automatically
+        calculated.
 
         Parameters
         ----------

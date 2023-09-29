@@ -20,7 +20,8 @@ import yaml
 from .parameters cimport CppParameterSet
 
 
-# NOTE: Nested entries must not have a non-None default value.
+# NOTE: Nested entries must not have a non-`None` default value. Instead,
+# provide all the nested entries with the bottom-level entry possibly `None`.
 _TMPL_PARAM_DICT = {
     'directories': {
         'catalogues': None,
@@ -73,8 +74,8 @@ class InvalidParameterError(ValueError):
 cdef class ParameterSet:
     """Parameter set.
 
-    This reads parameters from a file or a :class:`dict`, stores and
-    prints out the extracted parameters, and validates the parameters.
+    This reads parameters from a file or a :class:`dict` object, stores
+    and prints out the extracted parameters, and validates the parameters.
 
     Parameters
     ----------
@@ -204,7 +205,7 @@ cdef class ParameterSet:
         self.__setitem__(name, value)
 
     def names(self):
-        """Return the set of top-level parameter names like
+        """Return the full set of top-level parameter names like
         :meth:`dict.keys`.
 
         Returns
@@ -216,7 +217,8 @@ cdef class ParameterSet:
         return self._params.keys()
 
     def items(self):
-        """Return the set of entries like a :meth:`dict.items`.
+        """Return the full set of parameter entries like
+        :meth:`dict.items`.
 
         Returns
         -------
@@ -227,7 +229,7 @@ cdef class ParameterSet:
         return self._params.items()
 
     def get(self, key, *default_val):
-        """Return a possibly non-existent top-level entry like
+        """Return a possibly non-existent top-level parameter entry like
         :meth:`dict.get`.
 
         Parameters
@@ -254,7 +256,8 @@ cdef class ParameterSet:
         self._original = False
 
     def print(self):
-        """Print the parameters as dictionary with :func:`pprint.pprint`.
+        """Print the parameters as a dictionary
+        with :func:`pprint.pprint`.
 
         """
         pprint(self._params, sort_dicts=False)
@@ -265,8 +268,8 @@ cdef class ParameterSet:
         Parameters
         ----------
         filepath : str or :class:`pathlib.Path`, optional
-            Saved file path.  If `None` (default), parameters are
-            saved to a default file in the output measurement directory.
+            Saved file path.  If `None` (default), parameters are saved
+            to a default file path in the output measurement directory.
 
         """
         if filepath is None:
@@ -521,8 +524,8 @@ def fetch_paramset_template(format, ret_defaults=False):
     Parameters
     ----------
     format : {'text', 'dict'}
-        Template format, either file contents ('text')
-        or dictionary ('dict').
+        Template format, either as file content text ('text')
+        or a dictionary ('dict').
     ret_defaults : bool, optional
         If `True` (default is `False`), return a list of non-`None`
         default parameters in the template.  Only used when `format`
@@ -578,23 +581,24 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
     paramset : dict-like
         Parameter set to be updated.
     params_sampling : dict, optional
-        Dictionary containing a subset of the following entries
-        for sampling parameters---
+        Dictionary containing any number of the following
+        sampling parameters---
 
-            * 'boxsize': [float, float, float];
-            * 'ngrid': [int, int, int];
-            * 'alignment': {'centre', 'pad'}
-            * 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
-            * 'interlace': bool;
+        - 'boxsize': [float, float, float];
+        - 'ngrid': [int, int, int];
+        - 'alignment': {'centre', 'pad'}
+        - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
+        - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and exactly one of the following parameters only when 'alignment'
+        is 'pad'---
 
-            * 'boxpad': float;
-            * 'gridpad': float.
+        - 'boxpad': float;
+        - 'gridpad': float.
 
-        This will override corresponding parameters in the template.
-        If `None` (default), no modification happens and the original
-        `paramset` is returned.
+        This will override corresponding parameters in the input
+        parameter set.  If `None` (default), no modification is made and
+        the input `paramset` is returned.
     params_default : dict, optional
         If not `None` (default), this is a sub-dictionary of `paramset`
         and any of its entries unmodified by `params_sampling` will be
@@ -684,16 +688,16 @@ def _modify_measurement_parameters(paramset, params_measure=None,
         Dictionary containing a subset of the following entries
         for measurement parameters:
 
-            * 'ell1', 'ell2', 'ELL': int;
-            * 'i_wa', 'j_wa': int;
-            * 'form': {'full', 'diag', 'off-diag', 'row'};
-            * 'bin_min', 'bin_max': float;
-            * 'num_bins': int;
-            * 'idx_bin': int.
+        - 'ell1', 'ell2', 'ELL': int;
+        - 'i_wa', 'j_wa': int;
+        - 'form': {'full', 'diag', 'off-diag', 'row'};
+        - 'bin_min', 'bin_max': float;
+        - 'num_bins': int;
+        - 'idx_bin': int.
 
-        This will override corresponding parameters in the template.
-        If `None` (default), no modification happens and the original
-        `paramset` is returned.
+        This will override corresponding parameters in the input
+        parameter set.  If `None` (default), no modification is made and
+        the input `paramset` is returned.
     params_default : dict, optional
         If not `None` (default), this is a sub-dictionary of `paramset`
         and any of its entries unmodified by `params_measure` will be

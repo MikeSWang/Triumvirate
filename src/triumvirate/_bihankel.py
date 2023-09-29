@@ -54,12 +54,12 @@ def _check_1d_array(a):
 
     Parameters
     ----------
-    a : array of float
+    a : 1-d array of float
         Input 1-d array.
 
     Returns
     -------
-    a : array of float
+    a : 1-d array of float
         Input 1-d array.
 
     Raises
@@ -83,12 +83,12 @@ def _check_2d_array(a):
 
     Parameters
     ----------
-    a : array of float
+    a : 2-d array of float
         Input 2-d array.
 
     Returns
     -------
-    a : array of float
+    a : 2-d array of float
         Input 2-d array.
 
     Raises

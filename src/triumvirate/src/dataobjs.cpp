@@ -56,7 +56,7 @@ Binning::Binning(trv::ParameterSet& params) : Binning::Binning(
 void Binning::set_bins(double coord_min, double coord_max, int nbin) {
   if (coord_min < 0.) {
     throw trv::sys::InvalidParameterError(
-      "Binning range must be non-negative."
+      "Bin range must be non-negative."
     );
   }
   if (nbin <= 0) {
