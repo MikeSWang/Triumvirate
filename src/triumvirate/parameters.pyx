@@ -170,7 +170,7 @@ cdef class ParameterSet:
 
         """
         self._params.update({key: val})
-        self._parse_params()
+        self._parse_params()  # validate
         self._original = False
 
     def __getattr__(self, name):
@@ -252,7 +252,7 @@ cdef class ParameterSet:
 
         """
         self._params.update(*args, **kwargs)
-        self._parse_params()
+        self._parse_params()  # validate
         self._original = False
 
     def print(self):
@@ -596,7 +596,7 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding parameters in the input
+        This will override the corresponding parameters in the input
         parameter set.  If `None` (default), no modification is made and
         the input `paramset` is returned.
     params_default : dict, optional
@@ -695,7 +695,7 @@ def _modify_measurement_parameters(paramset, params_measure=None,
         - 'num_bins': int;
         - 'idx_bin': int.
 
-        This will override corresponding parameters in the input
+        This will override the corresponding parameters in the input
         parameter set.  If `None` (default), no modification is made and
         the input `paramset` is returned.
     params_default : dict, optional

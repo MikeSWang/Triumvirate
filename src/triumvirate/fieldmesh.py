@@ -31,12 +31,12 @@ def record_binned_vectors(binning, paramset=None, boxsize=None, ngrid=None):
         (default), `boxsize` and `ngrid` must be provided.
     boxsize : float or sequence of [float, float, float], optional
         Box size in each dimension (default is `None`).  Must be provided
-        if `paramset` is `None`.  This will override corresponding entries
-        in `paramset`.
+        if `paramset` is `None`.  This will override the corresponding
+        entries in `paramset`.
     ngrid : int or sequence of [int, int, int], optional
         Grid number in each dimension (default is `None`).  Must be
-        provided if `paramset` is set.  This will override corresponding
-        entries in `paramset`.
+        provided if `paramset` is set.  This will override the
+        corresponding entries in `paramset`.
 
     Returns
     -------

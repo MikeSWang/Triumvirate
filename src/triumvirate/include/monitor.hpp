@@ -360,6 +360,12 @@ class InvalidDataError: public std::runtime_error {
  */
 void display_prog_notice();
 
+/**
+ * @brief Display program licence in @c stdout.
+ *
+ */
+void display_prog_licence();
+
 }  // namespace trv::sys
 }  // namespace trv
 

@@ -36,9 +36,9 @@ Outside Conda environments, they can be installed using a package manager:
 
         $ brew install gsl fftw
 
-(select the appropriate version in round/square brackets above).
+(select the appropriate option/version in the brackets above).
 
-Another option is to build these libraries from the source, following
+Another option is to build these libraries from the source, following the
 instructions from `'GSL - GNU Scientific Library'
 <https://www.gnu.org/software/gsl/>`_ and `'FFTW' <https://www.fftw.org>`_.
 In this case, path environmental variables may need to be set/modified
@@ -119,13 +119,13 @@ virtual environment should be created for installing and using the package
 (e.g. a Conda environment created with ``conda create -n <env>`` and
 activated with ``conda activate <env>``).
 
-To install from |PyPI-repo|, execute in terminal:
+To install from |PyPI-repo|, execute in shell:
 
 .. code-block:: console
 
     $ python -m pip install triumvirate
 
-To install using |conda-repo|, execute in terminal:
+To install using |conda-repo|, execute in shell:
 
 .. code-block:: console
 
@@ -138,7 +138,7 @@ By default, the package is installed with OpenMP enabled if it is supported.
     Conda packages are built with dependencies such as ``numpy`` and
     ``scipy`` sourced from the ``conda-forge`` channel. For consistency
     and avoidance of dependency conflicts, it is recommended that
-    ``conda-forge`` should be as the highest-priority channel,
+    ``conda-forge`` should be set as the highest-priority channel,
 
     .. code-block:: console
 
@@ -166,7 +166,7 @@ its local directory path:
     $ git clone git@github.com:MikeSWang/Triumvirate.git [--branch <branch-or-release>]
     $ cd Triumvirate
 
-Then, execute in terminal:
+Then, execute in shell:
 
 .. code-block:: console
 
@@ -205,7 +205,7 @@ directory path:
     $ git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
     $ cd Triumvirate
 
-Then, execute in terminal:
+Then, execute in shell:
 
 .. code-block:: console
 
@@ -241,8 +241,8 @@ and configure the OpenMP-enabled compilation options accordingly.
 Using `make`
 ------------
 
-By default, OpenMP is *disabled*. To *enable* OpenMP parallelisation, pass
-``useomp=true`` or ``useomp=1`` to `make`.
+By default, OpenMP is *disabled* for `make`-based installation. To *enable*
+OpenMP parallelisation, pass ``useomp=true`` or ``useomp=1`` to `make`.
 
 To override the compilation settings used in the default |Makefile|_, set the
 environmental variables as shown in the following examples for macOS:
@@ -263,21 +263,23 @@ environmental variables as shown in the following examples for macOS:
         # Set OpenMP linker flags.
         $ export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
 
-These commands are also included in the default |Makefile|_ (though possibly
-commented out).
+These commands are also included in the default |Makefile|_ (though commented
+out as they are an alternative to the default GCC set-up).
 
 
 Python setup
 ------------
 
-By default, OpenMP support is automatically detected. To *disable* OpenMP
-parallelisation explicitly, set the environmental variable ``PY_NO_OMP``
-with :code:`export PY_NO_OMP=''` (and unset with :code:`unset PY_NO_OMP`
-to re-enable it); similarly, to *enforce* OpenMP parallelisation
-explicitly, set the environmental variable ``PY_OMP``.
+By default, OpenMP support is automatically detected for Python installation
+(except when building through `make`). To *disable* OpenMP parallelisation
+explicitly, set the environmental variable ``PY_NO_OMP`` with
+:code:`export PY_NO_OMP=''` (and unset with :code:`unset PY_NO_OMP` to
+re-enable it); to *enforce* OpenMP parallelisation explicitly, set the
+environmental variable ``PY_OMP`` (to any non-empty value).
 
-To override the compilation settings used by ``setup.py``, set the
-environmental variables as shown in the following examples for macOS:
+To override the compilation settings used by ``setup.py`` (e.g. to use a
+different compiler suite to the default GCC), set the environmental variables
+as shown in the following examples (for macOS with Homebrew package manager):
 
 .. tabs::
 

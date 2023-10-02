@@ -37,6 +37,24 @@ following functionalities:
   in Fourier space through the Hankel transform, as in e.g. eqs. (58) & (63)
   of :cite:t:`Sugiyama:2019` and eq. (56) of :cite:t:`Sugiyama:2018`.
 
+For the global plane-parallel estimators, the simulation box is placed at the
+spatial infinity (or equivalently the observer is), so that the line of sight
+to each particle can be treated as the same and taken to be along
+the :math:`z`-axis.
+
+For the local plane-parallel estimators, the observer is placed at the origin
+in the survey coordinates, and the line of sight is chosen to point towards
+one of the particles in a doublet/triplet for two-/three-point clustering
+measurements.
+
+The geometry of the survey leaves an imprint on the clustering statistics,
+where in Fourier space the effect is a convolution with the survey window
+function. This convolution mixes different multipoles of the underlying
+clustering statistics and the survey window, and the precise convolution
+formula (i.e. the number of multipoles to include in modelling) needed to
+achieve a given level of convergence depends on the precise survey geometry
+including any sample weights applied.
+
 .. bibliography::
     :style: plain
 

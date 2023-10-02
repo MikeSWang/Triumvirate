@@ -12,11 +12,11 @@ cosmological analyses.
 
 .. tip::
 
-    - The scientific context is explained in ':doc:`background`'.
-    - Installation instructions can be found in ':doc:`installation`'.
-    - To get started quickly, read ':doc:`tutorials`'.
-    - For full API, please refer to ':doc:`apiref`'.
-    - Frequently asked questions are answered in ':doc:`faq`'.
+    - The scientific context is explained in :doc:`background`.
+    - Installation instructions can be found in :doc:`installation`.
+    - To get started quickly, read :doc:`tutorials`.
+    - For full API, please refer to :doc:`apiref`.
+    - Frequently asked questions are answered in :doc:`faq`.
 
 
 Attribution
@@ -54,7 +54,7 @@ Acknowledgement
 
 |br| This project has received funding from the European Research Council (ERC)
 under the European Union's Horizon 2020 research and innovation programme
-(Grant agreement No. `853291 <https://doi.org/10.3030/853291>`_).
+(Grant agreement ID: `853291 <https://doi.org/10.3030/853291>`_).
 
 Key underlying numerical algorithms were originally developed by
 Naonori S Sugiyama, and are available in the GitHub repository |hitomi|_.
@@ -74,8 +74,8 @@ User feedback and contributions are very welcome. Please refer to the
 <https://github.com/MikeSWang/Triumvirate/blob/main/CONTRIBUTING.md>`_.
 
 
-Discussions
-===========
+Discussions & Wiki
+==================
 
 .. image:: https://img.shields.io/github/discussions/MikeSWang/Triumvirate
     :target: https://github.com/MikeSWang/Triumvirate/discussions
@@ -85,12 +85,14 @@ Discussions
 for users and developers is hosted on GitHub, where you can receive
 announcements, post questions, share ideas and get updates.
 
+A `wiki site <https://github.com/MikeSWang/Triumvirate/wiki>`_ collects wisdoms
+for specific use cases and user environments.
+
 
 Releases
 ========
 
-Release notes are included in the `change log
-<https://github.com/MikeSWang/Triumvirate/blob/main/CHANGELOG.md>`_.
+Release notes are included in :doc:`releases`.
 
 
 Licence
@@ -126,4 +128,5 @@ Licence
     installation
     tutorials
     apiref
+    releases
     faq

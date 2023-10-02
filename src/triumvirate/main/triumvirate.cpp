@@ -47,6 +47,7 @@
 int main(int argc, char* argv[]) {
 #ifdef TRV_USE_LOGO
   trv::sys::display_prog_notice();
+  // trv::sys::display_prog_licence();
 #endif  // TRV_USE_LOGO
 
   if (trv::sys::currTask == 0) {
@@ -114,8 +115,10 @@ int main(int argc, char* argv[]) {
   // A.2 Data I/O
   // ---------------------------------------------------------------------
 
-  if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("[A.2] Reading catalogues...");
+  if (params.catalogue_type != "none") {
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.stat("[A.2] Reading catalogues...");
+    }
   }
 
   trv::ParticleCatalogue catalogue_data; // data-source catalogue
@@ -182,8 +185,10 @@ int main(int argc, char* argv[]) {
     flag_rand = "true";
   }
 
-  if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("[A.2] ... read catalogues.");
+  if (params.catalogue_type != "none") {
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.stat("[A.2] ... read catalogues.");
+    }
   }
 
   // =====================================================================
@@ -213,8 +218,10 @@ int main(int argc, char* argv[]) {
   // B.2 Line of sight
   // ---------------------------------------------------------------------
 
-  if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("[B.2] Computing lines of sight...");
+  if (params.catalogue_type != "none") {
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.stat("[B.2] Computing lines of sight...");
+    }
   }
 
   trv::LineOfSight* los_data = nullptr;
@@ -273,18 +280,22 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("[B.2] ... computed lines of sight.");
+  if (params.catalogue_type != "none") {
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.stat("[B.2] ... computed lines of sight.");
+    }
   }
 
   // ---------------------------------------------------------------------
   // B.3 Box alignment
   // ---------------------------------------------------------------------
 
-  if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat(
-      "[B.3] Aligning catalogues inside measurement box..."
-    );
+  if (params.catalogue_type != "none") {
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.stat(
+        "[B.3] Aligning catalogues inside measurement box..."
+      );
+    }
   }
 
   if (params.catalogue_type == "survey") {
@@ -344,10 +355,12 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat(
-      "[B.3] ... aligned catalogues inside measurement box."
-    );
+  if (params.catalogue_type != "none") {
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.stat(
+        "[B.3] ... aligned catalogues inside measurement box."
+      );
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -699,7 +712,8 @@ int main(int argc, char* argv[]) {
     } else
     if (params.form == "off-diag") {
       std::snprintf(
-        save_filepath, sizeof(save_filepath), "%s/zetaw%d%d%d_wa%d%d_offdiag%d%s",
+        save_filepath, sizeof(save_filepath),
+        "%s/zetaw%d%d%d_wa%d%d_offdiag%d%s",
         params.measurement_dir.c_str(),
         params.ell1, params.ell2, params.ELL, params.i_wa, params.j_wa,
         params.idx_bin,
@@ -753,6 +767,10 @@ int main(int argc, char* argv[]) {
   // =====================================================================
   // C Finalisation
   // =====================================================================
+
+  if (trv::sys::currTask == 0) {
+    trv::sys::logger.stat("[C] Data objects are being cleared.");
+  }
 
   // Clear dynamically allocated memory.
   catalogue_data.finalise_particles();

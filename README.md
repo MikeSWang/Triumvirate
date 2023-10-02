@@ -64,7 +64,7 @@ $ git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release
 $ cd Triumvirate
 ```
 
-Then, execute in terminal:
+Then, execute in shell:
 
 ```console
 $ make clean
@@ -117,7 +117,7 @@ in the BibTeX format.
 
 This project has received funding from the European Research Council (ERC)
 under the European Union's Horizon 2020 research and innovation programme
-(Grant agreement No. [853291](https://doi.org/10.3030/853291)).
+(Grant agreement ID: [853291](https://doi.org/10.3030/853291)).
 
 Key underlying numerical algorithms were originally developed by
 Naonori S Sugiyama, and are available in the GitHub repository [``hitomi``](
@@ -130,7 +130,7 @@ their valuable feedback and suggestions, which have improved the
 functionality and documentation of the code.
 
 
-## Development/Contributing
+## Contributing/Development
 
 ![Platforms](https://img.shields.io/conda/pn/msw/triumvirate)
 
@@ -146,13 +146,16 @@ User feedback and contributions are very welcome. Please refer to the
 [contribution guidelines](CONTRIBUTING.md).
 
 
-## Discussions
+## Discussions & Wiki
 
 [![Discussions](https://img.shields.io/github/discussions/MikeSWang/Triumvirate)](https://github.com/MikeSWang/Triumvirate/discussions)
 
 A [community forum](https://github.com/MikeSWang/Triumvirate/discussions)
 for users and developers exists, where you can receive
 announcements, post questions, share ideas and get updates.
+
+A [wiki site](https://github.com/MikeSWang/Triumvirate/wiki) collects wisdoms
+for specific use cases and user environments.
 
 
 ## Releases

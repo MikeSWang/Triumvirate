@@ -57,7 +57,7 @@ ASSIGNMENT = 'cic'
 
 def _amalgamate_parameters(paramset=None, params_sampling=None,
                            degree=None, binning=None, **type_kwargs):
-    """Amalgamate a parameter set with overriding sampling parameters
+    """Amalgamate a parameter set by overriding sampling parameters
     and the measured multipole degree and coordinate binning.
 
     Parameters
@@ -69,25 +69,26 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     degree : int, optional
         Multipole degree.  If not `None` (default), this will override
         ``paramset['degrees']['ELL']``.
     binning : :class:`~.triumvirate.dataobjs.Binning`, optional
         Binning (default is `None`).
     **type_kwargs
-        `catalogue_type` and `statistic_type` parameters to be filled in.
+        'catalogue_type' and 'statistic_type' parameters to be filled in.
 
     Returns
     -------
@@ -346,18 +347,19 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     degree : int, optional
         Multipole degree.  If not `None` (default), this will override
         ``paramset['degrees']['ELL']``.
@@ -365,12 +367,12 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         Binning for the measurements.  If `None` (default), this is
         constructed from `paramset`.
     types : dict, optional
-        `catalogue_type` and `statistic_type` (default is `None`).
+        'catalogue_type' and 'statistic_type' values (default is `None`).
         This should be set by the caller of this function.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format. The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -403,6 +405,24 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
 
     if logger:
         logger.info("Parameter set have been initialised.")
+
+    if paramset['catalogue_type'] != 'survey':
+        raise ValueError(
+            "`paramset` 'catalogue_type' does not correspond to "
+            "the local plane-parallel clustering algorithm being called: "
+            f"catalogue_type = '{paramset['catalogue_type']}'."
+        )
+
+    if paramset['statistic_type'] == 'powspec':
+        statistic_name = 'power spectrum'
+    elif paramset['statistic_type'] == '2pcf':
+        statistic_name = 'two-point correlation function'
+    else:
+        raise ValueError(
+            "`paramset` 'statistic_type' does not correspond to "
+            "the clustering algorithm being called: "
+            f"statistic_type = '{paramset['statistic_type']}'."
+        )
 
     # -- Data ------------------------------------------------------------
 
@@ -519,7 +539,12 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
 
     # Perform measurement.
     if logger:
-        logger.info("Measuring clustering statistics...", cpp_state='start')
+        logger.info(
+            "Measuring %s from paired survey-type catalogues "
+            "in the local plane-parallel approximation...",
+            statistic_name,
+            cpp_state='start'
+        )
 
     results = twopt_algofunc(
         particles_data, particles_rand, los_data, los_rand,
@@ -527,7 +552,12 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
     )
 
     if logger:
-        logger.info("... measured clustering statistics.", cpp_state='end')
+        logger.info(
+            "... measured %s from paired survey-type catalogues "
+            "in the local plane-parallel approximation.",
+            statistic_name,
+            cpp_state='end'
+        )
 
     if save:
         odirpath = paramset['directories']['measurements'] or ""
@@ -596,25 +626,26 @@ def compute_powspec(catalogue_data, catalogue_rand,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
         Full parameter set (default is `None`).  This is used in lieu of
         `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format. The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -622,7 +653,17 @@ def compute_powspec(catalogue_data, catalogue_rand,
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
-        Measurement results.
+        Measurement results as a dictionary with the following entries---
+
+        - 'kbin': central wavenumber for each bin;
+        - 'keff': effective wavenumber for each bin;
+        - 'nmodes': number of wavevector modes in each bin;
+        - 'pk_raw': power spectrum raw measurements including any
+          specified normalisation and shot noise;
+        - 'pk_shot': power spectrum shot noise.
+
+        The effective wavenumber is here defined as the average wavenumber
+        in each bin.
 
     Raises
     ------
@@ -640,7 +681,7 @@ def compute_powspec(catalogue_data, catalogue_rand,
     ...     paramset=None
     ... )
 
-    Specify multipole `degree` 2, customised
+    Specify multipole `degree` 2 and provide customised
     :class:`~triumvirate.dataobjs.Binning` object ``binning``.
     Whether `paramset` provided or not, relevant parameters are overriden
     by the supplied keyword arguments.
@@ -652,18 +693,12 @@ def compute_powspec(catalogue_data, catalogue_rand,
     ...     sampling_params={
     ...         'boxsize': [1000., 1500., 1000.],
     ...         'ngrid': [256, 256, 256],
-    ...         # 'boxalign' at default initial value in `ParameterSet`
+    ...         # 'alignment' at default initial value in `ParameterSet`
     ...         # 'assignment' at default initial value in `ParameterSet`
     ...     }
     ... )
 
     """
-    # if logger:
-    #     logger.info(
-    #         "Measuring power spectrum from paired survey-type catalogues...",
-    #         cpp_state='start'
-    #     )
-
     results = _compute_2pt_stats_survey_like(
         _compute_powspec,
         catalogue_data, catalogue_rand,
@@ -673,12 +708,6 @@ def compute_powspec(catalogue_data, catalogue_rand,
         types={'catalogue_type': 'survey', 'statistic_type': 'powspec'},
         save=save, logger=logger
     )
-
-    # if logger:
-    #     logger.info(
-    #         "... measured power spectrum from paired survey-type catalogues.",  # noqa: E501
-    #         cpp_state='end'
-    #     )
 
     return results
 
@@ -715,25 +744,26 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
         Full parameter set (default is `None`).  This is used
         in lieu of `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format. The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -741,7 +771,15 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
-        Measurement results.
+        Measurement results as a dictionary with the following entries---
+
+        - 'rbin': central separation for each bin;
+        - 'reff': effective separation for each bin;
+        - 'npairs': number of separation pairs in each bin;
+        - 'xi': two-point correlation function measurements.
+
+        The effective separation is here defined as the average separation
+        in each bin.
 
     Raises
     ------
@@ -754,13 +792,6 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
     See analogous examples in :func:`~triumvirate.twopt.compute_powspec`.
 
     """
-    # if logger:
-    #     logger.info(
-    #         "Measuring two-point correlation function "
-    #         "from paired survey-type catalogues...",
-    #         cpp_state='start'
-    #     )
-
     results = _compute_2pt_stats_survey_like(
         _compute_corrfunc,
         catalogue_data, catalogue_rand,
@@ -770,13 +801,6 @@ def compute_corrfunc(catalogue_data, catalogue_rand,
         types={'catalogue_type': 'survey', 'statistic_type': '2pcf'},
         save=save, logger=logger
     )
-
-    # if logger:
-    #     logger.info(
-    #         "... measured two-point correlation function "
-    #         "from paired survey-type catalogues.",
-    #         cpp_state='end'
-    #     )
 
     return results
 
@@ -805,18 +829,19 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     degree : int, optional
         Multipole degree.  If not `None` (default), this will override
         ``paramset['degrees']['ELL']``.
@@ -824,12 +849,12 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
         Binning for the measurements.  If `None` (default), this is
         constructed from `paramset`.
     types : dict, optional
-        `catalogue_type` and `statistic_type` (default is `None`).
+        'catalogue_type' and 'statistic_type' values (default is `None`).
         This should be set by the caller of this function.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format. The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -862,6 +887,24 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
 
     if logger:
         logger.info("Parameter set have been initialised.")
+
+    if paramset['catalogue_type'] != 'sim':
+        raise ValueError(
+            "`paramset` 'catalogue_type' does not correspond to "
+            "the global plane-parallel clustering algorithm being called: "
+            f"catalogue_type = '{paramset['catalogue_type']}'."
+        )
+
+    if paramset['statistic_type'] == 'powspec':
+        statistic_name = 'power spectrum'
+    elif paramset['statistic_type'] == '2pcf':
+        statistic_name = 'two-point correlation function'
+    else:
+        raise ValueError(
+            "`paramset` 'statistic_type' does not correspond to "
+            "the clustering algorithm being called: "
+            f"statistic_type = '{paramset['statistic_type']}'."
+        )
 
     # -- Data ------------------------------------------------------------
 
@@ -946,12 +989,22 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
 
     # Perform measurement.
     if logger:
-        logger.info("Measuring clustering statistics...", cpp_state='start')
+        logger.info(
+            "Measuring %s from a simulation-box catalogue "
+            "in the global plane-parallel approximation...",
+            statistic_name,
+            cpp_state='start'
+        )
 
     results = twopt_algofunc(particles_data, paramset, binning, norm_factor)
 
     if logger:
-        logger.info("... measured clustering statistics.", cpp_state='end')
+        logger.info(
+            "... measured %s from a simulation-box catalogue "
+            "in the global plane-parallel approximation.",
+            statistic_name,
+            cpp_state='end'
+        )
 
     if save:
         odirpath = paramset['directories']['measurements'] or ""
@@ -1009,25 +1062,26 @@ def compute_powspec_in_gpp_box(catalogue_data,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
         Full parameter set (default is `None`).  This is used
         in lieu of `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format. The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -1035,7 +1089,17 @@ def compute_powspec_in_gpp_box(catalogue_data,
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
-        Measurement results.
+        Measurement results as a dictionary with the following entries---
+
+        - 'kbin': central wavenumber for each bin;
+        - 'keff': effective wavenumber for each bin;
+        - 'nmodes': number of wavevector modes in each bin;
+        - 'pk_raw': power spectrum raw measurements including any
+          specified normalisation and shot noise;
+        - 'pk_shot': power spectrum shot noise.
+
+        The effective wavenumber is here defined as the average wavenumber
+        in each bin.
 
     Raises
     ------
@@ -1046,16 +1110,9 @@ def compute_powspec_in_gpp_box(catalogue_data,
     Examples
     --------
     See analogous examples in :func:`~triumvirate.twopt.compute_powspec`
-    (though without line-of-sight arguments).
+    (though without the line-of-sight arguments).
 
     """
-    # if logger:
-    #     logger.info(
-    #         "Measuring power spectrum from a simulation-box catalogue "
-    #         "in the global plane-parallel approximation...",
-    #         cpp_state='start'
-    #     )
-
     results = _compute_2pt_stats_sim_like(
         _compute_powspec_in_gpp_box, catalogue_data,
         paramset=paramset, params_sampling=sampling_params,
@@ -1063,13 +1120,6 @@ def compute_powspec_in_gpp_box(catalogue_data,
         types={'catalogue_type': 'sim', 'statistic_type': 'powspec'},
         save=save, logger=logger
     )
-
-    # if logger:
-    #     logger.info(
-    #         "... measured power spectrum from a simulation-box catalogue "
-    #         "in the global plane-parallel approximation.",
-    #         cpp_state='end'
-    #     )
 
     return results
 
@@ -1096,25 +1146,26 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
         Full parameter set (default is `None`).  This is used
         in lieu of `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format. The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -1122,7 +1173,15 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
-        Measurement results.
+        Measurement results as a dictionary with the following entries---
+
+        - 'rbin': central separation for each bin;
+        - 'reff': effective separation for each bin;
+        - 'npairs': number of separation pairs in each bin;
+        - 'xi': two-point correlation function measurements.
+
+        The effective separation is here defined as the average separation
+        in each bin.
 
     Raises
     ------
@@ -1133,17 +1192,9 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
     Examples
     --------
     See analogous examples in :func:`~triumvirate.twopt.compute_powspec`
-    (though without line-of-sight arguments).
+    (though without the line-of-sight arguments).
 
     """
-    # if logger:
-    #     logger.info(
-    #         "Measuring two-point correlation function "
-    #         "from a simulation-box catalogue "
-    #         "in the global plane-parallel approximation...",
-    #         cpp_state='start'
-    #     )
-
     results = _compute_2pt_stats_sim_like(
         _compute_corrfunc_in_gpp_box, catalogue_data,
         paramset=paramset, params_sampling=sampling_params,
@@ -1151,14 +1202,6 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
         types={'catalogue_type': 'sim', 'statistic_type': '2pcf'},
         save=save, logger=logger
     )
-
-    # if logger:
-    #     logger.info(
-    #         "... measured two-point correlation function "
-    #         "from a simulation-box catalogue "
-    #         "in the global plane-parallel approximation.",
-    #         cpp_state='end'
-    #     )
 
     return results
 
@@ -1191,25 +1234,26 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
-        - 'boxalign': {'centre', 'pad'};
+        - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'boxalign' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
         Full parameter set (default is `None`).  This is used
         in lieu of `degree`, `binning` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format. The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -1217,7 +1261,15 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
-        Measurement results.
+        Measurement results as a dictionary with the following entries---
+
+        - 'rbin': central separation for each bin;
+        - 'reff': effective separation for each bin;
+        - 'npairs': number of separation pairs in each bin;
+        - 'xi': two-point correlation function window measurements.
+
+        The effective separation is here defined as the average separation
+        in each bin.
 
     Raises
     ------
@@ -1318,7 +1370,9 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
     # Perform measurement.
     if logger:
         logger.info(
-            "Measuring window function statistics...", cpp_state='start'
+            "Measuring two-point correlation function window "
+            "from a random catalogue...",
+            cpp_state='start'
         )
 
     results = _compute_corrfunc_window(
@@ -1328,7 +1382,9 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
 
     if logger:
         logger.info(
-            "... measured window function statistics.", cpp_state='end'
+            "... measured two-point correlation function window "
+            "from a random catalogue.",
+            cpp_state='end'
         )
 
     if save:

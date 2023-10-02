@@ -1234,10 +1234,11 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
 
           k_eff += k_;
           nmodes++;
-        } else {
-          // this->field[idx_grid][0] = 0.; (unused)
-          // this->field[idx_grid][1] = 0.; (unused)
         }
+        // else {
+        //   this->field[idx_grid][0] = 0.;  // unused
+        //   this->field[idx_grid][1] = 0.;  // unused
+        // }
       }
     }
   }

@@ -11,13 +11,13 @@
 Three-Point Clustering Measurements in LSS
 ==========================================
 
-.. image:: https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/ci.yml?label=ci&logo=GitHubActions
-    :target: https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml
-    :alt: CI
+.. .. image:: https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/ci.yml?label=ci&logo=GitHubActions
+..     :target: https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml
+..     :alt: CI
 
-.. image:: https://img.shields.io/readthedocs/triumvirate/latest?logo=ReadtheDocs
-    :target: https://triumvirate.readthedocs.io/en/latest/
-    :alt: Docs
+.. .. image:: https://img.shields.io/readthedocs/triumvirate/latest?logo=ReadtheDocs
+..     :target: https://triumvirate.readthedocs.io/en/latest/
+..     :alt: Docs
 
 .. image:: https://img.shields.io/github/v/release/MikeSWang/Triumvirate?display_name=tag&sort=semver&logo=Git
     :target: https://github.com/MikeSWang/Triumvirate/releases/latest
@@ -95,7 +95,7 @@ change into the repository directory path:
     $ git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
     $ cd Triumvirate
 
-Then, execute in terminal:
+Then, execute in shell:
 
 .. code-block:: console
 
@@ -171,7 +171,7 @@ Acknowledgement
 
 This project has received funding from the European Research Council (ERC)
 under the European Union's Horizon 2020 research and innovation programme
-(Grant agreement No. `853291 <https://doi.org/10.3030/853291>`_).
+(Grant agreement ID: `853291 <https://doi.org/10.3030/853291>`_).
 
 Key underlying numerical algorithms were originally developed by
 Naonori S Sugiyama, and are available in the GitHub repository |hitomi|_.
@@ -191,8 +191,8 @@ User feedback and contributions are very welcome. Please refer to the
 <https://github.com/MikeSWang/Triumvirate/blob/main/CONTRIBUTING.md>`_.
 
 
-Discussions
-===========
+Discussions & Wiki
+==================
 
 .. image:: https://img.shields.io/github/discussions/MikeSWang/Triumvirate
     :target: https://github.com/MikeSWang/Triumvirate/discussions
@@ -201,6 +201,9 @@ Discussions
 A `community forum <https://github.com/MikeSWang/Triumvirate/discussions>`_
 for users and developers is hosted on GitHub, where you can receive
 announcements, post questions, share ideas and get updates.
+
+A `wiki site <https://github.com/MikeSWang/Triumvirate/wiki>` collects wisdoms
+for specific use cases and user environments.
 
 
 Releases

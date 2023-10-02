@@ -52,7 +52,7 @@ from triumvirate.parameters import (
 def _amalgamate_parameters(paramset=None, params_sampling=None,
                            degrees=None, wa_orders=None, binning=None,
                            form=None, idx_bin=None, **type_kwargs):
-    """Amalgamate a parameter set with overriding sampling parameters
+    """Amalgamate a parameter set by overriding sampling parameters
     and measurement parameters.
 
     Parameters
@@ -70,12 +70,13 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     degrees : tuple of (int, int, int) or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
@@ -88,15 +89,17 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         multipole degrees are assumed to be single-digit integers.
     binning : :class:`~.triumvirate.dataobjs.Binning`, optional
         Binning (default is `None`).
-    form : {'diag', 'full'}, optional
+    form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
     idx_bin : int, optional
-        Fixed bin index for the first coordinate dimension when binning
-        `form` is 'full'.  If not `None` (default), this will
-        override ``paramset['idx_bin']``.
+        When binning `form` is 'row', this is the fixed bin index for
+        the first coordinate dimension; when binning `form` is 'off-diag',
+        this is the upper-triangular off-diagonal index; otherwise, this
+        is ignored.  If not `None` (default), this will override
+        ``paramset['idx_bin']``.
     **type_kwargs
-        `catalogue_type` and `statistic_type` parameters to be filled in.
+        'catalogue_type' and 'statistic_type' parameters to be filled in.
 
     Returns
     -------
@@ -120,10 +123,10 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
             "`degrees`, `binning` and `form` must be provided "
             "when `paramset` is None."
         )
-    if paramset is None and form == 'full' and idx_bin is None:
+    if paramset is None and form in ['row', 'off-diag'] and idx_bin is None:
         raise ValueError(
             "`idx_bin` must be provided when `paramset` is None "
-            "and `form` is 'full'."
+            "and `form` is 'row' or 'off-diag'."
         )
 
     if paramset is None:
@@ -406,12 +409,13 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     degrees : tuple of (int, int, int) or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
@@ -420,20 +424,22 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
-    form : {'diag', 'full'}, optional
+    form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
     idx_bin : int, optional
-        Fixed bin index for the first coordinate dimension
-        when binning `form` is 'full'.  If not `None` (default),
-        this will override ``paramset['idx_bin']``.
+        When binning `form` is 'row', this is the fixed bin index for
+        the first coordinate dimension; when binning `form` is 'off-diag',
+        this is the upper-triangular off-diagonal index; otherwise, this
+        is ignored.  If not `None` (default), this will override
+        ``paramset['idx_bin']``.
     types : dict, optional
-        `catalogue_type` and `statistic_type` (default is `None`).
+        'catalogue_type' and 'statistic_type' values (default is `None`).
         This should be set by the caller of this function.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format.  The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -460,6 +466,24 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
 
     if logger:
         logger.info("Parameter set have been initialised.")
+
+    if paramset['catalogue_type'] != 'survey':
+        raise ValueError(
+            "`paramset` 'catalogue_type' does not correspond to "
+            "the local plane-parallel clustering algorithm being called: "
+            f"catalogue_type = '{paramset['catalogue_type']}'."
+        )
+
+    if paramset['statistic_type'] == 'bispec':
+        statistic_name = 'bispectrum'
+    elif paramset['statistic_type'] == '3pcf':
+        statistic_name = 'three-point correlation function'
+    else:
+        raise ValueError(
+            "`paramset` 'statistic_type' does not correspond to "
+            "the clustering algorithm being called: "
+            f"statistic_type = '{paramset['statistic_type']}'."
+        )
 
     # -- Data ------------------------------------------------------------
 
@@ -573,7 +597,12 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
 
     # Perform measurement.
     if logger:
-        logger.info("Measuring clustering statistics...", cpp_state='start')
+        logger.info(
+            "Measuring %s from paired survey-type catalogues "
+            "in the local plane-parallel approximation...",
+            statistic_name,
+            cpp_state='start'
+        )
 
     results = threept_algofunc(
         particles_data, particles_rand, los_data, los_rand,
@@ -581,7 +610,12 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
     )
 
     if logger:
-        logger.info("... measured clustering statistics.", cpp_state='end')
+        logger.info(
+            "... measured %s from paired survey-type catalogues "
+            "in the local plane-parallel approximation.",
+            statistic_name,
+            cpp_state='end'
+        )
 
     if save:
         odirpath = paramset['directories']['measurements'] or ""
@@ -650,13 +684,15 @@ def compute_bispec(catalogue_data, catalogue_rand,
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
-    form : {'diag', 'full'}, optional
+    form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
     idx_bin : int, optional
-        Fixed bin index for the first coordinate dimension
-        when binning `form` is 'full'.  If not `None` (default),
-        this will override ``paramset['idx_bin']``.
+        When binning `form` is 'row', this is the fixed bin index for
+        the first coordinate dimension; when binning `form` is 'off-diag',
+        this is the upper-triangular off-diagonal index; otherwise, this
+        is ignored.  If not `None` (default), this will override
+        ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters---
@@ -667,19 +703,20 @@ def compute_bispec(catalogue_data, catalogue_rand,
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
         Full parameter set (default is `None`).  This is used in lieu of
         `degrees`, `binning`, `form`, `idx_bin` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format.  The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -687,13 +724,26 @@ def compute_bispec(catalogue_data, catalogue_rand,
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
-        Measurement results.
+        Measurement results as a dictionary with the following entries---
+
+        - 'k1_bin', 'k2_bin': central wavenumber for each bin of
+          the first and second wavenumbers;
+        - 'k1_eff', 'k2_eff': effective wavenumber for each bin of
+          the first and second wavenumbers;
+        - 'nmodes_1', 'nmodes_2': number of wavevector modes in each bin
+          of the first and second wavenumbers;
+        - 'bk_raw': bispectrum raw measurements including any
+          specified normalisation and shot noise;
+        - 'bk_shot': bispectrum shot noise.
+
+        The effective wavenumber is here defined as the average wavenumber
+        in each bin.
 
     Examples
     --------
-    Specify multipole `degrees` (0, 0, 2) and bispectrum 'full'
-    non-diagonal `form` with the first wavenumber fixed in bin 5,
-    which override the parameters supplied by `paramset`.
+    Specify multipole `degrees` (0, 0, 2) and bispectrum 'row' `form` with
+    the first wavenumber fixed in the bin indexed 5.  These override the
+    corresponding parameters supplied by `paramset`.
 
     >>> results = compute_bispec(
     ...     catalogue_data, catalogue_rand,
@@ -707,12 +757,6 @@ def compute_bispec(catalogue_data, catalogue_rand,
     :func:`~triumvirate.twopt.compute_powspec`.
 
     """
-    # if logger:
-    #     logger.info(
-    #         "Measuring bispectrum from paired survey-type catalogues...",
-    #         cpp_state='start'
-    #     )
-
     results = _compute_3pt_stats_survey_like(
         _compute_bispec,
         catalogue_data, catalogue_rand,
@@ -722,12 +766,6 @@ def compute_bispec(catalogue_data, catalogue_rand,
         types={'catalogue_type': 'survey', 'statistic_type': 'bispec'},
         save=save, logger=logger
     )
-
-    # if logger:
-    #     logger.info(
-    #         "... measured bispectrum from paired survey-type catalogues.",
-    #         cpp_state='end'
-    #     )
 
     return results
 
@@ -763,13 +801,15 @@ def compute_3pcf(catalogue_data, catalogue_rand,
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
-    form : {'diag', 'full'}, optional
+    form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
     idx_bin : int, optional
-        Fixed bin index for the first coordinate dimension
-        when binning `form` is 'full'.  If not `None` (default),
-        this will override ``paramset['idx_bin']``.
+        When binning `form` is 'row', this is the fixed bin index for
+        the first coordinate dimension; when binning `form` is 'off-diag',
+        this is the upper-triangular off-diagonal index; otherwise, this
+        is ignored.  If not `None` (default), this will override
+        ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters---
@@ -780,19 +820,20 @@ def compute_3pcf(catalogue_data, catalogue_rand,
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
         Full parameter set (default is `None`).  This is used in lieu of
         `degrees`, `binning`, `form`, `idx_bin` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format.  The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -800,20 +841,26 @@ def compute_3pcf(catalogue_data, catalogue_rand,
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
-        Measurement results.
+        Measurement results as a dictionary with the following entries---
+
+        - 'r1_bin', 'r2_bin': central separation for each bin of
+          the first and second separations;
+        - 'r1_eff', 'r2_eff': effective separation for each bin of
+          the first and second separations;
+        - 'npairs_1', 'npairs_2': number of separation pairs in each bin
+          of the first and second separations;
+        - 'zeta_raw': three-point correlation function raw measurements
+          including any specified normalisation and shot noise;
+        - 'zeta_shot': three-point correlation function shot noise.
+
+        The effective separation is here defined as the average separation
+        in each bin.
 
     Examples
     --------
     See analogous examples in :func:`~triumvirate.threept.compute_bispec`.
 
     """
-    # if logger:
-    #     logger.info(
-    #         "Measuring three-point correlation function "
-    #         "from paired survey-type catalogues...",
-    #         cpp_state='start'
-    #     )
-
     results = _compute_3pt_stats_survey_like(
         _compute_3pcf,
         catalogue_data, catalogue_rand,
@@ -823,13 +870,6 @@ def compute_3pcf(catalogue_data, catalogue_rand,
         types={'catalogue_type': 'survey', 'statistic_type': '3pcf'},
         save=save, logger=logger
     )
-
-    # if logger:
-    #     logger.info(
-    #         "... measured three-point correlation function "
-    #         "from paired survey-type catalogues.",
-    #         cpp_state='end'
-    #     )
 
     return results
 
@@ -849,7 +889,7 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #     catalogue_rand : :class:`~triumvirate.catalogue.ParticleCatalogue`
 #         Random-source catalogue.
 #     los_choice : {0, 1, 2}, int
-#         Line-of-sight choice.
+#         Line-of-sight end-point choice.
 #     los_data : (N, 3) array of float, optional
 #         Specified lines of sight for the data-source catalogue.
 #         If `None` (default), this is automatically computed using
@@ -866,13 +906,15 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #     binning : :class:`~triumvirate.dataobjs.Binning`, optional
 #         Binning for the measurements.  If `None` (default),
 #         this is constructed from `paramset`.
-#     form : {'diag', 'full'}, optional
+#     form : {'diag', 'off-diag', 'row', 'full'}, optional
 #         Binning form of the measurements.  If not `None` (default),
 #         this will override ``paramset['form']``.
 #     idx_bin : int, optional
-#         Fixed bin index for the first coordinate dimension
-#         when binning `form` is 'full'.  If not `None` (default),
-#         this will override ``paramset['idx_bin']``.
+#         When binning `form` is 'row', this is the fixed bin index for
+#         the first coordinate dimension; when binning `form` is 'off-diag',
+#         this is the upper-triangular off-diagonal index; otherwise, this
+#         is ignored.  If not `None` (default), this will override
+#         ``paramset['idx_bin']``.
 #     sampling_params : dict, optional
 #         Dictionary containing a subset of the following entries
 #         for sampling parameters---
@@ -883,19 +925,20 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
 #         - 'interlace': bool;
 #
-#         and one and only one of the following when 'alignment' is 'pad'---
+#         and exactly one of the following only when 'alignment' is 'pad'---
 #
 #         - 'boxpad': float;
 #         - 'gridpad': float.
 #
-#         This will override corresponding entries in `paramset`.
+#         If not `None` (default), this will override the corresponding
+#         entries in `paramset`.
 #     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
 #         Full parameter set (default is `None`).  This is used in lieu of
 #         `degrees`, `binning`, `form`, `idx_bin` or `sampling_params`.
 #     save : {'.txt', '.npz', False}, optional
 #         If not `False` (default), save the measurements as a '.txt' file
 #         or in '.npz' format.  The save path is determined from `paramset`
-#         (if unset, a default file in the current working directory is
+#         (if unset, a default file path in the current working directory is
 #         used).
 #     logger : :class:`logging.Logger`, optional
 #         Logger (default is `None`).
@@ -903,7 +946,20 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #     Returns
 #     -------
 #     results : dict of {str: :class:`numpy.ndarray`}
-#         Measurement results.
+#         Measurement results as a dictionary with the following entries---
+#
+#         - 'k1_bin', 'k2_bin': central wavenumber for each bin of
+#           the first and second wavenumbers;
+#         - 'k1_eff', 'k2_eff': effective wavenumber for each bin of
+#           the first and second wavenumbers;
+#         - 'nmodes_1', 'nmodes_2': number of wavevector modes in each bin
+#           of the first and second wavenumbers;
+#         - 'bk_raw': bispectrum raw measurements including any
+#           specified normalisation and shot noise;
+#         - 'bk_shot': bispectrum shot noise.
+#
+#         The effective wavenumber is here defined as the average wavenumber
+#         in each bin.
 #
 #     """
 #     # --------------------------------------------------------------------
@@ -1036,7 +1092,13 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 
 #     # Perform measurement.
 #     if logger:
-#         logger.info("Measuring clustering statistics...", cpp_state='start')
+#         logger.info(
+#             "Measuring bispectrum from paired survey-type catalogues "
+#             "with line-of-sight end-point choice %d "
+#             "in the local plane-parallel approximation...",
+#             los_choice,
+#             cpp_state='start'
+#         )
 
 #     results = _compute_bispec_for_los_choice(
 #         particles_data, particles_rand, los_data, los_rand, los_choice,
@@ -1044,7 +1106,13 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #     )
 
 #     if logger:
-#         logger.info("... measured clustering statistics.", cpp_state='end')
+#         logger.info(
+#             "... measured bispctrum from paired survey-type catalogues "
+#             "with line-of-sight end-point choice %d "
+#             "in the local plane-parallel approximation.",
+#             los_choice,
+#             cpp_state='end'
+#         )
 
 #     if save:
 #         odirpath = paramset['directories']['measurements'] or ""
@@ -1089,8 +1157,8 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 
 def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
                                 paramset=None, params_sampling=None,
-                                degrees=None, binning=None, types=None,
-                                form=None, idx_bin=None,
+                                degrees=None, binning=None,
+                                form=None, idx_bin=None, types=None,
                                 save=False, logger=None):
     """Compute three-point statistics from a simulation-box catalogue
     in the global plane-parallel approximation.
@@ -1115,12 +1183,13 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     degrees : tuple of (int, int, int) or str of length 3, optional
         Multipole degrees either as a tuple ('ell1', 'ell2', 'ELL') or
         as a string of length 3.  If not `None` (default), this will
@@ -1129,20 +1198,22 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
-    types : dict, optional
-        `catalogue_type` and `statistic_type` (default is `None`).
-        This should be set by the caller of this function.
-    form : {'diag', 'full'}, optional
+    form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
     idx_bin : int, optional
-        Fixed bin index for the first coordinate dimension
-        when binning `form` is 'full'.  If not `None` (default),
-        this will override ``paramset['idx_bin']``.
+        When binning `form` is 'row', this is the fixed bin index for
+        the first coordinate dimension; when binning `form` is 'off-diag',
+        this is the upper-triangular off-diagonal index; otherwise, this
+        is ignored.  If not `None` (default), this will override
+        ``paramset['idx_bin']``.
+    types : dict, optional
+        'catalogue_type' and 'statistic_type' values (default is `None`).
+        This should be set by the caller of this function.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format.  The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -1169,6 +1240,24 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
 
     if logger:
         logger.info("Parameter set have been initialised.")
+
+    if paramset['catalogue_type'] != 'sim':
+        raise ValueError(
+            "`paramset` 'catalogue_type' does not correspond to "
+            "the global plane-parallel clustering algorithm being called: "
+            f"catalogue_type = '{paramset['catalogue_type']}'."
+        )
+
+    if paramset['statistic_type'] == 'bispec':
+        statistic_name = 'bispectrum'
+    elif paramset['statistic_type'] == '3pcf':
+        statistic_name = 'three-point correlation function'
+    else:
+        raise ValueError(
+            "`paramset` 'statistic_type' does not correspond to "
+            "the clustering algorithm being called: "
+            f"statistic_type = '{paramset['statistic_type']}'."
+        )
 
     # -- Data ------------------------------------------------------------
 
@@ -1253,12 +1342,22 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
 
     # Perform measurement.
     if logger:
-        logger.info("Measuring clustering statistics...", cpp_state='start')
+        logger.info(
+            "Measuring %s from a simulation-box catalogue "
+            "in the global plane-parallel approximation...",
+            statistic_name,
+            cpp_state='start'
+        )
 
     results = threept_algofunc(particles_data, paramset, binning, norm_factor)
 
     if logger:
-        logger.info("... measured clustering statistics.", cpp_state='end')
+        logger.info(
+            "... measured %s from a simulation-box catalogue "
+            "in the global plane-parallel approximation.",
+            statistic_name,
+            cpp_state='end'
+        )
 
     if save:
         odirpath = paramset['directories']['measurements'] or ""
@@ -1317,13 +1416,15 @@ def compute_bispec_in_gpp_box(catalogue_data,
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
-    form : {'diag', 'full'}, optional
+    form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
     idx_bin : int, optional
-        Fixed bin index for the first coordinate dimension
-        when binning `form` is 'full'.  If not `None` (default),
-        this will override ``paramset['idx_bin']``.
+        When binning `form` is 'row', this is the fixed bin index for
+        the first coordinate dimension; when binning `form` is 'off-diag',
+        this is the upper-triangular off-diagonal index; otherwise, this
+        is ignored.  If not `None` (default), this will override
+        ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters---
@@ -1334,19 +1435,20 @@ def compute_bispec_in_gpp_box(catalogue_data,
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
         Full parameter set (default is `None`).  This is used in lieu of
         `degrees`, `binning`, `form`, `idx_bin` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format.  The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -1354,21 +1456,27 @@ def compute_bispec_in_gpp_box(catalogue_data,
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
-        Measurement results.
+        Measurement results as a dictionary with the following entries---
+
+        - 'k1_bin', 'k2_bin': central wavenumber for each bin of
+          the first and second wavenumbers;
+        - 'k1_eff', 'k2_eff': effective wavenumber for each bin of
+          the first and second wavenumbers;
+        - 'nmodes_1', 'nmodes_2': number of wavevector modes in each bin
+          of the first and second wavenumbers;
+        - 'bk_raw': bispectrum raw measurements including any
+          specified normalisation and shot noise;
+        - 'bk_shot': bispectrum shot noise.
+
+        The effective wavenumber is here defined as the average wavenumber
+        in each bin.
 
     Examples
     --------
     See analogous examples in :func:`~triumvirate.threept.compute_bispec`
-    (though without line-of-sight arguments).
+    (though without the line-of-sight arguments).
 
     """
-    # if logger:
-    #     logger.info(
-    #         "Measuring bispectrum from a simulation-box catalogue "
-    #         "in the global plane-parallel approximation...",
-    #         cpp_state='start'
-    #     )
-
     results = _compute_3pt_stats_sim_like(
         _compute_bispec_in_gpp_box,
         catalogue_data,
@@ -1377,13 +1485,6 @@ def compute_bispec_in_gpp_box(catalogue_data,
         types={'catalogue_type': 'sim', 'statistic_type': 'bispec'},
         save=save, logger=logger
     )
-
-    # if logger:
-    #     logger.info(
-    #         "... measured bispectrum from a simulation-box catalogue "
-    #         "in the global plane-parallel approximation.",
-    #         cpp_state='end'
-    #     )
 
     return results
 
@@ -1409,13 +1510,15 @@ def compute_3pcf_in_gpp_box(catalogue_data,
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
-    form : {'diag', 'full'}, optional
+    form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
     idx_bin : int, optional
-        Fixed bin index for the first coordinate dimension
-        when binning `form` is 'full'.  If not `None` (default),
-        this will override ``paramset['idx_bin']``.
+        When binning `form` is 'row', this is the fixed bin index for
+        the first coordinate dimension; when binning `form` is 'off-diag',
+        this is the upper-triangular off-diagonal index; otherwise, this
+        is ignored.  If not `None` (default), this will override
+        ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters---
@@ -1426,19 +1529,20 @@ def compute_3pcf_in_gpp_box(catalogue_data,
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
         Full parameter set (default is `None`).  This is used in lieu of
         `degree`, `binning`, `form`, `idx_bin` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format.  The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -1446,22 +1550,27 @@ def compute_3pcf_in_gpp_box(catalogue_data,
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
-        Measurement results.
+        Measurement results as a dictionary with the following entries---
+
+        - 'r1_bin', 'r2_bin': central separation for each bin of
+          the first and second separations;
+        - 'r1_eff', 'r2_eff': effective separation for each bin of
+          the first and second separations;
+        - 'npairs_1', 'npairs_2': number of separation pairs in each bin
+          of the first and second separations;
+        - 'zeta_raw': three-point correlation function raw measurements
+          including any specified normalisation and shot noise;
+        - 'zeta_shot': three-point correlation function shot noise.
+
+        The effective separation is here defined as the average separation
+        in each bin.
 
     Examples
     --------
     See analogous examples in :func:`~triumvirate.threept.compute_bispec`
-    (though without line-of-sight arguments).
+    (though without the line-of-sight arguments).
 
     """
-    # if logger:
-    #     logger.info(
-    #         "Measuring three-point correlation function "
-    #         "from a simulation-box catalogue "
-    #         "in the global plane-parallel approximation...",
-    #         cpp_state='start'
-    #     )
-
     results = _compute_3pt_stats_sim_like(
         _compute_3pcf_in_gpp_box,
         catalogue_data,
@@ -1470,14 +1579,6 @@ def compute_3pcf_in_gpp_box(catalogue_data,
         types={'catalogue_type': 'sim', 'statistic_type': '3pcf'},
         save=save, logger=logger
     )
-
-    # if logger:
-    #     logger.info(
-    #         "... measured three-point correlation function "
-    #         "from a simulation-box catalogue "
-    #         "in the global plane-parallel approximation.",
-    #         cpp_state='end'
-    #     )
 
     return results
 
@@ -1516,13 +1617,15 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
     binning : :class:`~triumvirate.dataobjs.Binning`, optional
         Binning for the measurements.  If `None` (default),
         this is constructed from `paramset`.
-    form : {'diag', 'full'}, optional
+    form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
     idx_bin : int, optional
-        Fixed bin index for the first coordinate dimension
-        when binning `form` is 'full'.  If not `None` (default),
-        this will override ``paramset['idx_bin']``.
+        When binning `form` is 'row', this is the fixed bin index for
+        the first coordinate dimension; when binning `form` is 'off-diag',
+        this is the upper-triangular off-diagonal index; otherwise, this
+        is ignored.  If not `None` (default), this will override
+        ``paramset['idx_bin']``.
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters---
@@ -1533,19 +1636,20 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
 
-        and one and only one of the following when 'alignment' is 'pad'---
+        and exactly one of the following only when 'alignment' is 'pad'---
 
         - 'boxpad': float;
         - 'gridpad': float.
 
-        This will override corresponding entries in `paramset`.
+        If not `None` (default), this will override the corresponding
+        entries in `paramset`.
     paramset : :class:`~triumvirate.parameters.ParameterSet`, optional
         Full parameter set (default is `None`).  This is used in lieu of
         `degrees`, `binning`, `form`, `idx_bin` or `sampling_params`.
     save : {'.txt', '.npz', False}, optional
         If not `False` (default), save the measurements as a '.txt' file
         or in '.npz' format.  The save path is determined from `paramset`
-        (if unset, a default file in the current working directory is
+        (if unset, a default file path in the current working directory is
         used).
     logger : :class:`logging.Logger`, optional
         Logger (default is `None`).
@@ -1553,7 +1657,20 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
     Returns
     -------
     results : dict of {str: :class:`numpy.ndarray`}
-        Measurement results.
+        Measurement results as a dictionary with the following entries---
+
+        - 'r1_bin', 'r2_bin': central separation for each bin of
+          the first and second separations;
+        - 'r1_eff', 'r2_eff': effective separation for each bin of
+          the first and second separations;
+        - 'npairs_1', 'npairs_2': number of separation pairs in each bin
+          of the first and second separations;
+        - 'zeta_raw': three-point correlation function raw measurements
+          including any specified normalisation and shot noise;
+        - 'zeta_shot': three-point correlation function shot noise.
+
+        The effective separation is here defined as the average separation
+        in each bin.
 
     Examples
     --------
@@ -1654,7 +1771,9 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
     # Perform measurement.
     if logger:
         logger.info(
-            "Measuring window function statistics...", cpp_state='start'
+            "Measuring three-point correlation function window "
+            "from a random catalogue...",
+            cpp_state='start'
         )
 
     results = _compute_3pcf_window(
@@ -1665,7 +1784,9 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
 
     if logger:
         logger.info(
-            "... measured window function statistics.", cpp_state='end'
+            "... measured three-point correlation function window "
+            "from a random catalogue.",
+            cpp_state='end'
         )
 
     if save:

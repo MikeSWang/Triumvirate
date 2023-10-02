@@ -23,7 +23,7 @@ Usage guides
 ============
 
 For advanced usage of the Python package, consult the following tutorials
-for various components:
+for various functionalities:
 
 - `Customised Logger <tutorials/Logger.html>`_
 - `Parameter Set <tutorials/Parameters.html>`_
@@ -56,6 +56,16 @@ measurement pipeline. The guide to running the program can be found in
     .. code-block:: console
 
         $ export OMP_NUM_THREADS=<num-threads>
+
+    In general, the following process affinity settings are found to be
+    performant:
+
+    .. code-block:: console
+
+        $ export OMP_PLACES=threads
+        $ export OMP_PROC_BIND=spread
+
+    However, the optimal settings may vary depending on the system.
 
 
 For developers, ':doc:`apidoc_cpp/apidoc_cpp`' contains the full C++
