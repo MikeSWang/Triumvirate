@@ -5,7 +5,7 @@
 # Three-Point Clustering Measurements in LSS
 
 [![CI](https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/ci.yml?label=ci&logo=GitHubActions)](https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml)
-[![Docs](https://img.shields.io/readthedocs/triumvirate/latest?logo=ReadtheDocs)](https://triumvirate.readthedocs.io/en/latest/)
+[![Docs](https://img.shields.io/readthedocs/triumvirate/latest?logo=ReadtheDocs)](https://readthedocs.org/projects/triumvirate/builds/)
 [![Release](https://img.shields.io/github/v/release/MikeSWang/Triumvirate?display_name=tag&sort=semver&logo=Git)](https://github.com/MikeSWang/Triumvirate/releases/latest)
 
 ``Triumvirate`` is a Python/C++ software package for measuring three-point (and

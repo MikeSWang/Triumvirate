@@ -16,7 +16,7 @@ Three-Point Clustering Measurements in LSS
 ..     :alt: CI
 
 .. .. image:: https://img.shields.io/readthedocs/triumvirate/latest?logo=ReadtheDocs
-..     :target: https://triumvirate.readthedocs.io/en/latest/
+..     :target: https://readthedocs.org/projects/triumvirate/builds/
 ..     :alt: Docs
 
 .. image:: https://img.shields.io/github/v/release/MikeSWang/Triumvirate?display_name=tag&sort=semver&logo=Git
@@ -202,7 +202,7 @@ A `community forum <https://github.com/MikeSWang/Triumvirate/discussions>`_
 for users and developers is hosted on GitHub, where you can receive
 announcements, post questions, share ideas and get updates.
 
-A `wiki site <https://github.com/MikeSWang/Triumvirate/wiki>` collects wisdoms
+A `wiki site <https://github.com/MikeSWang/Triumvirate/wiki>`_ collects wisdoms
 for specific use cases and user environments.
 
 
