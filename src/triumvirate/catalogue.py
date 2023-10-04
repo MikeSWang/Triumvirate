@@ -62,7 +62,9 @@ class ParticleCatalogue:
     ws, wc : (1-d array of) float, optional
         Sample weight and clustering weight of particles (defaults
         are 1.).  If an array, it must be of the same length as
-        `x`, `y` and `z`.
+        `x`, `y` and `z`.  See the
+        :ref:`note <sample_and_clustering_weights>` below
+        for more details.
     logger : :class:`logging.Logger`, optional
         Program logger (default is `None`).
 
@@ -78,7 +80,9 @@ class ParticleCatalogue:
         Total particle sample weight.
 
 
-    .. attention::
+    .. _sample_and_clustering_weights:
+
+    .. admonition:: Sample and clustering weights
 
         There are two types of weights: sample weight ``ws``
         (e.g. completeness weights) and clustering weight ``wc``
@@ -153,12 +157,14 @@ class ParticleCatalogue:
                 optional
             Catalogue file field names or data types.  If `None`
             (default), the header in the file may be used to infer the
-            field names or data types.  See the note below for
-            more details.
+            field names or data types.  See the
+            :ref:`note <format_and_names_arguments>` below
+            for more details.
         format : str, optional
             File format specifier (default is 'ascii.no_header' for
-            default `reader` value 'astropy').  See the note below for
-            more details.
+            default `reader` value 'astropy').  See the
+            :ref:`note <format_and_names_arguments>` below
+            for more details.
         name_mapping : dict of {str: str}, optional
             Mapping between any of the default column names 'x', 'y', 'z',
             'nz', 'ws' and 'wc' (keys) and the corresponding field names
@@ -196,8 +202,9 @@ class ParticleCatalogue:
         ... )
 
 
+        .. _format_and_names_arguments:
+
         .. admonition:: `format` and `names` arguments
-            :class: dropdown
 
             For ``reader='astropy'``, supported `format` can be found in
             `'Built-In Table Readers/Writers'`_, and `names` correspond to

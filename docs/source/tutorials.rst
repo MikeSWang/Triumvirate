@@ -5,11 +5,11 @@ Tutorials
 Getting started
 ===============
 
-For a simple walk-through of using |Triumvirate|, see `'Quick Guide'
+For a simple walk-through of using |Triumvirate|, see `Quick Guide
 <tutorials/QuickGuide.html>`_.
 
 To learn about program parameter configuration,
-see `'Parameter Configuration' <tutorials/Configuration.html>`_.
+see `Parameter Configuration <tutorials/Configuration.html>`_.
 
 .. toctree::
     :hidden:
@@ -50,7 +50,7 @@ measurement pipeline. The guide to running the program can be found in
 .. admonition:: OpenMP parallelisation
 
     For both Python and C++ programs built with OpenMP enabled
-    (see ':doc:`installation`'), you can set the environmental variable
+    (see :doc:`installation`), you can set the environmental variable
     ``OMP_NUM_THREADS`` for multithreaded execution:
 
     .. code-block:: console
@@ -68,10 +68,10 @@ measurement pipeline. The guide to running the program can be found in
     However, the optimal settings may vary depending on the system.
 
 
-For developers, ':doc:`apidoc_cpp/apidoc_cpp`' contains the full C++
+For developers, :doc:`apidoc_cpp/apidoc_cpp` contains the full C++
 API reference. To reuse C++ routines, ensure the linker finds ``libtrv``,
 e.g. by providing the path to the static library (built following
-':doc:`installation`') with the flag :code:`-L<path-to-libtrv.a>`
+:doc:`installation`) with the flag :code:`-L<path-to-libtrv.a>`
 during compilation.
 
 

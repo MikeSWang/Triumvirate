@@ -87,28 +87,28 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   std::ifstream fin(param_filepath.c_str());
 
   // Initialise temporary variables to hold the extracted parameters.
-  char catalogue_dir_[1024];
-  char measurement_dir_[1024];
-  char data_catalogue_file_[1024];
-  char rand_catalogue_file_[1024];
-  char catalogue_columns_[1024];
-  char output_tag_[1024];
+  char catalogue_dir_[1024] = "";
+  char measurement_dir_[1024] = "";
+  char data_catalogue_file_[1024] = "";
+  char rand_catalogue_file_[1024] = "";
+  char catalogue_columns_[1024] = "";
+  char output_tag_[1024] = "";
 
   double boxsize_x, boxsize_y, boxsize_z;
   int ngrid_x, ngrid_y, ngrid_z;
 
-  char alignment_[16];
-  char padscale_[16];
-  char assignment_[16];
-  char interlace_[16];
+  char alignment_[16] = "";
+  char padscale_[16] = "";
+  char assignment_[16] = "";
+  char interlace_[16] = "";
 
-  char catalogue_type_[16];
-  char statistic_type_[16];
-  char form_[16];
-  char norm_convention_[16];
-  char binning_[16];
+  char catalogue_type_[16] = "";
+  char statistic_type_[16] = "";
+  char form_[16] = "";
+  char norm_convention_[16] = "";
+  char binning_[16] = "";
 
-  char save_binned_vectors_[16];
+  char save_binned_vectors_[16] = "";
 
   // ---------------------------------------------------------------------
   // Extraction
@@ -387,25 +387,33 @@ int ParameterSet::validate() {
   }
   if (this->catalogue_type == "survey") {
     if (this->data_catalogue_file != "") {
-      this->data_catalogue_file = this->catalogue_dir
-        + this->data_catalogue_file;  // transmutation
+      if (this->data_catalogue_file.rfind("/", 0) != 0) {
+        this->data_catalogue_file = this->catalogue_dir
+          + this->data_catalogue_file;
+      }  // transmutation
     }
     if (this->rand_catalogue_file != "") {
-      this->rand_catalogue_file = this->catalogue_dir
-        + this->rand_catalogue_file;  // transmutation
+      if (this->rand_catalogue_file.rfind("/", 0) != 0) {
+        this->rand_catalogue_file = this->catalogue_dir
+          + this->rand_catalogue_file;
+      }  // transmutation
     }
   } else
   if (this->catalogue_type == "random") {
     this->data_catalogue_file = "";  // transmutation
     if (this->rand_catalogue_file != "") {
-      this->rand_catalogue_file = this->catalogue_dir
-        + this->rand_catalogue_file;  // transmutation
+      if (this->rand_catalogue_file.rfind("/", 0) != 0) {
+        this->rand_catalogue_file = this->catalogue_dir
+          + this->rand_catalogue_file;
+      }  // transmutation
     }
   } else
   if (this->catalogue_type == "sim") {
     if (this->data_catalogue_file != "") {
-      this->data_catalogue_file = this->catalogue_dir
-        + this->data_catalogue_file;  // transmutation
+      if (this->data_catalogue_file.rfind("/", 0) != 0) {
+        this->data_catalogue_file = this->catalogue_dir
+          + this->data_catalogue_file;
+      }  // transmutation
     }
     this->rand_catalogue_file = "";  // transmutation
   } else
@@ -519,7 +527,7 @@ int ParameterSet::validate() {
   if (this->statistic_type == "modes") {
     this->npoint = "none"; this->space = "fourier";  // derivation
   } else
-  if (this->statistic_type == "seps") {
+  if (this->statistic_type == "pairs") {
     this->npoint = "none"; this->space = "config";  // derivation
   } else {
 #ifndef TRV_EXTCALL
@@ -560,13 +568,13 @@ int ParameterSet::validate() {
   )) {
     if (trvs::currTask == 0) {
       trvs::logger.error(
-        "Normalisation convention must be "
-        "'mesh' or 'particle': `norm_convention` = '%s'.",
+        "Normalisation convention must be 'mesh', 'particle', "
+        "'mesh' or 'mesh-mixed': `norm_convention` = '%s'.",
         this->norm_convention.c_str()
       );
       throw trvs::InvalidParameterError(
-        "Normalisation convention must be "
-        "'mesh' or 'particle': `norm_convention` = '%s'.\n",
+        "Normalisation convention must be 'mesh', 'particle', "
+        "'mesh' or 'mesh-mixed': `norm_convention` = '%s'.\n",
         this->norm_convention.c_str()
       );
     }
@@ -617,8 +625,10 @@ int ParameterSet::validate() {
     this->save_binned_vectors = default_bvec_sfilepath;  // transmutation
   } else
   if (this->save_binned_vectors != "") {
-    this->save_binned_vectors = this->measurement_dir
-      + this->save_binned_vectors;  // transmutation
+    if (this->save_binned_vectors.rfind("/", 0) != 0) {
+      this->save_binned_vectors = this->measurement_dir
+        + this->save_binned_vectors;
+    }  // transmutation
   }
 
   // Validate and derive numerical parameters.
@@ -804,7 +814,7 @@ int ParameterSet::validate() {
   }
 
   if (
-    (this->statistic_type == "modes" || this->statistic_type == "seps")
+    (this->statistic_type == "modes" || this->statistic_type == "pairs")
     && this->save_binned_vectors == ""
   ) {
     this->save_binned_vectors = default_bvec_sfilepath;  // transmutation

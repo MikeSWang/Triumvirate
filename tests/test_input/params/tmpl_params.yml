@@ -17,6 +17,7 @@ files:
   data_catalogue:
   rand_catalogue:
 
+# FUTURE: This parameter currently has no effect in the Python interface.
 # Field names of catalogue data columns as a list in the order of
 # appearance.  If unset, the catalogue files are assumed to contain
 # an approriate header.
@@ -73,8 +74,8 @@ catalogue_type:
 # Type of measurement: {
 #   'powspec', '2pcf', '2pcf-win',
 #   'bispec', '3pcf', '3pcf-win', '3pcf-win-wa',
-#   'modes', 'seps'
-# }. [mandatory]
+#   'modes', 'pairs'
+# }.
 statistic_type:
 
 # Degrees of the multipoles.
@@ -119,6 +120,7 @@ idx_bin:
 
 # -- Misc ----------------------------------------------------------------
 
+# FUTURE: This parameter currently has no effect in the Python interface.
 # Save binning details to file:
 # {true/on, false/off (default), <relpath-to-file>}.
 # If a path is provided, it is relative to the measurement directory.

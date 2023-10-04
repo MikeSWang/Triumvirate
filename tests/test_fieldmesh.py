@@ -19,7 +19,7 @@ from triumvirate.fieldmesh import record_binned_vectors
             (3, 0.08, 0.105, 0.10053096, 0.02513274, 0.01256637),
         ),
         (
-            'empty', 'seps', 228396,
+            'empty', 'pairs', 228396,
             (3, 125., 150., 148.4375, 19.53125, 7.8125),
         ),
     ]
@@ -46,7 +46,7 @@ def test_record_binned_vectors(case, statistic_type, count, last_entry,
 
     if statistic_type == 'modes':
         test_binning = request.getfixturevalue('test_binning_fourier')
-    elif statistic_type == 'seps':
+    elif statistic_type == 'pairs':
         test_binning = request.getfixturevalue('test_binning_config')
     else:
         raise ValueError("Invalid statistic type for `record_binned_vectors`.")

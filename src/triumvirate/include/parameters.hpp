@@ -108,7 +108,7 @@ class ParameterSet {
   /// catalogue type: {"survey", "random", "sim", "none"}
   std::string catalogue_type;
   /// statistic type: {"powspec", "2pcf", "2pcf-win", "bispec", "3pcf",
-  ///                  "3pcf-win", "3pcf-win-wa", "modes", "seps"}
+  ///                  "3pcf-win", "3pcf-win-wa", "modes", "pairs"}
   std::string statistic_type;
 
   // Derived measurement type.

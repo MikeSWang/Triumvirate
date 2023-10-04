@@ -343,6 +343,15 @@ cdef class ParameterSet:
         except KeyError:
             self.thisptr.rand_catalogue_file = "".encode('utf-8')
 
+        # try:
+        #     self.thisptr.catalogue_columns = \
+        #         "".join(self._params['catalogue_columns']).encode('utf-8')
+        # except TypeError as err:
+        #     if self._params['catalogue_columns'] is None:
+        #         self.thisptr.catalogue_columns = "".encode('utf-8')
+        #     else:
+        #         raise err
+
         try:
             if self._params['tags']['output'] is None:
                 self._params['tags']['output'] = ''
@@ -468,7 +477,9 @@ cdef class ParameterSet:
 
         # -- Misc --------------------------------------------------------
 
-        if self._params['verbose'] is not None:
+        if self._params['verbose'] is None:
+            self.thisptr.verbose = 20
+        else:
             self.thisptr.verbose = self._params['verbose']
 
         # ----------------------------------------------------------------

@@ -21,7 +21,8 @@ cdef class Binning:
     space : {'config', 'fourier'}
         Coordinate space.
     scheme : {'lin', 'log', 'linpad', 'logpad'}
-        Binning scheme.  See the note below for more details.
+        Binning scheme.  See the :ref:`note <binning_scheme>` below
+        for more details.
     bin_min, bin_max : float, optional
         Minimum and maximum of the bin range (defaults are `None`).
     num_bins : int, optional
@@ -32,7 +33,8 @@ cdef class Binning:
     space : {'config', 'fourier'}
         Coordinate space.
     scheme : {'lin', 'log', 'linpad', 'logpad'}
-        Binning scheme.  See the note below for more details.
+        Binning scheme.  See the :ref:`note <binning_scheme>` below
+        for more details.
     bin_min : float or None
         Minimum of the bin range.
     bin_max : float or None
@@ -47,8 +49,9 @@ cdef class Binning:
         Bin widths of length :attr:`num_bins`.
 
 
+    .. _binning_scheme:
+
     .. admonition:: Binning `scheme`
-        :class: dropdown
 
         The bin setting method supports linear ('lin') and
         log-linear/exponential ('log') binning, with possible linear
@@ -101,8 +104,11 @@ cdef class Binning:
         ------
         ValueError
             When the 'space' parameter is unset or unrecognised in
-            `paramset`.  See the note below for more details.
+            `paramset`.  See the :ref:`note <binning_space>` below
+            for more details.
 
+
+        .. _binning_space:
 
         .. attention::
 

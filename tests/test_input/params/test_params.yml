@@ -15,6 +15,7 @@ files:
   data_catalogue:
   rand_catalogue:
 
+# FUTURE: This parameter currently has no effect in the Python interface.
 # Field names of catalogue data columns as a list in the order of
 # appearance.  If unset, the catalogue files are assumed to contain
 # an approriate header.
@@ -27,13 +28,13 @@ tags:
 
 # -- Sampling ------------------------------------------------------------
 
-# Box size in each dimension (in length units).
+# Box size in each dimension (in length units). [mandatory]
 boxsize:
   x: 1000.
   y: 1000.
   z: 1000.
 
-# Grid cell number in each dimension.
+# Grid cell number in each dimension. [mandatory]
 ngrid:
   x: 64
   y: 64
@@ -71,8 +72,8 @@ catalogue_type:
 # Type of measurement: {
 #   'powspec', '2pcf', '2pcf-win',
 #   'bispec', '3pcf', '3pcf-win', '3pcf-win-wa',
-#   'modes', 'seps'
-# }. [mandatory]
+#   'modes', 'pairs'
+# }.
 statistic_type:
 
 # Degrees of the multipoles.
@@ -101,11 +102,11 @@ binning: lin
 
 # Range of measurement scales.
 # The binning coordinate is either wavenumbers in Fourier space,
-# or separations in configuration space.
+# or separations in configuration space. [mandatory]
 range: [0.005, 0.105]  # placeholder
 
 # Number of measurement bins (i.e. data vector dimension).
-# Must be >=2, or >=7 if padding is used in binning.
+# Must be >=2, or >=7 if padding is used in binning. [mandatory]
 num_bins: 4
 
 # Fixed bin index when the `form` of three-point statistics measurements
@@ -117,6 +118,7 @@ idx_bin:
 
 # -- Misc ----------------------------------------------------------------
 
+# FUTURE: This parameter currently has no effect in the Python interface.
 # Save binning details to file:
 # {true/on, false/off (default), <relpath-to-file>}.
 # If a path is provided, it is relative to the measurement directory.

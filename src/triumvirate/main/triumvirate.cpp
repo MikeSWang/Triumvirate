@@ -752,7 +752,7 @@ int main(int argc, char* argv[]) {
     trv::BinnedVectors binned_vectors = binning_meshgrid.record_binned_vectors(
       binning, params.save_binned_vectors
     );
-    if (params.statistic_type == "modes" || params.statistic_type == "seps") {
+    if (params.statistic_type == "modes" || params.statistic_type == "pairs") {
       std::snprintf(
         save_filepath, sizeof(save_filepath), "%s",
         params.save_binned_vectors.c_str()
