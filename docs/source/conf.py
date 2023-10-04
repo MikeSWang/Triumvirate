@@ -104,6 +104,8 @@ html_last_updated_fmt = "%a, %Y-%m-%dT%H:%M:%S%z. Version {}".format(release)
 
 html_theme = 'sphinx_book_theme'
 html_theme_options = {
+    'announcement':
+        "Version 0.3 is now available with significant improvements!",
     'path_to_docs': "docs/source",
     'repository_url': 'https://github.com/MikeSWang/Triumvirate',
     'toc_title': 'On this page',

@@ -1,5 +1,39 @@
 # Change Log
 
+## v0.3.0 (2023-10-04)
+
+### Bug fixes
+
+Fix reused bin statistics when duplicate recording is designed to be avoided
+in [``threept.cpp``](src/triumvirate/src/threept.cpp).
+
+### Features
+
+- Add the functionality to record binning details for wavevector modes
+  and separation pairs from a mesh grid with the option to save the results
+  to a file in C++.
+
+- Add more forms of three-point statistics including the off-diagonal and
+  full form (the original 'full' form is renamed to 'row').
+
+### Improvements
+
+- Implement further parallelisation and refactoring resulting in
+  significant speed-up.
+
+- Enhance parameter validation consistency.
+
+### Maintenance
+
+- Update syntax and fix typos.
+- Add and update test data after API changes.
+
+### Documentation
+
+- Add and update details to/in various documentation components.
+- Update and rerun tutorial notebooks after API changes.
+
+
 ## v0.2.2 (2023-07-04)
 
 ### Improvements
