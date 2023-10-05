@@ -105,7 +105,7 @@ double calc_powspec_normalisation_from_mesh(
  * only, where the two meshes come from separate data- and random-source
  * particle catalogues.
  *
- * @see <a href="https://pypower.rtfd.io/en/latest/api/api.html
+ * @see <a href="https://pypower.readthedocs.io/en/latest/api/api.html
  * #pypower.fft_power.normalization">@c pypower documentation</a>.
  *
  * @param particles_data Data-source particle catalogue.
