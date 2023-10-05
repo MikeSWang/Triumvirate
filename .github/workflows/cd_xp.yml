@@ -68,7 +68,7 @@ jobs:
         if: >
           github.event.inputs.run_build_bdist_xplat == 'true' &&
           github.event.inputs.version_tag == ''
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-tags: true
 
@@ -76,7 +76,7 @@ jobs:
         if: >
           github.event.inputs.run_build_bdist_xplat == 'true' &&
           github.event.inputs.version_tag != ''
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: refs/tags/${{ github.event.inputs.version_tag }}
 
