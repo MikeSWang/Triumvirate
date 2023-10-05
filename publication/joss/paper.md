@@ -51,7 +51,7 @@ complementarity, methods for measuring two-point clustering statistics are
 also included in the package.
 
 
-[^1]: [github.com/naonori/hitomi/](https://github.com/naonori/hitomi/)
+[^1]: [github.com/naonori/hitomi](https://github.com/naonori/hitomi)
 
 
 # Statement of need
@@ -98,20 +98,61 @@ can compute:
     models derived in Fourier space through the Hankel transform
     [@Wilson:2016;@Sugiyama:2019].
 
+For the global plane-parallel estimators, the simulation box is placed at
+the spatial infinity (or equivalently the observer is), so that the
+line of sight to each particle can be treated as the same and taken to be
+along the $z$-axis. For the local plane-parallel estimators, the observer
+is placed at the origin in the survey coordinates, and the line of sight
+is chosen to point towards one of the particles in a triplet or pair for
+three- or two-point clustering measurements respectively.
+
+The geometry of the survey leaves an imprint on the clustering statistics,
+where in Fourier space the effect is a convolution with the survey window
+function. This convolution mixes different multipoles of the underlying
+clustering statistics and the survey window, and the precise convolution
+formula (i.e. the number of multipoles to include in modelling) needed to
+achieve a given level of convergence depends on the precise survey geometry
+including any sample weights applied. Therefore the functionality to
+measure the window function is an integral part of this program.
+
 These functionalities are essential to cosmological inference pipelines,
 and can help validate any analytical covariance matrix predictions against
 sample estimates. Since precise covariance matrix estimates usually
 require clustering measurements repeated over a large number of simulated
 mock catalogues, computational efficiency is an important objective.
-Finally,  `Triumvirate` also enables comparison studies between
-alternative compressed statistics of three-point clustering
-[e.g. @Scoccimarro:2015; @Slepian:2018], which may have different
-constraining power on different cosmological parameters.
+
+Finally, `Triumvirate` also enables comparison studies between
+alternative compressed statistics of three-point clustering, which may have
+different constraining power on different cosmological parameters. There
+are existing software packages for some of these alternative approaches:
+
+  * `pylians`[^4] [@VillaescusaNavarro:2018] computes the bispectrum with
+    the Scoccimarro estimator [@Scoccimarro:2015] for triangle
+    configurations parametrised by two wavenumbers and the angle between
+    the corresponding wavevectors;
+
+  * `nbodykit`[^5] [@Hand:2018] computes the isotropised 3PCF with a
+    pair-counting algorithm [@Slepian:2015], although in principle
+    this can be generalised to anisotropic 3PCF [@Slepian:2018], or be
+    implemented using FFTs [@Slepian:2016];
+
+  * @Philcox:2021[^6] advocates a windowless cubic estimator for the
+    bispectrum in the Soccimarro decomposition, which can be evaluated
+    using FFTs. However, this approach requires the inversion of a Fisher
+    matrix obtained from a suite of Monte Carlo realisations.
+
+As these programs use a different decomposition of three-point clustering
+statistics and focus on either configuration- or Fourier-space statistics
+only, `Triumvirate` fulfills complementary needs in current galaxy
+clustering analyses.
 
 
 [^2]: [desi.lbl.gov](https://www.desi.lbl.gov)
 [^3]: [sci.esa.int/euclid](https://sci.esa.int/web/euclid/),
       [euclid-ec.org](https://www.euclid-ec.org)
+[^4]: [pylians3.readthedocs.io](https://pylians3.readthedocs.io)
+[^5]: [nbodykit.readthedocs.io](https://nbodykit.readthedocs.io)
+[^6]: [github.com/oliverphilcox/Spectra-Without-Windows](https://github.com/oliverphilcox/Spectra-Without-Windows)
 
 
 # Implementation
@@ -195,52 +236,53 @@ $\mathcal{O}\left({N_\mathrm{bin}^2 N_\mathrm{mesh} \ln N_\mathrm{mesh}}\right)$
 where $N_\mathrm{bin}$ is the number of coordinate bins.
 
 It is worth noting that in `Triumvirate`, the spherical harmonic weights
-are applied to individual particles rather than the mesh grids, in
-contrast to other packages such as `nbodykit`. This should result in
-more accurate results at the expense of memory usage, as multiple meshes
-need to be stored for spherical harmonics of different degrees and orders.
-We estimate the minimum memory usage for bispectrum measurements to be
-$11 M$ and $9 M$ respectively for local and global plane-parallel
-estimators, where $M = 16 N_\mathrm{mesh}$ bytes (roughly
-$1.5\times10^{-8} N_\mathrm{mesh}$ gibibytes[^4]); for local and global
+are applied to individual particles rather than the mesh grids. This should
+result in more accurate results at the expense of memory usage, as multiple
+meshes need to be stored for spherical harmonics of different degrees
+and orders. We estimate the minimum memory usage for bispectrum
+measurements to be $11 M$ and $9 M$ respectively for local and global
+plane-parallel estimators, where $M = 16 N_\mathrm{mesh}$ bytes (roughly
+$1.5\times10^{-8} N_\mathrm{mesh}$ gibibytes[^7]); for local and global
 plane-parallel 3PCF estimators, the figures are $10 M$ and $9 M$
 respectively.
 
 In the table below, we show the wall time and peak memory usage for
-bispectrum and three-point correlation function measurements of a few
-select multipoles and grid numbers with $N_\mathrm{bin} = 20$, using a
-single core on one AMD EPYC 7H12 processor with base frequency 2.60 GHz.
-With multithreading enabled, the run time is reduced (see the last column
-in the table). Here 'lpp' and 'gpp' denote local and global plane-parallel
-approximations respectively. For the global plane-parallel estimates,
-the catalogue used is a cubic box containing
-$N_\mathrm{part} = 8 \times 10^6$ particles; for the local plane-parallel
-estimates, the data and random catalogues contain
-$N_\mathrm{part} = 6.6 \times 10^5$ and $1.3 \times 10^7$ particles
-respectively.
+bispectrum and 3PCF measurements of a few select multipoles and
+grid numbers with $N_\mathrm{bin} = 20$, using a single core on one
+AMD EPYC 7H12 processor with base frequency 2.60 GHz. With multithreading
+enabled, the run time is reduced (see the last column in the table). Here
+'lpp' and 'gpp' denote local and global plane-parallel approximations
+respectively. For the global plane-parallel estimates, the catalogue used
+is a cubic box containing $N_\mathrm{part} = 8 \times 10^6$ particles;
+for the local plane-parallel estimates, the data and random catalogues
+contain $N_\mathrm{part} = 6.6 \times 10^5$ and $1.3 \times 10^7$ particles
+respectively. Since both the bispectrum and 3PCF are computed with FFTs,
+the computation time and memory usage for them are roughly the same, with
+minor differences due to the slightly different number of mesh grids needed
+for evaluation.
 
---------------------------------------------------------------------------------------------------------------------------
-Multipole/$N_\mathrm{mesh}$                   $128^3$                $256^3$                $512^3$   $512^3$ (32 threads)
------------------------------- ---------------------- ---------------------- ---------------------- ----------------------
-$B_{000}^{\mathrm{(lpp)}}$              96 s, 1.8 GiB         215 s, 4.4 GiB         1247 s, 25 GiB           85 s, 25 GiB
+--------------------------------------------------------------------------------------------------------------------------------------------------
+Multipole/$N_\mathrm{mesh}$                        $128^3$                     $256^3$                     $512^3$            $512^3$ (32 threads)
+------------------------------ --------------------------- --------------------------- --------------------------- -------------------------------
+$B_{000}^{\mathrm{(lpp)}}$                   96 s, 1.8 GiB              215 s, 4.4 GiB              1247 s, 25 GiB                    85 s, 25 GiB
 
-$B_{000}^{\mathrm{(gpp)}}$              42 s, 0.7 GiB         172 s, 2.9 GiB         1185 s, 21 GiB           59 s, 21 GiB
+$B_{000}^{\mathrm{(gpp)}}$                   42 s, 0.7 GiB              172 s, 2.9 GiB              1185 s, 21 GiB                    59 s, 21 GiB
 
-$B_{202}^{\mathrm{(lpp)}}$             320 s, 1.8 GiB        1030 s, 4.4 GiB         6449 s, 25 GiB          267 s, 25 GiB
+$B_{202}^{\mathrm{(lpp)}}$                  320 s, 1.8 GiB             1030 s, 4.4 GiB              6449 s, 25 GiB                   267 s, 25 GiB
 
-$B_{202}^{\mathrm{(gpp)}}$              42 s, 0.7 GiB         176 s, 2.9 GiB         1187 s, 21 GiB           60 s, 21 GiB
+$B_{202}^{\mathrm{(gpp)}}$                   42 s, 0.7 GiB              176 s, 2.9 GiB              1187 s, 21 GiB                    60 s, 21 GiB
 
-$\zeta_{000}^{\mathrm{(lpp)}}$          90 s, 1.8 GiB         211 s, 4.4 GiB         1403 s, 21 GiB           83 s, 21 GiB
+$\zeta_{000}^{\mathrm{(lpp)}}$               90 s, 1.8 GiB              211 s, 4.4 GiB              1403 s, 21 GiB                    83 s, 21 GiB
 
-$\zeta_{000}^{\mathrm{(gpp)}}$          43 s, 0.7 GiB         178 s, 2.9 GiB         1226 s, 19 GiB           55 s, 19 GiB
+$\zeta_{000}^{\mathrm{(gpp)}}$               43 s, 0.7 GiB              178 s, 2.9 GiB              1226 s, 19 GiB                    55 s, 19 GiB
 
-$\zeta_{202}^{\mathrm{(lpp)}}$         267 s, 1.8 GiB         964 s, 4.4 GiB         6377 s, 21 GiB          266 s, 21 GiB
+$\zeta_{202}^{\mathrm{(lpp)}}$              267 s, 1.8 GiB              964 s, 4.4 GiB              6377 s, 21 GiB                   266 s, 21 GiB
 
-$\zeta_{202}^{\mathrm{(gpp)}}$          43 s, 0.7 GiB         177 s, 2.9 GiB         1241 s, 19 GiB           57 s, 19 GiB
---------------------------------------------------------------------------------------------------------------------------
+$\zeta_{202}^{\mathrm{(gpp)}}$               43 s, 0.7 GiB              177 s, 2.9 GiB              1241 s, 19 GiB                    57 s, 19 GiB
+--------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-[^4]: Note that 1 gibibytes (GiB) is $2^{30}$ bytes, as opposed to
+[^7]: Note that 1 gibibytes (GiB) is $2^{30}$ bytes, as opposed to
       1 gigabytes (GB) which is $10^9$ bytes. GiB is the preferred unit
       by job schedulers such as Slurm for computer clusters.
 
@@ -251,6 +293,10 @@ $\zeta_{202}^{\mathrm{(gpp)}}$          43 s, 0.7 GiB         177 s, 2.9 GiB    
 user feedback. One extension of interest is the inclusion of other
 three-point clustering estimators with different coordinate systems and
 compression choices, and the functionality to transform between them.
+The ability to measure clustering statistics from a density field already
+sampled on a mesh grid may also be useful. In addition, porting the code
+to graphic processing units (GPUs) can bring further parallelisation that
+can enhance the performance of the code.
 
 
 # Acknowledgements
