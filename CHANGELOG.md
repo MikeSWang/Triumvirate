@@ -14,7 +14,8 @@ in [``threept.cpp``](src/triumvirate/src/threept.cpp).
   to a file in C++.
 
 - Add more forms of three-point statistics including the off-diagonal and
-  full form (the original 'full' form is renamed to 'row').
+  full form (the original 'full' form is renamed to 'row')
+  ([#22](https://github.com/MikeSWang/Triumvirate/issues/22)).
 
 ### Improvements
 
