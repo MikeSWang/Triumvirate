@@ -224,7 +224,7 @@ Licence
 <https://www.gnu.org/licenses/gpl-3.0.en.html>`_. Please see |Licence|_
 (located at the repository directory root) for full terms and conditions.
 
-&copy; 2023 Mike S Wang & Naonori S Sugiyama
+|Copyright| 2023 Mike S Wang & Naonori S Sugiyama
 
 
 .. |Triumvirate| replace:: ``Triumvirate``
@@ -240,3 +240,5 @@ Licence
 
 .. |Licence| replace:: ``Licence``
 .. _Licence: https://github.com/MikeSWang/Triumvirate/blob/main/Licence
+
+.. |Copyright| unicode:: U+000A9
