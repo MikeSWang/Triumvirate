@@ -61,25 +61,30 @@ double get_vec3d_magnitude(double* vec) {
 // Gamma function
 // ***********************************************************************
 
-// Lanzcos approximation parameters.
-// CAVEAT: Discretionary choices (for the Lanczos approximation series).
-const int nterm_lanczos = 9;  ///< number of terms in approximation series
-const double gconst_lanczos = 7.;  ///< Lanczos approximation constant
-/// Lanczos approximation coefficients for @ref trv::maths::gconst_lanczos
-/// and @ref trv::maths::nterm_lanczos
-const double pcoeff_lanczos[] = {
-      0.99999999999980993227684700473478,
-    676.520368121885098567009190444019,
-  -1259.13921672240287047156078755283,
-    771.3234287776530788486528258894,
-   -176.61502916214059906584551354,
-     12.507343278686904814458936853,
-     -0.13857109526572011689554707,
-      9.984369578019570859563e-6,
-      1.50563273514931155834e-7,
-};  // varying number of significant figures
+// -----------------------------------------------------------------------
+// Lanzcos approximation
+// -----------------------------------------------------------------------
+
+/// Lanczos approximation constant
+const double gconst_lanczos = 7.;
 
 std::complex<double> eval_lanczos_approx_series(std::complex<double> z) {
+  // CAVEAT: Discretionary choices (for the Lanczos approximation series).
+  // Declare the number of approximation terms and the corresponding
+  // Lanczos approximation coefficients.
+  const int nterm_lanczos = 9;
+  const double pcoeff_lanczos[] = {
+        0.999999999999809932277,
+      676.520368121885098567,
+    -1259.13921672240287047,
+      771.323428777653078849,
+     -176.615029162140599066,
+       12.5073432786869048145,
+       -0.138571095265720116896,
+        9.98436957801957085956e-6,
+        1.50563273514931155834e-7,
+  };  // NOTE: constant number of significant figures.
+
   std::complex<double> series = pcoeff_lanczos[0];
   for (int i = 1; i < nterm_lanczos; i++) {
     series += pcoeff_lanczos[i] / (z + double(i));
@@ -88,11 +93,11 @@ std::complex<double> eval_lanczos_approx_series(std::complex<double> z) {
   return series;
 }
 
-std::complex<double> eval_gamma(std::complex<double> z) {
+std::complex<double> eval_gamma_lanczos(std::complex<double> z) {
   // Exploit Euler's reflection formula as the Lanczos approximation
   // is only valid for Re{z} > 1/2.
   if (z.real() < 1./2) {
-    return M_PI / (std::sin(M_PI * z) * eval_gamma(1. - z));
+    return M_PI / (std::sin(M_PI * z) * eval_gamma_lanczos(1. - z));
   }
 
   // Substitute variables into the approximation formula.
@@ -101,53 +106,52 @@ std::complex<double> eval_gamma(std::complex<double> z) {
   std::complex<double> t = z + gconst_lanczos + 1./2;
   std::complex<double> series = eval_lanczos_approx_series(z);
 
-  std::complex<double> gamma = std::sqrt(2*M_PI)
+  std::complex<double> gamma = std::sqrt(2.*M_PI)
     * std::pow(t, z + 1./2) * std::exp(-t) * series;
 
   return gamma;
 }
 
-std::complex<double> eval_lngamma(std::complex<double> z) {
-  // Exploit Euler's reflection formula as the Lanczos approximation
-  // is only valid for Re{z} > 1/2.
-  if (z.real() < 1./2) {
-    return
-      std::log(M_PI) - std::log(std::sin(M_PI * z)) - eval_lngamma(1. - z);
+
+// -----------------------------------------------------------------------
+// Component evaluation
+// -----------------------------------------------------------------------
+
+void get_lngamma_parts(double x, double y, double& lnr, double& theta) {
+  gsl_sf_result lnr_result, theta_result;
+  gsl_sf_lngamma_complex_e(x, y, &lnr_result, &theta_result);
+
+  lnr = lnr_result.val;
+  theta = theta_result.val;
+}
+
+std::complex<double> eval_gamma_lnratio(double mu, std::complex<double> nu) {
+  std::complex<double> x_p = (mu + 1. + nu)/2.;
+  std::complex<double> x_m = (mu + 1. - nu)/2.;
+
+  // Although the Stirling approximation is used, the Lanczos
+  // approximation for log-gamma should remain accurate enough.
+  const double cutoff_asymp = 100.;
+  std::complex<double> lnratio;
+  if (nu.imag() < cutoff_asymp) {
+    double lnr_p, theta_p;
+    double lnr_m, theta_m;
+
+    get_lngamma_parts(x_p.real(), x_p.imag(), lnr_p, theta_p);
+    get_lngamma_parts(x_m.real(), x_m.imag(), lnr_m, theta_m);
+
+    lnratio.real(lnr_p - lnr_m);
+    lnratio.imag(theta_p - theta_m);
+  } else {
+    lnratio =
+      - nu
+      + (x_p - 1./2) * std::log(x_p) - (x_m - 1./2) * std::log(x_m)
+      + 1./12 * (1./x_p - 1./x_m)
+      - 1./360 * (1./std::pow(x_p, 3) - 1./std::pow(x_m, 3))
+      + 1./1260 * (1./std::pow(x_p, 5) - 1./std::pow(x_m, 5));
   }
 
-  // Substitute variables into the approximation formula.
-  z -= 1;
-
-  std::complex<double> t = z + gconst_lanczos + 1./2;
-  std::complex<double> series = eval_lanczos_approx_series(z);
-
-  std::complex<double> lngamma = std::log(2*M_PI) / 2.
-    + (z + 1./2) * std::log(t) - t + std::log(series);
-
-  return lngamma;
-}
-
-std::complex<double> eval_gamma_ratio_asymp(
-  double mu, std::complex<double> nu
-) {
-  std::complex<double> x_p = (mu + 1 + nu)/2.;
-  std::complex<double> x_m = (mu + 1 - nu)/2.;
-
-  std::complex<double> lnratio =
-    - nu
-    + (x_p - 1./2) * std::log(x_p) - (x_m - 1./2) * std::log(x_m)
-    + 1./12 * (1./x_p - 1./x_m)
-    - 1./360 * (1./std::pow(x_p, 3) - 1./std::pow(x_m, 3))
-    + 1./1260 * (1./std::pow(x_p, 5) - 1./std::pow(x_m, 5));
-
   return lnratio;
-}
-
-void get_lngamma_components(double x, double y, double& lnr, double& theta) {
-  std::complex<double> lngamma = eval_lngamma(x + M_I * y);
-
-  if (lnr) {lnr = lngamma.real();}
-  if (theta) {theta = lngamma.imag();}
 }
 
 

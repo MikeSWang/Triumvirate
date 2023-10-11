@@ -37,7 +37,9 @@
 #include <gsl/gsl_interp.h>
 #include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_sf_coupling.h>
+#include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_sf_legendre.h>
+#include <gsl/gsl_sf_result.h>
 #include <gsl/gsl_spline.h>
 
 #include <cmath>
@@ -93,6 +95,10 @@ double get_vec3d_magnitude(double* vec);
 // Gamma function
 // ***********************************************************************
 
+// -----------------------------------------------------------------------
+// Lanzcos approximation
+// -----------------------------------------------------------------------
+
 /**
  * @brief Evaluate the Lanczos approximation series @f$ A_g(z) @f$
  *        for the gamma function.
@@ -104,6 +110,9 @@ double get_vec3d_magnitude(double* vec);
  * @f]
  * where @f$ g @f$ is the Lanczos constant.
  *
+ * Here @f$ g = 7 @f$ is chosen with @f$ N = 9 @f$ terms in the
+ * series @f$ A_g(z) @f$.
+ *
  * @param z Complex argument.
  * @returns Value of @f$ A_g(z) @f$.
  */
@@ -113,51 +122,52 @@ std::complex<double> eval_lanczos_approx_series(std::complex<double> z);
  * @brief Evaluate the gamma function @f$ \Gamma(z) @f$ on
  *        the complex plane using the Lanczos approximation.
  *
+ * Here the Lanczos approximation series @f$ A_g(z) @f$ uses @f$ g = 7 @f$
+ * with @f$ N = 9 @f$ terms.
+ *
  * @param z Complex argument.
  * @returns Value of @f$ \Gamma(z) @f$.
  *
  * @see trv::eval_lanczos_approx_series()
  */
-std::complex<double> eval_gamma(std::complex<double> z);
+std::complex<double> eval_gamma_lanczos(std::complex<double> z);
+
+
+// -----------------------------------------------------------------------
+// Component evaluation
+// -----------------------------------------------------------------------
 
 /**
- * @brief Evaluate the log-gamma function @f$ \ln\Gamma(z) @f$
- *        on the complex plane using the Lanczos approximation.
+ * @brief Get the real and imaginary parts of the log-gamma function
+ *        @f$ \ln\Gamma(z = x + \mathrm{i}\,y) @f$.
  *
- * @param z Complex argument.
- * @returns Value of @f$ \ln\Gamma(z) @f$.
+ * @param[in] x Real part of the complex argument.
+ * @param[in] y Imaginary part of the complex argument.
+ * @param[out] lnr Real part of the log-gamma function value.
+ * @param[out] theta Imaginary part of the log-gamma function value.
  *
- * @see trv::eval_lanczos_approx_series()
+ * @see gsl_sf_lngamma_complex_e() used to evaluate the
+ *      log-gamma function with complex argument.
  */
-std::complex<double> eval_lngamma(std::complex<double> z);
+void get_lngamma_parts(double x, double y, double& lnr, double& theta);
 
 /**
  * @brief Evaluate the logarithm of the ratio of two gamma functions.
  *
  * The ratio is of the form
  * @f$
- *   \Gamma\big(\frac{\nu + \mu + 1}{2}\big)
- *     \big/ \Gamma\big(\frac{\nu - \mu + 1}{2}\big)
+ *   \Gamma\big(\frac{\mu + \nu + 1}{2}\big)
+ *     \big/ \Gamma\big(\frac{\mu - \nu + 1}{2}\big) \,,
  * @f$
- * in the asymptotic limit @f$ \mu, \nu \to \infty @f$.
+ * where @f$ \mu @f$ and @f$ \mathrm{Re}\,\{\nu\} @f$ are small,
+ * while @f$ \mathrm{Im}\,\{\nu\} @f$ may be large, in which case the
+ * Stirling approximation is used.
  *
  * @param mu Real variable.
  * @param nu Complex variable.
- * @returns Approximate logarithmic ratio.
+ * @returns Logarithmic ratio.
  */
-std::complex<double> eval_gamma_ratio_asymp(
-  double mu, std::complex<double> nu
-);
-
-/**
- * @brief Return the real and imaginary parts of the log-gamma function.
- *
- * @param[in] x Real part of the complex argument.
- * @param[in] y Imaginary part of the complex argument.
- * @param[out] lnr Real part of the log-gamma function value.
- * @param[out] theta Imaginary part of the log-gamma function value.
- */
-void get_lngamma_components(double x, double y, double& lnr, double& theta);
+std::complex<double> eval_gamma_lnratio(double mu, std::complex<double> nu);
 
 
 // ***********************************************************************
