@@ -79,11 +79,11 @@ double calc_coupling_coeff_2pt(int ell, int ELL, int m, int M);
  * @brief Calculate particle-based power spectrum normalisation.
  *
  * @param particles Particle catalogue.
- * @param alpha Alpha contrast.
+ * @param alpha Alpha contrast (default is 1.).
  * @returns Power spectrum normalisation factor.
  */
 double calc_powspec_normalisation_from_particles(
-  ParticleCatalogue& particles, double alpha=1.
+  ParticleCatalogue& particles, double alpha = 1.
 );
 
 /**
@@ -91,11 +91,12 @@ double calc_powspec_normalisation_from_particles(
  *
  * @param particles Particle catalogue.
  * @param params Parameter set.
- * @param alpha Alpha contrast.
+ * @param alpha Alpha contrast (default is 1.).
  * @returns Power spectrum normalisation factor.
  */
 double calc_powspec_normalisation_from_mesh(
-  trv::ParticleCatalogue& particles, trv::ParameterSet& params, double alpha=1.
+  trv::ParticleCatalogue& particles,
+  trv::ParameterSet& params, double alpha = 1.
 );
 
 /**
@@ -158,11 +159,11 @@ double calc_powspec_normalisation_from_meshes(
  * @brief Calculate particle-based power spectrum shot noise level.
  *
  * @param particles Particle catalogue.
- * @param alpha Alpha contrast.
+ * @param alpha Alpha contrast (default is 1.).
  * @returns Power spectrum normalisation factor.
  */
 double calc_powspec_shotnoise_from_particles(
-  ParticleCatalogue& particles, double alpha=1.
+  ParticleCatalogue& particles, double alpha = 1.
 );
 
 /**

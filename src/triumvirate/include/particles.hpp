@@ -89,7 +89,7 @@ class ParticleCatalogue {
    *       when an instance is created as a standalone without
    *       @c ParameterSet .
    */
-  ParticleCatalogue(int verbose=-1);
+  ParticleCatalogue(int verbose = -1);
 
   /**
    * @brief Destruct the particle catalogue.
@@ -149,7 +149,7 @@ class ParticleCatalogue {
   int load_catalogue_file(
     const std::string& catalogue_filepath,
     const std::string& catalogue_columns,
-    double volume=0.
+    double volume = 0.
   );
 
   /**

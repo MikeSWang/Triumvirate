@@ -695,7 +695,7 @@ OMP_ATOMIC
 }
 
 double MeshField::calc_assignment_window_in_fourier(
-  int i, int j, int k, int order=0
+  int i, int j, int k, int order
 ) {
   this->shift_grid_indices_fourier(i, j, k);
 

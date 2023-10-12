@@ -485,10 +485,11 @@ class MeshField {
    *        in Fourier space for different assignment schemes.
    *
    * @param i, j, k Grid cell indices.
-   * @param order Order of the assignment scheme.
+   * @param order Order of the assignment scheme
+   *              (default is 0 as placeholder).
    * @returns Window value.
    */
-  double calc_assignment_window_in_fourier(int i, int j, int k, int order);
+  double calc_assignment_window_in_fourier(int i, int j, int k, int order = 0);
 };
 
 

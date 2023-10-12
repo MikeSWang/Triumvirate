@@ -89,6 +89,9 @@ cdef class Binning:
         if _settable:
             self.set_bins(self.bin_min, self.bin_max, self.num_bins)
 
+    def __dealloc__(self):
+        del self.thisptr
+
     @classmethod
     def from_parameter_set(cls, paramset):
         """Create binning from a parameter set.

@@ -89,11 +89,11 @@ void validate_multipole_coupling(trv::ParameterSet& params);
  * @brief Calculate particle-based bispectrum normalisation.
  *
  * @param particles Particle catalogue.
- * @param alpha Alpha contrast.
+ * @param alpha Alpha contrast (default is 1.).
  * @returns Bispectrum normalisation factor.
  */
 double calc_bispec_normalisation_from_particles(
-  ParticleCatalogue& particles, double alpha=1.
+  ParticleCatalogue& particles, double alpha = 1.
 );
 
 /**
@@ -101,11 +101,11 @@ double calc_bispec_normalisation_from_particles(
  *
  * @param particles Particle catalogue.
  * @param params Parameter set.
- * @param alpha Alpha contrast.
+ * @param alpha Alpha contrast (default is 1.).
  * @returns Bispectrum normalisation factor.
  */
 double calc_bispec_normalisation_from_mesh(
-  ParticleCatalogue& particles, trv::ParameterSet& params, double alpha=1.
+  ParticleCatalogue& particles, trv::ParameterSet& params, double alpha = 1.
 );
 
 
@@ -260,13 +260,14 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
  * @param rbinning Separation binning.
  * @param alpha Alpha contrast.
  * @param norm_factor Normalisation factor.
- * @param wide_angle Whether wide-angle corretions or not.
+ * @param wide_angle Whether wide-angle corretions or not
+ *                   (default is `false`).
  * @returns Three-point correlation function window measurements.
  */
 trv::ThreePCFWindowMeasurements compute_3pcf_window(
   ParticleCatalogue& catalogue_rand, LineOfSight* los_rand,
   trv::ParameterSet& params, trv::Binning& rbinning,
-  double alpha, double norm_factor, bool wide_angle=false
+  double alpha, double norm_factor, bool wide_angle = false
 );
 
 #ifdef TRV_USE_LEGACY_CODE
