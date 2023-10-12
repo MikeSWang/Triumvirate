@@ -738,12 +738,12 @@ class ParticleCatalogue:
             C++-wrapped catalogue.
 
         """
-        x = self._compute(self._pdata['x'])
-        y = self._compute(self._pdata['y'])
-        z = self._compute(self._pdata['z'])
-        nz = self._compute(self._pdata['nz'])
-        ws = self._compute(self._pdata['ws'])
-        wc = self._compute(self._pdata['wc'])
+        x = np.ascontiguousarray(self._compute(self._pdata['x']))
+        y = np.ascontiguousarray(self._compute(self._pdata['y']))
+        z = np.ascontiguousarray(self._compute(self._pdata['z']))
+        nz = np.ascontiguousarray(self._compute(self._pdata['nz']))
+        ws = np.ascontiguousarray(self._compute(self._pdata['ws']))
+        wc = np.ascontiguousarray(self._compute(self._pdata['wc']))
 
         return _ParticleCatalogue(x, y, z, nz, ws, wc, verbose=verbose)
 

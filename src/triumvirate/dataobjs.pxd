@@ -62,22 +62,22 @@ cdef extern from "include/dataobjs.hpp":
         vector[double] kbin
         vector[double] keff
         vector[int] nmodes
-        vector[np.complex128_t] pk_raw
-        vector[np.complex128_t] pk_shot
+        vector[double complex] pk_raw
+        vector[double complex] pk_shot
 
     struct TwoPCFMeasurements "trv::TwoPCFMeasurements":
         int dim
         vector[double] rbin
         vector[double] reff
         vector[int] npairs
-        vector[np.complex128_t] xi
+        vector[double complex] xi
 
     struct TwoPCFWindowMeasurements "trv::TwoPCFWindowMeasurements":
         int dim
         vector[double] rbin
         vector[double] reff
         vector[int] npairs
-        vector[np.complex128_t] xi
+        vector[double complex] xi
 
     # -- Three-point statistics ------------------------------------------
 
@@ -89,8 +89,8 @@ cdef extern from "include/dataobjs.hpp":
         vector[double] k2_eff
         vector[int] nmodes_1
         vector[int] nmodes_2
-        vector[np.complex128_t] bk_raw
-        vector[np.complex128_t] bk_shot
+        vector[double complex] bk_raw
+        vector[double complex] bk_shot
 
     struct ThreePCFMeasurements "trv::ThreePCFMeasurements":
         int dim
@@ -100,8 +100,8 @@ cdef extern from "include/dataobjs.hpp":
         vector[double] r2_eff
         vector[int] npairs_1
         vector[int] npairs_2
-        vector[np.complex128_t] zeta_raw
-        vector[np.complex128_t] zeta_shot
+        vector[double complex] zeta_raw
+        vector[double complex] zeta_shot
 
     struct ThreePCFWindowMeasurements "trv::ThreePCFWindowMeasurements":
         int dim
@@ -111,8 +111,8 @@ cdef extern from "include/dataobjs.hpp":
         vector[double] r2_eff
         vector[int] npairs_1
         vector[int] npairs_2
-        vector[np.complex128_t] zeta_raw
-        vector[np.complex128_t] zeta_shot
+        vector[double complex] zeta_raw
+        vector[double complex] zeta_shot
 
 
 cdef class Binning:

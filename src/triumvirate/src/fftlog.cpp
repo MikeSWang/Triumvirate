@@ -32,56 +32,133 @@ namespace trv {
 
 namespace maths {
 
-double calc_kr_pivot_lowring(
-  double mu, double q, double L, int N, double kr_c
+HankelTransform::HankelTransform(double mu, double q) {
+  this->order = mu;
+  this->bias = q;
+}
+
+void HankelTransform::initialise(
+  std::vector<double> sample_pts, double kr_c, bool lowring
 ) {
-  double x_p = (mu + 1 + q)/2;
-  double x_m = (mu + 1 - q)/2;
-  double y = M_PI * N / (2*L);
+  // Initialise pre-sample points.
+  if (sample_pts.size() < 2) {
+    throw trv::sys::InvalidParameterError(
+      "The number of sample points must be at least 2."
+    );
+  }
 
-  // Note that no minus is involved by complex conjugation of
-  // the gamma function.
-  double lnr_, phi_p, phi_m;
-  trvm::get_lngamma_components(x_p, y, lnr_, phi_p);
-  trvm::get_lngamma_components(x_m, y, lnr_, phi_m);
+  this->pre_sampts = sample_pts;
+  this->nsamp = sample_pts.size();
+  this->logres =
+    std::log(sample_pts.back() / sample_pts.front()) / (this->nsamp - 1);
 
-  double arg_ = std::log(2/kr_c) * N / L + (phi_p + phi_m) / M_PI;
-  double arg_int = std::round(arg_);
-  if (arg_ != arg_int) {
-    kr_c *= std::exp(L / N * (arg_ - arg_int));
+  // Initialise the transform.
+  if (lowring) {
+    this->pivot = this->calc_lowring_pivot(this->logres, kr_c);
+  } else {
+    if (kr_c <= 0.) {
+      throw trv::sys::InvalidParameterError(
+        "Pivot value must be positive."
+      );
+    }
+    this->pivot = kr_c;
+  }
+
+  this->kernel = this->compute_kernel_coeff();
+
+  // Initialise post-sample points.
+  this->post_sampts.resize(this->nsamp);
+  for (int j = 0; j < this->nsamp; j++) {
+    this->post_sampts[j] = this->pivot / this->pre_sampts[this->nsamp - j - 1];
+  }
+
+  // // Alternative to the for-loop block above, note that k_c and r_c are
+  // // both exp(L/2) times `k0` and `r0`.
+  // // STYLE: Standard naming convention is not followed below.
+  // int N = this->nsamp;
+  // double dL = this->logres;
+  // double kr_c_used = this->pivot;
+  // double r0 = this->pre_sampts[0];
+
+  // double kr_0 = kr_c_used * std::exp(- N * dL);
+  // double k0 = kr_0 / r0;
+}
+
+double HankelTransform::calc_lowring_pivot(double delta, double kr_c) {
+  // STYLE: Standard naming convention is not followed below.
+  double mu = this->order;
+  double q = this->bias;
+  double dL = delta;
+
+  double x_p = (mu + 1. + q)/2.;
+  double x_m = (mu + 1. - q)/2.;
+  double y = M_PI / (2.*dL);
+
+  if (kr_c > 0.) {
+    // Note that no minus sign is involved in the phase by
+    // complex conjugation of the gamma function.
+    double lnr_p, lnr_m, phi_p, phi_m;
+    trvm::get_lngamma_parts(x_p, y, lnr_p, phi_p);
+    trvm::get_lngamma_parts(x_m, y, lnr_m, phi_m);
+
+    double argphase = std::log(2./kr_c) / dL + (phi_p + phi_m) / M_PI;
+
+    kr_c *= std::exp(dL * (argphase - std::round(argphase)));
+  } else {
+    // Alternatively, simply set the value as follows.
+    std::complex<double> gamma_lnratio = eval_gamma_lnratio(mu, q + 2*y*M_I);
+
+    double lnkr_c = std::log(2) + gamma_lnratio.imag() / (2*y);
+
+    kr_c = std::exp(lnkr_c - std::floor(lnkr_c / dL) * dL);
   }
 
   return kr_c;
 }
 
-void compute_u_kernel_coeff(
-  double mu, double q, double L, int N, double kr_c, std::complex<double>* u
-) {
-  double y = M_PI / L;
-  double kr_0 = kr_c * std::exp(-L);
+std::vector< std::complex<double> > HankelTransform::compute_kernel_coeff() {
+  // STYLE: Standard naming convention is not followed below.
+  double mu = this->order;
+  double q = this->bias;
+  int N = this->nsamp;
+  double dL = this->logres;
+  double kr_c = this->pivot;
 
-  double t = -2 * y * std::log(kr_0/2);
+  if (N <= 0 || dL <= 0. || kr_c <= 0.) {
+    throw std::runtime_error(
+      "This instance of trv::maths::HankelTransform has not been "
+      "initialised with `initialise`."
+    );
+  }
 
-  if (q == 0) {
-    double x = (mu + 1)/2;
+  double x_p = (mu + 1. + q)/2.;
+  double x_m = (mu + 1. - q)/2.;
+  double x_eq = (mu + 1.)/2.;
 
-    double lnr, phi;
+  double y = M_PI / (N * dL);
+
+  double t = -2. * y * std::log(kr_c/2.);
+
+  // Note that no minus sign is involved in the phase by
+  // complex conjugation of the gamma function.
+  std::vector< std::complex<double> > u(N);
+  if (q == 0.) {
     for (int m = 0; m <= N/2; m++) {
-      trvm::get_lngamma_components(x, m*y, lnr, phi);
-      u[m] = trvm::eval_complex_in_polar(1., m*t + 2*phi);
+      double lnr_, phi_eq;
+      trvm::get_lngamma_parts(x_eq, m*y, lnr_, phi_eq);
+
+      u[m] = trvm::eval_complex_in_polar(1., m*t + 2*phi_eq);
     }
   } else {
-    double x_p = (mu + 1 + q)/2;
-    double x_m = (mu + 1 - q)/2;
-
-    double lnr_p, phi_p;
-    double lnr_m, phi_m;
+    double qln2 = q * std::log(2.);
     for (int m = 0; m <= N/2; m++) {
-      trvm::get_lngamma_components(x_p, m*y, lnr_p, phi_p);
-      trvm::get_lngamma_components(x_m, m*y, lnr_m, phi_m);
+      double lnr_p, phi_p;
+      double lnr_m, phi_m;
+      trvm::get_lngamma_parts(x_p, m*y, lnr_p, phi_p);
+      trvm::get_lngamma_parts(x_m, m*y, lnr_m, phi_m);
 
       u[m] = trvm::eval_complex_in_polar(
-        std::exp(std::log(2) * q + lnr_p - lnr_m), m*t + phi_p - phi_m
+        std::exp(qln2 + lnr_p - lnr_m), m*t + phi_p + phi_m
       );
     }
   }
@@ -91,139 +168,118 @@ void compute_u_kernel_coeff(
   }
 
   if (N % 2 == 0) {
-    u[N/2] = u[N/2].real() + trvm::M_I * 0.;  // make real by log-periodicity
+    // Make the mid-point real by log-periodicity.
+    u[N/2] = u[N/2].real() + trvm::M_I * 0.;
   }
+
+  return u;
 }
 
-void hankel_transform(
-  double mu, double q, double kr_c, int N, bool lowring,
-  double* r, std::complex<double>* a,
-  double* k, std::complex<double>* b,
-  std::complex<double>* u
+void HankelTransform::biased_transform(
+  std::complex<double>* a, std::complex<double>* b
 ) {
-  // Calculate the logarithmic interval.
-  double L = N * std::log(r[N - 1] / r[0]) / (N - 1.);
+  // STYLE: Standard naming convention is not followed below.
+  int N = this->nsamp;
 
-  // Compute the forward transform kernel.
-  std::complex<double>* u_ = nullptr;
-  if (u == nullptr) {
-    u_ = new std::complex<double>[N];
-
-    if (lowring) {
-      kr_c = calc_kr_pivot_lowring(mu, q, L, N, kr_c);
-    }
-
-    compute_u_kernel_coeff(mu, q, L, N, kr_c, u_);
-    u = u_;
-  }
-
-  // Compute output sample points corresponding to the input sample points.
-  double kr_0 = kr_c * std::exp(-L);
-
-  k[0] = kr_0 / r[0];
-  for (int j = 1; j < N; j++) {
-    k[j] = k[0] * std::exp(j * L / N);
+  if (this->kernel.empty() || N <= 2) {
+    throw std::runtime_error(
+      "This instance of trv::maths::HankelTransform has not been "
+      "initialised with `initialise`."
+    );
   }
 
   // Compute the convolution b = a * u using FFT.
-  // ``(`` and ``)`` are necessary
+  // NOTE: ``(`` and ``)`` are necessary
   // (see https://www.fftw.org/doc/Complex-numbers.html).
   fftw_plan forward_plan = fftw_plan_dft_1d(
-    N, (fftw_complex*) a, (fftw_complex*) b, -1, FFTW_ESTIMATE
+    N, (fftw_complex*) a, (fftw_complex*) b, FFTW_FORWARD, FFTW_ESTIMATE
   );
-  fftw_plan reverse_plan = fftw_plan_dft_1d(
-    N, (fftw_complex*) b, (fftw_complex*) b, +1, FFTW_ESTIMATE
-  );
-
   fftw_execute(forward_plan);
-  for (int m = 0; m < N; m++) {
-    b[m] *= u[m] / double(N);  // divide by `N` to normalise the inverse DFT
-  }
-  fftw_execute(reverse_plan);
-
   fftw_destroy_plan(forward_plan);
+
+  for (int m = 0; m < N; m++) {
+    // Divide by `N` to normalise the inverse DFT.
+    b[m] *= this->kernel[m] / double(N);
+  }
+
+  fftw_plan reverse_plan = fftw_plan_dft_1d(
+    N, (fftw_complex*) b, (fftw_complex*) b, FFTW_BACKWARD, FFTW_ESTIMATE
+  );
+  fftw_execute(reverse_plan);
   fftw_destroy_plan(reverse_plan);
 
-  // Reverse the array `b`.
+  // Reverse the array `b` as inverse FFT is used above instead of FFT.
   std::complex<double> b_;
   for (int n = 0; n < N/2; n++) {
     b_ = b[n];
     b[n] = b[N - n - 1];
     b[N - n - 1] = b_;
   }
-
-  delete[] u_;
 }
 
-void sj_transform(
-  int ell, int m, int N, double* r, double* a, double* k, double* b
+SphericalBesselTransform::SphericalBesselTransform(int ell, int n): \
+HankelTransform(ell + 1./2, double(n)) {
+  this->degree = ell;
+}
+
+void SphericalBesselTransform::initialise(
+  std::vector<double> sample_pts, double kr_c, bool lowring
 ) {
-  double mu = ell + 1./2;
-  double q = 0.;
-  double kr_c = 1.;
-  bool lowring = true;
+  HankelTransform::initialise(sample_pts, kr_c, lowring);
+}
+
+void SphericalBesselTransform::biased_transform(
+  std::vector< std::complex<double> >& a,
+  std::vector< std::complex<double> >& b
+) {
+  // STYLE: Standard naming convention is not followed below.
+  int N = this->nsamp;
+
+  if (int(a.size()) != N) {
+    throw trv::sys::InvalidParameterError(
+      "The size of array `a` must be equal to the number of samples."
+    );
+  }
+  if (int(a.size()) != N) {
+    b.resize(N);
+  }
 
   std::complex<double> A[N];
   std::complex<double> B[N];
 
   for (int j = 0; j < N; j++) {
-    A[j] = std::pow(r[j], m - 1./2) * a[j];
+    A[j] = std::pow(this->pre_sampts[j], 3./2) * a[j];
   }
 
-  hankel_transform(mu, q, kr_c, N, lowring, r, A, k, B, nullptr);
+  HankelTransform::biased_transform(A, B);
 
   for (int j = 0; j < N; j++) {
-    std::complex<double> bj = std::pow(2*M_PI * k[j], -3./2) * B[j];
-    b[j] = bj.real();
+    b[j] = std::pow(2*M_PI / this->post_sampts[j], 3./2) * B[j];
   }
 }
 
-void sj_transform_symm_biased(
-  int ell, int i, int N, double* r, double* a, double* k, double* b
+void SphericalBesselTransform::transform_cosmological_multipole(
+    int dir,
+    std::vector< std::complex<double> >& pre_samples,
+    std::vector< std::complex<double> >& post_samples
 ) {
-  double mu = ell + 1./2;
-  double m = 2.;
-  double q = 0.;
-  double kr_c = 1.;
-  bool lowring = true;
-
-  std::complex<double> A[N];
-  std::complex<double> B[N];
-
-  for (int j = 0; j < N; j++) {
-    A[j] = std::pow(r[j], m + i - 1./2) * a[j];
+  if (abs(dir) != 1) {
+    throw trv::sys::InvalidParameterError(
+      "The transform direction must be either +1 (forward) or -1 (backward)."
+    );
   }
 
-  hankel_transform(mu, q, kr_c, N, lowring, r, A, k, B, nullptr);
+  double pifactor = (dir == -1) ? std::pow(2*M_PI, -3) : 1.;
+  std::complex<double> parity = std::pow(trvm::M_I, - dir * this->degree);
+  std::complex<double> prefactor = pifactor * parity;
 
-  for (int j = 0; j < N; j++) {
-    std::complex<double> bj = std::pow(2*M_PI * k[j], -3./2) * B[j];
-    b[j] = bj.real();
+  this->biased_transform(pre_samples, post_samples);
+
+  for (int j = 0; j <this->nsamp; j++) {
+    post_samples[j] *= prefactor;
   }
 }
 
 }  // namespace trv::maths
-
-void transform_powspec_to_corrfunc_multipole(
-  int ell, int N, double* k, double* pk, double* r, double* xi
-) {
-  int m = 2;
-
-  trvm::sj_transform(ell, m, N, k, pk, r, xi);
-}
-
-void transform_corrfunc_to_powspec_multipole(
-  int ell, int N, double* r, double* xi, double* k, double* pk
-) {
-  int m = 2;
-
-  trvm::sj_transform(ell, m, N, r, xi, k, pk);
-
-  // Factors of π are needed here the forward transform is used
-  // in the backend as the backward transform.
-  for (int j = 0; j < N; j++) {
-    pk[j] *= 8 * M_PI * M_PI * M_PI;
-  }
-}
 
 }  // namespace trv

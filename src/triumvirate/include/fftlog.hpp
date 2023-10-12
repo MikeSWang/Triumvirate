@@ -33,6 +33,7 @@
 
 #include <cmath>
 #include <complex>
+#include <vector>
 
 #include "maths.hpp"
 #include "arrayops.hpp"
@@ -42,156 +43,157 @@ namespace trv {
 namespace maths {
 
 /**
- * @brief Calculate a low-ringing pivot value @f$ k r = k_c r_c @f$
- *        for the FFTLog transform.
+ * @brief Perform the (forward biased) Hankel and associated transforms
+ *        using the FFTLog algorithm.
  *
- * @param[in] mu Order of the Hankel transform.
- * @param[in] q FFTLog power-law bias index.
- * @param[in] L Logarithmic interval.
- * @param[in] N Sample number.
- * @param[out] kr_c Initial pivot value.
- * @returns Low-ringing pivot value.
  */
-double calc_kr_pivot_lowring(
-  double mu, double q, double L, int N, double kr_c=1.
-);
+class HankelTransform {
+ public:
+  double order;        ///< order of the Hankel transform
+  double bias;         ///< power-law bias index
+  int nsamp = 0;       ///< number of samples
+  double logres = 0.;  ///< logarithmic interval sample spacing
+  double pivot = 1.;   ///< pivot value
 
-/**
- * @brief Compute the FFTLog transform kernel coefficients @f$ u @f$.
- *
- * @param[in] mu Order of the Hankel transform.
- * @param[in] q FFTLog power-law bias index.
- * @param[in] L Logarithmic interval.
- * @param[in] N Sample number.
- * @param[in] kr_c Pivot value.
- * @param[out] u Kernel coefficients.
- */
-void compute_u_kernel_coeff(
-  double mu, double q, double L, int N, double kr_c, std::complex<double>* u
-);
+  /// logarithmically linearly-spaced sample points pre-transform
+  std::vector<double> pre_sampts;
 
-/**
- * @brief Perform the (forward) Hankel transform.
- *
- * The transform is defined here as
- * @f[
- *   b(k) = \int_0^\infty k \mathrm{d}r \, (k r)^q J_\mu(k r) a(r) \,.
- * @f]
- *
- * @param[in] mu Order of the Hankel transform.
- * @param[in] q FFTLog power-law bias index.
- * @param[in] N Sample number.
- * @param[in] kr_c (Initial) pivot value.
- * @param[in] lowring Boolean low-ringing condition.
- * @param[in] r Pre-transform sample points.
- * @param[in] a Pre-transform sample values.
- * @param[out] k Post-transform sample points.
- * @param[out] b Post-trasform sample values.
- * @param[out] u FFTLog transform kernel coefficients.
- */
-void hankel_transform(
-  double mu, double q, double kr_c, int N, bool lowring,
-  double* r, std::complex<double>* a,
-  double* k, std::complex<double>* b,
-  std::complex<double>* u
-);
+  /// logarithmically linearly-spaced sample points post-transform
+  std::vector<double> post_sampts;
 
-/**
- * @brief Perform the (forward) spherical Fourier--Bessel transform.
- *
- * The transform is defined here as
- * @f[
- *   b_\ell(k) = (2\pi k)^{-3/2} \int_0^\infty k \mathrm{d}r \,
- *     r^{m - 1/2} J_\ell(k r) a_\ell(r) \,.
- * @f]
- *
- * @note When ``m = 2``, this is the Hankel transform definition used in
- *       cosmological correlators,
- *       @f[
- *         \xi_\ell(r) = 4\pi \mathrm{i}^\ell \int_0^\infty
- *           \frac{\mathrm{d}k \, k^2}{(2\pi)^3}
- *           j_\ell(kr) P_\ell(k) \,,
- *       @f]
- *       i.e. @f$ a(r) @f$ corresponds to @f$ P_\ell(k) @f$ and
- *       @f$ b(k) @f$ corresponds to @f$ \mathrm{i}^{-\ell} \xi_\ell(r)@f$.
- *
- * @param[in] ell Order of the transform.
- * @param[in] m Dimensional power-law index.
- * @param[in] N Sample number.
- * @param[in] r Pre-transform sample points.
- * @param[in] a Pre-transform sample values.
- * @param[out] k Post-transform sample points.
- * @param[out] b Post-transform sample values.
- */
-void sj_transform(
-  int ell, int m, int N, double* r, double* a, double* k, double* b
-);
+  /**
+   * @brief Construct the Hankel transform.
+   *
+   * @param mu Order of the Hankel transform.
+   * @param q Power-law bias index.
+   */
+  HankelTransform(double mu, double q);
 
-/**
- * @brief Perform the (forward) biased symmetric spherical
- *        Bessel transform.
- *
- * The transform is defined here as
- * @f[
- *   b_\ell(k) = (2\pi k)^{-3/2} \int_0^\infty k \mathrm{d}r \,
- *     r^{3/2 + i} J_\ell(k r) a_\ell(r) \,.
- * @f]
- *
- * @note This is the Hankel transform definition used in cosmological
- *       wide-angle expansions,
- *       @f[
- *         \xi_\ell^{(n)}(r) = 4\pi \mathrm{i}^\ell \int_0^\infty
- *           \frac{\mathrm{d}k \, k^2}{(2\pi)^3}
- *           (k r)^{-n} j_\ell(kr) P_\ell^{(n)}(k) \,,
- *       @f]
- *       i.e. @f$ a(r) @f$ corresponds to @f$ P_\ell^{(n)}(k) @f$ and
- *       @f$ b(k) @f$ corresponds to
- *       @f$ \mathrm{i}^{-\ell} \xi_\ell^{(n)}(r)@f$ with @f$ n @f$
- *       identified with `i`.
- *
- * @param[in] ell Order of the transform.
- * @param[in] i Power-law bias index.
- * @param[in] N Sample number.
- * @param[in] r Pre-transform sample points.
- * @param[in] a Pre-transform sample values.
- * @param[out] k Post-transform sample points.
- * @param[out] b Post-transform sample values.
- */
-void sj_transform_symm_biased(
-  int ell, int i, int N, double* r, double* a, double* k, double* b
-);
+  /**
+   * @brief Initialise the Hankel transform.
+   *
+   * This sets up the pre- and post-transform samples as well as the
+   * transform kernel and the pivot value.
+   *
+   * @param sample_pts Logarithmically linearly-spaced sample points.
+   * @param kr_c Pivot value.
+   * @param lowring If true (default), set the pivot value by the
+   *                low-ringing condition.
+   * @throws trv::sys::InvalidParameterError When the size of `sample_pts`
+   *                                         is less than 2.
+   * @throws trv::sys::InvalidParameterError When `kr_c` is non-positive
+   *                                         while `lowring` is false.
+   */
+  void initialise(
+    std::vector<double> sample_pts, double kr_c, bool lowring = true
+  );
+
+  /**
+   * @brief Perform the (forward biased) Hankel transform.
+   *
+   * The transform is defined here as
+   * @f[
+   *   b(k) = \int_0^\infty k \mathrm{d}r \, (k r)^q J_\mu(k r) a(r) \,.
+   * @f]
+   *
+   * @param[in] a Pre-transform sample values.
+   * @param[out] b Post-trasform sample values.
+   */
+  void biased_transform(std::complex<double>* a, std::complex<double>* b);
+
+  /**
+   * @brief Compute the FFTLog transform kernel coefficients @f$ u @f$.
+   *
+   * @returns Kernel coefficients.
+   */
+  std::vector< std::complex<double> > compute_kernel_coeff();
+
+  /**
+   * @brief Calculate a low-ringing FFTLog transform pivot value
+   *        @f$ k r = k_c r_c @f$.
+   *
+   * @param delta Logarithmic-interval sample spacing.
+   * @param kr_c Initial pivot value (default is 1.).  If zero, it is
+   *             calculated directly; otherwise, it is adjusted from
+   *             the initial value.
+   * @returns Low-ringing pivot value.
+   *
+   * @note This is not bound to the logarithmic-interval sample spacing
+   *       initialised.
+   */
+  double calc_lowring_pivot(double delta, double kr_c = 1.);
+
+ private:
+  /// FFTLog transform kernel coefficients
+  std::vector< std::complex<double> > kernel;
+};
+
+class SphericalBesselTransform: public HankelTransform {
+ public:
+  int degree;  ///< degree of the spherical Bessel transform
+
+  /**
+   * @brief Construct the spherical Bessel transform.
+   *
+   * @param ell Degree of the spherical Bessel transform.
+   * @param n Power-law bias index.
+   */
+  SphericalBesselTransform(int ell, int n);
+
+  /**
+   * @brief Initialise the spherical Bessel transform.
+   *
+   * This sets up the underlying Hankel transform with order
+   * @f$ \mu = \ell + 1/2 @f$.  The low-ringing pivot value is enforced
+   * from an initial value of 1.
+   *
+   * @param sample_pts Logarithmically linearly-spaced sample points.
+   * @param kr_c Pivot value.
+   * @param lowring If true (default), set the pivot value by the
+   *                low-ringing condition.
+   */
+  void initialise(
+    std::vector<double> sample_pts, double kr_c, bool lowring = true
+  );
+
+  /**
+   * @brief Perform the (forward biased) spherical Bessel transform.
+   *
+   * The transform is defined here as
+   * @f[
+   *   b(k) = 4\pi \int_0^\infty r^2 \mathrm{d}r \,
+   *     (k r)^q j_\ell(k r) a(r) \,.
+   * @f]
+   *
+   * @note This is equivalent to the (forward biased) Hankel transform for
+   *       @f$ A(r) = r^{3/2} a(r) @f$ and $B(k) = (2\pi / k)^{3/2} b(k)$
+   *       with @f$ \mu = \ell + 1/2 @f$ and the same @f$ q @f$.
+   *
+   * @param[in] a Pre-transform sample values.
+   * @param[out] b Post-transform sample values.
+   */
+  void biased_transform(
+    std::vector< std::complex<double> >& a,
+    std::vector< std::complex<double> >& b
+  );
+
+  /**
+   * @brief Transform csomological multipole samples.
+   *
+   * @param[in] dir Transform direction: +1 (forward) for configuration to
+   *                Fourier space, -1 (backward) for Fourier to
+   *                configuration space.
+   * @param[in] pre_samples Pre-transform multipole samples.
+   * @param[out] post_samples Post-transform multipoles samples.
+   */
+  void transform_cosmological_multipole(
+    int dir,
+    std::vector< std::complex<double> >& pre_samples,
+    std::vector< std::complex<double> >& post_samples
+  );
+};
 
 }  // namespace trv::maths
-
-/**
- * @brief Transform power spectrum to correlation function
- *        multipole samples.
- *
- * @param[in] ell Multipole degree.
- * @param[in] N Sample number.
- * @param[in] k Wavenumber sample points.
- * @param[in] pk Power spectrum samples.
- * @param[out] r Separation sample points.
- * @param[out] xi Correlation function samples.
- */
-void transform_powspec_to_corrfunc_multipole(
-  int ell, int N, double* k, double* pk, double* r, double* xi
-);
-
-/**
- * @brief Transform correlation function to power spectrum
- *        multipole samples.
- *
- * @param[in] ell Multipole degree.
- * @param[in] N Sample number.
- * @param[in] r (Pointer) Separation sample points.
- * @param[in] xi (Pointer) Correlation function samples.
- * @param[out] k (Pointer) Wavenumber sample points.
- * @param[out] pk (Pointer) Power spectrum samples.
- */
-void transform_corrfunc_to_powspec_multipole(
-  int ell, int N, double* r, double* xi, double* k, double* pk
-);
 
 }  // namespace trv
 
