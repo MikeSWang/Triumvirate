@@ -30,7 +30,7 @@ from pathlib import Path
 
 import numpy as np
 
-from triumvirate._threept import (
+from ._threept import (
     _calc_bispec_normalisation_from_mesh,
     _calc_bispec_normalisation_from_particles,
     _compute_bispec,
@@ -40,8 +40,8 @@ from triumvirate._threept import (
     _compute_3pcf_in_gpp_box,
     _compute_3pcf_window,
 )
-from triumvirate.dataobjs import Binning
-from triumvirate.parameters import (
+from .dataobjs import Binning
+from .parameters import (
     _modify_measurement_parameters,
     _modify_sampling_parameters,
     fetch_paramset_template,

@@ -13,10 +13,10 @@ import warnings
 
 import numpy as np
 
-from triumvirate.catalogue import ParticleCatalogue
-from triumvirate.dataobjs import Binning
-from triumvirate.parameters import ParameterSet, fetch_paramset_template
-from triumvirate.twopt import compute_powspec_in_gpp_box
+from .catalogue import ParticleCatalogue
+from .dataobjs import Binning
+from .parameters import ParameterSet, fetch_paramset_template
+from .twopt import compute_powspec_in_gpp_box
 
 
 def _create_minimal_catalogue():

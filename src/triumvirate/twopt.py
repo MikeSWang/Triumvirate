@@ -30,7 +30,7 @@ from pathlib import Path
 
 import numpy as np
 
-from triumvirate._twopt import (
+from ._twopt import (
     _calc_powspec_normalisation_from_mesh,
     _calc_powspec_normalisation_from_meshes,
     _calc_powspec_normalisation_from_particles,
@@ -40,8 +40,8 @@ from triumvirate._twopt import (
     _compute_powspec,
     _compute_powspec_in_gpp_box,
 )
-from triumvirate.dataobjs import Binning
-from triumvirate.parameters import (
+from .dataobjs import Binning
+from .parameters import (
     _modify_measurement_parameters,
     _modify_sampling_parameters,
     fetch_paramset_template,

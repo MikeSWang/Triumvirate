@@ -10,8 +10,8 @@ Handle fields and mesh grids.
 """
 import numpy as np
 
-from triumvirate._field import _record_binned_vectors
-from triumvirate.parameters import (
+from ._field import _record_binned_vectors
+from .parameters import (
     _modify_sampling_parameters,
     fetch_paramset_template,
     ParameterSet,

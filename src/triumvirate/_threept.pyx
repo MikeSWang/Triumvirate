@@ -12,13 +12,13 @@ from libcpp cimport bool as bool_t
 import numpy as np
 cimport numpy as np
 
-from triumvirate._particles cimport CppParticleCatalogue, _ParticleCatalogue
-from triumvirate.dataobjs cimport (
+from ._particles cimport CppParticleCatalogue, _ParticleCatalogue
+from .dataobjs cimport (
     Binning, CppBinning,
     LineOfSight,
     BispecMeasurements, ThreePCFMeasurements, ThreePCFWindowMeasurements
 )
-from triumvirate.parameters cimport CppParameterSet, ParameterSet
+from .parameters cimport CppParameterSet, ParameterSet
 
 
 cdef extern from "include/threept.hpp":

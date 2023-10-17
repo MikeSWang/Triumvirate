@@ -10,7 +10,7 @@ Configure the program logger.
 """
 import numpy as np
 
-from triumvirate._fftlog import HankelTransform
+from ._fftlog import HankelTransform
 
 
 class SphericalBesselTransform:

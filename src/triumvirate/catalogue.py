@@ -15,14 +15,14 @@ import warnings
 import numpy as np
 from astropy.table import Table
 
-from triumvirate._particles import _ParticleCatalogue
+from ._particles import _ParticleCatalogue
 
 try:
     from nbodykit.source.catalog import (
         ArrayCatalog,
         BinaryCatalog,
         CSVCatalog,
-        FITSCatalog,
+        # FITSCatalog,
         HDFCatalog,
     )
     _nbkt_imported = True
