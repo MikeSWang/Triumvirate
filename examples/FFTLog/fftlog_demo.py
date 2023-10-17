@@ -1,0 +1,443 @@
+"""Demonstrate the use of the FFTLog algorithm for Hankel-like transforms.
+
+.. attention::
+
+    Requires Python >=3.11 for the following language features:
+
+    - Match statement (PEP 634);
+    - Self type (PEP 673).
+
+"""
+import argparse
+import os.path as osp
+import sys
+import warnings
+from functools import wraps
+from typing import Callable, Literal, Self, Tuple, Union
+
+import matplotlib.pyplot as plt
+import numpy as np
+import hankl
+from scipy.interpolate import InterpolatedUnivariateSpline
+
+from triumvirate._fftlog import HankelTransform
+from triumvirate.transforms import SphericalBesselTransform
+
+
+def parse_parameters() -> argparse.Namespace:
+    """Initialise the command-line argument parser.
+
+    Returns
+    -------
+    pars
+        Parsed command-line parameters.
+
+    """
+    parser = argparse.ArgumentParser(
+        description="FFTLog Hankel transform demo."
+    )
+
+    parser.add_argument(
+        '-t', "--test-case", type=str,
+        choices=['hankel-sym', 'hankel-asym', 'sj-sym', 'sj-cosmo'],
+        required=True
+    )
+    parser.add_argument(
+        '--order', type=int, default=0,
+        help="Order of the Hankel transform."
+    )
+    parser.add_argument(
+        '--degree', type=int, default=0,
+        help="Degree of the spherical Bessel transform."
+    )
+    parser.add_argument(
+        '--show-diff', action='store_true',
+        help="Show the difference between the transform results."
+    )
+
+    pars = parser.parse_args()
+
+    # HACK: Override the degree to be 0 to match the external samples.
+    if pars.test_case == 'sj-cosmo' and pars.degree != 0:
+        pars.degree = 0
+        warnings.warn(
+            "Spherical Bessel transform degree overriden to 0 "
+            "when external cosmological multipole samples are referenced "
+            "as they are computed for the monopole only."
+        )
+
+    return pars
+
+
+def get_analy_func_pair(
+        testcase: Literal['hankel-sym', 'hankel-asym', 'sj-sym']
+    ) -> Tuple[Tuple[Callable, str], Tuple[Callable, str]]:
+    """Get pre- and post-transform analytical functions for the given
+    test case.
+
+    Parameters
+    ----------
+    testcase
+        Test cases:
+
+        - 'hankel-sym' for symmetric-form functions for the
+          Hankel transform;
+        - 'hankel-asym' for asymmetric-form functions for the
+          Hankel transform;
+        - 'sj-sym' for symmetric-form functions for the spherical
+          Bessel transform.
+
+    Returns
+    -------
+    Pre- and post-transform functions with their TeX strings.
+
+    """
+    match testcase:
+        case 'hankel-sym':
+            return ((
+                lambda r, mu=0.: r**(mu + 1.) * np.exp(-r*r/2.),
+                r"$f(r) = r^{\mu + 1} \mathrm{e}^{-r^2 / 2}$"
+            ), (
+                lambda k, mu=0.: k**(mu + 1.) * np.exp(-k*k/2.),
+                r"$g(k) = k^{\mu + 1} \mathrm{e}^{-k^2 / 2}$"
+            ))
+        case 'hankel-asym':
+            return ((
+                lambda r, **kwargs: r * (1 + r**2)**(-3/2),
+                r"$f(r) = r (1 + r^2)^{-3/2}$",
+            ), (
+                lambda k, **kwargs: k * np.exp(-k),
+                r"$g(k) = k \mathrm{e}^{-k}$"
+            ))
+        case 'sj-sym':
+            return ((
+                lambda r, ell=0: r**ell * np.exp(-r*r/2.),
+                r"$f(r) = r^\ell \mathrm{e}^{-r^2 / 2}$"
+            ), (
+                lambda k, ell=0: (2*np.pi)**(3./2) * k**ell * np.exp(-k*k/2.),
+                r"$g(k) = (2\pi)^{3/2} k^\ell \mathrm{e}^{-k^2 / 2}$"
+            ))
+        case _:
+            raise ValueError(
+                f"No analytical functions for test case: {testcase}."
+            )
+
+
+def get_external_samples(
+        presamp_file: str = "pk_lgsamps.dat",
+        postsamp_file: str = "xir_postsamps.dat",
+        samp_dir: str = "examples/FFTLog/storage/input/samps"
+    ) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
+    """Get pre- and post-transform samples from external files.
+
+    Parameters
+    ----------
+    presamp_file
+        File name for pre-transform samples.
+    postsamp_file
+        File name for post-transform samples.
+    samp_dir
+        Directory containing the sample files.
+
+    Returns
+    -------
+    presamples, postsamples
+        Pre- and post-transform samples.
+
+    """
+    presamples = np.loadtxt(osp.join(samp_dir, presamp_file), unpack=True)
+    postsamples = np.loadtxt(osp.join(samp_dir, postsamp_file), unpack=True)
+
+    return presamples, postsamples
+
+
+class ComparisonPlot:
+    """Comparison plot context manager.
+
+    Parameters
+    ----------
+    comp_type
+        Type of comparison plot:
+
+        - 'analytic' for analytical functions;
+        - 'samples' for external samples.
+
+    plot_diff
+        If `True` (default), plot the difference between the
+        transform results.
+    xlim, ylim
+        Limits for the x- and y-axes.
+    xlabel, ylabel
+        Labels for the x- and y-axes.
+    title
+        Title for the plot.
+
+    """
+
+    def __init__(
+            self,
+            comp_type: Literal['analytic', 'samples'],
+            plot_diff: bool = True,
+            xlim: Union[Tuple[float, float], None] = None,
+            ylim: Union[Tuple[float, float], None] = None,
+            xlabel: Union[str, None] = None,
+            ylabel: Union[str, None] = None,
+            title: Union[str, None] = None
+        ) -> None:
+        # Store figure attributes.
+        self._comp_type = comp_type
+        self._flag_diff = plot_diff
+        self._xlim = xlim
+        self._ylim = ylim
+        self._xlabel = xlabel
+        self._ylabel = ylabel
+        self._title = title
+
+    def __enter__(self) -> Self:
+        # Set up the figure.
+        self._fig = plt.figure()
+
+        if self._flag_diff:
+            self._ax_comp = plt.subplot2grid((4, 1), (0, 0), rowspan=3)
+            self._ax_diff = plt.subplot2grid(
+                (4, 1), (3, 0), sharex=self._ax_comp
+            )
+        else:
+            self._ax_comp = plt.subplot2grid((1, 1), (0, 0))
+            self._ax_diff = None
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        # Apply figure attributes.
+        if self._xlim:
+            self._ax_comp.set_xlim(*self._xlim)
+        if self._ylim:
+            self._ax_comp.set_ylim(*self._ylim)
+            if self._flag_diff:
+                self._ax_diff.axhline(-1.e-3, c='k', alpha=.5, ls='--')
+                self._ax_diff.axhline(1.e-3, c='k', alpha=.5, ls='--')
+                self._ax_diff.set_ylim(-1.75e-3, 1.75e-3)
+
+        self._ax_comp.set_xscale('log')
+        if self._comp_type == 'analytic':
+            self._ax_comp.set_yscale('log')
+
+        if not self._xlabel:
+            if self._comp_type == 'analytic':
+                self._xlabel = r"$k$"
+            if self._comp_type == 'samples':
+                self._xlabel = r"$r$"
+        if self._flag_diff:
+            self._ax_comp.tick_params(labelbottom=False)
+            self._ax_diff.set_xlabel(self._xlabel)
+        else:
+            self._ax_comp.set_xlabel(self._xlabel)
+
+        self._ax_comp.set_ylabel(self._ylabel)
+        if self._flag_diff:
+             self._ax_diff.set_ylabel("diff. (%)")
+
+        self._ax_comp.legend()
+        self._ax_comp.set_title(self._title)
+
+        plt.subplots_adjust(wspace=0, hspace=0)
+        plt.show()
+
+    def __call__(self, runner: Callable) -> Callable:
+        @wraps(runner)
+        def wrapper(*args, **kwargs):
+            with self:
+                return runner(*args, canvas=self, **kwargs)
+        return wrapper
+
+
+def get_testcase(pars: argparse.Namespace) -> None:
+    """Get the test case.
+
+    Parameters
+    ----------
+    pars
+        Parsed command-line parameters.
+
+    """
+    testcase = pars.test_case
+    showdiff = pars.show_diff
+
+    @ComparisonPlot(
+        comp_type='analytic',
+        plot_diff=showdiff,
+        xlim=(1.e-5, 1.e1),
+        ylim=(1.e-6, 1.e0),
+        ylabel=r"$g(k)$",
+    )
+    def run_hankel(canvas: ComparisonPlot) -> None:
+        # Get analytical functions.
+        (f, fstr), (g, gstr) = get_analy_func_pair(testcase)
+
+        # Set up samples.
+        r = np.logspace(*LGRANGE, NSAMP, base=20)
+        fr = f(r, mu=pars.order)
+
+        # Compute the Hankel transforms.
+        k_fftlog, gk_fftlog = \
+            HankelTransform(pars.order, BIAS, r, PIVOT, LOWRING)\
+            .transform(fr + 0.j)
+        k_hankl, gk_hankl = hankl.FFTLog(
+            r, fr, mu=pars.order, q=BIAS, xy=PIVOT, lowring=LOWRING
+        )
+        k_analy, gk_analy = k_fftlog, g(k_fftlog, mu=pars.order)
+
+        # Calculate the differences.
+        if pars.show_diff:
+            dgk_fftlog = gk_fftlog.real / gk_analy - 1.
+            dgk_hankl = gk_hankl / gk_analy - 1.
+
+        # Plot the results.
+        plot_fftlog = canvas._ax_comp.plot(
+            k_fftlog, gk_fftlog.real, ls='-', label='FFTLog'
+        )
+        plot_hankl = canvas._ax_comp.plot(
+            k_hankl, gk_hankl, ls='--', label='hankl'
+        )
+        _ = canvas._ax_comp.plot(
+            k_analy, gk_analy, ls=':', label='analytical'
+        )
+
+        if pars.show_diff:
+            canvas._ax_diff.plot(
+                k_fftlog, dgk_fftlog,
+                c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
+            )
+            canvas._ax_diff.plot(
+                k_hankl, dgk_hankl,
+                c=plot_hankl[0].get_color(), ls='--', label='hankl'
+            )
+
+        canvas._title = (
+            fstr + r"$\,$, " + gstr + f" ($\mu = {pars.order}$)"
+        )
+
+    @ComparisonPlot(
+        comp_type='analytic',
+        plot_diff=showdiff,
+        xlim=(1.e-5, 1.e1),
+        ylim=(1.e-10, 1.e2),
+        ylabel=r"$k^2 g(k)$",
+    )
+    def run_sj_sym(canvas: ComparisonPlot) -> None:
+        # Get analytical functions.
+        (f, fstr), (g, gstr) = get_analy_func_pair('sj-sym')
+
+        # Set up samples.
+        r = np.logspace(*LGRANGE, NSAMP, base=20)
+        fr = f(r, ell=pars.degree)
+
+        # Compute the Hankel transforms.
+        k_fftlog, gk_fftlog = \
+            SphericalBesselTransform(pars.degree, BIAS, r, PIVOT, LOWRING)\
+            .transform(fr + 0.j)
+        k_analy, gk_analy = k_fftlog, g(k_fftlog, ell=pars.degree)
+
+        # Calculate the differences.
+        if pars.show_diff:
+            dgk_fftlog = gk_fftlog.real / gk_analy - 1.
+
+        # Plot the results.
+        plot_fftlog = canvas._ax_comp.plot(
+            k_fftlog, k_fftlog**2 * gk_fftlog.real, ls='-', label='FFTLog'
+        )
+        _ = canvas._ax_comp.plot(
+            k_analy, k_analy**2 * gk_analy, ls=':', label='analytical'
+        )
+
+        if pars.show_diff:
+            canvas._ax_diff.plot(
+                k_fftlog, dgk_fftlog,
+                c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
+            )
+
+        canvas._title = (
+            fstr + r"$\,$, " + gstr + f" ($\ell = {pars.degree}$)"
+        )
+
+    @ComparisonPlot(
+        comp_type='samples',
+        plot_diff=showdiff,
+        xlim=(2.5e0, 2.5e2),
+        ylim=(-.25e-0, 2.25e0),
+        ylabel=r"$r \xi(r)$",
+    )
+    def run_sj_cosmo(canvas: ComparisonPlot) -> None:
+        # Set up samples.
+        (k, pk), (r, xi) = get_external_samples()
+
+        # Compute the FFTLog transform.
+        r_fftlog, xi_fftlog = SphericalBesselTransform(
+            pars.degree, BIAS, k, lowring=LOWRING
+        ).transform_cosmo_multipoles(-1, pk)
+        r_hankl, xi_hankl = hankl.P2xi(
+            k, pk, pars.degree, n=BIAS, lowring=LOWRING
+        )
+
+        xi_ext_fftlog = InterpolatedUnivariateSpline(r, xi)(r_fftlog)
+        xi_ext_hankl = InterpolatedUnivariateSpline(r, xi)(r_hankl)
+
+        # Calculate the differences.
+        if pars.show_diff:
+            dxi_fftlog = xi_fftlog.real / xi_ext_fftlog - 1.
+            dxi_hankl = xi_hankl.real / xi_ext_hankl - 1.
+
+        # Plot the results.
+        plot_fftlog = canvas._ax_comp.plot(
+            r_fftlog, r_fftlog * xi_fftlog.real, ls='-', label='FFTLog'
+        )
+        plot_hankl = canvas._ax_comp.plot(
+            r_hankl, r_hankl * xi_hankl.real, ls='--', label='hankl'
+        )
+        _ = canvas._ax_comp.plot(
+            r, r * xi, ls=':', label='extern (mcfit)'
+        )
+
+        if pars.show_diff:
+            canvas._ax_diff.plot(
+                r_fftlog, dxi_fftlog,
+                c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
+            )
+            canvas._ax_diff.plot(
+                r_hankl, dxi_hankl,
+                c=plot_hankl[0].get_color(), ls='--', label='hankl'
+            )
+
+    match testcase:
+        case 'hankel-sym' | 'hankel-asym':
+            return run_hankel
+        case 'sj-sym':
+            return run_sj_sym
+        case 'sj-cosmo':
+            return run_sj_cosmo
+        case _:
+            raise ValueError(f"Undefined test case: {testcase}.")
+
+
+def main() -> Literal[0]:
+    """Main function.
+
+    """
+    global BIAS, PIVOT, LOWRING, NSAMP, LGRANGE
+
+    BIAS = 0.
+    PIVOT = 1.
+    LOWRING = True
+    NSAMP = 2**10
+    LGRANGE = [-5., 5.]
+
+    pars = parse_parameters()
+    runner = get_testcase(pars)
+    runner()
+
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
