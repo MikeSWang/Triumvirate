@@ -13,15 +13,22 @@ import os.path as osp
 import sys
 import warnings
 from functools import wraps
-from typing import Callable, Literal, Self, Tuple, Union
+from typing import Callable, List, Literal, Self, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
-import hankl
 from scipy.interpolate import InterpolatedUnivariateSpline
 
 from triumvirate._fftlog import HankelTransform
 from triumvirate.transforms import SphericalBesselTransform
+
+try:
+    import hankl
+except ImportError:
+    warnings.warn(
+        "Could not import `hankl` package. "
+        "Some of the test cases will not be available."
+    )
 
 
 def parse_parameters() -> argparse.Namespace:
@@ -70,8 +77,8 @@ def parse_parameters() -> argparse.Namespace:
 
 
 def get_analy_func_pair(
-        testcase: Literal['hankel-sym', 'hankel-asym', 'sj-sym']
-    ) -> Tuple[Tuple[Callable, str], Tuple[Callable, str]]:
+    testcase: Literal['hankel-sym', 'hankel-asym', 'sj-sym']
+) -> Tuple[Tuple[Callable, str], Tuple[Callable, str]]:
     """Get pre- and post-transform analytical functions for the given
     test case.
 
@@ -124,10 +131,10 @@ def get_analy_func_pair(
 
 
 def get_external_samples(
-        presamp_file: str = "pk_lgsamps.dat",
-        postsamp_file: str = "xir_postsamps.dat",
-        samp_dir: str = "examples/FFTLog/storage/input/samps"
-    ) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
+    presamp_file: str = "pk_lgsamps.dat",
+    postsamp_file: str = "xir_postsamps.dat",
+    samp_dir: str = "examples/FFTLog/storage/input/samps"
+) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
     """Get pre- and post-transform samples from external files.
 
     Parameters
@@ -151,7 +158,7 @@ def get_external_samples(
     return presamples, postsamples
 
 
-class ComparisonPlot:
+class comparison_plot:
     """Comparison plot context manager.
 
     Parameters
@@ -175,15 +182,15 @@ class ComparisonPlot:
     """
 
     def __init__(
-            self,
-            comp_type: Literal['analytic', 'samples'],
-            plot_diff: bool = True,
-            xlim: Union[Tuple[float, float], None] = None,
-            ylim: Union[Tuple[float, float], None] = None,
-            xlabel: Union[str, None] = None,
-            ylabel: Union[str, None] = None,
-            title: Union[str, None] = None
-        ) -> None:
+        self,
+        comp_type: Literal['analytic', 'samples'],
+        plot_diff: bool = True,
+        xlim: Union[Tuple[float, float], None] = None,
+        ylim: Union[Tuple[float, float], None] = None,
+        xlabel: Union[str, None] = None,
+        ylabel: Union[str, None] = None,
+        title: Union[str, None] = None
+    ) -> None:
         # Store figure attributes.
         self._comp_type = comp_type
         self._flag_diff = plot_diff
@@ -236,7 +243,7 @@ class ComparisonPlot:
 
         self._ax_comp.set_ylabel(self._ylabel)
         if self._flag_diff:
-             self._ax_diff.set_ylabel("diff. (%)")
+            self._ax_diff.set_ylabel("diff. (%)")
 
         self._ax_comp.legend()
         self._ax_comp.set_title(self._title)
@@ -246,10 +253,10 @@ class ComparisonPlot:
 
     def __call__(self, runner: Callable) -> Callable:
         @wraps(runner)
-        def wrapper(*args, **kwargs):
+        def context_wrapper(*args, **kwargs):
             with self:
                 return runner(*args, canvas=self, **kwargs)
-        return wrapper
+        return context_wrapper
 
 
 def get_testcase(pars: argparse.Namespace) -> None:
@@ -264,14 +271,14 @@ def get_testcase(pars: argparse.Namespace) -> None:
     testcase = pars.test_case
     showdiff = pars.show_diff
 
-    @ComparisonPlot(
+    @comparison_plot(
         comp_type='analytic',
         plot_diff=showdiff,
         xlim=(1.e-5, 1.e1),
         ylim=(1.e-6, 1.e0),
         ylabel=r"$g(k)$",
     )
-    def run_hankel(canvas: ComparisonPlot) -> None:
+    def run_hankel(canvas: comparison_plot) -> None:
         # Get analytical functions.
         (f, fstr), (g, gstr) = get_analy_func_pair(testcase)
 
@@ -315,17 +322,17 @@ def get_testcase(pars: argparse.Namespace) -> None:
             )
 
         canvas._title = (
-            fstr + r"$\,$, " + gstr + f" ($\mu = {pars.order}$)"
+            fstr + r"$\,$, " + gstr + fr" ($\mu = {pars.order}$)"
         )
 
-    @ComparisonPlot(
+    @comparison_plot(
         comp_type='analytic',
         plot_diff=showdiff,
         xlim=(1.e-5, 1.e1),
         ylim=(1.e-10, 1.e2),
         ylabel=r"$k^2 g(k)$",
     )
-    def run_sj_sym(canvas: ComparisonPlot) -> None:
+    def run_sj_sym(canvas: comparison_plot) -> None:
         # Get analytical functions.
         (f, fstr), (g, gstr) = get_analy_func_pair('sj-sym')
 
@@ -358,17 +365,17 @@ def get_testcase(pars: argparse.Namespace) -> None:
             )
 
         canvas._title = (
-            fstr + r"$\,$, " + gstr + f" ($\ell = {pars.degree}$)"
+            fstr + r"$\,$, " + gstr + fr" ($\ell = {pars.degree}$)"
         )
 
-    @ComparisonPlot(
+    @comparison_plot(
         comp_type='samples',
         plot_diff=showdiff,
         xlim=(2.5e0, 2.5e2),
         ylim=(-.25e-0, 2.25e0),
         ylabel=r"$r \xi(r)$",
     )
-    def run_sj_cosmo(canvas: ComparisonPlot) -> None:
+    def run_sj_cosmo(canvas: comparison_plot) -> None:
         # Set up samples.
         (k, pk), (r, xi) = get_external_samples()
 
@@ -424,20 +431,19 @@ def main() -> Literal[0]:
     """Main function.
 
     """
-    global BIAS, PIVOT, LOWRING, NSAMP, LGRANGE
-
-    BIAS = 0.
-    PIVOT = 1.
-    LOWRING = True
-    NSAMP = 2**10
-    LGRANGE = [-5., 5.]
-
     pars = parse_parameters()
     runner = get_testcase(pars)
     runner()
 
     return 0
 
+
+# Global parameters
+BIAS: float = 0.
+PIVOT: float = 1.
+LOWRING: bool = True
+NSAMP: int = 2**10
+LGRANGE: List[float] = [-5., 5.]
 
 if __name__ == '__main__':
     sys.exit(main())
