@@ -81,6 +81,8 @@ class HankelTransform {
    *                low-ringing condition.
    * @throws trv::sys::InvalidParameterError When the size of `sample_pts`
    *                                         is less than 2.
+   * @throws trv::sys::InvalidParameterError When `sample_pts` is not
+   *                                         log-linearly spaced.
    * @throws trv::sys::InvalidParameterError When `kr_c` is non-positive
    *                                         while `lowring` is false.
    */

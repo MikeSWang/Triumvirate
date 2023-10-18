@@ -46,6 +46,15 @@ void HankelTransform::initialise(
       "The number of sample points must be at least 2."
     );
   }
+  if (
+    trv::array::check_1d_array(
+      sample_pts.data(), sample_pts.size(), false, true
+    ) != 0
+  ) {
+    throw trv::sys::InvalidParameterError(
+      "The sample points are not log-linearly spaced."
+    );
+  }
 
   this->pre_sampts = sample_pts;
   this->nsamp = sample_pts.size();

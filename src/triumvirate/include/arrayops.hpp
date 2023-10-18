@@ -75,6 +75,45 @@ class ExtrapError: public std::runtime_error {
 namespace array {
 
 /**
+ * @brief Check if all elements of a 1-d array are close to a given value.
+ *
+ * @tparam T A @c typename.
+ * @param arr 1-d array.
+ * @param N Array size.
+ * @param val Value to check against.
+ * @param atol Absolute tolerance (default is 1.e-8).
+ * @param rtol Relative tolerance (default is 1.e-5).
+ * @returns @c true if all elements are close to @p val,
+ *          @c false otherwise.
+ */
+template <typename T>
+bool check_isclose(
+  const T* arr, std::size_t N,
+  const T val,
+  T atol = 1.e-8, T rtol = 1.e-5
+) {
+    for (std::size_t i = 0; i < N; i++) {
+        T diff = std::abs(arr[i] - val);
+        if (diff > atol + rtol * std::abs(val)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * @brief Check the linearity or log-linearity of a 1-d array.
+ *
+ * @param a 1-d array.
+ * @param N Array size.
+ * @param check_lin If true, check linearity.
+ * @param check_loglin If true, check log-linearity.
+ * @returns 0 if no check fails, 1 if linearity check fails,
+ *          or 2 if log-linearity check fails.
+ */
+int check_1d_array(double* a, int N, bool check_lin, bool check_loglin);
+
+/**
  * @brief Extrapolate sample series exponentially (i.e. log-linearly).
  *
  * @param[in] a Samples series.
@@ -132,6 +171,11 @@ void extrap2d_bizeros(
   std::vector< std::vector<double> >& a_ext
 );
 
+
+// ***********************************************************************
+// Sorting
+// ***********************************************************************
+
 /**
  * @brief Get the sorted indices.
  *
@@ -141,6 +185,7 @@ void extrap2d_bizeros(
 std::vector<int> get_sorted_indices(std::vector<int> sorting_vector);
 
 }  // namespace trv::array
+
 }  // namespace trv
 
 #endif  // !TRIUMVIRATE_INCLUDE_ARRAYOPS_HPP_INCLUDED_

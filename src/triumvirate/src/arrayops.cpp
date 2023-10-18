@@ -53,12 +53,34 @@ const char* ExtrapError::what() const noexcept {return this->err_mesg.c_str();}
 
 namespace array {
 
+int check_1d_array(double* a, int N, bool check_lin, bool check_loglin) {
+  if (check_lin) {
+    double diff_a[N - 1];
+    for (int i = 0; i < N - 1; i++) {
+      diff_a[i] = a[i + 1] - a[i];
+    }
+    if (!check_isclose(diff_a, N - 1, diff_a[0])) {
+      return 1;
+    }
+  }
+  if (check_loglin) {
+    double diff_loga[N - 1];
+    for (int i = 0; i < N - 1; i++) {
+      diff_loga[i] = std::log(a[i + 1] / a[i]);
+    }
+    if (!check_isclose(diff_loga, N - 1, diff_loga[0])) {
+      return 2;
+    }
+  }
+  return 0;
+}
+
 void extrap_loglin(double* a, int N, int N_ext, double* a_ext) {
   // Check for sign change or zero.
   double dlna_left = std::log(a[1] / a[0]);
   if (std::isnan(dlna_left)) {
     throw trv::sys::ExtrapError(
-      "[ERRO] Sign change or zero detected in log-linear extrapolation "
+      "Sign change or zero detected in log-linear extrapolation "
       "at the lower end."
     );
   }
@@ -66,7 +88,7 @@ void extrap_loglin(double* a, int N, int N_ext, double* a_ext) {
   double dlna_right = std::log(a[N - 1] / a[N - 2]);
   if (std::isnan(dlna_left)) {
     throw trv::sys::ExtrapError(
-      "[ERRO] Sign change or zero detected in log-linear extrapolation "
+      "Sign change or zero detected in log-linear extrapolation "
       "at the upper end."
     );
   }
@@ -110,7 +132,7 @@ void extrap2d_logbilin(
     dlna_left = std::log(a[i - N_ext][1] / a[i - N_ext][0]);
     if (std::isnan(dlna_left)) {
       throw trv::sys::ExtrapError(
-        "[ERRO] Sign change or zero detected in log-linear extrapolation "
+        "Sign change or zero detected in log-linear extrapolation "
         "at the left end."
       );
     }
@@ -118,7 +140,7 @@ void extrap2d_logbilin(
     dlna_right = std::log(a[i - N_ext][N - 1] / a[i - N_ext][N - 2]);
     if (std::isnan(dlna_right)) {
       throw trv::sys::ExtrapError(
-        "[ERRO] Sign change or zero detected in log-linear extrapolation "
+        "Sign change or zero detected in log-linear extrapolation "
         "at the right end."
       );
     }
@@ -155,7 +177,7 @@ void extrap2d_logbilin(
     dlna_up = std::log(a_ext[N_ext + 1][j] / a_ext[N_ext][j]);
     if (std::isnan(dlna_up)) {
       throw trv::sys::ExtrapError(
-        "[ERRO] Sign change or zero detected in log-linear extrapolation "
+        "Sign change or zero detected in log-linear extrapolation "
         "at the top end."
       );
     }
@@ -163,7 +185,7 @@ void extrap2d_logbilin(
     dlna_down = std::log(a_ext[N_ext + N - 1][j] / a_ext[N_ext + N - 2][j]);
     if (std::isnan(dlna_down)) {
       throw trv::sys::ExtrapError(
-        "[ERRO] Sign change or zero detected in log-linear extrapolation "
+        "Sign change or zero detected in log-linear extrapolation "
         "at the bottom end."
       );
     }
@@ -260,6 +282,11 @@ void extrap2d_bizeros(
   }
 }
 
+
+// ***********************************************************************
+// Sorting
+// ***********************************************************************
+
 std::vector<int> get_sorted_indices(std::vector<int> sorting_vector) {
   // Create an index vector to store the indices of the elements.
   std::vector<int> indices(sorting_vector.size());
@@ -280,4 +307,5 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector) {
 }
 
 }  // namespace trv::array
+
 }  // namespace trv

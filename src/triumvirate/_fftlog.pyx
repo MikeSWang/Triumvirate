@@ -8,6 +8,7 @@ Implement the FFTLog algorithm for Hankel-related transforms.
 import numpy as np
 cimport numpy as np
 
+from ._arrayops import _check_1d_array
 from ._fftlog cimport CppHankelTransform
 
 
@@ -21,7 +22,7 @@ cdef class HankelTransform:
     q : float
         Power-law bias index.
     x : array of float
-        Pre-transform sample points.
+        Pre-transform sample points.  Must be log-linearly spaced.
     kr_c : float
         Pivot value for the transform.  When `lowring` is `True`, this is
         adjusted if it is non-zero, or otherwise directly calculated.
@@ -44,7 +45,9 @@ cdef class HankelTransform:
     def __cinit__(self, mu, q, x, kr_c, lowring=True):
         self.thisptr = new CppHankelTransform(<double>mu, <double>q)
 
-        cdef np.ndarray[double, ndim=1, mode='c'] _x = np.ascontiguousarray(x)
+        cdef np.ndarray[double, ndim=1, mode='c'] _x = np.ascontiguousarray(
+            _check_1d_array(x, check_loglin=True)
+        )
         self.thisptr.initialise(_x, kr_c, lowring)
 
         self.order = self.thisptr.order
