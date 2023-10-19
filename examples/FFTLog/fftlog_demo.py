@@ -25,6 +25,7 @@ from triumvirate.transforms import SphericalBesselTransform
 try:
     import hankl
 except ImportError:
+    hankl = None
     warnings.warn(
         "Could not import `hankl` package. "
         "Some of the test cases will not be available."
@@ -290,23 +291,26 @@ def get_testcase(pars: argparse.Namespace) -> None:
         k_fftlog, gk_fftlog = \
             HankelTransform(pars.order, BIAS, r, PIVOT, LOWRING)\
             .transform(fr + 0.j)
-        k_hankl, gk_hankl = hankl.FFTLog(
-            r, fr, mu=pars.order, q=BIAS, xy=PIVOT, lowring=LOWRING
-        )
+        if hankl is not None:
+            k_hankl, gk_hankl = hankl.FFTLog(
+                r, fr, mu=pars.order, q=BIAS, xy=PIVOT, lowring=LOWRING
+            )
         k_analy, gk_analy = k_fftlog, g(k_fftlog, mu=pars.order)
 
         # Calculate the differences.
         if pars.show_diff:
             dgk_fftlog = gk_fftlog.real / gk_analy - 1.
-            dgk_hankl = gk_hankl / gk_analy - 1.
+            if hankl is not None:
+                dgk_hankl = gk_hankl / gk_analy - 1.
 
         # Plot the results.
         plot_fftlog = canvas._ax_comp.plot(
             k_fftlog, gk_fftlog.real, ls='-', label='FFTLog'
         )
-        plot_hankl = canvas._ax_comp.plot(
-            k_hankl, gk_hankl, ls='--', label='hankl'
-        )
+        if hankl is not None:
+            plot_hankl = canvas._ax_comp.plot(
+                k_hankl, gk_hankl, ls='--', label='hankl'
+            )
         _ = canvas._ax_comp.plot(
             k_analy, gk_analy, ls=':', label='analytical'
         )
@@ -316,10 +320,11 @@ def get_testcase(pars: argparse.Namespace) -> None:
                 k_fftlog, dgk_fftlog,
                 c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
             )
-            canvas._ax_diff.plot(
-                k_hankl, dgk_hankl,
-                c=plot_hankl[0].get_color(), ls='--', label='hankl'
-            )
+            if hankl is not None:
+                canvas._ax_diff.plot(
+                    k_hankl, dgk_hankl,
+                    c=plot_hankl[0].get_color(), ls='--', label='hankl'
+                )
 
         canvas._title = (
             fstr + r"$\,$, " + gstr + fr" ($\mu = {pars.order}$)"
@@ -383,25 +388,29 @@ def get_testcase(pars: argparse.Namespace) -> None:
         r_fftlog, xi_fftlog = SphericalBesselTransform(
             pars.degree, BIAS, k, lowring=LOWRING
         ).transform_cosmo_multipoles(-1, pk)
-        r_hankl, xi_hankl = hankl.P2xi(
-            k, pk, pars.degree, n=BIAS, lowring=LOWRING
-        )
+        if hankl is not None:
+            r_hankl, xi_hankl = hankl.P2xi(
+                k, pk, pars.degree, n=BIAS, lowring=LOWRING
+            )
 
         xi_ext_fftlog = InterpolatedUnivariateSpline(r, xi)(r_fftlog)
-        xi_ext_hankl = InterpolatedUnivariateSpline(r, xi)(r_hankl)
+        if hankl is not None:
+            xi_ext_hankl = InterpolatedUnivariateSpline(r, xi)(r_hankl)
 
         # Calculate the differences.
         if pars.show_diff:
             dxi_fftlog = xi_fftlog.real / xi_ext_fftlog - 1.
-            dxi_hankl = xi_hankl.real / xi_ext_hankl - 1.
+            if hankl is not None:
+                dxi_hankl = xi_hankl.real / xi_ext_hankl - 1.
 
         # Plot the results.
         plot_fftlog = canvas._ax_comp.plot(
             r_fftlog, r_fftlog * xi_fftlog.real, ls='-', label='FFTLog'
         )
-        plot_hankl = canvas._ax_comp.plot(
-            r_hankl, r_hankl * xi_hankl.real, ls='--', label='hankl'
-        )
+        if hankl is not None:
+            plot_hankl = canvas._ax_comp.plot(
+                r_hankl, r_hankl * xi_hankl.real, ls='--', label='hankl'
+            )
         _ = canvas._ax_comp.plot(
             r, r * xi, ls=':', label='extern (mcfit)'
         )
@@ -411,10 +420,11 @@ def get_testcase(pars: argparse.Namespace) -> None:
                 r_fftlog, dxi_fftlog,
                 c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
             )
-            canvas._ax_diff.plot(
-                r_hankl, dxi_hankl,
-                c=plot_hankl[0].get_color(), ls='--', label='hankl'
-            )
+            if hankl is not None:
+                canvas._ax_diff.plot(
+                    r_hankl, dxi_hankl,
+                    c=plot_hankl[0].get_color(), ls='--', label='hankl'
+                )
 
     match testcase:
         case 'hankel-sym' | 'hankel-asym':
