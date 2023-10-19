@@ -355,12 +355,12 @@ def get_testcase(pars: argparse.Namespace) -> None:
 
         if pars.show_diff:
             canvas._ax_diff.plot(
-                k_fftlog, dgk_fftlog,
+                k_fftlog, 100 * dgk_fftlog,
                 c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
             )
             if hankl is not None:
                 canvas._ax_diff.plot(
-                    k_hankl, dgk_hankl,
+                    k_hankl, 100 * dgk_hankl,
                     c=plot_hankl[0].get_color(), ls='--', label='hankl'
                 )
 
@@ -405,7 +405,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
 
         if pars.show_diff:
             canvas._ax_diff.plot(
-                k_fftlog, dgk_fftlog,
+                k_fftlog, 100 * dgk_fftlog,
                 c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
             )
 
@@ -463,12 +463,12 @@ def get_testcase(pars: argparse.Namespace) -> None:
 
         if pars.show_diff:
             canvas._ax_diff.plot(
-                r_fftlog, dxi_fftlog,
+                r_fftlog, 100 * dxi_fftlog,
                 c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
             )
             if hankl is not None:
                 canvas._ax_diff.plot(
-                    r_hankl, dxi_hankl,
+                    r_hankl, 100 * dxi_hankl,
                     c=plot_hankl[0].get_color(), ls='--', label='hankl'
                 )
 

@@ -23,7 +23,8 @@ class SphericalBesselTransform:
     bias : int
         Power-law bias index.
     sample_pts : array of float
-        Pre-transform sample points.
+        Pre-transform sample points in 1-d.  Must be log-linearly spaced.
+        Must be even in length if extrapolation is used.
     pivot : float, optional
         Pivot value (default is 1.).  When `lowring` is `True`, this is
         adjusted if it is non-zero, or otherwise directly calculated.
@@ -38,6 +39,8 @@ class SphericalBesselTransform:
         - 2: extrapolate linearly;
         - 3: extrapolate log-linearly.
 
+        Any extrapolation doubles the sample size in effect, and
+        assumes the pre-transform samples to be real.
 
     Attributes
     ----------
@@ -49,8 +52,6 @@ class SphericalBesselTransform:
         Sample size.
     pivot : float
         Pivot value used.
-    extrap : int
-        Extrapolation method used.
 
     """
 
@@ -64,6 +65,8 @@ class SphericalBesselTransform:
             degree + 1./2, bias, sample_pts,
             kr_c=pivot, lowring=lowring, extrap=extrap
         )
+        self._lowring = lowring
+        self._extrap = extrap
 
         self._logres = self._fbht._logres
         self._pre_sampts = np.asarray(self._fbht._pre_sampts)
@@ -89,12 +92,13 @@ class SphericalBesselTransform:
         Parameters
         ----------
         pre_samples : array_like
-            Pre-transform samples.
+            Pre-transform samples in 1-d.  Assumed to be real
+            if extrapolation is used.
 
         Returns
         -------
         post_sampts, post_samples : array_like
-            Post-transform samples and sample values.
+            Post-transform sample points and samples.
 
         """
         pre_samples *= self._pre_sampts ** (3./2)
@@ -116,12 +120,13 @@ class SphericalBesselTransform:
             Fourier space, 'backward' or -1 from Fourier to configuration
             space.
         pre_samples : array of float
-            Pre-transform samples.
+            Pre-transform samples in 1-d.  Assumed to be real
+            if extrapolation is used.
 
         Returns
         -------
         post_sampts, post_samples : array of float
-            Post-transform samples and sample values.
+            Post-transform sample points and samples.
 
         """
         if direction in {'forward', 1}:

@@ -23,6 +23,7 @@ cdef class HankelTransform:
         Power-law bias index.
     x : array of float
         Pre-transform sample points.  Must be log-linearly spaced.
+        Must be even in length if extrapolation is used.
     kr_c : float
         Pivot value for the transform.  When `lowring` is `True`, this is
         adjusted if it is non-zero, or otherwise directly calculated.
@@ -37,6 +38,8 @@ cdef class HankelTransform:
         - 2: extrapolate linearly;
         - 3: extrapolate log-linearly.
 
+        Any extrapolation doubles the sample size in effect, and
+        assumes the pre-transform samples to be real.
 
     Attributes
     ----------
@@ -94,12 +97,13 @@ cdef class HankelTransform:
         Parameters
         ----------
         fx : array_like
-            Pre-transform samples.
+            Pre-transform samples.  Assumed to be real if extrapolation
+            is used.
 
         Returns
         -------
         y, gy : array_like
-            Post-transform samples and sample values.
+            Post-transform sample points and samples.
 
         """
         fx = np.ascontiguousarray(fx, dtype=np.complex128)
@@ -115,12 +119,13 @@ cdef class HankelTransform:
         Parameters
         ----------
         fx : array of complex
-            Pre-transform samples.
+            Pre-transform samples.  Assumed to be real if extrapolation
+            is used.
 
         Returns
         -------
         gy : array of complex
-            Post-transform samples and sample values.
+            Post-transform samples.
 
         """
         cdef np.ndarray[double complex, ndim=1, mode='c'] gy = \

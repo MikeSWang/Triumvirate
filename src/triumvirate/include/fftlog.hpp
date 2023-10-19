@@ -84,8 +84,8 @@ class HankelTransform {
    * @param extrap Extrapolation option.  If not
    *               @ref `trv::array::ExtrapOption::NONE` (default),
    *               the number of sample must be even; any extrapolation
-   *               doubles the sample size, and assumes the pre-transform
-   *               samples to be real.
+   *               doubles the sample size in effect, and assumes the
+   *               pre-transform samples to be real.
    * @throws trv::sys::InvalidParameterError When the size of `sample_pts`
    *                                         is less than 2.
    * @throws trv::sys::InvalidParameterError When `sample_pts` is not
@@ -111,8 +111,8 @@ class HankelTransform {
    *                low-ringing condition.
    * @param extrap Extrapolation option.  If not 0 (default),
    *               the number of sample must be even; any extrapolation
-   *               doubles the sample size, and assumes the pre-transform
-   *               samples to be real.
+   *               doubles the sample size in effect, and assumes the
+   *               pre-transform samples to be real.
    * @throws trv::sys::InvalidParameterError When the size of `sample_pts`
    *                                         is less than 2.
    * @throws trv::sys::InvalidParameterError When `sample_pts` is not
@@ -213,8 +213,8 @@ class SphericalBesselTransform: public HankelTransform {
    * @param extrap Extrapolation option.  If not
    *               @ref `trv::array::ExtrapOption::NONE` (default),
    *               the number of sample must be even; any extrapolation
-   *               doubles the sample size, and assumes the pre-transform
-   *               samples to be real.
+   *               doubles the sample size in effect, and assumes the
+   *               pre-transform samples to be real.
    */
   void initialise(
     std::vector<double> sample_pts, double kr_c,
@@ -235,8 +235,8 @@ class SphericalBesselTransform: public HankelTransform {
    *                low-ringing condition.
    * @param extrap Extrapolation option.  If not 0 (default),
    *               the number of sample must be even; any extrapolation
-   *               doubles the sample size, and assumes the pre-transform
-   *               samples to be real.
+   *               doubles the sample size in effect, and assumes the
+   *               pre-transform samples to be real.
    *
    * @overload
    */
