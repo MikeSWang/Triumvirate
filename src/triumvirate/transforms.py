@@ -29,6 +29,15 @@ class SphericalBesselTransform:
         adjusted if it is non-zero, or otherwise directly calculated.
     lowring : bool, optional
         Low-ringing condition (default is `True`).
+    extrap : int, optional
+        Extrapolation method (default is 0) with the following
+        options:
+
+        - 0: none;
+        - 1: extrapolate by constant padding;
+        - 2: extrapolate linearly;
+        - 3: extrapolate log-linearly.
+
 
     Attributes
     ----------
@@ -40,17 +49,20 @@ class SphericalBesselTransform:
         Sample size.
     pivot : float
         Pivot value used.
+    extrap : int
+        Extrapolation method used.
 
     """
 
-    def __init__(self, degree, bias, sample_pts, pivot=1., lowring=True):
+    def __init__(self, degree, bias, sample_pts, pivot=1.,
+                 lowring=True, extrap=0):
 
         self.degree = degree
         self.bias = bias
 
         self._fbht = HankelTransform(
             degree + 1./2, bias, sample_pts,
-            kr_c=pivot, lowring=lowring
+            kr_c=pivot, lowring=lowring, extrap=extrap
         )
 
         self._logres = self._fbht._logres

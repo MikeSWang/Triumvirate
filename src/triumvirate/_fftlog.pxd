@@ -20,7 +20,7 @@ cdef extern from "include/fftlog.hpp":
         CppHankelTransform(double mu, double q)
 
         void initialise(
-            vector[double] sample_pts, double kr_c, bool_t lowring
+            vector[double] sample_pts, double kr_c, bool_t lowring, int extrap
         ) except +
 
         void biased_transform(

@@ -28,6 +28,15 @@ cdef class HankelTransform:
         adjusted if it is non-zero, or otherwise directly calculated.
     lowring : bool, optional
         Low-ringing condition (default is `True`).
+    extrap : int, optional
+        Extrapolation method (default is 0) with the following
+        options:
+
+        - 0: none;
+        - 1: extrapolate by constant padding;
+        - 2: extrapolate linearly;
+        - 3: extrapolate log-linearly.
+
 
     Attributes
     ----------
@@ -42,13 +51,15 @@ cdef class HankelTransform:
 
     """
 
-    def __cinit__(self, mu, q, x, kr_c, lowring=True):
+    def __cinit__(self, mu, q, x, kr_c, lowring=True, extrap=0):
         self.thisptr = new CppHankelTransform(<double>mu, <double>q)
 
         cdef np.ndarray[double, ndim=1, mode='c'] _x = np.ascontiguousarray(
             _check_1d_array(x, check_loglin=True)
         )
-        self.thisptr.initialise(_x, kr_c, lowring)
+        self.thisptr.initialise(
+            _x, kr_c, lowring, 0 if extrap is None else extrap
+        )
 
         self.order = self.thisptr.order
         self.bias = self.thisptr.bias

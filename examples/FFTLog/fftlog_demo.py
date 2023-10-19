@@ -59,6 +59,10 @@ def parse_parameters() -> argparse.Namespace:
         help="Degree of the spherical Bessel transform."
     )
     parser.add_argument(
+        '--extrap', action='store_true',
+        help="Enable extrapolation for smoothness."
+    )
+    parser.add_argument(
         '--show-diff', action='store_true',
         help="Show the difference between the transform results."
     )
@@ -73,6 +77,7 @@ def parse_parameters() -> argparse.Namespace:
             "when external cosmological multipole samples are referenced "
             "as they are computed for the monopole only."
         )
+    pars.extrap_opt = 3 if pars.extrap else None
 
     return pars
 
@@ -288,12 +293,13 @@ def get_testcase(pars: argparse.Namespace) -> None:
         fr = f(r, mu=pars.order)
 
         # Compute the Hankel transforms.
-        k_fftlog, gk_fftlog = \
-            HankelTransform(pars.order, BIAS, r, PIVOT, LOWRING)\
-            .transform(fr + 0.j)
+        k_fftlog, gk_fftlog = HankelTransform(
+            pars.order, BIAS, r, PIVOT, LOWRING, extrap=pars.extrap_opt
+        ).transform(fr + 0.j)
         if hankl is not None:
             k_hankl, gk_hankl = hankl.FFTLog(
-                r, fr, mu=pars.order, q=BIAS, xy=PIVOT, lowring=LOWRING
+                r, fr, mu=pars.order, q=BIAS, xy=PIVOT,
+                lowring=LOWRING, ext=pars.extrap_opt
             )
         k_analy, gk_analy = k_fftlog, g(k_fftlog, mu=pars.order)
 
@@ -346,9 +352,9 @@ def get_testcase(pars: argparse.Namespace) -> None:
         fr = f(r, ell=pars.degree)
 
         # Compute the Hankel transforms.
-        k_fftlog, gk_fftlog = \
-            SphericalBesselTransform(pars.degree, BIAS, r, PIVOT, LOWRING)\
-            .transform(fr + 0.j)
+        k_fftlog, gk_fftlog = SphericalBesselTransform(
+            pars.degree, BIAS, r, PIVOT, LOWRING, extrap=pars.extrap_opt
+        ).transform(fr + 0.j)
         k_analy, gk_analy = k_fftlog, g(k_fftlog, ell=pars.degree)
 
         # Calculate the differences.
@@ -386,11 +392,12 @@ def get_testcase(pars: argparse.Namespace) -> None:
 
         # Compute the FFTLog transform.
         r_fftlog, xi_fftlog = SphericalBesselTransform(
-            pars.degree, BIAS, k, lowring=LOWRING
+            pars.degree, BIAS, k, lowring=LOWRING, extrap=pars.extrap_opt
         ).transform_cosmo_multipoles(-1, pk)
         if hankl is not None:
             r_hankl, xi_hankl = hankl.P2xi(
-                k, pk, pars.degree, n=BIAS, lowring=LOWRING
+                k, pk, pars.degree, n=BIAS,
+                lowring=LOWRING, ext=pars.extrap_opt
             )
 
         xi_ext_fftlog = InterpolatedUnivariateSpline(r, xi)(r_fftlog)

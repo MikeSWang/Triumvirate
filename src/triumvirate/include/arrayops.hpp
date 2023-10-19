@@ -75,11 +75,21 @@ class ExtrapError: public std::runtime_error {
 namespace array {
 
 /**
+ * @brief Extrapolation scheme.
+ *
+ */
+enum ExtrapOption {
+  NONE = 0,    ///< 0: none
+  PAD = 1,     ///< 1: pad
+  LIN = 2,     ///< 2: linear
+  LOGLIN = 3,  ///< 3: log-linear
+};
+
+/**
  * @brief Check if all elements of a 1-d array are close to a given value.
  *
  * @tparam T A @c typename.
- * @param arr 1-d array.
- * @param N Array size.
+ * @param arr 1-d array as a vector.
  * @param val Value to check against.
  * @param atol Absolute tolerance (default is 1.e-8).
  * @param rtol Relative tolerance (default is 1.e-5).
@@ -88,17 +98,13 @@ namespace array {
  */
 template <typename T>
 bool check_isclose(
-  const T* arr, std::size_t N,
-  const T val,
+  const std::vector<T>& arr, const T val,
   T atol = 1.e-8, T rtol = 1.e-5
 ) {
-    for (std::size_t i = 0; i < N; i++) {
-        T diff = std::abs(arr[i] - val);
-        if (diff > atol + rtol * std::abs(val)) {
-            return false;
-        }
-    }
-    return true;
+  for (T elem : arr) {
+      if (std::abs(elem - val) > atol + rtol * std::abs(val)) {return false;}
+  }
+  return true;
 }
 
 /**

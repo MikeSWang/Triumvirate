@@ -39,7 +39,8 @@ HankelTransform::HankelTransform(double mu, double q) {
 }
 
 void HankelTransform::initialise(
-  std::vector<double> sample_pts, double kr_c, bool lowring
+  std::vector<double> sample_pts, double kr_c, bool lowring,
+  trva::ExtrapOption extrap
 ) {
   // Initialise pre-sample points.
   if (sample_pts.size() < 2) {
@@ -92,6 +93,12 @@ void HankelTransform::initialise(
 
   // double kr_0 = kr_c_used * std::exp(- N * dL);
   // double k0 = kr_0 / r0;
+}
+
+void HankelTransform::initialise(
+  std::vector<double> sample_pts, double kr_c, bool lowring, int extrap
+) {
+  this->initialise(sample_pts, kr_c, lowring, trva::ExtrapOption(extrap));
 }
 
 double HankelTransform::calc_lowring_pivot(double delta, double kr_c) {
@@ -233,9 +240,17 @@ HankelTransform(ell + 1./2, double(n)) {
 }
 
 void SphericalBesselTransform::initialise(
-  std::vector<double> sample_pts, double kr_c, bool lowring
+  std::vector<double> sample_pts, double kr_c, bool lowring,
+  trva::ExtrapOption extrap
 ) {
-  HankelTransform::initialise(sample_pts, kr_c, lowring);
+  HankelTransform::initialise(sample_pts, kr_c, lowring, extrap);
+}
+
+void SphericalBesselTransform::initialise(
+  std::vector<double> sample_pts, double kr_c, bool lowring,
+  int extrap
+) {
+  HankelTransform::initialise(sample_pts, kr_c, lowring, extrap);
 }
 
 void SphericalBesselTransform::biased_transform(

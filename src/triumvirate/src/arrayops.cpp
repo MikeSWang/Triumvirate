@@ -26,6 +26,8 @@
 
 #include "arrayops.hpp"
 
+namespace trvs = trv::sys;
+
 namespace trv {
 
 // ***********************************************************************
@@ -55,20 +57,20 @@ namespace array {
 
 int check_1d_array(double* a, int N, bool check_lin, bool check_loglin) {
   if (check_lin) {
-    double diff_a[N - 1];
+    std::vector<double> diff_a(N - 1);
     for (int i = 0; i < N - 1; i++) {
       diff_a[i] = a[i + 1] - a[i];
     }
-    if (!check_isclose(diff_a, N - 1, diff_a[0])) {
+    if (!check_isclose(diff_a, diff_a[0])) {
       return 1;
     }
   }
   if (check_loglin) {
-    double diff_loga[N - 1];
+    std::vector<double> diff_loga(N - 1);
     for (int i = 0; i < N - 1; i++) {
       diff_loga[i] = std::log(a[i + 1] / a[i]);
     }
-    if (!check_isclose(diff_loga, N - 1, diff_loga[0])) {
+    if (!check_isclose(diff_loga, diff_loga[0])) {
       return 2;
     }
   }

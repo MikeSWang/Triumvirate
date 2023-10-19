@@ -38,6 +38,8 @@
 #include "maths.hpp"
 #include "arrayops.hpp"
 
+namespace trva = trv::array;
+
 namespace trv {
 
 namespace maths {
@@ -79,6 +81,11 @@ class HankelTransform {
    * @param kr_c Pivot value.
    * @param lowring If true (default), set the pivot value by the
    *                low-ringing condition.
+   * @param extrap Extrapolation option.  If not
+   *               @ref `trv::array::ExtrapOption::NONE` (default),
+   *               the number of sample must be even; any extrapolation
+   *               doubles the sample size, and assumes the pre-transform
+   *               samples to be real.
    * @throws trv::sys::InvalidParameterError When the size of `sample_pts`
    *                                         is less than 2.
    * @throws trv::sys::InvalidParameterError When `sample_pts` is not
@@ -87,7 +94,38 @@ class HankelTransform {
    *                                         while `lowring` is false.
    */
   void initialise(
-    std::vector<double> sample_pts, double kr_c, bool lowring = true
+    std::vector<double> sample_pts, double kr_c,
+    bool lowring = true,
+    trva::ExtrapOption extrap = trva::ExtrapOption::NONE
+  );
+
+  /**
+   * @brief Initialise the Hankel transform.
+   *
+   * This sets up the pre- and post-transform samples as well as the
+   * transform kernel and the pivot value.
+   *
+   * @param sample_pts Logarithmically linearly-spaced sample points.
+   * @param kr_c Pivot value.
+   * @param lowring If true (default), set the pivot value by the
+   *                low-ringing condition.
+   * @param extrap Extrapolation option.  If not 0 (default),
+   *               the number of sample must be even; any extrapolation
+   *               doubles the sample size, and assumes the pre-transform
+   *               samples to be real.
+   * @throws trv::sys::InvalidParameterError When the size of `sample_pts`
+   *                                         is less than 2.
+   * @throws trv::sys::InvalidParameterError When `sample_pts` is not
+   *                                         log-linearly spaced.
+   * @throws trv::sys::InvalidParameterError When `kr_c` is non-positive
+   *                                         while `lowring` is false.
+   *
+   * @overload
+   */
+  void initialise(
+    std::vector<double> sample_pts, double kr_c,
+    bool lowring = true,
+    int extrap = 0
   );
 
   /**
@@ -100,6 +138,10 @@ class HankelTransform {
    *
    * @param[in] a Pre-transform sample values.
    * @param[out] b Post-trasform sample values.
+   *
+   * @attention If extrapolation is enabled (`extrap` not
+   *            @ref `trv::array::ExtrapOption::NONE`, the pre-transform
+   *            samples are assumed to be real.
    */
   void biased_transform(std::complex<double>* a, std::complex<double>* b);
 
@@ -128,6 +170,21 @@ class HankelTransform {
  private:
   /// FFTLog transform kernel coefficients
   std::vector< std::complex<double> > kernel;
+
+  /// extrapolation option (default is none)
+  trva::ExtrapOption extrap = trva::ExtrapOption::NONE;
+
+  /// number of sample points with extrapolation option
+  int nsamp_extrap = 0;
+
+  /// number of extra sample points on either side
+  int n_ext = 0;
+
+  /// pre-transform sample points with extrapolation option
+  std::vector<double> pre_sampts_extrap;
+
+  /// post-transform sample points with extrapolation option
+  std::vector<double> post_sampts_extrap;
 };
 
 class SphericalBesselTransform: public HankelTransform {
@@ -153,9 +210,40 @@ class SphericalBesselTransform: public HankelTransform {
    * @param kr_c Pivot value.
    * @param lowring If true (default), set the pivot value by the
    *                low-ringing condition.
+   * @param extrap Extrapolation option.  If not
+   *               @ref `trv::array::ExtrapOption::NONE` (default),
+   *               the number of sample must be even; any extrapolation
+   *               doubles the sample size, and assumes the pre-transform
+   *               samples to be real.
    */
   void initialise(
-    std::vector<double> sample_pts, double kr_c, bool lowring = true
+    std::vector<double> sample_pts, double kr_c,
+    bool lowring = true,
+    trva::ExtrapOption extrap = trva::ExtrapOption::NONE
+  );
+
+  /**
+   * @brief Initialise the spherical Bessel transform.
+   *
+   * This sets up the underlying Hankel transform with order
+   * @f$ \mu = \ell + 1/2 @f$.  The low-ringing pivot value is enforced
+   * from an initial value of 1.
+   *
+   * @param sample_pts Logarithmically linearly-spaced sample points.
+   * @param kr_c Pivot value.
+   * @param lowring If true (default), set the pivot value by the
+   *                low-ringing condition.
+   * @param extrap Extrapolation option.  If not 0 (default),
+   *               the number of sample must be even; any extrapolation
+   *               doubles the sample size, and assumes the pre-transform
+   *               samples to be real.
+   *
+   * @overload
+   */
+  void initialise(
+    std::vector<double> sample_pts, double kr_c,
+    bool lowring = true,
+    int extrap = 0
   );
 
   /**
@@ -173,6 +261,9 @@ class SphericalBesselTransform: public HankelTransform {
    *
    * @param[in] a Pre-transform sample values.
    * @param[out] b Post-transform sample values.
+   *
+   * @attention If extrapolation is enabled by `extrap`, the pre-transform
+   *            samples are assumed to be real.
    */
   void biased_transform(
     std::vector< std::complex<double> >& a,
@@ -187,6 +278,10 @@ class SphericalBesselTransform: public HankelTransform {
    *                configuration space.
    * @param[in] pre_samples Pre-transform multipole samples.
    * @param[out] post_samples Post-transform multipoles samples.
+   *
+   * @attention If extrapolation is enabled (`extrap` not
+   *            @ref `trv::array::ExtrapOption::NONE`, the pre-transform
+   *            samples are assumed to be real.
    */
   void transform_cosmological_multipole(
     int dir,
