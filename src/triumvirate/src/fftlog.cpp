@@ -26,6 +26,7 @@
 
 #include "fftlog.hpp"
 
+namespace trva = trv::array;
 namespace trvm = trv::maths;
 namespace trvs = trv::sys;
 
@@ -48,11 +49,7 @@ void HankelTransform::initialise(
       "The number of sample points must be at least 2."
     );
   }
-  if (
-    trv::array::check_1d_array(
-      sample_pts.data(), sample_pts.size(), false, true
-    ) != 0
-  ) {
+  if (trva::check_1d_array(sample_pts, false, true, false) != 0) {
     throw trvs::InvalidParameterError(
       "The sample points are not log-linearly spaced."
     );
@@ -63,14 +60,29 @@ void HankelTransform::initialise(
   this->logres =
     std::log(sample_pts.back() / sample_pts.front()) / (this->nsamp - 1);
 
+  this->extrap = extrap;
+  if (this->extrap != trva::ExtrapOption::NONE) {
+    if (this->nsamp % 2 != 0) {
+      throw trvs::InvalidParameterError(
+        "The number of sample points must be even for extrapolation."
+      );
+    }
+    this->nsamp_extrap = 2 * this->nsamp;
+    this->n_ext = this->nsamp / 2;
+    trva::extrap_loglin(
+      this->pre_sampts, this->n_ext, this->pre_sampts_extrap
+    );
+  } else {
+    this->nsamp_extrap = this->nsamp;
+    this->n_ext = 0;
+  }
+
   // Initialise the transform.
   if (lowring) {
     this->pivot = this->calc_lowring_pivot(this->logres, kr_c);
   } else {
     if (kr_c <= 0.) {
-      throw trvs::InvalidParameterError(
-        "Pivot value must be positive."
-      );
+      throw trvs::InvalidParameterError("Pivot value must be positive.");
     }
     this->pivot = kr_c;
   }
@@ -81,6 +93,14 @@ void HankelTransform::initialise(
   this->post_sampts.resize(this->nsamp);
   for (int j = 0; j < this->nsamp; j++) {
     this->post_sampts[j] = this->pivot / this->pre_sampts[this->nsamp - j - 1];
+  }
+
+  if (this->extrap != trva::ExtrapOption::NONE) {
+    this->post_sampts_extrap.resize(this->nsamp_extrap);
+    for (int j = 0; j < this->nsamp_extrap; j++) {
+      this->post_sampts_extrap[j] =
+        this->pivot / this->pre_sampts[this->nsamp_extrap - j - 1];
+    }
   }
 
   // // Alternative to the for-loop block above, note that k_c and r_c are
@@ -137,11 +157,11 @@ std::vector< std::complex<double> > HankelTransform::compute_kernel_coeff() {
   // STYLE: Standard naming convention is not followed below.
   double mu = this->order;
   double q = this->bias;
-  int N = this->nsamp;
+  int N_trans = this->nsamp_extrap;
   double dL = this->logres;
   double kr_c = this->pivot;
 
-  if (N <= 0 || dL <= 0. || kr_c <= 0.) {
+  if (N_trans <= 0 || dL <= 0. || kr_c <= 0.) {
     throw std::runtime_error(
       "This instance of trv::maths::HankelTransform has not been "
       "initialised with `initialise`."
@@ -152,15 +172,15 @@ std::vector< std::complex<double> > HankelTransform::compute_kernel_coeff() {
   double x_m = (mu + 1. - q)/2.;
   double x_eq = (mu + 1.)/2.;
 
-  double y = M_PI / (N * dL);
+  double y = M_PI / (N_trans * dL);
 
   double t = -2. * y * std::log(kr_c/2.);
 
   // Note that no minus sign is involved in the phase by
   // complex conjugation of the gamma function.
-  std::vector< std::complex<double> > u(N);
+  std::vector< std::complex<double> > u(N_trans);
   if (q == 0.) {
-    for (int m = 0; m <= N/2; m++) {
+    for (int m = 0; m <= N_trans/2; m++) {
       double lnr_, phi_eq;
       trvm::get_lngamma_parts(x_eq, m*y, lnr_, phi_eq);
 
@@ -168,7 +188,7 @@ std::vector< std::complex<double> > HankelTransform::compute_kernel_coeff() {
     }
   } else {
     double qln2 = q * std::log(2.);
-    for (int m = 0; m <= N/2; m++) {
+    for (int m = 0; m <= N_trans/2; m++) {
       double lnr_p, phi_p;
       double lnr_m, phi_m;
       trvm::get_lngamma_parts(x_p, m*y, lnr_p, phi_p);
@@ -180,13 +200,13 @@ std::vector< std::complex<double> > HankelTransform::compute_kernel_coeff() {
     }
   }
 
-  for (int m = N/2 + 1; m < N; m++) {
-    u[m] = conj(u[N - m]);
+  for (int m = N_trans/2 + 1; m < N_trans; m++) {
+    u[m] = conj(u[N_trans - m]);
   }
 
-  if (N % 2 == 0) {
+  if (N_trans % 2 == 0) {
     // Make the mid-point real by log-periodicity.
-    u[N/2] = u[N/2].real() + trvm::M_I * 0.;
+    u[N_trans/2] = u[N_trans/2].real() + trvm::M_I * 0.;
   }
 
   return u;
@@ -197,40 +217,85 @@ void HankelTransform::biased_transform(
 ) {
   // STYLE: Standard naming convention is not followed below.
   int N = this->nsamp;
+  int N_trans = this->nsamp_extrap;
 
-  if (this->kernel.empty() || N <= 2) {
+  if (this->kernel.empty() || N <= 2 || N_trans <= 2) {
     throw std::runtime_error(
       "This instance of trv::maths::HankelTransform has not been "
       "initialised with `initialise`."
     );
   }
 
+  // Perform any extrapolation required.
+  std::complex<double> a_trans[N_trans];
+  std::complex<double> b_trans[N_trans];
+  if (this->extrap == trva::ExtrapOption::NONE) {
+    for (int j = 0; j < N_trans; j++) {
+      a_trans[j] = a[j];
+      b_trans[j] = 0.;
+    }
+  } else {
+    // Assume reality with extrapolation.
+    std::vector<double> a_vec(N);
+    for (int j = 0; j < N; j++) {
+      a_vec[j] = a[j].real();
+    }
+
+    std::vector<double> a_trans_vec(N_trans);
+    switch (this->extrap) {
+      case trva::ExtrapOption::LIN:
+        trva::extrap_lin(a_vec, this->n_ext, a_trans_vec);
+        break;
+      case trva::ExtrapOption::LOGLIN:
+        trva::extrap_loglin(a_vec, this->n_ext, a_trans_vec);
+        break;
+      case trva::ExtrapOption::PAD:
+        trva::extrap_pad(
+          a_vec, this->n_ext, a_vec.front(), a_vec.back(), a_trans_vec
+        );
+        break;
+      default:
+        throw trvs::InvalidParameterError("Unsupported extrapolation option.");
+    }
+
+    for (int j = 0; j < N_trans; j++) {
+      a_trans[j] = a_trans_vec[j];
+      b_trans[j] = 0.;
+    }
+  }
+
   // Compute the convolution b = a * u using FFT.
   // NOTE: ``(`` and ``)`` are necessary
   // (see https://www.fftw.org/doc/Complex-numbers.html).
   fftw_plan forward_plan = fftw_plan_dft_1d(
-    N, (fftw_complex*) a, (fftw_complex*) b, FFTW_FORWARD, FFTW_ESTIMATE
+    N_trans, (fftw_complex*) a_trans, (fftw_complex*) b_trans,
+    FFTW_FORWARD, FFTW_ESTIMATE
   );
   fftw_execute(forward_plan);
   fftw_destroy_plan(forward_plan);
 
-  for (int m = 0; m < N; m++) {
+  for (int m = 0; m < N_trans; m++) {
     // Divide by `N` to normalise the inverse DFT.
-    b[m] *= this->kernel[m] / double(N);
+    b_trans[m] *= this->kernel[m] / double(N_trans);
   }
 
   fftw_plan reverse_plan = fftw_plan_dft_1d(
-    N, (fftw_complex*) b, (fftw_complex*) b, FFTW_BACKWARD, FFTW_ESTIMATE
+    N_trans, (fftw_complex*) b_trans, (fftw_complex*) b_trans,
+    FFTW_BACKWARD, FFTW_ESTIMATE
   );
   fftw_execute(reverse_plan);
   fftw_destroy_plan(reverse_plan);
 
   // Reverse the array `b` as inverse FFT is used above instead of FFT.
-  std::complex<double> b_;
-  for (int n = 0; n < N/2; n++) {
-    b_ = b[n];
-    b[n] = b[N - n - 1];
-    b[N - n - 1] = b_;
+  for (int n = 0; n < N_trans/2; n++) {
+    std::complex<double> b_trans_ = b_trans[n];
+    b_trans[n] = b_trans[N_trans - n - 1];
+    b_trans[N_trans - n - 1] = b_trans_;
+  }
+
+  // Trim any extrapolation.
+  for (int j = 0; j < N; j++) {
+    b[j] = b_trans[j + this->n_ext];
   }
 }
 

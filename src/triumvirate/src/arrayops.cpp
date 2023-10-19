@@ -55,233 +55,184 @@ const char* ExtrapError::what() const noexcept {return this->err_mesg.c_str();}
 
 namespace array {
 
-int check_1d_array(double* a, int N, bool check_lin, bool check_loglin) {
+int check_1d_array(
+  std::vector<double>& a, bool check_lin, bool check_loglin, bool check_sign
+) {
+  std::size_t N = a.size();
+
   if (check_lin) {
     std::vector<double> diff_a(N - 1);
-    for (int i = 0; i < N - 1; i++) {
+    for (std::size_t i = 0; i < N - 1; i++) {
       diff_a[i] = a[i + 1] - a[i];
     }
-    if (!check_isclose(diff_a, diff_a[0])) {
-      return 1;
-    }
+    if (!check_isclose(diff_a, diff_a[0])) {return 1;}
   }
+
   if (check_loglin) {
     std::vector<double> diff_loga(N - 1);
-    for (int i = 0; i < N - 1; i++) {
+    std::feclearexcept(FE_ALL_EXCEPT);
+    for (std::size_t i = 0; i < N - 1; i++) {
       diff_loga[i] = std::log(a[i + 1] / a[i]);
+      if (std::fetestexcept(FE_DIVBYZERO) || std::fetestexcept(FE_INVALID)) {
+        return 3;
+      }
     }
-    if (!check_isclose(diff_loga, diff_loga[0])) {
-      return 2;
+    if (!check_isclose(diff_loga, diff_loga[0])) {return 2;}
+  }
+
+  if (check_sign) {
+    for (std::size_t i = 0; i < N - 1; i++) {
+      if (a[i] * a[i + 1] <= 0.0) {return 3;}
     }
   }
+
   return 0;
 }
 
-void extrap_loglin(double* a, int N, int N_ext, double* a_ext) {
-  // Check for sign change or zero.
-  double dlna_left = std::log(a[1] / a[0]);
-  if (std::isnan(dlna_left)) {
-    throw trv::sys::ExtrapError(
-      "Sign change or zero detected in log-linear extrapolation "
-      "at the lower end."
-    );
-  }
+void extrap_lin(
+  std::vector<double>& a, int N_ext, std::vector<double>& a_ext
+) {
+  // Prepare arrays.
+  int N = a.size();
+  int N_notch_left = N_ext;
+  int N_notch_right = N_ext + N;
+  int N_extrap = N_ext + N + N_ext;
 
-  double dlna_right = std::log(a[N - 1] / a[N - 2]);
-  if (std::isnan(dlna_left)) {
-    throw trv::sys::ExtrapError(
-      "Sign change or zero detected in log-linear extrapolation "
-      "at the upper end."
-    );
-  }
+  a_ext.resize(N_extrap);
 
   // Extrapolate the lower end.
-  if (a[0] > 0) {
-    for (int i = 0; i < N_ext; i++) {
-      a_ext[i] = a[0] * std::exp((i - N_ext) * dlna_left);
-    }
-  } else {
-    for (int i = 0; i < N_ext; i++) {
-      a_ext[i] = 0.;
+  double da_left = a[1] - a[0];
+  for (int i = 0; i < N_notch_left; i++) {
+    a_ext[i] = a.front() + (i - N_notch_left) * da_left;
+  }
+
+  // Fill in the middle part.
+  for (int i = N_notch_left; i < N_notch_right; i++) {
+    a_ext[i] = a[i - N_notch_left];
+  }
+
+  // Extrapolate the upper end.
+  double da_right = a[N - 1] - a[N - 2];
+  for (int i = N_notch_right; i < N_extrap; i++) {
+    a_ext[i] = a.back() + (i - (N_notch_right - 1)) * da_right;
+  }
+}
+
+void extrap_loglin(
+  std::vector<double>& a, int N_ext, std::vector<double>& a_ext
+) {
+  std::feclearexcept(FE_ALL_EXCEPT);
+
+  // Prepare arrays.
+  int N = a.size();
+  int N_notch_left = N_ext;
+  int N_notch_right = N_ext + N;
+  int N_extrap = N_ext + N + N_ext;
+
+  if (check_1d_array(a, false, false, true) != 0) {
+    throw std::invalid_argument(
+      "Sign change or zeros detected in the input array."
+    );
+  }
+
+  a_ext.resize(N_extrap);
+
+  // Extrapolate the lower end.
+  double dlna_left = std::log(a[1] / a[0]);
+  if (std::isnan(dlna_left)) {
+    throw std::invalid_argument(
+      "NaN detected at lower-end log-linear spacing."
+    );
+  }
+
+  for (int i = 0; i < N_notch_left; i++) {
+    a_ext[i] = a.front() * std::exp((i - N_notch_left) * dlna_left);
+    if (std::fetestexcept(FE_DIVBYZERO) || std::fetestexcept(FE_INVALID)) {
+      throw std::invalid_argument(
+        "NaN detected at lower-end log-linear extrapolation."
+      );
     }
   }
 
   // Fill in the middle part.
-  for (int i = N_ext; i < N_ext + N; i++) {
+  for (int i = N_notch_left; i < N_notch_right; i++) {
     a_ext[i] = a[i - N_ext];
   }
 
   // Extrapolate the upper end.
-  if (a[N - 1] > 0) {
-    for (int i = N_ext + N; i < N + 2*N_ext; i++) {
-      a_ext[i] = a[N - 1] * std::exp((i - N_ext - (N - 1)) * dlna_right);
-    }
-  } else {
-    for (int i = N_ext + N; i < N + 2*N_ext; i++) {
-      a_ext[i] = 0.;
+  double dlna_right = std::log(a[N - 1] / a[N - 2]);
+  if (std::isnan(dlna_right)) {
+    throw std::invalid_argument(
+      "NaN detected at upper-end log-linear spacing."
+    );
+  }
+
+  for (int i = N_notch_right; i < N_extrap; i++) {
+    a_ext[i] = a.back() * std::exp((i - (N_notch_right - 1)) * dlna_right);
+    if (std::fetestexcept(FE_DIVBYZERO) || std::fetestexcept(FE_INVALID)) {
+      throw std::invalid_argument(
+        "NaN detected at upper-end log-linear extrapolation."
+      );
     }
   }
 }
 
-void extrap2d_logbilin(
-  std::vector< std::vector<double> > a,
-  int N, int N_ext,
-  std::vector< std::vector<double> >& a_ext
+void extrap_pad(
+  std::vector<double>& a,
+  int N_ext, double c_lower, double c_upper,
+  std::vector<double>& a_ext
 ) {
-  double dlna_left, dlna_right;
-  for (int i = N_ext; i < N_ext + N; i++) {
-    // Check for sign change or zero.
-    dlna_left = std::log(a[i - N_ext][1] / a[i - N_ext][0]);
-    if (std::isnan(dlna_left)) {
-      throw trv::sys::ExtrapError(
-        "Sign change or zero detected in log-linear extrapolation "
-        "at the left end."
-      );
-    }
+  int N = a.size();
+  int N_notch_left = N_ext;
+  int N_notch_right = N_ext + N;
+  int N_extrap = N_ext + N + N_ext;
 
-    dlna_right = std::log(a[i - N_ext][N - 1] / a[i - N_ext][N - 2]);
-    if (std::isnan(dlna_right)) {
-      throw trv::sys::ExtrapError(
-        "Sign change or zero detected in log-linear extrapolation "
-        "at the right end."
-      );
-    }
+  a_ext.resize(N_extrap);
 
-    // Extrapolate the middle left edge.
-    for (int j = 0; j < N_ext; j++) {
-      if (a[i - N_ext][0] > 0) {
-        a_ext[i][j] = a[i - N_ext][0] * std::exp((j - N_ext) * dlna_left);
-      } else {
-        a_ext[i][j] = 0.;
-      }
-    }
-
-    // Fill in the central part.
-    for (int j = N_ext; j < N_ext + N; j++) {
-      a_ext[i][j] = a[i - N_ext][j - N_ext];
-    }
-
-    // Extrapolate the middle right edge.
-    for (int j = N_ext + N; j < N + 2*N_ext; j++) {
-      if (a[i - N_ext][N - 1] > 0) {
-        a_ext[i][j] = a[i - N_ext][N - 1] * std::exp(
-          (j - N_ext - (N - 1)) * dlna_right
-        );
-      } else {
-        a_ext[i][j] = 0.;
-      }
-    }
+  for (int i = 0; i < N_notch_left; i++) {
+    a_ext[i] = c_lower;
   }
-
-  double dlna_up, dlna_down;
-  for (int j = 0; j < N + 2*N_ext; j++) {
-    // Check for sign change or zero.
-    dlna_up = std::log(a_ext[N_ext + 1][j] / a_ext[N_ext][j]);
-    if (std::isnan(dlna_up)) {
-      throw trv::sys::ExtrapError(
-        "Sign change or zero detected in log-linear extrapolation "
-        "at the top end."
-      );
-    }
-
-    dlna_down = std::log(a_ext[N_ext + N - 1][j] / a_ext[N_ext + N - 2][j]);
-    if (std::isnan(dlna_down)) {
-      throw trv::sys::ExtrapError(
-        "Sign change or zero detected in log-linear extrapolation "
-        "at the bottom end."
-      );
-    }
-
-    // Extrapolate the upper edge.
-    for (int i = 0; i < N_ext; i++) {
-      if (a_ext[N_ext][j] > 0) {
-        a_ext[i][j] = a_ext[N_ext][j] * std::exp((i - N_ext) * dlna_up);
-      } else {
-        a_ext[i][j] = 0.;
-      }
-    }
-
-    // Extrapolate the lower edge.
-    for (int i = N_ext + N; i < N + 2*N_ext; i++) {
-      if (a_ext[N_ext + N - 1][j] > 0) {
-        a_ext[i][j] = a_ext[N_ext + N - 1][j] * std::exp(
-          (i - N_ext - (N - 1)) * dlna_down
-        );
-      } else {
-        a_ext[i][j] = 0.;
-      }
-    }
+  for (int i = N_notch_left; i < N_notch_right; i++) {
+    a_ext[i] = a[i - N_notch_left];
+  }
+  for (int i = N_notch_right; i < N_extrap; i++) {
+    a_ext[i] = c_upper;
   }
 }
 
-void extrap2d_bilin(
-  std::vector< std::vector<double> > a,
-  int N, int N_ext,
+void extrap2d_lin(
+  std::vector< std::vector<double> >& a,
+  int N_row_ext, int N_col_ext,
   std::vector< std::vector<double> >& a_ext
 ) {
-  double da_left, da_right;
-  for (int i = N_ext; i < N + N_ext; i++) {
-    da_left = a[i - N_ext][1] -  a[i - N_ext][0];
-    da_right = a[i - N_ext][N - 1] - a[i - N_ext][N - 2];
-
-    // Extrapolate the middle left edge.
-    for (int j = 0; j < N_ext; j++) {
-      a_ext[i][j] = a[i - N_ext][0] + (j - N_ext) * da_left;
-    }
-
-    // Fill in the central part.
-    for (int j = N_ext; j < N_ext + N; j++) {
-      a_ext[i][j] = a[i - N_ext][j - N_ext];
-    }
-
-    // Extrapolate the middle right edge.
-    for (int j = N_ext + N; j < N + 2*N_ext; j++) {
-      a_ext[i][j] = a[i - N_ext][N-1] + (j - N_ext - (N - 1)) * da_right;
-    }
-  }
-
-  double da_up, da_down;
-  for (int j = 0; j < N + 2*N_ext; j++) {
-    da_up = a_ext[N_ext + 1][j] - a_ext[N_ext][j];
-    da_down = a_ext[N_ext + N - 1][j] - a_ext[N_ext + N - 2][j];
-
-    // Extrapolate the upper edge.
-    for (int i =  0; i < N_ext; i++) {
-      a_ext[i][j] = a_ext[N_ext][j] + (i - N_ext) * da_up;
-    }
-
-    // Extrapolate the lower edge.
-    for (int i =  N_ext + N; i < 2*N_ext + N; i++) {
-      a_ext[i][j] = a_ext[N_ext + N - 1][j] + (i - N_ext - (N - 1)) * da_down;
-    }
-  }
+  // FUTURE: Implement this function.
+  throw trvs::UnimplementedError(
+    "Function `extrap2d_lin` is not yet implemented in the C++ backend."
+  );
 }
 
-void extrap2d_bizeros(
-  std::vector< std::vector<double> > a,
-  int N, int N_ext,
+void extrap2d_loglin(
+  std::vector< std::vector<double> >& a,
+  int N_row_ext, int N_col_ext,
   std::vector< std::vector<double> >& a_ext
 ) {
-  for (int i = N_ext; i < N + N_ext; i++) {
-    for (int j = 0; j < N_ext; j++) {
-      a_ext[i][j] = 0.;
-    }
-    for (int j = N_ext; j < N_ext + N; j++) {
-      a_ext[i][j] = a[i - N_ext][j - N_ext];
-    }
-    for (int j = N_ext + N; j < N + 2*N_ext; j++) {
-      a_ext[i][j] = 0.;
-    }
-  }
+  // FUTURE: Implement this function.
+  throw trvs::UnimplementedError(
+    "Function `extrap2d_loglin` is not yet implemented in the C++ backend."
+  );
+}
 
-  for (int j = 0; j < N + 2*N_ext; j++) {
-    for (int i = 0; i < N_ext; i++) {
-      a_ext[i][j] = 0.;
-    }
-    for (int i = N_ext + N; i < N + 2*N_ext; i++) {
-      a_ext[i][j] = 0.;
-    }
-  }
+void extrap2d_pad(
+  std::vector< std::vector<double> >& a,
+  int N_row_ext, int N_col_ext,
+  double c_row_lower, double c_row_upper,
+  double c_col_lower, double c_col_upper,
+  std::vector< std::vector<double> >& a_ext
+) {
+  // FUTURE: Implement this function.
+  throw trvs::UnimplementedError(
+    "Function `extrap2d_pad` is not yet implemented in the C++ backend."
+  );
 }
 
 

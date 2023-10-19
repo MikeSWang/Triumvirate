@@ -52,15 +52,27 @@ def parse_parameters() -> argparse.Namespace:
     )
     parser.add_argument(
         '--order', type=int, default=0,
-        help="Order of the Hankel transform."
+        help="Order of the Hankel transform (default is %(default)d)."
     )
     parser.add_argument(
         '--degree', type=int, default=0,
-        help="Degree of the spherical Bessel transform."
+        help="Degree of the spherical Bessel transform "
+             "(default is %(default)d)."
     )
     parser.add_argument(
-        '--extrap', action='store_true',
-        help="Enable extrapolation for smoothness."
+        '--extrap', type=int, nargs='?', const=3, default=0,
+        help="Extrapolation option for smoothness "
+             "(default is %(default)d if disabled or %(const)d if enabled)."
+    )
+    parser.add_argument(
+        '--lgcentre', type=float, default=0.,
+        help="Logarithmic centre for the sample points "
+             "(default is %(default).1f)."
+    )
+    parser.add_argument(
+        '--shorten', type=float, default=1.,
+        help="Shorten the range of sample points by this factor "
+             "(default is %(default).1f)."
     )
     parser.add_argument(
         '--show-diff', action='store_true',
@@ -77,9 +89,27 @@ def parse_parameters() -> argparse.Namespace:
             "when external cosmological multipole samples are referenced "
             "as they are computed for the monopole only."
         )
-    pars.extrap_opt = 3 if pars.extrap else None
 
     return pars
+
+
+def get_sampts_lgrange(centre: float, shorten: float) -> Tuple[float, float]:
+    """Get the log-range of sample points.
+
+    Parameters
+    ----------
+    centre
+        Logarithmic centre for the sample points.
+    shorten
+        Shorten the symmetric range of sample points by this factor.
+
+    Returns
+    -------
+    Tuple[float, float]
+        Log-range of sample points.
+
+    """
+    return ((val - centre) / shorten for val in LGRANGE)
 
 
 def get_analy_func_pair(
@@ -137,8 +167,8 @@ def get_analy_func_pair(
 
 
 def get_external_samples(
-    presamp_file: str = "pk_lgsamps.dat",
-    postsamp_file: str = "xir_postsamps.dat",
+    presamp_file: str,
+    postsamp_file: str,
     samp_dir: str = "examples/FFTLog/storage/input/samps"
 ) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
     """Get pre- and post-transform samples from external files.
@@ -289,17 +319,19 @@ def get_testcase(pars: argparse.Namespace) -> None:
         (f, fstr), (g, gstr) = get_analy_func_pair(testcase)
 
         # Set up samples.
-        r = np.logspace(*LGRANGE, NSAMP, base=10)
+        r = np.logspace(
+            *get_sampts_lgrange(pars.lgcentre, pars.shorten), NSAMP, base=10
+        )
         fr = f(r, mu=pars.order)
 
         # Compute the Hankel transforms.
         k_fftlog, gk_fftlog = HankelTransform(
-            pars.order, BIAS, r, PIVOT, LOWRING, extrap=pars.extrap_opt
+            pars.order, BIAS, r, PIVOT, LOWRING, extrap=pars.extrap
         ).transform(fr + 0.j)
         if hankl is not None:
             k_hankl, gk_hankl = hankl.FFTLog(
                 r, fr, mu=pars.order, q=BIAS, xy=PIVOT,
-                lowring=LOWRING, ext=pars.extrap_opt
+                lowring=LOWRING, ext=pars.extrap
             )
         k_analy, gk_analy = k_fftlog, g(k_fftlog, mu=pars.order)
 
@@ -348,12 +380,14 @@ def get_testcase(pars: argparse.Namespace) -> None:
         (f, fstr), (g, gstr) = get_analy_func_pair('sj-sym')
 
         # Set up samples.
-        r = np.logspace(*LGRANGE, NSAMP, base=10)
+        r = np.logspace(
+            *get_sampts_lgrange(pars.lgcentre, pars.shorten), NSAMP, base=10
+        )
         fr = f(r, ell=pars.degree)
 
         # Compute the Hankel transforms.
         k_fftlog, gk_fftlog = SphericalBesselTransform(
-            pars.degree, BIAS, r, PIVOT, LOWRING, extrap=pars.extrap_opt
+            pars.degree, BIAS, r, PIVOT, LOWRING, extrap=pars.extrap
         ).transform(fr + 0.j)
         k_analy, gk_analy = k_fftlog, g(k_fftlog, ell=pars.degree)
 
@@ -388,16 +422,21 @@ def get_testcase(pars: argparse.Namespace) -> None:
     )
     def run_sj_cosmo(canvas: comparison_plot) -> None:
         # Set up samples.
-        (k, pk), (r, xi) = get_external_samples()
+        (k, pk), (r, xi) = get_external_samples(
+            presamp_file=PK_PRE_SAMP_FILE,
+            postsamp_file=XIR_POST_SAMP_FILE.format(
+                '_extrap' if pars.extrap else ''
+            )
+        )
 
         # Compute the FFTLog transform.
         r_fftlog, xi_fftlog = SphericalBesselTransform(
-            pars.degree, BIAS, k, lowring=LOWRING, extrap=pars.extrap_opt
+            pars.degree, BIAS, k, lowring=LOWRING, extrap=pars.extrap
         ).transform_cosmo_multipoles(-1, pk)
         if hankl is not None:
             r_hankl, xi_hankl = hankl.P2xi(
                 k, pk, pars.degree, n=BIAS,
-                lowring=LOWRING, ext=pars.extrap_opt
+                lowring=LOWRING, ext=pars.extrap
             )
 
         xi_ext_fftlog = InterpolatedUnivariateSpline(r, xi)(r_fftlog)
@@ -460,7 +499,9 @@ BIAS: float = 0.
 PIVOT: float = 1.
 LOWRING: bool = True
 NSAMP: int = 2**10
-LGRANGE: List[float] = [-5., 5.]
+LGRANGE: Tuple[float, float] = (-5., 5.)
+PK_PRE_SAMP_FILE: str = "pk_lgsamps.dat"
+XIR_POST_SAMP_FILE: str = "xir_lgsamps_post{}.dat"
 
 if __name__ == '__main__':
     sys.exit(main())

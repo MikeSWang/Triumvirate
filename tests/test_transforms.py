@@ -33,20 +33,20 @@ def gsph_analytic(k, ell=0):
 
 
 @pytest.mark.parametrize(
-    "order, bias, nsamp, lg_range, test_case",
+    "test_case, order, bias, nsamp, lg_range, extrap",
     [
-        (2, 0, 2**10, [-5., 5.], 'a'),
-        (0, 0, 2**11, [-5., 5.], 'b'),
+        ('a', 2, 0, 2**10, [-5., 5.], 0),
+        ('b', 0, 0, 2**11, [-5., 5.], 3),
     ]
 )
-def test_hankeltransform(order, bias, nsamp, lg_range, test_case):
+def test_hankeltransform(test_case, order, bias, nsamp, lg_range, extrap):
 
     if test_case not in ['a', 'b']:
         raise ValueError("Invalid test case.")
 
     pre_sampts = np.logspace(*lg_range, nsamp, base=10, endpoint=False)
     transformer = HankelTransform(
-        order, bias, pre_sampts, kr_c=1., lowring=True
+        order, bias, pre_sampts, kr_c=1., lowring=True, extrap=extrap
     )
     post_sampts = np.asarray(transformer._post_sampts)
 
