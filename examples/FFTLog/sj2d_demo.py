@@ -1,4 +1,5 @@
-"""Demonstrate the use of the FFTLog algorithm for Hankel-like transforms.
+"""Demonstrate the use of the FFTLog algorithm for double spherical
+Bessel transforms.
 
 .. attention::
 
@@ -13,23 +14,13 @@ import os.path as osp
 import sys
 import warnings
 from functools import wraps
-from typing import Callable, List, Literal, Self, Tuple, Union
+from typing import Callable, Literal, Self, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.interpolate import InterpolatedUnivariateSpline
+from scipy.interpolate import RectBivariateSpline
 
-from triumvirate._fftlog import HankelTransform
-from triumvirate.transforms import SphericalBesselTransform
-
-try:
-    import hankl
-except ImportError:
-    hankl = None
-    warnings.warn(
-        "Could not import `hankl` package. "
-        "Some of the test cases will not be available."
-    )
+from triumvirate.transforms import DoubleSphericalBesselTransform
 
 
 def parse_parameters() -> argparse.Namespace:
@@ -42,22 +33,18 @@ def parse_parameters() -> argparse.Namespace:
 
     """
     parser = argparse.ArgumentParser(
-        description="FFTLog Hankel transform demo."
+        description="Double spherical Bessel transform demo."
     )
 
     parser.add_argument(
         '-t', "--test-case", type=str,
-        choices=['hankel-sym', 'hankel-asym', 'sj-sym', 'sj-cosmo'],
+        choices=['sym', 'asym', 'cosmo'],
         required=True
     )
     parser.add_argument(
-        '--order', type=int, default=0,
-        help="Order of the Hankel transform (default is %(default)d)."
-    )
-    parser.add_argument(
-        '--degree', type=int, default=0,
-        help="Degree of the spherical Bessel transform "
-             "(default is %(default)d)."
+        '--degrees', type=int, nargs=2, default=(0, 0),
+        help="Degrees of the double spherical Bessel transform "
+             "(default is %(default)s)."
     )
     parser.add_argument(
         '--extrap', type=int, nargs='?', const=3, default=0,
@@ -82,10 +69,10 @@ def parse_parameters() -> argparse.Namespace:
     pars = parser.parse_args()
 
     # HACK: Override the degree to be 0 to match the external samples.
-    if pars.test_case == 'sj-cosmo' and pars.degree != 0:
-        pars.degree = 0
+    if pars.test_case == 'cosmo' and pars.degrees != (0, 0):
+        pars.degrees = (0, 0)
         warnings.warn(
-            "Spherical Bessel transform degree overriden to 0 "
+            "Double spherical Bessel transform degree overriden to (0, 0) "
             "when external cosmological multipole samples are referenced "
             "as they are computed for the monopole only."
         )
@@ -113,7 +100,7 @@ def get_sampts_lgrange(centre: float, shorten: float) -> Tuple[float, float]:
 
 
 def get_analy_func_pair(
-    testcase: Literal['hankel-sym', 'hankel-asym', 'sj-sym']
+    testcase: Literal['sym', 'asym']
 ) -> Tuple[Tuple[Callable, str], Tuple[Callable, str]]:
     """Get pre- and post-transform analytical functions for the given
     test case.
@@ -123,11 +110,9 @@ def get_analy_func_pair(
     testcase
         Test cases:
 
-        - 'hankel-sym' for symmetric-form functions for the
-          Hankel transform;
-        - 'hankel-asym' for asymmetric-form functions for the
-          Hankel transform;
-        - 'sj-sym' for symmetric-form functions for the spherical
+        - 'sym' for symmetric-form functions for the double spherical
+          Bessel transform;
+        - 'asym' for asymmetric-form functions for the double spherical
           Bessel transform.
 
     Returns
@@ -136,23 +121,7 @@ def get_analy_func_pair(
 
     """
     match testcase:
-        case 'hankel-sym':
-            return ((
-                lambda r, mu=0.: r**(mu + 1.) * np.exp(-r*r/2.),
-                r"$f(r) = r^{\mu + 1} \mathrm{e}^{-r^2 / 2}$"
-            ), (
-                lambda k, mu=0.: k**(mu + 1.) * np.exp(-k*k/2.),
-                r"$g(k) = k^{\mu + 1} \mathrm{e}^{-k^2 / 2}$"
-            ))
-        case 'hankel-asym':
-            return ((
-                lambda r, **kwargs: r * (1 + r**2)**(-3/2),
-                r"$f(r) = r (1 + r^2)^{-3/2}$",
-            ), (
-                lambda k, **kwargs: k * np.exp(-k),
-                r"$g(k) = k \mathrm{e}^{-k}$"
-            ))
-        case 'sj-sym':
+        case 'sym':
             return ((
                 lambda r, ell=0: r**ell * np.exp(-r*r/2.),
                 r"$f(r) = r^\ell \mathrm{e}^{-r^2 / 2}$"
@@ -160,6 +129,8 @@ def get_analy_func_pair(
                 lambda k, ell=0: (2*np.pi)**(3./2) * k**ell * np.exp(-k*k/2.),
                 r"$g(k) = (2\pi)^{3/2} k^\ell \mathrm{e}^{-k^2 / 2}$"
             ))
+        case 'asym':
+            raise NotImplementedError
         case _:
             raise ValueError(
                 f"No analytical functions for test case: {testcase}."
@@ -311,10 +282,11 @@ def get_testcase(pars: argparse.Namespace) -> None:
         comp_type='analytic',
         plot_diff=showdiff,
         xlim=(1.e-5, 1.e1),
-        ylim=(1.e-6, 1.e0),
-        ylabel=r"$g(k)$",
+        ylim=(1.e-18, 1.e3),
+        xlabel=r"$k_1 = k_2$",
+        ylabel=r"$k_1^2 k_2^2 g(k_1) g(k_2)$",
     )
-    def run_hankel(canvas: comparison_plot) -> None:
+    def run_analy(canvas: comparison_plot) -> None:
         # Get analytical functions.
         (f, fstr), (g, gstr) = get_analy_func_pair(testcase)
 
@@ -322,95 +294,43 @@ def get_testcase(pars: argparse.Namespace) -> None:
         r = np.logspace(
             *get_sampts_lgrange(pars.lgcentre, pars.shorten), NSAMP, base=10
         )
-        fr = f(r, mu=pars.order)
+        fr_1, fr_2 = (f(r, ell=ell) for ell in pars.degrees)
 
         # Compute the Hankel transforms.
-        k_fftlog, gk_fftlog = HankelTransform(
-            pars.order, BIAS, r, PIVOT, LOWRING, extrap=pars.extrap
-        ).transform(fr + 0.j)
-        if hankl is not None:
-            k_hankl, gk_hankl = hankl.FFTLog(
-                r, fr, mu=pars.order, q=BIAS, xy=PIVOT,
-                lowring=LOWRING, ext=pars.extrap
-            )
-        k_analy, gk_analy = k_fftlog, g(k_fftlog, mu=pars.order)
+        frr = fr_1[:, None] * fr_2[None, :]
+        kk_fftlog, gkk_fftlog = DoubleSphericalBesselTransform(
+            pars.degrees, BIASES, r, PIVOT, LOWRING, extrap=pars.extrap
+        ).transform(frr + 0.j)
+
+        gkk_analy = np.multiply(*[
+            g(ki_fftlog, ell=ell)
+            for (ki_fftlog, ell) in zip(kk_fftlog, pars.degrees)
+        ])
+
+        k_diag = kk_fftlog[0][np.equal(*kk_fftlog)]
 
         # Calculate the differences.
         if pars.show_diff:
-            dgk_fftlog = gk_fftlog.real / gk_analy - 1.
-            if hankl is not None:
-                dgk_hankl = gk_hankl / gk_analy - 1.
+            dgkk_fftlog = gkk_fftlog.real / gkk_analy - 1.
 
         # Plot the results.
         plot_fftlog = canvas._ax_comp.plot(
-            k_fftlog, gk_fftlog.real, ls='-', label='FFTLog'
+            k_diag, k_diag**4 * np.diag(gkk_fftlog).real,
+            ls='-', label='FFTLog'
         )
-        if hankl is not None:
-            plot_hankl = canvas._ax_comp.plot(
-                k_hankl, gk_hankl, ls='--', label='hankl'
-            )
         _ = canvas._ax_comp.plot(
-            k_analy, gk_analy, ls=':', label='analytical'
+            k_diag, k_diag**4 * np.diag(gkk_analy),
+            ls=':', label='analytical'
         )
 
         if pars.show_diff:
             canvas._ax_diff.plot(
-                k_fftlog, 100 * dgk_fftlog,
-                c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
-            )
-            if hankl is not None:
-                canvas._ax_diff.plot(
-                    k_hankl, 100 * dgk_hankl,
-                    c=plot_hankl[0].get_color(), ls='--', label='hankl'
-                )
-
-        canvas._title = (
-            fstr + r"$\,$, " + gstr + fr" ($\mu = {pars.order}$)"
-        )
-
-    @comparison_plot(
-        comp_type='analytic',
-        plot_diff=showdiff,
-        xlim=(1.e-5, 1.e1),
-        ylim=(1.e-10, 1.e2),
-        ylabel=r"$k^2 g(k)$",
-    )
-    def run_sj_sym(canvas: comparison_plot) -> None:
-        # Get analytical functions.
-        (f, fstr), (g, gstr) = get_analy_func_pair('sj-sym')
-
-        # Set up samples.
-        r = np.logspace(
-            *get_sampts_lgrange(pars.lgcentre, pars.shorten), NSAMP, base=10
-        )
-        fr = f(r, ell=pars.degree)
-
-        # Compute the Hankel transforms.
-        k_fftlog, gk_fftlog = SphericalBesselTransform(
-            pars.degree, BIAS, r, PIVOT, LOWRING, extrap=pars.extrap
-        ).transform(fr + 0.j)
-        k_analy, gk_analy = k_fftlog, g(k_fftlog, ell=pars.degree)
-
-        # Calculate the differences.
-        if pars.show_diff:
-            dgk_fftlog = gk_fftlog.real / gk_analy - 1.
-
-        # Plot the results.
-        plot_fftlog = canvas._ax_comp.plot(
-            k_fftlog, k_fftlog**2 * gk_fftlog.real, ls='-', label='FFTLog'
-        )
-        _ = canvas._ax_comp.plot(
-            k_analy, k_analy**2 * gk_analy, ls=':', label='analytical'
-        )
-
-        if pars.show_diff:
-            canvas._ax_diff.plot(
-                k_fftlog, 100 * dgk_fftlog,
+                k_diag, 100 * np.diag(dgkk_fftlog),
                 c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
             )
 
         canvas._title = (
-            fstr + r"$\,$, " + gstr + fr" ($\ell = {pars.degree}$)"
+            fstr + r"$\,$, " + gstr + fr" ($\ell = {pars.degrees}$)"
         )
 
     @comparison_plot(
@@ -418,9 +338,10 @@ def get_testcase(pars: argparse.Namespace) -> None:
         plot_diff=showdiff,
         xlim=(2.5e0, 2.5e2),
         ylim=(-.25e-0, 2.25e0),
-        ylabel=r"$r \xi(r)$",
+        xlabel=r"$r_1 = r_2$",
+        ylabel=r"$[r_1 r_2 \xi(r_1) \xi(r_2)]^{1/2}$",
     )
-    def run_sj_cosmo(canvas: comparison_plot) -> None:
+    def run_samples(canvas: comparison_plot) -> None:
         # Set up samples.
         (k, pk), (r, xi) = get_external_samples(
             presamp_file=PK_PRE_SAMP_FILE,
@@ -430,55 +351,43 @@ def get_testcase(pars: argparse.Namespace) -> None:
         )
 
         # Compute the FFTLog transform.
-        r_fftlog, xi_fftlog = SphericalBesselTransform(
-            pars.degree, BIAS, k, lowring=LOWRING, extrap=pars.extrap
-        ).transform_cosmo_multipoles(-1, pk)
-        if hankl is not None:
-            r_hankl, xi_hankl = hankl.P2xi(
-                k, pk, pars.degree, n=BIAS,
-                lowring=LOWRING, ext=pars.extrap
-            )
+        bkk = pk[:, None] * pk[None, :]
+        rr_fftlog, xirr_fftlog = DoubleSphericalBesselTransform(
+            pars.degrees, BIASES, k, lowring=LOWRING, extrap=pars.extrap
+        ).transform_cosmo_multipoles(-1, bkk)
 
-        xi_ext_fftlog = InterpolatedUnivariateSpline(r, xi)(r_fftlog)
-        if hankl is not None:
-            xi_ext_hankl = InterpolatedUnivariateSpline(r, xi)(r_hankl)
+        xirr = xi[:, None] * xi[None, :]
+        xirr_ext_fftlog = RectBivariateSpline(r, r, xirr)(
+            *rr_fftlog, grid=False
+        )
+
+        r_diag = rr_fftlog[0][np.equal(*rr_fftlog)]
+        # r_row = rr_fftlog[0][:, 0]
 
         # Calculate the differences.
         if pars.show_diff:
-            dxi_fftlog = xi_fftlog.real / xi_ext_fftlog - 1.
-            if hankl is not None:
-                dxi_hankl = xi_hankl.real / xi_ext_hankl - 1.
+            dxirr_fftlog = xirr_fftlog.real / xirr_ext_fftlog - 1.
 
         # Plot the results.
         plot_fftlog = canvas._ax_comp.plot(
-            r_fftlog, r_fftlog * xi_fftlog.real, ls='-', label='FFTLog'
+            r_diag, r_diag * np.sqrt(np.diag(xirr_ext_fftlog).real),
+            ls='-', label='FFTLog'
         )
-        if hankl is not None:
-            plot_hankl = canvas._ax_comp.plot(
-                r_hankl, r_hankl * xi_hankl.real, ls='--', label='hankl'
-            )
         _ = canvas._ax_comp.plot(
-            r, r * xi, ls=':', label='extern (mcfit)'
+            r, r * np.sqrt(np.diag(xirr)), ls=':', label='extern (mcfit)'
         )
 
         if pars.show_diff:
             canvas._ax_diff.plot(
-                r_fftlog, 100 * dxi_fftlog,
+                r_diag, 100 * np.diag(dxirr_fftlog),
                 c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
             )
-            if hankl is not None:
-                canvas._ax_diff.plot(
-                    r_hankl, 100 * dxi_hankl,
-                    c=plot_hankl[0].get_color(), ls='--', label='hankl'
-                )
 
     match testcase:
-        case 'hankel-sym' | 'hankel-asym':
-            return run_hankel
-        case 'sj-sym':
-            return run_sj_sym
-        case 'sj-cosmo':
-            return run_sj_cosmo
+        case 'sym' | 'asym':
+            return run_analy
+        case 'cosmo':
+            return run_samples
         case _:
             raise ValueError(f"Undefined test case: {testcase}.")
 
@@ -495,7 +404,7 @@ def main() -> Literal[0]:
 
 
 # Global parameters
-BIAS: float = 0.
+BIASES: Tuple[int, int] = (0, 0)
 PIVOT: float = 1.
 LOWRING: bool = True
 NSAMP: int = 2**10
