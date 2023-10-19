@@ -70,7 +70,7 @@ void ParticleCatalogue::initialise_particles(const int num) {
   this->pdata = new ParticleData[this->ntotal];
 
   trvs::gbytesMem += trvs::size_in_gb<struct ParticleData>(this->ntotal);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 }
 
 void ParticleCatalogue::finalise_particles() {

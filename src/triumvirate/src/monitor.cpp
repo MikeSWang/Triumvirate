@@ -49,7 +49,7 @@ double gbytesMaxMem = 0.;
 auto clockStart = std::chrono::steady_clock::now();  ///< program starting time
 
 /// @cond DOXYGEN_DOC_MISC
-Logger logger(NSET);  ///< default logger at `NSET` logging level
+Logger logger(LogLevel::NSET);  ///< default logger at `NSET` logging level
 /// @endcond
 
 void update_maxmem() {
@@ -153,17 +153,17 @@ void Logger::log(LogLevel entry_level, const char* fmt_string, ...) {
   if (entry_level >= this->level_limit) {
     std::string log_type;
     switch (entry_level) {
-      case NSET:
+      case LogLevel::NSET:
         log_type = "\b";
-      case DBUG:
+      case LogLevel::DBUG:
         log_type = "DBUG";
-      case STAT:
+      case LogLevel::STAT:
         log_type = "STAT";
-      case INFO:
+      case LogLevel::INFO:
         log_type = "INFO";
-      case WARN:
+      case LogLevel::WARN:
         log_type = "WARN";
-      case ERRO:
+      case LogLevel::ERRO:
         log_type = "ERRO";
     }
 
@@ -181,15 +181,15 @@ void Logger::log(int level_entry, const char* fmt_string, ...) {
 
     std::string log_type;
     switch (level_entry) {
-      case DBUG:
+      case LogLevel::DBUG:
         log_type = "DBUG";
-      case STAT:
+      case LogLevel::STAT:
         log_type = "STAT";
-      case INFO:
+      case LogLevel::INFO:
         log_type = "INFO";
-      case WARN:
+      case LogLevel::WARN:
         log_type = "WARN";
-      case ERRO:
+      case LogLevel::ERRO:
         log_type = "ERRO";
     }
 
@@ -201,7 +201,7 @@ void Logger::log(int level_entry, const char* fmt_string, ...) {
 }
 
 void Logger::debug(const char* fmt_string, ...) {
-  if (this->level_limit <= DBUG) {
+  if (this->level_limit <= LogLevel::DBUG) {
     std::va_list args;
     va_start(args, fmt_string);
     Logger::emit("DBUG", fmt_string, args);
@@ -210,7 +210,7 @@ void Logger::debug(const char* fmt_string, ...) {
 }
 
 void Logger::stat(const char* fmt_string, ...) {
-  if (this->level_limit <= STAT) {
+  if (this->level_limit <= LogLevel::STAT) {
     std::va_list args;
     va_start(args, fmt_string);
     Logger::emit("STAT", fmt_string, args);
@@ -219,7 +219,7 @@ void Logger::stat(const char* fmt_string, ...) {
 }
 
 void Logger::info(const char* fmt_string, ...) {
-  if (this->level_limit <= INFO) {
+  if (this->level_limit <= LogLevel::INFO) {
     std::va_list args;
     va_start(args, fmt_string);
     Logger::emit("INFO", fmt_string, args);
@@ -228,7 +228,7 @@ void Logger::info(const char* fmt_string, ...) {
 }
 
 void Logger::warn(const char* fmt_string, ...) {
-  if (this->level_limit <= WARN) {
+  if (this->level_limit <= LogLevel::WARN) {
     std::va_list args;
     va_start(args, fmt_string);
     Logger::emit("WARN", fmt_string, args);
@@ -237,7 +237,7 @@ void Logger::warn(const char* fmt_string, ...) {
 }
 
 void Logger::error(const char* fmt_string, ...) {
-  if (this->level_limit <= ERRO) {
+  if (this->level_limit <= LogLevel::ERRO) {
     std::va_list args;
     va_start(args, fmt_string);
     Logger::emit("ERRO", fmt_string, args);

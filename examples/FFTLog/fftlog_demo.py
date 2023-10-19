@@ -284,7 +284,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
         (f, fstr), (g, gstr) = get_analy_func_pair(testcase)
 
         # Set up samples.
-        r = np.logspace(*LGRANGE, NSAMP, base=20)
+        r = np.logspace(*LGRANGE, NSAMP, base=10)
         fr = f(r, mu=pars.order)
 
         # Compute the Hankel transforms.
@@ -342,7 +342,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
         (f, fstr), (g, gstr) = get_analy_func_pair('sj-sym')
 
         # Set up samples.
-        r = np.logspace(*LGRANGE, NSAMP, base=20)
+        r = np.logspace(*LGRANGE, NSAMP, base=10)
         fr = f(r, ell=pars.degree)
 
         # Compute the Hankel transforms.

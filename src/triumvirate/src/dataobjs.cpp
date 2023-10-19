@@ -26,6 +26,8 @@
 
 #include "dataobjs.hpp"
 
+namespace trvs = trv::sys;
+
 namespace trv {
 
 // ***********************************************************************
@@ -55,12 +57,12 @@ Binning::Binning(trv::ParameterSet& params) : Binning::Binning(
 
 void Binning::set_bins(double coord_min, double coord_max, int nbin) {
   if (coord_min < 0.) {
-    throw trv::sys::InvalidParameterError(
+    throw trvs::InvalidParameterError(
       "Bin range must be non-negative."
     );
   }
   if (nbin <= 0) {
-    throw trv::sys::InvalidParameterError(
+    throw trvs::InvalidParameterError(
       "Number of bins must be positive."
     );
   }
@@ -162,7 +164,7 @@ void Binning::compute_binning() {
   // ---------------------------------------------------------------------
   if (scheme == "log")  {
     if (this->bin_min == 0.) {
-      throw trv::sys::InvalidParameterError(
+      throw trvs::InvalidParameterError(
         "Cannot use logarithmic binning when the lowest edge is zero."
       );
     }
@@ -240,7 +242,7 @@ void Binning::compute_binning() {
     }
     this->bin_edges.push_back(this->bin_max);
   } else {
-    throw trv::sys::InvalidParameterError(
+    throw trvs::InvalidParameterError(
       "Invalid binning `scheme`: %s.", scheme.c_str()
     );
   }

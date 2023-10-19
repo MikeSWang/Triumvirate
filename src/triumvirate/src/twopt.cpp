@@ -121,7 +121,7 @@ double calc_powspec_normalisation_from_meshes(
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
-  trv::sys::update_maxmem();
+  trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for

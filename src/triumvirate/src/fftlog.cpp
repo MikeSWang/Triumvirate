@@ -27,6 +27,7 @@
 #include "fftlog.hpp"
 
 namespace trvm = trv::maths;
+namespace trvs = trv::sys;
 
 namespace trv {
 
@@ -42,7 +43,7 @@ void HankelTransform::initialise(
 ) {
   // Initialise pre-sample points.
   if (sample_pts.size() < 2) {
-    throw trv::sys::InvalidParameterError(
+    throw trvs::InvalidParameterError(
       "The number of sample points must be at least 2."
     );
   }
@@ -51,7 +52,7 @@ void HankelTransform::initialise(
       sample_pts.data(), sample_pts.size(), false, true
     ) != 0
   ) {
-    throw trv::sys::InvalidParameterError(
+    throw trvs::InvalidParameterError(
       "The sample points are not log-linearly spaced."
     );
   }
@@ -66,7 +67,7 @@ void HankelTransform::initialise(
     this->pivot = this->calc_lowring_pivot(this->logres, kr_c);
   } else {
     if (kr_c <= 0.) {
-      throw trv::sys::InvalidParameterError(
+      throw trvs::InvalidParameterError(
         "Pivot value must be positive."
       );
     }
@@ -245,7 +246,7 @@ void SphericalBesselTransform::biased_transform(
   int N = this->nsamp;
 
   if (int(a.size()) != N) {
-    throw trv::sys::InvalidParameterError(
+    throw trvs::InvalidParameterError(
       "The size of array `a` must be equal to the number of samples."
     );
   }
@@ -273,7 +274,7 @@ void SphericalBesselTransform::transform_cosmological_multipole(
     std::vector< std::complex<double> >& post_samples
 ) {
   if (abs(dir) != 1) {
-    throw trv::sys::InvalidParameterError(
+    throw trvs::InvalidParameterError(
       "The transform direction must be either +1 (forward) or -1 (backward)."
     );
   }
