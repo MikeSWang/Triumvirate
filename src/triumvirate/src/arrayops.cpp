@@ -36,7 +36,7 @@ namespace trv {
 
 namespace sys {
 
-ExtrapError::ExtrapError(const char* fmt_string, ...): std::runtime_error(
+ExtrapError::ExtrapError(const char* fmt_string, ...) : std::runtime_error(
     "Extrapolation error."  // mandatory default error message
 ) {
   std::va_list args;

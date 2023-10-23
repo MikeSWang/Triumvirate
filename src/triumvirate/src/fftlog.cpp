@@ -310,7 +310,7 @@ void HankelTransform::biased_transform(
   }
 }
 
-SphericalBesselTransform::SphericalBesselTransform(int ell, int n): \
+SphericalBesselTransform::SphericalBesselTransform(int ell, int n) : \
 HankelTransform(ell + 1./2, double(n)) {
   this->degree = ell;
 }

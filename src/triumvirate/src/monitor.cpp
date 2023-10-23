@@ -268,7 +268,7 @@ const char* UnimplementedError::what() const noexcept {
   return this->err_mesg.c_str();
 }
 
-IOError::IOError(const char* fmt_string, ...): std::runtime_error(
+IOError::IOError(const char* fmt_string, ...) : std::runtime_error(
   "I/O error."  // mandatory default error message
 ) {
   std::va_list args;
