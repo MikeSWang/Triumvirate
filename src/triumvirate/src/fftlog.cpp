@@ -41,7 +41,7 @@ HankelTransform::HankelTransform(double mu, double q) {
 
 void HankelTransform::initialise(
   std::vector<double> sample_pts, double kr_c, bool lowring,
-  trva::ExtrapOption extrap
+  trva::ExtrapOption extrap, double extrap_exp
 ) {
   // Initialise pre-sample points.
   if (sample_pts.size() < 2) {
@@ -67,13 +67,21 @@ void HankelTransform::initialise(
         "The number of sample points must be even for extrapolation."
       );
     }
-    this->nsamp_extrap = 2 * this->nsamp;
-    this->n_ext = this->nsamp / 2;
+    this->nsamp_trans = std::pow(
+      2, std::ceil(std::log2(extrap_exp * this->nsamp))
+    );
+    if (this->nsamp_trans < this->nsamp) {
+      throw trvs::InvalidParameterError(
+        "The sample size expansion factor results in a shrunken sample size."
+      );
+    }
+
+    this->n_ext = (this->nsamp_trans - this->nsamp) / 2;
     trva::extrap_loglin(
       this->pre_sampts, this->n_ext, this->pre_sampts_extrap
     );
   } else {
-    this->nsamp_extrap = this->nsamp;
+    this->nsamp_trans = this->nsamp;
     this->n_ext = 0;
   }
 
@@ -96,10 +104,10 @@ void HankelTransform::initialise(
   }
 
   if (this->extrap != trva::ExtrapOption::NONE) {
-    this->post_sampts_extrap.resize(this->nsamp_extrap);
-    for (int j = 0; j < this->nsamp_extrap; j++) {
+    this->post_sampts_extrap.resize(this->nsamp_trans);
+    for (int j = 0; j < this->nsamp_trans; j++) {
       this->post_sampts_extrap[j] =
-        this->pivot / this->pre_sampts[this->nsamp_extrap - j - 1];
+        this->pivot / this->pre_sampts[this->nsamp_trans - j - 1];
     }
   }
 
@@ -116,9 +124,12 @@ void HankelTransform::initialise(
 }
 
 void HankelTransform::initialise(
-  std::vector<double> sample_pts, double kr_c, bool lowring, int extrap
+  std::vector<double> sample_pts, double kr_c, bool lowring,
+  int extrap, double extrap_exp
 ) {
-  this->initialise(sample_pts, kr_c, lowring, trva::ExtrapOption(extrap));
+  this->initialise(
+    sample_pts, kr_c, lowring, trva::ExtrapOption(extrap), extrap_exp
+  );
 }
 
 double HankelTransform::calc_lowring_pivot(double delta, double kr_c) {
@@ -157,7 +168,7 @@ std::vector< std::complex<double> > HankelTransform::compute_kernel_coeff() {
   // STYLE: Standard naming convention is not followed below.
   double mu = this->order;
   double q = this->bias;
-  int N_trans = this->nsamp_extrap;
+  int N_trans = this->nsamp_trans;
   double dL = this->logres;
   double kr_c = this->pivot;
 
@@ -217,7 +228,7 @@ void HankelTransform::biased_transform(
 ) {
   // STYLE: Standard naming convention is not followed below.
   int N = this->nsamp;
-  int N_trans = this->nsamp_extrap;
+  int N_trans = this->nsamp_trans;
 
   if (this->kernel.empty() || N <= 2 || N_trans <= 2) {
     throw std::runtime_error(
@@ -306,16 +317,16 @@ HankelTransform(ell + 1./2, double(n)) {
 
 void SphericalBesselTransform::initialise(
   std::vector<double> sample_pts, double kr_c, bool lowring,
-  trva::ExtrapOption extrap
+  trva::ExtrapOption extrap, double extrap_exp
 ) {
-  HankelTransform::initialise(sample_pts, kr_c, lowring, extrap);
+  HankelTransform::initialise(sample_pts, kr_c, lowring, extrap, extrap_exp);
 }
 
 void SphericalBesselTransform::initialise(
   std::vector<double> sample_pts, double kr_c, bool lowring,
-  int extrap
+  int extrap, double extrap_exp
 ) {
-  HankelTransform::initialise(sample_pts, kr_c, lowring, extrap);
+  HankelTransform::initialise(sample_pts, kr_c, lowring, extrap, extrap_exp);
 }
 
 void SphericalBesselTransform::biased_transform(

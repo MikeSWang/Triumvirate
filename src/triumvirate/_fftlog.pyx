@@ -38,8 +38,15 @@ cdef class HankelTransform:
         - 2: extrapolate linearly;
         - 3: extrapolate log-linearly.
 
-        Any extrapolation doubles the sample size in effect, and
-        assumes the pre-transform samples to be real.
+        Any extrapolation results in a sample size for the transform that
+        is the smallest power of 2 greater than or equal to `extrap_exp`
+        times the original number of sample points; the pre-transform
+        samples are assumed to be real.
+    extrap_exp : float, optional
+        Sample size expansion factor (default is 2.) for extrapolation.
+        The smallest power of 2 greater than or equal to this times the
+        original number of sample points is used as the sample size for
+        the transform.
 
     Attributes
     ----------
@@ -54,20 +61,21 @@ cdef class HankelTransform:
 
     """
 
-    def __cinit__(self, mu, q, x, kr_c, lowring=True, extrap=0):
+    def __cinit__(self, mu, q, x, kr_c, lowring=True, extrap=0, extrap_exp=2.):
         self.thisptr = new CppHankelTransform(<double>mu, <double>q)
 
         cdef np.ndarray[double, ndim=1, mode='c'] _x = np.ascontiguousarray(
             _check_1d_array(x, check_loglin=True)
         )
         self.thisptr.initialise(
-            _x, kr_c, lowring, 0 if extrap is None else extrap
+            _x, kr_c, lowring, 0 if extrap is None else extrap, extrap_exp
         )
 
         self.order = self.thisptr.order
         self.bias = self.thisptr.bias
 
         self._nsamp = self.thisptr.nsamp
+        self._nsamp_trans = self.thisptr.nsamp_trans
         self._logres = self.thisptr.logres
         self._pivot = self.thisptr.pivot
 

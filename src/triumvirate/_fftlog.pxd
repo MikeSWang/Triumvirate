@@ -11,6 +11,7 @@ cdef extern from "include/fftlog.hpp":
         double order
         double bias
         int nsamp
+        int nsamp_trans
         double logres
         double pivot
 
@@ -20,7 +21,8 @@ cdef extern from "include/fftlog.hpp":
         CppHankelTransform(double mu, double q)
 
         void initialise(
-            vector[double] sample_pts, double kr_c, bool_t lowring, int extrap
+            vector[double] sample_pts, double kr_c, bool_t lowring,
+            int extrap, double extrap_exp
         ) except +
 
         void biased_transform(
@@ -33,6 +35,7 @@ cdef class HankelTransform:
     cdef public double order
     cdef public double bias
     cdef public int _nsamp
+    cdef public int _nsamp_trans
     cdef public double _logres
     cdef public double _pivot
     cdef public vector[double] _pre_sampts

@@ -39,8 +39,15 @@ class SphericalBesselTransform:
         - 2: extrapolate linearly;
         - 3: extrapolate log-linearly.
 
-        Any extrapolation doubles the sample size in effect, and
-        assumes the pre-transform samples to be real.
+        Any extrapolation results in a sample size for the transform that
+        is the smallest power of 2 greater than or equal to `extrap_exp`
+        times the original number of sample points; the pre-transform
+        samples are assumed to be real.
+    extrap_exp : float, optional
+        Sample size expansion factor (default is 2.) for extrapolation.
+        The smallest power of 2 greater than or equal to this times the
+        original number of sample points is used as the sample size for
+        the transform.
 
     Attributes
     ----------
@@ -56,14 +63,14 @@ class SphericalBesselTransform:
     """
 
     def __init__(self, degree, bias, sample_pts, pivot=1.,
-                 lowring=True, extrap=0):
+                 lowring=True, extrap=0, extrap_exp=2.):
 
         self.degree = degree
         self.bias = bias
 
         self._fbht = HankelTransform(
             degree + 1./2, bias, sample_pts,
-            kr_c=pivot, lowring=lowring, extrap=extrap
+            kr_c=pivot, lowring=lowring, extrap=extrap, extrap_exp=extrap_exp
         )
         self._lowring = lowring
         self._extrap = extrap
@@ -174,8 +181,15 @@ class DoubleSphericalBesselTransform:
         - 2: extrapolate linearly;
         - 3: extrapolate log-linearly.
 
-        Any extrapolation doubles the sample size in effect, and
-        assumes the pre-transform samples to be real.
+        Any extrapolation results in a sample size for the transform that
+        is the smallest power of 2 greater than or equal to `extrap_exp`
+        times the original number of sample points; the pre-transform
+        samples are assumed to be real.
+    extrap_exp : float, optional
+        Sample size expansion factor (default is 2.) for extrapolation.
+        The smallest power of 2 greater than or equal to this times the
+        original number of sample points is used as the sample size for
+        the transform.
 
     Attributes
     ----------
@@ -194,7 +208,7 @@ class DoubleSphericalBesselTransform:
     _rep = 0
 
     def __init__(self, degrees, biases, sample_pts, pivot=1.,
-                 lowring=True, extrap=0):
+                 lowring=True, extrap=0, extrap_exp=2.):
 
         self.degrees = degrees
         self.biases = biases
@@ -202,7 +216,8 @@ class DoubleSphericalBesselTransform:
         self._fbsjt = tuple(
             SphericalBesselTransform(
                 degree_, bias_, sample_pts,
-                pivot=pivot, lowring=lowring, extrap=extrap
+                pivot=pivot, lowring=lowring,
+                extrap=extrap, extrap_exp=extrap_exp
             )
             for (degree_, bias_) in zip(degrees, biases)
         )
