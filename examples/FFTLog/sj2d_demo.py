@@ -332,7 +332,8 @@ def get_testcase(pars: argparse.Namespace) -> None:
 
         # Calculate the differences.
         if pars.show_diff:
-            dgkk_fftlog = gkk_fftlog.real / gkk_analy - 1.
+            with np.errstate(divide='ignore'):
+                dgkk_fftlog = gkk_fftlog.real / gkk_analy - 1.
 
         # Plot the results.
         plot_fftlog = canvas._ax_comp.plot(
@@ -387,7 +388,8 @@ def get_testcase(pars: argparse.Namespace) -> None:
 
         # Calculate the differences.
         if pars.show_diff:
-            dxirr_fftlog = xirr_fftlog.real / xirr_ext_fftlog - 1.
+            with np.errstate(divide='ignore'):
+                dxirr_fftlog = xirr_fftlog.real / xirr_ext_fftlog - 1.
 
         # Plot the results.
         plot_fftlog = canvas._ax_comp.plot(

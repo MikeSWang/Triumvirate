@@ -13,7 +13,7 @@ import os.path as osp
 import sys
 import warnings
 from functools import wraps
-from typing import Callable, List, Literal, Self, Tuple, Union
+from typing import Callable, Literal, Self, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,6 +22,15 @@ from scipy.special import gamma
 
 from triumvirate._fftlog import HankelTransform
 from triumvirate.transforms import SphericalBesselTransform
+
+try:
+    import mcfit
+except ImportError:
+    mcfit = None
+    warnings.warn(
+        "Could not import `mcfit` package. "
+        "Some of the test cases will not be available."
+    )
 
 try:
     import hankl
@@ -347,29 +356,44 @@ def get_testcase(pars: argparse.Namespace) -> None:
             pars.order, BIAS, r, PIVOT, LOWRING,
             extrap=pars.extrap, extrap_exp=1.25
         ).transform(fr + 0.j)
+        k_fftlog_analy, gk_fftlog_analy = k_fftlog, g(k_fftlog, mu=pars.order)
+
+        if mcfit is not None:
+            k_mcfit, gk_mcfit = mcfit.Hankel(
+                r, lowring=LOWRING
+            )(fr / r, extrap=bool(pars.extrap))
+            gk_mcfit *= k_mcfit
+            gk_mcfit_analy = g(k_mcfit, mu=pars.order)
         if hankl is not None:
             k_hankl, gk_hankl = hankl.FFTLog(
                 r, fr, mu=pars.order, q=BIAS, xy=PIVOT,
                 lowring=LOWRING, ext=pars.extrap
             )
-        k_analy, gk_analy = k_fftlog, g(k_fftlog, mu=pars.order)
+            gk_hankl_analy = g(k_hankl, mu=pars.order)
 
         # Calculate the differences.
         if pars.show_diff:
-            dgk_fftlog = gk_fftlog.real / gk_analy - 1.
-            if hankl is not None:
-                dgk_hankl = gk_hankl / gk_analy - 1.
+            with np.errstate(divide='ignore'):
+                dgk_fftlog = gk_fftlog.real / gk_fftlog_analy - 1.
+                if mcfit is not None:
+                    dgk_mcfit = gk_mcfit / gk_mcfit_analy - 1.
+                if hankl is not None:
+                    dgk_hankl = gk_hankl / gk_hankl_analy - 1.
 
         # Plot the results.
         plot_fftlog = canvas._ax_comp.plot(
             k_fftlog, gk_fftlog.real, ls='-', label='FFTLog'
         )
+        if mcfit is not None:
+            plot_mcfit = canvas._ax_comp.plot(
+                k_mcfit, gk_mcfit, ls='--', label='mcfit'
+            )
         if hankl is not None:
             plot_hankl = canvas._ax_comp.plot(
                 k_hankl, gk_hankl, ls='--', label='hankl'
             )
         _ = canvas._ax_comp.plot(
-            k_analy, gk_analy, ls=':', label='analytical'
+            k_fftlog_analy, gk_fftlog_analy, ls=':', label='analytical'
         )
 
         if pars.show_diff:
@@ -377,6 +401,11 @@ def get_testcase(pars: argparse.Namespace) -> None:
                 k_fftlog, 100 * dgk_fftlog,
                 c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
             )
+            if mcfit is not None:
+                canvas._ax_diff.plot(
+                    k_mcfit, 100 * dgk_mcfit,
+                    c=plot_mcfit[0].get_color(), ls='--', label='mcfit'
+                )
             if hankl is not None:
                 canvas._ax_diff.plot(
                     k_hankl, 100 * dgk_hankl,
@@ -413,18 +442,33 @@ def get_testcase(pars: argparse.Namespace) -> None:
             pars.degree, BIAS, r, PIVOT, LOWRING,
             extrap=pars.extrap, extrap_exp=1.25
         ).transform(fr + 0.j)
-        k_analy, gk_analy = k_fftlog, g(k_fftlog, ell=pars.degree)
+        k_fftlog_analy, gk_fftlog_analy = \
+            k_fftlog, g(k_fftlog, ell=pars.degree)
+
+        if mcfit is not None:
+            k_mcfit, gk_mcfit = mcfit.SphericalBessel(
+                r, lowring=LOWRING
+            )(fr * (2*np.pi)**(3./2), extrap=bool(pars.extrap))
+            gk_mcfit_analy = g(k_mcfit, ell=pars.degree)
 
         # Calculate the differences.
         if pars.show_diff:
-            dgk_fftlog = gk_fftlog.real / gk_analy - 1.
+            with np.errstate(divide='ignore'):
+                dgk_fftlog = gk_fftlog.real / gk_fftlog_analy - 1.
+                if mcfit is not None:
+                    dgk_mcfit = gk_mcfit / gk_mcfit_analy - 1.
 
         # Plot the results.
         plot_fftlog = canvas._ax_comp.plot(
             k_fftlog, k_fftlog**2 * gk_fftlog.real, ls='-', label='FFTLog'
         )
+        if mcfit is not None:
+            plot_mcfit = canvas._ax_comp.plot(
+                k_mcfit, k_mcfit**2 * gk_mcfit, ls='--', label='mcfit'
+            )
         _ = canvas._ax_comp.plot(
-            k_analy, k_analy**2 * gk_analy, ls=':', label='analytical'
+            k_fftlog_analy, k_fftlog_analy**2 * gk_fftlog_analy,
+            ls=':', label='analytical'
         )
 
         if pars.show_diff:
@@ -432,6 +476,11 @@ def get_testcase(pars: argparse.Namespace) -> None:
                 k_fftlog, 100 * dgk_fftlog,
                 c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
             )
+            if mcfit is not None:
+                canvas._ax_diff.plot(
+                    k_mcfit, 100 * dgk_mcfit,
+                    c=plot_mcfit[0].get_color(), ls='--', label='mcfit'
+                )
 
         canvas._title = (
             fstr + r"$\,$, " + gstr + fr" ($\ell = {pars.degree}$)"
@@ -469,9 +518,10 @@ def get_testcase(pars: argparse.Namespace) -> None:
 
         # Calculate the differences.
         if pars.show_diff:
-            dxi_fftlog = xi_fftlog.real / xi_ext_fftlog - 1.
-            if hankl is not None:
-                dxi_hankl = xi_hankl.real / xi_ext_hankl - 1.
+            with np.errstate(divide='ignore'):
+                dxi_fftlog = xi_fftlog.real / xi_ext_fftlog - 1.
+                if hankl is not None:
+                    dxi_hankl = xi_hankl.real / xi_ext_hankl - 1.
 
         # Plot the results.
         plot_fftlog = canvas._ax_comp.plot(
