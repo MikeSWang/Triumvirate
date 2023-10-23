@@ -19,6 +19,7 @@ from typing import Callable, Literal, Self, Tuple, Union
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import RectBivariateSpline
+from scipy.special import gamma
 
 from triumvirate.transforms import DoubleSphericalBesselTransform
 
@@ -80,7 +81,7 @@ def parse_parameters() -> argparse.Namespace:
     return pars
 
 
-def get_sampts_lgrange(centre: float, shorten: float) -> Tuple[float, float]:
+def get_sampts(centre: float, shorten: float) -> np.ndarray:
     """Get the log-range of sample points.
 
     Parameters
@@ -96,7 +97,11 @@ def get_sampts_lgrange(centre: float, shorten: float) -> Tuple[float, float]:
         Log-range of sample points.
 
     """
-    return tuple((val - centre) / shorten for val in LGRANGE)
+    return np.logspace(
+        *((val - centre) / shorten for val in LGRANGE),
+        round(NSAMP / shorten),
+        base=10
+    )
 
 
 def get_analy_func_pair(
@@ -130,7 +135,18 @@ def get_analy_func_pair(
                 r"$g(k) = (2\pi)^{3/2} k^\ell \mathrm{e}^{-k^2 / 2}$"
             ))
         case 'asym':
-            raise NotImplementedError
+            return ((
+                lambda r, s=1, **kwargs: r**(s - 3),
+                r"$f(r) = r^{s - 3}$"
+            ), (
+                lambda k, s=1, ell=0, **kwargs:
+                    np.pi**(3./2)
+                    * gamma(s/2. + ell/2.) / gamma(3./2 - s/2. + ell/2.)
+                    * (2./k)**s,
+                r"$g(k) = \pi^{3/2} "
+                r"\frac{\Gamma(s/2 + \ell/2)}{\Gamma(3/2 - s/2 + \ell/2)} "
+                r"\left(\frac{2}{k}\right)^s$"
+            ))
         case _:
             raise ValueError(
                 f"No analytical functions for test case: {testcase}."
@@ -281,8 +297,14 @@ def get_testcase(pars: argparse.Namespace) -> None:
     @comparison_plot(
         comp_type='analytic',
         plot_diff=showdiff,
-        xlim=(1.e-5, 1.e1),
-        ylim=(1.e-18, 1.e3),
+        xlim={
+            'sym': (1.e-5, 1.e1),
+            'asym': (1.e-1, 1.e3),
+        }.get(testcase),
+        ylim={
+            'sym': (1.e-18, 1.e3),
+            'asym': (1.e-0, 1.e9),
+        }.get(testcase),
         xlabel=r"$k_1 = k_2$",
         ylabel=r"$k_1^2 k_2^2 g(k_1) g(k_2)$",
     )
@@ -291,15 +313,14 @@ def get_testcase(pars: argparse.Namespace) -> None:
         (f, fstr), (g, gstr) = get_analy_func_pair(testcase)
 
         # Set up samples.
-        r = np.logspace(
-            *get_sampts_lgrange(pars.lgcentre, pars.shorten), NSAMP, base=10
-        )
+        r = get_sampts(pars.lgcentre, pars.shorten)
         fr_1, fr_2 = (f(r, ell=ell) for ell in pars.degrees)
 
         # Compute the Hankel transforms.
         frr = fr_1[:, None] * fr_2[None, :]
         kk_fftlog, gkk_fftlog = DoubleSphericalBesselTransform(
-            pars.degrees, BIASES, r, PIVOT, LOWRING, extrap=pars.extrap
+            pars.degrees, BIASES, r, PIVOT, LOWRING,
+            extrap=pars.extrap, extrap_exp=1.25
         ).transform(frr + 0.j)
 
         gkk_analy = np.multiply(*[
@@ -407,7 +428,7 @@ def main() -> Literal[0]:
 BIASES: Tuple[int, int] = (0, 0)
 PIVOT: float = 1.
 LOWRING: bool = True
-NSAMP: int = 2**10
+NSAMP: int = 768
 LGRANGE: Tuple[float, float] = (-5., 5.)
 PK_PRE_SAMP_FILE: str = "pk_lgsamps.dat"
 XIR_POST_SAMP_FILE: str = "xir_lgsamps_post{}.dat"

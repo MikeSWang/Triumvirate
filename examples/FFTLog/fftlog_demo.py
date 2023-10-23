@@ -18,6 +18,7 @@ from typing import Callable, List, Literal, Self, Tuple, Union
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import InterpolatedUnivariateSpline
+from scipy.special import gamma
 
 from triumvirate._fftlog import HankelTransform
 from triumvirate.transforms import SphericalBesselTransform
@@ -47,7 +48,7 @@ def parse_parameters() -> argparse.Namespace:
 
     parser.add_argument(
         '-t', "--test-case", type=str,
-        choices=['hankel-sym', 'hankel-asym', 'sj-sym', 'sj-cosmo'],
+        choices=['hankel-sym', 'hankel-asym', 'sj-sym', 'sj-asym', 'sj-cosmo'],
         required=True
     )
     parser.add_argument(
@@ -93,7 +94,7 @@ def parse_parameters() -> argparse.Namespace:
     return pars
 
 
-def get_sampts_lgrange(centre: float, shorten: float) -> Tuple[float, float]:
+def get_sampts(centre: float, shorten: float) -> np.ndarray:
     """Get the log-range of sample points.
 
     Parameters
@@ -109,11 +110,15 @@ def get_sampts_lgrange(centre: float, shorten: float) -> Tuple[float, float]:
         Log-range of sample points.
 
     """
-    return tuple((val - centre) / shorten for val in LGRANGE)
+    return np.logspace(
+        *((val - centre) / shorten for val in LGRANGE),
+        round(NSAMP / shorten),
+        base=10
+    )
 
 
 def get_analy_func_pair(
-    testcase: Literal['hankel-sym', 'hankel-asym', 'sj-sym']
+    testcase: Literal['hankel-sym', 'hankel-asym', 'sj-sym', 'sj-asym']
 ) -> Tuple[Tuple[Callable, str], Tuple[Callable, str]]:
     """Get pre- and post-transform analytical functions for the given
     test case.
@@ -128,6 +133,8 @@ def get_analy_func_pair(
         - 'hankel-asym' for asymmetric-form functions for the
           Hankel transform;
         - 'sj-sym' for symmetric-form functions for the spherical
+          Bessel transform;
+        - 'sj-asym' for asymmetric-form functions for the spherical
           Bessel transform.
 
     Returns
@@ -159,6 +166,19 @@ def get_analy_func_pair(
             ), (
                 lambda k, ell=0: (2*np.pi)**(3./2) * k**ell * np.exp(-k*k/2.),
                 r"$g(k) = (2\pi)^{3/2} k^\ell \mathrm{e}^{-k^2 / 2}$"
+            ))
+        case 'sj-asym':
+            return ((
+                lambda r, s=1, **kwargs: r**(s - 3),
+                r"$f(r) = r^{s - 3}$"
+            ), (
+                lambda k, s=1, ell=0, **kwargs:
+                    np.pi**(3./2)
+                    * gamma(s/2. + ell/2.) / gamma(3./2 - s/2. + ell/2.)
+                    * (2./k)**s,
+                r"$g(k) = \pi^{3/2} "
+                r"\frac{\Gamma(s/2 + \ell/2)}{\Gamma(3/2 - s/2 + \ell/2)} "
+                r"\left(\frac{2}{k}\right)^s$"
             ))
         case _:
             raise ValueError(
@@ -257,10 +277,10 @@ class comparison_plot:
             self._ax_comp.set_xlim(*self._xlim)
         if self._ylim:
             self._ax_comp.set_ylim(*self._ylim)
-            if self._flag_diff:
-                self._ax_diff.axhline(-1.e-3, c='k', alpha=.5, ls='--')
-                self._ax_diff.axhline(1.e-3, c='k', alpha=.5, ls='--')
-                self._ax_diff.set_ylim(-1.75e-3, 1.75e-3)
+        if self._flag_diff:  # in %
+            self._ax_diff.axhline(-1.e-1, c='k', alpha=.5, ls='--')
+            self._ax_diff.axhline(1.e-1, c='k', alpha=.5, ls='--')
+            self._ax_diff.set_ylim(-1.75e-1, 1.75e-1)
 
         self._ax_comp.set_xscale('log')
         if self._comp_type == 'analytic':
@@ -319,14 +339,13 @@ def get_testcase(pars: argparse.Namespace) -> None:
         (f, fstr), (g, gstr) = get_analy_func_pair(testcase)
 
         # Set up samples.
-        r = np.logspace(
-            *get_sampts_lgrange(pars.lgcentre, pars.shorten), NSAMP, base=10
-        )
+        r = get_sampts(pars.lgcentre, pars.shorten)
         fr = f(r, mu=pars.order)
 
         # Compute the Hankel transforms.
         k_fftlog, gk_fftlog = HankelTransform(
-            pars.order, BIAS, r, PIVOT, LOWRING, extrap=pars.extrap
+            pars.order, BIAS, r, PIVOT, LOWRING,
+            extrap=pars.extrap, extrap_exp=1.25
         ).transform(fr + 0.j)
         if hankl is not None:
             k_hankl, gk_hankl = hankl.FFTLog(
@@ -371,23 +390,28 @@ def get_testcase(pars: argparse.Namespace) -> None:
     @comparison_plot(
         comp_type='analytic',
         plot_diff=showdiff,
-        xlim=(1.e-5, 1.e1),
-        ylim=(1.e-10, 1.e2),
+        xlim={
+            'sj-sym': (1.e-5, 1.e1),
+            'sj-asym': (1.e-1, 1.e3),
+        }.get(testcase),
+        ylim={
+            'sj-sym': (1.e-10, 1.e2),
+            'sj-asym': (1.e-0, 1.e5),
+        }.get(testcase),
         ylabel=r"$k^2 g(k)$",
     )
-    def run_sj_sym(canvas: comparison_plot) -> None:
+    def run_sj(canvas: comparison_plot) -> None:
         # Get analytical functions.
-        (f, fstr), (g, gstr) = get_analy_func_pair('sj-sym')
+        (f, fstr), (g, gstr) = get_analy_func_pair(testcase)
 
         # Set up samples.
-        r = np.logspace(
-            *get_sampts_lgrange(pars.lgcentre, pars.shorten), NSAMP, base=10
-        )
+        r = get_sampts(pars.lgcentre, pars.shorten)
         fr = f(r, ell=pars.degree)
 
         # Compute the Hankel transforms.
         k_fftlog, gk_fftlog = SphericalBesselTransform(
-            pars.degree, BIAS, r, PIVOT, LOWRING, extrap=pars.extrap
+            pars.degree, BIAS, r, PIVOT, LOWRING,
+            extrap=pars.extrap, extrap_exp=1.25
         ).transform(fr + 0.j)
         k_analy, gk_analy = k_fftlog, g(k_fftlog, ell=pars.degree)
 
@@ -475,8 +499,8 @@ def get_testcase(pars: argparse.Namespace) -> None:
     match testcase:
         case 'hankel-sym' | 'hankel-asym':
             return run_hankel
-        case 'sj-sym':
-            return run_sj_sym
+        case 'sj-sym' | 'sj-asym':
+            return run_sj
         case 'sj-cosmo':
             return run_sj_cosmo
         case _:
@@ -498,7 +522,7 @@ def main() -> Literal[0]:
 BIAS: float = 0.
 PIVOT: float = 1.
 LOWRING: bool = True
-NSAMP: int = 2**10
+NSAMP: int = 768
 LGRANGE: Tuple[float, float] = (-5., 5.)
 PK_PRE_SAMP_FILE: str = "pk_lgsamps.dat"
 XIR_POST_SAMP_FILE: str = "xir_lgsamps_post{}.dat"
