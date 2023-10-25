@@ -375,7 +375,7 @@ def extrap2d_loglin(a, n_ext):
     return a_out
 
 
-def extrap2d_pad(a, n_ext, c_lower, c_upper):
+def extrap2d_pad(a, n_ext, crow_lower, crow_upper, ccol_lower, ccol_upper):
     """Extrapolate a 2-d array by constant padding bi-directionally.
 
     Parameters
@@ -384,8 +384,8 @@ def extrap2d_pad(a, n_ext, c_lower, c_upper):
         Input 2-d array.
     n_ext : int or tuple of int
         Number of extra elements on either side of each row and/or column.
-    c_lower, c_upper : float or tuple of float
-        Constant value used for padding on either side of
+    crow_lower, crow_upper, ccol_lower, ccol_upper : (sequence of) float
+        Constant values used for padding on either side of
         each row and/or column.
 
     Returns
@@ -399,28 +399,65 @@ def extrap2d_pad(a, n_ext, c_lower, c_upper):
 
     .. code-block:: none
 
-        c_lower[1]  c_lower[1]  ...  c_lower[1]   c_lower[1]
-        c_lower[0]  a[0, 0]     ...  a[0, -1]     c_upper[0]
-        ...         ...         ...  ...          ...
-        c_lower[0]  a[-1, 0]    ...  a[-1, -1]    c_upper[0]
-        c_upper[1]  c_upper[1]  ...  c_upper[-1]  c_upper[1]
+        ... ...             ...            ...  ...             ...             ...
+        ... ...             ccol_lower[0]  ...  ccol_lower[-1]  ...             ...
+        ... crow_lower[0]   a[0, 0]        ...  a[0, -1]        crow_upper[0]   ...
+        ... ...             ...            ...  ...             ...             ...
+        ... crow_lower[-1]  a[-1, 0]       ...  a[-1, -1]       crow_upper[-1]  ...
+        ... ...             ccol_upper[0]  ...  ccol_upper[-1]  ...             ...
+        ... ...             ...            ...  ...             ...             ...
 
-    """
+    If any of `crow_lower`, `crow_upper`, `ccol_lower` and `ccol_upper`
+    is a scalar, it is repeated to form a 1-d array of the
+    appropriate length.
+
+    For consistency, it is required that
+    ``crow_lower[0] == ccol_lower[0]``,
+    ``crow_upper[0] == ccol_lower[-1]``,
+    ``crow_lower[-1] == ccol_upper[0]``, and
+    ``crow_upper[-1] == ccol_upper[-1]``.
+
+    """  # noqa: E501
     a = _check_2d_array(a)
+
+    if np.isscalar(crow_lower):
+        crow_lower = np.full(a.shape[0], crow_lower)
+    if np.isscalar(crow_upper):
+        crow_upper = np.full(a.shape[0], crow_upper)
+    if np.isscalar(ccol_lower):
+        ccol_lower = np.full(a.shape[-1], ccol_lower)
+    if np.isscalar(ccol_upper):
+        ccol_upper = np.full(a.shape[-1], ccol_upper)
+
+    if crow_lower[0] != ccol_lower[0]:
+        raise ValueError(
+            "Inconsistent lower padding values for rows and columns."
+        )
+    if crow_upper[0] != ccol_lower[-1]:
+        raise ValueError(
+            "Inconsistent lower and upper padding values for rows and columns."
+        )
+    if crow_lower[-1] != ccol_upper[0]:
+        raise ValueError(
+            "Inconsistent upper and lower padding values for rows and columns."
+        )
+    if crow_upper[-1] != ccol_upper[-1]:
+        raise ValueError(
+            "Inconsistent upper padding values for rows and columns."
+        )
 
     nrow_ext, ncol_ext = \
         n_ext if isinstance(n_ext, Sequence) else (n_ext, n_ext)
-    crow_lower, ccol_lower = \
-        c_lower if isinstance(c_lower, Sequence) else (c_lower, c_lower)
-    crow_upper, ccol_upper = \
-        c_upper if isinstance(c_upper, Sequence) else (c_upper, c_upper)
 
-    a_l = np.full((a.shape[0], ncol_ext), crow_lower)
-    a_r = np.full((a.shape[0], ncol_ext), crow_upper)
+    a_l = np.tile(crow_lower, (nrow_ext, 1)).T
+    a_r = np.tile(crow_upper, (nrow_ext, 1)).T
     a_ = np.c_[a_l, a, a_r]
 
-    a__u = np.full((nrow_ext, a_.shape[-1]), ccol_lower)
-    a__d = np.full((nrow_ext, a_.shape[-1]), ccol_upper)
+    ccol_lower = np.concatenate([a_l[0], ccol_lower, a_r[0]])
+    ccol_upper = np.concatenate([a_l[-1], ccol_upper, a_r[-1]])
+
+    a__u = np.tile(ccol_lower, (ncol_ext, 1))
+    a__d = np.tile(ccol_upper, (ncol_ext, 1))
     a_out = np.r_[a__u, a_, a__d]
 
     return a_out

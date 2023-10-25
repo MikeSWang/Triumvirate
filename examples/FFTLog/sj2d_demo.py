@@ -244,10 +244,10 @@ class comparison_plot:
             self._ax_comp.set_xlim(*self._xlim)
         if self._ylim:
             self._ax_comp.set_ylim(*self._ylim)
-            if self._flag_diff:
-                self._ax_diff.axhline(-1.e-3, c='k', alpha=.5, ls='--')
-                self._ax_diff.axhline(1.e-3, c='k', alpha=.5, ls='--')
-                self._ax_diff.set_ylim(-1.75e-3, 1.75e-3)
+            if self._flag_diff:  # in %
+                self._ax_diff.axhline(-1.e-1, c='k', alpha=.5, ls='--')
+                self._ax_diff.axhline(1.e-1, c='k', alpha=.5, ls='--')
+                self._ax_diff.set_ylim(-1.75e-1, 1.75e-1)
 
         self._ax_comp.set_xscale('log')
         if self._comp_type == 'analytic':
@@ -320,7 +320,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
         frr = fr_1[:, None] * fr_2[None, :]
         kk_fftlog, gkk_fftlog = DoubleSphericalBesselTransform(
             pars.degrees, BIASES, r, PIVOT, LOWRING,
-            extrap=pars.extrap, extrap_exp=1.25
+            extrap=pars.extrap, extrap_exp=EXPAND
         ).transform(frr + 0.j)
 
         gkk_analy = np.multiply(*[
@@ -432,6 +432,7 @@ PIVOT: float = 1.
 LOWRING: bool = True
 NSAMP: int = 768
 LGRANGE: Tuple[float, float] = (-5., 5.)
+EXPAND: float = 1.25
 PK_PRE_SAMP_FILE: str = "pk_lgsamps.dat"
 XIR_POST_SAMP_FILE: str = "xir_lgsamps_post{}.dat"
 
