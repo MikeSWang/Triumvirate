@@ -410,7 +410,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
 
         # Calculate the differences.
         if pars.show_diff:
-            with np.errstate(divide='ignore'):
+            with np.errstate(divide='ignore', invalid='ignore'):
                 dgk_fftlog = gk_fftlog.real / gk_fftlog_analy - 1.
                 if _mcfit is not None:
                     dgk_mcfit = gk_mcfit / gk_mcfit_analy - 1.
@@ -497,7 +497,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
 
         # Calculate the differences.
         if pars.show_diff:
-            with np.errstate(divide='ignore'):
+            with np.errstate(divide='ignore', invalid='ignore'):
                 dgk_fftlog = gk_fftlog.real / gk_fftlog_analy - 1.
                 if _mcfit is not None:
                     dgk_mcfit = gk_mcfit / gk_mcfit_analy - 1.

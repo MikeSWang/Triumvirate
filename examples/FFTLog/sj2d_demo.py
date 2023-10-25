@@ -332,7 +332,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
 
         # Calculate the differences.
         if pars.show_diff:
-            with np.errstate(divide='ignore'):
+            with np.errstate(divide='ignore', invalid='ignore'):
                 dgkk_fftlog = gkk_fftlog.real / gkk_analy - 1.
 
         # Plot the results.

@@ -56,6 +56,14 @@ class SphericalBesselTransform:
         The smallest power of 2 greater than or equal to this times the
         original number of sample points is used as the sample size for
         the transform.
+    extrap_layer : {'native', 'outer'}, optional
+        Extrapolation layer:
+
+        - 'native' (default): extrapolate the samples, including
+          any pre-factors, within the underlying FFTLog algorithm;
+        - 'outer': extrapolate the samples, excluding any pre-factors,
+          before passing them to the underlying FFTLog algorithm.
+
 
     Attributes
     ----------
@@ -68,20 +76,55 @@ class SphericalBesselTransform:
     pivot : float
         Pivot value used.
 
+    Raises
+    ------
+    ValueError
+        When `extrap` is not a supported option.
+    ValueError
+        When the input sample size is not even and extrapolation is used.
+
     """
 
-    def __init__(self, degree, bias, sample_pts, pivot=1.,
-                 lowring=True, extrap=0, extrap_exp=2.):
+    def __init__(self, degree, bias, sample_pts, pivot=1., lowring=True,
+                 extrap=0, extrap_exp=2., extrap_layer='native'):
+        if extrap not in {0, 1, 2, 3}:
+            raise ValueError(
+                f"Extrapolation option must be 0, 1, 2 or 3: {extrap=}."
+            )
 
         self.degree = degree
         self.bias = bias
 
-        self._fbht = HankelTransform(
-            degree + 1./2, bias, sample_pts,
-            kr_c=pivot, lowring=lowring, extrap=extrap, extrap_exp=extrap_exp
-        )
         self._lowring = lowring
         self._extrap = extrap
+        self._extrap_layer = extrap_layer
+
+        if self._extrap:
+            if (nsamp := len(sample_pts)) % 2:
+                raise ValueError(
+                    "Input sample size must be even when extrapolation "
+                    f"is used: {len(sample_pts)=}."
+                )
+            if self._extrap_layer == 'native':
+                extrap_native = self._extrap
+            elif self._extrap_layer == 'outer':
+                extrap_native = 0
+                nsamp_trans = int(2 ** np.ceil(np.log2(extrap_exp * nsamp)))
+                self._n_ext = (nsamp_trans - nsamp) // 2
+                sample_pts = extrap_loglin(sample_pts, self._n_ext)
+            else:
+                raise ValueError(
+                    "Extrapolation layer must be 'native' or 'outer': "
+                    f"extrap_layer={self._extrap_layer}."
+                )
+        else:
+            extrap_native = 0
+
+        self._fbht = HankelTransform(
+            degree + 1./2, bias, sample_pts,
+            kr_c=pivot, lowring=lowring,
+            extrap=extrap_native, extrap_exp=extrap_exp
+        )
 
         self._logres = self._fbht._logres
         self._pre_sampts = np.asarray(self._fbht._pre_sampts)
@@ -116,6 +159,9 @@ class SphericalBesselTransform:
             Post-transform sample points and samples.
 
         """
+        if self._extrap_layer == 'outer':
+            pre_samples = self._perform_extrap(pre_samples)
+
         pre_samples *= self._pre_sampts ** (3./2)
 
         post_sampts, post_samples = self._fbht.transform(pre_samples)
@@ -161,6 +207,28 @@ class SphericalBesselTransform:
 
         return post_sampts, post_samples
 
+    def _perform_extrap(self, arr):
+        """Perform extrapolation according to interal attributes.
+
+        Parameters
+        ----------
+        arr : array_like
+            1-d array to extrapolate.
+
+        Returns
+        -------
+        array_like
+            Extrapolated 1-d array.
+
+        """
+        if self._extrap == 1:
+            return extrap_pad(arr, self._n_ext, arr[0], arr[-1])
+        if self._extrap == 2:
+            return extrap_lin(arr, self._n_ext)
+        if self._extrap == 3:
+            return extrap_loglin(arr, self._n_ext)
+        return arr
+
 
 class DoubleSphericalBesselTransform:
     """Double spherical Bessel Transform.
@@ -198,6 +266,10 @@ class DoubleSphericalBesselTransform:
         The smallest power of 2 greater than or equal to this times the
         original number of sample points is used as the sample size for
         the transform.
+    extrap2d : bool, optional
+        If `True` (default), perform 2-d extrapolation pre-transform
+        excluding any pre-factors; otherwise, perform 1-d extrapolation
+        including any pre-factors within the underlying FFTLog algorithm.
 
     Attributes
     ----------
@@ -210,27 +282,56 @@ class DoubleSphericalBesselTransform:
     pivot : float
         Pivot value used for both dimensions.
 
+    Raises
+    ------
+    ValueError
+        When `extrap` is not a supported option.
+    ValueError
+        When the input sample size is not even and extrapolation is used.
+
     """
     # Representative transform, either vertical (0, across rows)
     # or horizontal (1, across columns).
     _rep = 0
 
-    def __init__(self, degrees, biases, sample_pts, pivot=1.,
-                 lowring=True, extrap=0, extrap_exp=2.):
+    def __init__(self, degrees, biases, sample_pts, pivot=1., lowring=True,
+                 extrap=0, extrap_exp=2., extrap2d=True):
+        if extrap not in {0, 1, 2, 3}:
+            raise ValueError(
+                f"Extrapolation option must be 0, 1, 2 or 3: {extrap=}."
+            )
 
         self.degrees = degrees
         self.biases = biases
+
+        self._lowring = lowring
+        self._extrap = extrap
+        self._extrap2d = extrap2d
+
+        if self._extrap:
+            if (nsamp := len(sample_pts)) % 2:
+                raise ValueError(
+                    "Input sample size must be even when extrapolation "
+                    f"is used: {len(sample_pts)=}."
+                )
+            if not self._extrap2d:
+                extrap_native = self._extrap
+            else:
+                extrap_native = 0
+                nsamp_trans = int(2 ** np.ceil(np.log2(extrap_exp * nsamp)))
+                self._n_ext = (nsamp_trans - nsamp) // 2
+                sample_pts = extrap_loglin(sample_pts, self._n_ext)
+        else:
+            extrap_native = 0
 
         self._fbsjt = tuple(
             SphericalBesselTransform(
                 degree_, bias_, sample_pts,
                 pivot=pivot, lowring=lowring,
-                extrap=extrap, extrap_exp=extrap_exp
+                extrap=extrap_native, extrap_exp=extrap_exp
             )
             for (degree_, bias_) in zip(degrees, biases)
         )
-        self._lowring = lowring
-        self._extrap = extrap
 
         self._logres = self._fbsjt[self._rep]._logres
         self._pre_sampts = np.asarray(self._fbsjt[self._rep]._pre_sampts)
@@ -266,6 +367,9 @@ class DoubleSphericalBesselTransform:
             `post_sampts` in :func:`numpy.meshgrid` 'ij'-indexing format.
 
         """
+        if self._extrap2d:
+            pre_samples = self._perform_extrap(pre_samples)
+
         inter_samples = []
         for pre_samples_row in pre_samples:
             _, inter_samples_row = self._fbsjt[1].transform(pre_samples_row)
@@ -321,3 +425,28 @@ class DoubleSphericalBesselTransform:
         post_samples *= prefactor * parity
 
         return post_sampts, post_samples
+
+    def _perform_extrap(self, arr):
+        """Perform extrapolation according to interal attributes.
+
+        Parameters
+        ----------
+        arr : array_like
+            2-d array to extrapolate.
+
+        Returns
+        -------
+        array_like
+            Extrapolated 2-d array.
+
+        """
+        arr = np.asarray(arr)
+        if self._extrap == 1:
+            return extrap2d_pad(
+                arr, self._n_ext, arr[:, 0], arr[:, -1], arr[0, :], arr[-1, :]
+            )
+        if self._extrap == 2:
+            return extrap2d_lin(arr, self._n_ext)
+        if self._extrap == 3:
+            return extrap2d_loglin(arr, self._n_ext)
+        return arr
