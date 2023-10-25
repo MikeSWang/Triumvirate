@@ -105,7 +105,8 @@ cdef class HankelTransform:
         Parameters
         ----------
         fx : array_like
-            Pre-transform samples.  Assumed to be real if extrapolation
+            Pre-transform samples.  Must be even in length
+            if extrapolation is used.  Assumed to be real if extrapolation
             is used.
 
         Returns
@@ -127,7 +128,8 @@ cdef class HankelTransform:
         Parameters
         ----------
         fx : array of complex
-            Pre-transform samples.  Assumed to be real if extrapolation
+            Pre-transform samples.  Must be even in length
+            if extrapolation is used.  Assumed to be real if extrapolation
             is used.
 
         Returns

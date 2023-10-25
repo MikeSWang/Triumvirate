@@ -10,6 +10,14 @@ Configure the program logger.
 """
 import numpy as np
 
+from ._arrayops import (
+    extrap_lin,
+    extrap_loglin,
+    extrap_pad,
+    extrap2d_lin,
+    extrap2d_loglin,
+    extrap2d_pad,
+)
 from ._fftlog import HankelTransform
 
 
@@ -81,10 +89,10 @@ class SphericalBesselTransform:
 
     @property
     def size(self):
-        """Sample size.
+        """Sample size of the transform.
 
         """
-        return self._fbht._nsamp
+        return self._fbht.size
 
     @property
     def pivot(self):
@@ -230,10 +238,10 @@ class DoubleSphericalBesselTransform:
 
     @property
     def size(self):
-        """Sample size.
+        """Sample size of the transform.
 
         """
-        return self._fbsjt[self._rep]._nsamp
+        return self._fbsjt[self._rep].size
 
     @property
     def pivot(self):

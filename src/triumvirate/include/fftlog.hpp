@@ -79,6 +79,7 @@ class HankelTransform {
    * transform kernel and the pivot value.
    *
    * @param sample_pts Logarithmically linearly-spaced sample points.
+   *                   Must be even in length if extrapolation is enabled.
    * @param kr_c Pivot value.
    * @param lowring If true (default), set the pivot value by the
    *                low-ringing condition.
@@ -88,7 +89,7 @@ class HankelTransform {
    *               power of 2 that is greater than or equal to
    *               `extrap_exp` times the original number of
    *               sample points; the pre-transform samples are assumed
-   *               to be real.
+   *               to be real and must be even in length.
    * @param extrap_exp Sample size expansion factor (default is 2.) for
    *                   extrapolation.  The smallest power of 2 greater
    *                   than or equal to this times the original number
@@ -98,6 +99,9 @@ class HankelTransform {
    *                                         is less than 2.
    * @throws trv::sys::InvalidParameterError When `sample_pts` is not
    *                                         log-linearly spaced.
+   * @throws trv::sys::InvalidParameterError When the size of `sample_pts`
+   *                                         is not even with
+   *                                         extrapolation enabled.
    * @throws trv::sys::InvalidParameterError When `extrap_exp` results in
    *                                         a shrunken sample size.
    * @throws trv::sys::InvalidParameterError When `kr_c` is non-positive
@@ -117,6 +121,7 @@ class HankelTransform {
    * transform kernel and the pivot value.
    *
    * @param sample_pts Logarithmically linearly-spaced sample points.
+   *                   Must be even in length if extrapolation is enabled.
    * @param kr_c Pivot value.
    * @param lowring If true (default), set the pivot value by the
    *                low-ringing condition.
@@ -125,20 +130,12 @@ class HankelTransform {
    *               power of 2 that is greater than or equal to
    *               `extrap_exp` times the original number of
    *               sample points; the pre-transform samples are assumed
-   *               to be real.
+   *               to be real and must be even in length.
    * @param extrap_exp Sample size expansion factor (default is 2.) for
    *                   extrapolation.  The smallest power of 2 greater
    *                   than or equal to this times the original number
    *                   of sample points is used as the sample size for
    *                   the transform.
-   * @throws trv::sys::InvalidParameterError When the size of `sample_pts`
-   *                                         is less than 2.
-   * @throws trv::sys::InvalidParameterError When `sample_pts` is not
-   *                                         log-linearly spaced.
-   * @throws trv::sys::InvalidParameterError When `extrap_exp` results in
-   *                                         a shrunken sample size.
-   * @throws trv::sys::InvalidParameterError When `kr_c` is non-positive
-   *                                         while `lowring` is false.
    *
    * @overload
    */
@@ -157,7 +154,8 @@ class HankelTransform {
    *   b(k) = \int_0^\infty k \mathrm{d}r \, (k r)^q J_\mu(k r) a(r) \,.
    * @f]
    *
-   * @param[in] a Pre-transform sample values.
+   * @param[in] a Pre-transform sample values. Must be even in length
+   *              if extrapolation is enabled.
    * @param[out] b Post-trasform sample values.
    *
    * @attention If extrapolation is enabled (`extrap` not
@@ -225,6 +223,7 @@ class SphericalBesselTransform: public HankelTransform {
    * from an initial value of 1.
    *
    * @param sample_pts Logarithmically linearly-spaced sample points.
+   *                   Must be even in length if extrapolation is enabled.
    * @param kr_c Pivot value.
    * @param lowring If true (default), set the pivot value by the
    *                low-ringing condition.
@@ -234,7 +233,7 @@ class SphericalBesselTransform: public HankelTransform {
    *               power of 2 that is greater than or equal to
    *               `extrap_exp` times the original number of
    *               sample points; the pre-transform samples are assumed
-   *               to be real.
+   *               to be real and must be even in length.
    * @param extrap_exp Sample size expansion factor (default is 2) for
    *                   extrapolation.  The smallest power of 2 greater
    *                   than or equal to this times the original number
@@ -256,6 +255,7 @@ class SphericalBesselTransform: public HankelTransform {
    * from an initial value of 1.
    *
    * @param sample_pts Logarithmically linearly-spaced sample points.
+   *                   Must even in length if extrapolation is enabled.
    * @param kr_c Pivot value.
    * @param lowring If true (default), set the pivot value by the
    *                low-ringing condition.
@@ -264,7 +264,7 @@ class SphericalBesselTransform: public HankelTransform {
    *               power of 2 that is greater than or equal to
    *               `extrap_exp` times the original number of
    *               sample points; the pre-transform samples are assumed
-   *               to be real.
+   *               to be real and must be even in length.
    * @param extrap_exp Sample size expansion factor (default is 2) for
    *                   extrapolation.  The smallest power of 2 greater
    *                   than or equal to this times the original number
@@ -293,7 +293,8 @@ class SphericalBesselTransform: public HankelTransform {
    *       @f$ A(r) = r^{3/2} a(r) @f$ and $B(k) = (2\pi / k)^{3/2} b(k)$
    *       with @f$ \mu = \ell + 1/2 @f$ and the same @f$ q @f$.
    *
-   * @param[in] a Pre-transform sample values.
+   * @param[in] a Pre-transform sample values.  Must even in length
+   *              if extrapolation is enabled.
    * @param[out] b Post-transform sample values.
    *
    * @attention If extrapolation is enabled by `extrap`, the pre-transform
@@ -310,7 +311,8 @@ class SphericalBesselTransform: public HankelTransform {
    * @param[in] dir Transform direction: +1 (forward) for configuration to
    *                Fourier space, -1 (backward) for Fourier to
    *                configuration space.
-   * @param[in] pre_samples Pre-transform multipole samples.
+   * @param[in] pre_samples Pre-transform multipole samples.  Must be even
+   *                        in length if extrapolation is enabled.
    * @param[out] post_samples Post-transform multipoles samples.
    *
    * @attention If extrapolation is enabled (`extrap` not

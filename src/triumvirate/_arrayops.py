@@ -205,7 +205,7 @@ def extrap_lin(a, n_ext):
         Extrapolated 1-d array.
 
     """
-    a = _check_1d_array(a, check_sorted=True)
+    a = _check_1d_array(a)
 
     a_l = a[0] + (a[1] - a[0]) * np.arange(-n_ext, 0)
     a_r = a[-1] + (a[-1] - a[-2]) * np.arange(1, n_ext + 1)
@@ -233,7 +233,7 @@ def extrap_loglin(a, n_ext):
         Extrapolated 1-d array.
 
     """
-    a = _check_1d_array(a, check_sorted=True, check_sign=True)
+    a = _check_1d_array(a, check_sign=True)
 
     a_l = a[0] * (a[1] / a[0]) ** np.arange(-n_ext, 0)
     a_r = a[-1] * (a[-1] / a[-2]) ** np.arange(1, n_ext + 1)
@@ -260,7 +260,7 @@ def extrap_pad(a, n_ext, c_lower, c_upper):
         Extrapolated 1-d array.
 
     """
-    a = _check_1d_array(a, check_sorted=True)
+    a = _check_1d_array(a)
 
     a_l = np.full(n_ext, c_lower)
     a_r = np.full(n_ext, c_upper)
@@ -335,7 +335,7 @@ def extrap2d_lin(a, n_ext):
         Extrapolated 2-d array.
 
     """
-    a = _check_2d_array(a, check_sorted=True)
+    a = _check_2d_array(a)
 
     nrow_ext, ncol_ext = \
         n_ext if isinstance(n_ext, Sequence) else (n_ext, n_ext)
@@ -363,7 +363,7 @@ def extrap2d_loglin(a, n_ext):
         Extrapolated 2-d array.
 
     """
-    a = _check_2d_array(a, check_sorted=True, check_sign=True)
+    a = _check_2d_array(a, check_sign=True)
 
     nrow_ext, ncol_ext = \
         n_ext if isinstance(n_ext, Sequence) else (n_ext, n_ext)
@@ -406,7 +406,7 @@ def extrap2d_pad(a, n_ext, c_lower, c_upper):
         c_upper[1]  c_upper[1]  ...  c_upper[-1]  c_upper[1]
 
     """
-    a = _check_2d_array(a, check_sorted=True)
+    a = _check_2d_array(a)
 
     nrow_ext, ncol_ext = \
         n_ext if isinstance(n_ext, Sequence) else (n_ext, n_ext)
