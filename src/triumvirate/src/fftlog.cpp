@@ -98,29 +98,30 @@ void HankelTransform::initialise(
   this->kernel = this->compute_kernel_coeff();
 
   // Initialise post-sample points.
+  // Note the end-point of the periodic interval is not included in
+  // the sample points, thus the shift in the product from the pivot
+  // by one sample point.
+  double kr_aprod = this->pivot * std::exp(- this->logres);
+
   this->post_sampts.resize(this->nsamp);
   for (int j = 0; j < this->nsamp; j++) {
-    this->post_sampts[j] = this->pivot / this->pre_sampts[this->nsamp - j - 1];
+    this->post_sampts[j] = kr_aprod / this->pre_sampts[this->nsamp - j - 1];
   }
 
   if (this->extrap != trva::ExtrapOption::NONE) {
     this->post_sampts_extrap.resize(this->nsamp_trans);
     for (int j = 0; j < this->nsamp_trans; j++) {
       this->post_sampts_extrap[j] =
-        this->pivot / this->pre_sampts[this->nsamp_trans - j - 1];
+        kr_aprod / this->pre_sampts[this->nsamp_trans - j - 1];
     }
   }
 
   // // Alternative to the for-loop block above, note that k_c and r_c are
   // // both exp(L/2) times `k0` and `r0`.
-  // // STYLE: Standard naming convention is not followed below.
-  // int N = this->nsamp;
-  // double dL = this->logres;
-  // double kr_c_used = this->pivot;
+  // double kr_0 = kr_aprod * std::exp(- this->nsamp * this->logres);
   // double r0 = this->pre_sampts[0];
-
-  // double kr_0 = kr_c_used * std::exp(- N * dL);
   // double k0 = kr_0 / r0;
+  // ...
 }
 
 void HankelTransform::initialise(
@@ -278,36 +279,40 @@ void HankelTransform::biased_transform(
   // Compute the convolution b = a * u using FFT.
   // NOTE: ``(`` and ``)`` are necessary
   // (see https://www.fftw.org/doc/Complex-numbers.html).
-  fftw_plan forward_plan = fftw_plan_dft_1d(
+  fftw_plan preplan = fftw_plan_dft_1d(
     N_trans, (fftw_complex*) a_trans, (fftw_complex*) b_trans,
     FFTW_FORWARD, FFTW_ESTIMATE
   );
-  fftw_execute(forward_plan);
-  fftw_destroy_plan(forward_plan);
+  fftw_execute(preplan);
+  fftw_destroy_plan(preplan);
 
   for (int m = 0; m < N_trans; m++) {
     // Divide by `N` to normalise the inverse DFT.
     b_trans[m] *= this->kernel[m] / double(N_trans);
   }
 
-  fftw_plan reverse_plan = fftw_plan_dft_1d(
+  fftw_plan postplan = fftw_plan_dft_1d(
     N_trans, (fftw_complex*) b_trans, (fftw_complex*) b_trans,
-    FFTW_BACKWARD, FFTW_ESTIMATE
+    FFTW_FORWARD, FFTW_ESTIMATE
   );
-  fftw_execute(reverse_plan);
-  fftw_destroy_plan(reverse_plan);
-
-  // Reverse the array `b` as inverse FFT is used above instead of FFT.
-  for (int n = 0; n < N_trans/2; n++) {
-    std::complex<double> b_trans_ = b_trans[n];
-    b_trans[n] = b_trans[N_trans - n - 1];
-    b_trans[N_trans - n - 1] = b_trans_;
-  }
+  fftw_execute(postplan);
+  fftw_destroy_plan(postplan);
 
   // Trim any extrapolation.
   for (int j = 0; j < N; j++) {
     b[j] = b_trans[j + this->n_ext];
   }
+
+  // // Reverse and shift the array `b_trans` when inverse FFT is used above
+  // // instead of FFT, and trim any extrapolation.
+  // for (int n = 0; n < N_trans/2; n++) {
+  //   std::complex<double> b_trans_ = b_trans[n];
+  //   b_trans[n] = b_trans[N_trans - n - 1];
+  //   b_trans[N_trans - n - 1] = b_trans_;
+  // }
+  // for (int j = 0; j < N; j++) {
+  //   b[j] = b_trans[(j + N_trans - 1) % N_trans + this->n_ext];
+  // }
 }
 
 SphericalBesselTransform::SphericalBesselTransform(int ell, int n) : \
