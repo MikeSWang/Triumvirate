@@ -223,6 +223,36 @@ def get_external_samples(
     return presamples, postsamples
 
 
+def translate_extrap_mcfit(extrap_opt: int) -> Union[bool, Literal['const']]:
+    """Translate the extrapolation option for `mcfit`.
+
+    Parameters
+    ----------
+    extrap_opt : int
+        Extrapolation option.
+
+    Returns
+    -------
+    bool or str
+        Extrapolation option for `mcfit`.
+
+    Raises
+    ------
+    ValueError
+        When `extrap_opt` is not supported by `mcfit`.
+
+    """
+    if extrap_opt == 0:
+        return False
+    if extrap_opt == 1:
+        return 'const'
+    if extrap_opt == 2:
+        raise ValueError("Linear extrapolation not available for `mcfit`.")
+    if extrap_opt == 3:
+        return True
+    raise ValueError(f"Unrecognised extrapolation option: {extrap_opt}.")
+
+
 class comparison_plot:
     """Comparison plot context manager.
 
@@ -354,16 +384,23 @@ def get_testcase(pars: argparse.Namespace) -> None:
         # Compute the Hankel transforms.
         k_fftlog, gk_fftlog = HankelTransform(
             pars.order, BIAS, r, PIVOT, LOWRING,
-            extrap=pars.extrap, extrap_exp=1.25
+            extrap=pars.extrap, extrap_exp=EXPAND
         ).transform(fr + 0.j)
         k_fftlog_analy, gk_fftlog_analy = k_fftlog, g(k_fftlog, mu=pars.order)
 
-        if mcfit is not None:
-            k_mcfit, gk_mcfit = mcfit.Hankel(
-                r, lowring=LOWRING
-            )(fr / r, extrap=bool(pars.extrap))
-            gk_mcfit *= k_mcfit
-            gk_mcfit_analy = g(k_mcfit, mu=pars.order)
+        if (_mcfit := mcfit) is not None:
+            try:
+                extrap_mcfit = translate_extrap_mcfit(pars.extrap)
+            except ValueError as err:
+                _mcfit = None
+                warnings.warn(str(err))
+            else:
+                k_mcfit, gk_mcfit = mcfit.Hankel(
+                    r, lowring=LOWRING,
+                    N=EXPAND*1j if extrap_mcfit else NSAMP
+                )(fr / r, extrap=extrap_mcfit)
+                gk_mcfit *= k_mcfit
+                gk_mcfit_analy = g(k_mcfit, mu=pars.order)
         if hankl is not None:
             k_hankl, gk_hankl = hankl.FFTLog(
                 r, fr, mu=pars.order, q=BIAS, xy=PIVOT,
@@ -375,7 +412,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
         if pars.show_diff:
             with np.errstate(divide='ignore'):
                 dgk_fftlog = gk_fftlog.real / gk_fftlog_analy - 1.
-                if mcfit is not None:
+                if _mcfit is not None:
                     dgk_mcfit = gk_mcfit / gk_mcfit_analy - 1.
                 if hankl is not None:
                     dgk_hankl = gk_hankl / gk_hankl_analy - 1.
@@ -384,7 +421,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
         plot_fftlog = canvas._ax_comp.plot(
             k_fftlog, gk_fftlog.real, ls='-', label='FFTLog'
         )
-        if mcfit is not None:
+        if _mcfit is not None:
             plot_mcfit = canvas._ax_comp.plot(
                 k_mcfit, gk_mcfit, ls='--', label='mcfit'
             )
@@ -401,7 +438,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
                 k_fftlog, 100 * dgk_fftlog,
                 c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
             )
-            if mcfit is not None:
+            if _mcfit is not None:
                 canvas._ax_diff.plot(
                     k_mcfit, 100 * dgk_mcfit,
                     c=plot_mcfit[0].get_color(), ls='--', label='mcfit'
@@ -440,29 +477,36 @@ def get_testcase(pars: argparse.Namespace) -> None:
         # Compute the Hankel transforms.
         k_fftlog, gk_fftlog = SphericalBesselTransform(
             pars.degree, BIAS, r, PIVOT, LOWRING,
-            extrap=pars.extrap, extrap_exp=1.25
+            extrap=pars.extrap, extrap_exp=EXPAND
         ).transform(fr + 0.j)
         k_fftlog_analy, gk_fftlog_analy = \
             k_fftlog, g(k_fftlog, ell=pars.degree)
 
-        if mcfit is not None:
-            k_mcfit, gk_mcfit = mcfit.SphericalBessel(
-                r, lowring=LOWRING
-            )(fr * (2*np.pi)**(3./2), extrap=bool(pars.extrap))
-            gk_mcfit_analy = g(k_mcfit, ell=pars.degree)
+        if (_mcfit := mcfit) is not None:
+            try:
+                extrap_mcfit = translate_extrap_mcfit(pars.extrap)
+            except ValueError as err:
+                _mcfit = None
+                warnings.warn(str(err))
+            else:
+                k_mcfit, gk_mcfit = mcfit.SphericalBessel(
+                    r, lowring=LOWRING,
+                    N=EXPAND*1j if extrap_mcfit else NSAMP
+                )(fr * (2*np.pi)**(3./2), extrap=extrap_mcfit)
+                gk_mcfit_analy = g(k_mcfit, ell=pars.degree)
 
         # Calculate the differences.
         if pars.show_diff:
             with np.errstate(divide='ignore'):
                 dgk_fftlog = gk_fftlog.real / gk_fftlog_analy - 1.
-                if mcfit is not None:
+                if _mcfit is not None:
                     dgk_mcfit = gk_mcfit / gk_mcfit_analy - 1.
 
         # Plot the results.
         plot_fftlog = canvas._ax_comp.plot(
             k_fftlog, k_fftlog**2 * gk_fftlog.real, ls='-', label='FFTLog'
         )
-        if mcfit is not None:
+        if _mcfit is not None:
             plot_mcfit = canvas._ax_comp.plot(
                 k_mcfit, k_mcfit**2 * gk_mcfit, ls='--', label='mcfit'
             )
@@ -476,7 +520,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
                 k_fftlog, 100 * dgk_fftlog,
                 c=plot_fftlog[0].get_color(), ls='-', label='FFTLog'
             )
-            if mcfit is not None:
+            if _mcfit is not None:
                 canvas._ax_diff.plot(
                     k_mcfit, 100 * dgk_mcfit,
                     c=plot_mcfit[0].get_color(), ls='--', label='mcfit'
@@ -574,6 +618,7 @@ PIVOT: float = 1.
 LOWRING: bool = True
 NSAMP: int = 768
 LGRANGE: Tuple[float, float] = (-5., 5.)
+EXPAND: float = 1.25
 PK_PRE_SAMP_FILE: str = "pk_lgsamps.dat"
 XIR_POST_SAMP_FILE: str = "xir_lgsamps_post{}.dat"
 
