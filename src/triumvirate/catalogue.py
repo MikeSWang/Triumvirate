@@ -80,6 +80,9 @@ class ParticleCatalogue:
         Total particle sample weight.
 
 
+    .. versionchanged:: 0.2.0
+       Separate `wtotal` and `wstotal` attributes.
+
     .. _sample_and_clustering_weights:
 
     .. admonition:: Sample and clustering weights

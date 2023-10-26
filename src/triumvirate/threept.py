@@ -92,12 +92,20 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
     form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
+
+        .. versionchanged:: 0.3.0
+            Add 'off-diag' and 'row' options and redefine 'full' option.
+
     idx_bin : int, optional
         When binning `form` is 'row', this is the fixed bin index for
         the first coordinate dimension; when binning `form` is 'off-diag',
         this is the upper-triangular off-diagonal index; otherwise, this
         is ignored.  If not `None` (default), this will override
         ``paramset['idx_bin']``.
+
+        .. versionchanged:: 0.3.0
+            Expand definition to match changed `form`.
+
     **type_kwargs
         'catalogue_type' and 'statistic_type' parameters to be filled in.
 
@@ -427,12 +435,20 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
     form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
+
+        .. versionchanged:: 0.3.0
+            Add 'off-diag' and 'row' options and redefine 'full' option.
+
     idx_bin : int, optional
         When binning `form` is 'row', this is the fixed bin index for
         the first coordinate dimension; when binning `form` is 'off-diag',
         this is the upper-triangular off-diagonal index; otherwise, this
         is ignored.  If not `None` (default), this will override
         ``paramset['idx_bin']``.
+
+        .. versionchanged:: 0.3.0
+            Expand definition to match changed `form`.
+
     types : dict, optional
         'catalogue_type' and 'statistic_type' values (default is `None`).
         This should be set by the caller of this function.
@@ -687,12 +703,20 @@ def compute_bispec(catalogue_data, catalogue_rand,
     form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
+
+        .. versionchanged:: 0.3.0
+            Add 'off-diag' and 'row' options and redefine 'full' option.
+
     idx_bin : int, optional
         When binning `form` is 'row', this is the fixed bin index for
         the first coordinate dimension; when binning `form` is 'off-diag',
         this is the upper-triangular off-diagonal index; otherwise, this
         is ignored.  If not `None` (default), this will override
         ``paramset['idx_bin']``.
+
+        .. versionchanged:: 0.3.0
+            Expand definition to match changed `form`.
+
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters---
@@ -804,12 +828,20 @@ def compute_3pcf(catalogue_data, catalogue_rand,
     form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
+
+        .. versionchanged:: 0.3.0
+            Add 'off-diag' and 'row' options and redefine 'full' option.
+
     idx_bin : int, optional
         When binning `form` is 'row', this is the fixed bin index for
         the first coordinate dimension; when binning `form` is 'off-diag',
         this is the upper-triangular off-diagonal index; otherwise, this
         is ignored.  If not `None` (default), this will override
         ``paramset['idx_bin']``.
+
+        .. versionchanged:: 0.3.0
+            Expand definition to match changed `form`.
+
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters---
@@ -909,12 +941,20 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #     form : {'diag', 'off-diag', 'row', 'full'}, optional
 #         Binning form of the measurements.  If not `None` (default),
 #         this will override ``paramset['form']``.
+#
+#         .. versionchanged:: 0.3.0
+#             Add 'off-diag' and 'row' options and redefine 'full' option.
+#
 #     idx_bin : int, optional
 #         When binning `form` is 'row', this is the fixed bin index for
 #         the first coordinate dimension; when binning `form` is 'off-diag',
 #         this is the upper-triangular off-diagonal index; otherwise, this
 #         is ignored.  If not `None` (default), this will override
 #         ``paramset['idx_bin']``.
+#
+#         .. versionchanged:: 0.3.0
+#             Expand definition to match changed `form`.
+#
 #     sampling_params : dict, optional
 #         Dictionary containing a subset of the following entries
 #         for sampling parameters---
@@ -1201,12 +1241,20 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
     form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
+
+        .. versionchanged:: 0.3.0
+            Add 'off-diag' and 'row' options and redefine 'full' option.
+
     idx_bin : int, optional
         When binning `form` is 'row', this is the fixed bin index for
         the first coordinate dimension; when binning `form` is 'off-diag',
         this is the upper-triangular off-diagonal index; otherwise, this
         is ignored.  If not `None` (default), this will override
         ``paramset['idx_bin']``.
+
+        .. versionchanged:: 0.3.0
+            Expand definition to match changed `form`.
+
     types : dict, optional
         'catalogue_type' and 'statistic_type' values (default is `None`).
         This should be set by the caller of this function.
@@ -1419,12 +1467,20 @@ def compute_bispec_in_gpp_box(catalogue_data,
     form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
+
+        .. versionchanged:: 0.3.0
+            Add 'off-diag' and 'row' options and redefine 'full' option.
+
     idx_bin : int, optional
         When binning `form` is 'row', this is the fixed bin index for
         the first coordinate dimension; when binning `form` is 'off-diag',
         this is the upper-triangular off-diagonal index; otherwise, this
         is ignored.  If not `None` (default), this will override
         ``paramset['idx_bin']``.
+
+        .. versionchanged:: 0.3.0
+            Expand definition to match changed `form`.
+
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters---
@@ -1513,12 +1569,20 @@ def compute_3pcf_in_gpp_box(catalogue_data,
     form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
+
+        .. versionchanged:: 0.3.0
+            Add 'off-diag' and 'row' options and redefine 'full' option.
+
     idx_bin : int, optional
         When binning `form` is 'row', this is the fixed bin index for
         the first coordinate dimension; when binning `form` is 'off-diag',
         this is the upper-triangular off-diagonal index; otherwise, this
         is ignored.  If not `None` (default), this will override
         ``paramset['idx_bin']``.
+
+        .. versionchanged:: 0.3.0
+            Expand definition to match changed `form`.
+
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters---
@@ -1620,12 +1684,20 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
     form : {'diag', 'off-diag', 'row', 'full'}, optional
         Binning form of the measurements.  If not `None` (default),
         this will override ``paramset['form']``.
+
+        .. versionchanged:: 0.3.0
+            Add 'off-diag' and 'row' options and redefine 'full' option.
+
     idx_bin : int, optional
         When binning `form` is 'row', this is the fixed bin index for
         the first coordinate dimension; when binning `form` is 'off-diag',
         this is the upper-triangular off-diagonal index; otherwise, this
         is ignored.  If not `None` (default), this will override
         ``paramset['idx_bin']``.
+
+        .. versionchanged:: 0.3.0
+            Expand definition to match changed `form`.
+
     sampling_params : dict, optional
         Dictionary containing a subset of the following entries
         for sampling parameters---

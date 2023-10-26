@@ -7,6 +7,8 @@ Handle fields and mesh grids.
 .. autosummary::
     record_binned_vectors
 
+.. versionadded:: 0.3.0
+
 """
 import numpy as np
 
