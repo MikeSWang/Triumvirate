@@ -2,10 +2,12 @@
 Hankel-Like Transforms (:mod:`~triumvirate.transforms`)
 ==========================================================================
 
-Configure the program logger.
+Perform Hankel-like transforms in 1- and 2-d.
 
 .. autosummary::
     SphericalBesselTransform
+    DoubleSphericalBesselTransform
+    resample_lglin
 
 """
 from collections.abc import Sequence

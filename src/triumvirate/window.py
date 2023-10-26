@@ -1,5 +1,5 @@
 """
-Window Convolution (:mod:`~triumvirate.winconv`)
+Window Convolution (:mod:`~triumvirate.window`)
 ==========================================================================
 
 Perform window convolution of three-point statistics.
@@ -8,15 +8,14 @@ Perform window convolution of three-point statistics.
 from typing import NamedTuple
 
 import numpy as np
-from scipy.interpolate import interp1d, RectBivariateSpline
 
-from triumvirate._bihankel import (
-    transform_bispec_to_3pcf,
-    transform_3pcf_to_bispec,
+from triumvirate.transforms import (
+    DoubleSphericalBesselTransform,
+    resample_lglin,
 )
 
 
-# Default convolution formula from Sugiyama et al. (2019) [arXiv:1803.02132].
+# Default convolution formula from Sugiyama et al. (2018) [arXiv:1803.02132].
 _FORMULAE_SUGIYAMA19 = {
     '000': [
         ('000', '000', 1),
@@ -48,19 +47,19 @@ _FORMULAE_SUGIYAMA19 = {
 
 
 class _WConvTerm(NamedTuple):
-    r"""Window convolution term as a tuple of its three factors.
+    r"""Window convolution term as a tuple of three factors.
 
     For example, ``term = _WConvTerm('000', 'ic', -1)``, with
-    parameters/attributes/factors ``term.deg_Q = '000'``,
-    ``term.deg_zeta = 'ic'`` and ``term.coeff = -1``, corresponds to the
-    term :math:`- 1 \cdot Q_{000} \zeta_{\mathrm{ic}}`.
+    ``term.deg_Q = '000'``, ``term.deg_zeta = 'ic'``
+    and ``term.coeff = -1``, corresponds to the term
+    :math:`- 1 \cdot Q_{000} \zeta_{\mathrm{ic}}`.
 
     Attributes
     ----------
     deg_Q : str
-        Window function multipole degree.
+        Window function multipole.
     deg_zeta : str
-        Unwindowed three-point correlation funciton multipole degree.
+        Unwindowed three-point correlation funciton multipole.
     coeff : float
         Numerical factor for the convolution term.
 
@@ -85,10 +84,10 @@ class _WConvFormulae:
 
     Attributes
     ----------
-    multipoles_Q : list of str
-        List of degrees of the required window function multipoles.
-    multipoles_zeta : list of str
-        List of degrees of the required 3PCF multipoles.
+    multipoles_Q : array of str
+        Required window function multipoles.
+    multipoles_zeta : array of str
+        Required unwindowed 3PCF multipoles.
 
     """
 
