@@ -184,26 +184,6 @@ class ParticleCatalogue:
         logger : :class:`logging.Logger`, optional
             Program logger (default is `None`).
 
-        Examples
-        --------
-        >>> ParticleCatalogue.read_from_file(
-        ...     filepath,
-        ...     reader='astropy',
-        ...     format='fits',
-        ...     # Match original data column names to the default names.
-        ...     name_mapping={
-        ...         'x': 'X', 'y': 'Y', 'z': 'Z',
-        ...         'nz': 'NZ', 'ws': 'WEIGHT_SYS', 'wc': 'WEIGHT_FKP',
-        ...     }
-        ... )
-        >>> ParticleCatalogue.read_from_file(
-        ...     filepath,
-        ...     reader='nbodykit',
-        ...     format='hdf5',
-        ...     # `root` keyword argument is passed to `HDFCatalog`.
-        ...     file_kwargs={root='particles'}
-        ... )
-
 
         .. _format_and_names_arguments:
 
@@ -235,6 +215,27 @@ class ParticleCatalogue:
             If any of the 'nz', 'ws' and 'wc' columns are not provided,
             these columns are initialised with the default values in
             :class:`~triumvirate.catalogue.ParticleCatalogue`.
+
+
+        Examples
+        --------
+        >>> ParticleCatalogue.read_from_file(
+        ...     filepath,
+        ...     reader='astropy',
+        ...     format='fits',
+        ...     # Match original data column names to the default names.
+        ...     name_mapping={
+        ...         'x': 'X', 'y': 'Y', 'z': 'Z',
+        ...         'nz': 'NZ', 'ws': 'WEIGHT_SYS', 'wc': 'WEIGHT_FKP',
+        ...     }
+        ... )
+        >>> ParticleCatalogue.read_from_file(
+        ...     filepath,
+        ...     reader='nbodykit',
+        ...     format='hdf5',
+        ...     # `root` keyword argument is passed to `HDFCatalog`.
+        ...     file_kwargs={root='particles'}
+        ... )
 
 
         .. |Table| replace:: :class:`astropy.table.Table`

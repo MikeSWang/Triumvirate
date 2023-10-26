@@ -1,8 +1,16 @@
 """
-Window Convolution (:mod:`~triumvirate.window`)
+Window Convolution (:mod:`~triumvirate.winconv`)
 ==========================================================================
 
+.. versionadded:: 0.4.0
+
+
 Perform window convolution of three-point statistics.
+
+.. autosummary::
+    WinConvTerm
+    WinConvFormulae
+    ThreePointWinConv
 
 """
 from typing import NamedTuple
@@ -15,64 +23,71 @@ from triumvirate.transforms import (
 )
 
 
-# Default convolution formula from Sugiyama et al. (2018) [arXiv:1803.02132].
-_FORMULAE_SUGIYAMA19 = {
-    '000': [
-        ('000', '000', 1),
-        ('000', 'ic', -1),
-        ('110', '110', 1./3),
-    ],
-    '110': [
-        ('000', '110', 1),
-        ('110', '000', 1),
-        ('110', 'ic', -1),
-    ],
-    '202': [
-        ('000', '202', 1),
-        ('202', '000', 1),
-        ('202', 'ic', -1),
-        ('110', '112', 1./3),
-        ('112', '110', 1./3),
-    ],
-    '112': [
-        ('000', '112', 1),
-        ('112', '000', 1),
-        ('112', 'ic', -1),
-        ('022', '110', 2./5),
-        ('202', '110', 2./5),
-        ('110', '022', 2./5),
-        ('110', '202', 2./5),
-    ],
+NAMED_FORMULAE = {
+    # Sugiyama et al. (2018) [arXiv:1803.02132]
+    'sugiyama+18': {
+        '000': [
+            ('000', '000', 1.),
+            ('000', 'ic', -1.),
+            ('110', '110', 1./3),
+        ],
+        '110': [
+            ('000', '110', 1.),
+            ('110', '000', 1.),
+            ('110', 'ic', -1.),
+        ],
+        '202': [
+            ('000', '202', 1.),
+            ('202', '000', 1.),
+            ('202', 'ic', -1.),
+            ('110', '112', 1./3),
+            ('112', '110', 1./3),
+        ],
+        '112': [
+            ('000', '112', 1.),
+            ('112', '000', 1.),
+            ('112', 'ic', -1.),
+            ('022', '110', 2./5),
+            ('202', '110', 2./5),
+            ('110', '022', 2./5),
+            ('110', '202', 2./5),
+        ],
+    },
 }
 
 
-class _WConvTerm(NamedTuple):
+class WinConvTerm(NamedTuple):
     r"""Window convolution term as a tuple of three factors.
-
-    For example, ``term = _WConvTerm('000', 'ic', -1)``, with
-    ``term.deg_Q = '000'``, ``term.deg_zeta = 'ic'``
-    and ``term.coeff = -1``, corresponds to the term
-    :math:`- 1 \cdot Q_{000} \zeta_{\mathrm{ic}}`.
 
     Attributes
     ----------
-    deg_Q : str
-        Window function multipole.
-    deg_zeta : str
-        Unwindowed three-point correlation funciton multipole.
+    ind_Q : str
+        Window function multipole index/indices.
+    ind_Z : str
+        Unwindowed three-point correlation funciton multipole
+        index/indices.
     coeff : float
-        Numerical factor for the convolution term.
+        Numerical coefficient for the convolution term.
+
+    Examples
+    --------
+    The following `term` corresponds to the term
+    :math:`- 1 \cdot Q_{000} \zeta_{\mathrm{ic}}`:
+
+    >>> term = WinConvTerm('000', 'ic', -1)
+    >>> print(term.coeff, term.ind_Q, term.ind_Z)
+    -1 000 ic
 
     """
-    deg_Q: str
-    deg_zeta: str
+    ind_Q: str
+    ind_Z: str
     coeff: float
 
 
-class _WConvFormulae:
-    """Window convolution formulae.
+class WinConvFormulae:
+    r"""Window convolution formulae.
 
-    The full formulae are encoded as a dictionary, where each key
+    The full set of formulae are encoded as a dictionary, where each key
     corresponds to a windowed three-point correlation function (3PCF)
     multipole, and each value is a sequence of (named) tuples each
     corresponding to a window convolution term.
@@ -84,49 +99,128 @@ class _WConvFormulae:
 
     Attributes
     ----------
-    multipoles_Q : array of str
+    formulae : dict of \
+               {str: list of :class:`~triumvirate.winconv.WinConvTerm`}
+        Window convolution formulae.
+    multipoles : list of str
+        Windowed 3PCF multipoles.
+    multipoles_wind : array of str
         Required window function multipoles.
-    multipoles_zeta : array of str
+    multipoles_3pcf : array of str
         Required unwindowed 3PCF multipoles.
+
+    Examples
+    --------
+    The following `formulae` corresponds to a single formula for the
+    (0, 0, 0) monopole consisting of three terms, namely
+    :math:`Q_{000} \zeta_{000} - Q_{000} \zeta_{\mathrm{ic}} + \frac{1}{3}
+    Q_{110} \zeta_{110}`:
+
+    >>> formulae_dict = {
+    ...     '000': [
+    ...         ('000', '000', 1),
+    ...         ('000', 'ic', -1),
+    ...         ('110', '110', 1./3),
+    ...     ],
+    ... }
+    >>> formulae = WinConvFormulae(formulae_dict)
+
+    It encodes the formula(e) for the (0, 0, 0) monopole only:
+
+    >>> print(formulae.multipoles)
+    ['000']
+
+    The window function multipoles required are:
+
+    >>> print(formulae.multipoles_wind)
+    ['000', '110']
+
+    The unwindowed 3PCF multipoles required are:
+
+    >>> print(formulae.multipoles_3pcf)
+    ['000', 'ic', '110']
 
     """
 
     def __init__(self, formulae):
 
-        self._formulae = {
-            multipole: [_WConvTerm(*term) for term in formula]
+        self.formulae = {
+            multipole: [WinConvTerm(*term) for term in formula]
             for multipole, formula in formulae.items()
         }
 
         self.multipoles = formulae.keys()
-
-        self.multipoles_Q = np.unique([
-            term.deg_Q
+        self.multipoles_wind = np.unique([
+            term.ind_Q
             for formula in self._formulae.values()
             for term in formula
         ])
-        self.multipoles_zeta = np.unique([
-            term.deg_zeta
+        self.multipoles_3pcf = np.unique([
+            term.ind_Z
             for formula in self._formulae.values()
             for term in formula
         ])
 
     def __getitem__(self, multipole):
-        """Get the formula for the window convolution of a specific
-        3PCF multipole.
+        """Get the formula for a specific windowed 3PCF multipole.
 
         Parameters
         ----------
         multipole : str
-            Degrees of the specified windowed 3PCF multipole.
+            Windowed 3PCF multipole.
 
         Returns
         -------
-        list of :class:`~triumvirate.winconv._WConvTerm`
+        list of :class:`~triumvirate.winconv.WinConvTerm`
             List of window convolution terms for `multipole`.
 
         """
         return self._formulae[multipole]
+
+    def print_latex_expr(self, multipole):
+        pass
+
+
+class ThreePointWinConv:
+    """Window convolution of three-point statistics.
+
+    Parameters
+    ----------
+    formulae : str, \
+               or dict of {str: sequence of tuples of (str, str, float)} \
+               or {str: list of :class:`~triumvirate.winconv.WinConvTerm`}
+        Window convolution formulae.
+    window_sampts : 1-d array of float
+        Window function separation sample points.
+    window_multipoles : dict of {str: 2-d array of float}
+        Window function multipole samples (each key is a multipole).
+
+    """
+
+    def __init__(self, formulae, window_sampts, window_multipoles):
+
+        # Constuct formulae object.
+        if isinstance(formulae, str):
+            try:
+                formulae = NAMED_FORMULAE[formulae.lower()]
+            except KeyError:
+                raise ValueError(f'Unknown named formulae: {formulae}.')
+        if not isinstance(formulae, WinConvFormulae):
+            formulae = WinConvFormulae(formulae)
+        self._formulae = formulae
+
+        # Store window multipoles.
+        self._r_in = window_sampts
+        self._Q_in = window_multipoles
+
+    def conv_bispec(self):
+        pass
+
+    def conv_3pcf(self):
+        pass
+
+    def conv_3pcf_diag(self):
+        pass
 
 
 def wconv_3pcf_diag(formulae, Q, zeta, r_common, r_Q=None, r_zeta=None):
@@ -193,8 +287,8 @@ def wconv_3pcf_diag(formulae, Q, zeta, r_common, r_Q=None, r_zeta=None):
         formulae = _FORMULAE_SUGIYAMA19
 
     # Convert dictionary to formular object.
-    if not isinstance(formulae, _WConvFormulae):
-        formulae = _WConvFormulae(formulae)
+    if not isinstance(formulae, WinConvFormulae):
+        formulae = WinConvFormulae(formulae)
 
     # Coerce onto the same coordinate samples.
     if r_Q is None:
@@ -221,7 +315,7 @@ def wconv_3pcf_diag(formulae, Q, zeta, r_common, r_Q=None, r_zeta=None):
         zeta_tilde = 0.  # technically not a scalar
         for term in formulae[multipole]:
             zeta_tilde += term.coeff \
-                * Q_samples[term.deg_Q] * zeta_samples[term.deg_zeta]
+                * Q_samples[term.ind_Q] * zeta_samples[term.ind_Z]
         zeta_conv[multipole] = zeta_tilde
 
     return zeta_conv
@@ -293,8 +387,8 @@ def wconv_3pcf(formulae, Q, zeta, r1_common, r2_common,
         formulae = _FORMULAE_SUGIYAMA19
 
     # Convert dictionary to formular object.
-    if not isinstance(formulae, _WConvFormulae):
-        formulae = _WConvFormulae(formulae)
+    if not isinstance(formulae, WinConvFormulae):
+        formulae = WinConvFormulae(formulae)
 
     # Coerce onto the same coordinate samples.
     if r1_Q is None and r2_Q is None:
@@ -327,7 +421,7 @@ def wconv_3pcf(formulae, Q, zeta, r1_common, r2_common,
         zeta_tilde = 0.  # technically not a scalar
         for term in formulae[multipole]:
             zeta_tilde += term.coeff \
-                * Q_samples[term.deg_Q] * zeta_samples[term.deg_zeta]
+                * Q_samples[term.ind_Q] * zeta_samples[term.ind_Z]
         zeta_conv[multipole] = zeta_tilde
 
     return zeta_conv

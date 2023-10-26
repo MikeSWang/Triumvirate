@@ -2,12 +2,13 @@
 Field and mesh (:mod:`~triumvirate.fieldmesh`)
 ==========================================================================
 
+.. versionadded:: 0.3.0
+
+
 Handle fields and mesh grids.
 
 .. autosummary::
     record_binned_vectors
-
-.. versionadded:: 0.3.0
 
 """
 import numpy as np
