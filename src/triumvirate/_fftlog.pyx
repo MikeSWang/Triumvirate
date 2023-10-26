@@ -55,7 +55,7 @@ cdef class HankelTransform:
     bias : float
         Power-law bias index.
     size : int
-        Sample size.
+        Sample size of the transform.
     pivot : float
         Pivot value used.
 
@@ -90,7 +90,7 @@ cdef class HankelTransform:
         """Sample size.
 
         """
-        return self._nsamp
+        return self._nsamp_trans
 
     @property
     def pivot(self):

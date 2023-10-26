@@ -59,10 +59,11 @@ class SphericalBesselTransform:
     extrap_layer : {'native', 'outer'}, optional
         Extrapolation layer:
 
-        - 'native' (default): extrapolate the samples, including
+        - 'native': extrapolate the samples, including
           any pre-factors, within the underlying FFTLog algorithm;
-        - 'outer': extrapolate the samples, excluding any pre-factors,
-          before passing them to the underlying FFTLog algorithm.
+        - 'outer' (default): extrapolate the samples, excluding
+          any pre-factors, before passing them to the underlying
+          FFTLog algorithm.
 
 
     Attributes
@@ -86,7 +87,7 @@ class SphericalBesselTransform:
     """
 
     def __init__(self, degree, bias, sample_pts, pivot=1., lowring=True,
-                 extrap=0, extrap_exp=2., extrap_layer='native'):
+                 extrap=0, extrap_exp=2., extrap_layer='outer'):
         if extrap not in {0, 1, 2, 3}:
             raise ValueError(
                 f"Extrapolation option must be 0, 1, 2 or 3: {extrap=}."
@@ -267,9 +268,10 @@ class DoubleSphericalBesselTransform:
         original number of sample points is used as the sample size for
         the transform.
     extrap2d : bool, optional
-        If `True` (default), perform 2-d extrapolation pre-transform
-        excluding any pre-factors; otherwise, perform 1-d extrapolation
-        including any pre-factors within the underlying FFTLog algorithm.
+        If `True` (default is `False`), perform 2-d extrapolation
+        pre-transform excluding any pre-factors; otherwise, perform 1-d
+        extrapolation including any pre-factors within the underlying
+        FFTLog algorithm.
 
     Attributes
     ----------
@@ -295,7 +297,7 @@ class DoubleSphericalBesselTransform:
     _rep = 0
 
     def __init__(self, degrees, biases, sample_pts, pivot=1., lowring=True,
-                 extrap=0, extrap_exp=2., extrap2d=True):
+                 extrap=0, extrap_exp=2., extrap2d=False):
         if extrap not in {0, 1, 2, 3}:
             raise ValueError(
                 f"Extrapolation option must be 0, 1, 2 or 3: {extrap=}."
