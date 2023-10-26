@@ -8,7 +8,10 @@ Configure the program logger.
     SphericalBesselTransform
 
 """
+from collections.abc import Sequence
+
 import numpy as np
+from scipy.interpolate import RectBivariateSpline, UnivariateSpline
 
 from ._arrayops import (
     extrap_lin,
@@ -452,3 +455,94 @@ class DoubleSphericalBesselTransform:
         if self._extrap == 3:
             return extrap2d_loglin(arr, self._n_ext)
         return arr
+
+
+def resample_lglin(sampts, samples, size=None, spline=3):
+    """Resample at logarithmically spaced sample points in 1- or 2-d.
+
+    Parameters
+    ----------
+    sampts : array_like or sequence of array_like
+        Original sample points (1-d in each dimension).
+    samples : array_like
+        Original samples in 1-d or 2-d.
+    size : int or sequence of int, optional
+        Size of the interpolated samples.  If `None` (default), the size
+        is kept the same as the original samples.
+    spline : int, optional
+        Degree of the interpolation spline (default is 3).
+
+    Returns
+    -------
+    resampts : (2-tuple of) :class:`numpy.ndarray`
+        Logarithmically spaced sample points (1-d for each dimension)
+        in the original range(s).
+    resamples : :class:`numpy.ndarray`
+        Interpolated samples.
+
+    Examples
+    --------
+    Resample a 2-d function:
+    >>> import numpy as np
+    >>> from triumvirate.transforms import resample_lglin
+    >>> def f(x, y): return np.exp(-x*np.sqrt(y))
+    >>> sampts = 1.e-3 * np.arange(1., 51.)
+    >>> samples = f(*np.meshgrid(sampts, sampts, indexing='ij'))
+    >>> resampts, resamples = resample_lglin(sampts, samples, size=10)
+
+    Check that the resampling is accurate:
+    >>> resamples_expected = f(
+    ...     *np.meshgrid(resampts[0], resampts[-1], indexing='ij')
+    ... )
+    >>> print(
+    ...     "Resampling is accurate:",
+    ...     np.allclose(resamples, resamples_expected)
+    ... )
+    Resampling is accurate: True
+
+    """
+    sampts = np.squeeze(sampts)
+    samples = np.squeeze(samples)
+
+    if samples.ndim == 1:
+        if sampts.ndim != 1:
+            raise ValueError("Sample points must be 1-d.")
+
+        resampts = np.logspace(
+            np.log10(sampts[0]), np.log10(sampts[-1]), size or len(sampts),
+            base=10
+        )
+        resamples = UnivariateSpline(
+            sampts, samples, k=spline, ext='raise'
+        )(resampts)
+
+        return resampts, resamples
+
+    if samples.ndim == 2:
+        if sampts.ndim == 1:
+            sampts = np.array([sampts, sampts])
+        if len(sampts) != 2 or sampts[0].ndim != 1 or sampts[-1].ndim != 1:
+            raise ValueError(
+                "Must provide (two) 1-d array(s) as sample points "
+                "for 2-d resampling."
+            )
+
+        size = size if isinstance(size, Sequence) else (size, size)
+
+        resampts = (
+            np.logspace(
+                np.log10(sampts[0][0]), np.log10(sampts[0][-1]),
+                size[0] or len(sampts[0]), base=10
+            ),
+            np.logspace(
+                np.log10(sampts[-1][0]), np.log10(sampts[-1][-1]),
+                size[-1] or len(sampts[-1]), base=10
+            )
+        )
+        resamples = RectBivariateSpline(
+            sampts[0], sampts[-1], samples, kx=spline, ky=spline
+        )(*resampts)
+
+        return resampts, resamples
+
+    raise ValueError(f"Sample points must be 1-d or 2-d: {samples.ndim=}.")

@@ -9,6 +9,7 @@ from triumvirate._fftlog import HankelTransform
 from triumvirate.transforms import (
     DoubleSphericalBesselTransform,
     SphericalBesselTransform,
+    resample_lglin,
 )
 
 
@@ -162,3 +163,35 @@ def test_doublesphericalbesseltransform(degrees, biases, nsamp, lgrange_samp,
         post_samples[test_range].real, post_results[test_range],
         rtol=1.e-3
     ), "Transform not accurate in the expected range."
+
+
+@pytest.mark.parametrize(
+    "sampts, size, func, ndim",
+    [
+        (np.arange(1., 11.), None, lambda x: x**2, 1),
+        (
+            np.arange(1., 51.) * 1.e-3, 10,
+            lambda x, y: np.exp(-x*np.sqrt(y)),
+            2
+        ),
+    ]
+)
+def test_resample_lglin(sampts, size, func, ndim):
+
+    if ndim == 1:
+        samples = func(sampts)
+    elif ndim == 2:
+        samples = func(*np.meshgrid(sampts, sampts, indexing='ij'))
+    else:
+        raise ValueError("Resampling only supports 1- or 2-d arrays.")
+
+    resampts, resamples = resample_lglin(sampts, samples, size=size)
+
+    if ndim == 1:
+        resamples_exact = func(resampts)
+    if ndim == 2:
+        resamples_exact = func(
+            *np.meshgrid(resampts[0], resampts[-1], indexing='ij')
+        )
+
+    assert np.allclose(resamples, resamples_exact), "Resampling not accurate."
