@@ -16,7 +16,7 @@ Perform Hankel-like transforms in 1- and 2-d.
 from collections.abc import Sequence
 
 import numpy as np
-from scipy.interpolate import RectBivariateSpline, UnivariateSpline
+from scipy.interpolate import InterpolatedUnivariateSpline, RectBivariateSpline
 
 from ._arrayops import (
     extrap_lin,
@@ -519,7 +519,7 @@ def resample_lglin(sampts, samples, size=None, spline=3):
             np.log10(sampts[0]), np.log10(sampts[-1]), size or len(sampts),
             base=10
         )
-        resamples = UnivariateSpline(
+        resamples = InterpolatedUnivariateSpline(
             sampts, samples, k=spline, ext='raise'
         )(resampts)
 
