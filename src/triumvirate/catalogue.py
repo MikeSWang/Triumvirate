@@ -57,8 +57,10 @@ class ParticleCatalogue:
         the same length.
     nz : (1-d array of) float, optional
         Redshift-dependent mean number density (defaults is `None`).
-        If an array, it must be of the same length
-        as `x`, `y` and `z`.
+        If an array, it must be of the same length as `x`, `y` and `z`.
+        This quantity should include sample weighting if sample weights
+        are used; see the :ref:`note <sample_and_clustering_weights>`
+        below for more details.
     ws, wc : (1-d array of) float, optional
         Sample weight and clustering weight of particles (defaults
         are 1.).  If an array, it must be of the same length as
@@ -94,6 +96,11 @@ class ParticleCatalogue:
 
         Note the naming convention above: in particular, ``wc`` is not
         the completeness weight (which is a component of ``ws`` instead).
+
+        When sample weights are applied (e.g. the catalogue has been
+        corrected for incompleteness), the redshift-dependent mean
+        number density ``nz`` is the weighted mean number density
+        (e.g. including the completeness weights).
 
     """
 
