@@ -13,4 +13,4 @@ Python Package
     apidoc_py/triumvirate.threept
     apidoc_py/triumvirate.twopt
     apidoc_py/triumvirate.transforms
-    apidoc_py/triumvirate.window
+    apidoc_py/triumvirate.winconv
