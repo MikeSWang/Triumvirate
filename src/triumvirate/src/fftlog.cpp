@@ -39,6 +39,14 @@ HankelTransform::HankelTransform(double mu, double q) {
   this->bias = q;
 }
 
+HankelTransform::~HankelTransform() {
+  fftw_destroy_plan(this->pre_plan);
+  fftw_free(this->pre_buffer);
+
+  fftw_destroy_plan(this->post_plan);
+  fftw_free(this->post_buffer);
+}
+
 void HankelTransform::initialise(
   std::vector<double> sample_pts, double kr_c, bool lowring,
   trva::ExtrapOption extrap, double extrap_exp
@@ -122,6 +130,19 @@ void HankelTransform::initialise(
   // double r0 = this->pre_sampts[0];
   // double k0 = kr_0 / r0;
   // ...
+
+  // Initialise FFTW plans.
+  this->pre_buffer = fftw_alloc_complex(this->nsamp_trans);
+  this->pre_plan = fftw_plan_dft_1d(
+    this->nsamp_trans, this->pre_buffer, this->pre_buffer,
+    FFTW_FORWARD, FFTW_MEASURE
+  );
+
+  this->post_buffer = fftw_alloc_complex(this->nsamp_trans);
+  this->post_plan = fftw_plan_dft_1d(
+    this->nsamp_trans, this->post_buffer, this->post_buffer,
+    FFTW_FORWARD, FFTW_MEASURE
+  );
 }
 
 void HankelTransform::initialise(
@@ -277,26 +298,18 @@ void HankelTransform::biased_transform(
   }
 
   // Compute the convolution b = a * u using FFT.
-  // NOTE: ``(`` and ``)`` are necessary
-  // (see https://www.fftw.org/doc/Complex-numbers.html).
-  fftw_plan preplan = fftw_plan_dft_1d(
-    N_trans, (fftw_complex*) a_trans, (fftw_complex*) b_trans,
-    FFTW_FORWARD, FFTW_ESTIMATE
-  );
-  fftw_execute(preplan);
-  fftw_destroy_plan(preplan);
+  memcpy(this->pre_buffer, a_trans, sizeof(std::complex<double>) * N_trans);
+  fftw_execute(this->pre_plan);
+  memcpy(a_trans, this->pre_buffer, sizeof(std::complex<double>) * N_trans);
 
   for (int m = 0; m < N_trans; m++) {
     // Divide by `N` to normalise the inverse DFT.
-    b_trans[m] *= this->kernel[m] / double(N_trans);
+    b_trans[m] = a_trans[m] * this->kernel[m] / double(N_trans);
   }
 
-  fftw_plan postplan = fftw_plan_dft_1d(
-    N_trans, (fftw_complex*) b_trans, (fftw_complex*) b_trans,
-    FFTW_FORWARD, FFTW_ESTIMATE
-  );
-  fftw_execute(postplan);
-  fftw_destroy_plan(postplan);
+  memcpy(this->post_buffer, b_trans, sizeof(std::complex<double>) * N_trans);
+  fftw_execute(this->post_plan);
+  memcpy(b_trans, this->post_buffer, sizeof(std::complex<double>) * N_trans);
 
   // Trim any extrapolation.
   for (int j = 0; j < N; j++) {

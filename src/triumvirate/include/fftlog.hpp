@@ -33,6 +33,7 @@
 
 #include <cmath>
 #include <complex>
+#include <cstring>
 #include <vector>
 
 #include "maths.hpp"
@@ -71,6 +72,11 @@ class HankelTransform {
    * @param q Power-law bias index.
    */
   HankelTransform(double mu, double q);
+
+  /**
+   * @brief Destruct the Hankel transform.
+   */
+  ~HankelTransform();
 
   /**
    * @brief Initialise the Hankel transform.
@@ -201,6 +207,14 @@ class HankelTransform {
 
   /// post-transform sample points with extrapolation option
   std::vector<double> post_sampts_extrap;
+
+  /// pre-kernel FFTW plan and array
+  fftw_plan pre_plan;
+  fftw_complex* pre_buffer;
+
+  /// post-kernel FFTW plan and array
+  fftw_plan post_plan;
+  fftw_complex* post_buffer;
 };
 
 class SphericalBesselTransform: public HankelTransform {
