@@ -13,7 +13,8 @@ import argparse
 import os.path as osp
 import sys
 import warnings
-from functools import wraps
+from functools import partial, wraps
+from timeit import Timer
 from typing import Callable, Literal, Self, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -65,6 +66,10 @@ def parse_parameters() -> argparse.Namespace:
     parser.add_argument(
         '--show-diff', action='store_true',
         help="Show the difference between the transform results."
+    )
+    parser.add_argument(
+        '--time', action='store_true',
+        help="Time the transform without showing a plotted figure."
     )
 
     pars = parser.parse_args()
@@ -201,6 +206,8 @@ class comparison_plot:
         Labels for the x- and y-axes.
     title
         Title for the plot.
+    timed
+        If `True`, time the transform and skip showing the figure.
 
     """
 
@@ -212,7 +219,8 @@ class comparison_plot:
         ylim: Union[Tuple[float, float], None] = None,
         xlabel: Union[str, None] = None,
         ylabel: Union[str, None] = None,
-        title: Union[str, None] = None
+        title: Union[str, None] = None,
+        timed: bool = False,
     ) -> None:
         # Store figure attributes.
         self._comp_type = comp_type
@@ -222,6 +230,7 @@ class comparison_plot:
         self._xlabel = xlabel
         self._ylabel = ylabel
         self._title = title
+        self._timed = timed
 
     def __enter__(self) -> Self:
         # Set up the figure.
@@ -272,13 +281,18 @@ class comparison_plot:
         self._ax_comp.set_title(self._title)
 
         plt.subplots_adjust(wspace=0, hspace=0)
-        plt.show()
+        plt.show(block=not self._timed)
 
     def __call__(self, runner: Callable) -> Callable:
         @wraps(runner)
         def context_wrapper(*args, **kwargs):
             with self:
-                return runner(*args, canvas=self, **kwargs)
+                direct_runner = partial(runner, *args, canvas=self, **kwargs)
+                if self._timed:
+                    timer = Timer(direct_runner)
+                    print(f"Run time: {timer.timeit(number=1):.3f} s.")
+                else:
+                    return direct_runner()
         return context_wrapper
 
 
@@ -293,6 +307,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
     """
     testcase = pars.test_case
     showdiff = pars.show_diff
+    timed = pars.time
 
     @comparison_plot(
         comp_type='analytic',
@@ -307,6 +322,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
         }.get(testcase),
         xlabel=r"$k_1 = k_2$",
         ylabel=r"$k_1^2 k_2^2 g(k_1) g(k_2)$",
+        timed=timed,
     )
     def run_analy(canvas: comparison_plot) -> None:
         # Get analytical functions.
@@ -362,6 +378,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
         ylim=(-.25e-0, 2.25e0),
         xlabel=r"$r_1 = r_2$",
         ylabel=r"$[r_1 r_2 \xi(r_1) \xi(r_2)]^{1/2}$",
+        timed=timed,
     )
     def run_samples(canvas: comparison_plot) -> None:
         # Set up samples.
