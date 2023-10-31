@@ -34,6 +34,27 @@ class ShapeError(ValueError):
     pass
 
 
+class OrderError(ValueError):
+    """Exception raised when the array order is incorrect.
+
+    """
+    pass
+
+
+class MixedSignError(ValueError):
+    """Exception raised when the array signs are mixed.
+
+    """
+    pass
+
+
+class SpacingError(ValueError):
+    """Exception raised when the array spacing is incorrect.
+
+    """
+    pass
+
+
 # ========================================================================
 # Extrapolation
 # ========================================================================
@@ -80,22 +101,22 @@ def _check_1d_array(a, check_sorted=False, check_sign=False,
     def _check_sign(a):
         same_sgn = np.all(a > 0. if a[0] > 0. else a < 0.)
         if not same_sgn:
-            raise ValueError("Input array contains mixed-sign entries.")
+            raise MixedSignError("Input array contains mixed-sign entries.")
 
     if check_sorted:
         if (not np.all(a[:-1] <= a[1:])) or (not np.all(a[:-1] >= a[1:])):
-            raise ValueError("Input array is not a sorted sequence.")
+            raise OrderError("Input array is not a sorted sequence.")
     if check_sign:
         _check_sign(a)
     if check_lin:
         spacing = np.mean(a[1:] - a[:-1])
         if not np.allclose(a[1:] - a[:-1], spacing):
-            raise ValueError("Input array is not linearly spaced.")
+            raise SpacingError("Input array is not linearly spaced.")
     if check_loglin:
         _check_sign(a)
         log_spacing = np.mean(np.log(a[1:] / a[:-1]))
         if not np.allclose(np.log(a[1:] / a[:-1]), log_spacing):
-            raise ValueError("Input array is not log-linearly spaced.")
+            raise SpacingError("Input array is not log-linearly spaced.")
 
     return a
 
@@ -142,7 +163,7 @@ def _check_2d_array(a, check_sorted=False, check_sign=False,
     def _check_sign(a):
         same_sgn = np.all(a > 0. if a[0, 0] > 0. else a < 0.)
         if not same_sgn:
-            raise ValueError("Input array contains mixed-sign entries.")
+            raise MixedSignError("Input array contains mixed-sign entries.")
 
     if check_sorted:
         for a_, direction in zip([a, a.transpose()], ['row', 'column']):
@@ -157,7 +178,7 @@ def _check_2d_array(a, check_sorted=False, check_sign=False,
                     ])
                 )
             ):
-                raise ValueError(
+                raise OrderError(
                     "Input array is not a sorted sequence "
                     f"along the {direction}s."
                 )
@@ -167,7 +188,7 @@ def _check_2d_array(a, check_sorted=False, check_sign=False,
         for a_, direction in zip([a, a.transpose()], ['row', 'column']):
             spacing = np.mean(a_[:, 1:] - a_[:, :-1], axis=1)
             if not np.allclose(a_[:, 1:] - a_[:, :-1], spacing[:, None]):
-                raise ValueError(
+                raise SpacingError(
                     "Input array is not linearly spaced "
                     f"along the {direction}s."
                 )
@@ -178,7 +199,7 @@ def _check_2d_array(a, check_sorted=False, check_sign=False,
             if not np.allclose(
                 np.log(a_[:, 1:] / a_[:, :-1]), log_spacing[:, None]
             ):
-                raise ValueError(
+                raise SpacingError(
                     "Input array is not log-linearly spaced "
                     f"along the {direction}s."
                 )
