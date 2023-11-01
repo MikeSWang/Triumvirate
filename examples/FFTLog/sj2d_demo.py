@@ -13,7 +13,7 @@ import argparse
 import os.path as osp
 import sys
 import warnings
-from functools import partial, wraps
+from functools import wraps
 from time import time
 from typing import Callable, Literal, Self, Tuple, Union
 

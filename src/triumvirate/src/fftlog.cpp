@@ -154,13 +154,13 @@ void HankelTransform::initialise(
   this->pre_buffer = fftw_alloc_complex(this->nsamp_trans);
   this->pre_plan = fftw_plan_dft_1d(
     this->nsamp_trans, this->pre_buffer, this->pre_buffer,
-    FFTW_FORWARD, FFTW_MEASURE
+    FFTW_FORWARD, FFTW_ESTIMATE
   );
 
   this->post_buffer = fftw_alloc_complex(this->nsamp_trans);
   this->post_plan = fftw_plan_dft_1d(
     this->nsamp_trans, this->post_buffer, this->post_buffer,
-    FFTW_FORWARD, FFTW_MEASURE
+    FFTW_FORWARD, FFTW_ESTIMATE
   );
 }
 
