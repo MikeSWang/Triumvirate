@@ -13,7 +13,7 @@ import os.path as osp
 import sys
 import warnings
 from functools import partial, wraps
-from timeit import Timer
+from time import time
 from typing import Callable, Literal, Self, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -359,12 +359,7 @@ class comparison_plot:
         @wraps(runner)
         def context_wrapper(*args, **kwargs):
             with self:
-                direct_runner = partial(runner, *args, canvas=self, **kwargs)
-                if self._timed:
-                    timer = Timer(direct_runner)
-                    print(f"Run time: {timer.timeit(number=1):.3f} s.")
-                else:
-                    return direct_runner()
+                return runner(*args, canvas=self, **kwargs)
         return context_wrapper
 
 
@@ -398,10 +393,15 @@ def get_testcase(pars: argparse.Namespace) -> None:
         fr = f(r, mu=pars.order)
 
         # Compute the Hankel transforms.
+        t_start = time()
         k_fftlog, gk_fftlog = HankelTransform(
             pars.order, BIAS, r, PIVOT, LOWRING,
             extrap=pars.extrap, extrap_exp=EXPAND
         ).transform(fr + 0.j)
+        t_end = time()
+        if timed:
+            print(f"FFTLog transform time: {t_end - t_start:.3f} s")
+
         k_fftlog_analy, gk_fftlog_analy = k_fftlog, g(k_fftlog, mu=pars.order)
 
         if (_mcfit := mcfit) is not None:
@@ -492,10 +492,15 @@ def get_testcase(pars: argparse.Namespace) -> None:
         fr = f(r, ell=pars.degree)
 
         # Compute the Hankel transforms.
+        t_start = time()
         k_fftlog, gk_fftlog = SphericalBesselTransform(
             pars.degree, BIAS, r, PIVOT, LOWRING,
             extrap=pars.extrap, extrap_exp=EXPAND
         ).transform(fr + 0.j)
+        t_end = time()
+        if timed:
+            print(f"FFTLog transform time: {t_end - t_start:.3f} s")
+
         k_fftlog_analy, gk_fftlog_analy = \
             k_fftlog, g(k_fftlog, ell=pars.degree)
 
@@ -565,9 +570,14 @@ def get_testcase(pars: argparse.Namespace) -> None:
         )
 
         # Compute the FFTLog transform.
+        t_start = time()
         r_fftlog, xi_fftlog = SphericalBesselTransform(
             pars.degree, BIAS, k, lowring=LOWRING, extrap=pars.extrap
         ).transform_cosmo_multipoles(-1, pk)
+        t_end = time()
+        if timed:
+            print(f"FFTLog transform time: {t_end - t_start:.3f} s")
+
         if hankl is not None:
             r_hankl, xi_hankl = hankl.P2xi(
                 k, pk, pars.degree, n=BIAS,
@@ -634,7 +644,7 @@ def main() -> Literal[0]:
 BIAS: float = 0.
 PIVOT: float = 1.
 LOWRING: bool = True
-NSAMP: int = 4096
+NSAMP: int = 768
 LGRANGE: Tuple[float, float] = (-5., 5.)
 EXPAND: float = 1.25
 PK_PRE_SAMP_FILE: str = "pk_lgsamps.dat"

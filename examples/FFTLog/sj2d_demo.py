@@ -14,7 +14,7 @@ import os.path as osp
 import sys
 import warnings
 from functools import partial, wraps
-from timeit import Timer
+from time import time
 from typing import Callable, Literal, Self, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -287,12 +287,7 @@ class comparison_plot:
         @wraps(runner)
         def context_wrapper(*args, **kwargs):
             with self:
-                direct_runner = partial(runner, *args, canvas=self, **kwargs)
-                if self._timed:
-                    timer = Timer(direct_runner)
-                    print(f"Run time: {timer.timeit(number=1):.3f} s.")
-                else:
-                    return direct_runner()
+                return runner(*args, canvas=self, **kwargs)
         return context_wrapper
 
 
@@ -334,10 +329,15 @@ def get_testcase(pars: argparse.Namespace) -> None:
 
         # Compute the Hankel transforms.
         frr = fr_1[:, None] * fr_2[None, :]
+
+        t_start = time()
         kk_fftlog, gkk_fftlog = DoubleSphericalBesselTransform(
             pars.degrees, BIASES, r, PIVOT, LOWRING,
             extrap=pars.extrap, extrap_exp=EXPAND
         ).transform(frr + 0.j)
+        t_end = time()
+        if timed:
+            print(f"FFTLog transform time: {t_end - t_start:.3f} s")
 
         gkk_analy = np.multiply(*[
             g(ki_fftlog, ell=ell)
@@ -391,9 +391,14 @@ def get_testcase(pars: argparse.Namespace) -> None:
 
         # Compute the FFTLog transform.
         bkk = pk[:, None] * pk[None, :]
+
+        t_start = time()
         rr_fftlog, xirr_fftlog = DoubleSphericalBesselTransform(
             pars.degrees, BIASES, k, lowring=LOWRING, extrap=pars.extrap
         ).transform_cosmo_multipoles(-1, bkk)
+        t_end = time()
+        if timed:
+            print(f"FFTLog transform time: {t_end - t_start:.3f} s")
 
         xirr = xi[:, None] * xi[None, :]
         xirr_ext_fftlog = RectBivariateSpline(r, r, xirr)(
