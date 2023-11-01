@@ -461,8 +461,8 @@ LOWRING: bool = True
 NSAMP: int = 768
 LGRANGE: Tuple[float, float] = (-5., 5.)
 EXPAND: float = 1.25
-PK_PRE_SAMP_FILE: str = "pk_lgsamps.dat"
-XIR_POST_SAMP_FILE: str = "xir_lgsamps_post{}.dat"
+PK_PRE_SAMP_FILE: str = "pk_lg_presamps.dat"
+XIR_POST_SAMP_FILE: str = "xir_lg_postsamps{}.dat"
 
 if __name__ == '__main__':
     sys.exit(main())
