@@ -279,12 +279,12 @@ void HankelTransform::biased_transform(
   }
 
   // Perform any extrapolation required.
-  std::complex<double> a_trans[N_trans];
-  std::complex<double> b_trans[N_trans];
   if (this->extrap == trva::ExtrapOption::NONE) {
     for (int j = 0; j < N_trans; j++) {
-      a_trans[j] = a[j];
-      b_trans[j] = 0.;
+      this->pre_buffer[j][0] = (a[j]).real();
+      this->pre_buffer[j][1] = (a[j]).imag();
+      this->post_buffer[j][0] = 0.;
+      this->post_buffer[j][1] = 0.;
     }
   } else {
     // Assume reality with extrapolation.
@@ -311,39 +311,52 @@ void HankelTransform::biased_transform(
     }
 
     for (int j = 0; j < N_trans; j++) {
-      a_trans[j] = a_trans_vec[j];
-      b_trans[j] = 0.;
+      this->pre_buffer[j][0] = a_trans_vec[j];
+      this->pre_buffer[j][1] = 0.;
+      this->post_buffer[j][0] = 0.;
+      this->post_buffer[j][1] = 0.;
     }
   }
 
   // Compute the convolution b = a * u using FFT.
-  memcpy(this->pre_buffer, a_trans, sizeof(std::complex<double>) * N_trans);
   fftw_execute(this->pre_plan);
-  memcpy(a_trans, this->pre_buffer, sizeof(std::complex<double>) * N_trans);
 
   for (int m = 0; m < N_trans; m++) {
     // Divide by `N` to normalise the inverse DFT.
-    b_trans[m] = a_trans[m] * this->kernel[m] / double(N_trans);
+    std::complex<double> a_(this->pre_buffer[m][0], this->pre_buffer[m][1]);
+    std::complex<double> b_ = a_ * this->kernel[m] / double(N_trans);
+    this->post_buffer[m][0] = b_.real();
+    this->post_buffer[m][1] = b_.imag();
   }
 
-  memcpy(this->post_buffer, b_trans, sizeof(std::complex<double>) * N_trans);
   fftw_execute(this->post_plan);
-  memcpy(b_trans, this->post_buffer, sizeof(std::complex<double>) * N_trans);
 
   // Trim any extrapolation.
   for (int j = 0; j < N; j++) {
-    b[j] = b_trans[j + this->n_ext];
+    b[j] = std::complex<double>(
+      this->post_buffer[j + this->n_ext][0],
+      this->post_buffer[j + this->n_ext][1]
+    );
   }
 
   // // Reverse and shift the array `b_trans` when inverse FFT is used above
   // // instead of FFT, and trim any extrapolation.
-  // for (int n = 0; n < N_trans/2; n++) {
-  //   std::complex<double> b_trans_ = b_trans[n];
-  //   b_trans[n] = b_trans[N_trans - n - 1];
-  //   b_trans[N_trans - n - 1] = b_trans_;
+  // for (int m = 0; m < N_trans/2; m++) {
+  //   double b_real_ = this->post_buffer[m][0];
+  //   double b_imag_ = this->post_buffer[m][1];
+
+  //   this->post_buffer[m][0] = this->post_buffer[N_trans - m - 1][0];
+  //   this->post_buffer[m][1] = this->post_buffer[N_trans - m - 1][1];
+
+  //   this->post_buffer[N_trans - m - 1][0] = b_real_;
+  //   this->post_buffer[N_trans - m - 1][1] = b_imag_;
   // }
   // for (int j = 0; j < N; j++) {
-  //   b[j] = b_trans[(j + N_trans - 1) % N_trans + this->n_ext];
+  //   int j_ = (j + N_trans - 1) % N_trans + this->n_ext;
+  //   b[j] = std::complex<double>(
+  //     this->post_buffer[j_][0],
+  //     this->post_buffer[j_][1]
+  //   );
   // }
 }
 
