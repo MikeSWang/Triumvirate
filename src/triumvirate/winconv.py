@@ -202,9 +202,7 @@ class WinConvFormulae:
     delimiters):
 
     >>> print(formulae.get_latex_expr('000'))
-    Q_\\mathrm{000} \\zeta_\\mathrm{000} \
-    - Q_\\mathrm{000} \\zeta_\\mathrm{ic} \
-    + \\frac{1}{3} Q_\\mathrm{110} \\zeta_\\mathrm{110}
+    Q_\\mathrm{000} \\zeta_\\mathrm{000} - Q_\\mathrm{000} \\zeta_\\mathrm{ic} + \\frac{1}{3} Q_\\mathrm{110} \\zeta_\\mathrm{110}
 
 
     .. |formulae_dicttype| replace:: \
@@ -220,7 +218,7 @@ class WinConvFormulae:
 
     .. |coeff_type| replace:: int, float or :class:`fractions.Fraction`
 
-    """
+    """  # noqa: E501
 
     def __init__(self, formulae):
 
