@@ -772,7 +772,13 @@ int main(int argc, char* argv[]) {
     trv::sys::logger.stat("[C] Data objects are being cleared.");
   }
 
-  // Clear dynamically allocated memory.
+  // Clear persistent and dynamic memory.
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  fftw_cleanup_threads();
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+  fftw_cleanup();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
   catalogue_data.finalise_particles();
   catalogue_rand.finalise_particles();
 

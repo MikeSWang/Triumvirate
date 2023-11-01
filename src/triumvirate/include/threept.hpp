@@ -37,6 +37,8 @@
 #ifndef TRIUMVIRATE_INCLUDE_THREEPT_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_THREEPT_HPP_INCLUDED_
 
+#include <fftw3.h>
+
 #include <cmath>
 #include <complex>
 #include <cstdio>

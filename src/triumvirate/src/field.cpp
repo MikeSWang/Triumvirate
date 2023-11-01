@@ -39,9 +39,12 @@ namespace trv {
 // Life cycle
 // -----------------------------------------------------------------------
 
-MeshField::MeshField(trv::ParameterSet& params) {
+MeshField::MeshField(
+  trv::ParameterSet& params, bool plan_ini, const std::string name
+) {
   // Attach the full parameter set to @ref trv::MeshField.
   this->params = params;
+  this->name = name;
 
   trvs::logger.reset_level(params.verbose);
 
@@ -59,7 +62,33 @@ MeshField::MeshField(trv::ParameterSet& params) {
     trvs::update_maxmem();
   }
 
-  this->initialise_density_field();  // likely redundant but safe
+  this->reset_density_field();  // likely redundant but safe
+
+  // Initialise FFTW plans.
+  if (plan_ini) {
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+    fftw_plan_with_nthreads(omp_get_max_threads());
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
+    this->transform = fftw_plan_dft_3d(
+      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+      this->field, this->field,
+      FFTW_FORWARD, FFTW_MEASURE
+    );
+    this->inv_transform = fftw_plan_dft_3d(
+      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+      this->field, this->field,
+      FFTW_BACKWARD, FFTW_MEASURE
+    );
+    if (this->params.interlace == "true") {
+      this->transform_s = fftw_plan_dft_3d(
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        this->field_s, this->field_s,
+        FFTW_FORWARD, FFTW_MEASURE
+      );
+    }
+    this->plan_ini = true;
+  }
 
   // Calculate grid sizes in configuration space.
   this->dr[0] = this->params.boxsize[0] / this->params.ngrid[0];
@@ -76,9 +105,76 @@ MeshField::MeshField(trv::ParameterSet& params) {
   this->vol_cell = this->vol / double(this->params.nmesh);
 }
 
-MeshField::~MeshField() {this->finalise_density_field();}
+MeshField::MeshField(
+  trv::ParameterSet& params,
+  fftw_plan& transform, fftw_plan& inv_transform,
+  const std::string name
+) {
+  // Attach the full parameter set to @ref trv::MeshField.
+  this->params = params;
+  this->name = name;
 
-void MeshField::initialise_density_field() {
+  trvs::logger.reset_level(params.verbose);
+
+  // Initialise the field (and its shadow field if interlacing is used)
+  // and increase allocated memory.
+  this->field = fftw_alloc_complex(this->params.nmesh);
+
+  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+  trvs::update_maxmem();
+
+  if (this->params.interlace == "true") {
+    this->field_s = fftw_alloc_complex(this->params.nmesh);
+
+    trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+    trvs::update_maxmem();
+  }
+
+  this->reset_density_field();  // likely redundant but safe
+
+  // Initialise FFTW plans.
+  this->transform = transform;
+  this->inv_transform = inv_transform;
+  if (this->params.interlace == "true") {
+    this->transform_s = transform;
+  }
+  this->plan_ext = true;
+
+  // Calculate grid sizes in configuration space.
+  this->dr[0] = this->params.boxsize[0] / this->params.ngrid[0];
+  this->dr[1] = this->params.boxsize[1] / this->params.ngrid[1];
+  this->dr[2] = this->params.boxsize[2] / this->params.ngrid[2];
+
+  // Calculate fundamental wavenumbers in Fourier space.
+  this->dk[0] = 2.*M_PI / this->params.boxsize[0];
+  this->dk[1] = 2.*M_PI / this->params.boxsize[1];
+  this->dk[2] = 2.*M_PI / this->params.boxsize[2];
+
+  // Calculate mesh volume and mesh grid cell volume.
+  this->vol = this->params.volume;
+  this->vol_cell = this->vol / double(this->params.nmesh);
+}
+
+MeshField::~MeshField() {
+  if (this->plan_ini) {
+    fftw_destroy_plan(this->transform);
+    fftw_destroy_plan(this->inv_transform);
+    if (this->params.interlace == "true") {
+      fftw_destroy_plan(this->transform_s);
+    }
+  }
+
+  if (this->field != nullptr) {
+    fftw_free(this->field); this->field = nullptr;
+    trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+  }
+  if (this->field_s != nullptr) {
+    fftw_free(this->field_s); this->field_s = nullptr;
+    trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+  }
+}
+
+void MeshField::reset_density_field() {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -94,18 +190,6 @@ void MeshField::initialise_density_field() {
       this->field_s[gid][0] = 0.;
       this->field_s[gid][1] = 0.;
     }
-  }
-}
-
-void MeshField::finalise_density_field() {
-  // Free memory usage.
-  if (this->field != nullptr) {
-    fftw_free(this->field); this->field = nullptr;
-    trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
-  }
-  if (this->field_s != nullptr) {
-    fftw_free(this->field_s); this->field_s = nullptr;
-    trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   }
 }
 
@@ -209,7 +293,7 @@ void MeshField::assign_weighted_field_to_mesh_ngp(
   const double inv_vol_cell = 1 / this->vol_cell;
 
   // Reset field values to zero.
-  this->initialise_density_field();
+  this->reset_density_field();
 
   // Assign particles to grid cells.
 #ifdef TRV_USE_OMP
@@ -319,7 +403,7 @@ void MeshField::assign_weighted_field_to_mesh_cic(
   const double inv_vol_cell = 1 / this->vol_cell;
 
   // Reset field values to zero.
-  this->initialise_density_field();
+  this->reset_density_field();
 
   // Assign particles to grid cells.
 
@@ -431,7 +515,7 @@ void MeshField::assign_weighted_field_to_mesh_tsc(
   const double inv_vol_cell = 1 / this->vol_cell;
 
   // Reset field values to zero.
-  this->initialise_density_field();
+  this->reset_density_field();
 
   // Perform assignment.
 #ifdef TRV_USE_OMP
@@ -579,7 +663,7 @@ void MeshField::assign_weighted_field_to_mesh_pcs(
   const double inv_vol_cell = 1 / this->vol_cell;
 
   // Reset field values to zero.
-  this->initialise_density_field();
+  this->reset_density_field();
 
   // Perform assignment.
 #ifdef TRV_USE_OMP
@@ -813,7 +897,7 @@ void MeshField::compute_ylm_wgtd_field(
     weight_kern[pid][1] = ylm.imag() * particles_rand[pid].w;
   }
 
-  MeshField field_rand(this->params);
+  MeshField field_rand(this->params, false);
   field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
   fftw_free(weight_kern); weight_kern = nullptr;
@@ -941,7 +1025,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
     weight_kern[pid][1] = ylm.imag() * std::pow(particles_rand[pid].w, 2);
   }
 
-  MeshField field_rand(this->params);
+  MeshField field_rand(this->params, false);
   field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
   fftw_free(weight_kern); weight_kern = nullptr;
@@ -1028,17 +1112,11 @@ void MeshField::fourier_transform() {
   }
 
   // Perform FFT.
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
-  fftw_plan transform = fftw_plan_dft_3d(
-    this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-    this->field, this->field,
-    FFTW_FORWARD, FFTW_ESTIMATE
-  );
-
-  fftw_execute(transform);
-  fftw_destroy_plan(transform);
+  if (this->plan_ext) {
+    fftw_execute_dft(this->transform, this->field, this->field);
+  } else {
+    fftw_execute(this->transform);
+  }
 
   // Interlace with the shadow field.
   if (this->params.interlace == "true") {
@@ -1050,17 +1128,11 @@ void MeshField::fourier_transform() {
       this->field_s[gid][1] *= this->vol_cell;
     }
 
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
-    fftw_plan transform_s = fftw_plan_dft_3d(
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      this->field_s, this->field_s,
-      FFTW_FORWARD, FFTW_ESTIMATE
-    );
-
-    fftw_execute(transform_s);
-    fftw_destroy_plan(transform_s);
+    if (this->plan_ext) {
+      fftw_execute_dft(this->transform_s, this->field_s, this->field_s);
+    } else {
+      fftw_execute(this->transform_s);
+    }
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for collapse(3)
@@ -1116,17 +1188,11 @@ void MeshField::inv_fourier_transform() {
   }
 
   // Perform inverse FFT.
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
-  fftw_plan inv_transform = fftw_plan_dft_3d(
-    this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-    this->field, this->field,
-    FFTW_BACKWARD, FFTW_ESTIMATE
-  );
-
-  fftw_execute(inv_transform);
-  fftw_destroy_plan(inv_transform);
+  if (this->plan_ext) {
+    fftw_execute_dft(this->inv_transform, this->field, this->field);
+  } else {
+    fftw_execute(this->inv_transform);
+  }
 }
 
 
@@ -1196,7 +1262,7 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   double& k_eff, int& nmodes
 ) {
   // Reset field values to zero.
-  this->initialise_density_field();
+  this->reset_density_field();
 
   // Reset effective wavenumber and wavevector modes.
   k_eff = 0.;
@@ -1244,17 +1310,11 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   }
 
   // Perform inverse FFT.
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
-  fftw_plan inv_transform = fftw_plan_dft_3d(
-    this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-    this->field, this->field,
-    FFTW_BACKWARD, FFTW_ESTIMATE
-  );
-
-  fftw_execute(inv_transform);
-  fftw_destroy_plan(inv_transform);
+  if (this->plan_ext) {
+    fftw_execute_dft(this->inv_transform, this->field, this->field);
+  } else {
+    fftw_execute(this->inv_transform);
+  }
 
   // Average over wavevector modes in the band.
 #ifdef TRV_USE_OMP
@@ -1275,7 +1335,7 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
     double r
 ) {
   // Reset field values to zero.
-  this->initialise_density_field();
+  this->reset_density_field();
 
   // Compute the field weighted by the spherical Bessel function and
   // reduced spherical harmonics.
@@ -1321,17 +1381,11 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
 }
 
   // Perform inverse FFT.
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
-  fftw_plan inv_transform = fftw_plan_dft_3d(
-    this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-    this->field, this->field,
-    FFTW_BACKWARD, FFTW_ESTIMATE
-  );
-
-  fftw_execute(inv_transform);
-  fftw_destroy_plan(inv_transform);
+  if (this->plan_ext) {
+    fftw_execute_dft(this->inv_transform, this->field, this->field);
+  } else {
+    fftw_execute(this->inv_transform);
+  }
 }
 
 
@@ -1954,11 +2008,13 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   fftw_plan inv_transform = fftw_plan_dft_3d(
     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
     twopt_3d, twopt_3d,
-    FFTW_BACKWARD, FFTW_ESTIMATE
+    FFTW_BACKWARD, FFTW_MEASURE
   );
 
   fftw_execute(inv_transform);
   fftw_destroy_plan(inv_transform);
+
+  // fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
 
   // Perform fine binning.
   // NOTE: Dynamically allocate owing to size.
@@ -2178,11 +2234,13 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   fftw_plan inv_transform = fftw_plan_dft_3d(
     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
     twopt_3d, twopt_3d,
-    FFTW_BACKWARD, FFTW_ESTIMATE
+    FFTW_BACKWARD, FFTW_MEASURE
   );
 
   fftw_execute(inv_transform);
   fftw_destroy_plan(inv_transform);
+
+  // fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
 
   // Perform fine binning.
   // NOTE: Dynamically allocate owing to size.
@@ -2403,11 +2461,13 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   fftw_plan inv_transform = fftw_plan_dft_3d(
     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
     twopt_3d, twopt_3d,
-    FFTW_BACKWARD, FFTW_ESTIMATE
+    FFTW_BACKWARD, FFTW_MEASURE
   );
 
   fftw_execute(inv_transform);
   fftw_destroy_plan(inv_transform);
+
+  // fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
 
   // Weight by spherical Bessel functions and harmonics before summing
   // over the configuration-space grids.

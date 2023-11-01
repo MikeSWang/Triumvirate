@@ -67,6 +67,7 @@ namespace trv {
 class MeshField {
  public:
   trv::ParameterSet params;  ///< parameter set
+  std::string name;          ///< field name
   fftw_complex* field;       ///< complex field on mesh
   double dr[3];              ///< grid size in each dimension
   double dk[3];              ///< fundamental wavenumber in each dimension
@@ -81,8 +82,32 @@ class MeshField {
    * @brief Construct the mesh field.
    *
    * @param params Parameter set.
+   * @param plan_ini Flag for FFTW plan initialisation
+   *                 (default is `true`).
+   * @param name Field name (default is "mesh-field").
    */
-  MeshField(trv::ParameterSet& params);
+  MeshField(
+    trv::ParameterSet& params,
+    bool plan_ini = true,
+    const std::string name = "mesh-field"
+  );
+
+  /**
+   * @brief Construct the mesh field with external FFTW plans.
+   *
+   * @param params Parameter set.
+   * @param transform External FFTW plan for Fourier transform.
+   * @param inv_transform External FFTW plan for inverse
+   *                      Fourier transform.
+   * @param name Field name (default is "mesh-field").
+   *
+   * @overload
+   */
+  MeshField(
+    trv::ParameterSet& params,
+    fftw_plan& transform, fftw_plan& inv_transform,
+    const std::string name = "mesh-field"
+  );
 
   /**
    * @brief Destruct the mesh field.
@@ -95,16 +120,7 @@ class MeshField {
    * This is an explicit method to reset values of
    * @ref trv::MeshField.field (and its interlaced counterpart) to zeros.
    */
-  void initialise_density_field();
-
-  /**
-   * @brief Finalise the complex field (and its shadow) on mesh.
-   *
-   * This is an explicit method to free the resources occupied by
-   * @ref trv::MeshField.field and may be called outside the
-   * class destructor.
-   */
-  void finalise_density_field();
+  void reset_density_field();
 
   // ---------------------------------------------------------------------
   // Operators & reserved methods
@@ -394,6 +410,16 @@ class MeshField {
  private:
   /// half-grid shifted complex field on mesh
   fftw_complex* field_s = nullptr;
+
+  /// FFTW plan for forward Fourier transform of the field
+  fftw_plan transform;
+  /// FFTW plan for forward Fourier transform of the shadow field
+  fftw_plan transform_s;
+  /// FFTW plan for backward Fourier transform of the field
+  fftw_plan inv_transform;
+
+  bool plan_ini = false;  ///< flag for plan initiality
+  bool plan_ext = false;  ///< flag for plan externality
 
   friend class FieldStats;
 

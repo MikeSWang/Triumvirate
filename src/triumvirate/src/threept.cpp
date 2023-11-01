@@ -107,12 +107,10 @@ double calc_bispec_normalisation_from_particles(
 double calc_bispec_normalisation_from_mesh(
   ParticleCatalogue& particles, trv::ParameterSet& params, double alpha
 ) {
-  MeshField catalogue_mesh(params);
+  MeshField catalogue_mesh(params, false);
 
   double norm_factor =
     catalogue_mesh.calc_grid_based_powlaw_norm(particles, 3);
-
-  catalogue_mesh.finalise_density_field();  // likely redundant but safe
 
   norm_factor /= std::pow(alpha, 3);
 
@@ -282,6 +280,19 @@ trv::BispecMeasurements compute_bispec(
     bk_dv[idx_dv] = 0.;
     sn_dv[idx_dv] = 0.;
   }  // likely redundant but safe
+
+  // // Set up FFTW master plans.
+  // fftw_complex* array_holder = fftw_alloc_complex(params.nmesh);
+  // fftw_plan fwd_master_plan = fftw_plan_dft_3d(
+  //   params.ngrid[0], params.ngrid[1], params.ngrid[2],
+  //   array_holder, array_holder,
+  //   FFTW_FORWARD, FFTW_MEASURE
+  // );
+  // fftw_plan bwd_master_plan = fftw_plan_dft_3d(
+  //   params.ngrid[0], params.ngrid[1], params.ngrid[2],
+  //   array_holder, array_holder,
+  //   FFTW_BACKWARD, FFTW_MEASURE
+  // );
 
   // ---------------------------------------------------------------------
   // Measurement
@@ -764,14 +775,9 @@ trv::BispecMeasurements compute_bispec(
     }
   }
 
-  dn_00.finalise_density_field();  // ~dn_00 (likely redundant but safe)
-  N_00.finalise_density_field();  // ~N_00 (likely redundant but safe)
-
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_cleanup_threads();
-#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
-  fftw_cleanup();
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+  // fftw_destroy_plan(fwd_master_plan);
+  // fftw_destroy_plan(bwd_master_plan);
+  // fftw_free(array_holder);
 
   // ---------------------------------------------------------------------
   // Results
@@ -1124,15 +1130,6 @@ trv::ThreePCFMeasurements compute_3pcf(
         trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
-
-  dn_00.finalise_density_field();  // ~dn_00 (likely redundant but safe)
-  N_00.finalise_density_field();  // ~N_00 (likely redundant but safe)
-
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_cleanup_threads();
-#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
-  fftw_cleanup();
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // ---------------------------------------------------------------------
   // Results
@@ -1671,15 +1668,6 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
     }
   }
 
-  dn_00.finalise_density_field();  // ~dn_00 (likely redundant but safe)
-  N_L0.finalise_density_field();  // ~N_L0 (likely redundant but safe)
-
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_cleanup_threads();
-#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
-  fftw_cleanup();
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
-
   // ---------------------------------------------------------------------
   // Results
   // ---------------------------------------------------------------------
@@ -2006,15 +1994,6 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
-
-  dn_00.finalise_density_field();  // ~dn_00 (likely redundant but safe)
-  N_00.finalise_density_field();  // ~N_00 (likely redundant but safe)
-
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_cleanup_threads();
-#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
-  fftw_cleanup();
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // ---------------------------------------------------------------------
   // Results
@@ -2366,15 +2345,6 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
-
-  n_00.finalise_density_field();  // ~n_00 (likely redundant but safe)
-  N_00.finalise_density_field();  // ~N_00 (likely redundant but safe)
-
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_cleanup_threads();
-#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
-  fftw_cleanup();
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // ---------------------------------------------------------------------
   // Results
@@ -3065,15 +3035,6 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
-
-  // dn_00.finalise_density_field();  // ~dn_00 (likely redundant but safe)
-  // N_00.finalise_density_field();  // ~N_00 (likely redundant but safe)
-
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_cleanup_threads();
-#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
-  fftw_cleanup();
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // ---------------------------------------------------------------------
   // Results

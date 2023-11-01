@@ -92,12 +92,10 @@ double calc_powspec_normalisation_from_particles(
 double calc_powspec_normalisation_from_mesh(
   trv::ParticleCatalogue& particles, trv::ParameterSet& params, double alpha
 ) {
-  trv::MeshField catalogue_mesh(params);
+  trv::MeshField catalogue_mesh(params, false);
 
   double norm_factor =
     catalogue_mesh.calc_grid_based_powlaw_norm(particles, 2);
-
-  catalogue_mesh.finalise_density_field();  // likely redundant but safe
 
   norm_factor /= std::pow(alpha, 2);
 
@@ -110,8 +108,8 @@ double calc_powspec_normalisation_from_meshes(
   trv::ParameterSet& params, double alpha
 ) {
   // Assign particles to mesh.
-  trv::MeshField mesh_data(params);
-  trv::MeshField mesh_rand(params);
+  trv::MeshField mesh_data(params, false);
+  trv::MeshField mesh_rand(params, false);
 
   fftw_complex* weight_data = nullptr;
   weight_data = fftw_alloc_complex(particles_data.ntotal);
@@ -157,9 +155,6 @@ double calc_powspec_normalisation_from_meshes(
   for (int gid = 0; gid < params.nmesh; gid++) {
     norm += mesh_data.field[gid][0] * mesh_rand.field[gid][0];
   }
-
-  mesh_data.finalise_density_field();  // likely redundant but safe
-  mesh_rand.finalise_density_field();  // likely redundant but safe
 
   double vol_cell = params.volume / double(params.nmesh);
 
