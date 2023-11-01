@@ -120,6 +120,7 @@ class SphericalBesselTransform:
                 )
             if self._extrap_layer == 'native':
                 extrap_native = self._extrap
+                self._n_ext = 0
             elif self._extrap_layer == 'outer':
                 extrap_native = 0
                 nsamp_trans = int(2 ** np.ceil(np.log2(extrap_exp * nsamp)))
@@ -131,6 +132,7 @@ class SphericalBesselTransform:
                     f"extrap_layer={self._extrap_layer}."
                 )
         else:
+            self._n_ext = 0
             extrap_native = 0
 
         self._fbht = HankelTransform(
@@ -140,9 +142,14 @@ class SphericalBesselTransform:
             threaded=threaded
         )
 
+        self._post_slice = slice(self._n_ext, -self._n_ext) if self._n_ext \
+            else slice(None)
+
         self._logres = self._fbht._logres
         self._pre_sampts = np.asarray(self._fbht._pre_sampts)
-        self._post_sampts = np.asarray(self._fbht._post_sampts)
+        self._post_sampts = np.asarray(self._fbht._post_sampts)[
+            self._post_slice
+        ]
 
     @property
     def size(self):
@@ -179,6 +186,9 @@ class SphericalBesselTransform:
         pre_samples *= self._pre_sampts ** (3./2)
 
         post_sampts, post_samples = self._fbht.transform(pre_samples)
+
+        post_sampts = post_sampts[self._post_slice]
+        post_samples = post_samples[self._post_slice]
 
         post_samples *= (2*np.pi / self._post_sampts) ** (3./2)
 
@@ -334,12 +344,14 @@ class DoubleSphericalBesselTransform:
                 )
             if not self._extrap2d:
                 extrap_native = self._extrap
+                self._n_ext = 0
             else:
                 extrap_native = 0
                 nsamp_trans = int(2 ** np.ceil(np.log2(extrap_exp * nsamp)))
                 self._n_ext = (nsamp_trans - nsamp) // 2
                 sample_pts = extrap_loglin(sample_pts, self._n_ext)
         else:
+            self._n_ext = 0
             extrap_native = 0
 
         self._fbsjt = tuple(
@@ -352,9 +364,14 @@ class DoubleSphericalBesselTransform:
             for (degree_, bias_) in zip(degrees, biases)
         )
 
+        self._post_slice = slice(self._n_ext, -self._n_ext) if self._n_ext \
+            else slice(None)
+
         self._logres = self._fbsjt[self._rep]._logres
         self._pre_sampts = np.asarray(self._fbsjt[self._rep]._pre_sampts)
-        self._post_sampts = np.asarray(self._fbsjt[self._rep]._post_sampts)
+        self._post_sampts = np.asarray(self._fbsjt[self._rep]._post_sampts)[
+            self._post_slice
+        ]
 
     @property
     def size(self):
@@ -400,6 +417,7 @@ class DoubleSphericalBesselTransform:
             post_samples_T.append(post_samples_col)
 
         post_samples = np.asarray(post_samples_T).T
+        post_samples = post_samples[self._post_slice, self._post_slice]
 
         post_sampts = np.meshgrid(
             self._post_sampts, self._post_sampts, indexing='ij'
