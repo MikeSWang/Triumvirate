@@ -70,8 +70,9 @@ class HankelTransform {
    *
    * @param mu Order of the Hankel transform.
    * @param q Power-law bias index.
+   * @param threaded If `true` (default), use multi-threads FFT.
    */
-  HankelTransform(double mu, double q);
+  HankelTransform(double mu, double q, bool threaded = true);
 
   /**
    * @brief Destruct the Hankel transform.
@@ -215,6 +216,9 @@ class HankelTransform {
   /// post-kernel FFTW plan and array
   fftw_plan post_plan;
   fftw_complex* post_buffer;
+
+  /// FFTW multi-threading
+  bool threaded = true;
 };
 
 class SphericalBesselTransform: public HankelTransform {
@@ -226,8 +230,9 @@ class SphericalBesselTransform: public HankelTransform {
    *
    * @param ell Degree of the spherical Bessel transform.
    * @param n Power-law bias index.
+   * @param threaded If `true` (default), use multi-threads FFT.
    */
-  SphericalBesselTransform(int ell, int n);
+  SphericalBesselTransform(int ell, int n, bool threaded = true);
 
   /**
    * @brief Initialise the spherical Bessel transform.

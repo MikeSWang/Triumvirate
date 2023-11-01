@@ -18,7 +18,7 @@ cdef extern from "include/fftlog.hpp":
         vector[double] pre_sampts
         vector[double] post_sampts
 
-        CppHankelTransform(double mu, double q)
+        CppHankelTransform(double mu, double q, bool_t threaded)
 
         void initialise(
             vector[double] sample_pts, double kr_c, bool_t lowring,

@@ -93,6 +93,10 @@ def parse_parameters() -> argparse.Namespace:
         '--time', action='store_true',
         help="Time the transform without showing a plotted figure."
     )
+    parser.add_argument(
+        '--threaded', action='store_true',
+        help="Use multi-threaded FFTLog transform."
+    )
 
     pars = parser.parse_args()
 
@@ -396,7 +400,8 @@ def get_testcase(pars: argparse.Namespace) -> None:
         t_start = time()
         k_fftlog, gk_fftlog = HankelTransform(
             pars.order, BIAS, r, PIVOT, LOWRING,
-            extrap=pars.extrap, extrap_exp=EXPAND
+            extrap=pars.extrap, extrap_exp=EXPAND,
+            threaded=pars.threaded
         ).transform(fr + 0.j)
         t_end = time()
         if timed:
@@ -495,7 +500,8 @@ def get_testcase(pars: argparse.Namespace) -> None:
         t_start = time()
         k_fftlog, gk_fftlog = SphericalBesselTransform(
             pars.degree, BIAS, r, PIVOT, LOWRING,
-            extrap=pars.extrap, extrap_exp=EXPAND
+            extrap=pars.extrap, extrap_exp=EXPAND,
+            threaded=pars.threaded
         ).transform(fr + 0.j)
         t_end = time()
         if timed:
@@ -572,7 +578,8 @@ def get_testcase(pars: argparse.Namespace) -> None:
         # Compute the FFTLog transform.
         t_start = time()
         r_fftlog, xi_fftlog = SphericalBesselTransform(
-            pars.degree, BIAS, k, lowring=LOWRING, extrap=pars.extrap
+            pars.degree, BIAS, k, lowring=LOWRING, extrap=pars.extrap,
+            threaded=pars.threaded
         ).transform_cosmo_multipoles(-1, pk)
         t_end = time()
         if timed:

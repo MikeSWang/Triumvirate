@@ -71,6 +71,10 @@ def parse_parameters() -> argparse.Namespace:
         '--time', action='store_true',
         help="Time the transform without showing a plotted figure."
     )
+    parser.add_argument(
+        '--threaded', action='store_true',
+        help="Use multi-threaded FFTLog transform."
+    )
 
     pars = parser.parse_args()
 
@@ -333,7 +337,8 @@ def get_testcase(pars: argparse.Namespace) -> None:
         t_start = time()
         kk_fftlog, gkk_fftlog = DoubleSphericalBesselTransform(
             pars.degrees, BIASES, r, PIVOT, LOWRING,
-            extrap=pars.extrap, extrap_exp=EXPAND
+            extrap=pars.extrap, extrap_exp=EXPAND,
+            threaded=pars.threaded
         ).transform(frr + 0.j)
         t_end = time()
         if timed:
@@ -394,7 +399,8 @@ def get_testcase(pars: argparse.Namespace) -> None:
 
         t_start = time()
         rr_fftlog, xirr_fftlog = DoubleSphericalBesselTransform(
-            pars.degrees, BIASES, k, lowring=LOWRING, extrap=pars.extrap
+            pars.degrees, BIASES, k, lowring=LOWRING, extrap=pars.extrap,
+            threaded=pars.threaded
         ).transform_cosmo_multipoles(-1, bkk)
         t_end = time()
         if timed:

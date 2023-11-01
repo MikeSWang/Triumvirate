@@ -34,9 +34,11 @@ namespace trv {
 
 namespace maths {
 
-HankelTransform::HankelTransform(double mu, double q) {
+HankelTransform::HankelTransform(double mu, double q, bool threaded) {
   this->order = mu;
   this->bias = q;
+
+  this->threaded = threaded;
 }
 
 HankelTransform::~HankelTransform() {
@@ -45,6 +47,16 @@ HankelTransform::~HankelTransform() {
 
   fftw_destroy_plan(this->post_plan);
   fftw_free(this->post_buffer);
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  if (this->threaded) {
+    fftw_cleanup_threads();
+  } else {
+    fftw_cleanup();
+  }
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+  fftw_cleanup();
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 }
 
 void HankelTransform::initialise(
@@ -132,6 +144,13 @@ void HankelTransform::initialise(
   // ...
 
   // Initialise FFTW plans.
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  if (this->threaded) {
+    fftw_init_threads();
+    fftw_plan_with_nthreads(omp_get_max_threads());
+  }
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
   this->pre_buffer = fftw_alloc_complex(this->nsamp_trans);
   this->pre_plan = fftw_plan_dft_1d(
     this->nsamp_trans, this->pre_buffer, this->pre_buffer,
@@ -328,8 +347,9 @@ void HankelTransform::biased_transform(
   // }
 }
 
-SphericalBesselTransform::SphericalBesselTransform(int ell, int n) : \
-HankelTransform(ell + 1./2, double(n)) {
+SphericalBesselTransform::SphericalBesselTransform(
+  int ell, int n, bool threaded
+) : HankelTransform(ell + 1./2, double(n), threaded) {
   this->degree = ell;
 }
 

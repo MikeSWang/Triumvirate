@@ -47,6 +47,9 @@ cdef class HankelTransform:
         The smallest power of 2 greater than or equal to this times the
         original number of sample points is used as the sample size for
         the transform.
+    threaded : bool, optional
+        If `True` (default is `False`), use the multi-threaded FFTLog
+        algorithm.
 
     Attributes
     ----------
@@ -61,8 +64,9 @@ cdef class HankelTransform:
 
     """
 
-    def __cinit__(self, mu, q, x, kr_c, lowring=True, extrap=0, extrap_exp=2.):
-        self.thisptr = new CppHankelTransform(<double>mu, <double>q)
+    def __cinit__(self, mu, q, x, kr_c, lowring=True, extrap=0, extrap_exp=2.,
+                  threaded=False):
+        self.thisptr = new CppHankelTransform(<double>mu, <double>q, threaded)
 
         cdef np.ndarray[double, ndim=1, mode='c'] _x = np.ascontiguousarray(
             _check_1d_array(x, check_loglin=True)

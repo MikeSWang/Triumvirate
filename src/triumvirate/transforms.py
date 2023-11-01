@@ -73,6 +73,9 @@ class SphericalBesselTransform:
           any pre-factors, before passing them to the underlying
           FFTLog algorithm.
 
+    threaded : bool, optional
+        If `True` (default is `False`), use the multi-threaded FFTLog
+        algorithm.
 
     Attributes
     ----------
@@ -95,7 +98,8 @@ class SphericalBesselTransform:
     """
 
     def __init__(self, degree, bias, sample_pts, pivot=1., lowring=True,
-                 extrap=0, extrap_exp=2., extrap_layer='outer'):
+                 extrap=0, extrap_exp=2., extrap_layer='outer',
+                 threaded=False):
         if extrap not in {0, 1, 2, 3}:
             raise ValueError(
                 f"Extrapolation option must be 0, 1, 2 or 3: {extrap=}."
@@ -132,7 +136,8 @@ class SphericalBesselTransform:
         self._fbht = HankelTransform(
             degree + 1./2, bias, sample_pts,
             kr_c=pivot, lowring=lowring,
-            extrap=extrap_native, extrap_exp=extrap_exp
+            extrap=extrap_native, extrap_exp=extrap_exp,
+            threaded=threaded
         )
 
         self._logres = self._fbht._logres
@@ -280,6 +285,9 @@ class DoubleSphericalBesselTransform:
         pre-transform excluding any pre-factors; otherwise, perform 1-d
         extrapolation including any pre-factors within the underlying
         FFTLog algorithm.
+    threaded : bool, optional
+        If `True` (default is `False`), use the multi-threaded FFTLog
+        algorithm.
 
     Attributes
     ----------
@@ -305,7 +313,7 @@ class DoubleSphericalBesselTransform:
     _rep = 0
 
     def __init__(self, degrees, biases, sample_pts, pivot=1., lowring=True,
-                 extrap=0, extrap_exp=2., extrap2d=False):
+                 extrap=0, extrap_exp=2., extrap2d=False, threaded=False):
         if extrap not in {0, 1, 2, 3}:
             raise ValueError(
                 f"Extrapolation option must be 0, 1, 2 or 3: {extrap=}."
@@ -338,7 +346,8 @@ class DoubleSphericalBesselTransform:
             SphericalBesselTransform(
                 degree_, bias_, sample_pts,
                 pivot=pivot, lowring=lowring,
-                extrap=extrap_native, extrap_exp=extrap_exp
+                extrap=extrap_native, extrap_exp=extrap_exp,
+                threaded=threaded
             )
             for (degree_, bias_) in zip(degrees, biases)
         )
