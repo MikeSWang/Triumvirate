@@ -39,7 +39,7 @@ def _record_binned_vectors(Binning binning not None,
         - ``'vecz'``: z-component of the vector,
 
     """
-    fieldstats_ptr = new CppFieldStats(deref(paramset.thisptr))
+    fieldstats_ptr = new CppFieldStats(deref(paramset.thisptr), False)
 
     binned_vectors_struct = fieldstats_ptr.record_binned_vectors(
         deref(binning.thisptr), ''.encode('utf-8')

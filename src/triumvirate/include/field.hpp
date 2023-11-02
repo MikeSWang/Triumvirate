@@ -552,8 +552,10 @@ class FieldStats {
    * @brief Construct pseudo two-point statistics.
    *
    * @param params Parameter set.
+   * @param plan_ini Flag for FFTW plan initialisation
+   *                 (default is `true`).
    */
-  FieldStats(trv::ParameterSet& params);
+  FieldStats(trv::ParameterSet& params, bool plan_ini = true);
 
   /**
    * @brief Destruct two-point statistics.
@@ -729,6 +731,13 @@ class FieldStats {
   double dk[3];              ///< fundamental wavenumber in each dimension
   double vol;                ///< mesh volume
   double vol_cell;           ///< mesh grid cell volume
+
+  /// FFTW plan for inverse Fourier transform
+  fftw_plan inv_transform;
+  /// FFTW buffer array for pseudo-two-point statistics
+  fftw_complex* twopt_3d = nullptr;
+  /// FFTW plan initiality flag
+  bool plan_ini = false;
 
   // ---------------------------------------------------------------------
   // Utilities

@@ -1446,7 +1446,7 @@ double MeshField::calc_grid_based_powlaw_norm(
 // Life cycle
 // -----------------------------------------------------------------------
 
-FieldStats::FieldStats(trv::ParameterSet& params){
+FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
   this->params = params;
 
   this->reset_stats();
@@ -1464,10 +1464,35 @@ FieldStats::FieldStats(trv::ParameterSet& params){
   // Calculate mesh volume and mesh grid cell volume.
   this->vol = this->params.volume;
   this->vol_cell = this->vol / double(this->params.nmesh);
+
+  // Set up FFTW plans.
+  if (plan_ini) {
+    this->twopt_3d = fftw_alloc_complex(this->params.nmesh);
+
+    trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+    trvs::update_maxmem();
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+    fftw_plan_with_nthreads(omp_get_max_threads());
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+    this->inv_transform = fftw_plan_dft_3d(
+      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+      this->twopt_3d, this->twopt_3d,
+      FFTW_BACKWARD, FFTW_MEASURE
+    );
+
+    this->plan_ini = true;
+  }
 }
 
 // An empty destructor is redundant but left here for future implementations.
-FieldStats::~FieldStats() {}
+FieldStats::~FieldStats() {
+  if (this->plan_ini) {
+    fftw_destroy_plan(this->inv_transform);
+    fftw_free(this->twopt_3d); this->twopt_3d = nullptr;
+    trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+  }
+}
 
 void FieldStats::reset_stats() {
   std::fill(this->nmodes.begin(), this->nmodes.end(), 0);
@@ -1960,17 +1985,12 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
 
   // Set up 3-d two-point statistics mesh grids (before inverse
   // Fourier transform).
-  fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
-
-  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
-  trvs::update_maxmem();
-
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
   for (int gid = 0; gid < this->params.nmesh; gid++) {
-    twopt_3d[gid][0] = 0.;
-    twopt_3d[gid][1] = 0.;
+    this->twopt_3d[gid][0] = 0.;
+    this->twopt_3d[gid][1] = 0.;
   }  // likely redundant but safe
 
   // Compute shot noise--subtracted mode powers on mesh grids.
@@ -1995,25 +2015,14 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
 
         pk_mode -= sn_mode;
 
-        twopt_3d[idx_grid][0] = pk_mode.real() / this->vol;
-        twopt_3d[idx_grid][1] = pk_mode.imag() / this->vol;
+        this->twopt_3d[idx_grid][0] = pk_mode.real() / this->vol;
+        this->twopt_3d[idx_grid][1] = pk_mode.imag() / this->vol;
       }
     }
   }
 
   // Inverse Fourier transform.
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
-  fftw_plan inv_transform = fftw_plan_dft_3d(
-    this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-    twopt_3d, twopt_3d,
-    FFTW_BACKWARD, FFTW_MEASURE
-  );
-
-  fftw_execute(inv_transform);
-  fftw_destroy_plan(inv_transform);
-
+  fftw_execute(this->inv_transform);
   // fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
 
   // Perform fine binning.
@@ -2058,7 +2067,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
         int idx_r = int(r_ / dr_sample);
         if (0 <= idx_r && idx_r < n_sample) {
           std::complex<double> xi_pair(
-            twopt_3d[idx_grid][0], twopt_3d[idx_grid][1]
+            this->twopt_3d[idx_grid][0], this->twopt_3d[idx_grid][1]
           );
 
           // Weight by reduced spherical harmonics.
@@ -2110,10 +2119,6 @@ OMP_ATOMIC
       this->xi[ibin] = 0.;
     }
   }
-
-  fftw_free(twopt_3d); twopt_3d = nullptr;
-
-  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
 
   delete[] npairs_sample;
   delete[] r_sample;
@@ -2183,17 +2188,12 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
 
   // Set up 3-d two-point statistics mesh grids (before inverse
   // Fourier transform).
-  fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
-
-  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
-  trvs::update_maxmem();
-
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
   for (int gid = 0; gid < this->params.nmesh; gid++) {
-    twopt_3d[gid][0] = 0.;
-    twopt_3d[gid][1] = 0.;
+    this->twopt_3d[gid][0] = 0.;
+    this->twopt_3d[gid][1] = 0.;
   }  // likely redundant but safe
 
   // Compute meshed statistics.
@@ -2221,25 +2221,14 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
 
         pk_mode -= sn_mode;
 
-        twopt_3d[idx_grid][0] = pk_mode.real() / this->vol;
-        twopt_3d[idx_grid][1] = pk_mode.imag() / this->vol;
+        this->twopt_3d[idx_grid][0] = pk_mode.real() / this->vol;
+        this->twopt_3d[idx_grid][1] = pk_mode.imag() / this->vol;
       }
     }
   }
 
   // Inverse Fourier transform.
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
-  fftw_plan inv_transform = fftw_plan_dft_3d(
-    this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-    twopt_3d, twopt_3d,
-    FFTW_BACKWARD, FFTW_MEASURE
-  );
-
-  fftw_execute(inv_transform);
-  fftw_destroy_plan(inv_transform);
-
+  fftw_execute(this->inv_transform);
   // fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
 
   // Perform fine binning.
@@ -2278,7 +2267,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
         int idx_r = int(r_ / dr_sample);
         if (0 <= idx_r && idx_r < n_sample) {
           std::complex<double> xi_pair(
-            twopt_3d[idx_grid][0], twopt_3d[idx_grid][1]
+            this->twopt_3d[idx_grid][0], this->twopt_3d[idx_grid][1]
           );
 
           // Weight by reduced spherical harmonics.
@@ -2337,10 +2326,6 @@ OMP_ATOMIC
       // this->npairs[ibin] /= 2;  // reality condition
     }
   }
-
-  fftw_free(twopt_3d); twopt_3d = nullptr;
-
-  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
 
   delete[] npairs_sample;
   delete[] r_sample;
@@ -2410,17 +2395,12 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
 
   // Set up 3-d two-point statistics mesh grids (before inverse
   // Fourier transform).
-  fftw_complex* twopt_3d = fftw_alloc_complex(this->params.nmesh);
-
-  trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
-  trvs::update_maxmem();
-
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
   for (int gid = 0; gid < this->params.nmesh; gid++) {
-    twopt_3d[gid][0] = 0.;
-    twopt_3d[gid][1] = 0.;
+    this->twopt_3d[gid][0] = 0.;
+    this->twopt_3d[gid][1] = 0.;
   }  // likely redundant but safe
 
   // Compute meshed statistics.
@@ -2448,25 +2428,14 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
 
         pk_mode -= sn_mode;
 
-        twopt_3d[idx_grid][0] = pk_mode.real() / this->vol;
-        twopt_3d[idx_grid][1] = pk_mode.imag() / this->vol;
+        this->twopt_3d[idx_grid][0] = pk_mode.real() / this->vol;
+        this->twopt_3d[idx_grid][1] = pk_mode.imag() / this->vol;
       }
     }
   }
 
   // Inverse Fourier transform.
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
-  fftw_plan inv_transform = fftw_plan_dft_3d(
-    this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-    twopt_3d, twopt_3d,
-    FFTW_BACKWARD, FFTW_MEASURE
-  );
-
-  fftw_execute(inv_transform);
-  fftw_destroy_plan(inv_transform);
-
+  fftw_execute(this->inv_transform);
   // fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
 
   // Weight by spherical Bessel functions and harmonics before summing
@@ -2498,7 +2467,7 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
         double jb = sj_b_thread.eval(k_b * r_);
 
         std::complex<double> S_ij_k_3d(
-          twopt_3d[idx_grid][0], twopt_3d[idx_grid][1]
+          this->twopt_3d[idx_grid][0], this->twopt_3d[idx_grid][1]
         );
 
         S_ij_k_3d *= ja * jb * ylm_a[idx_grid] * ylm_b[idx_grid];
@@ -2516,10 +2485,6 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   std::complex<double> S_ij_k(S_ij_k_real, S_ij_k_imag);
 
   S_ij_k *= this->vol_cell;
-
-  fftw_free(twopt_3d); twopt_3d = nullptr;
-
-  trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
 
   return S_ij_k;
 }

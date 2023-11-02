@@ -748,7 +748,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (params.save_binned_vectors != "") {
-    trv::FieldStats binning_meshgrid(params);
+    trv::FieldStats binning_meshgrid(params, false);
     trv::BinnedVectors binned_vectors = binning_meshgrid.record_binned_vectors(
       binning, params.save_binned_vectors
     );

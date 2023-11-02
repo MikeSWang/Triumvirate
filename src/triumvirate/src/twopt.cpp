@@ -365,6 +365,8 @@ trv::PowspecMeasurements compute_powspec(
   );
   dn_00.fourier_transform();
 
+  FieldStats stats_2pt(params);
+
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
     MeshField dn_LM(params);  // δn_LM(k)
     dn_LM.compute_ylm_wgtd_field(
@@ -378,7 +380,6 @@ trv::PowspecMeasurements compute_powspec(
 
     // Compute quantity equivalent to (-1)^m₁ δᴰ_{m₁, -M} which, after
     // being summed over m₁, agrees with Hand et al. (2017) [1704.02357].
-    FieldStats stats_2pt(params);
     for (int m1 = - ell1; m1 <= ell1; m1++) {
       double coupling = calc_coupling_coeff_2pt(ell1, params.ELL, m1, M_);
       if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
@@ -483,6 +484,8 @@ trv::TwoPCFMeasurements compute_corrfunc(
   );
   dn_00.fourier_transform();
 
+  FieldStats stats_2pt(params);
+
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
     MeshField dn_LM(params);  // δn_LM(k)
     dn_LM.compute_ylm_wgtd_field(
@@ -496,7 +499,6 @@ trv::TwoPCFMeasurements compute_corrfunc(
 
     // Compute quantity equivalent to (-1)^m₁ δᴰ_{m₁, -M} which, after
     // being summed over m₁, agrees with Hand et al. (2017) [1704.02357].
-    FieldStats stats_2pt(params);
     for (int m1 = - ell1; m1 <= ell1; m1++) {
       double coupling = calc_coupling_coeff_2pt(ell1, params.ELL, m1, M_);
       if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
@@ -799,6 +801,8 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
   dn_00.compute_ylm_wgtd_field(catalogue_rand, los_rand, alpha, 0, 0);
   dn_00.fourier_transform();  // δn_00(k)
 
+  FieldStats stats_2pt(params);
+
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
     MeshField dn_LM(params);
     dn_LM.compute_ylm_wgtd_field(
@@ -806,7 +810,6 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
     );
     dn_LM.fourier_transform();  // δn_LM(k)
 
-    FieldStats stats_2pt(params);
     std::complex<double> sn_amp = trv::calc_ylm_wgtd_shotnoise_amp_for_powspec(
       catalogue_rand, los_rand, alpha, params.ELL, M_
     );  // \bar{N}_LM(k)

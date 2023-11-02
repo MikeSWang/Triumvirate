@@ -322,6 +322,8 @@ trv::BispecMeasurements compute_bispec(
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
+  FieldStats stats_sn(params);
+
   // Compute bispectrum terms including shot noise.
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -651,9 +653,8 @@ trv::BispecMeasurements compute_bispec(
           }
         }
 
-        if (params.ell2 == 0) {
+        if (params.ell2 == 0) {  // S|{i ≠ j = k}
           // When l₂ = 0, the Wigner 3-j symbol enforces L = l₁.
-          FieldStats stats_sn(params);  // S|{i ≠ j = k}
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_00_for_sn, N_LM, Sbar_LM, params.ell1, m1_, kbinning
           );
@@ -699,9 +700,8 @@ trv::BispecMeasurements compute_bispec(
           }
         }
 
-        if (params.ell1 == 0) {
+        if (params.ell1 == 0) {  // S|{j ≠ i = k}
           // When l₁ = 0, the Wigner 3-j symbol enforces L = l₂.
-          FieldStats stats_sn(params);  // S|{j ≠ i = k}
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_00_for_sn, N_LM, Sbar_LM, params.ell2, m2_, kbinning
           );
@@ -747,7 +747,6 @@ trv::BispecMeasurements compute_bispec(
           }
         }
 
-        FieldStats stats_sn(params);
         for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
           double k_a = k1eff_dv[idx_dv];
           double k_b = k2eff_dv[idx_dv];
@@ -904,6 +903,8 @@ trv::ThreePCFMeasurements compute_3pcf(
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
+  FieldStats stats_sn(params);
+
   // Compute 3PCF terms including shot noise.
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -972,10 +973,9 @@ trv::ThreePCFMeasurements compute_3pcf(
           params.ELL, M_
         );  // \bar{S}_LM
 
-        FieldStats stats_sn(params);  // S|{i = j ≠ k}
         stats_sn.compute_uncoupled_shotnoise_for_3pcf(
           dn_LM_for_sn, N_00, ylm_r_a, ylm_r_b, Sbar_LM, rbinning
-        );
+        );  // S|{i = j ≠ k}
 
         // Enforce the Kronecker delta in eq. (51) in the Paper.
         if (params.form == "diag") {
@@ -1256,6 +1256,8 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
+
+  FieldStats stats_sn(params);
 
   // Compute bispectrum terms including shot noise.
   int count_terms = 0;
@@ -1545,9 +1547,8 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         }
       }
 
-      if (params.ell2 == 0) {
+      if (params.ell2 == 0) {  // S|{i ≠ j = k}
         // When l₂ = 0, the Wigner 3-j symbol enforces L = l₁.
-        FieldStats stats_sn(params);  // S|{i ≠ j = k}
         stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
           dn_00_for_sn, N_L0, Sbar_LM, params.ell1, m1_, kbinning
         );
@@ -1593,9 +1594,8 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         }
       }
 
-      if (params.ell1 == 0) {
+      if (params.ell1 == 0) {  // S|{j ≠ i = k}
         // When l₁ = 0, the Wigner 3-j symbol enforces L = l₂.
-        FieldStats stats_sn(params);  // S|{j ≠ i = k}
         stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
           dn_00_for_sn, N_L0, Sbar_LM, params.ell2, m2_, kbinning
         );
@@ -1641,7 +1641,6 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         }
       }
 
-      FieldStats stats_sn(params);
       for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
         double k_a = k1eff_dv[idx_dv];
         double k_b = k2eff_dv[idx_dv];
@@ -1790,6 +1789,8 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
+  FieldStats stats_sn(params);
+
   // Compute 3PCF terms including shot noise.
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -1840,10 +1841,9 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       std::complex<double> Sbar_L0 =
         double(catalogue_data.ntotal);  // \bar{S}_L0
 
-      FieldStats stats_sn(params);  // S|{i = j ≠ k}
       stats_sn.compute_uncoupled_shotnoise_for_3pcf(
         dn_L0_for_sn, N_00, ylm_r_a, ylm_r_b, Sbar_L0, rbinning
-      );
+      );  // S|{i = j ≠ k}
 
       // Enforce the Kronecker delta in eq. (51) in the Paper.
       if (params.form == "diag") {
@@ -2118,6 +2118,8 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
 
+  FieldStats stats_sn(params);
+
   // Compute 3PCF window terms including shot noise.
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -2184,10 +2186,9 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           catalogue_rand, los_rand, alpha, params.ELL, M_
         );  // \bar{S}_LM
 
-        FieldStats stats_sn(params);  // S|{i = j ≠ k}
         stats_sn.compute_uncoupled_shotnoise_for_3pcf(
           n_LM_for_sn, N_00, ylm_r_a, ylm_r_b, Sbar_LM, rbinning
-        );
+        );  // S|{i = j ≠ k}
 
         // Enforce the Kronecker delta in eq. (51) in the Paper.
         if (params.form == "diag") {
@@ -2474,6 +2475,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
+
+  FieldStats stats_sn(params);
 
   // Compute bispectrum terms.
   int count_terms = 0;
@@ -2911,9 +2914,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           }
         }
 
-        if (params.ell2 == 0) {
+        if (params.ell2 == 0) {  // S|{i ≠ j = k}
           // When l₂ = 0, the Wigner 3-j symbol enforces L = l₁.
-          FieldStats stats_sn(params);  // S|{i ≠ j = k}
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_LM_a_for_sn, N_LM_a, Sbar_LM, params.ell1, m1_, kbinning
           );
@@ -2959,9 +2961,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           }
         }
 
-        if (params.ell1 == 0) {
+        if (params.ell1 == 0) {  // S|{j ≠ i = k}
           // When l₁ = 0, the Wigner 3-j symbol enforces L = l₂.
-            FieldStats stats_sn(params);  // S|{j ≠ i = k}
           stats_sn.compute_ylm_wgtd_2pt_stats_in_fourier(
             dn_LM_b_for_sn, N_LM_b, Sbar_LM,
             params.ell2, m2_, kbinning
@@ -3008,7 +3009,6 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           }
         }
 
-        FieldStats stats_sn(params);
         for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
           double k_a = k1eff_dv[idx_dv];
           double k_b = k2eff_dv[idx_dv];
