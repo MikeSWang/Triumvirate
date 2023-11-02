@@ -26,6 +26,9 @@ Improvements
 
 - Refactor gamma function computations.
 - Refactor array operation checks.
+- Refactor FFTW plans.
+- Add logs to `trv::MeshField` and `trv::FieldStats` operations.
+- Add tracking of (I)FFTs.
 
 Maintenance
 -----------

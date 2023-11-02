@@ -1,5 +1,39 @@
 # Change Log
 
+## v0.4.0 (2023-1?-??)
+
+### Bug fixes
+
+Fix various legacy issues in the non-public methods related to
+Hankel-like transforms.
+
+### Features
+
+- Add public API for Hankel-like transforms using the FFTLog algorithm
+  with enhanced extrapolation options.
+
+- Add public API for window convolution.
+
+- Expose installation validation as a public function.
+
+### Improvements
+
+- Refactor gamma function computations.
+- Refactor array operation checks.
+- Refactor FFTW plans.
+- Add logs to ``trv::MeshField`` and ``trv::FieldStats`` operations.
+- Add tracking of (I)FFTs.
+
+### Maintenance
+
+Update syntax and fix typos.
+
+### Documentation
+
+- Add version context to documentation.
+- Add and update details to/in various documentation components.
+
+
 ## v0.3.0 (2023-10-04)
 
 ### Bug fixes
