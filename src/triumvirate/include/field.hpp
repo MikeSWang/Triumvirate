@@ -411,15 +411,15 @@ class MeshField {
   /// half-grid shifted complex field on mesh
   fftw_complex* field_s = nullptr;
 
-  /// FFTW plan for forward Fourier transform of the field
+  /// FFTW plan for Fourier transform of the field
   fftw_plan transform;
-  /// FFTW plan for forward Fourier transform of the shadow field
+  /// FFTW plan for Fourier transform of the shadow field
   fftw_plan transform_s;
-  /// FFTW plan for backward Fourier transform of the field
+  /// FFTW plan for inverse Fourier transform of the field
   fftw_plan inv_transform;
 
-  bool plan_ini = false;  ///< flag for plan initiality
-  bool plan_ext = false;  ///< flag for plan externality
+  bool plan_ini = false;  ///< FFTW plan initialisation flag
+  bool plan_ext = false;  ///< FFTW plan externality flag
 
   friend class FieldStats;
 
@@ -732,11 +732,11 @@ class FieldStats {
   double vol;                ///< mesh volume
   double vol_cell;           ///< mesh grid cell volume
 
-  /// FFTW plan for inverse Fourier transform
-  fftw_plan inv_transform;
   /// FFTW buffer array for pseudo-two-point statistics
   fftw_complex* twopt_3d = nullptr;
-  /// FFTW plan initiality flag
+  /// FFTW plan for inverse Fourier transform
+  fftw_plan inv_transform;
+  /// FFTW plan initialisation flag
   bool plan_ini = false;
 
   // ---------------------------------------------------------------------

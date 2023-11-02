@@ -136,12 +136,14 @@ void HankelTransform::initialise(
     }
   }
 
+  // ---->
   // // Alternative to the for-loop block above, note that k_c and r_c are
   // // both exp(L/2) times `k0` and `r0`.
   // double kr_0 = kr_aprod * std::exp(- this->nsamp * this->logres);
   // double r0 = this->pre_sampts[0];
   // double k0 = kr_0 / r0;
   // ...
+  // ----<
 
   // Initialise FFTW plans.
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
@@ -339,6 +341,7 @@ void HankelTransform::biased_transform(
     );
   }
 
+  // ---->
   // // Reverse and shift the array `b_trans` when inverse FFT is used above
   // // instead of FFT, and trim any extrapolation.
   // for (int m = 0; m < N_trans/2; m++) {
@@ -358,6 +361,7 @@ void HankelTransform::biased_transform(
   //     this->post_buffer[j_][1]
   //   );
   // }
+  // ----<
 }
 
 SphericalBesselTransform::SphericalBesselTransform(

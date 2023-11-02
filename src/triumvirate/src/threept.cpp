@@ -281,19 +281,6 @@ trv::BispecMeasurements compute_bispec(
     sn_dv[idx_dv] = 0.;
   }  // likely redundant but safe
 
-  // // Set up FFTW master plans.
-  // fftw_complex* array_holder = fftw_alloc_complex(params.nmesh);
-  // fftw_plan fwd_master_plan = fftw_plan_dft_3d(
-  //   params.ngrid[0], params.ngrid[1], params.ngrid[2],
-  //   array_holder, array_holder,
-  //   FFTW_FORWARD, FFTW_MEASURE
-  // );
-  // fftw_plan bwd_master_plan = fftw_plan_dft_3d(
-  //   params.ngrid[0], params.ngrid[1], params.ngrid[2],
-  //   array_holder, array_holder,
-  //   FFTW_BACKWARD, FFTW_MEASURE
-  // );
-
   // ---------------------------------------------------------------------
   // Measurement
   // ---------------------------------------------------------------------
@@ -773,10 +760,6 @@ trv::BispecMeasurements compute_bispec(
         trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
-
-  // fftw_destroy_plan(fwd_master_plan);
-  // fftw_destroy_plan(bwd_master_plan);
-  // fftw_free(array_holder);
 
   // ---------------------------------------------------------------------
   // Results
@@ -2451,6 +2434,21 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
     sn_dv[idx_dv] = 0.;
   }  // likely redundant but safe
 
+  // ---->
+  // // Set up FFTW master plans.
+  // fftw_complex* array_holder = fftw_alloc_complex(params.nmesh);
+  // fftw_plan fwd_master_plan = fftw_plan_dft_3d(
+  //   params.ngrid[0], params.ngrid[1], params.ngrid[2],
+  //   array_holder, array_holder,
+  //   FFTW_FORWARD, FFTW_MEASURE
+  // );
+  // fftw_plan bwd_master_plan = fftw_plan_dft_3d(
+  //   params.ngrid[0], params.ngrid[1], params.ngrid[2],
+  //   array_holder, array_holder,
+  //   FFTW_BACKWARD, FFTW_MEASURE
+  // );
+  // ----<
+
   // ---------------------------------------------------------------------
   // Measurement
   // ---------------------------------------------------------------------
@@ -2460,6 +2458,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // RFE: Not adopted until copy-assignment constructor is checked.
+  // ---->
   // // Compute common field quantities.
   // MeshField dn_00(params);  // δn_00(r)
   // dn_00.compute_ylm_wgtd_field(
@@ -2472,6 +2471,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   // N_00.compute_ylm_wgtd_quad_field(
   //   catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
   // );
+  // ----<
 
   trvm::SphericalBesselCalculator sj_a(params.ell1);  // j_l_a
   trvm::SphericalBesselCalculator sj_b(params.ell2);  // j_l_b
@@ -3035,6 +3035,12 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
+
+  // ---->
+  // fftw_destroy_plan(fwd_master_plan);
+  // fftw_destroy_plan(bwd_master_plan);
+  // fftw_free(array_holder);
+  // ----<
 
   // ---------------------------------------------------------------------
   // Results

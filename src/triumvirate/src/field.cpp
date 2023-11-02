@@ -2022,8 +2022,11 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   }
 
   // Inverse Fourier transform.
-  fftw_execute(this->inv_transform);
-  // fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
+  if (this->plan_ini) {
+    fftw_execute(this->inv_transform);
+  } else {
+    fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
+  }
 
   // Perform fine binning.
   // NOTE: Dynamically allocate owing to size.
@@ -2228,8 +2231,11 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   }
 
   // Inverse Fourier transform.
-  fftw_execute(this->inv_transform);
-  // fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
+  if (this->plan_ini) {
+    fftw_execute(this->inv_transform);
+  } else {
+    fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
+  }
 
   // Perform fine binning.
   // NOTE: Dynamically allocate owing to size.
@@ -2435,8 +2441,11 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   }
 
   // Inverse Fourier transform.
-  fftw_execute(this->inv_transform);
-  // fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
+  if (this->plan_ini) {
+    fftw_execute(this->inv_transform);
+  } else {
+    fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
+  }
 
   // Weight by spherical Bessel functions and harmonics before summing
   // over the configuration-space grids.
