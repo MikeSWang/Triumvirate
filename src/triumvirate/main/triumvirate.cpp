@@ -792,6 +792,13 @@ int main(int argc, char* argv[]) {
     (catalogue_data.ntotal + catalogue_rand.ntotal)
   );
 
+  if (trv::sys::count_fft > 0 || trv::sys::count_ifft > 0) {
+    trv::sys::logger.info(
+      "Number of FFTs: %d forward, %d backward.",
+      trv::sys::count_fft, trv::sys::count_ifft
+    );
+  }
+
   if (trv::sys::currTask == 0) {
     trv::sys::logger.info(
       "Minimal estimate of peak memory usage: %.1f gigabytes.",

@@ -46,6 +46,9 @@ int currTask = 0;
 double gbytesMem = 0.;
 double gbytesMaxMem = 0.;
 
+int count_fft = 0;
+int count_ifft = 0;
+
 auto clockStart = std::chrono::steady_clock::now();  ///< program starting time
 
 /// @cond DOXYGEN_DOC_MISC

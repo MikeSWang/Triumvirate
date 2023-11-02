@@ -107,7 +107,7 @@ double calc_bispec_normalisation_from_particles(
 double calc_bispec_normalisation_from_mesh(
   ParticleCatalogue& particles, trv::ParameterSet& params, double alpha
 ) {
-  MeshField catalogue_mesh(params, false);
+  MeshField catalogue_mesh(params, false, "`catalogue_mesh`");
 
   double norm_factor =
     catalogue_mesh.calc_grid_based_powlaw_norm(particles, 3);
@@ -290,7 +290,7 @@ trv::BispecMeasurements compute_bispec(
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute common field quantities.
-  MeshField dn_00(params);  // δn_00(k)
+  MeshField dn_00(params, true, "`dn_00`");  // δn_00(k)
   dn_00.compute_ylm_wgtd_field(
     catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
   );
@@ -300,7 +300,7 @@ trv::BispecMeasurements compute_bispec(
 
   double vol_cell = dn_00.vol_cell;
 
-  MeshField N_00(params);  // N_00(k)
+  MeshField N_00(params, true, "`N_00`");  // N_00(k)
   N_00.compute_ylm_wgtd_quad_field(
     catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
   );
@@ -366,7 +366,7 @@ trv::BispecMeasurements compute_bispec(
         // ·······························································
 
         // Compute bispectrum components in eqs. (41) & (42) in the Paper.
-        MeshField G_LM(params);  // G_LM
+        MeshField G_LM(params, true, "`G_LM`");  // G_LM
         G_LM.compute_ylm_wgtd_field(
           catalogue_data, catalogue_rand, los_data, los_rand, alpha,
           params.ELL, M_
@@ -375,8 +375,8 @@ trv::BispecMeasurements compute_bispec(
         G_LM.apply_assignment_compensation();
         G_LM.inv_fourier_transform();
 
-        MeshField F_lm_a(params);  // F_lm_a
-        MeshField F_lm_b(params);  // F_lm_b
+        MeshField F_lm_a(params, true, "`F_lm_a`");  // F_lm_a
+        MeshField F_lm_b(params, true, "`F_lm_b`");  // F_lm_b
 
         if (params.form == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
@@ -612,14 +612,16 @@ trv::BispecMeasurements compute_bispec(
         // ·······························································
 
         // Compute shot noise components in eqs. (45) & (46) in the Paper.
-        MeshField dn_LM_for_sn(params);  // δn_LM(k) (for shot noise)
+        MeshField dn_LM_for_sn(params, true, "`dn_LM_for_sn`");  // δn_LM(k)
+                                                                 // (for
+                                                                 // shot noise)
         dn_LM_for_sn.compute_ylm_wgtd_field(
           catalogue_data, catalogue_rand, los_data, los_rand, alpha,
           params.ELL, M_
         );
         dn_LM_for_sn.fourier_transform();
 
-        MeshField N_LM(params);  // N_LM(k)
+        MeshField N_LM(params, true, "`N_LM`");  // N_LM(k)
         N_LM.compute_ylm_wgtd_quad_field(
           catalogue_data, catalogue_rand, los_data, los_rand, alpha,
           params.ELL, M_
@@ -869,7 +871,7 @@ trv::ThreePCFMeasurements compute_3pcf(
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute common field quantities.
-  MeshField dn_00(params);  // δn_00(k)
+  MeshField dn_00(params, true, "`dn_00`");  // δn_00(k)
   dn_00.compute_ylm_wgtd_field(
     catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
   );
@@ -877,7 +879,7 @@ trv::ThreePCFMeasurements compute_3pcf(
 
   double vol_cell = dn_00.vol_cell;
 
-  MeshField N_00(params);  // N_00(k)
+  MeshField N_00(params, true, "`N_00`");  // N_00(k)
   N_00.compute_ylm_wgtd_quad_field(
     catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
   );
@@ -944,7 +946,9 @@ trv::ThreePCFMeasurements compute_3pcf(
         // ·······························································
 
         // Compute shot noise components in eq. (51) in the Paper.
-        MeshField dn_LM_for_sn(params);  // δn_LM(k) (for shot noise)
+        MeshField dn_LM_for_sn(params, true, "`dn_LM_for_sn`");  // δn_LM(k)
+                                                                 // (for
+                                                                 // shot noise)
         dn_LM_for_sn.compute_ylm_wgtd_field(
           catalogue_data, catalogue_rand, los_data, los_rand, alpha,
           params.ELL, M_
@@ -1054,7 +1058,7 @@ trv::ThreePCFMeasurements compute_3pcf(
         // ·······························································
 
         // Compute 3PCF components in eqs. (42), (48) & (49) in the Paper.
-        MeshField G_LM(params);  // G_LM
+        MeshField G_LM(params, true, "`G_LM`");  // G_LM
         G_LM.compute_ylm_wgtd_field(
           catalogue_data, catalogue_rand, los_data, los_rand, alpha,
           params.ELL, M_
@@ -1063,8 +1067,8 @@ trv::ThreePCFMeasurements compute_3pcf(
         G_LM.apply_assignment_compensation();
         G_LM.inv_fourier_transform();
 
-        MeshField F_lm_a(params);  // F_lm_a
-        MeshField F_lm_b(params);  // F_lm_b
+        MeshField F_lm_a(params, true, "`F_lm_a`");  // F_lm_a
+        MeshField F_lm_b(params, true, "`F_lm_b`");  // F_lm_b
 
         for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
           double r_a = r1eff_dv[idx_dv];
@@ -1220,7 +1224,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute common field quantities.
-  MeshField dn_00(params);  // δn_00(k)
+  MeshField dn_00(params, true, "`dn_00`");  // δn_00(k)
   dn_00.compute_unweighted_field_fluctuations_insitu(catalogue_data);
   dn_00.fourier_transform();
 
@@ -1231,7 +1235,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
   // Under the global plane-parallel approximation, y_{LM} = δᴰ_{M0}
   // (L-invariant) for the line-of-sight spherical harmonic.
-  MeshField N_L0(params);  // N_L0(k)
+  MeshField N_L0(params, true, "`N_L0`");  // N_L0(k)
   N_L0.compute_unweighted_field(catalogue_data);
   N_L0.fourier_transform();
 
@@ -1286,14 +1290,14 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       // Raw bispectrum
       // ·································································
 
-      MeshField G_00(params);  // G_00
+      MeshField G_00(params, true, "`G_00`");  // G_00
       G_00.compute_unweighted_field_fluctuations_insitu(catalogue_data);
       G_00.fourier_transform();
       G_00.apply_assignment_compensation();
       G_00.inv_fourier_transform();
 
-      MeshField F_lm_a(params);  // F_lm_a
-      MeshField F_lm_b(params);  // F_lm_b
+      MeshField F_lm_a(params, true, "`F_lm_a`");  // F_lm_a
+      MeshField F_lm_b(params, true, "`F_lm_b`");  // F_lm_b
 
       if (params.form == "diag") {
         for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
@@ -1757,7 +1761,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute common field quantities.
-  MeshField dn_00(params);  // δn_00(k)
+  MeshField dn_00(params, true, "`dn_00`");  // δn_00(k)
   dn_00.compute_unweighted_field_fluctuations_insitu(catalogue_data);
   dn_00.fourier_transform();
 
@@ -1765,7 +1769,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
 
   double vol_cell = dn_00.vol_cell;
 
-  MeshField N_00(params);  // N_00(k)
+  MeshField N_00(params, true, "`N_00`");  // N_00(k)
   N_00.compute_unweighted_field(catalogue_data);
   N_00.fourier_transform();
 
@@ -1922,14 +1926,14 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       // ·································································
 
       // Compute 3PCF components in eqs. (42), (48) & (49) in the Paper.
-      MeshField G_00(params);  // G_00
+      MeshField G_00(params, true, "`G_00`");  // G_00
       G_00.compute_unweighted_field_fluctuations_insitu(catalogue_data);
       G_00.fourier_transform();
       G_00.apply_assignment_compensation();
       G_00.inv_fourier_transform();
 
-      MeshField F_lm_a(params);  // F_lm_a
-      MeshField F_lm_b(params);  // F_lm_b
+      MeshField F_lm_a(params, true, "`F_lm_a`");  // F_lm_a
+      MeshField F_lm_b(params, true, "`F_lm_b`");  // F_lm_b
 
       for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
         double r_a = r1eff_dv[idx_dv];
@@ -2088,13 +2092,13 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute common field quantities.
-  MeshField n_00(params);  // n_00(k)
+  MeshField n_00(params, true, "`n_00`");  // n_00(k)
   n_00.compute_ylm_wgtd_field(catalogue_rand, los_rand, alpha, 0, 0);
   n_00.fourier_transform();
 
   double vol_cell = n_00.vol_cell;
 
-  MeshField N_00(params);  // N_00(k)
+  MeshField N_00(params, true, "`N_00`");  // N_00(k)
   N_00.compute_ylm_wgtd_quad_field(catalogue_rand, los_rand, alpha, 0, 0);
   N_00.fourier_transform();
 
@@ -2159,7 +2163,9 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         // ·······························································
 
         // Compute shot noise components in eq. (51) in the Paper.
-        MeshField n_LM_for_sn(params);  // n_LM(k) (for shot noise)
+        MeshField n_LM_for_sn(params, true, "`n_LM_for_sn`");  // δn_LM(k)
+                                                               // (for
+                                                               // shot noise)
         n_LM_for_sn.compute_ylm_wgtd_field(
           catalogue_rand, los_rand, alpha, params.ELL, M_
         );
@@ -2266,7 +2272,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         // ·······························································
 
         // Compute 3PCF components in eqs. (42), (48) & (49) in the Paper.
-        MeshField G_LM(params);  // G_LM
+        MeshField G_LM(params, true, "`G_LM`");  // G_LM
         G_LM.compute_ylm_wgtd_field(
           catalogue_rand, los_rand, alpha, params.ELL, M_
         );
@@ -2279,8 +2285,8 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           G_LM.apply_wide_angle_pow_law_kernel();
         }
 
-        MeshField F_lm_a(params);  // F_lm_a
-        MeshField F_lm_b(params);  // F_lm_b
+        MeshField F_lm_a(params, true, "`F_lm_a`");  // F_lm_a
+        MeshField F_lm_b(params, true, "`F_lm_b`");  // F_lm_b
 
         for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
           double r_a = r1eff_dv[idx_dv];
@@ -2460,14 +2466,14 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   // RFE: Not adopted until copy-assignment constructor is checked.
   // ---->
   // // Compute common field quantities.
-  // MeshField dn_00(params);  // δn_00(r)
+  // MeshField dn_00(params, true, "`dn_00`");  // δn_00(r)
   // dn_00.compute_ylm_wgtd_field(
   //   catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
   // );
 
   // double vol_cell = dn_00.vol_cell;
 
-  // MeshField N_00(params);  // N_00(r)
+  // MeshField N_00(params, true, "`N_00`");  // N_00(r)
   // N_00.compute_ylm_wgtd_quad_field(
   //   catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
   // );
@@ -2533,7 +2539,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         // ·······························································
 
         // Compute bispectrum components in eqs. (41) & (42) in the Paper.
-        MeshField dn_LM_a(params);  // δn_LM_a
+        MeshField dn_LM_a(params, true, "`dn_LM_a`");  // δn_LM_a
         if (los_choice == 0) {
           dn_LM_a.compute_ylm_wgtd_field(
             catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -2547,7 +2553,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         }
         dn_LM_a.fourier_transform();
 
-        MeshField dn_LM_b(params);  // δn_LM_b
+        MeshField dn_LM_b(params, true, "`dn_LM_b`");  // δn_LM_b
         if (los_choice == 1) {
           dn_LM_b.compute_ylm_wgtd_field(
             catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -2561,7 +2567,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         }
         dn_LM_b.fourier_transform();
 
-        MeshField G_LM(params);  // G_LM
+        MeshField G_LM(params, true, "`G_LM`");  // G_LM
         if (los_choice == 2) {
           G_LM.compute_ylm_wgtd_field(
             catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -2579,8 +2585,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
         double vol_cell = G_LM.vol_cell;
 
-        MeshField F_lm_a(params);  // F_lm_a
-        MeshField F_lm_b(params);  // F_lm_b
+        MeshField F_lm_a(params, true, "`F_lm_a`");  // F_lm_a
+        MeshField F_lm_b(params, true, "`F_lm_b`");  // F_lm_b
 
         if (params.form == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
@@ -2816,7 +2822,9 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         // ·······························································
 
         // Compute shot noise components in eqs. (45) & (46) in the Paper.
-        MeshField dn_LM_a_for_sn(params);  // δn_LM_a(k) (for shot noise)
+        MeshField dn_LM_a_for_sn(params, true, "`dn_LM_a_for_sn`");  // δn_LM_a(k)
+                                                               // (for shot
+                                                               // noise)
         if (los_choice == 0) {
           dn_LM_a_for_sn.compute_ylm_wgtd_field(
             catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -2830,7 +2838,9 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         }
         dn_LM_a_for_sn.fourier_transform();
 
-        MeshField dn_LM_b_for_sn(params);  // δn_LM_b(k) (for shot noise)
+        MeshField dn_LM_b_for_sn(params, true, "`dn_LM_b_for_sn`");  // δn_LM_b(k)
+                                                               // (for shot
+                                                               // noise)
         if (los_choice == 1) {
           dn_LM_b_for_sn.compute_ylm_wgtd_field(
             catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -2844,7 +2854,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         }
         dn_LM_b_for_sn.fourier_transform();
 
-        MeshField dn_LM_c_for_sn(params);  // δn_LM_c(k) (for shot noise)
+        // δn_LM_c(k) (for shot noise)
+        MeshField dn_LM_c_for_sn(params, true, "`dn_LM_c_for_sn`");
         if (los_choice == 2) {
           dn_LM_c_for_sn.compute_ylm_wgtd_field(
             catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -2858,7 +2869,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         }
         dn_LM_c_for_sn.fourier_transform();
 
-        MeshField N_LM_a(params);  // N_LM_a(k)
+        MeshField N_LM_a(params, true, "`N_LM_a`");  // N_LM_a(k)
         if (los_choice == 0) {
           N_LM_a.compute_ylm_wgtd_quad_field(
             catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -2872,7 +2883,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         }
         N_LM_a.fourier_transform();
 
-        MeshField N_LM_b(params);  // N_LM_b(k)
+        MeshField N_LM_b(params, true, "`N_LM_b`");  // N_LM_b(k)
         if (los_choice == 1) {
           N_LM_b.compute_ylm_wgtd_quad_field(
             catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -2886,7 +2897,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         }
         N_LM_b.fourier_transform();
 
-        MeshField N_LM_c(params);  // N_LM_c(k)
+        MeshField N_LM_c(params, true, "`N_LM_c`");  // N_LM_c(k)
         if (los_choice == 2) {
           N_LM_c.compute_ylm_wgtd_quad_field(
             catalogue_data, catalogue_rand, los_data, los_rand, alpha,

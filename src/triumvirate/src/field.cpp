@@ -243,6 +243,14 @@ void MeshField::get_grid_wavevector(int i, int j, int k, double kvec[3]) {
 void MeshField::assign_weighted_field_to_mesh(
   ParticleCatalogue& particles, fftw_complex* weights
 ) {
+  if (trvs::currTask == 0) {
+    trvs::logger.debug(
+      "Performing mesh assignment scheme '%s' to %s.",
+      this->params.assignment.c_str(),
+      this->name.c_str()
+    );
+  }
+
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     double extent = particles.pos_max[iaxis] - particles.pos_min[iaxis];
     if (params.boxsize[iaxis] < extent) {
@@ -897,7 +905,7 @@ void MeshField::compute_ylm_wgtd_field(
     weight_kern[pid][1] = ylm.imag() * particles_rand[pid].w;
   }
 
-  MeshField field_rand(this->params, false);
+  MeshField field_rand(this->params, false, "`field_rand`");
   field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
   fftw_free(weight_kern); weight_kern = nullptr;
@@ -1025,7 +1033,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
     weight_kern[pid][1] = ylm.imag() * std::pow(particles_rand[pid].w, 2);
   }
 
-  MeshField field_rand(this->params, false);
+  MeshField field_rand(this->params, false, "`field_rand`");
   field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
   fftw_free(weight_kern); weight_kern = nullptr;
@@ -1102,6 +1110,12 @@ void MeshField::compute_ylm_wgtd_quad_field(
 // -----------------------------------------------------------------------
 
 void MeshField::fourier_transform() {
+  if (trvs::currTask == 0) {
+    trvs::logger.debug(
+      "Performing Fourier transform of %s.", this->name.c_str()
+    );
+  }
+
   // Apply FFT volume normalisation, where ∫d³x ↔ dV Σᵢ, dV =: `vol_cell`.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
@@ -1117,6 +1131,7 @@ void MeshField::fourier_transform() {
   } else {
     fftw_execute(this->transform);
   }
+  trvs::count_fft += 1;
 
   // Interlace with the shadow field.
   if (this->params.interlace == "true") {
@@ -1133,6 +1148,7 @@ void MeshField::fourier_transform() {
     } else {
       fftw_execute(this->transform_s);
     }
+    trvs::count_fft += 1;
 
 #ifdef TRV_USE_OMP
 #pragma omp parallel for collapse(3)
@@ -1177,6 +1193,12 @@ void MeshField::fourier_transform() {
 }
 
 void MeshField::inv_fourier_transform() {
+  if (trvs::currTask == 0) {
+    trvs::logger.debug(
+      "Performing inverse Fourier transform of %s.", this->name.c_str()
+    );
+  }
+
   // Apply inverse FFT volume normalisation, where ∫d³k/(2π)³ ↔ (1/V) Σᵢ,
   // V =: `vol`.
 #ifdef TRV_USE_OMP
@@ -1193,6 +1215,7 @@ void MeshField::inv_fourier_transform() {
   } else {
     fftw_execute(this->inv_transform);
   }
+  trvs::count_ifft += 1;
 }
 
 
@@ -1201,6 +1224,12 @@ void MeshField::inv_fourier_transform() {
 // -----------------------------------------------------------------------
 
 void MeshField::apply_wide_angle_pow_law_kernel() {
+  if (trvs::currTask == 0) {
+    trvs::logger.debug(
+      "Applying wide-angle power-law kernel to %s.", this->name.c_str()
+    );
+  }
+
   // CAVEAT: Discretionary choice such that eps_r / r = O(1.e-9).
   const double eps_r = 1.e-6;
 
@@ -1232,6 +1261,12 @@ void MeshField::apply_wide_angle_pow_law_kernel() {
 }
 
 void MeshField::apply_assignment_compensation() {
+  if (trvs::currTask == 0) {
+    trvs::logger.debug(
+      "Applying assignment compensation to %s.", this->name.c_str()
+    );
+  }
+
 #ifdef TRV_USE_OMP
 #pragma omp parallel for collapse(3)
 #endif  // TRV_USE_OMP
@@ -1261,6 +1296,14 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   double k_lower, double k_upper,
   double& k_eff, int& nmodes
 ) {
+  if (trvs::currTask == 0) {
+    trvs::logger.debug(
+      "Performing inverse Fourier transform to spherical harmonic weighted "
+      "%s in wavenumber bands [%f, %f).",
+      this->name.c_str(), k_lower, k_upper
+    );
+  }
+
   // Reset field values to zero.
   this->reset_density_field();
 
@@ -1315,6 +1358,7 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   } else {
     fftw_execute(this->inv_transform);
   }
+  trvs::count_ifft += 1;
 
   // Average over wavevector modes in the band.
 #ifdef TRV_USE_OMP
@@ -1334,6 +1378,14 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
     trvm::SphericalBesselCalculator& sjl,
     double r
 ) {
+  if (trvs::currTask == 0) {
+    trvs::logger.debug(
+      "Performing inverse Fourier transform to spherical Bessel weighted "
+      "%s at separation `r` = %f.",
+      this->name.c_str(), r
+    );
+  }
+
   // Reset field values to zero.
   this->reset_density_field();
 
@@ -1386,6 +1438,7 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
   } else {
     fftw_execute(this->inv_transform);
   }
+  trvs::count_ifft += 1;
 }
 
 
@@ -2027,6 +2080,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   } else {
     fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
   }
+  trvs::count_ifft += 1;
 
   // Perform fine binning.
   // NOTE: Dynamically allocate owing to size.
@@ -2137,6 +2191,10 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   std::complex<double> shotnoise_amp,
   trv::Binning& rbinning
 ) {
+  if (trvs::currTask == 0) {
+    trvs::logger.debug("Computing uncoupled shot noise for 3PCF.");
+  }
+
   this->resize_stats(rbinning.num_bins);
 
   // Check mesh fields compatibility and reuse properties and methods of
@@ -2236,6 +2294,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   } else {
     fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
   }
+  trvs::count_ifft += 1;
 
   // Perform fine binning.
   // NOTE: Dynamically allocate owing to size.
@@ -2349,6 +2408,14 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   std::complex<double> shotnoise_amp,
   double k_a, double k_b
 ) {
+  if (trvs::currTask == 0) {
+    trvs::logger.debug(
+      "Computing uncoupled shot noise for bispectrum "
+      "in wavenumber bin [%f, %f).",
+      k_a, k_b
+    );
+  }
+
   // Check mesh fields compatibility and reuse properties and methods of
   // the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
@@ -2446,6 +2513,7 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   } else {
     fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
   }
+  trvs::count_ifft += 1;
 
   // Weight by spherical Bessel functions and harmonics before summing
   // over the configuration-space grids.

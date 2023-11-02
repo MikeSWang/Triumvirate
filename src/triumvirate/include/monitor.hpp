@@ -68,6 +68,9 @@ extern int currTask;  ///< current task
 extern double gbytesMem;     ///< current memory usage in gibibytes
 extern double gbytesMaxMem;  ///< maximum memory usage in gibibytes
 
+extern int count_fft;   ///< number of FFTs
+extern int count_ifft;  ///< number of IFFTs
+
 /**
  * @brief Return size in gibibytes.
  *

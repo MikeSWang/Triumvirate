@@ -92,7 +92,7 @@ double calc_powspec_normalisation_from_particles(
 double calc_powspec_normalisation_from_mesh(
   trv::ParticleCatalogue& particles, trv::ParameterSet& params, double alpha
 ) {
-  trv::MeshField catalogue_mesh(params, false);
+  trv::MeshField catalogue_mesh(params, false, "`catalogue_mesh`");
 
   double norm_factor =
     catalogue_mesh.calc_grid_based_powlaw_norm(particles, 2);
@@ -108,8 +108,8 @@ double calc_powspec_normalisation_from_meshes(
   trv::ParameterSet& params, double alpha
 ) {
   // Assign particles to mesh.
-  trv::MeshField mesh_data(params, false);
-  trv::MeshField mesh_rand(params, false);
+  trv::MeshField mesh_data(params, false, "`mesh_data`");
+  trv::MeshField mesh_rand(params, false, "`mesh_rand`");
 
   fftw_complex* weight_data = nullptr;
   weight_data = fftw_alloc_complex(particles_data.ntotal);
@@ -359,7 +359,7 @@ trv::PowspecMeasurements compute_powspec(
   fftw_init_threads();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  MeshField dn_00(params);  // δn_00(k)
+  MeshField dn_00(params, true, "`dn_00`");  // δn_00(k)
   dn_00.compute_ylm_wgtd_field(
     catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
   );
@@ -368,7 +368,7 @@ trv::PowspecMeasurements compute_powspec(
   FieldStats stats_2pt(params);
 
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-    MeshField dn_LM(params);  // δn_LM(k)
+    MeshField dn_LM(params, true, "`dn_LM`");  // δn_LM(k)
     dn_LM.compute_ylm_wgtd_field(
       catalogue_data, catalogue_rand, los_data, los_rand, alpha, params.ELL, M_
     );
@@ -478,7 +478,7 @@ trv::TwoPCFMeasurements compute_corrfunc(
   fftw_init_threads();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  MeshField dn_00(params);  // δn_00(k)
+  MeshField dn_00(params, true, "`dn_00`");  // δn_00(k)
   dn_00.compute_ylm_wgtd_field(
     catalogue_data, catalogue_rand, los_data, los_rand, alpha, 0, 0
   );
@@ -487,7 +487,7 @@ trv::TwoPCFMeasurements compute_corrfunc(
   FieldStats stats_2pt(params);
 
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-    MeshField dn_LM(params);  // δn_LM(k)
+    MeshField dn_LM(params, true, "`dn_LM`");  // δn_LM(k)
     dn_LM.compute_ylm_wgtd_field(
       catalogue_data, catalogue_rand, los_data, los_rand, alpha, params.ELL, M_
     );
@@ -605,7 +605,7 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute power spectrum.
-  MeshField dn(params);  // δn(k)
+  MeshField dn(params, true, "`dn`");  // δn(k)
   dn.compute_unweighted_field_fluctuations_insitu(catalogue_data);
   dn.fourier_transform();
 
@@ -706,7 +706,7 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute 2PCF.
-  MeshField dn(params);  // δn(k)
+  MeshField dn(params, true, "`dn`");  // δn(k)
   dn.compute_unweighted_field_fluctuations_insitu(catalogue_data);
   dn.fourier_transform();
 
@@ -797,14 +797,14 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
   fftw_init_threads();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-  MeshField dn_00(params);
+  MeshField dn_00(params, true, "`dn_00`");
   dn_00.compute_ylm_wgtd_field(catalogue_rand, los_rand, alpha, 0, 0);
   dn_00.fourier_transform();  // δn_00(k)
 
   FieldStats stats_2pt(params);
 
   for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
-    MeshField dn_LM(params);
+    MeshField dn_LM(params, true, "`dn_LM`");
     dn_LM.compute_ylm_wgtd_field(
       catalogue_rand, los_rand, alpha, params.ELL, M_
     );
