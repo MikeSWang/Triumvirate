@@ -8,6 +8,7 @@ import textwrap
 from configparser import ConfigParser
 from datetime import datetime
 from importlib import import_module
+from itertools import chain
 from pathlib import Path
 
 
@@ -57,6 +58,25 @@ else:
 
 
 # -- General configuration -----------------------------------------------
+
+def skip_cdef_member(app, what, name, obj, skip, options):
+    SKIP_LISTS = {
+        'dataobjs.Binning': [
+            'bin_centres', 'bin_edges', 'bin_widths',
+            'bin_max', 'bin_min',
+            'num_bins',
+            'scheme', 'space',
+        ],
+    }
+
+    skip_list = list(chain.from_iterable(SKIP_LISTS.values()))
+
+    return True if name in skip_list else None
+
+
+def setup(app):
+    app.connect('autodoc-skip-member', skip_cdef_member)
+
 
 exclude_patterns = ['setup', 'config', 'tests', 'examples']
 
