@@ -769,3 +769,8 @@ def _modify_measurement_parameters(paramset, params_measure=None,
     if ret_defaults:
         return paramset, params_default
     return paramset
+
+
+# CAVEAT: Remove docstrings from Cython pseudo special functions.
+vars()['__reduce_cython__'].__doc__ = None
+vars()['__setstate_cython__'].__doc__ = None

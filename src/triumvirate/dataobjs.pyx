@@ -217,3 +217,8 @@ cdef class Binning:
         self.thisptr.bin_centres = self.bin_centres
         self.thisptr.bin_widths = self.bin_widths
         self.thisptr.scheme = self.scheme.encode('utf-8')
+
+
+# CAVEAT: Remove docstrings from Cython pseudo special functions.
+vars()['__reduce_cython__'].__doc__ = None
+vars()['__setstate_cython__'].__doc__ = None
