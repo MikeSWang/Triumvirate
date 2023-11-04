@@ -35,7 +35,6 @@ def configure():
 
     """
     parser = argparse.ArgumentParser(
-        prog='gen_param_file',
         description="Generate parameter files by modifying a template."
     )
 

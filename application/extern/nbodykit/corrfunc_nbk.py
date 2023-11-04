@@ -21,7 +21,6 @@ def configure():
 
     """
     parser = ArgumentParser(
-        prog="corrfunc_nbk",
         description="Measure flat-sky correlation function using `nbodykit`."
     )
 

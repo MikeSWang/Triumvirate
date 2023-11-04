@@ -21,7 +21,6 @@ def configure():
 
     """
     parser = ArgumentParser(
-        prog="powspec_nbk",
         description="Measure power spectrum using `nbodykit`."
     )
 

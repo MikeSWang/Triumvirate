@@ -22,7 +22,6 @@ def configure():
 
     """
     parser = ArgumentParser(
-        prog="powspec_pyp",
         description="Measure power spectrum using `pypower`."
     )
 

@@ -59,43 +59,44 @@ def parse_parameters() -> argparse.Namespace:
     parser.add_argument(
         '-t', "--test-case", type=str,
         choices=['hankel-sym', 'hankel-asym', 'sj-sym', 'sj-asym', 'sj-cosmo'],
-        required=True
+        required=True,
+        help="test case"
     )
     parser.add_argument(
         '--order', type=int, default=0,
-        help="Order of the Hankel transform (default is %(default)d)."
+        help="order of the Hankel transform (default is %(default)d)"
     )
     parser.add_argument(
         '--degree', type=int, default=0,
-        help="Degree of the spherical Bessel transform "
-             "(default is %(default)d)."
+        help="degree of the spherical Bessel transform "
+             "(default is %(default)d)"
     )
     parser.add_argument(
         '--extrap', type=int, nargs='?', const=3, default=0,
-        help="Extrapolation option for smoothness "
-             "(default is %(default)d if disabled or %(const)d if enabled)."
+        help="extrapolation option for smoothness "
+             "(default is %(default)d if disabled or %(const)d if enabled)"
     )
     parser.add_argument(
         '--lgcentre', type=float, default=0.,
-        help="Logarithmic centre for the sample points "
-             "(default is %(default).1f)."
+        help="logarithmic centre for the sample points "
+             "(default is %(default).1f)"
     )
     parser.add_argument(
         '--shorten', type=float, default=1.,
-        help="Shorten the range of sample points by this factor "
-             "(default is %(default).1f)."
+        help="shorten the range of sample points by this factor "
+             "(default is %(default).1f)"
     )
     parser.add_argument(
         '--show-diff', action='store_true',
-        help="Show the difference between the transform results."
+        help="show the difference between the transform results"
     )
     parser.add_argument(
         '--time', action='store_true',
-        help="Time the transform without showing a plotted figure."
+        help="time the transform without showing a plotted figure"
     )
     parser.add_argument(
         '--threaded', action='store_true',
-        help="Use multi-threaded FFTLog transform."
+        help="use multi-threaded FFTLog transform"
     )
 
     pars = parser.parse_args()

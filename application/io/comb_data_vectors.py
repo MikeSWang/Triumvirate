@@ -33,7 +33,6 @@ def configure():
 
     """
     parser = argparse.ArgumentParser(
-        prog='comb_data_vectors',
         description="Combine clustering multipole data vectors."
     )
 
