@@ -1,0 +1,35 @@
+{
+    "name": "Triumvirate-Dev",
+	"build": {
+		"context": "..",
+		"dockerfile": "Dockerfile"
+	},
+    "features": {
+        "ghcr.io/mamba-org/devcontainer-features/micromamba:1": {
+            "version": "latest",
+            "channels": "conda-forge",
+            "autoActivate": false,
+            "envFile": "/tmp/conda-tmp/conda-env.yml",
+            "envName": "trv-dev"
+        }
+    },
+    "onCreateCommand": "sudo cp .devcontainer/notice_welcome.txt /usr/local/etc/vscode-dev-containers/first-run-notice.txt",
+    "postCreateCommand": "bash .devcontainer/postCreate.sh",
+    "waitFor": "postCreateCommand",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.makefile-tools",
+                "ms-vscode.cpptools",
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-python.flake8",
+                "github.copilot",
+                "ktnrg45.vscode-cython",
+                "cschlosser.doxdocgen",
+                "lextudio.restructuredtext",
+                "trond-snekvik.simple-rst"
+            ]
+        }
+    }
+}

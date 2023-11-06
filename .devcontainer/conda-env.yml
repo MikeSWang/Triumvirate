@@ -1,0 +1,25 @@
+name: trv-dev
+category: dev
+channels:
+  - conda-forge
+dependencies:
+  # Build dependencies
+  - python >= 3.8
+  - pip >= 19.1
+  - setuptools >= 61.0.0
+  - setuptools_scm >= 6.4.0
+  - cython >= 0.25
+  - extension-helpers
+  - pkg-config
+  - gsl >= 2.7
+  - fftw >= 3
+  - libgomp
+  - llvm-openmp
+  # Runtime dependencies
+  - numpy >= 1.17
+  - scipy
+  - astropy >= 4.2
+  - pyyaml > 4
+  # Test dependencies
+  - flake8
+  - pytest
