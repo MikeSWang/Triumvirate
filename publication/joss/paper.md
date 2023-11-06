@@ -42,8 +42,8 @@ proposed by @Sugiyama:2019. The objective of `Triumvirate` is to provide
 efficient end-to-end measurement of clustering statistics which can be fed
 into downstream galaxy survey analyses to constrain and test cosmological
 models. To this end, it builds upon the original algorithms in the `hitomi`
-code[^1] developed by Sugiyama [@Sugiyama:2018;@Sugiyama:2019], and
-supplies a user-friendly interface with flexible input/output (I/O) of
+code[^1] developed by Sugiyama et al. [-@Sugiyama:2018;-@Sugiyama:2019],
+and supplies a user-friendly interface with flexible input/output (I/O) of
 catalogue data and measurement results, with the built program
 configurable through external parameter files and tracked through enhanced
 logging and warning/exception handling. For completeness and
@@ -159,7 +159,7 @@ clustering analyses.
 
 Direct calculation of Fourier modes of density field fluctuations
 as a sum over a large number of particles is computationally infeasible,
-but thankfully the TripoSH estimators can be cast in a form amenable to
+but the TripoSH estimators can be cast in a form amenable to
 fast Fourier transforms (FFTs), which can be utilised to speed up
 evaluations. In our numerical scheme, the particles are assigned to
 regular mesh grids with appropriate weighting, which is a combination of
@@ -176,7 +176,7 @@ of grid points a particle is assigned to. Since mesh assignment convolves
 the underlying field with a sampling window, the transformed Fourier-space
 field should be compensated by dividing out the sampling window
 [@Hockney:1988]. For power spectrum measurements only where no inverse FFT
-is involved, the interlacing technique can be used to reduce the amount of
+is involved the interlacing technique can be used to reduce the amount of
 aliasing [@Sefusatti:2016], an artifact of discrete Fourier transform where
 the sampled Fourier mode at each wavenumber receives contributions from
 other modes, with the effect increasingly prominent as the Nyquist
@@ -282,8 +282,8 @@ $\zeta_{202}^{\mathrm{(gpp)}}$               43 s, 0.7 GiB              177 s, 2
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-[^7]: Note that 1 gibibytes (GiB) is $2^{30}$ bytes, as opposed to
-      1 gigabytes (GB) which is $10^9$ bytes. GiB is the preferred unit
+[^7]: Note that 1 gibibyte (GiB) is $2^{30}$ bytes, as opposed to
+      1 gigabyte (GB) which is $10^9$ bytes. GiB is the preferred unit
       by job schedulers such as Slurm for computer clusters.
 
 
