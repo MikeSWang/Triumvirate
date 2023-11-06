@@ -186,6 +186,10 @@ functionality and documentation of the code.
 Contributing
 ============
 
+.. image:: https://github.com/codespaces/badge.svg
+    :target: https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=355723559
+    :alt: Codespaces
+
 User feedback and contributions are very welcome. Please refer to the
 `contribution guidelines
 <https://github.com/MikeSWang/Triumvirate/blob/main/CONTRIBUTING.md>`_.

@@ -38,3 +38,13 @@ https://www.python.org/dev/peps/pep-0008/) standards as closely as possible,
 and always include doc-strings (ideally in the [``numpydoc``](
 https://numpydoc.readthedocs.io/en/latest/format.html) format) and unit tests
 if you are adding new features.
+
+
+## Development Container
+
+[![Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=355723559)
+
+A developement container (dev container) is made available through
+GitHub Codespaces. It provides a web-based cloud development environment
+in the form of Visual Studio Code, and is pre-configured for building
+and developing this project.

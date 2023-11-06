@@ -142,6 +142,8 @@ functionality and documentation of the code.
 [![Feature-Issues](https://img.shields.io/github/issues/MikeSWang/Triumvirate/feature)](https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Afeature)
 [![PullRequests](https://img.shields.io/github/issues-pr/MikeSWang/Triumvirate)](https://github.com/MikeSWang/Triumvirate/pulls)
 
+[![Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=355723559)
+
 User feedback and contributions are very welcome. Please refer to the
 [contribution guidelines](CONTRIBUTING.md).
 
