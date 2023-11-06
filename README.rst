@@ -187,7 +187,7 @@ Contributing
 ============
 
 .. image:: https://github.com/codespaces/badge.svg
-    :target: https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=355723559
+    :target: https://codespaces.new/MikeSWang/Triumvirate?hide_repo_select=true&ref=main
     :alt: Codespaces
 
 User feedback and contributions are very welcome. Please refer to the
