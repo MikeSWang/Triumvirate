@@ -12,8 +12,15 @@ authors:
 title: "Triumvirate"
 version: 0.3.0
 date-released: 2023-10-04
-doi: 10.5281/zenodo.10072128
-repository-code: https://github.com/MikeSWang/Triumvirate/releases/tag/v0.3.0
+license: GPL-3.0
+identifiers:
+  - description: "Zenodo DOI (all versions)"
+    type: doi
+    value: 10.5281/zenodo.10072128
+  - description: "Zenodo DOI (version 0.3.0) associated with doi:10.21105/joss.05571"
+    type: doi
+    value: 10.5281/zenodo.10072129
+repository-code: https://github.com/MikeSWang/Triumvirate
 url: https://triumvirate.rtfd.io
 preferred-citation:
   type: article
@@ -30,6 +37,54 @@ preferred-citation:
   journal: "J. Open Source Softw."
   year: 2023
   volume: 8
-  issue: 91
+  number: 91
   start: 5571
+  end: 5576
   doi: 10.21105/joss.05571
+  identifiers:
+    - type: other
+      value: "arXiv:2304.03643"
+      description: "ArXiv eprint [astro-ph.IM]"
+references:
+  - type: article
+    authors:
+      - family-names: "Sugiyama"
+        given-names: "Naonori S."
+      - family-names: "Saito"
+        given-names: "Shun"
+      - family-names: "Beutler"
+        given-names: "Florian"
+      - family-names: "Seo"
+        given-names: "Hee-Jong"
+    title: "A complete FFT-based decomposition formalism for the redshift-space bispectrum"
+    journal: "Mon. Not. R. Astron. Soc."
+    year: 2019
+    volume: 484
+    issue: 1
+    start: 364
+    end: 384
+    doi: 10.1093/mnras/sty3249
+    identifiers:
+      - type: other
+        value: "arXiv:1803.02132"
+        description: "ArXiv eprint [astro-ph.CO]"
+  - type: article
+    authors:
+      - family-names: "Sugiyama"
+        given-names: "Naonori S."
+      - family-names: "Shiraishi"
+        given-names: "Maresuke"
+      - family-names: "Okumura"
+        given-names: "Teppei"
+    title: "Limits on statistical anisotropy from BOSS DR12 galaxies using bipolar spherical harmonics"
+    journal: "Mon. Not. R. Astron. Soc."
+    year: 2018
+    volume: 473
+    issue: 2
+    start: 2737
+    end: 2752
+    doi: 10.1093/mnras/stx2333
+    identifiers:
+      - type: other
+        value: "arXiv:1704.02868"
+        description: "ArXiv eprint [astro-ph.CO]"
