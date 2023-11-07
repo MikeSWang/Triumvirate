@@ -101,7 +101,7 @@ or ``useomp=1`` to the end of the second line as shown above.
 
 ## Attribution
 
-[![JOSS](https://joss.theoj.org/papers/a8325e3897dd726d9df42286bf72d19f/status.svg)](https://joss.theoj.org/papers/a8325e3897dd726d9df42286bf72d19f)
+[![JOSS](https://joss.theoj.org/papers/10.21105/joss.05571/status.svg)](https://doi.org/10.21105/joss.05571)
 [![arXiv](https://img.shields.io/badge/arXiv-2304.03643-b31b1b)](https://arxiv.org/abs/2304.03643)
 [![MNRAS](https://img.shields.io/badge/10.1093%2Fmnras%2Fsty3249-grey?logo=doi)](https://doi.org/10.1093/mnras/sty3249)
 [![MNRAS](https://img.shields.io/badge/10.1093%2Fmnras%2Fstx2333-grey?logo=doi)](https://doi.org/10.1093/mnras/stx2333)

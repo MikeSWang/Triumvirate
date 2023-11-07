@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "To acknowledge the use of Triumvirate in your work, please cite the following publication(s)."
+authors:
+- family-names: "Wang"
+  given-names: "Mike Shengbo"
+  orcid: https://orcid.org/0000-0002-2652-4043
+- family-names: "Beutler"
+  given-names: "Florian"
+  orcid: https://orcid.org/0000-0003-0467-5438
+- family-names: "Sugiyama"
+  given-names: "Naonori S."
+title: "Triumvirate"
+version: 0.3.0
+date-released: 2023-10-04
+doi: 10.5281/zenodo.10072128
+repository-code: https://github.com/MikeSWang/Triumvirate/releases/tag/v0.3.0
+url: https://triumvirate.rtfd.io
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Wang"
+    given-names: "Mike Shengbo"
+    orcid: https://orcid.org/0000-0002-2652-4043
+  - family-names: "Beutler"
+    given-names: "Florian"
+    orcid: https://orcid.org/0000-0003-0467-5438
+  - family-names: "Sugiyama"
+    given-names: "Naonori S."
+  title: "Triumvirate: A Python/C++ package for three-point clustering measurements"
+  journal: "J. Open Source Softw."
+  year: 2023
+  volume: 8
+  issue: 91
+  start: 5571
+  doi: 10.21105/joss.05571

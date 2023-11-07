@@ -140,8 +140,8 @@ or ``useomp=1`` to the end of the second line as shown above.
 Attribution
 ===========
 
-.. image:: https://joss.theoj.org/papers/a8325e3897dd726d9df42286bf72d19f/status.svg
-    :target: https://joss.theoj.org/papers/a8325e3897dd726d9df42286bf72d19f
+.. image:: https://joss.theoj.org/papers/10.21105/joss.05571/status.svg
+    :target: https://doi.org/10.21105/joss.05571
     :alt: JOSS
 
 .. image:: https://img.shields.io/badge/arXiv-2304.03643-b31b1b
