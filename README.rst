@@ -144,6 +144,10 @@ Attribution
     :target: https://doi.org/10.21105/joss.05571
     :alt: JOSS
 
+.. image:: https://img.shields.io/badge/zenodo-10.5281%2Fzenodo.10072128-1682D4
+    :target: https://doi.org/10.5281/zenodo.10072128
+    :alt: Zenodo
+
 .. image:: https://img.shields.io/badge/arXiv-2304.03643-b31b1b
     :target: https://arxiv.org/abs/2304.03643
     :alt: arXiv
@@ -157,8 +161,9 @@ Attribution
     :alt: MNRAS
 
 To acknowledge the use of |Triumvirate| in your published research, please
-cite the publications linked above which contain the relevant information
-in the BibTeX format.
+cite the publications linked above; for convenience, you can refer to the
+files |CitationCFF|_ and |CitationMD|_ for the relevant information in
+different formats.
 
 
 Acknowledgement
@@ -242,7 +247,13 @@ Licence
 .. |Makefile| replace:: ``Makefile``
 .. _Makefile: https://github.com/MikeSWang/Triumvirate/blob/main/Makefile
 
-.. |Licence| replace:: ``Licence``
-.. _Licence: https://github.com/MikeSWang/Triumvirate/blob/main/Licence
+.. |CitationCFF| replace:: ``CITATION.cff``
+.. _CitationCFF: https://github.com/MikeSWang/Triumvirate/blob/main/CITATION.cff
+
+.. |CitationMD| replace:: ``CITATION.md``
+.. _CitationMD: https://github.com/MikeSWang/Triumvirate/blob/main/CITATION.md
+
+.. |Licence| replace:: ``LICENCE``
+.. _Licence: https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE
 
 .. |Copyright| unicode:: U+000A9

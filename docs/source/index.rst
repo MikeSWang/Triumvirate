@@ -26,6 +26,10 @@ Attribution
     :target: https://doi.org/10.21105/joss.05571
     :alt: JOSS
 
+.. image:: https://img.shields.io/badge/zenodo-10.5281%2Fzenodo.10072128-1682D4
+    :target: https://doi.org/10.5281/zenodo.10072128
+    :alt: Zenodo
+
 .. image:: https://img.shields.io/badge/arXiv-2304.03643-b31b1b
     :target: https://arxiv.org/abs/2304.03643
     :alt: arXiv
@@ -40,8 +44,9 @@ Attribution
 
 |br| To acknowledge the use of |Triumvirate| in your published research, please
 cite the companion journal article :cite:p:`Wang:2023` and related publications
-:cite:p:`Sugiyama:2018,Sugiyama:2019` with links above containing the
-relevant information in the BibTeX format.
+:cite:p:`Sugiyama:2018,Sugiyama:2019` linked above; for convenience, you can
+refer to the files |CitationCFF|_ and |CitationMD|_ for the relevant
+information in different formats.
 
 
 Acknowledgement
@@ -113,6 +118,12 @@ Licence
 
 .. |hitomi| replace:: ``hitomi``
 .. _hitomi: https://github.com/naonori/hitomi
+
+.. |CitationCFF| replace:: ``CITATION.cff``
+.. _CitationCFF: https://github.com/MikeSWang/Triumvirate/blob/main/CITATION.cff
+
+.. |CitationMD| replace:: ``CITATION.md``
+.. _CitationMD: https://github.com/MikeSWang/Triumvirate/blob/main/CITATION.md
 
 
 .. |br| raw:: html

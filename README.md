@@ -102,13 +102,15 @@ or ``useomp=1`` to the end of the second line as shown above.
 ## Attribution
 
 [![JOSS](https://joss.theoj.org/papers/10.21105/joss.05571/status.svg)](https://doi.org/10.21105/joss.05571)
+[![Zenodo](https://img.shields.io/badge/zenodo-10.5281%2Fzenodo.10072128-1682D4)](https://doi.org/10.5281/zenodo.10072128)
 [![arXiv](https://img.shields.io/badge/arXiv-2304.03643-b31b1b)](https://arxiv.org/abs/2304.03643)
 [![MNRAS](https://img.shields.io/badge/10.1093%2Fmnras%2Fsty3249-grey?logo=doi)](https://doi.org/10.1093/mnras/sty3249)
 [![MNRAS](https://img.shields.io/badge/10.1093%2Fmnras%2Fstx2333-grey?logo=doi)](https://doi.org/10.1093/mnras/stx2333)
 
 To acknowledge the use of ``Triumvirate`` in your published research, please
-cite the publications linked above which contain the relevant information
-in the BibTeX format.
+cite the publications linked above; for convenience, you can refer to the
+files [CITATION.cff](CITATION.cff) and [CITATION.md](CITATION.md)
+for the relevant information in different formats.
 
 
 ## Acknowledgement

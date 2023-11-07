@@ -17,6 +17,8 @@ prune publication
 exclude .gitattributes
 exclude .gitignore
 exclude .readthedocs.yml
+exclude CITATION.md
 exclude CONTRIBUTING.md
 exclude NOTES.md
 include Makefile
+include CITATION.cff

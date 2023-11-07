@@ -9,6 +9,10 @@ authors:
   orcid: https://orcid.org/0000-0003-0467-5438
 - family-names: "Sugiyama"
   given-names: "Naonori S."
+contact:
+- family-names: "Wang"
+  given-names: "Mike Shengbo"
+  orcid: "https://orcid.org/0000-0002-2652-4043"
 title: "Triumvirate"
 version: 0.3.0
 date-released: 2023-10-04
@@ -37,14 +41,19 @@ preferred-citation:
   journal: "J. Open Source Softw."
   year: 2023
   volume: 8
-  number: 91
+  issue: 91
   start: 5571
   end: 5576
   doi: 10.21105/joss.05571
+  publisher:
+    name: Open Journals
+  issn: 2475-9066
+  date-published: 2023-11-07
+  url: https://joss.theoj.org/papers/10.21105/joss.05571
   identifiers:
     - type: other
       value: "arXiv:2304.03643"
-      description: "ArXiv eprint [astro-ph.IM]"
+      description: "arXiv eprint [astro-ph.IM]"
 references:
   - type: article
     authors:
@@ -87,4 +96,4 @@ references:
     identifiers:
       - type: other
         value: "arXiv:1704.02868"
-        description: "ArXiv eprint [astro-ph.CO]"
+        description: "arXiv eprint [astro-ph.CO]"
