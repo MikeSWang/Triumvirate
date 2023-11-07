@@ -109,7 +109,7 @@ or ``useomp=1`` to the end of the second line as shown above.
 
 To acknowledge the use of ``Triumvirate`` in your published research, please
 cite the publications linked above; for convenience, you can refer to the
-files [CITATION.cff](CITATION.cff) and [CITATION.md](CITATION.md)
+files [``CITATION.cff``](CITATION.cff) and [``CITATION.md``](CITATION.md)
 for the relevant information in different formats.
 
 
