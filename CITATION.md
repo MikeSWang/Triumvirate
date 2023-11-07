@@ -10,9 +10,9 @@ Please cite the following JOSS article (in BibTeX),
     pages = {5571},
     doi = {10.21105/joss.05571},
     eid = {arXiv:2304.03643},
-    archivePrefix={arXiv},
+    archivePrefix = {arXiv},
     eprint = {2304.03643},
-    primaryClass={astro-ph.IM},
+    primaryClass = {astro-ph.IM},
 }
 ```
 and the following Zenodo archive (in BibTeX),
@@ -41,9 +41,9 @@ In addition, please consider citing the following MNRAS articles (in BibTeX):
     pages = {364--384},
     doi = {10.1093/mnras/sty3249},
     eid = {arXiv:1803.02132},
-    archivePrefix={arXiv},
+    archivePrefix = {arXiv},
     eprint = {1803.02132},
-    primaryClass={astro-ph.CO},
+    primaryClass = {astro-ph.CO},
 }
 
 @article{Sugiyama:2018,
@@ -56,8 +56,8 @@ In addition, please consider citing the following MNRAS articles (in BibTeX):
     pages = {2737--2752},
     doi = {10.1093/mnras/stx2333},
     eid = {arXiv:1704.02868},
-    archivePrefix={arXiv},
+    archivePrefix = {arXiv},
     eprint = {1704.02868},
-    primaryClass={astro-ph.CO},
+    primaryClass = {astro-ph.CO},
 }
 ```

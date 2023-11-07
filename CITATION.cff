@@ -76,7 +76,7 @@ references:
     identifiers:
       - type: other
         value: "arXiv:1803.02132"
-        description: "ArXiv eprint [astro-ph.CO]"
+        description: "arXiv eprint [astro-ph.CO]"
   - type: article
     authors:
       - family-names: "Sugiyama"
