@@ -6,8 +6,8 @@
 
 🔧 Codespace container:
 
-    This codespace launches into a Conda base environment managed by
-    Miniconda. It also contains the Conda environment 'trv-dev' set up by
+    This codespace launches into a development environment managed by
+    Miniconda. It contains the Conda environment 'trv-dev' set up by
     `micromamba` with all build, runtime and test dependencies installed
     from the 'conda-forge' channel. The VS Code editor is pre-configured
     with extensions for C++/Python/Cython development and documentation.
