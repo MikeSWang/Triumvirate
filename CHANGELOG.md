@@ -33,6 +33,10 @@ Update syntax and fix typos.
 - Add version context to documentation.
 - Add and update details to/in various documentation components.
 
+### Miscellaneous
+
+Relicense under/clarify GPL-3.0-or-later in lieu of GPL-3.0 where applicable.
+
 
 ## v0.3.0 (2023-10-04)
 
