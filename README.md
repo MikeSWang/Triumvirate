@@ -77,23 +77,27 @@ static library or binary executable only, ``cppinstall`` builds both,
 all of the above. To enable OpenMP parallelisation, append ``useomp=true``
 or ``useomp=1`` to the end of the second line as shown above.
 
-> :bulb: The latest release is on the [``main``](
+> [!NOTE]
+> The latest release is on the [``main``](
 > https://github.com/MikeSWang/Triumvirate/tree/main) branch. The default
 > [``Makefile``](Makefile) (located at the repository directory root) should
 > work in most build environments, but may need to be modified as appropriate.
 
-> :bulb: See the [Installation](
+> [!NOTE]
+> See the [Installation](
 > https://triumvirate.readthedocs.io/en/latest/installation.html#dependencies)
 > page in the documentation for more details about dependency requirements.
 
-> :warning: If enabling OpenMP, ensure the C++ compiler used supports it and is
+> [!IMPORTANT]
+> If enabling OpenMP, ensure the C++ compiler used supports it and is
 > configured accordingly. The default [``Makefile``](Makefile) (located at the
 > repository directory root) assumes the GCC compiler and OpenMP library. See
 > the [Installation](
 > https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
 > page in the documentation for more details.
 
-> :bulb: Pass option ``-j[N] -O`` to `make` to run multiple concurrent jobs
+> [!NOTE]
+> Pass option ``-j[N] -O`` to `make` to run multiple concurrent jobs
 > for parallel building (optional parameter ``N`` is the number of
 > parallel jobs; see [GNU Make Manual](
 > https://www.gnu.org/software/make/manual/html_node/Options-Summary.html)).
