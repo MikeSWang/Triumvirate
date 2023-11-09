@@ -25,7 +25,7 @@ identifiers:
     type: doi
     value: 10.5281/zenodo.10072129
 repository-code: https://github.com/MikeSWang/Triumvirate
-url: https://triumvirate.rtfd.io
+url: https://triumvirate.readthedocs.io
 preferred-citation:
   type: article
   authors:

@@ -32,10 +32,10 @@ https://triumvirate.readthedocs.io/en/latest/).
 ### Python package
 
 [![PyPI](https://img.shields.io/pypi/v/Triumvirate?logo=PyPI&color=informational)](https://pypi.org/project/Triumvirate)
-[![conda](https://img.shields.io/conda/v/msw/triumvirate?logo=Anaconda&color=informational)](https://anaconda.org/msw/triumvirate)
+[![Conda](https://img.shields.io/conda/v/msw/triumvirate?logo=Anaconda&color=informational)](https://anaconda.org/msw/triumvirate)
 
 ``Triumvirate`` as a Python package is distributed through [PyPI](
-https://pypi.org/project/Triumvirate) and [conda](
+https://pypi.org/project/Triumvirate) and [Conda](
 https://anaconda.org/msw/triumvirate). Instructions for installation
 can be found on the [Installation](
 https://triumvirate.readthedocs.io/en/latest/installation.html#python-package)
