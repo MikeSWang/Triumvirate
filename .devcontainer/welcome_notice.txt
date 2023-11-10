@@ -1,0 +1,24 @@
+👋 Welcome to Triumvirate-Dev Container in GitHub Codespaces!
+
+🚦 Contribution guidelines:
+
+    https://github.com/MikeSWang/Triumvirate/blob/main/CONTRIBUTING.md
+
+🔧 Development environment:
+
+    This codespace container is managed by Miniconda. It contains the
+    Conda environment 'trv-dev' set up by `micromamba` with all build,
+    runtime and test dependencies installed from the 'conda-forge'
+    channel. The VS Code editor is pre-configured with extensions for
+    C++/Python/Cython development and documentation.
+
+To start your development, activate the pre-configured environment:
+
+    $ micromamba activate trv-dev
+
+To build the project, execute:
+
+    $ make clean && make -j -O install useomp=true
+
+This will produce the binary executable at build/bin/triumvirate and
+install an editable version of the Python package.
