@@ -15,7 +15,8 @@
     },
     "onCreateCommand": "bash .devcontainer/onCreate.sh",
     "postCreateCommand": "bash .devcontainer/postCreate.sh",
-    "waitFor": "postCreateCommand",
+    "postStartCommand": "bash .devcontainer/postStart.sh",
+    "waitFor": "postStartCommand",
     "customizations": {
         "vscode": {
             "extensions": [
