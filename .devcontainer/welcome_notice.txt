@@ -22,3 +22,7 @@ To build the project, execute:
 
 This will produce the binary executable at build/bin/triumvirate and
 install an editable version of the Python package.
+
+To see this message again, enter:
+
+    $ welcome-notice
