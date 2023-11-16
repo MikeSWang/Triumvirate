@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Wiki
+    url: https://github.com/MikeSWang/Triumvirate/wiki
+    about: Have you checked unofficial documentation and 'wisdoms' in the wiki?
+  - name: Discussions
+    url: https://github.com/MikeSWang/Triumvirate/discussions
+    about: Have you thought about posting your question in the forum?
