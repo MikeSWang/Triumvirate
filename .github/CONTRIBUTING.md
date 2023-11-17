@@ -19,6 +19,10 @@ show a minimum (non-)working example as well as expected behaviour.
 If the issue relates to build/installation, please also include the
 information about your build environment.
 
+> [!NOTE]
+> If you are reporting a security issue, please refer to the
+> [security policy](SECURITY.md) instead.
+
 
 ## <a name="contribution"></a> Contributing
 
