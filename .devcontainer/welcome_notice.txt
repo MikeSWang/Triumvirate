@@ -2,7 +2,7 @@
 
 🚦 Contribution guidelines:
 
-    https://github.com/MikeSWang/Triumvirate/blob/main/CONTRIBUTING.md
+    https://github.com/MikeSWang/Triumvirate/blob/main/.github/CONTRIBUTING.md
 
 🔧 Development environment:
 

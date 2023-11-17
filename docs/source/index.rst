@@ -77,7 +77,7 @@ Contributing
 
 User feedback and contributions are very welcome. Please refer to the
 `contribution guidelines
-<https://github.com/MikeSWang/Triumvirate/blob/main/CONTRIBUTING.md>`_.
+<https://github.com/MikeSWang/Triumvirate/blob/main/.github/CONTRIBUTING.md>`_.
 
 
 Discussions & Wiki

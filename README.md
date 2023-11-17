@@ -150,7 +150,7 @@ which have improved the functionality and documentation of the code.
 [![Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/MikeSWang/Triumvirate?hide_repo_select=true&ref=main)
 
 User feedback and contributions are very welcome. Please refer to the
-[contribution guidelines](CONTRIBUTING.md).
+[contribution guidelines](.github/CONTRIBUTING.md).
 
 
 ## Discussions & Wiki

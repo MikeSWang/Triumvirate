@@ -34,6 +34,6 @@ Please describe the implementation details related to the issue(s).
 
 ## Checklist
 
-- [ ] Read the [contribution guidelines](../CONTRIBUTING.md).
+- [ ] Read the [contribution guidelines](CONTRIBUTING.md).
 - [ ] Write unit tests.
 - [ ] Write doc-strings and comments.

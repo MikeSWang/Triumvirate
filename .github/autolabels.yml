@@ -20,7 +20,6 @@ documentation:
 maintenance:
 - .github/**/*.md
 - CHANGELOG.md
-- CONTRIBUTING.md
 - NOTES.md
 
 workflows:
