@@ -1,0 +1,26 @@
+title: "[IDEAS] <insert-title>"
+# labels: ["feature", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        This discussion category is for sharing ideas for e.g. a new _feature_
+        and _enhancement_. If they are mature enough, they may be moved to the
+        [issue tracker](https://github.com/MikeSWang/Triumvirate/issues).
+  - type: dropdown
+    id: checklist
+    attributes:
+      label: >
+        Have you checked this discussion does not belong in another category?
+      options:
+        - Q&A
+        - Maintenance
+        - General
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      placeholder: |
+        Give a detailed description of your idea.

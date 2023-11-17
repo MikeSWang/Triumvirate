@@ -1,0 +1,24 @@
+title: "[GENERAL] <insert-title>"
+body:
+  - type: markdown
+    attributes:
+      value: >
+        This discussion category is for general discussions that do not fit
+        into any other category.
+  - type: dropdown
+    id: checklist
+    attributes:
+      label: >
+        Have you checked this discussion does not belong in another category?
+      options:
+        - Q&A
+        - Ideas
+        - Maintenance
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      placeholder: |
+        Add details and context here.

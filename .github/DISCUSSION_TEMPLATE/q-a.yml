@@ -1,0 +1,24 @@
+title: "[Q&A] <insert-title>"
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        This discussion category is for asking questions.
+  - type: dropdown
+    id: checklist
+    attributes:
+      label: >
+        Have you checked this discussion does not belong in another category?
+      options:
+        - Maintenance
+        - Ideas
+        - General
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      placeholder: |
+        Give a detailed description of your question.

@@ -1,0 +1,27 @@
+title: "[MAINT] <insert-title>"
+# labels: ["maintenance"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        This discussion category is for _maintenance_ requests including
+        _documentation_ clarification. For _bug_ reports and _build_ issues,
+        please use the
+        [issue tracker](https://github.com/MikeSWang/Triumvirate/issues).
+  - type: dropdown
+    id: checklist
+    attributes:
+      label: >
+        Have you checked this discussion does not belong in another category?
+      options:
+        - Q&A
+        - Ideas
+        - General
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      placeholder: |
+        Give a detailed description of your request.
