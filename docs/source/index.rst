@@ -67,8 +67,9 @@ Naonori S Sugiyama, and are available in the GitHub repository |hitomi|_.
 We thank the JOSS reviewers, William Coulton
 (`@wcoulton <https://github.com/wcoulton>`_) and Alfonso Veropalumbo
 (`@alfonso-veropalumbo <https://github.com/alfonso-veropalumbo>`_), for
-their valuable feedback and suggestions, which have improved the
-functionality and documentation of the code.
+their valuable feedback and suggestions (`openjournals/joss-reviews#5571
+<https://github.com/openjournals/joss-reviews/issues/5571>`_),
+which have improved the functionality and documentation of the code.
 
 
 Contributing
@@ -108,7 +109,7 @@ Licence
     :alt: GPL-3.0 Licence
 
 |br| |Triumvirate| is made freely available under the `GPL-3.0 licence
-<https://www.gnu.org/licenses/gpl-3.0.en.html>`_.
+<https://www.gnu.org/licenses/gpl-3.0.en.html>`_ (or any later version).
 
 
 .. |Triumvirate| raw:: html

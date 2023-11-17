@@ -184,12 +184,16 @@ Naonori S Sugiyama, and are available in the GitHub repository |hitomi|_.
 We thank the JOSS reviewers, William Coulton
 (`@wcoulton <https://github.com/wcoulton>`_) and Alfonso Veropalumbo
 (`@alfonso-veropalumbo <https://github.com/alfonso-veropalumbo>`_), for
-their valuable feedback and suggestions, which have improved the
-functionality and documentation of the code.
+their valuable feedback and suggestions (`openjournals/joss-reviews#5571
+<https://github.com/openjournals/joss-reviews/issues/5571>`_),
+which have improved the functionality and documentation of the code.
 
 
 Contributing
 ============
+
+.. image:: https://img.shields.io/conda/pn/msw/triumvirate
+    :alt: Platforms
 
 .. image:: https://github.com/codespaces/badge.svg
     :target: https://codespaces.new/MikeSWang/Triumvirate?hide_repo_select=true&ref=main
@@ -230,8 +234,9 @@ Licence
     :alt: GPL-3.0 Licence
 
 |Triumvirate| is made freely available under the `GPL-3.0 licence
-<https://www.gnu.org/licenses/gpl-3.0.en.html>`_. Please see |Licence|_
-(located at the repository directory root) for full terms and conditions.
+<https://www.gnu.org/licenses/gpl-3.0.en.html>`_ (or any later version).
+Please see |Licence|_ (located at the repository directory root) for full
+terms and conditions.
 
 |Copyright| 2023 Mike S Wang & Naonori S Sugiyama
 

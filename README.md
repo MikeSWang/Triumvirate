@@ -132,14 +132,13 @@ https://github.com/naonori/hitomi).
 We thank the JOSS reviewers, William Coulton
 ([@wcoulton](https://github.com/wcoulton)) and Alfonso Veropalumbo
 ([@alfonso-veropalumbo](https://github.com/alfonso-veropalumbo)), for
-their valuable feedback and suggestions, which have improved the
-functionality and documentation of the code.
+their valuable feedback and suggestions (openjournals/joss-reviews#5571),
+which have improved the functionality and documentation of the code.
 
 
 ## Contributing/Development
 
 ![Platforms](https://img.shields.io/conda/pn/msw/triumvirate)
-
 [![ReleaseDate](https://img.shields.io/github/release-date-pre/MikeSWang/Triumvirate)](https://github.com/MikeSWang/Triumvirate/releases/latest)
 ![CommitsSince](https://img.shields.io/github/commits-since/MikeSWang/Triumvirate/latest/main)
 
@@ -176,8 +175,8 @@ Release notes are included in the [change log](CHANGELOG.md).
 [![Licence](https://img.shields.io/github/license/MikeSWang/Triumvirate?label=licence&style=flat-square&color=informational)](https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE)
 
 ``Triumvirate`` is made freely available under the [GPL-3.0 licence](
-https://www.gnu.org/licenses/gpl-3.0.en.html). Please see
-[``LICENCE``](LICENCE) (located at the repository directory root) for
-full terms and conditions.
+https://www.gnu.org/licenses/gpl-3.0.en.html) (or any later version).
+Please see [``LICENCE``](LICENCE) (located at the repository directory root)
+for full terms and conditions.
 
 &copy; 2023 Mike S Wang & Naonori S Sugiyama
