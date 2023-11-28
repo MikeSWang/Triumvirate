@@ -177,7 +177,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up (Mini)conda
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: conda_bld
           channels: conda-forge
