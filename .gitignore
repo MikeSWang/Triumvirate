@@ -86,6 +86,9 @@ publication/supplements/**/*.npy
 !**/build/.gitignore
 !**/test_build/.gitignore
 
+## Directories: examples/**/storage (demo data)
+!examples/**/storage
+
 ## Files: docs/source/*.rst (non-generated documentation)
 !docs/source/*.rst
 
