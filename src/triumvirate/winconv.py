@@ -410,7 +410,8 @@ class ThreePointWindow:
         self.Q = Q_in
 
     @classmethod
-    def load_from_file(cls, filepaths, usecols=(1, 4, 6, 8), make_loglin=True):
+    def load_from_file(cls, filepaths, subtract_shotnoise=True,
+                       usecols=(1, 4, 6, 8), make_loglin=True):
         """Load window function from a plain-text file as saved by
         :func:`~triumvirate.threept.compute_3pcf_window` with
         ``form='full'``.
@@ -419,11 +420,17 @@ class ThreePointWindow:
         ----------
         filepaths : dict of {str: str}
             Window function file paths (values) for each multipole (key).
+        subtract_shotnoise : bool, optional
+            Whether to subtract the shot-noise contribution from the
+            window function (default is `True`).
         usecols : tuple of int, optional
             Zero-indexed columns to read from the file (default is
-            ``(1, 4, 6, 8)``).  Must be of length 4 and correspond to the
-            effective separation sample points (two columns), and the raw
-            window function and shot-noise (two columns).
+            ``(1, 4, 6, 8)``).   If `subtract_shotnoise` is `True`,
+            must be of length 4 and correspond to the effective separation
+            sample points (two columns), and the raw window function and
+            shot-noise (two columns); otherwise, must be of length 3 and
+            correspond to the effective separation sample points (two
+            columns) and the raw window function (one column).
         make_loglin : bool, optional
             Whether to resample the window function multipole samples
             logarithmically if they are not already (default is `True`).
@@ -433,10 +440,26 @@ class ThreePointWindow:
 
         flat_multipoles = {}
         for multipole, filepath in filepaths.items():
-            r1_eff, r2_eff, Qflat_raw, Qflat_shot = np.loadtxt(
-                filepath, unpack=True, usecols=usecols
-            )
-            flat_multipoles[multipole] = Qflat_raw - Qflat_shot
+            if subtract_shotnoise:
+                if len(usecols) != 4:
+                    raise ValueError(
+                        "Must provide four columns to read from the file "
+                        "when subtracting shot-noise."
+                    )
+                r1_eff, r2_eff, Qflat_raw, Qflat_shot = np.loadtxt(
+                    filepath, unpack=True, usecols=usecols
+                )
+                flat_multipoles[multipole] = Qflat_raw - Qflat_shot
+            else:
+                if len(usecols) != 3:
+                    raise ValueError(
+                        "Must provide three columns to read from the file "
+                        "when not subtracting shot-noise."
+                    )
+                r1_eff, r2_eff, Qflat_raw = np.loadtxt(
+                    filepath, unpack=True, usecols=usecols
+                )
+                flat_multipoles[multipole] = Qflat_raw
 
         paired_sampts = np.column_stack((r1_eff, r2_eff))
 
