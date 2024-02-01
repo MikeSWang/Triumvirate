@@ -319,6 +319,130 @@ class WinConvFormulae:
         return ' '.join(terms_str)
 
 
+class ThreePointWindow:
+    """Three-point window function.
+
+    By construction, the window function is discretely sampled as a
+    symmetric matrix where the upper triangular part is stored as a
+    flattened array in row-major order, where each value corresponds
+    to a pair of separation sample points.
+
+    Parameters
+    ----------
+    paired_sampts : 2-d array of float
+        Paired separation window function sample points.
+    flat_multipoles : dict of {str: 1-d array of float}
+        Flattened window function multipole samples (each key is
+        a multipole).
+    make_loglin : bool, optional
+        Whether to resample the window function multipole samples
+        logarithmically if they are not already (default is `True`).
+
+    Attributes
+    ----------
+    r : 1-d array of float
+        window function separation sample points.
+    Q : dict of {str: 2-d array of float}
+        Window function Multipole samples (each key is a multipole).
+
+    Raises
+    ------
+    ValueError
+        If `paired_sampts` is not a 2-d array.
+    ValueError
+        If `paired_sampts` and `flat_multipoles` have different lengths.
+    ValueError
+        If `paired_sampts` and `flat_multipoles` do not correspond to an
+        upper triangular matrix.
+
+    """
+
+    def __init__(self, paired_sampts, flat_multipoles, make_loglin=True):
+
+        # Check dimensions and reshape.
+        if paired_sampts.ndim != 2:
+            raise ValueError(
+                "Paired separation sample points must be a 2-d array."
+            )
+        for flat_multipole_ in flat_multipoles.values():
+            if len(paired_sampts) != len(flat_multipole_):
+                raise ValueError(
+                    "Paired separation sample points and flattened multipole "
+                    "samples must have the same length."
+                )
+
+        nbins = (np.sqrt(8*len(paired_sampts) + 1) - 1) / 2.
+        if not np.isclose(nbins, int(nbins)):
+            raise ValueError(
+                "Paired separation sample points do not correspond to "
+                "an upper triangular matrix."
+            )
+        nbins = int(nbins)
+
+        triu_indices = np.triu_indices(nbins)
+
+        rQ_in = paired_sampts[:nbins, 1]
+
+        Q_in = {}
+        for degrees, Q_flat in flat_multipoles.items():
+            Q_mat = np.zeros((nbins, nbins))
+            Q_mat[triu_indices] = Q_flat
+            Q_mat.T[triu_indices] = Q_flat
+            Q_in[degrees] = Q_mat
+
+        # Check window function separation sample points.
+        try:
+            _check_1d_array(rQ_in, check_loglin=True)
+        except SpacingError:
+            if make_loglin:
+                _rQ, _Q = None, {}
+                for degrees, Q_in_ in Q_in.items():
+                    _rQ, _Q[degrees] = resample_lglin(rQ_in, Q_in_)
+                rQ_in, Q_in = _rQ[0], _Q
+            else:
+                warnings.warn(
+                    "Window function separation sample points are not "
+                    "logarithmically spaced.",
+                    RuntimeWarning
+                )
+
+        self.r = rQ_in
+        self.Q = Q_in
+
+    @classmethod
+    def load_from_file(cls, filepaths, usecols=(1, 4, 6, 8), make_loglin=True):
+        """Load window function from a plain-text file as saved by
+        :func:`~triumvirate.threept.compute_3pcf_window` with
+        ``form='full'``.
+
+        Parameters
+        ----------
+        filepaths : dict of {str: str}
+            Window function file paths (values) for each multipole (key).
+        usecols : tuple of int, optional
+            Zero-indexed columns to read from the file (default is
+            ``(1, 4, 6, 8)``).  Must be of length 4 and correspond to the
+            effective separation sample points (two columns), and the raw
+            window function and shot-noise (two columns).
+        make_loglin : bool, optional
+            Whether to resample the window function multipole samples
+            logarithmically if they are not already (default is `True`).
+
+        """
+        r1_eff, r2_eff = None, None
+
+        flat_multipoles = {}
+        for multipole, filepath in filepaths.items():
+            r1_eff, r2_eff, Qflat_raw, Qflat_shot = np.loadtxt(
+                filepath, unpack=True, usecols=usecols
+            )
+            flat_multipoles[multipole] = Qflat_raw - Qflat_shot
+
+        paired_sampts = np.column_stack((r1_eff, r2_eff))
+
+        return cls(paired_sampts, flat_multipoles, make_loglin=make_loglin)
+
+
 class TwoPointWinConvBase:
     """Generic window convolution of two-point statistics.
 
@@ -552,7 +676,7 @@ class PowspecWinConv(TwoPointWinConvBase):
             self.r_common = r_common
 
         try:
-            _check_1d_array(k_in, check_log=True)
+            _check_1d_array(k_in, check_loglin=True)
         except SpacingError:
             raise SpacingError(
                 "Input power spectrum wavenumber sample points are not "
@@ -617,13 +741,12 @@ class PowspecWinConv(TwoPointWinConvBase):
                 self._bsjt[multipole_Z].transform(Ppole_in)
 
         # Resample at common separation sample points.
-        if not np.allclose(r_in, self.r_common):
-            xi_in = {
-                multipole_Z: InterpolatedUnivariateSpline(
-                    r_in, Zpole_in
-                )(self.r_common)
-                for multipole_Z, Zpole_in in xi_in.items()
-            }
+        xi_in = {
+            multipole_Z: InterpolatedUnivariateSpline(
+                r_in, Zpole_in
+            )(self.r_common)
+            for multipole_Z, Zpole_in in xi_in.items()
+        }
 
         # Convolve 2PCF multipoles.
         xi_conv = {}
@@ -640,13 +763,12 @@ class PowspecWinConv(TwoPointWinConvBase):
                 self._fsjt[multipole].transform(Zpole_conv)
 
         # Resample at output wavenumber sample points.
-        if not np.allclose(k_conv, self.k_out):
-            pk_conv_out = {
-                multipole: InterpolatedUnivariateSpline(
-                    k_conv, Ppole_conv_out
-                )(self.k_out)
-                for multipole, Ppole_conv_out in pk_conv_out.items()
-            }
+        pk_conv_out = {
+            multipole: InterpolatedUnivariateSpline(
+                k_conv, Ppole_conv_out
+            )(self.k_out)
+            for multipole, Ppole_conv_out in pk_conv_out.items()
+        }
 
         return pk_conv_out
 
@@ -943,7 +1065,7 @@ class BispecWinConv(ThreePointWinConvBase):
             self.r_common = r_common
 
         try:
-            _check_1d_array(k_in, check_log=True)
+            _check_1d_array(k_in, check_loglin=True)
         except SpacingError:
             raise SpacingError(
                 "Input bispectrum wavenumber sample points are not "
@@ -977,7 +1099,7 @@ class BispecWinConv(ThreePointWinConvBase):
         }  # backward double sj-transform for unwindowed bispectrum multipoles
         self._fdsjt = {
             multipole: DoubleSphericalBesselTransform(
-                degrees=(multipole[0], multipole[1]),
+                degrees=(int(multipole[0]), int(multipole[1])),
                 biases=(0, 0),
                 sample_pts=self.r_common,
                 **self._transform_kwargs
@@ -1008,13 +1130,12 @@ class BispecWinConv(ThreePointWinConvBase):
                 self._bdsjt[multipole_Z].transform(Bpole_in)
 
         # Resample at common separation sample points.
-        if not np.allclose(r_in, self.r_common):
-            zeta_in = {
-                multipole_Z: RectBivariateSpline(
-                    r_in, r_in, Zpole_in
-                )(self.r_common, self.r_common)
-                for multipole_Z, Zpole_in in zeta_in.items()
-            }
+        zeta_in = {
+            multipole_Z: RectBivariateSpline(
+                r_in[0][:, 0], r_in[-1][0, :], Zpole_in
+            )(self.r_common, self.r_common)
+            for multipole_Z, Zpole_in in zeta_in.items()
+        }
 
         # Convolve 3PCF multipoles.
         zeta_conv = {}
@@ -1031,12 +1152,11 @@ class BispecWinConv(ThreePointWinConvBase):
                 self._fdsjt[multipole].transform(Zpole_conv)
 
         # Resample at output wavenumber sample points.
-        if not np.allclose(k_conv, self.k_out):
-            bk_conv_out = {
-                multipole: RectBivariateSpline(
-                    k_conv, k_conv, Bpole_conv_out
-                )(self.k_out, self.k_out)
-                for multipole, Bpole_conv_out in bk_conv_out.items()
-            }
+        bk_conv_out = {
+            multipole: RectBivariateSpline(
+                k_conv[0][:, 0], k_conv[-1][0, :], Bpole_conv_out
+            )(self.k_out, self.k_out)
+            for multipole, Bpole_conv_out in bk_conv_out.items()
+        }
 
         return bk_conv_out
