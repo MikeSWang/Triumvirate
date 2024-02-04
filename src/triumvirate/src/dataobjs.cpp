@@ -242,9 +242,50 @@ void Binning::compute_binning() {
     }
     this->bin_edges.push_back(this->bin_max);
   } else {
-    throw trvs::InvalidParameterError(
-      "Invalid binning `scheme`: %s.", scheme.c_str()
-    );
+    if (this->space == "fourier") {
+      throw trvs::InvalidParameterError(
+        "Unknown/unimplemented binning `scheme`: %s.", scheme.c_str()
+      );
+    }
+
+    // Implement 'custom' binning scheme for 'config' space.
+    dbin_pad = 10.;
+    nbin_pad = 6;
+
+    this->bin_edges.push_back(0.);
+    this->bin_centres.push_back(0.5);
+    this->bin_widths.push_back(1.);
+
+    this->bin_edges.push_back(1.);
+    this->bin_centres.push_back(5.5);
+    this->bin_widths.push_back(9.);
+
+    for (int ibin = 1; ibin < nbin_pad; ibin++) {
+      double edge_left = dbin_pad * ibin;
+      double centre = edge_left + dbin_pad / 2.;
+
+      this->bin_edges.push_back(edge_left);
+      this->bin_centres.push_back(centre);
+      this->bin_widths.push_back(dbin_pad);
+    }
+
+    double bin_min = dbin_pad * nbin_pad;
+
+    double dlnbin = (std::log(this->bin_max) - std::log(bin_min))
+      / double(this->num_bins - nbin_pad);
+
+    for (int ibin = nbin_pad; ibin < this->num_bins; ibin++) {
+      double edge_left =
+        bin_min * std::exp(dlnbin * (ibin - nbin_pad));
+      double edge_right =
+        bin_min * std::exp(dlnbin * (ibin - nbin_pad + 1));
+      double centre = (edge_left + edge_right) / 2.;
+
+      this->bin_edges.push_back(edge_left);
+      this->bin_centres.push_back(centre);
+      this->bin_widths.push_back(edge_right - edge_left);
+    }
+    this->bin_edges.push_back(this->bin_max);
   }
 }
 
