@@ -26,6 +26,7 @@
  */
 
 #include <cstdio>
+#include <stdexcept>
 #include <string>
 
 #include "monitor.hpp"
@@ -35,6 +36,65 @@
 #include "io.hpp"
 #include "twopt.hpp"
 #include "threept.hpp"
+
+/**
+ * @brief Set 'custom' binning.
+ *
+ * @todo This method is intended as a temporary alternative to
+ *       trv::Binning::set_bins(std::vector) used for custom binning
+ *       schemes specified by the external parameter file.
+ *
+ * @param binning Binning.
+ */
+void _set_custom_bins(trv::Binning& _binning) {
+  // Clear any existing binning.
+  _binning.bin_edges.clear();
+  _binning.bin_centres.clear();
+  _binning.bin_widths.clear();
+
+  // Implement 'custom' binning scheme for 'fourier' space.
+  if (_binning.space == "fourier") {
+    throw std::domain_error("No custom binning specified in Fourier space.");
+  }
+
+  // Implement 'custom' binning scheme for 'config' space.
+  double dbin_pad = 15.;
+  int nbin_pad = 5;
+
+  _binning.bin_edges.push_back(0.);
+  _binning.bin_centres.push_back(0.5);
+  _binning.bin_widths.push_back(1.);
+
+  _binning.bin_edges.push_back(1.);
+  _binning.bin_centres.push_back(8.);
+  _binning.bin_widths.push_back(14.);
+
+  for (int ibin = 1; ibin < nbin_pad; ibin++) {
+    double edge_left = dbin_pad * ibin;
+    double centre = edge_left + dbin_pad / 2.;
+
+    _binning.bin_edges.push_back(edge_left);
+    _binning.bin_centres.push_back(centre);
+    _binning.bin_widths.push_back(dbin_pad);
+  }
+
+  double bin_min = dbin_pad * nbin_pad;
+
+  double dlnbin = (std::log(_binning.bin_max) - std::log(bin_min))
+    / double(_binning.num_bins - nbin_pad);
+
+  for (int ibin = nbin_pad; ibin < _binning.num_bins; ibin++) {
+    double edge_left = bin_min * std::exp(dlnbin * (ibin - nbin_pad));
+    double edge_right = bin_min * std::exp(dlnbin * (ibin - nbin_pad + 1));
+    double centre = (edge_left + edge_right) / 2.;
+
+    _binning.bin_edges.push_back(edge_left);
+    _binning.bin_centres.push_back(centre);
+    _binning.bin_widths.push_back(edge_right - edge_left);
+  }
+
+  _binning.bin_edges.push_back(_binning.bin_max);
+}
 
 /**
  * @brief A 'black-box' program for measuring two- and three-point
@@ -208,7 +268,11 @@ int main(int argc, char* argv[]) {
   }
 
   trv::Binning binning(params);  // binning
-  binning.set_bins();
+  if (params.binning == "custom") {
+    _set_custom_bins(binning);
+  } else {
+    binning.set_bins();
+  }
 
   if (trv::sys::currTask == 0) {
     trv::sys::logger.stat("[B.1] ... set up binning.");
