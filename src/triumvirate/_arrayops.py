@@ -59,7 +59,7 @@ class SpacingError(ValueError):
 # Extrapolation
 # ========================================================================
 
-def _check_1d_array(a, check_sorted=False, check_sign=False,
+def _check_1d_array(a, check_sorted=False, check_epsign=False,
                     check_lin=False, check_loglin=False):
     """Check the input array is a 1-d array, possibly satisfying
     additional conditions.
@@ -70,9 +70,10 @@ def _check_1d_array(a, check_sorted=False, check_sign=False,
         Input array.
     check_sorted : bool, optional
         If `True` (default is `False`), check the input array is sorted.
-    check_sign : bool, optional
-        If `True` (default is `False`), check for mixed-sign or zero
-        entries in the input array.
+    check_epsign : bool, optional
+        If `True` (default is `False`), check for mixed sign entries at
+        the endpoints in the input array, and for nonzero endpoints with
+        zero next-to-endpoint entries.
     check_lin : bool, optional
         If `True` (default is `False`), check the input array is
         linearly spaced.
@@ -98,22 +99,29 @@ def _check_1d_array(a, check_sorted=False, check_sign=False,
     if a.ndim != 1:
         raise ShapeError("Input array is not 1-d.")
 
-    def _check_sign(a):
-        same_sgn = np.all(a > 0. if a[0] > 0. else a < 0.)
-        if not same_sgn:
-            raise MixedSignError("Input array contains mixed-sign entries.")
+    def _check_epsign(a, strict=False):
+        if strict:
+            same_sign_l = a[0] * a[1] > 0.
+            same_sign_r = a[-1] * a[-2] > 0.
+        else:
+            same_sign_l = (a[0] * a[1] > 0.) or (a[0] == 0.)
+            same_sign_r = (a[-1] * a[-2] > 0.) or (a[-1] == 0.)
+        if not (same_sign_l and same_sign_r):
+            raise MixedSignError(
+                "Input array contains mixed-sign entries at the endpoints."
+            )
 
     if check_sorted:
         if (not np.all(a[:-1] <= a[1:])) or (not np.all(a[:-1] >= a[1:])):
             raise OrderError("Input array is not a sorted sequence.")
-    if check_sign:
-        _check_sign(a)
+    if check_epsign:
+        _check_epsign(a)
     if check_lin:
         spacing = np.mean(a[1:] - a[:-1])
         if not np.allclose(a[1:] - a[:-1], spacing):
             raise SpacingError("Input array is not linearly spaced.")
     if check_loglin:
-        _check_sign(a)
+        _check_epsign(a, strict=True)
         log_spacing = np.mean(np.log(a[1:] / a[:-1]))
         if not np.allclose(np.log(a[1:] / a[:-1]), log_spacing):
             raise SpacingError("Input array is not log-linearly spaced.")
@@ -121,7 +129,7 @@ def _check_1d_array(a, check_sorted=False, check_sign=False,
     return a
 
 
-def _check_2d_array(a, check_sorted=False, check_sign=False,
+def _check_2d_array(a, check_sorted=False, check_epsign=False,
                     check_lin=False, check_loglin=False):
     """Check the input array is a sorted 2-d array, possibly satisfying
     additional conditions.
@@ -132,9 +140,10 @@ def _check_2d_array(a, check_sorted=False, check_sign=False,
         Input array.
     check_sorted : bool, optional
         If `True` (default is `False`), check the input array is sorted.
-    check_sign : bool, optional
-        If `True` (default is `False`), check for mixed-sign or zero
-        entries in the input array.
+    check_epsign : bool, optional
+        If `True` (default is `False`), check for mixed sign entries at
+        the endpoints in the input array, and for nonzero endpoints with
+        zero next-to-endpoint entries.
     check_lin : bool, optional
         If `True` (default is `False`), check the input array is
         linearly spaced.
@@ -160,10 +169,30 @@ def _check_2d_array(a, check_sorted=False, check_sign=False,
     if a.ndim != 2:
         raise ShapeError("Input array is not 2-d.")
 
-    def _check_sign(a):
-        same_sgn = np.all(a > 0. if a[0, 0] > 0. else a < 0.)
-        if not same_sgn:
-            raise MixedSignError("Input array contains mixed-sign entries.")
+    def _check_epsign(a, strict=False):
+        if strict:
+            same_sign_l = np.all(a[:, 0] * a[:, 1] > 0.)
+            same_sign_r = np.all(a[:, -1] * a[:, -2] > 0.)
+            same_sign_u = np.all(a[0, :] * a[1, :] > 0.)
+            same_sign_d = np.all(a[-1, :] * a[-2, :] > 0.)
+        else:
+            same_sign_l = np.all(np.logical_or(
+                a[:, 0] * a[:, 1] > 0., a[:, 0] == 0.
+            ))
+            same_sign_r = np.all(np.logical_or(
+                a[:, -1] * a[:, -2] > 0., a[:, -1] == 0.
+            ))
+            same_sign_u = np.all(np.logical_or(
+                a[0, :] * a[1, :] > 0., a[0, :] == 0.
+            ))
+            same_sign_d = np.all(np.logical_or(
+                a[-1, :] * a[-2, :] > 0., a[-1, :] == 0.
+            ))
+
+        if not (same_sign_l and same_sign_r and same_sign_u and same_sign_d):
+            raise MixedSignError(
+                "Input array contains mixed-sign entries at the endpoints."
+            )
 
     if check_sorted:
         for a_, direction in zip([a, a.transpose()], ['row', 'column']):
@@ -182,8 +211,8 @@ def _check_2d_array(a, check_sorted=False, check_sign=False,
                     "Input array is not a sorted sequence "
                     f"along the {direction}s."
                 )
-    if check_sign:
-        _check_sign(a)
+    if check_epsign:
+        _check_epsign(a)
     if check_lin:
         for a_, direction in zip([a, a.transpose()], ['row', 'column']):
             spacing = np.mean(a_[:, 1:] - a_[:, :-1], axis=1)
@@ -193,7 +222,7 @@ def _check_2d_array(a, check_sorted=False, check_sign=False,
                     f"along the {direction}s."
                 )
     if check_loglin:
-        _check_sign(a)
+        _check_epsign(a, strict=True)
         for a_, direction in zip([a, a.transpose()], ['row', 'column']):
             log_spacing = np.mean(np.log(a_[:, 1:] / a_[:, :-1]), axis=1)
             if not np.allclose(
@@ -254,10 +283,10 @@ def extrap_loglin(a, n_ext):
         Extrapolated 1-d array.
 
     """
-    a = _check_1d_array(a, check_sign=True)
+    a = _check_1d_array(a, check_epsign=True)
 
-    a_l = a[0] * (a[1] / a[0]) ** np.arange(-n_ext, 0)
-    a_r = a[-1] * (a[-1] / a[-2]) ** np.arange(1, n_ext + 1)
+    a_l = a[0] * (a[0] / a[1]) ** np.arange(n_ext, 0, -1)
+    a_r = a[-1] * (a[-1] / a[-2]) ** np.arange(1, n_ext + 1, 1)
     a_out = np.concatenate([a_l, a, a_r])
 
     return a_out
@@ -332,8 +361,8 @@ def _extrap2d_row_loglin(a, ncol_ext):
         Extrapolated 2-d array.
 
     """
-    a_l = a[:, [0]] * (a[:, [1]] / a[:, [0]]) ** np.arange(-ncol_ext, 0)
-    a_r = a[:, [-1]] * (a[:, [-1]] / a[:, [-2]]) ** np.arange(1, ncol_ext + 1)
+    a_l = a[:, [0]] * (a[:, [0]]/a[:, [1]]) ** np.arange(ncol_ext, 0, -1)
+    a_r = a[:, [-1]] * (a[:, [-1]]/a[:, [-2]]) ** np.arange(1, ncol_ext + 1, 1)
 
     a_out = np.c_[a_l, a, a_r]
 
@@ -384,7 +413,7 @@ def extrap2d_loglin(a, n_ext):
         Extrapolated 2-d array.
 
     """
-    a = _check_2d_array(a, check_sign=True)
+    a = _check_2d_array(a, check_epsign=True)
 
     nrow_ext, ncol_ext = \
         n_ext if isinstance(n_ext, Sequence) else (n_ext, n_ext)

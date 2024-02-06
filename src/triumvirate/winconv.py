@@ -25,7 +25,7 @@ from fractions import Fraction
 import numpy as np
 from scipy.interpolate import InterpolatedUnivariateSpline, RectBivariateSpline
 
-from triumvirate._arrayops import SpacingError, _check_1d_array
+from triumvirate._arrayops import MixedSignError, SpacingError, _check_1d_array
 from triumvirate.transforms import (
     DoubleSphericalBesselTransform,
     SphericalBesselTransform,
@@ -393,7 +393,7 @@ class ThreePointWindow:
         # Check window function separation sample points.
         try:
             _check_1d_array(rQ_in, check_loglin=True)
-        except SpacingError:
+        except (MixedSignError, SpacingError,):
             if make_loglin:
                 _rQ, _Q = None, {}
                 for degrees, Q_in_ in Q_in.items():
