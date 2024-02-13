@@ -3,25 +3,33 @@
 # See configuration in ``.github/workflows/labeller.yml``.
 #
 build:
-- setup.py
-- setup.cfg
-- pyproject.toml
-- Makefile
-- MANIFEST.in
-- .github/workflows/ci*.yml
-- .github/workflows/cd*.yml
+- changed-files:
+  - any-glob-to-any-files:
+    - setup.py
+    - setup.cfg
+    - pyproject.toml
+    - Makefile
+    - MANIFEST.in
+    - .github/workflows/ci*.yml
+    - .github/workflows/cd*.yml
 
 documentation:
-- docs/**/*
-- deploy/doc/**/*
-- README.*
-- .readthedocs.yml
+- changed-files:
+  - any-glob-to-any-files:
+    - docs/**/*
+    - deploy/doc/**/*
+    - README.*
+    - .readthedocs.yml
 
 maintenance:
-- .github/**/*.md
-- CHANGELOG.md
-- NOTES.md
+- changed-files:
+  - any-glob-to-any-files:
+    - .github/**/*.md
+    - CHANGELOG.md
+    - NOTES.md
 
 workflows:
-- .github/**/*.yml
-- deploy/**/*
+- changed-files:
+  - any-glob-to-any-files:
+    - .github/**/*.yml
+    - deploy/**/*
