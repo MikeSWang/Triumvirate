@@ -334,11 +334,11 @@ class ThreePointWindow:
     flat_multipoles : dict of {str: 1-d array of float}
         Flattened window function multipole samples (each key is
         a multipole).
-    alpha_norm : float, optional
-        Alpha factor for normalising the window function (default is 1.)
-        owing to high number density in the random catalogue, e.g.
-        0.1 for a random catalogue with 10 times the number density
-        of the data catalogue.
+    alpha_contrast : float, optional
+        Alpha contrast factor (default is 1.) for normalising the higher
+        number density of the random catalogue, e.g. 0.1 for a
+        random catalogue with 10 times the number density of the
+        data catalogue.
     make_loglin : bool, optional
         Whether to resample the window function multipole samples
         logarithmically if they are not already (default is `True`).
@@ -362,7 +362,7 @@ class ThreePointWindow:
 
     """
 
-    def __init__(self, paired_sampts, flat_multipoles, alpha_norm=1.,
+    def __init__(self, paired_sampts, flat_multipoles, alpha_contrast=1.,
                  make_loglin=True):
 
         # Check dimensions and reshape.
@@ -394,7 +394,7 @@ class ThreePointWindow:
             Q_mat = np.zeros((nbins, nbins))
             Q_mat[triu_indices] = Q_flat
             Q_mat.T[triu_indices] = Q_flat
-            Q_in[degrees] = alpha_norm * Q_mat
+            Q_in[degrees] = alpha_contrast**2 * Q_mat
 
         # Check window function separation sample points.
         try:
@@ -417,7 +417,8 @@ class ThreePointWindow:
 
     @classmethod
     def load_from_file(cls, filepaths, subtract_shotnoise=True,
-                       usecols=(1, 4, 6, 8), alpha_norm=1., make_loglin=True):
+                       usecols=(1, 4, 6, 8), alpha_contrast=1.,
+                       make_loglin=True):
         """Load window function from a plain-text file as saved by
         :func:`~triumvirate.threept.compute_3pcf_window` with
         ``form='full'``.
@@ -437,11 +438,11 @@ class ThreePointWindow:
             shot-noise (two columns); otherwise, must be of length 3 and
             correspond to the effective separation sample points (two
             columns) and the raw window function (one column).
-        alpha_norm : float, optional
-            Alpha factor for normalising the window function
-            (default is 1.) owing to high number density in the
-            random catalogue, e.g. 0.1 for a random catalogue with
-            10 times the number density of the data catalogue.
+        alpha_contrast : float, optional
+            Alpha contrast factor (default is 1.) for normalising the
+            higher number density of the random catalogue, e.g. 0.1 for a
+            random catalogue with 10 times the number density of the
+            data catalogue.
         make_loglin : bool, optional
             Whether to resample the window function multipole samples
             logarithmically if they are not already (default is `True`).
@@ -476,7 +477,7 @@ class ThreePointWindow:
 
         return cls(
             paired_sampts, flat_multipoles,
-            alpha_norm=alpha_norm, make_loglin=make_loglin
+            alpha_contrast=alpha_contrast, make_loglin=make_loglin
         )
 
 
