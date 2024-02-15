@@ -513,16 +513,22 @@ class ParticleCatalogue:
         else:
             catalogue_ref_ = catalogue_ref
 
-        _axes_overflow = []
-        _axes_overflow.extend(self._check_bounds_in_boxsize(boxsize))
-        _axes_overflow.extend(catalogue_ref_._check_bounds_in_boxsize(boxsize))
+        _axes_overflow = self._check_bounds_in_boxsize(boxsize)
         if _axes_overflow:
             warnings.warn(
-                "Box size is smaller than particle coordinate extents "
-                "along axis: {}. "
+                "Catalogue extent exceeds the box size along axis {} ({})."
                 "Some partcles may lie outside the box after centring."
-                .format(set(_axes_overflow))
+                .format(set(_axes_overflow), self)
             )
+        if catalogue_ref is not None:
+            _axes_overflow_ref = \
+                catalogue_ref_._check_bounds_in_boxsize(boxsize)
+            if _axes_overflow_ref:
+                warnings.warn(
+                    "Catalogue extent exceeds the box size along axis {} ({})."
+                    "Some partcles may lie outside the box after centring."
+                    .format(set(_axes_overflow_ref), catalogue_ref_)
+                )
 
         origin = np.array([
             np.mean(catalogue_ref_.bounds[axis]) - boxsize[iaxis]/2.
@@ -595,16 +601,22 @@ class ParticleCatalogue:
         else:
             catalogue_ref_ = catalogue_ref
 
-        _axes_overflow = []
-        _axes_overflow.extend(self._check_bounds_in_boxsize(boxsize))
-        _axes_overflow.extend(catalogue_ref_._check_bounds_in_boxsize(boxsize))
+        _axes_overflow = self._check_bounds_in_boxsize(boxsize)
         if _axes_overflow:
             warnings.warn(
-                "Box size is smaller than particle coordinate extents "
-                "along axis: {}. "
+                "Catalogue extent exceeds the box size along axis {} ({})."
                 "Some partcles may lie outside the box after padding."
-                .format(set(_axes_overflow))
+                .format(set(_axes_overflow), self)
             )
+        if catalogue_ref is not None:
+            _axes_overflow_ref = \
+                catalogue_ref_._check_bounds_in_boxsize(boxsize)
+            if _axes_overflow_ref:
+                warnings.warn(
+                    "Catalogue extent exceeds the box size along axis {} ({})."
+                    "Some partcles may lie outside the box after padding."
+                    .format(set(_axes_overflow_ref), catalogue_ref_)
+                )
 
         origin = np.array([
             catalogue_ref_.bounds[axis][0] for axis in ['x', 'y', 'z']
@@ -683,31 +695,37 @@ class ParticleCatalogue:
 
         """
         self.bounds = {}
+        self.spans = {}
         for axis in ['x', 'y', 'z']:
             self.bounds[axis] = (
                 self._compute(self._pdata[axis].min()),
                 self._compute(self._pdata[axis].max())
             )
+            self.spans[axis] = self.bounds[axis][1] - self.bounds[axis][0]
 
         if self._logger:
             if init:
                 self._logger.info(
                     "Original extents of particle coordinates: "
-                    "{'x': (%.3f, %.3f),"
-                    " 'y': (%.3f, %.3f),"
-                    " 'z': (%.3f, %.3f)}"
+                    "{'x': (%.3f, %.3f | %.3f),"
+                    " 'y': (%.3f, %.3f | %.3f),"
+                    " 'z': (%.3f, %.3f | %.3f)}"
                     " (%s).",
-                    *self.bounds['x'], *self.bounds['y'], *self.bounds['z'],
+                    *self.bounds['x'], self.spans['x'],
+                    *self.bounds['y'], self.spans['y'],
+                    *self.bounds['z'], self.spans['z'],
                     self
                 )
             else:
                 self._logger.info(
                     "Offset extents of particle coordinates: "
-                    "{'x': (%.3f, %.3f),"
-                    " 'y': (%.3f, %.3f),"
-                    " 'z': (%.3f, %.3f)}"
+                    "{'x': (%.3f, %.3f | %.3f),"
+                    " 'y': (%.3f, %.3f | %.3f),"
+                    " 'z': (%.3f, %.3f | %.3f)}"
                     " (%s).",
-                    *self.bounds['x'], *self.bounds['y'], *self.bounds['z'],
+                    *self.bounds['x'], self.spans['x'],
+                    *self.bounds['y'], self.spans['y'],
+                    *self.bounds['z'], self.spans['z'],
                     self
                 )
 

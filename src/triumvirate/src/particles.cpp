@@ -441,6 +441,20 @@ void ParticleCatalogue::centre_in_box(
   const double boxsize[3]
 ) {
   catalogue.calc_pos_extents();  // likely redundant but safe
+  for (int iaxis = 0; iaxis < 3; iaxis++) {
+    if (catalogue.pos_span[iaxis] > boxsize[iaxis]) {
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "Catalogue extent exceeds the box size along axis %d: "
+          "span = %.3f, boxsize = %.3f (source=%s). "
+          "Some partcles may lie outside the box after centring.",
+          iaxis,
+          catalogue.pos_span[iaxis], boxsize[iaxis],
+          catalogue.source.c_str()
+        );
+      }
+    }
+  }
 
   double xmid = (catalogue.pos_min[0] + catalogue.pos_max[0]) / 2.;
   double ymid = (catalogue.pos_min[1] + catalogue.pos_max[1]) / 2.;
@@ -457,7 +471,37 @@ void ParticleCatalogue::centre_in_box(
   ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
   const double boxsize[3]
 ) {
+  catalogue.calc_pos_extents();  // likely redundant but safe
+  for (int iaxis = 0; iaxis < 3; iaxis++) {
+    if (catalogue.pos_span[iaxis] > boxsize[iaxis]) {
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "Catalogue extent exceeds the box size along axis %d: "
+          "span = %.3f, boxsize = %.3f (source=%s). "
+          "Some partcles may lie outside the box after centring.",
+          iaxis,
+          catalogue.pos_span[iaxis], boxsize[iaxis],
+          catalogue.source.c_str()
+        );
+      }
+    }
+  }
+
   catalogue_ref.calc_pos_extents();  // likely redundant but safe
+  for (int iaxis = 0; iaxis < 3; iaxis++) {
+    if (catalogue_ref.pos_span[iaxis] > boxsize[iaxis]) {
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "Catalogue extent exceeds the box size along axis %d: "
+          "span = %.3f, boxsize = %.3f (source=%s). "
+          "Some partcles may lie outside the box after centring.",
+          iaxis,
+          catalogue_ref.pos_span[iaxis], boxsize[iaxis],
+          catalogue_ref.source.c_str()
+        );
+      }
+    }
+  }
 
   double xmid = (catalogue_ref.pos_min[0] + catalogue_ref.pos_max[0]) / 2.;
   double ymid = (catalogue_ref.pos_min[1] + catalogue_ref.pos_max[1]) / 2.;
@@ -476,6 +520,20 @@ void ParticleCatalogue::pad_in_box(
   const double boxsize[3], const double boxsize_pad[3]
 ) {
   catalogue.calc_pos_extents();  // likely redundant but safe
+  for (int iaxis = 0; iaxis < 3; iaxis++) {
+    if (catalogue.pos_span[iaxis] > boxsize[iaxis]) {
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "Catalogue extent exceeds the box size along axis %d: "
+          "span = %.3f, boxsize = %.3f (source=%s). "
+          "Some partcles may lie outside the box after padding.",
+          iaxis,
+          catalogue.pos_span[iaxis], boxsize[iaxis],
+          catalogue.source.c_str()
+        );
+      }
+    }
+  }
 
   double dvec[3] = {
     catalogue.pos_min[0] - boxsize_pad[0] * boxsize[0],
@@ -490,7 +548,37 @@ void ParticleCatalogue::pad_in_box(
     ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
     const double boxsize[3], const double boxsize_pad[3]
 ) {
+  catalogue.calc_pos_extents();  // likely redundant but safe
+  for (int iaxis = 0; iaxis < 3; iaxis++) {
+    if (catalogue.pos_span[iaxis] > boxsize[iaxis]) {
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "Catalogue extent exceeds the box size along axis %d: "
+          "span = %.3f, boxsize = %.3f (source=%s). "
+          "Some partcles may lie outside the box after padding.",
+          iaxis,
+          catalogue.pos_span[iaxis], boxsize[iaxis],
+          catalogue.source.c_str()
+        );
+      }
+    }
+  }
+
   catalogue_ref.calc_pos_extents();  // likely redundant but safe
+  for (int iaxis = 0; iaxis < 3; iaxis++) {
+    if (catalogue_ref.pos_span[iaxis] > boxsize[iaxis]) {
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "Catalogue extent exceeds the box size along axis %d: "
+          "span = %.3f, boxsize = %.3f (source=%s). "
+          "Some partcles may lie outside the box after padding.",
+          iaxis,
+          catalogue_ref.pos_span[iaxis], boxsize[iaxis],
+          catalogue_ref.source.c_str()
+        );
+      }
+    }
+  }
 
   double dvec[3] = {
     catalogue_ref.pos_min[0] - boxsize_pad[0] * boxsize[0],

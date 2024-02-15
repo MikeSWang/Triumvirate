@@ -1322,6 +1322,10 @@ def compute_corrfunc_window(catalogue_rand, los_rand=None,
         [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']]
     )
 
+    catalogue_rand.periodise(
+        [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']]
+    )
+
     if logger:
         logger.info("Catalogues have been aligned.")
 

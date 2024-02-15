@@ -416,6 +416,7 @@ int main(int argc, char* argv[]) {
       trv::ParticleCatalogue::centre_in_box(
         catalogue_rand, params.boxsize
       );
+      catalogue_rand.offset_coords_for_periodicity(params.boxsize);
     }
   }
 
