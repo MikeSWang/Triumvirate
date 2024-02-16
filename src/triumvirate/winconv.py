@@ -227,7 +227,7 @@ class WinConvFormulae:
             for multipole, formula in formulae.items()
         }
 
-        self.multipoles = formulae.keys()
+        self.multipoles = list(formulae.keys())
         self.multipoles_Q = np.unique([
             term.ind_Q
             for formula in self.formulae.values()
@@ -345,6 +345,8 @@ class ThreePointWindow:
 
     Attributes
     ----------
+    multipoles : list of str
+        Window function multipoles.
     r : 1-d array of float
         window function separation sample points.
     Q : dict of {str: 2-d array of float}
@@ -414,6 +416,7 @@ class ThreePointWindow:
 
         self.r = rQ_in
         self.Q = Q_in
+        self.multipoles = list(self.Q.keys())
 
     @classmethod
     def load_from_file(cls, filepaths, subtract_shotnoise=True,
