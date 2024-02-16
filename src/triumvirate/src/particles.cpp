@@ -343,7 +343,7 @@ void ParticleCatalogue::calc_total_weights() {
   }
 }
 
-void ParticleCatalogue::calc_pos_extents() {
+void ParticleCatalogue::calc_pos_extents(bool init) {
   if (this->pdata == nullptr) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Particle data are uninitialised.");
@@ -377,7 +377,7 @@ void ParticleCatalogue::calc_pos_extents() {
     this->pos_span[iaxis] = pos_max[iaxis] - pos_min[iaxis];
   }
 
-  if (trvs::currTask == 0) {
+  if (trvs::currTask == 0 && init) {
     trvs::logger.info(
       "Extents of particle coordinates: "
       "{'x': (%.3f, %.3f | %.3f),"
@@ -444,7 +444,7 @@ void ParticleCatalogue::centre_in_box(
   ParticleCatalogue& catalogue,
   const double boxsize[3]
 ) {
-  catalogue.calc_pos_extents();  // likely redundant but safe
+  catalogue.calc_pos_extents(false);  // likely redundant but safe
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     if (catalogue.pos_span[iaxis] > boxsize[iaxis]) {
       if (trvs::currTask == 0) {
@@ -475,7 +475,7 @@ void ParticleCatalogue::centre_in_box(
   ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
   const double boxsize[3]
 ) {
-  catalogue.calc_pos_extents();  // likely redundant but safe
+  catalogue.calc_pos_extents(false);  // likely redundant but safe
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     if (catalogue.pos_span[iaxis] > boxsize[iaxis]) {
       if (trvs::currTask == 0) {
@@ -491,7 +491,7 @@ void ParticleCatalogue::centre_in_box(
     }
   }
 
-  catalogue_ref.calc_pos_extents();  // likely redundant but safe
+  catalogue_ref.calc_pos_extents(false);  // likely redundant but safe
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     if (catalogue_ref.pos_span[iaxis] > boxsize[iaxis]) {
       if (trvs::currTask == 0) {
@@ -523,7 +523,7 @@ void ParticleCatalogue::pad_in_box(
   ParticleCatalogue& catalogue,
   const double boxsize[3], const double boxsize_pad[3]
 ) {
-  catalogue.calc_pos_extents();  // likely redundant but safe
+  catalogue.calc_pos_extents(false);  // likely redundant but safe
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     if (catalogue.pos_span[iaxis] > boxsize[iaxis]) {
       if (trvs::currTask == 0) {
@@ -552,7 +552,7 @@ void ParticleCatalogue::pad_in_box(
     ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
     const double boxsize[3], const double boxsize_pad[3]
 ) {
-  catalogue.calc_pos_extents();  // likely redundant but safe
+  catalogue.calc_pos_extents(false);  // likely redundant but safe
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     if (catalogue.pos_span[iaxis] > boxsize[iaxis]) {
       if (trvs::currTask == 0) {
@@ -568,7 +568,7 @@ void ParticleCatalogue::pad_in_box(
     }
   }
 
-  catalogue_ref.calc_pos_extents();  // likely redundant but safe
+  catalogue_ref.calc_pos_extents(false);  // likely redundant but safe
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     if (catalogue_ref.pos_span[iaxis] > boxsize[iaxis]) {
       if (trvs::currTask == 0) {
@@ -598,7 +598,7 @@ void ParticleCatalogue::pad_grids(
   ParticleCatalogue& catalogue,
   const double boxsize[3], const int ngrid[3], const double ngrid_pad[3]
 ) {
-  catalogue.calc_pos_extents();  // likely redundant but safe
+  catalogue.calc_pos_extents(false);  // likely redundant but safe
 
   double dvec[3] = {
     catalogue.pos_min[0], catalogue.pos_min[1], catalogue.pos_min[2]
@@ -615,7 +615,7 @@ void ParticleCatalogue::pad_grids(
     ParticleCatalogue& catalogue, ParticleCatalogue& catalogue_ref,
     const double boxsize[3], const int ngrid[3], const double ngrid_pad[3]
 ) {
-  catalogue_ref.calc_pos_extents();  // likely redundant but safe
+  catalogue_ref.calc_pos_extents(false);  // likely redundant but safe
 
   double dvec[3] = {
     catalogue_ref.pos_min[0] - ngrid_pad[0] * boxsize[0] / double(ngrid[0]),

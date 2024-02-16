@@ -178,11 +178,13 @@ class ParticleCatalogue {
   /**
    * @brief Calculate the extents of particle positions.
    *
+   * @param init Initialisation flag (default is `true`).
+   *
    * @attention This method resets @ref trv::ParticleCatalogue::pos_min,
    *            @ref trv::ParticleCatalogue::pos_max and
    *            @ref trv::ParticleCatalogue::pos_span.
    */
-  void calc_pos_extents();
+  void calc_pos_extents(bool init = true);
 
   // ---------------------------------------------------------------------
   // Catalogue operations
