@@ -425,10 +425,14 @@ offset_coords_for_periodicity(const double boxsize[3]) {
   for (int pid = 0; pid < this->ntotal; pid++) {
     for (int iaxis = 0; iaxis < 3; iaxis++) {
       if (this->pdata[pid].pos[iaxis] >= boxsize[iaxis]) {
-        this->pdata[pid].pos[iaxis] -= boxsize[iaxis];
+        this->pdata[pid].pos[iaxis] = std::fmod(
+          this->pdata[pid].pos[iaxis], boxsize[iaxis]
+        );
       } else
       if (this->pdata[pid].pos[iaxis] < 0.) {
-        this->pdata[pid].pos[iaxis] += boxsize[iaxis];
+        this->pdata[pid].pos[iaxis] = std::fmod(
+          this->pdata[pid].pos[iaxis], boxsize[iaxis]
+        ) + boxsize[iaxis];
       }
     }
   }
