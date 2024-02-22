@@ -18,6 +18,7 @@ dependencies:
   # Runtime dependencies
   - numpy >= 1.17
   - scipy
+  - sympy
   - astropy >= 4.2
   - pyyaml > 4
   # Test dependencies
