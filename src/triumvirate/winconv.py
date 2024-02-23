@@ -682,6 +682,99 @@ class ThreePointWindow:
         }
 
 
+def _integrate_2d_samples(x, y, z):
+    r"""Integrate 2-d samples of function :math:`z(x, y)`,
+
+    .. math:: \int \int z(x, y) x^2 y^2 \, \mathrm{d}x \mathrm{d}y \,,
+
+    using Simpson's rule.
+
+    Parameters
+    ----------
+    x, y : 1-d array of float
+        Sample points for both dimensions.
+    z : 2-d array of float
+        Sample values.
+
+    Returns
+    -------
+    float
+        Integrated value.
+
+    """
+    return simpson(simpson(z * y * y, y, axis=-1) * x * x, x, axis=-1)
+
+
+def calc_threept_ic(window_sampts, window_multipoles, r_in, zeta_in,
+                    r_common=None, approx=False):
+    """Compute three-point clustering statistic integral constraint.
+
+    Parameters
+    ----------
+    window_sampts :  1-d array of float
+        Window function separation sample points.
+    window_multipoles : dict of {str: 2-d array of float}
+        Window function multipole samples (each key is a multipole).
+        Must contain the ``'000'`` multipole.
+    r_in : 1-d array of float
+        Separation sample points for the input 3PCF.
+    zeta_in : dict of {str: 2-d array of float}
+        Input 3PCF multipole samples (each key is a multipole)
+        at sample points `r_in`.
+    r_common : 1-d array of float, optional
+        Common separation sample points.  If `None` (default), it is the
+        same as `r_in`.
+    approx : bool, optional
+        If `True` (default is `False`), include only the leading-order
+        term with ``'000'`` multipoles as an approximation.
+
+    Returns
+    -------
+    float
+        Integral constraint.
+
+    """
+    if r_common is None:
+        r_common = r_in
+
+    if approx:
+        multipoles_common = ['000']
+    else:
+        multipoles_common = set(window_multipoles.keys()) & set(zeta_in.keys())
+        if '000' not in multipoles_common:
+            raise ValueError(
+                "The '000' multipole is required for calculating "
+                "the integral constraint."
+            )
+
+    _Q_in = {
+        _multipole: RectBivariateSpline(
+            window_sampts, window_sampts, window_multipoles[_multipole]
+        )(r_common, r_common)
+        for _multipole in multipoles_common
+    }
+    _zeta_in = {
+        _multipole: RectBivariateSpline(
+            r_in, r_in, zeta_in[_multipole]
+        )(r_common, r_common)
+        for _multipole in multipoles_common
+    }
+
+    ic_nom = 0.
+    for _multipole in multipoles_common:
+        ell1, ell2, ELL = map(int, _multipole)
+
+        _N = (2 * ell1 + 1) * (2 * ell2 + 1) * (2 * ELL + 1)
+        _H2 = wigner_3j(ell1, ell2, ELL, 0, 0, 0) ** 2
+
+        ic_nom += _N * _H2 * _integrate_2d_samples(
+            r_common, r_common, _Q_in[_multipole] * _zeta_in[_multipole]
+        )
+
+    ic_denom = _integrate_2d_samples(r_common, r_common, _Q_in['000'])
+
+    return ic_nom / ic_denom
+
 
 class TwoPointWinConvBase:
     """Generic window convolution of two-point statistics.
