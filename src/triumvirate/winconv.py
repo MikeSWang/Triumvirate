@@ -23,13 +23,16 @@ from collections import namedtuple
 from fractions import Fraction
 
 import numpy as np
+from scipy.integrate import simpson
 from scipy.interpolate import InterpolatedUnivariateSpline, RectBivariateSpline
+from sympy.physics.wigner import wigner_3j
 
 from triumvirate._arrayops import MixedSignError, SpacingError, _check_1d_array
 from triumvirate.transforms import (
     DoubleSphericalBesselTransform,
     SphericalBesselTransform,
     resample_lglin,
+    resample_lin,
 )
 
 
@@ -320,7 +323,7 @@ class WinConvFormulae:
 
 
 class ThreePointWindow:
-    """Three-point window function.
+    """Three-point window function in configuration space.
 
     By construction, the window function is discretely sampled as a
     symmetric matrix where the upper triangular part is stored as a
@@ -338,10 +341,12 @@ class ThreePointWindow:
         Alpha contrast factor (default is 1.) for normalising the higher
         number density of the random catalogue, e.g. 0.1 for a
         random catalogue with 10 times the number density of the
-        data catalogue.
-    make_loglin : bool, optional
+        data catalogue.  The square of this factor is applied to the
+        amplitude of the window function.
+    make_loglin : bool or int, optional
         Whether to resample the window function multipole samples
         logarithmically if they are not already (default is `True`).
+        If an integer, it is the number of points to resample to.
 
     Attributes
     ----------
@@ -350,7 +355,13 @@ class ThreePointWindow:
     r : 1-d array of float
         window function separation sample points.
     Q : dict of {str: 2-d array of float}
-        Window function Multipole samples (each key is a multipole).
+        Window function multipole samples (each key is a multipole).
+    Q_diag : dict of {str: 1-d array of float}
+        Diagonal of the window function multipole samples (each key
+        is a multipole).
+    sources : list of str
+        Sources of the window function multipole samples as either 'array'
+        or the file path.
 
     Raises
     ------
@@ -367,7 +378,7 @@ class ThreePointWindow:
     def __init__(self, paired_sampts, flat_multipoles, alpha_contrast=1.,
                  make_loglin=True):
 
-        # Check dimensions and reshape.
+        # Check dimensions.
         if paired_sampts.ndim != 2:
             raise ValueError(
                 "Paired separation sample points must be a 2-d array."
@@ -387,26 +398,37 @@ class ThreePointWindow:
             )
         nbins = int(nbins)
 
+        # Reshape arrays.
         triu_indices = np.triu_indices(nbins)
 
         rQ_in = paired_sampts[:nbins, 1]
 
         Q_in = {}
-        for degrees, Q_flat in flat_multipoles.items():
+        for degrees, Q_flat in sorted(flat_multipoles.items()):
             Q_mat = np.zeros((nbins, nbins))
             Q_mat[triu_indices] = Q_flat
             Q_mat.T[triu_indices] = Q_flat
             Q_in[degrees] = alpha_contrast**2 * Q_mat
 
-        # Check window function separation sample points.
+        self.r = rQ_in
+        self.Q = Q_in
+
+        self.Q_diag = {}
+        self.multipoles = []
+        for degrees, Q_in_ in self.Q.items():
+            self.Q_diag[degrees] = np.diag(Q_in_)
+            self.multipoles.append(degrees)
+
+        self.sources = ['array'] * len(self.multipoles)
+
+        # Check sample spacing.
         try:
-            _check_1d_array(rQ_in, check_loglin=True)
+            _check_1d_array(self.r, check_loglin=True)
         except (MixedSignError, SpacingError,):
             if make_loglin:
-                _rQ, _Q = None, {}
-                for degrees, Q_in_ in Q_in.items():
-                    _rQ, _Q[degrees] = resample_lglin(rQ_in, Q_in_)
-                rQ_in, Q_in = _rQ[0], _Q
+                self.resample(
+                    size=make_loglin if isinstance(make_loglin, int) else None
+                )
             else:
                 warnings.warn(
                     "Window function separation sample points are not "
@@ -414,15 +436,11 @@ class ThreePointWindow:
                     RuntimeWarning
                 )
 
-        self.r = rQ_in
-        self.Q = Q_in
-        self.multipoles = list(self.Q.keys())
-
     @classmethod
-    def load_from_file(cls, filepaths, subtract_shotnoise=True,
-                       usecols=(1, 4, 6, 8), alpha_contrast=1.,
-                       make_loglin=True):
-        """Load window function from a plain-text file as saved by
+    def load_from_textfiles(cls, filepaths, subtract_shotnoise=True,
+                            usecols=(1, 4, 6, 8), alpha_contrast=1.,
+                            make_loglin=True):
+        """Load window function from plain-text files as saved by
         :func:`~triumvirate.threept.compute_3pcf_window` with
         ``form='full'``.
 
@@ -450,16 +468,22 @@ class ThreePointWindow:
             Whether to resample the window function multipole samples
             logarithmically if they are not already (default is `True`).
 
+        Returns
+        -------
+        :class:`~triumvirate.winconv.ThreePointWindow`
+            Three-point window function.
+
         """
         r1_eff, r2_eff = None, None
 
         flat_multipoles = {}
-        for multipole, filepath in filepaths.items():
+        sources = []
+        for multipole, filepath in sorted(filepaths.items()):
             if subtract_shotnoise:
                 if len(usecols) != 4:
                     raise ValueError(
                         "Must provide four columns to read from the file "
-                        "when subtracting shot-noise."
+                        "when subtracting shot noise."
                     )
                 r1_eff, r2_eff, Qflat_raw, Qflat_shot = np.loadtxt(
                     filepath, unpack=True, usecols=usecols
@@ -475,13 +499,188 @@ class ThreePointWindow:
                     filepath, unpack=True, usecols=usecols
                 )
                 flat_multipoles[multipole] = Qflat_raw
+            sources.append(filepath)
 
         paired_sampts = np.column_stack((r1_eff, r2_eff))
 
-        return cls(
+        self = cls(
             paired_sampts, flat_multipoles,
             alpha_contrast=alpha_contrast, make_loglin=make_loglin
         )
+
+        self.sources = sources
+
+        return self
+
+    @classmethod
+    def load_from_dict(cls, dict_obj):
+        """Load window function from a dictionary.
+
+        Parameters
+        ----------
+        dict_obj : dict
+            Dictionary of 2-d window function multipoles
+            (key 'Q') and sample points (key 'r').
+
+        Returns
+        -------
+        :class:`~triumvirate.winconv.ThreePointWindow`
+            Three-point window function.
+
+        """
+        self = cls.__new__(cls)
+
+        self.r = dict_obj['r']
+        self.Q = dict_obj['Q']
+
+        self.Q_diag = {
+            degrees: np.diag(Q_in_)
+            for degrees, Q_in_ in self.Q.items()
+        }
+
+        self.multipoles = sorted(list(self.Q.keys()))
+
+        try:
+            self.sources = dict_obj['sources']
+        except KeyError:
+            self.sources = ['array'] * len(self.multipoles)
+
+        return self
+
+    @classmethod
+    def load_from_file(cls, filepath):
+        """Load window function multipoles from a compressed NumPy file.
+
+        Parameters
+        ----------
+        filepath : str
+            File path to load the window function multipoles.
+
+        Returns
+        -------
+        :class:`~triumvirate.winconv.ThreePointWindow`
+            Three-point window function.
+
+        """
+        self = cls.__new__(cls)
+
+        win_obj = np.load(filepath)
+
+        self.r = win_obj['r']
+        self.Q = win_obj['Q']
+        self.Q_diag = win_obj['Q_diag']
+
+        self.multipoles = win_obj['multipoles']
+        self.sources = win_obj['sources']
+
+        return self
+
+    def save_to_file(self, filepath):
+        """Save window function to a compressed NumPy file.
+
+        Parameters
+        ----------
+        filepath : str
+            File path to save the window function multipoles.
+
+        """
+        win_obj = {
+            'r': self.r,
+            'Q': self.Q,
+            'Q_diag': self.Q_diag,
+            'multipoles': self.multipoles,
+            'sources': self.sources,
+        }
+
+        np.savez(filepath, **win_obj)
+
+    def subselect(self, rrange=None, idxrange=None, inplace=False):
+        """Select a range of separation sample points.
+
+        Parameters
+        ----------
+        rrange : tuple of float or None, optional
+            Range of separation sample points (default is `None`), e.g.
+            ``(None, 300.)``.
+        idxrange : tuple of int or None, optional
+            Range of separation sample point indices (default is `None`),
+            e.g. ``(None, -1)``, equivalent to ``slice(None, -1)``.
+        inplace : bool, optional
+            If `False` (default), return a new window function object;
+            otherwise, modify the window function in place.
+
+        Returns
+        -------
+        :class:`~triumvirate.winconv.ThreePointWindow` or None
+            If returned, three-point window function for the selected
+            range of separation sample points.
+
+        """
+        if rrange is None:
+            sel_range = np.full_like(self.r, True, dtype=bool)
+        else:
+            rmin, rmax = rrange
+            rmin = rmin or 0.
+            rmax = rmax or np.inf
+            sel_range = np.logical_and(rmin <= self.r, self.r <= rmax)
+
+        if idxrange is None:
+            sel_idx = np.full_like(self.r, True, dtype=bool)
+        else:
+            sel_idx = np.full_like(self.r, False, dtype=bool)
+            sel_idx[slice(*idxrange)] = True
+
+        selector = sel_range & sel_idx
+
+        if not inplace:
+            return self.__class__.load_from_dict({
+                'r': self.r[selector],
+                'Q': {
+                    degrees: Q_in_[selector, :][:, selector]
+                    for degrees, Q_in_ in self.Q.items()
+                }
+            })
+
+        self.r = self.r[selector]
+        self.Q = {
+            degrees: Q_in_[selector, :][:, selector]
+            for degrees, Q_in_ in self.Q.items()
+        }
+        self.Q_diag = {
+            degrees: np.diag(Q_in_)
+            for degrees, Q_in_ in self.Q.items()
+        }
+
+    def resample(self, spacing='lglin', size=None):
+        """Resample window function multipole samples.
+
+        Parameters
+        ----------
+        spacing : {'lglin', 'lin'}, optional
+            Spacing type for the resampled separation sample points
+            either 'lglin' (default) (logarithmic-linear) or 'lin'
+            (linear).
+        size : (tuple of) int, optional
+            Number(s) of points to resample to (default is `None`).
+
+        """
+        _rQ, _Q = None, {}
+        if spacing == 'lglin':
+            for degrees, Q_in_ in self.Q.items():
+                _rQ, _Q[degrees] = resample_lglin([self.r]*2, Q_in_, size=size)
+        elif spacing == 'lin':
+            for degrees, Q_in_ in self.Q.items():
+                _rQ, _Q[degrees] = resample_lin([self.r]*2, Q_in_, size=size)
+        else:
+            raise ValueError("Unknown spacing type: {}".format(spacing))
+
+        self.r, self.Q = _rQ[0], _Q
+
+        self.Q_diag = {
+            degrees: np.diag(Q_in_)
+            for degrees, Q_in_ in self.Q.items()
+        }
+
 
 
 class TwoPointWinConvBase:
@@ -568,7 +767,10 @@ class TwoPCFWinConv(TwoPointWinConvBase):
         super().__init__(formulae, window_sampts, window_multipoles)
 
         self.r_in = r_in
-        self.r_out = r_out or r_in
+        if r_out is None:
+            self.r_out = r_in
+        else:
+            self.r_out = r_out
 
         self._Q_out = {
             _multipole: InterpolatedUnivariateSpline(
@@ -725,7 +927,10 @@ class PowspecWinConv(TwoPointWinConvBase):
             )
 
         self.k_in = k_in
-        self.k_out = k_out or k_in
+        if k_out is None:
+            self.k_out = k_in
+        else:
+            self.k_out = k_out
 
         super().__init__(formulae, _rQ_in, _Q_in)
 
@@ -910,7 +1115,10 @@ class ThreePCFWinConv(ThreePointWinConvBase):
         super().__init__(formulae, window_sampts, window_multipoles)
 
         self.r_in = r_in
-        self.r_out = r_out or r_in
+        if r_out is None:
+            self.r_out = r_in
+        else:
+            self.r_out = r_out
 
         self._Q_out = {
             _multipole: RectBivariateSpline(
@@ -1114,7 +1322,10 @@ class BispecWinConv(ThreePointWinConvBase):
             )
 
         self.k_in = k_in
-        self.k_out = k_out or k_in
+        if k_out is None:
+            self.k_out = k_in
+        else:
+            self.k_out = k_out
 
         super().__init__(formulae, _rQ_in, _Q_in)
 
