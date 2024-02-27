@@ -1130,7 +1130,8 @@ class ThreePointWinConvBase:
 
         All convolution assumes that the 2-d window function multipole
         samples are square matrices, i.e. they are sampled
-        at the same sample points in both dimensions.
+        at the same sample points in both dimensions.  This also applies
+        to any integral constraint components.
 
     .. attention::
 
@@ -1189,7 +1190,8 @@ class ThreePCFWinConv(ThreePointWinConvBase):
 
         All convolution assumes that the 2-d window function and
         3PCF multipole samples are square matrices, i.e. they are sampled
-        at the same sample points in both dimensions.
+        at the same sample points in both dimensions.  This also applies
+        to any integral constraint components.
 
     .. attention::
 
@@ -1351,7 +1353,8 @@ class BispecWinConv(ThreePointWinConvBase):
 
         All convolution assumes that the 2-d window function and
         bispectrum multipole samples are square matrices, i.e. they are
-        sampled at the same sample points in both dimensions.
+        sampled at the same sample points in both dimensions.  This also
+        applies to any integral constraint components.
 
     .. attention::
 
