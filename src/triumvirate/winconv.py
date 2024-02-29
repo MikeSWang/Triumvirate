@@ -427,7 +427,7 @@ class ThreePointWindow:
         except (MixedSignError, SpacingError,):
             if make_loglin:
                 self.resample(
-                    size=make_loglin if isinstance(make_loglin, int) else None
+                    size=make_loglin if type(make_loglin) is int else None
                 )
             else:
                 warnings.warn(
@@ -667,10 +667,10 @@ class ThreePointWindow:
         _rQ, _Q = None, {}
         if spacing == 'lglin':
             for degrees, Q_in_ in self.Q.items():
-                _rQ, _Q[degrees] = resample_lglin([self.r]*2, Q_in_, size=size)
+                _rQ, _Q[degrees] = resample_lglin(self.r, Q_in_, size=size)
         elif spacing == 'lin':
             for degrees, Q_in_ in self.Q.items():
-                _rQ, _Q[degrees] = resample_lin([self.r]*2, Q_in_, size=size)
+                _rQ, _Q[degrees] = resample_lin(self.r, Q_in_, size=size)
         else:
             raise ValueError("Unknown spacing type: {}".format(spacing))
 
@@ -1380,7 +1380,7 @@ class BispecWinConv(ThreePointWinConvBase):
             except SpacingError:
                 _Q_in = {}
                 for multipole_Q, Qpole_in in window_multipoles.items():
-                    _rQ_in, _Q_in[multipole_Q] = resample_lglin(
+                    (_rQ_in, _), _Q_in[multipole_Q] = resample_lglin(
                         window_sampts, Qpole_in
                     )
                 warnings.warn(
