@@ -1474,8 +1474,9 @@ class BispecWinConv(ThreePointWinConvBase):
         # Backward transform bispectrum multipoles to 3PCF multipoles.
         zeta_in = {}
         for multipole_Z, Bpole_in in bk_in.items():
-            r_in, zeta_in[multipole_Z] = \
-                self._bdsjt[multipole_Z].transform(Bpole_in)
+            if multipole_Z in self._formulae.multipoles_Z:
+                r_in, zeta_in[multipole_Z] = \
+                    self._bdsjt[multipole_Z].transform(Bpole_in)
 
         # Resample at common separation sample points.
         zeta_in = {
