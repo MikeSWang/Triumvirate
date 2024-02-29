@@ -11,6 +11,7 @@ Perform Hankel-like transforms in 1- and 2-d.
     SphericalBesselTransform
     DoubleSphericalBesselTransform
     resample_lglin
+    resample_lin
 
 """
 from collections.abc import Sequence
@@ -614,7 +615,7 @@ def resample_lin(sampts, samples, size=None, spline=3):
     >>> def f(x, y): return np.exp(-x*np.sqrt(y))
     >>> sampts = 1.e-3 * np.arange(1., 51.)
     >>> samples = f(*np.meshgrid(sampts, sampts, indexing='ij'))
-    >>> resampts, resamples = resample_lglin(sampts, samples, size=10)
+    >>> resampts, resamples = resample_lin(sampts, samples, size=10)
 
     Check that the resampling is accurate:
 
