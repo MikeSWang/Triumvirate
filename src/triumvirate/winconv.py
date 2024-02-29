@@ -404,20 +404,20 @@ class ThreePointWindow:
         rQ_in = paired_sampts[:nbins, 1]
 
         Q_in = {}
-        for degrees, Q_flat in sorted(flat_multipoles.items()):
+        for multipole, Q_flat in sorted(flat_multipoles.items()):
             Q_mat = np.zeros((nbins, nbins))
             Q_mat[triu_indices] = Q_flat
             Q_mat.T[triu_indices] = Q_flat
-            Q_in[degrees] = alpha_contrast**2 * Q_mat
+            Q_in[multipole] = alpha_contrast**2 * Q_mat
 
         self.r = rQ_in
         self.Q = Q_in
 
         self.Q_diag = {}
         self.multipoles = []
-        for degrees, Q_in_ in self.Q.items():
-            self.Q_diag[degrees] = np.diag(Q_in_)
-            self.multipoles.append(degrees)
+        for multipole, Q_in_ in self.Q.items():
+            self.Q_diag[multipole] = np.diag(Q_in_)
+            self.multipoles.append(multipole)
 
         self.sources = ['array'] * len(self.multipoles)
 
@@ -534,8 +534,8 @@ class ThreePointWindow:
         self.Q = dict_obj['Q']
 
         self.Q_diag = {
-            degrees: np.diag(Q_in_)
-            for degrees, Q_in_ in self.Q.items()
+            multipole: np.diag(Q_in_)
+            for multipole, Q_in_ in self.Q.items()
         }
 
         self.multipoles = sorted(list(self.Q.keys()))
@@ -636,19 +636,19 @@ class ThreePointWindow:
             return self.__class__.load_from_dict({
                 'r': self.r[selector],
                 'Q': {
-                    degrees: Q_in_[selector, :][:, selector]
-                    for degrees, Q_in_ in self.Q.items()
+                    multipole: Q_in_[selector, :][:, selector]
+                    for multipole, Q_in_ in self.Q.items()
                 }
             })
 
         self.r = self.r[selector]
         self.Q = {
-            degrees: Q_in_[selector, :][:, selector]
-            for degrees, Q_in_ in self.Q.items()
+            multipole: Q_in_[selector, :][:, selector]
+            for multipole, Q_in_ in self.Q.items()
         }
         self.Q_diag = {
-            degrees: np.diag(Q_in_)
-            for degrees, Q_in_ in self.Q.items()
+            multipole: np.diag(Q_in_)
+            for multipole, Q_in_ in self.Q.items()
         }
 
     def resample(self, spacing='lglin', size=None):
@@ -666,19 +666,19 @@ class ThreePointWindow:
         """
         _rQ, _Q = None, {}
         if spacing == 'lglin':
-            for degrees, Q_in_ in self.Q.items():
-                _rQ, _Q[degrees] = resample_lglin(self.r, Q_in_, size=size)
+            for multipole, Q_in_ in self.Q.items():
+                _rQ, _Q[multipole] = resample_lglin(self.r, Q_in_, size=size)
         elif spacing == 'lin':
-            for degrees, Q_in_ in self.Q.items():
-                _rQ, _Q[degrees] = resample_lin(self.r, Q_in_, size=size)
+            for multipole, Q_in_ in self.Q.items():
+                _rQ, _Q[multipole] = resample_lin(self.r, Q_in_, size=size)
         else:
             raise ValueError("Unknown spacing type: {}".format(spacing))
 
         self.r, self.Q = _rQ[0], _Q
 
         self.Q_diag = {
-            degrees: np.diag(Q_in_)
-            for degrees, Q_in_ in self.Q.items()
+            multipole: np.diag(Q_in_)
+            for multipole, Q_in_ in self.Q.items()
         }
 
 
