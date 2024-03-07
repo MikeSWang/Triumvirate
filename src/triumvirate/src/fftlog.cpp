@@ -297,16 +297,23 @@ void HankelTransform::biased_transform(
 
     std::vector<double> a_trans_vec(N_trans);
     switch (this->extrap) {
-      case trva::ExtrapOption::LIN:
-        trva::extrap_lin(a_vec, this->n_ext, a_trans_vec);
+      case trva::ExtrapOption::NONE:
         break;
-      case trva::ExtrapOption::LOGLIN:
-        trva::extrap_loglin(a_vec, this->n_ext, a_trans_vec);
+      case trva::ExtrapOption::ZERO:
+        trva::extrap_pad(
+          a_vec, this->n_ext, 0., 0., a_trans_vec
+        );
         break;
       case trva::ExtrapOption::PAD:
         trva::extrap_pad(
           a_vec, this->n_ext, a_vec.front(), a_vec.back(), a_trans_vec
         );
+        break;
+      case trva::ExtrapOption::LIN:
+        trva::extrap_lin(a_vec, this->n_ext, a_trans_vec);
+        break;
+      case trva::ExtrapOption::LOGLIN:
+        trva::extrap_loglin(a_vec, this->n_ext, a_trans_vec);
         break;
       default:
         throw trvs::InvalidParameterError("Unsupported extrapolation option.");

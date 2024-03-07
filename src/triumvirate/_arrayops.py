@@ -22,6 +22,7 @@ Perform array operations.
     extrap2d_pad
 
 """
+import warnings
 from collections.abc import Sequence
 
 import numpy as np
@@ -50,6 +51,13 @@ class MixedSignError(ValueError):
 
 class SpacingError(ValueError):
     """Exception raised when the array spacing is incorrect.
+
+    """
+    pass
+
+
+class DivergenceWarning(RuntimeWarning):
+    """Warning issued when divergent behaviour is detected in an array.
 
     """
     pass
@@ -236,6 +244,33 @@ def _check_2d_array(a, check_sorted=False, check_epsign=False,
     return a
 
 
+def extrap_pad(a, n_ext, c_lower, c_upper):
+    """Extrapolate a 1-d array by constant padding.
+
+    Parameters
+    ----------
+    a : array of float
+        Input 1-d array.
+    n_ext : int
+        Number of extra elements on either side.
+    c_lower, c_upper : float
+        Constant value used for padding on either side.
+
+    Returns
+    -------
+    a_out : :class:`numpy.ndarray`
+        Extrapolated 1-d array.
+
+    """
+    a = _check_1d_array(a)
+
+    a_l = np.full(n_ext, c_lower)
+    a_r = np.full(n_ext, c_upper)
+    a_out = np.concatenate([a_l, a, a_r])
+
+    return a_out
+
+
 def extrap_lin(a, n_ext):
     """Extrapolate a 1-d array linearly.
 
@@ -292,8 +327,8 @@ def extrap_loglin(a, n_ext):
     return a_out
 
 
-def extrap_pad(a, n_ext, c_lower, c_upper):
-    """Extrapolate a 1-d array by constant padding.
+def extrap_loglin_oscil(a, n_ext):
+    """Extrapolate a 1-d array with oscillatory behaviour log-linearly.
 
     Parameters
     ----------
@@ -301,8 +336,6 @@ def extrap_pad(a, n_ext, c_lower, c_upper):
         Input 1-d array.
     n_ext : int
         Number of extra elements on either side.
-    c_lower, c_upper : float
-        Constant value used for padding on either side.
 
     Returns
     -------
@@ -312,8 +345,127 @@ def extrap_pad(a, n_ext, c_lower, c_upper):
     """
     a = _check_1d_array(a)
 
-    a_l = np.full(n_ext, c_lower)
-    a_r = np.full(n_ext, c_upper)
+    # Check for sign changes and restrict extrapolation to a range
+    # with at least 2 points on either 'bank' of the 'zero river'.
+    signdiff = np.diff(np.sign(a))
+    signchange = np.nonzero(signdiff)[0]
+    if len(signchange) > 0:
+        idx_lbank = max(signchange[0] + 1, 3)
+        idx_rbank = min(signchange[-1] + 1, a.size - 4)
+    else:
+        idx_lbank = a.size - 1
+        idx_rbank = 0
+
+    # Check for oscillations and further restrict extrapolation to a range
+    # excluding the innermost peak/trough with at least 2 points on either
+    # 'bank' of the 'zero river'.
+    lngrad_lbank = np.gradient(np.log(np.abs(a[:idx_lbank])))
+    signchange_lngrad_lbank = np.nonzero(np.diff(np.sign(lngrad_lbank)))[0]
+    if len(signchange_lngrad_lbank) > 0:
+        idx_ldbank = max(signchange_lngrad_lbank[-1] + 1, 3)
+    else:
+        idx_ldbank = a.size - 1
+
+    lngrad_rbank = np.gradient(np.log(np.abs(a[idx_rbank:])))
+    signchange_lngrad_rbank = np.nonzero(np.diff(np.sign(lngrad_rbank)))[0]
+    if len(signchange_lngrad_rbank) > 0:
+        idx_rdbank = min(idx_rbank + signchange_lngrad_rbank[0], a.size - 4)
+    else:
+        idx_rdbank = 0
+
+    # Divide the array into two 'halves' either side of the peak with
+    # each 'half' halved into 'quarters'.
+    idx_peak = np.argmax(np.abs(a))
+    if idx_peak == 0 or idx_peak == a.size - 1:
+        idx_peak = a.size // 2
+    idx_lquater = max((idx_peak + 1) // 2 - 1, 3)
+    idx_rquater = min(idx_peak + (a.size - 1 - idx_peak) // 2, a.size - 4)
+
+    # Define the tails used as the extrapolation range.
+    idx_ltail = min(idx_lbank, idx_ldbank, idx_lquater)
+    idx_rtail = max(idx_rbank, idx_rdbank, idx_rquater)
+
+    # Extrapolate the left and right tails.
+    lngrad_ltail = np.gradient(np.log(np.abs(a[:idx_ltail])))
+    # Oscillatory behaviour
+    if np.diff(np.sign(lngrad_ltail)).any():
+        # Use mean gradient.
+        if (mean_lngrad_ltail := np.mean(lngrad_ltail)) >= 0.:
+            powlaw_ltail = - mean_lngrad_ltail
+            # print("Left tail extrap: trend")
+        # Use constant padding when mean gradient is divergent.
+        else:
+            powlaw_ltail = 0.
+            warnings.warn(
+                "Divergent behaviour detected at the left tail. "
+                "Constant padding is used instead.",
+                DivergenceWarning
+            )
+            # print("Left tail extrap: trend -> const")
+    # No oscillations
+    else:
+        # Use endpoint gradient.
+        if (
+            lngrad_lend := np.log(np.abs(a[1])) - np.log(np.abs(a[0]))
+        ) >= 0.:
+            powlaw_ltail = - lngrad_lend
+            # print("Left tail extrap: endpoint")
+        # Endpoint gradient is divergent possibly with sign changes.
+        else:
+            mean_lngrad_ltail = np.mean(
+                np.gradient(np.log(np.abs(a[:idx_lquater])))
+            )
+            # Use mean gradient.
+            if mean_lngrad_ltail >= 0.:
+                powlaw_ltail = - mean_lngrad_ltail
+                # print("Left tail extrap: endpoint -> trend")
+            # Use constant padding when mean gradient is divergent.
+            else:
+                powlaw_ltail = 0.
+                warnings.warn(
+                    "Divergent behaviour detected at the left endpoints. "
+                    "Constant padding is used instead.",
+                    DivergenceWarning
+                )
+                # print("Left tail extrap: endpoint -> const")
+
+    lngrad_rtail = np.gradient(np.log(np.abs(a[idx_rtail:])))
+    if np.diff(np.sign(lngrad_rtail)).any():
+        if (mean_lngrad_rtail := np.mean(lngrad_rtail)) <= 0.:
+            powlaw_rtail = mean_lngrad_rtail
+            # print("Right tail extrap: trend")
+        else:
+            powlaw_rtail = 0.
+            warnings.warn(
+                "Divergent behaviour detected at the right tail. "
+                "Constant padding is used instead.",
+                DivergenceWarning
+            )
+            # print("Right tail extrap: trend -> const")
+    else:
+        if (
+            lngrad_rend := np.log(np.abs(a[-1])) - np.log(np.abs(a[-2]))
+        ) <= 0.:
+            powlaw_rtail = lngrad_rend
+            # print("Right tail extrap: endpoint")
+        else:
+            mean_lngrad_rtail = np.mean(
+                np.gradient(np.log(np.abs(a[idx_rquater:])))
+            )
+            if mean_lngrad_rtail <= 0.:
+                powlaw_rtail = mean_lngrad_rtail
+                # print("Right tail extrap: endpoint -> trend")
+            else:
+                powlaw_rtail = 0.
+                warnings.warn(
+                    "Divergent behaviour detected at the right endpoints. "
+                    "Constant padding is used instead.",
+                    DivergenceWarning
+                )
+                # print("Right tail extrap: endpoint -> const")
+
+    a_l = a[0] * np.exp(powlaw_ltail * np.arange(n_ext, 0, -1))
+    a_r = a[-1] * np.exp(powlaw_rtail * np.arange(1, n_ext + 1, 1))
     a_out = np.concatenate([a_l, a, a_r])
 
     return a_out
@@ -369,15 +521,16 @@ def _extrap2d_row_loglin(a, ncol_ext):
     return a_out
 
 
-def extrap2d_lin(a, n_ext):
-    """Extrapolate a 2-d array bilinearly.
+def _extrap2d_row_loglin_oscil(a, ncol_ext):
+    """Extrapolate a 2-d array with oscillatory behaviour log-linearly
+    along each row (i.e. horizontally).
 
     Parameters
     ----------
-    a : array of float
+    a : 2-d :class:`numpy.ndarray`
         Input 2-d array.
-    n_ext : int or tuple of int
-        Number of extra elements on either side of each row and/or column.
+    ncol_ext : int
+        Number of extra columns on either side.
 
     Returns
     -------
@@ -385,42 +538,10 @@ def extrap2d_lin(a, n_ext):
         Extrapolated 2-d array.
 
     """
-    a = _check_2d_array(a)
-
-    nrow_ext, ncol_ext = \
-        n_ext if isinstance(n_ext, Sequence) else (n_ext, n_ext)
-
-    # Extrapolate horizontally then vertically.
-    a_ = _extrap2d_row_lin(a, ncol_ext)
-    a_out = _extrap2d_row_lin(a_.transpose(), nrow_ext).transpose()
-
-    return a_out
-
-
-def extrap2d_loglin(a, n_ext):
-    """Extrapolate a 2-d array log-bilinearly.
-
-    Parameters
-    ----------
-    a : array of float
-        Input 2-d array.
-    n_ext : int or tuple of int
-        Number of extra elements on either side of each row and/or column.
-
-    Returns
-    -------
-    a_out : :class:`numpy.ndarray`
-        Extrapolated 2-d array.
-
-    """
-    a = _check_2d_array(a, check_epsign=True)
-
-    nrow_ext, ncol_ext = \
-        n_ext if isinstance(n_ext, Sequence) else (n_ext, n_ext)
-
-    # Extrapolate horizontally then vertically.
-    a_ = _extrap2d_row_loglin(a, ncol_ext)
-    a_out = _extrap2d_row_loglin(a_.transpose(), nrow_ext).transpose()
+    a_out = []
+    for a_row in a:
+        a_out.append(extrap_loglin_oscil(a_row, ncol_ext))
+    a_out = np.array(a_out)
 
     return a_out
 
@@ -509,5 +630,89 @@ def extrap2d_pad(a, n_ext, crow_lower, crow_upper, ccol_lower, ccol_upper):
     a__u = np.tile(ccol_lower, (ncol_ext, 1))
     a__d = np.tile(ccol_upper, (ncol_ext, 1))
     a_out = np.r_[a__u, a_, a__d]
+
+    return a_out
+
+
+def extrap2d_lin(a, n_ext):
+    """Extrapolate a 2-d array bilinearly.
+
+    Parameters
+    ----------
+    a : array of float
+        Input 2-d array.
+    n_ext : int or tuple of int
+        Number of extra elements on either side of each row and/or column.
+
+    Returns
+    -------
+    a_out : :class:`numpy.ndarray`
+        Extrapolated 2-d array.
+
+    """
+    a = _check_2d_array(a)
+
+    nrow_ext, ncol_ext = \
+        n_ext if isinstance(n_ext, Sequence) else (n_ext, n_ext)
+
+    # Extrapolate horizontally then vertically.
+    a_ = _extrap2d_row_lin(a, ncol_ext)
+    a_out = _extrap2d_row_lin(a_.transpose(), nrow_ext).transpose()
+
+    return a_out
+
+
+def extrap2d_loglin(a, n_ext):
+    """Extrapolate a 2-d array log-bilinearly.
+
+    Parameters
+    ----------
+    a : array of float
+        Input 2-d array.
+    n_ext : int or tuple of int
+        Number of extra elements on either side of each row and/or column.
+
+    Returns
+    -------
+    a_out : :class:`numpy.ndarray`
+        Extrapolated 2-d array.
+
+    """
+    a = _check_2d_array(a, check_epsign=True)
+
+    nrow_ext, ncol_ext = \
+        n_ext if isinstance(n_ext, Sequence) else (n_ext, n_ext)
+
+    # Extrapolate horizontally then vertically.
+    a_ = _extrap2d_row_loglin(a, ncol_ext)
+    a_out = _extrap2d_row_loglin(a_.transpose(), nrow_ext).transpose()
+
+    return a_out
+
+
+def extrap2d_loglin_oscil(a, n_ext):
+    """Extrapolate a 2-d array with oscillatory behaviour log-bilinearly.
+
+    Parameters
+    ----------
+    a : array of float
+        Input 2-d array.
+    n_ext : int or tuple of int
+        Number of extra elements on either side of each row and/or column.
+
+    Returns
+    -------
+    a_out : :class:`numpy.ndarray`
+        Extrapolated 2-d array.
+
+    """
+    a = _check_2d_array(a)
+
+    nrow_ext, ncol_ext = \
+        n_ext if isinstance(n_ext, Sequence) else (n_ext, n_ext)
+
+    # Extrapolate horizontally then vertically.
+    a_ = _extrap2d_row_loglin_oscil(a, ncol_ext)
+    a_out = _extrap2d_row_loglin_oscil(a_.transpose(), nrow_ext).transpose()
 
     return a_out

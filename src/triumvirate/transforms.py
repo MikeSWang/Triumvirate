@@ -22,9 +22,11 @@ from scipy.interpolate import InterpolatedUnivariateSpline, RectBivariateSpline
 from ._arrayops import (
     extrap_lin,
     extrap_loglin,
+    extrap_loglin_oscil,
     extrap_pad,
     extrap2d_lin,
     extrap2d_loglin,
+    extrap2d_loglin_oscil,
     extrap2d_pad,
 )
 from ._fftlog import HankelTransform
@@ -52,9 +54,11 @@ class SphericalBesselTransform:
         options:
 
         - 0: none;
-        - 1: extrapolate by constant padding;
-        - 2: extrapolate linearly;
-        - 3: extrapolate log-linearly.
+        - 1: extrapolate by zero padding;
+        - 2: extrapolate by constant padding;
+        - 3: extrapolate linearly;
+        - 4: extrapolate log-linearly;
+        - 5: extrapolate log-linearly with oscillatory behaviour.
 
         Any extrapolation results in a sample size for the transform that
         is the smallest power of 2 greater than or equal to `extrap_exp`
@@ -101,9 +105,9 @@ class SphericalBesselTransform:
     def __init__(self, degree, bias, sample_pts, pivot=1., lowring=True,
                  extrap=0, extrap_exp=2., extrap_layer='outer',
                  threaded=False):
-        if extrap not in {0, 1, 2, 3}:
+        if extrap not in {0, 1, 2, 3, 4, 5}:
             raise ValueError(
-                f"Extrapolation option must be 0, 1, 2 or 3: {extrap=}."
+                f"Extrapolation option must be in 0 to 5: {extrap=}."
             )
 
         self.degree = degree
@@ -247,11 +251,15 @@ class SphericalBesselTransform:
 
         """
         if self._extrap == 1:
-            return extrap_pad(arr, self._n_ext, arr[0], arr[-1])
+            return extrap_pad(arr, self._n_ext, 0., 0.)
         if self._extrap == 2:
-            return extrap_lin(arr, self._n_ext)
+            return extrap_pad(arr, self._n_ext, arr[0], arr[-1])
         if self._extrap == 3:
+            return extrap_lin(arr, self._n_ext)
+        if self._extrap == 4:
             return extrap_loglin(arr, self._n_ext)
+        if self._extrap == 5:
+            return extrap_loglin_oscil(arr, self._n_ext)
         return arr
 
 
@@ -273,14 +281,16 @@ class DoubleSphericalBesselTransform:
         adjusted if it is non-zero, or otherwise directly calculated.
     lowring : bool, optional
         Low-ringing condition (default is `True`).
-    extrap : int, optional
-        Extrapolation method (default is 0) with the following
-        options:
+    extrap : int or tuple of int, optional
+        Extrapolation method for both or each dimension(s) (default is 0)
+        with the following options:
 
         - 0: none;
-        - 1: extrapolate by constant padding;
-        - 2: extrapolate linearly;
-        - 3: extrapolate log-linearly.
+        - 1: extrapolate by zero padding;
+        - 2: extrapolate by constant padding;
+        - 3: extrapolate linearly;
+        - 4: extrapolate log-linearly;
+        - 5: extrapolate log-linearly with oscillatory behaviour.
 
         Any extrapolation results in a sample size for the transform that
         is the smallest power of 2 greater than or equal to `extrap_exp`
@@ -325,9 +335,9 @@ class DoubleSphericalBesselTransform:
 
     def __init__(self, degrees, biases, sample_pts, pivot=1., lowring=True,
                  extrap=0, extrap_exp=2., extrap2d=False, threaded=False):
-        if extrap not in {0, 1, 2, 3}:
+        if extrap not in {0, 1, 2, 3, 4, 5}:
             raise ValueError(
-                f"Extrapolation option must be 0, 1, 2 or 3: {extrap=}."
+                f"Extrapolation option must be in 0 to 5: {extrap=}."
             )
 
         self.degrees = degrees
@@ -481,12 +491,18 @@ class DoubleSphericalBesselTransform:
         arr = np.asarray(arr)
         if self._extrap == 1:
             return extrap2d_pad(
-                arr, self._n_ext, arr[:, 0], arr[:, -1], arr[0, :], arr[-1, :]
+                arr, self._n_ext, 0., 0., 0., 0.
             )
         if self._extrap == 2:
-            return extrap2d_lin(arr, self._n_ext)
+            return extrap2d_pad(
+                arr, self._n_ext, arr[:, 0], arr[:, -1], arr[0, :], arr[-1, :]
+            )
         if self._extrap == 3:
+            return extrap2d_lin(arr, self._n_ext)
+        if self._extrap == 4:
             return extrap2d_loglin(arr, self._n_ext)
+        if self._extrap == 5:
+            return extrap2d_loglin_oscil(arr, self._n_ext)
         return arr
 
 

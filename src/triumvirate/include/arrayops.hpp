@@ -82,9 +82,10 @@ namespace array {
  */
 enum ExtrapOption {
   NONE = 0,    ///< 0: none
-  PAD = 1,     ///< 1: pad
-  LIN = 2,     ///< 2: linear
-  LOGLIN = 3,  ///< 3: log-linear
+  ZERO = 1,    ///< 1: zero
+  PAD = 2,     ///< 2: pad
+  LIN = 3,     ///< 3: linear
+  LOGLIN = 4,  ///< 4: log-linear
 };
 
 /**
