@@ -50,7 +50,7 @@ def parse_parameters() -> argparse.Namespace:
              "(default is %(default)s)"
     )
     parser.add_argument(
-        '--extrap', type=int, nargs='?', const=3, default=0,
+        '--extrap', type=int, nargs='?', const=4, default=0,
         help="extrapolation option for smoothness "
              "(default is %(default)d if disabled or %(const)d if enabled)"
     )
@@ -259,9 +259,9 @@ class comparison_plot:
         if self._ylim:
             self._ax_comp.set_ylim(*self._ylim)
             if self._flag_diff:  # in %
-                self._ax_diff.axhline(-1.e-1, c='k', alpha=.5, ls='--')
-                self._ax_diff.axhline(1.e-1, c='k', alpha=.5, ls='--')
-                self._ax_diff.set_ylim(-1.75e-1, 1.75e-1)
+                self._ax_diff.axhline(-1.e-3, c='k', alpha=.5, ls='--')
+                self._ax_diff.axhline(1.e-3, c='k', alpha=.5, ls='--')
+                self._ax_diff.set_ylim(-1.75e-3, 1.75e-3)
 
         self._ax_comp.set_xscale('log')
         if self._comp_type == 'analytic':

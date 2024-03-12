@@ -72,7 +72,7 @@ def parse_parameters() -> argparse.Namespace:
              "(default is %(default)d)"
     )
     parser.add_argument(
-        '--extrap', type=int, nargs='?', const=3, default=0,
+        '--extrap', type=int, nargs='?', const=4, default=0,
         help="extrapolation option for smoothness "
              "(default is %(default)d if disabled or %(const)d if enabled)"
     )
@@ -255,11 +255,18 @@ def translate_extrap_mcfit(extrap_opt: int) -> Union[bool, Literal['const']]:
     if extrap_opt == 0:
         return False
     if extrap_opt == 1:
-        return 'const'
-    if extrap_opt == 2:
-        raise ValueError("Linear extrapolation not available for `mcfit`.")
+        raise ValueError("Zero padding not available for `mcfit`.")
+    if extrap_opt == 1:
+        raise 'const'
     if extrap_opt == 3:
+        raise ValueError("Linear extrapolation not available for `mcfit`.")
+    if extrap_opt == 4:
         return True
+    if extrap_opt == 5:
+        raise ValueError(
+            "Log-linear extrapolation with oscillations "
+            "not available for `mcfit`."
+        )
     raise ValueError(f"Unrecognised extrapolation option: {extrap_opt}.")
 
 
