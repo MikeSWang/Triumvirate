@@ -1214,6 +1214,18 @@ class ThreePCFWinConv(ThreePointWinConvBase):
             self.r_out = r_in
         else:
             self.r_out = r_out
+        if not self._check_conv_range(self._rQ_in):
+            warnings.warn(
+                "The convolution range `r_out` is not fully covered "
+                "by the window function separation sample points. "
+                "The window function samples may be extrapolated."
+            )
+        if not self._check_conv_range(self.r_in):
+            warnings.warn(
+                "The convolution range `r_out` is not fully covered "
+                "by the input 3PCF separation sample points. "
+                "The input 3PCF samples may be extrapolated."
+            )
 
         self._Q_out = {
             _multipole: RectBivariateSpline(
@@ -1296,6 +1308,27 @@ class ThreePCFWinConv(ThreePointWinConvBase):
             ])
 
         return zeta_diag_conv_out
+
+    def _check_conv_range(self, r):
+        """Check if the convolution range is fully covered by the
+        sample points.
+
+        Parameters
+        ----------
+        r : 1-d array of float
+            Separation sample points.
+
+        Returns
+        -------
+        bool
+            `True` if within range; `False` otherwise.
+
+        """
+        rtol = 1.e-5
+        return (
+            (1 - rtol) * r.min() <= self.r_out.min() and
+            (self.r_out.max() <= (1 + rtol) * r.max())
+        )
 
 
 class BispecWinConv(ThreePointWinConvBase):
