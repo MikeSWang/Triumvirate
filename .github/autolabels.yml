@@ -4,7 +4,7 @@
 #
 build:
 - changed-files:
-  - any-glob-to-any-files:
+  - any-glob-to-any-file:
     - setup.py
     - setup.cfg
     - pyproject.toml
@@ -15,7 +15,7 @@ build:
 
 documentation:
 - changed-files:
-  - any-glob-to-any-files:
+  - any-glob-to-any-file:
     - docs/**/*
     - deploy/doc/**/*
     - README.*
@@ -23,13 +23,13 @@ documentation:
 
 maintenance:
 - changed-files:
-  - any-glob-to-any-files:
+  - any-glob-to-any-file:
     - .github/**/*.md
     - CHANGELOG.md
     - NOTES.md
 
 workflows:
 - changed-files:
-  - any-glob-to-any-files:
+  - any-glob-to-any-file:
     - .github/**/*.yml
     - deploy/**/*
