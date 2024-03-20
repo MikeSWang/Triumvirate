@@ -684,6 +684,28 @@ class ThreePointWindow:
         }
 
 
+def _check_conv_range(r_conv, r):
+    """Check if the convolution range is fully covered by the
+    sample points.
+
+    Parameters
+    ----------
+    r_conv : 1-d array of float
+        Convolution range sample points.
+    r : 1-d array of float
+        Separation sample points.
+
+    Returns
+    -------
+    bool
+        `True` if within range; `False` otherwise.
+
+    """
+    RTOL = 1.e-5
+    return (1 - RTOL) * r.min() <= r_conv.min() \
+        and (r_conv.max() <= (1 + RTOL) * r.max())
+
+
 def _integrate_2d_samples(x, y, z):
     r"""Integrate 2-d samples of function :math:`z(x, y)`,
 
@@ -767,7 +789,7 @@ def calc_threept_ic(window_sampts, window_multipoles, r_in, zeta_in,
         ell1, ell2, ELL = map(int, _multipole)
 
         _N = (2 * ell1 + 1) * (2 * ell2 + 1) * (2 * ELL + 1)
-        _H2 = wigner_3j(ell1, ell2, ELL, 0, 0, 0) ** 2
+        _H2 = float(wigner_3j(ell1, ell2, ELL, 0, 0, 0)) ** 2
 
         ic_nom += _N * _H2 * _integrate_2d_samples(
             r_common, r_common, _Q_in[_multipole] * _zeta_in[_multipole]
@@ -813,6 +835,11 @@ class TwoPointWinConvBase:
         if not isinstance(formulae, WinConvFormulae):
             formulae = WinConvFormulae(formulae)
         self._formulae = formulae
+
+        if formulae.multipoles_Z[0] != 'ic':
+            self._multipole_rep = formulae.multipoles_Z[0]
+        else:
+            self._multipole_rep = formulae.multipoles_Z[-1]
 
         # Store window multipoles.
         self._rQ_in = window_sampts
@@ -870,6 +897,18 @@ class TwoPCFWinConv(TwoPointWinConvBase):
             self.r_out = r_in
         else:
             self.r_out = r_out
+        if not _check_conv_range(self.r_out, self._rQ_in):
+            warnings.warn(
+                "The convolution range `r_out` is not fully covered "
+                "by the window function separation sample points. "
+                "The window function samples may be extrapolated."
+            )
+        if not _check_conv_range(self.r_out, self.r_in):
+            warnings.warn(
+                "The convolution range `r_out` is not fully covered "
+                "by the input 3PCF separation sample points. "
+                "The input 3PCF samples may be extrapolated."
+            )
 
         self._Q_out = {
             _multipole: InterpolatedUnivariateSpline(
@@ -905,10 +944,13 @@ class TwoPCFWinConv(TwoPointWinConvBase):
         # Perform convolution as multiplication.
         xi_conv_out = {}
         for multipole in self._formulae.multipoles:
-            xi_conv_out[multipole] = np.add.reduce([
-                term.coeff * self._Q_out[term.ind_Q] * xi_out[term.ind_Z]
-                for term in self._formulae[multipole]
-            ])
+            xi_conv_out[multipole] = np.sum(
+                [
+                    term.coeff * self._Q_out[term.ind_Q] * xi_out[term.ind_Z]
+                    for term in self._formulae[multipole]
+                ],
+                axis=0
+            )
 
         return xi_conv_out
 
@@ -982,45 +1024,24 @@ class PowspecWinConv(TwoPointWinConvBase):
     def __init__(self, formulae, window_sampts, window_multipoles,
                  k_in, k_out=None, r_common=None, transform_kwargs=None):
 
-        # Different to other child classes of `TwoPointWinConvBase`,
-        # Hankel-like transforms are involved and the input arrays
-        # need to be remoulded.
-        if r_common is None:
-            try:
-                _check_1d_array(window_sampts, check_loglin=True)
-                _rQ_in, _Q_in = window_sampts, window_multipoles
-            except SpacingError:
-                _Q_in = {}
-                for multipole_Q, Qpole_in in window_multipoles.items():
-                    _rQ_in, _Q_in[multipole_Q] = resample_lglin(
-                        window_sampts, Qpole_in
-                    )
-                warnings.warn(
-                    "Window function separation sample points are not "
-                    "logarithmically spaced.  Window function multipoles "
-                    "have been resampled accordingly.",
-                    RuntimeWarning
-                )
-            finally:
-                self.r_common = _rQ_in
-        else:
-            try:
-                _check_1d_array(r_common, check_loglin=True)
-            except SpacingError:
-                raise SpacingError(
-                    "Common separation sample points are not "
-                    "logarithmically spaced."
-                )
+        super().__init__(formulae, window_sampts, window_multipoles)
 
-            _rQ_in = r_common
-            _Q_in = {}
-            for multipole_Q, Qpole_in in window_multipoles.items():
-                _Q_in[multipole_Q] = InterpolatedUnivariateSpline(
-                    window_sampts, Qpole_in
-                )(r_common)
+        # Instantiate default transform parameters.
+        self._transform_kwargs = transform_kwargs or {}
+        # if 'pivot' not in self._transform_kwargs:
+        #     self._transform_kwargs['pivot'] = 1.
+        # if 'lowring' not in self._transform_kwargs:
+        #     self._transform_kwargs['lowring'] = True
+        if 'extrap' not in self._transform_kwargs:
+            self._transform_kwargs['extrap'] = 4
+        # if 'extrap_exp' not in self._transform_kwargs:
+        #     self._transform_kwargs['extrap_exp'] = 2.
+        # if 'extrap_layer' not in self._transform_kwargs:
+        #     self._transform_kwargs['extrap_layer'] = 'outer'
+        # if 'threaded' not in self._transform_kwargs:
+        #     self._transform_kwargs['threaded'] = True
 
-            self.r_common = r_common
-
+        # Set input power spectrum wavenumber sample points.
         try:
             _check_1d_array(k_in, check_loglin=True)
         except SpacingError:
@@ -1030,24 +1051,9 @@ class PowspecWinConv(TwoPointWinConvBase):
             )
 
         self.k_in = k_in
-        if k_out is None:
-            self.k_out = k_in
-        else:
-            self.k_out = k_out
 
-        super().__init__(formulae, _rQ_in, _Q_in)
-
-        # Instantiate transforms for each multipole for repeated use.
-        self._transform_kwargs = transform_kwargs or {}
-        # if 'lowring' not in self._transform_kwargs:
-        #     self._transform_kwargs['lowring'] = True
-        if 'extrap' not in self._transform_kwargs:
-            self._transform_kwargs['extrap'] = 3
-        # if 'extrap_exp' not in self._transform_kwargs:
-        #     self._transform_kwargs['extrap_exp'] = 2.
-        # if 'extrap_layer' not in self._transform_kwargs:
-        #     self._transform_kwargs['extrap_layer'] = 'outer'
-
+        # Instantiate forward transforms for each unwindowed
+        # power spectrum multipole.
         self._bsjt = {
             multipole_Z: SphericalBesselTransform(
                 degree=int(multipole_Z),
@@ -1056,7 +1062,23 @@ class PowspecWinConv(TwoPointWinConvBase):
                 **self._transform_kwargs
             )
             for multipole_Z in self._formulae.multipoles_Z
-        }  # backward sj-transform for unwindowed power spectrum multipoles
+            if multipole_Z != 'ic'
+        }
+
+        # Set intermediate 2PCF separation sample points.
+        if r_common is None:
+            self.r_common = self._bsjt[self._multipole_rep]._post_sampts
+        else:
+            try:
+                _check_1d_array(r_common, check_loglin=True)
+            except SpacingError:
+                raise SpacingError(
+                    "Common separation sample points are not "
+                    "logarithmically spaced."
+                )
+            self.r_common = r_common
+
+        # Instantiate backward transforms for each windowed 2PCF multipole.
         self._fsjt = {
             multipole: SphericalBesselTransform(
                 degree=int(multipole),
@@ -1065,7 +1087,22 @@ class PowspecWinConv(TwoPointWinConvBase):
                 **self._transform_kwargs
             )
             for multipole in self._formulae.multipoles
-        }  # forward sj-transform for windowed 2PCF multipoles
+        }
+
+        # Set output power spectrum wavenumber sample points.
+        if k_out is None:
+            self.k_out = self._fsjt[self._multipole_rep]._post_sampts
+        else:
+            self.k_out = k_out
+
+        # Resample window function multipoles at common separation sample
+        # points.  This overrides the attributes set by the base class.
+        self._rQ_in = self.r_common
+        self._Q_in = {}
+        for multipole_Q, Qpole_in in window_multipoles.items():
+            self._Q_in[multipole_Q] = RectBivariateSpline(
+                window_sampts, window_sampts, Qpole_in
+            )(self.r_common, self.r_common)
 
     def convolve(self, pk_in):
         """Convolve power spectrum multipoles.
@@ -1083,33 +1120,27 @@ class PowspecWinConv(TwoPointWinConvBase):
             a multipole) at sample points :attr:`k_out`.
 
         """
-        # Backward transform bispectrum multipoles to 3PCF multipoles.
+        # Backward transform power spectrum multipoles to 2PCF multipoles.
         xi_in = {}
-        for multipole_Z, Ppole_in in pk_in.items():
-            r_in, xi_in[multipole_Z] = \
-                self._bsjt[multipole_Z].transform(Ppole_in)
+        for multipole_Z in self._formulae.multipoles_Z:
+            if multipole_Z == 'ic':
+                continue
+            r_in, xi_in[multipole_Z] = self._bsjt[multipole_Z].\
+                transform_cosmo_multipoles(-1, pk_in[multipole_Z])
 
-        # Resample at common separation sample points.
-        xi_in = {
-            multipole_Z: InterpolatedUnivariateSpline(
-                r_in, Zpole_in
-            )(self.r_common)
-            for multipole_Z, Zpole_in in xi_in.items()
-        }
-
-        # Convolve 2PCF multipoles.
-        xi_conv = {}
-        for multipole in self._formulae.multipoles:
-            xi_conv[multipole] = np.add.reduce([
-                term.coeff * self._Q_in[term.ind_Q] * xi_in[term.ind_Z]
-                for term in self._formulae[multipole]
-            ])
+        # Perform 2PCF convolution.
+        _winconv = TwoPCFWinConv(
+            self._formulae, self._rQ_in, self._Q_in,
+            r_in,
+            r_out=self.r_common
+        )
+        xi_conv = _winconv.convolve(xi_in)
 
         # Forward transform 2PCF multipoles to power spectrum multipoles.
         pk_conv_out = {}
-        for multipole, Zpole_conv in xi_conv.items():
-            k_conv, pk_conv_out[multipole] = \
-                self._fsjt[multipole].transform(Zpole_conv)
+        for multipole in self._formulae.multipoles:
+            k_conv, pk_conv_out[multipole] = self._fsjt[multipole].\
+                transform_cosmo_multipoles(1, xi_conv[multipole])
 
         # Resample at output wavenumber sample points.
         pk_conv_out = {
@@ -1165,11 +1196,17 @@ class ThreePointWinConvBase:
             formulae = WinConvFormulae(formulae)
         self._formulae = formulae
 
+        if formulae.multipoles_Z[0] != 'ic':
+            self._multipole_rep = formulae.multipoles_Z[0]
+        else:
+            self._multipole_rep = formulae.multipoles_Z[-1]
+
         # Store window multipoles.
         self._rQ_in = window_sampts
         self._Q_in = window_multipoles
 
 
+# STYLE: Standard naming convention is not always followed below.
 class ThreePCFWinConv(ThreePointWinConvBase):
     """Window convolution of three-point correlation function (3PCF).
 
@@ -1224,13 +1261,13 @@ class ThreePCFWinConv(ThreePointWinConvBase):
             self.r_out = r_in
         else:
             self.r_out = r_out
-        if not self._check_conv_range(self._rQ_in):
+        if not _check_conv_range(self.r_out, self._rQ_in):
             warnings.warn(
                 "The convolution range `r_out` is not fully covered "
                 "by the window function separation sample points. "
                 "The window function samples may be extrapolated."
             )
-        if not self._check_conv_range(self.r_in):
+        if not _check_conv_range(self.r_out, self.r_in):
             warnings.warn(
                 "The convolution range `r_out` is not fully covered "
                 "by the input 3PCF separation sample points. "
@@ -1303,10 +1340,13 @@ class ThreePCFWinConv(ThreePointWinConvBase):
         # Perform convolution as multiplication.
         zeta_conv_out = {}
         for multipole in self._formulae.multipoles:
-            zeta_conv_out[multipole] = np.add.reduce([
-                term.coeff * self._Q_out[term.ind_Q] * zeta_out[term.ind_Z]
-                for term in self._formulae[multipole]
-            ])
+            zeta_conv_out[multipole] = np.sum(
+                [
+                    term.coeff * self._Q_out[term.ind_Q] * zeta_out[term.ind_Z]
+                    for term in self._formulae[multipole]
+                ],
+                axis=0
+            )
 
         return zeta_conv_out
 
@@ -1362,34 +1402,16 @@ class ThreePCFWinConv(ThreePointWinConvBase):
         # Perform convolution as multiplication.
         zeta_diag_conv_out = {}
         for multipole in self._formulae.multipoles:
-            zeta_diag_conv_out[multipole] = np.add.reduce([
-                term.coeff
-                * self._Qdiag_out[term.ind_Q] * zeta_diag_out[term.ind_Z]
-                for term in self._formulae[multipole]
-            ])
+            zeta_diag_conv_out[multipole] = np.sum(
+                [
+                    term.coeff
+                    * self._Qdiag_out[term.ind_Q] * zeta_diag_out[term.ind_Z]
+                    for term in self._formulae[multipole]
+                ],
+                axis=0
+            )
 
         return zeta_diag_conv_out
-
-    def _check_conv_range(self, r):
-        """Check if the convolution range is fully covered by the
-        sample points.
-
-        Parameters
-        ----------
-        r : 1-d array of float
-            Separation sample points.
-
-        Returns
-        -------
-        bool
-            `True` if within range; `False` otherwise.
-
-        """
-        rtol = 1.e-5
-        return (
-            (1 - rtol) * r.min() <= self.r_out.min() and
-            (self.r_out.max() <= (1 + rtol) * r.max())
-        )
 
 
 class BispecWinConv(ThreePointWinConvBase):
@@ -1413,13 +1435,14 @@ class BispecWinConv(ThreePointWinConvBase):
         logarithmically spaced.
     k_out : 1-d array of float, optional
         Wavenumber sample points for the output bispectrum.  If `None`
-        (default), it is the same as `k_in`.
+        (default), they are chosen to correspond to the separation
+        sample points `r_common`.
     r_common : 1-d array of float, optional
         Separation sample points for multipoles of both the
         window function and the intermediate 3PCF (transformed from
-        `bk_in`).  If `None` (default), the window function separation
-        sample points are used (after logarithmic respacing if necessary);
-        otherwise, `r_common` must be logarithmically spaced.
+        `B_in`).  If `None` (default), they are chosen to correspond
+        to the input bispectrum wavenumber sample points; otherwise,
+        `r_common` must be logarithmically spaced.
     transform_kwargs : dict, optional
         FFTLog transform keyword arguments to be passed to
         :class:`~triumvirate.transforms.DoubleSphericalBesselTransform`
@@ -1435,7 +1458,7 @@ class BispecWinConv(ThreePointWinConvBase):
     r_common : 1-d array of float
         Logarithmically spaced separation sample points for multipoles
         of both the window function and the intermediate 3PCF
-        (transformed from `bk_in`).
+        (transformed from `B_in`).
 
     Raises
     ------
@@ -1464,45 +1487,24 @@ class BispecWinConv(ThreePointWinConvBase):
     def __init__(self, formulae, window_sampts, window_multipoles,
                  k_in, k_out=None, r_common=None, transform_kwargs=None):
 
-        # Different to other child classes of `ThreePointWinConvBase`,
-        # Hankel-like transforms are involved and the input arrays
-        # need to be remoulded.
-        if r_common is None:
-            try:
-                _check_1d_array(window_sampts, check_loglin=True)
-                _rQ_in, _Q_in = window_sampts, window_multipoles
-            except SpacingError:
-                _Q_in = {}
-                for multipole_Q, Qpole_in in window_multipoles.items():
-                    (_rQ_in, _), _Q_in[multipole_Q] = resample_lglin(
-                        window_sampts, Qpole_in
-                    )
-                warnings.warn(
-                    "Window function separation sample points are not "
-                    "logarithmically spaced.  Window function multipoles "
-                    "have been resampled accordingly.",
-                    RuntimeWarning
-                )
-            finally:
-                self.r_common = _rQ_in
-        else:
-            try:
-                _check_1d_array(r_common, check_loglin=True)
-            except SpacingError:
-                raise SpacingError(
-                    "Common separation sample points are not "
-                    "logarithmically spaced."
-                )
+        super().__init__(formulae, window_sampts, window_multipoles)
 
-            _rQ_in = r_common
-            _Q_in = {}
-            for multipole_Q, Qpole_in in window_multipoles.items():
-                _Q_in[multipole_Q] = RectBivariateSpline(
-                    window_sampts, window_sampts, Qpole_in
-                )(r_common, r_common)
+        # Initialise default transform parameters.
+        self._transform_kwargs = transform_kwargs or {}
+        # if 'pivot' not in self._transform_kwargs:
+        #     self._transform_kwargs['pivot'] = 1.
+        # if 'lowring' not in self._transform_kwargs:
+        #     self._transform_kwargs['lowring'] = True
+        if 'extrap' not in self._transform_kwargs:
+            self._transform_kwargs['extrap'] = 5
+        # if 'extrap_exp' not in self._transform_kwargs:
+        #     self._transform_kwargs['extrap_exp'] = 2.
+        # if 'extrap2d' not in self._transform_kwargs:
+        #     self._transform_kwargs['extrap2d'] = False
+        # if 'threaded' not in self._transform_kwargs:
+        #     self._transform_kwargs['threaded'] = True
 
-            self.r_common = r_common
-
+        # Set input bispectrum wavenumber sample points.
         try:
             _check_1d_array(k_in, check_loglin=True)
         except SpacingError:
@@ -1510,26 +1512,10 @@ class BispecWinConv(ThreePointWinConvBase):
                 "Input bispectrum wavenumber sample points are not "
                 "logarithmically spaced."
             )
-
         self.k_in = k_in
-        if k_out is None:
-            self.k_out = k_in
-        else:
-            self.k_out = k_out
 
-        super().__init__(formulae, _rQ_in, _Q_in)
-
-        # Instantiate transforms for each multipole for repeated use.
-        self._transform_kwargs = transform_kwargs or {}
-        # if 'lowring' not in self._transform_kwargs:
-        #     self._transform_kwargs['lowring'] = True
-        if 'extrap' not in self._transform_kwargs:
-            self._transform_kwargs['extrap'] = 3
-        # if 'extrap_exp' not in self._transform_kwargs:
-        #     self._transform_kwargs['extrap_exp'] = 2.
-        # if 'extrap2d' not in self._transform_kwargs:
-        #     self._transform_kwargs['extrap2d'] = False
-
+        # Instantiate forward transforms for each unwindowed
+        # bispectrum multipole.
         self._bdsjt = {
             multipole_Z: DoubleSphericalBesselTransform(
                 degrees=(int(multipole_Z[0]), int(multipole_Z[1])),
@@ -1538,7 +1524,23 @@ class BispecWinConv(ThreePointWinConvBase):
                 **self._transform_kwargs
             )
             for multipole_Z in self._formulae.multipoles_Z
-        }  # backward double sj-transform for unwindowed bispectrum multipoles
+            if multipole_Z != 'ic'
+        }
+
+        # Set intermediate 3PCF separation sample points.
+        if r_common is None:
+            self.r_common = self._bdsjt[self._multipole_rep]._post_sampts
+        else:
+            try:
+                _check_1d_array(r_common, check_loglin=True)
+            except SpacingError:
+                raise SpacingError(
+                    "Common separation sample points are not "
+                    "logarithmically spaced."
+                )
+            self.r_common = r_common
+
+        # Instantiate backward transforms for each windowed 3PCF multipole.
         self._fdsjt = {
             multipole: DoubleSphericalBesselTransform(
                 degrees=(int(multipole[0]), int(multipole[1])),
@@ -1547,59 +1549,72 @@ class BispecWinConv(ThreePointWinConvBase):
                 **self._transform_kwargs
             )
             for multipole in self._formulae.multipoles
-        }  # forward double sj-transform for windowed 3PCF multipoles
+        }
 
-    def convolve(self, bk_in):
-        """Convolve bispectrum multipoles.
+        # Set output bispectrum wavenumber sample points.
+        if k_out is None:
+            self.k_out = self._fdsjt[self._multipole_rep]._post_sampts
+        else:
+            self.k_out = k_out
+
+        # Resample window function multipoles at common separation sample
+        # points.  This overrides the attributes set by the base class.
+        self._rQ_in = self.r_common
+        self._Q_in = {}
+        for multipole_Q, Qpole_in in window_multipoles.items():
+            self._Q_in[multipole_Q] = RectBivariateSpline(
+                window_sampts, window_sampts, Qpole_in
+            )(self.r_common, self.r_common)
+
+    def convolve(self, B_in, ic=None):
+        r"""Convolve bispectrum multipoles.
 
         Parameters
         ----------
-        bk_in : dict of {str: 2-d array of float}
+        B_in : dict of {str: 2-d array of float}
             Input bispectrum multipole samples (each key is a multipole)
             at sample points :attr:`k_in`.
+        ic : float, optional
+            Integral constraint :math:`\bar{\zeta}`.  If `None` (default)
+            and required by the convolution formula, it is calculated
+            from the input bispectrum and the window function.
 
         Returns
         -------
-        bk_conv_out : dict of {str: 2-d :class:`numpy.ndarray`}
+        B_conv_out : dict of {str: 2-d :class:`numpy.ndarray`}
             Output windowed bispectrum multipole samples (each key is
             a multipole) at sample points :attr:`k_out`.
 
         """
         # Backward transform bispectrum multipoles to 3PCF multipoles.
         zeta_in = {}
-        for multipole_Z, Bpole_in in bk_in.items():
-            if multipole_Z in self._formulae.multipoles_Z:
-                r_in, zeta_in[multipole_Z] = \
-                    self._bdsjt[multipole_Z].transform(Bpole_in)
+        for multipole_Z in self._formulae.multipoles_Z:
+            if multipole_Z == 'ic':
+                continue
+            r_in, zeta_in[multipole_Z] = self._bdsjt[multipole_Z].\
+                transform_cosmo_multipoles(-1, B_in[multipole_Z])
 
-        # Resample at common separation sample points.
-        zeta_in = {
-            multipole_Z: RectBivariateSpline(
-                r_in[0][:, 0], r_in[-1][0, :], Zpole_in
-            )(self.r_common, self.r_common)
-            for multipole_Z, Zpole_in in zeta_in.items()
-        }
+        # Perform 3PCF convolution.
+        _winconv = ThreePCFWinConv(
+            self._formulae, self._rQ_in, self._Q_in,
+            r_in[0][:, 0],
+            r_out=self.r_common
+        )
 
-        # Convolve 3PCF multipoles.
-        zeta_conv = {}
-        for multipole in self._formulae.multipoles:
-            zeta_conv[multipole] = np.add.reduce([
-                term.coeff * self._Q_in[term.ind_Q] * zeta_in[term.ind_Z]
-                for term in self._formulae[multipole]
-            ])
+        zeta_conv = _winconv.convolve(zeta_in, ic=ic)
 
         # Forward transform 3PCF multipoles to bispectrum multipoles.
-        bk_conv_out = {}
-        for multipole, Zpole_conv in zeta_conv.items():
-            k_conv, bk_conv_out[multipole] = \
-                self._fdsjt[multipole].transform(Zpole_conv)
+        B_conv_out = {}
+        for multipole in self._formulae.multipoles:
+            k_conv, B_conv_out[multipole] = self._fdsjt[multipole].\
+                transform_cosmo_multipoles(1, zeta_conv[multipole])
 
         # Resample at output wavenumber sample points.
-        bk_conv_out = {
+        B_conv_out = {
             multipole: RectBivariateSpline(
                 k_conv[0][:, 0], k_conv[-1][0, :], Bpole_conv_out
             )(self.k_out, self.k_out)
-            for multipole, Bpole_conv_out in bk_conv_out.items()
+            for multipole, Bpole_conv_out in B_conv_out.items()
         }
 
-        return bk_conv_out
+        return B_conv_out
