@@ -10,6 +10,7 @@ from triumvirate.transforms import (
     DoubleSphericalBesselTransform,
     SphericalBesselTransform,
     resample_lglin,
+    resample_lin,
 )
 
 
@@ -58,7 +59,7 @@ def sj_func_pair(request):
     "order, bias, nsamp, lgrange_samp, extrap, hankel_func_pair, lgrange_test",
     [
         (2, 0, 2**10, [-5., 5.], 0, 'sym', [-3., .5]),
-        (0, 0, 2**11, [-5., 5.], 3, 'asym', [-3., .5]),
+        (0, 0, 2**11, [-5., 5.], 4, 'asym', [-3., .5]),
     ],
     indirect=['hankel_func_pair',]
 )
@@ -89,7 +90,7 @@ def test_hankeltransform(order, bias, nsamp, lgrange_samp, extrap,
     "degree, bias, nsamp, lgrange_samp, extrap, sj_func_pair, lgrange_test",
     [
         (0, 0, 2**10, [-5., 5.], 0, 'sym', [-3.5, .5]),
-        (2, 0, 2**11, [-5., 5.], 3, 'asym', [-1., 3.]),
+        (2, 0, 2**11, [-5., 5.], 4, 'asym', [-1., 3.]),
     ],
     indirect=['sj_func_pair',]
 )
@@ -124,7 +125,7 @@ def test_sphericalbesseltransform(degree, bias, nsamp, lgrange_samp, extrap,
     "degrees, biases, nsamp, lgrange_samp, extrap, sj_func_pair, lgrange_test",
     [
         ((0, 0), (0, 0), 2**10, [-5., 5.], 0, 'sym', [-3., 0.]),
-        ((2, 2), (0, 0), 2**11, [-5., 5.], 3, 'asym', [-.5, 3.]),
+        ((2, 2), (0, 0), 2**11, [-5., 5.], 4, 'asym', [-.5, 3.]),
     ],
     indirect=['sj_func_pair',]
 )
@@ -186,6 +187,34 @@ def test_resample_lglin(sampts, size, func, ndim):
         raise ValueError("Resampling only supports 1- or 2-d arrays.")
 
     resampts, resamples = resample_lglin(sampts, samples, size=size)
+
+    if ndim == 1:
+        resamples_exact = func(resampts)
+    if ndim == 2:
+        resamples_exact = func(
+            *np.meshgrid(resampts[0], resampts[-1], indexing='ij')
+        )
+
+    assert np.allclose(resamples, resamples_exact), "Resampling not accurate."
+
+
+@pytest.mark.parametrize(
+    "sampts, size, func, ndim",
+    [
+        (np.arange(1., 11.), None, lambda x: x**2, 1),
+        (np.arange(1., 51.) * 1.e-3, 10, lambda x, y: x + y, 2),
+    ]
+)
+def test_resample_lin(sampts, size, func, ndim):
+
+    if ndim == 1:
+        samples = func(sampts)
+    elif ndim == 2:
+        samples = func(*np.meshgrid(sampts, sampts, indexing='ij'))
+    else:
+        raise ValueError("Resampling only supports 1- or 2-d arrays.")
+
+    resampts, resamples = resample_lin(sampts, samples, size=size)
 
     if ndim == 1:
         resamples_exact = func(resampts)
