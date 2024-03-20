@@ -22,7 +22,7 @@ cdef class HankelTransform:
     q : float
         Power-law bias index.
     x : array of float
-        Pre-transform sample points.  Must be log-linearly spaced.
+        Pre-transform sample points.  Must be logarithmically spaced.
         Must be even in length if extrapolation is used.
     kr_c : float
         Pivot value for the transform.  When `lowring` is `True`, this is

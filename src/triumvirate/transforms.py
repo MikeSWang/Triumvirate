@@ -42,8 +42,9 @@ class SphericalBesselTransform:
     bias : int
         Power-law bias index.
     sample_pts : array of float
-        Pre-transform sample points in 1-d.  Must be log-linearly spaced.
-        Must be even in length if extrapolation is used.
+        Pre-transform sample points in 1-d.  Must be
+        logarithmically spaced.  Must be even in length if extrapolation
+        is used.
     pivot : float, optional
         Pivot value (default is 1.).  When `lowring` is `True`, this is
         adjusted if it is non-zero, or otherwise directly calculated.
@@ -274,7 +275,7 @@ class DoubleSphericalBesselTransform:
         Power-law bias indices.
     sample_pts : array of float
         Pre-transform sample points in 1-d for both dimensions.
-        Must be log-linearly spaced.  Must be even in length if
+        Must be logarithmically spaced.  Must be even in length if
         extrapolation is used.
     pivot : float, optional
         Pivot value (default is 1.).  When `lowring` is `True`, this is

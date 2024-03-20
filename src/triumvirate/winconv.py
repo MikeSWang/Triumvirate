@@ -520,7 +520,9 @@ class ThreePointWindow:
         ----------
         dict_obj : dict
             Dictionary of 2-d window function multipoles
-            (key 'Q') and sample points (key 'r').
+            (key 'Q') and sample points (key 'r'), where the multipoles
+            are themselves a single dictionary with each key corresponding
+            to a multipole.
 
         Returns
         -------
@@ -852,6 +854,10 @@ class TwoPCFWinConv(TwoPointWinConvBase):
         representation of a multipole must be consistent across
         all inputs.
 
+    .. attention::
+
+        Integral constraint is ignored.
+
     """
 
     def __init__(self, formulae, window_sampts, window_multipoles,
@@ -966,6 +972,10 @@ class PowspecWinConv(TwoPointWinConvBase):
         must use exactly the same key type.  In other words, the type
         representation of a multipole must be consistent across
         all inputs.
+
+    .. attention::
+
+        Integral constraint is ignored.
 
     """
 

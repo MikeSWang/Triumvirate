@@ -71,7 +71,7 @@ void HankelTransform::initialise(
   }
   if (trva::check_1d_array(sample_pts, false, true, false) != 0) {
     throw trvs::InvalidParameterError(
-      "The sample points are not log-linearly spaced."
+      "The sample points are not logarithmically spaced."
     );
   }
 

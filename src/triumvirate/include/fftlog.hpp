@@ -105,7 +105,7 @@ class HankelTransform {
    * @throws trv::sys::InvalidParameterError When the size of `sample_pts`
    *                                         is less than 2.
    * @throws trv::sys::InvalidParameterError When `sample_pts` is not
-   *                                         log-linearly spaced.
+   *                                         logarithmically spaced.
    * @throws trv::sys::InvalidParameterError When the size of `sample_pts`
    *                                         is not even with
    *                                         extrapolation enabled.
