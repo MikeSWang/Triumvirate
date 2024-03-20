@@ -1250,14 +1250,18 @@ class ThreePCFWinConv(ThreePointWinConvBase):
             for _multipole, _Qpole_in in self._Q_in.items()
         }
 
-    def convolve(self, zeta_in):
-        """Convolve 3PCF multipoles.
+    def convolve(self, zeta_in, ic=None):
+        r"""Convolve 3PCF multipoles.
 
         Parameters
         ----------
         zeta_in : dict of {str: 2-d array of float}
             Input 3PCF multipole samples (each key is a multipole)
             at sample points :attr:`r_in`.
+        ic : float, optional
+            Integral constraint :math:`\bar{\zeta}`.  If `None` (default)
+            and required by the convolution formula, it is calculated
+            from the input 3PCF and the window function.
 
         Returns
         -------
@@ -1268,18 +1272,8 @@ class ThreePCFWinConv(ThreePointWinConvBase):
         Raises
         ------
         ValueError
-            When the dimensions of the input 3PCF multipole samples,
-            including any integral constraint, do not match the separation
-            sample points of the input 3PCF.
-
-
-        .. attention::
-
-            This also calculates the integral constraint if it is required
-            by the convolution formulae but not present in the input 3PCF.
-            If the integral constraint is present in the input 3PCF, it
-            should be a 2-d array similar to the 3PCF multipoles, even
-            when its entries are all of the same value.
+            When the dimensions of the input 3PCF multipole samples do not
+            match the separation sample points of the input 3PCF.
 
         """
         # Interpolate input multipoles at output sample points.
@@ -1292,17 +1286,18 @@ class ThreePCFWinConv(ThreePointWinConvBase):
             }
         except IndexError:  # raised by :mod:`scipy.interpolate._fitpack2`
             raise ValueError(
-                "The input 3PCF multipole samples, including any integral "
-                "constraint, must be square matrices matching the dimension "
-                "of the input 3PCF separation sample points."
+                "The input 3PCF multipole samples must be square matrices "
+                "matching the dimension of the input 3PCF "
+                "separation sample points."
             )
 
         # Enforce integral constraint.
-        if ('ic' in self._formulae.multipoles_Z) and ('ic' not in zeta_out):
-            ic = calc_threept_ic(
-                self._rQ_in, self._Q_in, self.r_in, zeta_in,
-                r_common=self.r_out, approx=False
-            )
+        if 'ic' in self._formulae.multipoles_Z:
+            if ic is None:
+                ic = calc_threept_ic(
+                    self._rQ_in, self._Q_in, self.r_in, zeta_in,
+                    r_common=self.r_out, approx=False
+                )
             zeta_out['ic'] = ic * np.ones((len(self.r_out), len(self.r_out)))
 
         # Perform convolution as multiplication.
@@ -1315,14 +1310,17 @@ class ThreePCFWinConv(ThreePointWinConvBase):
 
         return zeta_conv_out
 
-    def convolve_diag(self, zeta_diag_in):
-        """Convolve diagonal 3PCF multipoles.
+    def convolve_diag(self, zeta_diag_in, ic=None):
+        r"""Convolve diagonal 3PCF multipoles.
 
         Parameters
         ----------
         zeta_diag_in : dict of {str: 1-d array of float}
             Input diagonal 3PCF multipole samples (each key
             is a multipole) at sample points :attr:`r_in`.
+        ic : float, optional
+            Integral constraint :math:`\bar{\zeta}`.  Cannot be `None`
+            (default) if required by the convolution formula.
 
         Returns
         -------
@@ -1334,15 +1332,7 @@ class ThreePCFWinConv(ThreePointWinConvBase):
         ------
         ValueError
             When the integral constraint is required by the convolution
-            formulae but not present in the input 3PCF.
-
-
-        .. attention::
-
-            If the integral constraint is required by the convolution
-            formulae, it must be present in the input 3PCF as a vector
-            (i.e. a 1-d array) similar to the diagonal 3PCF multipoles,
-            even when its entries are all of the same value.
+            formulae but `ic` is `None`.
 
         """
         # Interpolate input multipoles at output sample points.
@@ -1361,12 +1351,13 @@ class ThreePCFWinConv(ThreePointWinConvBase):
             )
 
         # Enforce integral constraint.
-        if ('ic' in self._formulae.multipoles_Z) \
-                and ('ic' not in zeta_diag_out):
-            raise ValueError(
-                "The integral constraint is required by the convolution "
-                "formulae but not present in the input 3PCF."
-            )
+        if 'ic' in self._formulae.multipoles_Z:
+            if ic is None:
+                raise ValueError(
+                    "The integral constraint is required by the convolution "
+                    "formulae but not provided."
+                )
+            zeta_diag_out['ic'] = ic * np.ones(len(self.r_out))
 
         # Perform convolution as multiplication.
         zeta_diag_conv_out = {}
