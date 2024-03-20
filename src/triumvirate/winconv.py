@@ -10,6 +10,8 @@ Perform window convolution of two- and three-point statistics.
 .. autosummary::
     WinConvTerm
     WinConvFormulae
+    ThreePointWindow
+    calc_threept_ic
     TwoPointWinConvBase
     TwoPCFWinConv
     PowspecWinConv

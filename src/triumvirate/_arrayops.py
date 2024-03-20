@@ -6,13 +6,18 @@ Perform array operations.
 
 .. autosummary::
     ShapeError
+    OrderError
+    MixedSignError
+    SpacingError
+    DivergenceWarning
 
 1-d arrays:
 
 .. autosummary::
+    extrap_pad
     extrap_lin
     extrap_loglin
-    extrap_pad
+    extrap_loglin_oscil
 
 2-d arrays:
 
@@ -20,6 +25,8 @@ Perform array operations.
     extrap2d_lin
     extrap2d_loglin
     extrap2d_pad
+    extrap2d_loglin_oscil
+    reshape_threept_datatab
 
 """
 import warnings
