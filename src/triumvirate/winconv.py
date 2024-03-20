@@ -162,11 +162,11 @@ class WinConvFormulae:
     ----------
     formulae : |formulae_type|
         Window convolution formulae.
-    multipoles : list of str
+    multipoles : list of str or list of tuple of int
         Windowed CF multipoles.
-    multipoles_Q : array of str
+    multipoles_Q : list of str or list of tuple of int
         Required window function multipoles.
-    multipoles_Z : array of str
+    multipoles_Z : list of str or list of tuple of int
         Required unwindowed CF multipoles.
 
     Examples
@@ -231,16 +231,16 @@ class WinConvFormulae:
         }
 
         self.multipoles = list(formulae.keys())
-        self.multipoles_Q = np.unique([
+        self.multipoles_Q = list(set([
             term.ind_Q
             for formula in self.formulae.values()
             for term in formula
-        ])
-        self.multipoles_Z = np.unique([
+        ]))
+        self.multipoles_Z = list(set([
             term.ind_Z
             for formula in self.formulae.values()
             for term in formula
-        ])
+        ]))
 
     def __getitem__(self, multipole):
         """Get the formula for a specific windowed CF multipole.
