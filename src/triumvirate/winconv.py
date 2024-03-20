@@ -1265,14 +1265,45 @@ class ThreePCFWinConv(ThreePointWinConvBase):
             Output windowed 3PCF multipole samples (each key is
             a multipole) at sample points :attr:`r_out`.
 
+        Raises
+        ------
+        ValueError
+            When the dimensions of the input 3PCF multipole samples,
+            including any integral constraint, do not match the separation
+            sample points of the input 3PCF.
+
+
+        .. attention::
+
+            This also calculates the integral constraint if it is required
+            by the convolution formulae but not present in the input 3PCF.
+            If the integral constraint is present in the input 3PCF, it
+            should be a 2-d array similar to the 3PCF multipoles, even
+            when its entries are all of the same value.
+
         """
         # Interpolate input multipoles at output sample points.
-        zeta_out = {
-            multipole: RectBivariateSpline(
-                self.r_in, self.r_in, Zpole_in
-            )(self.r_out, self.r_out)
-            for multipole, Zpole_in in zeta_in.items()
-        }
+        try:
+            zeta_out = {
+                multipole: RectBivariateSpline(
+                    self.r_in, self.r_in, Zpole_in
+                )(self.r_out, self.r_out)
+                for multipole, Zpole_in in zeta_in.items()
+            }
+        except IndexError:  # raised by :mod:`scipy.interpolate._fitpack2`
+            raise ValueError(
+                "The input 3PCF multipole samples, including any integral "
+                "constraint, must be square matrices matching the dimension "
+                "of the input 3PCF separation sample points."
+            )
+
+        # Enforce integral constraint.
+        if ('ic' in self._formulae.multipoles_Z) and ('ic' not in zeta_out):
+            ic = calc_threept_ic(
+                self._rQ_in, self._Q_in, self.r_in, zeta_in,
+                r_common=self.r_out, approx=False
+            )
+            zeta_out['ic'] = ic * np.ones((len(self.r_out), len(self.r_out)))
 
         # Perform convolution as multiplication.
         zeta_conv_out = {}
@@ -1299,14 +1330,43 @@ class ThreePCFWinConv(ThreePointWinConvBase):
             Output windowed diagonal 3PCF multipole samples (each key
             is a multipole) at sample points :attr:`r_out`.
 
+        Raises
+        ------
+        ValueError
+            When the integral constraint is required by the convolution
+            formulae but not present in the input 3PCF.
+
+
+        .. attention::
+
+            If the integral constraint is required by the convolution
+            formulae, it must be present in the input 3PCF as a vector
+            (i.e. a 1-d array) similar to the diagonal 3PCF multipoles,
+            even when its entries are all of the same value.
+
         """
         # Interpolate input multipoles at output sample points.
-        zeta_diag_out = {
-            multipole: InterpolatedUnivariateSpline(
-                self.r_in, Zpole_diag_in
-            )(self.r_out)
-            for multipole, Zpole_diag_in in zeta_diag_in.items()
-        }
+        try:
+            zeta_diag_out = {
+                multipole: InterpolatedUnivariateSpline(
+                    self.r_in, Zpole_diag_in
+                )(self.r_out)
+                for multipole, Zpole_diag_in in zeta_diag_in.items()
+            }
+        except ValueError:  # raised by :mod:`scipy.interpolate._fitpack2`
+            raise ValueError(
+                "The input 3PCF multipole samples, including any integral "
+                "constraint, must be vectors matching the dimension "
+                "of the input 3PCF separation sample points."
+            )
+
+        # Enforce integral constraint.
+        if ('ic' in self._formulae.multipoles_Z) \
+                and ('ic' not in zeta_diag_out):
+            raise ValueError(
+                "The integral constraint is required by the convolution "
+                "formulae but not present in the input 3PCF."
+            )
 
         # Perform convolution as multiplication.
         zeta_diag_conv_out = {}
