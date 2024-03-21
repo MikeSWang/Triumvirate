@@ -67,9 +67,7 @@ cdef class HankelTransform:
     def __cinit__(self, mu, q, x, kr_c, lowring=True, extrap=0, extrap_exp=2.,
                   threaded=False):
 
-        _x = np.ascontiguousarray(
-            np.copy(_check_1d_array(x, check_loglin=True))
-        )
+        _x = np.ascontiguousarray(_check_1d_array(x, check_loglin=True).copy())
 
         self.thisptr = new CppHankelTransform(<double>mu, <double>q, threaded)
 
@@ -122,9 +120,9 @@ cdef class HankelTransform:
 
         """
         cdef np.ndarray[double complex, ndim=1, mode='c'] fx_ = \
-            np.copy(fx)
+            fx.copy().astype(np.complex128)
         cdef np.ndarray[double complex, ndim=1, mode='c'] gy_ = \
-            np.zeros_like(fx)
+            np.zeros_like(fx, dtype=np.complex128)
         self.thisptr.biased_transform(&fx_[0], &gy_[0])
 
         y, gy = np.array(self._post_sampts), np.array(gy_)
