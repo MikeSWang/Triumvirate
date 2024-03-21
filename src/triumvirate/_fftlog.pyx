@@ -66,11 +66,13 @@ cdef class HankelTransform:
 
     def __cinit__(self, mu, q, x, kr_c, lowring=True, extrap=0, extrap_exp=2.,
                   threaded=False):
+
+        _x = np.ascontiguousarray(
+            np.copy(_check_1d_array(x, check_loglin=True))
+        )
+
         self.thisptr = new CppHankelTransform(<double>mu, <double>q, threaded)
 
-        cdef np.ndarray[double, ndim=1, mode='c'] _x = np.ascontiguousarray(
-            _check_1d_array(x, check_loglin=True)
-        )
         self.thisptr.initialise(
             _x, kr_c, lowring, 0 if extrap is None else extrap, extrap_exp
         )
@@ -119,32 +121,12 @@ cdef class HankelTransform:
             Post-transform sample points and samples.
 
         """
-        fx = np.ascontiguousarray(fx, dtype=np.complex128)
-        y, gy = self._post_sampts, self._transform(fx)
+        cdef np.ndarray[double complex, ndim=1, mode='c'] fx_ = \
+            np.copy(fx)
+        cdef np.ndarray[double complex, ndim=1, mode='c'] gy_ = \
+            np.zeros_like(fx)
+        self.thisptr.biased_transform(&fx_[0], &gy_[0])
 
-        return np.asarray(y), np.asarray(gy)
+        y, gy = np.array(self._post_sampts), np.array(gy_)
 
-    def _transform(
-        self, np.ndarray[double complex, ndim=1, mode='c'] fx not None
-    ):
-        """Transform samples at initialised sample points.
-
-        Parameters
-        ----------
-        fx : array of complex
-            Pre-transform samples.  Must be even in length
-            if extrapolation is used.  Assumed to be real if extrapolation
-            is used.
-
-        Returns
-        -------
-        gy : array of complex
-            Post-transform samples.
-
-        """
-        cdef np.ndarray[double complex, ndim=1, mode='c'] gy = \
-            np.zeros(self._nsamp, dtype=np.complex128)
-
-        self.thisptr.biased_transform(&fx[0], &gy[0])
-
-        return gy
+        return y, gy
