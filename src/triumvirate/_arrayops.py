@@ -111,7 +111,7 @@ def _check_1d_array(a, check_sorted=False, check_epsign=False,
     """
     a = np.squeeze(a)
 
-    if a.ndim != 1:
+    if a.ndim != 1 or a.size < 2:
         raise ShapeError("Input array is not 1-d.")
 
     def _check_epsign(a, strict=False):
@@ -181,7 +181,7 @@ def _check_2d_array(a, check_sorted=False, check_epsign=False,
     """
     a = np.squeeze(a)
 
-    if a.ndim != 2:
+    if a.ndim != 2 or a.size < 4:
         raise ShapeError("Input array is not 2-d.")
 
     def _check_epsign(a, strict=False):
@@ -351,6 +351,12 @@ def extrap_loglin_oscil(a, n_ext):
 
     """
     a = _check_1d_array(a)
+
+    if len(a) < 8:
+        warnings.warn(
+            "Array length is less than 8. Extrapolation may not be accurate.",
+            UserWarning
+        )
 
     # Check for sign changes and restrict extrapolation to a range
     # with at least 2 points on either 'bank' of the 'zero river'.
