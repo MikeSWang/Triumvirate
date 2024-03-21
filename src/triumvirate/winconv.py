@@ -847,6 +847,12 @@ class TwoPointWinConvBase:
         self._rQ_in = window_sampts
         self._Q_in = window_multipoles
 
+        if not set(self._formulae.multipoles_Q).issubset(self._Q_in.keys()):
+            raise ValueError(
+                "The window function multipole samples must contain all "
+                "the multipole keys required by the convolution formulae."
+            )
+
 
 class TwoPCFWinConv(TwoPointWinConvBase):
     """Window convolution of two-point correlation function (2PCF).
@@ -1206,6 +1212,12 @@ class ThreePointWinConvBase:
         # Store window multipoles.
         self._rQ_in = window_sampts
         self._Q_in = window_multipoles
+
+        if not set(self._formulae.multipoles_Q).issubset(self._Q_in.keys()):
+            raise ValueError(
+                "The window function multipole samples must contain all "
+                "the multipole keys required by the convolution formulae."
+            )
 
 
 # STYLE: Standard naming convention is not always followed below.
