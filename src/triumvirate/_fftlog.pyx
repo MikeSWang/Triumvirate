@@ -109,9 +109,8 @@ cdef class HankelTransform:
         Parameters
         ----------
         fx : array_like
-            Pre-transform samples.  Must be even in length
-            if extrapolation is used.  Assumed to be real if extrapolation
-            is used.
+            Pre-transform samples.  Must be even in length, and assumed
+            to be effectively real, if extrapolation is used.
 
         Returns
         -------
@@ -119,12 +118,26 @@ cdef class HankelTransform:
             Post-transform sample points and samples.
 
         """
-        cdef np.ndarray[double complex, ndim=1, mode='c'] fx_ = \
-            fx.copy().astype(np.complex128)
-        cdef np.ndarray[double complex, ndim=1, mode='c'] gy_ = \
-            np.zeros_like(fx, dtype=np.complex128)
-        self.thisptr.biased_transform(&fx_[0], &gy_[0])
+        fx_ = fx.astype(np.complex128)
+        gy_ = np.zeros_like(fx, dtype=np.complex128)
+        self._transform(fx_, gy_)
 
-        y, gy = np.array(self._post_sampts), np.array(gy_)
+        y = np.array(self._post_sampts)
+        gy = np.array(gy_)
 
         return y, gy
+
+    def _transform(self,
+                   np.ndarray[double complex, ndim=1, mode='c'] fx not None,
+                   np.ndarray[double complex, ndim=1, mode='c'] gy not None):
+        """Perform underlying sample transforms.
+
+        Parameters
+        ----------
+        fx : array_like
+            Pre-transform samples.
+        gy : array_like
+            Post-transform samples.
+
+        """
+        self.thisptr.biased_transform(&fx[0], &gy[0])

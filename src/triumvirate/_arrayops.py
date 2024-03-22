@@ -372,14 +372,14 @@ def extrap_loglin_oscil(a, n_ext):
     # Check for oscillations and further restrict extrapolation to a range
     # excluding the innermost peak/trough with at least 2 points on either
     # 'bank' of the 'zero river'.
-    lngrad_lbank = np.gradient(np.log(np.abs(a[:idx_lbank])))
+    lngrad_lbank = np.nan_to_num(np.gradient(np.log(np.abs(a[:idx_lbank]))))
     signchange_lngrad_lbank = np.nonzero(np.diff(np.sign(lngrad_lbank)))[0]
     if len(signchange_lngrad_lbank) > 0:
         idx_ldbank = max(signchange_lngrad_lbank[-1] + 1, 3)
     else:
         idx_ldbank = a.size - 1
 
-    lngrad_rbank = np.gradient(np.log(np.abs(a[idx_rbank:])))
+    lngrad_rbank = np.nan_to_num(np.gradient(np.log(np.abs(a[idx_rbank:]))))
     signchange_lngrad_rbank = np.nonzero(np.diff(np.sign(lngrad_rbank)))[0]
     if len(signchange_lngrad_rbank) > 0:
         idx_rdbank = min(idx_rbank + signchange_lngrad_rbank[0], a.size - 4)
@@ -399,7 +399,7 @@ def extrap_loglin_oscil(a, n_ext):
     idx_rtail = max(idx_rbank, idx_rdbank, idx_rquater)
 
     # Extrapolate the left and right tails.
-    lngrad_ltail = np.gradient(np.log(np.abs(a[:idx_ltail])))
+    lngrad_ltail = np.nan_to_num(np.gradient(np.log(np.abs(a[:idx_ltail]))))
     # Oscillatory behaviour
     if np.diff(np.sign(lngrad_ltail)).any():
         # Use mean gradient.
@@ -419,15 +419,17 @@ def extrap_loglin_oscil(a, n_ext):
     else:
         # Use endpoint gradient.
         if (
-            lngrad_lend := np.log(np.abs(a[1])) - np.log(np.abs(a[0]))
+            lngrad_lend := np.nan_to_num(
+                np.log(np.abs(a[1])) - np.log(np.abs(a[0]))
+            )
         ) >= 0.:
             powlaw_ltail = - lngrad_lend
             # print("Left tail extrap: endpoint")
         # Endpoint gradient is divergent possibly with sign changes.
         else:
-            mean_lngrad_ltail = np.mean(
+            mean_lngrad_ltail = np.nan_to_num(np.mean(
                 np.gradient(np.log(np.abs(a[:idx_lquater])))
-            )
+            ))
             # Use mean gradient.
             if mean_lngrad_ltail >= 0.:
                 powlaw_ltail = - mean_lngrad_ltail
@@ -442,7 +444,7 @@ def extrap_loglin_oscil(a, n_ext):
                 )
                 # print("Left tail extrap: endpoint -> const")
 
-    lngrad_rtail = np.gradient(np.log(np.abs(a[idx_rtail:])))
+    lngrad_rtail = np.nan_to_num(np.gradient(np.log(np.abs(a[idx_rtail:]))))
     if np.diff(np.sign(lngrad_rtail)).any():
         if (mean_lngrad_rtail := np.mean(lngrad_rtail)) <= 0.:
             powlaw_rtail = mean_lngrad_rtail
@@ -457,14 +459,16 @@ def extrap_loglin_oscil(a, n_ext):
             # print("Right tail extrap: trend -> const")
     else:
         if (
-            lngrad_rend := np.log(np.abs(a[-1])) - np.log(np.abs(a[-2]))
+            lngrad_rend := np.nan_to_num(
+                np.log(np.abs(a[-1])) - np.log(np.abs(a[-2]))
+            )
         ) <= 0.:
             powlaw_rtail = lngrad_rend
             # print("Right tail extrap: endpoint")
         else:
-            mean_lngrad_rtail = np.mean(
+            mean_lngrad_rtail = np.nan_to_num(np.mean(
                 np.gradient(np.log(np.abs(a[idx_rquater:])))
-            )
+            ))
             if mean_lngrad_rtail <= 0.:
                 powlaw_rtail = mean_lngrad_rtail
                 # print("Right tail extrap: endpoint -> trend")
