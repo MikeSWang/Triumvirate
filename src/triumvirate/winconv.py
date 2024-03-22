@@ -8,6 +8,8 @@ Window Convolution (:mod:`~triumvirate.winconv`)
 Perform window convolution of two- and three-point statistics.
 
 .. autosummary::
+    Multipole
+    calc_threept_winconv_coeff
     WinConvTerm
     WinConvFormulae
     ThreePointWindow
@@ -27,7 +29,7 @@ from fractions import Fraction
 import numpy as np
 from scipy.integrate import simpson
 from scipy.interpolate import InterpolatedUnivariateSpline, RectBivariateSpline
-from sympy.physics.wigner import wigner_3j
+from sympy.physics.wigner import wigner_3j, wigner_9j
 
 from triumvirate._arrayops import MixedSignError, SpacingError, _check_1d_array
 from triumvirate.transforms import (
@@ -112,6 +114,138 @@ The value for each key is itself a `dict`; see
 """
 
 
+class Multipole:
+    """Representation of a multipole.
+
+    Parameters
+    ----------
+    multipole : str or int or tuple of int
+        Multipole.
+
+    """
+
+    def __init__(self, multipole):
+
+        if isinstance(multipole, str):
+            if len(multipole) == 1:
+                self._multipole = int(multipole)
+            elif len(multipole) == 3:
+                self._multipole = tuple(map(int, multipole))
+            else:
+                raise ValueError("Multipole string must be of length 1 or 3.")
+        elif isinstance(multipole, (int, tuple)):
+            self._multipole = multipole
+        else:
+            raise ValueError("Unknown multipole type.")
+
+    def __str__(self):
+        if isinstance(self._multipole, int):
+            return str(self._multipole)
+        return ''.join(map(str, self._multipole))
+
+    def __eq__(self, other):
+        return self._multipole == other._multipole
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    @property
+    def multipole(self):
+        """Identifiable Multipole representation.
+
+        """
+        return self._multipole
+
+
+def _N_factor(ell1, ell2, L):
+    """Calculate the Wigner-3j--related factor.
+
+    Parameters
+    ----------
+    ell1, ell2. L : int
+        Multipole degrees.
+
+    Returns
+    -------
+    int
+        Multiplicative factor.
+
+    """
+    return (2 * ell1 + 1) * (2 * ell2 + 1) * (2 * L + 1)
+
+
+def _H_factor(ell1, ell2, L, symb=False):
+    """Calculate the Wigner-3j factor with zero spherical orders.
+
+    Parameters
+    ----------
+    ell1, ell2. L : int
+        Multipole degrees.
+    symb : bool, optional
+        Whether to return the factor as a symbolic expression
+        (default is `False`).
+
+    Returns
+    -------
+    float or SymPy expression
+        Wigner-3j factor.
+
+    """
+    if symb:
+        return wigner_3j(ell1, ell2, L, 0, 0, 0)
+    return float(wigner_3j(ell1, ell2, L, 0, 0, 0))
+
+
+def calc_threept_winconv_coeff(multipole, multipole_Q, multipole_Z,
+                               symb=False):
+    """Calculate the window convolution coefficient for a specific
+    window convolution term.
+
+    Parameters
+    ----------
+    multipole : str or tuple of int or :class:`~winconv.Multipole`
+        Convolved multipole.
+    multipole_Q : str or tuple of int or :class:`~winconv.Multipole`
+        Window function multipole.
+    multipole_Z : str or tuple of int or :class:`~winconv.Multipole`
+        Unwindowed correlation function multipole.
+    symb : bool, optional
+        Whether to return the coefficient as a symbolic expression
+        (default is `False`).
+
+    Returns
+    -------
+    float or SymPy expression
+        Window convolution coefficient.
+
+    """
+    if not isinstance(multipole, Multipole):
+        ell1, ell2, L = Multipole(multipole).multipole
+    if not isinstance(multipole_Z, Multipole):
+        ell1_, ell2_, L_ = Multipole(multipole_Z).multipole
+    if not isinstance(multipole_Q, Multipole):
+        ell1__, ell2__, L__ = Multipole(multipole_Q).multipole
+
+    H_frac = (
+        _H_factor(ell1, ell2, L)
+        / _H_factor(ell1_, ell2_, L_)
+        / _H_factor(ell1__, ell2__, L__)
+        * _H_factor(ell1, ell1_, ell1__)
+        * _H_factor(ell2, ell2_, ell2__)
+        * _H_factor(L, L_, L__)
+    )
+
+    coeff = (
+        _N_factor(ell1, ell2, L)
+        * wigner_9j(ell1__, ell2__, L__, ell1_, ell2_, L_, ell1, ell2, L)
+        * H_frac
+    )
+
+    if symb:
+        return coeff
+    return float(coeff)
+
+
 class WinConvTerm(namedtuple('WinConvTerm', ['ind_Q', 'ind_Z', 'coeff'])):
     r"""Window convolution term as a tuple of three factors.
 
@@ -164,11 +298,11 @@ class WinConvFormulae:
     ----------
     formulae : |formulae_type|
         Window convolution formulae.
-    multipoles : list of str or list of tuple of int
+    multipoles : list of str or list of (tuple of) int
         Windowed CF multipoles.
-    multipoles_Q : list of str or list of tuple of int
+    multipoles_Q : list of str or list of (tuple of) int
         Required window function multipoles.
-    multipoles_Z : list of str or list of tuple of int
+    multipoles_Z : list of str or list of (tuple of) int
         Required unwindowed CF multipoles.
 
     Examples
@@ -249,7 +383,7 @@ class WinConvFormulae:
 
         Parameters
         ----------
-        multipole : str
+        multipole : str or (tuple of) int
             Windowed CF multipole.
 
         Returns
@@ -266,11 +400,10 @@ class WinConvFormulae:
 
         Parameters
         ----------
-        multipole : str
+        multipole : str or (tuple of) int
             Windowed CF multipole.
         symbol : str, optional
-            Symbol for the unwindowed CF multipole (default is
-            ``r"\\zeta"``).
+            Symbol for the unwindowed CF (default is ``r"\\zeta"``).
 
         Returns
         -------
