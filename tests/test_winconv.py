@@ -5,8 +5,11 @@ from fractions import Fraction
 
 import numpy as np
 import pytest
+from sympy.core.numbers import Number
 
 from triumvirate.winconv import (
+    Multipole,
+    calc_threept_winconv_coeff,
     WinConvFormulae,
     # ThreePointWindow,
     # calc_threept_ic,
@@ -19,7 +22,73 @@ from triumvirate.winconv import (
 )
 
 
-# Implicit tests of all methods
+@pytest.fixture
+def multipole():
+    return Multipole('110')
+
+
+def test_multipole___init__(multipole):
+    assert multipole._multipole == (1, 1, 0)
+    assert multipole.multipole == (1, 1, 0)
+
+
+def test_multipole___str__(multipole):
+    assert str(multipole) == '110'
+
+
+def test_multipole___neq__(multipole):
+
+    multipole_other = Multipole((1, 1, 0))
+    assert multipole_other == multipole
+
+    multipole_another = Multipole('0')
+    assert multipole_another != multipole
+
+
+@pytest.mark.parametrize(
+    "multipole, multipole_Q, multipole_Z, expected_coeff",
+    [
+        (Multipole('000'), Multipole('110'), Multipole('110'), 1./3.),
+        (Multipole('110'), Multipole('000'), Multipole('110'), Number('1')),
+        (Multipole('110'), Multipole('000'), Multipole('000'), 0.),
+    ]
+)
+def test_calc_threept_winconv_coeff(multipole, multipole_Q, multipole_Z,
+                                    expected_coeff):
+
+    coeff = calc_threept_winconv_coeff(
+        multipole, multipole_Q, multipole_Z,
+        symb=isinstance(expected_coeff, Number)
+    )
+
+    if isinstance(expected_coeff, Number):
+        validity = (coeff == expected_coeff)
+    else:
+        validity = np.isclose(coeff, expected_coeff)
+    assert validity
+
+
+@pytest.fixture
+def winconvformulae():
+    formulae_dict = {
+        '000': [
+            ('000', '000', 1),
+            ('000', 'ic', -1),
+            ('110', '110', Fraction(1, 3)),
+        ],
+    }
+    return WinConvFormulae(formulae_dict)
+
+
+# Implicit tests of :class:`~triumvirate.winconv.WinConvTerm`
+def test_winconvformulae_getitem(winconvformulae):
+    term = winconvformulae['000'][0]
+    assert term.ind_Q == '000'
+    assert term.ind_Z == '000'
+    assert term.coeff == 1
+
+
+# Implicit tests of all methods in one
 @pytest.mark.parametrize(
     "formulae_dict,"
     "expected_multipoles, expected_multipoles_Q, expected_multipoles_Z,"
@@ -45,6 +114,7 @@ from triumvirate.winconv import (
 def test_winconvformulae(formulae_dict, expected_multipoles,
                          expected_multipoles_Q, expected_multipoles_Z,
                          expected_latex_expr):
+
     formulae = WinConvFormulae(formulae_dict)
 
     assert set(formulae.multipoles) == set(expected_multipoles)

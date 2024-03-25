@@ -119,7 +119,7 @@ class Multipole:
 
     Parameters
     ----------
-    multipole : str or int or tuple of int
+    multipole : str or int or tuple of int of length 3
         Multipole.
 
     """
@@ -157,13 +157,17 @@ class Multipole:
         return self._multipole
 
 
-def _N_factor(ell1, ell2, L):
-    """Calculate the Wigner-3j--related factor.
+def _N_prefactor(multipole=None, ell1=None, ell2=None, L=None):
+    """Calculate the Wigner-3j--related pre-factor.
 
     Parameters
     ----------
-    ell1, ell2. L : int
-        Multipole degrees.
+    multipole : :class:`~winconv.Multipole`, optional
+        Multipole.  If `None` (default), use the individual
+        multipole degrees.
+    ell1, ell2, L : int, optional
+        Multipole degrees (default is `None`).  Only used if
+        `multipole` is `None`.
 
     Returns
     -------
@@ -171,29 +175,30 @@ def _N_factor(ell1, ell2, L):
         Multiplicative factor.
 
     """
+    if multipole is not None:
+        ell1, ell2, L = multipole.multipole
+
     return (2 * ell1 + 1) * (2 * ell2 + 1) * (2 * L + 1)
 
 
-def _H_factor(ell1, ell2, L, symb=False):
+def _H_factor(ell1, ell2, ell3):
     """Calculate the Wigner-3j factor with zero spherical orders.
 
     Parameters
     ----------
-    ell1, ell2. L : int
+    ell1, ell2, ell3 : int
         Multipole degrees.
     symb : bool, optional
-        Whether to return the factor as a symbolic expression
-        (default is `False`).
+        If `True` (default is `False`), return the coefficient as a
+        symbolic expression.
 
     Returns
     -------
-    float or SymPy expression
+    :class:`sympy.core.numbers.Number`
         Wigner-3j factor.
 
     """
-    if symb:
-        return wigner_3j(ell1, ell2, L, 0, 0, 0)
-    return float(wigner_3j(ell1, ell2, L, 0, 0, 0))
+    return wigner_3j(ell1, ell2, ell3, 0, 0, 0)
 
 
 def calc_threept_winconv_coeff(multipole, multipole_Q, multipole_Z,
@@ -210,21 +215,25 @@ def calc_threept_winconv_coeff(multipole, multipole_Q, multipole_Z,
     multipole_Z : str or tuple of int or :class:`~winconv.Multipole`
         Unwindowed correlation function multipole.
     symb : bool, optional
-        Whether to return the coefficient as a symbolic expression
-        (default is `False`).
+        If `True` (default is `False`), return the coefficient as a
+        symbolic expression.
 
     Returns
     -------
-    float or SymPy expression
+    float or :class:`sympy.core.numbers.Number`
         Window convolution coefficient.
 
     """
     if not isinstance(multipole, Multipole):
-        ell1, ell2, L = Multipole(multipole).multipole
-    if not isinstance(multipole_Z, Multipole):
-        ell1_, ell2_, L_ = Multipole(multipole_Z).multipole
+        multipole = Multipole(multipole)
     if not isinstance(multipole_Q, Multipole):
-        ell1__, ell2__, L__ = Multipole(multipole_Q).multipole
+        multipole_Q = Multipole(multipole_Q)
+    if not isinstance(multipole_Z, Multipole):
+        multipole_Z = Multipole(multipole_Z)
+
+    ell1, ell2, L = multipole.multipole
+    ell1_, ell2_, L_ = multipole_Z.multipole
+    ell1__, ell2__, L__ = multipole_Q.multipole
 
     H_frac = (
         _H_factor(ell1, ell2, L)
@@ -236,7 +245,7 @@ def calc_threept_winconv_coeff(multipole, multipole_Q, multipole_Z,
     )
 
     coeff = (
-        _N_factor(ell1, ell2, L)
+        _N_prefactor(ell1=ell1, ell2=ell2, L=L)
         * wigner_9j(ell1__, ell2__, L__, ell1_, ell2_, L_, ell1, ell2, L)
         * H_frac
     )
