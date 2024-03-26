@@ -35,6 +35,16 @@ namespace trv {
 namespace maths {
 
 HankelTransform::HankelTransform(double mu, double q, bool threaded) {
+  if (
+    ((mu + 1. + q) <= 0. && std::floor(mu + 1. + q) == (mu + 1. + q)) ||
+    ((mu + 1. - q) <= 0. && std::floor(mu + 1. - q) == (mu + 1. - q))
+  ) {
+    throw trvs::InvalidParameterError(
+      "Invalid values of order `mu` and bias `q`: "
+      "negative poles in the gamma function."
+    );
+  }
+
   this->order = mu;
   this->bias = q;
 
