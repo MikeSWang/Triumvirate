@@ -303,9 +303,9 @@ pyuninstall:
 
 # -- Components ----------------------------------------------------------
 
-.PHONY: executable library OBJS_
+.PHONY: executable library objects_
 
-executable: OBJS_ ${PROGEXE}
+executable: ${PROGEXE}
 
 ${PROGEXE}: $(OBJS) ${PROGOBJ}
 	@echo "Compiling Triumvirate C++ program ${WOMP} OpenMP..."
@@ -315,7 +315,7 @@ ${PROGEXE}: $(OBJS) ${PROGOBJ}
 	fi
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS) $(LDLIBS)
 
-library: OBJS_ ${PROGLIB}
+library: ${PROGLIB}
 
 ${PROGLIB}: $(OBJS)
 	@echo "Creating Triumvirate C++ library ${WOMP} OpenMP..."
@@ -325,7 +325,7 @@ ${PROGLIB}: $(OBJS)
 	fi
 	$(AR) $(ARFLAGS) $@ $^
 
-OBJS_:
+objects_:
 	@echo "Creating Triumvirate C++ object files..."
 	@if [ ! -d ${DIR_BUILDOBJ} ]; then \
 	    echo "  making obj subdirectory in build directory..."; \
@@ -335,7 +335,7 @@ OBJS_:
 ${PROGOBJ}: ${PROGSRC}
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
-$(OBJS): ${DIR_BUILDOBJ}/%.o: ${DIR_PKG_SRC}/%.cpp
+$(OBJS): ${DIR_BUILDOBJ}/%.o: ${DIR_PKG_SRC}/%.cpp | objects_
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
 -include $(DEPS)
@@ -380,7 +380,8 @@ pytest:
 	    echo "  making output subdirectory in test directory..."; \
 	    mkdir -p ${DIR_TESTOUT}; \
 	fi
-	pytest
+	@echo "  running tests..."
+	pytest -vvv
 
 
 # ------------------------------------------------------------------------
