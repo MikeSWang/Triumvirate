@@ -211,11 +211,11 @@ class HankelTransform {
 
   /// pre-kernel FFTW plan and array
   fftw_plan pre_plan;
-  fftw_complex* pre_buffer;
+  fftw_complex* pre_buffer = nullptr;
 
   /// post-kernel FFTW plan and array
   fftw_plan post_plan;
-  fftw_complex* post_buffer;
+  fftw_complex* post_buffer = nullptr;
 
   /// FFTW multi-threading
   bool threaded = true;

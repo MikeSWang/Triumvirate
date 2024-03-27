@@ -53,10 +53,16 @@ HankelTransform::HankelTransform(double mu, double q, bool threaded) {
 
 HankelTransform::~HankelTransform() {
   fftw_destroy_plan(this->pre_plan);
-  fftw_free(this->pre_buffer);
+  if (this->pre_buffer != nullptr) {
+    fftw_free(this->pre_buffer);
+    this->pre_buffer = nullptr;
+  }
 
   fftw_destroy_plan(this->post_plan);
-  fftw_free(this->post_buffer);
+  if (this->post_buffer != nullptr) {
+    fftw_free(this->post_buffer);
+    this->post_buffer = nullptr;
+  }
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   if (this->threaded) {
