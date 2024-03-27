@@ -194,9 +194,6 @@ class HankelTransform {
   double calc_lowring_pivot(double delta, double kr_c = 1.);
 
  private:
-  /// FFTLog transform kernel coefficients
-  std::vector< std::complex<double> > kernel;
-
   /// extrapolation option (default is none)
   trva::ExtrapOption extrap = trva::ExtrapOption::NONE;
 
@@ -209,6 +206,9 @@ class HankelTransform {
   /// post-transform sample points with extrapolation option
   std::vector<double> post_sampts_extrap;
 
+  /// FFTLog transform kernel coefficients
+  std::vector< std::complex<double> > kernel;
+
   /// pre-kernel FFTW plan and array
   fftw_plan pre_plan;
   fftw_complex* pre_buffer = nullptr;
@@ -217,8 +217,17 @@ class HankelTransform {
   fftw_plan post_plan;
   fftw_complex* post_buffer = nullptr;
 
-  /// FFTW multi-threading
+  /// FFTW plan initialisation flag
+  bool plan_init = false;
+
+  /// FFTW multi-threading flag
   bool threaded = true;
+
+  /**
+   * @brief Reset FFTW plans and buffers.
+   *
+   */
+  void reset();
 };
 
 class SphericalBesselTransform: public HankelTransform {

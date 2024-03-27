@@ -35,6 +35,7 @@ namespace trv {
 namespace maths {
 
 HankelTransform::HankelTransform(double mu, double q, bool threaded) {
+  // Check transform parameters.
   if (
     ((mu + 1. + q) <= 0. && std::floor(mu + 1. + q) == (mu + 1. + q)) ||
     ((mu + 1. - q) <= 0. && std::floor(mu + 1. - q) == (mu + 1. - q))
@@ -49,20 +50,18 @@ HankelTransform::HankelTransform(double mu, double q, bool threaded) {
   this->bias = q;
 
   this->threaded = threaded;
+
+  // Initialise FFTW plans.
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  if (this->threaded) {
+    fftw_init_threads();
+    fftw_plan_with_nthreads(omp_get_max_threads());
+  }
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 }
 
 HankelTransform::~HankelTransform() {
-  fftw_destroy_plan(this->pre_plan);
-  if (this->pre_buffer != nullptr) {
-    fftw_free(this->pre_buffer);
-    this->pre_buffer = nullptr;
-  }
-
-  fftw_destroy_plan(this->post_plan);
-  if (this->post_buffer != nullptr) {
-    fftw_free(this->post_buffer);
-    this->post_buffer = nullptr;
-  }
+  this->reset();
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   if (this->threaded) {
@@ -73,6 +72,20 @@ HankelTransform::~HankelTransform() {
 #else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
   fftw_cleanup();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+}
+
+void HankelTransform::reset() {
+  if (this->plan_init) {
+    fftw_destroy_plan(this->pre_plan);
+    fftw_destroy_plan(this->post_plan);
+    this->plan_init = false;
+  }
+  if (this->pre_buffer != nullptr) {
+    fftw_free(this->pre_buffer); this->pre_buffer = nullptr;
+  }
+  if (this->post_buffer != nullptr) {
+    fftw_free(this->post_buffer); this->post_buffer = nullptr;
+  }
 }
 
 void HankelTransform::initialise(
@@ -162,12 +175,7 @@ void HankelTransform::initialise(
   // ----<
 
   // Initialise FFTW plans.
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  if (this->threaded) {
-    fftw_init_threads();
-    fftw_plan_with_nthreads(omp_get_max_threads());
-  }
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+  this->reset();
 
   this->pre_buffer = fftw_alloc_complex(this->nsamp_trans);
   this->pre_plan = fftw_plan_dft_1d(
@@ -180,6 +188,8 @@ void HankelTransform::initialise(
     this->nsamp_trans, this->post_buffer, this->post_buffer,
     FFTW_FORWARD, FFTW_ESTIMATE
   );
+
+  this->plan_init = true;
 }
 
 void HankelTransform::initialise(
