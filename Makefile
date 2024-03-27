@@ -107,6 +107,16 @@ DEP_LDFLAGS := $(shell pkg-config --libs-only-other --libs-only-L ${DEPS})
 DEP_LDLIBS := $(shell pkg-config --libs-only-l ${DEPS})
 
 
+# -- Dependencies (test) -------------------------------------------------
+
+DEPS_TEST := gtest
+
+DEP_TEST_INCLUDES := $(shell pkg-config --cflags-only-I ${DEPS_TEST})
+DEP_TEST_CXXFLAGS := $(shell pkg-config --cflags-only-other ${DEPS_TEST})
+DEP_TEST_LDFLAGS := $(shell pkg-config --libs-only-other --libs-only-L ${DEPS_TEST})
+DEP_TEST_LDLIBS := $(shell pkg-config --libs-only-l ${DEPS_TEST})
+
+
 # -- Options -------------------------------------------------------------
 
 INCLUDES += -I${DIR_PKG_INCLUDE} ${DEP_INCLUDES}
@@ -116,6 +126,14 @@ LDFLAGS += ${DEP_LDFLAGS}
 LDLIBS += $(if ${DEP_LDLIBS},${DEP_LDLIBS},$(-lgsl -lgslcblas -lm -lfftw3))
 
 PIPOPTS ?= --user
+
+
+# -- Options (test) ------------------------------------------------------
+
+INCLUDES_TEST = ${INCLUDES} ${DEP_TEST_INCLUDES}
+CXXFLAGS_TEST = ${CXXFLAGS} ${DEP_TEST_CXXFLAGS}
+LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} ${DEP_TEST_LDFLAGS}
+LDLIBS_TEST = -l${LIBNAME} ${LDLIBS} ${DEP_TEST_LDLIBS}
 
 
 # -- Environment ---------------------------------------------------------
@@ -134,6 +152,12 @@ ifdef FFTW_ROOT
 INCLUDES += -I${FFTW_INC}
 LDFLAGS += -L${FFTW_DIR}
 endif  # FFTW_ROOT
+
+# GTEST library
+ifdef GTEST_ROOT
+INCLUDES_TEST += -I${GTEST_ROOT}/include
+LDFLAGS_TEST += -L${GTEST_ROOT}/lib
+endif  # GTEST_ROOT
 
 endif  # NERSC_HOST
 
@@ -180,6 +204,11 @@ CPPFLAGS += -DTRV_USE_OMP -DTRV_USE_FFTWOMP
 CXXFLAGS += ${CXXFLAGS_OMP}
 LDFLAGS += ${LDFLAGS_OMP}
 LDLIBS += -lfftw3_omp ${LDLIBS_OMP}
+
+CPPFLAGS_TEST +=
+CXXFLAGS_TEST += ${CXXFLAGS_OMP}
+LDFLAGS_TEST += ${LDFLAGS_OMP}
+LDLIBS_TEST += ${LDLIBS_OMP}
 
 WOMP := with
 
@@ -248,6 +277,11 @@ CPPFLAGS := $(strip ${CPPFLAGS}) $(strip ${INCLUDES})
 CXXFLAGS := $(strip ${CXXFLAGS})
 LDFLAGS := $(strip ${LDFLAGS})
 LDLIBS := $(strip ${LDLIBS})
+
+CPPFLAGS_TEST := $(strip ${CPPFLAGS_TEST}) $(strip ${INCLUDES_TEST})
+CXXFLAGS_TEST := $(strip ${CXXFLAGS_TEST})
+LDFLAGS_TEST := $(strip ${LDFLAGS_TEST})
+LDLIBS_TEST := $(strip ${LDLIBS_TEST})
 
 
 # ========================================================================
@@ -370,9 +404,27 @@ checkopts:
 # Testing
 # ------------------------------------------------------------------------
 
-.PHONY: test pytest
+TEST_SRCS := $(wildcard ${DIR_TESTS}/*.cpp)
+TEST_EXES := $(TEST_SRCS:${DIR_TESTS}/%.cpp=${DIR_TESTBUILD}/%)
 
-test: pytest
+.PHONY: test cpptest cpptest_ pytest
+
+test: cpptest pytest
+
+cpptest: cpptest_ library ${TEST_EXES}
+	@echo "  running tests..."
+	@sh -c ${TEST_EXES}
+
+cpptest_:
+	@echo "Performing Triumvirate C++ tests..."
+	@if [ ! -d ${DIR_TESTBUILD} ]; then \
+	    echo "  making build subdirectory in test directory..."; \
+	    mkdir -p ${DIR_TESTBUILD}; \
+	fi
+	@echo "  compiling tests..."
+
+${TEST_EXES}: ${TEST_SRCS}
+	$(CXX) $(CPPFLAGS_TEST) $(CXXFLAGS_TEST) $< -o $@ $(LDFLAGS_TEST) $(LDLIBS_TEST)
 
 pytest:
 	@echo "Peforming Triumvirate Python tests..."
