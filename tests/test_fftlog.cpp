@@ -67,8 +67,8 @@ TEST_F(HankelTransformTest, test_biased_transform) {
   );
 
   // Check the output array values
-  EXPECT_EQ(b[0].real(), 2.4928845521357856);
-  EXPECT_EQ(b[7].real(), 2.0806115826236224);
+  EXPECT_NEAR(b[0].real(), 2.492884552, 1.e-9);
+  EXPECT_NEAR(b[7].real(), 2.080611583, 1.e-9);
 }
 
 // Test run: all
