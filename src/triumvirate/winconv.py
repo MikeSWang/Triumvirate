@@ -478,7 +478,7 @@ class ThreePointWindow:
     ----------
     paired_sampts : 2-d array of float
         Paired separation window function sample points.
-    flat_multipoles : dict of {str: 1-d array of float}
+    flat_multipoles : dict of {str or tuple of int: 1-d array of float}
         Flattened window function multipole samples (each key is
         a multipole).
     alpha_contrast : float, optional
@@ -494,13 +494,13 @@ class ThreePointWindow:
 
     Attributes
     ----------
-    multipoles : list of str
+    multipoles : list of str or list of tuple of int
         Window function multipoles.
     r : 1-d array of float
         window function separation sample points.
-    Q : dict of {str: 2-d array of float}
+    Q : dict of {str or tuple of int: 2-d array of float}
         Window function multipole samples (each key is a multipole).
-    Q_diag : dict of {str: 1-d array of float}
+    Q_diag : dict of {str or tuple of int: 1-d array of float}
         Diagonal of the window function multipole samples (each key
         is a multipole).
     sources : list of str
@@ -590,7 +590,7 @@ class ThreePointWindow:
 
         Parameters
         ----------
-        filepaths : dict of {str: str}
+        filepaths : dict of {str or tuple of int: str}
             Window function file paths (values) for each multipole (key).
         subtract_shotnoise : bool, optional
             Whether to subtract the shot-noise contribution from the
@@ -617,6 +617,12 @@ class ThreePointWindow:
         :class:`~triumvirate.winconv.ThreePointWindow`
             Three-point window function.
 
+
+        .. attention::
+
+            The effective separation sample points are assumed to be
+            the same for all window function files.
+
         """
         r1_eff, r2_eff = None, None
 
@@ -629,7 +635,7 @@ class ThreePointWindow:
                         "Must provide four columns to read from the file "
                         "when subtracting shot noise."
                     )
-                r1_eff, r2_eff, Qflat_raw, Qflat_shot = np.loadtxt(
+                r1_eff_, r2_eff_, Qflat_raw, Qflat_shot = np.loadtxt(
                     filepath, unpack=True, usecols=usecols
                 )
                 flat_multipoles[multipole] = Qflat_raw - Qflat_shot
@@ -639,10 +645,30 @@ class ThreePointWindow:
                         "Must provide three columns to read from the file "
                         "when not subtracting shot-noise."
                     )
-                r1_eff, r2_eff, Qflat_raw = np.loadtxt(
+                r1_eff_, r2_eff_, Qflat_raw = np.loadtxt(
                     filepath, unpack=True, usecols=usecols
                 )
                 flat_multipoles[multipole] = Qflat_raw
+
+            if r1_eff is not None:
+                if not np.allclose(r1_eff_, r1_eff):
+                    warnings.warn(
+                        "Effective separation sample points "
+                        "for the first dimension "
+                        "are not the same for all window function files."
+                    )
+            else:
+                r1_eff = r1_eff_
+            if r2_eff is not None:
+                if not np.allclose(r2_eff_, r2_eff):
+                    warnings.warn(
+                        "Effective separation sample points "
+                        "for the second dimension "
+                        "are not the same for all window function files."
+                    )
+            else:
+                r2_eff = r2_eff_
+
             sources.append(filepath)
 
         paired_sampts = np.column_stack((r1_eff, r2_eff))
@@ -846,8 +872,22 @@ def _check_conv_range(r_conv, r):
 
     """
     RTOL = 1.e-5
-    return (1 - RTOL) * r.min() <= r_conv.min() \
-        and (r_conv.max() <= (1 + RTOL) * r.max())
+
+    def _check(rc, rs):
+        return (1 - RTOL) * rs.min() <= rc.min() \
+            and (rc.max() <= (1 + RTOL) * rs.max())
+
+    if isinstance(r_conv, dict):
+        if isinstance(r, dict):
+            multipoles_common = set(r_conv.keys()) & set(r.keys())
+            return all(
+                _check(r_conv[multipole], r[multipole])
+                for multipole in multipoles_common
+            )
+        else:  # STYLE: unpythonic but logically clearer
+            return all(_check(r_conv[multipole], r) for multipole in r_conv)
+    else:  # STYLE: unpythonic but logically clearer
+        return _check(r_conv, r)
 
 
 def _integrate_2d_samples(x, y, z):
@@ -881,12 +921,13 @@ def calc_threept_ic(window_sampts, window_multipoles, r_in, zeta_in,
     ----------
     window_sampts :  1-d array of float
         Window function separation sample points.
-    window_multipoles : dict of {str: 2-d array of float}
+    window_multipoles : dict of {str or tuple of int: 2-d array of float}
         Window function multipole samples (each key is a multipole).
-        Must contain the ``'000'`` multipole.
-    r_in : 1-d array of float
-        Separation sample points for the input 3PCF.
-    zeta_in : dict of {str: 2-d array of float}
+        Must contain the ``'000'`` or ``(0, 0, 0)`` multipole.
+    r_in : dict of {str or tuple of int: 1-d array of float}
+        Separation sample points for the input 3PCF multipoles
+        (each key is a multipole).
+    zeta_in : dict of {str or tuple of int: 2-d array of float}
         Input 3PCF multipole samples (each key is a multipole)
         at sample points `r_in`.
     r_common : 1-d array of float, optional
@@ -894,37 +935,53 @@ def calc_threept_ic(window_sampts, window_multipoles, r_in, zeta_in,
         same as `r_in`.
     approx : bool, optional
         If `True` (default is `False`), include only the leading-order
-        term with ``'000'`` multipoles as an approximation.
+        term with ``'000'`` or ``(0, 0, 0)`` multipole as
+        an approximation.
 
     Returns
     -------
     float
         Integral constraint.
 
-    """
-    if r_common is None:
-        r_common = r_in
 
+    .. attention::
+
+        If the window convolution formulae use `str`, `int` or
+        `tuple` of `int` to represent a multipole, the corresponding
+        `dict` of window function multipole samples must use exactly
+        the same key type.  In other words, the type representation of
+        a multipole must be consistent across all inputs.
+
+    """
+    # Infer multipole key type.
+    keytype = type(next(iter(window_multipoles.keys())))
+
+    monopole = '000' if keytype is str else (0, 0, 0)
     if approx:
-        multipoles_common = ['000']
+        multipoles_common = [monopole]
     else:
         multipoles_common = set(window_multipoles.keys()) & set(zeta_in.keys())
-        if '000' not in multipoles_common:
+        if monopole not in multipoles_common:
             raise ValueError(
-                "The '000' multipole is required for calculating "
+                "The '000' or (0, 0, 0) multipole is required for calculating "
                 "the integral constraint."
             )
+
+    if r_common is None:
+        r_common = r_in
+    elif not isinstance(r_common, dict):
+        r_common = {multipole: r_common for multipole in multipoles_common}
 
     _Q_in = {
         _multipole: RectBivariateSpline(
             window_sampts, window_sampts, window_multipoles[_multipole]
-        )(r_common, r_common)
+        )(r_common[_multipole], r_common[_multipole])
         for _multipole in multipoles_common
     }
     _zeta_in = {
         _multipole: RectBivariateSpline(
-            r_in, r_in, zeta_in[_multipole]
-        )(r_common, r_common)
+            r_in[_multipole], r_in[_multipole], zeta_in[_multipole].real
+        )(r_common[_multipole], r_common[_multipole])
         for _multipole in multipoles_common
     }
 
@@ -932,14 +989,19 @@ def calc_threept_ic(window_sampts, window_multipoles, r_in, zeta_in,
     for _multipole in multipoles_common:
         ell1, ell2, ELL = map(int, _multipole)
 
-        _N = (2 * ell1 + 1) * (2 * ell2 + 1) * (2 * ELL + 1)
-        _H2 = float(wigner_3j(ell1, ell2, ELL, 0, 0, 0)) ** 2
+        # `float` conversion necessary as `sympy` returns `sympy.Float`
+        # and slows down the computation.
+        _H2 = float(_H_factor(ell1, ell2, ELL)) ** 2
+        _N = _N_prefactor(ell1=ell1, ell2=ell2, L=ELL)
 
         ic_nom += _N * _H2 * _integrate_2d_samples(
-            r_common, r_common, _Q_in[_multipole] * _zeta_in[_multipole]
+            r_common[_multipole], r_common[_multipole],
+            _Q_in[_multipole] * _zeta_in[_multipole]
         )
 
-    ic_denom = _integrate_2d_samples(r_common, r_common, _Q_in['000'])
+    ic_denom = _integrate_2d_samples(
+        r_common[_multipole], r_common[_multipole], _Q_in[monopole]
+    )
 
     return ic_nom / ic_denom
 
@@ -954,7 +1016,7 @@ class TwoPointWinConvBase:
         a named formula (e.g. 'wilson+16').
     window_sampts : 1-d array of float
         Window function separation sample points.
-    window_multipoles : dict of {str: 1-d array of float}
+    window_multipoles : dict of {str or int: 1-d array of float}
         Window function multipole samples (each key is a multipole).
 
 
@@ -1006,21 +1068,25 @@ class TwoPCFWinConv(TwoPointWinConvBase):
         a named formula (e.g. 'wilson+16').
     window_sampts : 1-d array of float
         Window function separation sample points.
-    window_multipoles : dict of {str: 1-d array of float}
+    window_multipoles : dict of {str or int: 1-d array of float}
         Window function multipole samples (each key is a multipole).
-    r_in : 1-d array of float
-        Separation sample points for the input 2PCF.
+    r_in : 1-d array of float or dict of {str or int: 1-d array-like}
+        Separation sample points for the input 2PCF multipoles.
     r_out : 1-d array of float, optional
-        Separation sample points for the output 2PCF.  If `None`
-        (default), it is the same as `r_in`.
+        Separation sample points for the output 2PCF multipoles.
+        If `None` (default), it is set to `r_in`.
 
     Attributes
     ----------
-    r_in : 1-d array of float
-        Separation sample points for the input 2PCF.
-    r_out : 1-d array of float
-        Separation sample points for the output 2PCF.
+    r_in : dict of {str or int: 1-d array of float}
+        Separation sample points for the input 2PCF multipoles.
+    r_out : dict of {str or int: 1-d array of float}
+        Separation sample points for the output 2PCF multipoles.
 
+
+    .. attention::
+
+        Integral constraint is ignored.
 
     .. attention::
 
@@ -1033,7 +1099,8 @@ class TwoPCFWinConv(TwoPointWinConvBase):
 
     .. attention::
 
-        Integral constraint is ignored.
+        The window function multipoles are assumed to be sampled at
+        the same separation sample points.
 
     """
 
@@ -1042,11 +1109,26 @@ class TwoPCFWinConv(TwoPointWinConvBase):
 
         super().__init__(formulae, window_sampts, window_multipoles)
 
-        self.r_in = r_in
+        if isinstance(r_in, dict):
+            self.r_in = r_in
+        else:
+            self.r_in = {
+                multipole: r_in
+                for multipole in set(
+                    formulae.multipoles_Z + formulae.multipoles_Q
+                )
+            }
         if r_out is None:
             self.r_out = r_in
         else:
-            self.r_out = r_out
+            self.r_out = {
+                multipole: r_out
+                for multipole in set(
+                    formulae.multipoles_Z +
+                    formulae.multipoles_Q +
+                    formulae.multipoles
+                )
+            }
         if not _check_conv_range(self.r_out, self._rQ_in):
             warnings.warn(
                 "The convolution range `r_out` is not fully covered "
@@ -1063,7 +1145,7 @@ class TwoPCFWinConv(TwoPointWinConvBase):
         self._Q_out = {
             _multipole: InterpolatedUnivariateSpline(
                 self._rQ_in, _Qpole_in
-            )(self.r_out)
+            )(self.r_out[_multipole])
             for _multipole, _Qpole_in in self._Q_in.items()
         }
 
@@ -1072,13 +1154,13 @@ class TwoPCFWinConv(TwoPointWinConvBase):
 
         Parameters
         ----------
-        xi_in : dict of {str: 2-d array of float}
+        xi_in : dict of {str or int: 1-d array of float}
             Input 3PCF multipole samples (each key is a multipole)
             at sample points :attr:`r_in`.
 
         Returns
         -------
-        xi_conv_out : dict of {str: 2-d :class:`numpy.ndarray`}
+        xi_conv_out : dict of {str or int: 1-d :class:`numpy.ndarray`}
             Output windowed 3PCF multipole samples (each key is
             a multipole) at sample points :attr:`r_out`.
 
@@ -1086,8 +1168,8 @@ class TwoPCFWinConv(TwoPointWinConvBase):
         # Interpolate input multipoles at output sample points.
         xi_out = {
             multipole: InterpolatedUnivariateSpline(
-                self.r_in, Zpole_in
-            )(self.r_out)
+                self.r_in[multipole], Zpole_in
+            )(self.r_out[multipole])
             for multipole, Zpole_in in xi_in.items()
         }
 
@@ -1117,7 +1199,7 @@ class PowspecWinConv(TwoPointWinConvBase):
         Window function separation sample points.  If not logarithmically
         spaced, these are respaced with the same range and number
         of points; `window_multipoles` are resampled accordingly.
-    window_multipoles : dict of {str: 1-d array of float}
+    window_multipoles : dict of {str or int: 1-d array of float}
         Window function multipole samples (each key is a multipole).
         If `window_sampts` needs to be logarithmically respaced, these are
         resampled accordingly.
@@ -1126,12 +1208,11 @@ class PowspecWinConv(TwoPointWinConvBase):
         logarithmically spaced.
     k_out : 1-d array of float, optional
         Wavenumber sample points for the output power spectrum.  If `None`
-        (default), it is the same as `k_in`.
+        (default), it is automatically derived.
     r_common : 1-d array of float, optional
         Separation sample points for multipoles of both the
         window function and the intermediate 2PCF (transformed from
-        `pk_in`).  If `None` (default), the window function separation
-        sample points are used (after logarithmic respacing if necessary);
+        `pk_in`).  If `None` (default), they are automatically derived;
         otherwise, `r_common` must be logarithmically spaced.
     transform_kwargs : dict, optional
         FFTLog transform keyword arguments to be passed to
@@ -1188,8 +1269,8 @@ class PowspecWinConv(TwoPointWinConvBase):
         #     self._transform_kwargs['extrap_exp'] = 2.
         # if 'extrap_layer' not in self._transform_kwargs:
         #     self._transform_kwargs['extrap_layer'] = 'outer'
-        # if 'threaded' not in self._transform_kwargs:
-        #     self._transform_kwargs['threaded'] = True
+        if 'threaded' not in self._transform_kwargs:
+            self._transform_kwargs['threaded'] = False
 
         # Set input power spectrum wavenumber sample points.
         try:
@@ -1217,7 +1298,25 @@ class PowspecWinConv(TwoPointWinConvBase):
 
         # Set intermediate 2PCF separation sample points.
         if r_common is None:
-            self.r_common = self._bsjt[self._multipole_rep]._post_sampts
+            r_common_min = max(
+                self._bsjt[multipole_Z]._post_sampts.min()
+                for multipole_Z in self._formulae.multipoles_Z
+                if multipole_Z != 'ic'
+            )
+            r_common_max = min(
+                self._bsjt[multipole_Z]._post_sampts.max()
+                for multipole_Z in self._formulae.multipoles_Z
+                if multipole_Z != 'ic'
+            )
+            size_r_common = min(
+                self._bsjt[multipole_Z]._post_sampts.size
+                for multipole_Z in self._formulae.multipoles_Z
+                if multipole_Z != 'ic'
+            )
+            self.r_common = np.logspace(
+                np.log10(r_common_min), np.log10(r_common_max), size_r_common,
+                base=10.
+            )
         else:
             try:
                 _check_1d_array(r_common, check_loglin=True)
@@ -1241,7 +1340,22 @@ class PowspecWinConv(TwoPointWinConvBase):
 
         # Set output power spectrum wavenumber sample points.
         if k_out is None:
-            self.k_out = self._fsjt[self._multipole_rep]._post_sampts
+            k_out_min = max(
+                self._fsjt[multipole]._post_sampts.min()
+                for multipole in self._formulae.multipoles
+            )
+            k_out_max = min(
+                self._fsjt[multipole]._post_sampts.max()
+                for multipole in self._formulae.multipoles
+            )
+            size_k_out = min(
+                self._fsjt[multipole]._post_sampts.size
+                for multipole in self._formulae.multipoles
+            )
+            self.k_out = np.logspace(
+                np.log10(k_out_min), np.log10(k_out_max), size_k_out,
+                base=10.
+            )
         else:
             self.k_out = k_out
 
@@ -1259,13 +1373,13 @@ class PowspecWinConv(TwoPointWinConvBase):
 
         Parameters
         ----------
-        pk_in : dict of {str: 1-d array of float}
+        pk_in : dict of {str or int: 1-d array of float}
             Input power spectrum multipole samples (each key is
             a multipole) at sample points :attr:`k_in`.
 
         Returns
         -------
-        pk_conv_out : dict of {str: 1-d :class:`numpy.ndarray`}
+        pk_conv_out : dict of {str or int: 1-d :class:`numpy.ndarray`}
             Output windowed power spectrum multipole samples (each key is
             a multipole) at sample points :attr:`k_out`.
 
@@ -1313,7 +1427,7 @@ class ThreePointWinConvBase:
         a named formula (e.g. 'sugiyama+18').
     window_sampts : 1-d array of float
         Window function separation sample points.
-    window_multipoles : dict of {str: 2-d array of float}
+    window_multipoles : dict of {str or tuple of int: 2-d array of float}
         Window function multipole samples (each key is a multipole).
 
 
@@ -1373,19 +1487,21 @@ class ThreePCFWinConv(ThreePointWinConvBase):
         a named formula (e.g. 'sugiyama+18').
     window_sampts : 1-d array of float
         Window function separation sample points.
-    window_multipoles : dict of {str: 2-d array of float}
+    window_multipoles : dict of {str or tuple of int: 2-d array of float}
         Window function multipole samples (each key is a multipole).
-    r_in : 1-d array of float
-        Separation sample points for the input 3PCF.
+    r_in : 1-d array of float or dict of {str or tuple: 1-d array-like}
+        Separation sample points for the input 3PCF, either the same
+        for all multipoles or a dictionary of sample points for each
+        multipole.
     r_out : 1-d array of float, optional
-        Separation sample points for the output 3PCF.  If `None`
-        (default), it is the same as `r_in`.
+        Separation sample points for all output 3PCF multipoles.
+        If `None` (default), it is set to `r_in`.
 
     Attributes
     ----------
-    r_in : 1-d array of float
+    r_in : dict of {str or tuple: 1-d array of float}
         Separation sample points for the input 3PCF.
-    r_out : 1-d array of float
+    r_out : dict of {str or tuple: 1-d array of float}
         Separation sample points for the output 3PCF.
 
 
@@ -1412,11 +1528,26 @@ class ThreePCFWinConv(ThreePointWinConvBase):
 
         super().__init__(formulae, window_sampts, window_multipoles)
 
-        self.r_in = r_in
+        if isinstance(r_in, dict):
+            self.r_in = r_in
+        else:
+            self.r_in = {
+                multipole: r_in
+                for multipole in set(
+                    formulae.multipoles_Z + formulae.multipoles_Q
+                )
+            }
         if r_out is None:
             self.r_out = r_in
         else:
-            self.r_out = r_out
+            self.r_out = {
+                multipole: r_out
+                for multipole in set(
+                    formulae.multipoles_Z +
+                    formulae.multipoles_Q +
+                    formulae.multipoles
+                )
+            }
         if not _check_conv_range(self.r_out, self._rQ_in):
             warnings.warn(
                 "The convolution range `r_out` is not fully covered "
@@ -1433,13 +1564,13 @@ class ThreePCFWinConv(ThreePointWinConvBase):
         self._Q_out = {
             _multipole: RectBivariateSpline(
                 self._rQ_in, self._rQ_in, _Qpole_in
-            )(self.r_out, self.r_out)
+            )(self.r_out[_multipole], self.r_out[_multipole])
             for _multipole, _Qpole_in in self._Q_in.items()
         }
         self._Qdiag_out = {
             _multipole: InterpolatedUnivariateSpline(
                 self._rQ_in, np.diag(_Qpole_in)
-            )(self.r_out)
+            )(self.r_out[_multipole])
             for _multipole, _Qpole_in in self._Q_in.items()
         }
 
@@ -1448,7 +1579,7 @@ class ThreePCFWinConv(ThreePointWinConvBase):
 
         Parameters
         ----------
-        zeta_in : dict of {str: 2-d array of float}
+        zeta_in : dict of {str or tuple of int: 2-d array of float}
             Input 3PCF multipole samples (each key is a multipole)
             at sample points :attr:`r_in`.
         ic : float, optional
@@ -1458,7 +1589,7 @@ class ThreePCFWinConv(ThreePointWinConvBase):
 
         Returns
         -------
-        zeta_conv_out : dict of {str: 2-d :class:`numpy.ndarray`}
+        zeta_conv_out : dict of {str or tuple of int: 2-d array of float}
             Output windowed 3PCF multipole samples (each key is
             a multipole) at sample points :attr:`r_out`.
 
@@ -1473,8 +1604,8 @@ class ThreePCFWinConv(ThreePointWinConvBase):
         try:
             zeta_out = {
                 multipole: RectBivariateSpline(
-                    self.r_in, self.r_in, Zpole_in
-                )(self.r_out, self.r_out)
+                    self.r_in[multipole], self.r_in[multipole], Zpole_in.real
+                )(self.r_out[multipole], self.r_out[multipole])
                 for multipole, Zpole_in in zeta_in.items()
             }
         except IndexError:  # raised by :mod:`scipy.interpolate._fitpack2`
@@ -1491,7 +1622,7 @@ class ThreePCFWinConv(ThreePointWinConvBase):
                     self._rQ_in, self._Q_in, self.r_in, zeta_in,
                     r_common=self.r_out, approx=False
                 )
-            zeta_out['ic'] = ic * np.ones((len(self.r_out), len(self.r_out)))
+            zeta_out['ic'] = ic
 
         # Perform convolution as multiplication.
         zeta_conv_out = {}
@@ -1511,7 +1642,7 @@ class ThreePCFWinConv(ThreePointWinConvBase):
 
         Parameters
         ----------
-        zeta_diag_in : dict of {str: 1-d array of float}
+        zeta_diag_in : dict of {str or tuple of int: 1-d array of float}
             Input diagonal 3PCF multipole samples (each key
             is a multipole) at sample points :attr:`r_in`.
         ic : float, optional
@@ -1520,7 +1651,7 @@ class ThreePCFWinConv(ThreePointWinConvBase):
 
         Returns
         -------
-        zeta_diag_conv_out : dict of {str: 1-d :class:`numpy.ndarray`}
+        zeta_diag_conv_out : dict of {str or tuple of int: 1-d array}
             Output windowed diagonal 3PCF multipole samples (each key
             is a multipole) at sample points :attr:`r_out`.
 
@@ -1535,8 +1666,8 @@ class ThreePCFWinConv(ThreePointWinConvBase):
         try:
             zeta_diag_out = {
                 multipole: InterpolatedUnivariateSpline(
-                    self.r_in, Zpole_diag_in
-                )(self.r_out)
+                    self.r_in[multipole], Zpole_diag_in
+                )(self.r_out[multipole])
                 for multipole, Zpole_diag_in in zeta_diag_in.items()
             }
         except ValueError:  # raised by :mod:`scipy.interpolate._fitpack2`
@@ -1553,7 +1684,7 @@ class ThreePCFWinConv(ThreePointWinConvBase):
                     "The integral constraint is required by the convolution "
                     "formulae but not provided."
                 )
-            zeta_diag_out['ic'] = ic * np.ones(len(self.r_out))
+            zeta_diag_out['ic'] = ic
 
         # Perform convolution as multiplication.
         zeta_diag_conv_out = {}
@@ -1582,7 +1713,7 @@ class BispecWinConv(ThreePointWinConvBase):
         Window function separation sample points.  If not logarithmically
         spaced, these are respaced with the same range and number
         of points; `window_multipoles` are resampled accordingly.
-    window_multipoles : dict of {str: 2-d array of float}
+    window_multipoles : dict of {str or tuple of int: 2-d array of float}
         Window function multipole samples (each key is a multipole).
         If `window_sampts` needs to be logarithmically respaced, these are
         resampled accordingly.
@@ -1596,9 +1727,8 @@ class BispecWinConv(ThreePointWinConvBase):
     r_common : 1-d array of float, optional
         Separation sample points for multipoles of both the
         window function and the intermediate 3PCF (transformed from
-        `B_in`).  If `None` (default), they are chosen to correspond
-        to the input bispectrum wavenumber sample points; otherwise,
-        `r_common` must be logarithmically spaced.
+        `B_in`).  If `None` (default), they are automatically derived;
+        otherwise, `r_common` must be logarithmically spaced.
     transform_kwargs : dict, optional
         FFTLog transform keyword arguments to be passed to
         :class:`~triumvirate.transforms.DoubleSphericalBesselTransform`
@@ -1657,8 +1787,8 @@ class BispecWinConv(ThreePointWinConvBase):
         #     self._transform_kwargs['extrap_exp'] = 2.
         # if 'extrap2d' not in self._transform_kwargs:
         #     self._transform_kwargs['extrap2d'] = False
-        # if 'threaded' not in self._transform_kwargs:
-        #     self._transform_kwargs['threaded'] = True
+        if 'threaded' not in self._transform_kwargs:
+            self._transform_kwargs['threaded'] = False
 
         # Set input bispectrum wavenumber sample points.
         try:
@@ -1685,7 +1815,25 @@ class BispecWinConv(ThreePointWinConvBase):
 
         # Set intermediate 3PCF separation sample points.
         if r_common is None:
-            self.r_common = self._bdsjt[self._multipole_rep]._post_sampts
+            r_common_min = max(
+                self._bdsjt[multipole_Z]._post_sampts.min()
+                for multipole_Z in self._formulae.multipoles_Z
+                if multipole_Z != 'ic'
+            )
+            r_common_max = min(
+                self._bdsjt[multipole_Z]._post_sampts.max()
+                for multipole_Z in self._formulae.multipoles_Z
+                if multipole_Z != 'ic'
+            )
+            size_r_common = min(
+                self._bdsjt[multipole_Z]._post_sampts.size
+                for multipole_Z in self._formulae.multipoles_Z
+                if multipole_Z != 'ic'
+            )
+            self.r_common = np.logspace(
+                np.log10(r_common_min), np.log10(r_common_max), size_r_common,
+                base=10.
+            )
         else:
             try:
                 _check_1d_array(r_common, check_loglin=True)
@@ -1709,7 +1857,22 @@ class BispecWinConv(ThreePointWinConvBase):
 
         # Set output bispectrum wavenumber sample points.
         if k_out is None:
-            self.k_out = self._fdsjt[self._multipole_rep]._post_sampts
+            k_out_min = max(
+                self._fdsjt[multipole]._post_sampts.min()
+                for multipole in self._formulae.multipoles
+            )
+            k_out_max = min(
+                self._fdsjt[multipole]._post_sampts.max()
+                for multipole in self._formulae.multipoles
+            )
+            size_k_out = min(
+                self._fdsjt[multipole]._post_sampts.size
+                for multipole in self._formulae.multipoles
+            )
+            self.k_out = np.logspace(
+                np.log10(k_out_min), np.log10(k_out_max), size_k_out,
+                base=10.
+            )
         else:
             self.k_out = k_out
 
@@ -1722,22 +1885,25 @@ class BispecWinConv(ThreePointWinConvBase):
                 window_sampts, window_sampts, Qpole_in
             )(self.r_common, self.r_common)
 
-    def convolve(self, B_in, ic=None):
+    def convolve(self, B_in, ic=None, ret_zeta=False):
         r"""Convolve bispectrum multipoles.
 
         Parameters
         ----------
-        B_in : dict of {str: 2-d array of float}
+        B_in : dict of {str or tuple of int: 2-d array of float}
             Input bispectrum multipole samples (each key is a multipole)
             at sample points :attr:`k_in`.
         ic : float, optional
             Integral constraint :math:`\bar{\zeta}`.  If `None` (default)
             and required by the convolution formula, it is calculated
             from the input bispectrum and the window function.
+        ret_zeta : bool, optional
+            Whether to return the intermediate 3PCF multipoles
+            (default is `False`).
 
         Returns
         -------
-        B_conv_out : dict of {str: 2-d :class:`numpy.ndarray`}
+        B_conv_out : dict of {str or tuple of int: 2-d array of float}
             Output windowed bispectrum multipole samples (each key is
             a multipole) at sample points :attr:`k_out`.
 
@@ -1767,10 +1933,16 @@ class BispecWinConv(ThreePointWinConvBase):
 
         # Resample at output wavenumber sample points.
         B_conv_out = {
-            multipole: RectBivariateSpline(
-                k_conv[0][:, 0], k_conv[-1][0, :], Bpole_conv_out
-            )(self.k_out, self.k_out)
+            multipole:
+                RectBivariateSpline(
+                    k_conv[0][:, 0], k_conv[-1][0, :], Bpole_conv_out.real
+                )(self.k_out, self.k_out) +
+                1j * RectBivariateSpline(
+                    k_conv[0][:, 0], k_conv[-1][0, :], Bpole_conv_out.imag
+                )(self.k_out, self.k_out)
             for multipole, Bpole_conv_out in B_conv_out.items()
         }
 
+        if ret_zeta:
+            return zeta_conv, B_conv_out
         return B_conv_out
