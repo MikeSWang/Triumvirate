@@ -65,15 +65,18 @@ void ParticleCatalogue::initialise_particles(const int num) {
   this->ntotal = num;
 
   // Renew particle data.
-  delete[] this->pdata; this->pdata = nullptr;
+  this->reset_particles();
 
   this->pdata = new ParticleData[this->ntotal];
-
   trvs::gbytesMem += trvs::size_in_gb<struct ParticleData>(this->ntotal);
   trvs::update_maxmem();
 }
 
 void ParticleCatalogue::finalise_particles() {
+  this->reset_particles();
+}
+
+void ParticleCatalogue::reset_particles() {
   // Free particle data.
   if (this->pdata != nullptr) {
     delete[] this->pdata; this->pdata = nullptr;

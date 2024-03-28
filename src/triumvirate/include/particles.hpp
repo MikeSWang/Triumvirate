@@ -114,11 +114,17 @@ class ParticleCatalogue {
   /**
    * @brief Finalise particle data container.
    *
+   */
+  void finalise_particles();
+
+  /**
+   * @brief Reset particle data container.
+   *
    * This is an explicit method to free the resources occupied by
    * @ref trv::ParticleCatalogue.pdata and may be called outside the
    * class destructor.
    */
-  void finalise_particles();
+  void reset_particles();
 
   // ---------------------------------------------------------------------
   // Operators & reserved methods
