@@ -123,7 +123,7 @@ INCLUDES += -I${DIR_PKG_INCLUDE} ${DEP_INCLUDES}
 CPPFLAGS += -MMD -MP
 CXXFLAGS += -Wall -O3 ${DEP_CXXFLAGS}
 LDFLAGS += ${DEP_LDFLAGS}
-LDLIBS += $(if ${DEP_LDLIBS},${DEP_LDLIBS},$(-lgsl -lgslcblas -lm -lfftw3))
+LDLIBS += $(if ${DEP_LDLIBS},${DEP_LDLIBS},-lgsl -lgslcblas -lm -lfftw3)
 
 PIPOPTS ?= --user
 
@@ -133,7 +133,7 @@ PIPOPTS ?= --user
 INCLUDES_TEST = ${INCLUDES} ${DEP_TEST_INCLUDES}
 CXXFLAGS_TEST = ${CXXFLAGS} ${DEP_TEST_CXXFLAGS}
 LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} ${DEP_TEST_LDFLAGS}
-LDLIBS_TEST = -l${LIBNAME} ${LDLIBS} ${DEP_TEST_LDLIBS}
+LDLIBS_TEST = -l${LIBNAME} ${LDLIBS} $(if ${DEP_TEST_LDLIBS},${DEP_TEST_LDLIBS},-lgtest -lpthread)
 
 
 # -- Environment ---------------------------------------------------------
