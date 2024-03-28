@@ -468,6 +468,8 @@ testclean:
 	@$(RM) -r ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/*
 	@echo "  removing pytest cache..."
 	@find . -type d -name ".pytest_cache" -exec rm -r {} +
+	@echo "  removing compiled bytecode..."
+	@find . -type d -name "__pycache__" -exec rm -r {} +
 	@echo "  removing core dumps..."
 	@$(RM) -r core
 
@@ -482,5 +484,7 @@ distclean:
 
 runclean:
 	@echo "Cleaning up Triumvirate runs..."
+	@echo "  removing compiled bytecode..."
+	@find . -type d -name "__pycache__" -exec rm -r {} +
 	@echo "  removing core dumps..."
 	@$(RM) -r core
