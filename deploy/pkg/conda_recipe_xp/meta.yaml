@@ -46,7 +46,7 @@ requirements:
   run:
     - python >=3.8
     - {{ pin_compatible("numpy") }}
-    - scipy
+    - scipy >= 1.6
     - sympy
     - astropy >=4.2
     - pyyaml >4

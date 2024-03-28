@@ -17,7 +17,7 @@ dependencies:
   - llvm-openmp
   # Runtime dependencies
   - numpy >= 1.17
-  - scipy
+  - scipy >= 1.6
   - sympy
   - astropy >= 4.2
   - pyyaml > 4

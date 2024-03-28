@@ -27,7 +27,10 @@ from collections import namedtuple
 from fractions import Fraction
 
 import numpy as np
-from scipy.integrate import simpson
+try:
+    from scipy.integrate import simpson
+except ImportError:
+    from scipy.integrate import simps as simpson
 from scipy.interpolate import InterpolatedUnivariateSpline, RectBivariateSpline
 from sympy.physics.wigner import wigner_3j, wigner_9j
 
