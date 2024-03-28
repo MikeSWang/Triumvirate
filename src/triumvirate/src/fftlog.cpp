@@ -63,15 +63,17 @@ HankelTransform::HankelTransform(double mu, double q, bool threaded) {
 HankelTransform::~HankelTransform() {
   this->reset();
 
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  if (this->threaded) {
-    fftw_cleanup_threads();
-  } else {
-    fftw_cleanup();
-  }
-#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
-  fftw_cleanup();
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+  // Do NOT call `fftw_cleanup` in reusable code here
+  // as it may cause memory leaks.
+// #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+//   if (this->threaded) {
+//     fftw_cleanup_threads();
+//   } else {
+//     fftw_cleanup();
+//   }
+// #else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+//   fftw_cleanup();
+// #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 }
 
 void HankelTransform::reset() {

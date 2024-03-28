@@ -406,12 +406,6 @@ trv::PowspecMeasurements compute_powspec(
     }
   }
 
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_cleanup_threads();
-#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
-  fftw_cleanup();
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
-
   // ---------------------------------------------------------------------
   // Results
   // ---------------------------------------------------------------------
@@ -526,12 +520,6 @@ trv::TwoPCFMeasurements compute_corrfunc(
     }
   }
 
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_cleanup_threads();
-#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
-  fftw_cleanup();
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
-
   // ---------------------------------------------------------------------
   // Results
   // ---------------------------------------------------------------------
@@ -624,12 +612,6 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
     pk_save[ibin] += double(2*params.ELL + 1) * stats_2pt.pk[ibin];
     sn_save[ibin] += double(2*params.ELL + 1) * stats_2pt.sn[ibin];
   }
-
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_cleanup_threads();
-#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
-  fftw_cleanup();
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // ---------------------------------------------------------------------
   // Results
@@ -724,12 +706,6 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
     r_save[ibin] = stats_2pt.r[ibin];
     xi_save[ibin] += double(2*params.ELL + 1) * stats_2pt.xi[ibin];
   }
-
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_cleanup_threads();
-#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
-  fftw_cleanup();
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // ---------------------------------------------------------------------
   // Results
@@ -843,12 +819,6 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
       );
     }
   }
-
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_cleanup_threads();
-#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
-  fftw_cleanup();
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // ---------------------------------------------------------------------
   // Results
