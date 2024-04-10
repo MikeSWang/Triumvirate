@@ -17,6 +17,14 @@ SCM_LOC_SCHEME ?= node-and-date
 
 
 # ------------------------------------------------------------------------
+# Preamble
+# ------------------------------------------------------------------------
+
+# Escape commas.
+COMMA := ,
+
+
+# ------------------------------------------------------------------------
 # Directories
 # ------------------------------------------------------------------------
 
@@ -132,7 +140,7 @@ PIPOPTS ?= --user
 
 INCLUDES_TEST = ${INCLUDES} ${DEP_TEST_INCLUDES}
 CXXFLAGS_TEST = ${CXXFLAGS} ${DEP_TEST_CXXFLAGS}
-LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} ${DEP_TEST_LDFLAGS}
+LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} $(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_TEST_LDFLAGS})) ${DEP_TEST_LDFLAGS}
 LDLIBS_TEST = -l${LIBNAME} ${LDLIBS} $(if ${DEP_TEST_LDLIBS},${DEP_TEST_LDLIBS},-lgtest -lpthread)
 
 
@@ -156,7 +164,7 @@ endif  # FFTW_ROOT
 # GTEST library
 ifdef GTEST_ROOT
 INCLUDES_TEST += -I${GTEST_ROOT}/include
-LDFLAGS_TEST += -L${GTEST_ROOT}/lib
+LDFLAGS_TEST += -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
 endif  # GTEST_ROOT
 
 endif  # NERSC_HOST
