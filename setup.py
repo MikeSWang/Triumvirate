@@ -706,6 +706,10 @@ def add_options_pkgs(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
     for macro_ in MACROS_PKG + MACROS_EXT:
         macros.append(macro_)
 
+    # Adapt `ldflags`. Note the `rpath` option is added.
+    for lib_dir_ in lib_dirs:
+        ldflags.append(f'-Wl,-rpath,{lib_dir_}')
+
     # Adapt `libs`. Note the linking order matters.
     libs = [PKG_LIB_NAME,] + libs  # noqa: E231
 
