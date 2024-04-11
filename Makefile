@@ -130,7 +130,9 @@ DEP_TEST_LDLIBS := $(shell pkg-config --libs-only-l ${DEPS_TEST})
 INCLUDES += -I${DIR_PKG_INCLUDE} ${DEP_INCLUDES}
 CPPFLAGS += -MMD -MP
 CXXFLAGS += -Wall -O3 ${DEP_CXXFLAGS}
-LDFLAGS += ${DEP_LDFLAGS}
+LDFLAGS += \
+	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \
+	${DEP_LDFLAGS}
 LDLIBS += $(if ${DEP_LDLIBS},${DEP_LDLIBS},-lgsl -lgslcblas -lm -lfftw3)
 
 PIPOPTS ?= --user
@@ -140,8 +142,11 @@ PIPOPTS ?= --user
 
 INCLUDES_TEST = ${INCLUDES} ${DEP_TEST_INCLUDES}
 CXXFLAGS_TEST = ${CXXFLAGS} ${DEP_TEST_CXXFLAGS}
-LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} $(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_TEST_LDFLAGS})) ${DEP_TEST_LDFLAGS}
-LDLIBS_TEST = -l${LIBNAME} ${LDLIBS} $(if ${DEP_TEST_LDLIBS},${DEP_TEST_LDLIBS},-lgtest -lpthread)
+LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} \
+	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_TEST_LDFLAGS})) \
+	${DEP_TEST_LDFLAGS}
+LDLIBS_TEST = -l${LIBNAME} ${LDLIBS} \
+	$(if ${DEP_TEST_LDLIBS},${DEP_TEST_LDLIBS},-lgtest -lpthread)
 
 
 # -- Environment ---------------------------------------------------------
