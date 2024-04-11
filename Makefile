@@ -169,6 +169,17 @@ endif  # GTEST_ROOT
 
 endif  # NERSC_HOST
 
+# DiRAC computer cluster [adapt]
+ifdef DIRAC_HOST
+
+# GTEST library
+ifdef GTEST_ROOT
+INCLUDES_TEST += -I${GTEST_ROOT}/include
+LDFLAGS_TEST += -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
+endif  # GTEST_ROOT
+
+endif  # DIRAC_HOST
+
 
 # -- Customisation -------------------------------------------------------
 
