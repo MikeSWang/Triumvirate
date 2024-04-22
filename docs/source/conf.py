@@ -59,28 +59,13 @@ else:
 
 # -- General configuration -----------------------------------------------
 
-def skip_cdef_member(app, what, name, obj, skip, options):
-    SKIP_LISTS = {
-        'dataobjs.Binning': [
-            'bin_centres', 'bin_edges', 'bin_widths',
-            'bin_max', 'bin_min',
-            'num_bins',
-            'scheme', 'space',
-        ],
-    }
-
-    skip_list = list(chain.from_iterable(SKIP_LISTS.values()))
-
-    return True if name in skip_list else None
-
-
-def setup(app):
-    app.connect('autodoc-skip-member', skip_cdef_member)
-
 
 exclude_patterns = ['setup', 'config', 'tests', 'examples']
 
 extensions = [
+    'breathe',
+    'exhale',
+    'myst_nb',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
@@ -91,14 +76,11 @@ extensions = [
     'sphinx.ext.graphviz',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
-    'breathe',
-    'exhale',
-    'myst_nb',
-    'sphinxcontrib.bibtex',
     'sphinx_copybutton',
+    # 'sphinx_inline_tabs',
     'sphinx_tabs.tabs',
     'sphinx_togglebutton',
-    # 'sphinx_inline_tabs',
+    'sphinxcontrib.bibtex',
 ]
 
 master_doc = 'index'
@@ -125,7 +107,7 @@ html_last_updated_fmt = "%a, %Y-%m-%dT%H:%M:%S%z. Version {}".format(release)
 html_theme = 'sphinx_book_theme'
 html_theme_options = {
     'announcement':
-        "Version 0.3 is now available with significant improvements!",
+        "Version 0.4 is coming soon!",
     'path_to_docs': "docs/source",
     'repository_url': 'https://github.com/MikeSWang/Triumvirate',
     'toc_title': 'On this page',
@@ -231,3 +213,31 @@ napoleon_use_ivar = True
 nb_execution_mode = 'off'
 
 todo_include_todos = True
+
+
+# -- Application set-up --------------------------------------------------
+
+def skip_cdef_member(app, what, name, obj, skip, options):
+
+    SKIP_LISTS = {
+        'dataobjs.Binning': [
+            'bin_centres', 'bin_edges', 'bin_widths',
+            'bin_max', 'bin_min',
+            'num_bins',
+            'scheme', 'space',
+        ],
+    }
+
+    skip_list = list(chain.from_iterable(SKIP_LISTS.values()))
+
+    return True if name in skip_list else None
+
+
+def setup(app):
+
+    app.connect('autodoc-skip-member', skip_cdef_member)
+
+    return {
+        "parallel_read_safe": True,
+        "parallel_write_safe": True,
+    }
