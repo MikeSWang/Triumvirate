@@ -993,33 +993,74 @@ class ThreePointWindow:
 
         """
         if rrange is None:
-            sel_range = np.full_like(self.r, True, dtype=bool)
+            select_range = {
+                multipole: np.full_like(self.r, True, dtype=bool)
+                for multipole in self.multipoles
+            }
+        elif isinstance(rrange, dict):
+            select_range = {
+                Multipole(multipole): np.logical_and(
+                    rmin <= self.r, self.r <= rmax
+                )
+                for multipole, (rmin, rmax) in rrange.items()
+            }
         else:
             rmin, rmax = rrange
             rmin = rmin or 0.
             rmax = rmax or np.inf
-            sel_range = np.logical_and(rmin <= self.r, self.r <= rmax)
+            select_range = {
+                multipole: np.logical_and(rmin <= self.r, self.r <= rmax)
+                for multipole in self.multipoles
+            }
 
-        sel_idx = np.full_like(self.r, idxrange is None, dtype=bool)
-        if idxrange is not None:
-            sel_idx[slice(*idxrange)] = True
+        if idxrange is None:
+            select_idx = {
+                multipole: np.full_like(self.r, True, dtype=bool)
+                for multipole in self.multipoles
+            }
+        elif isinstance(idxrange, dict):
+            select_idx = {
+                multipole: np.full_like(self.r, True, dtype=bool)
+                for multipole in self.multipoles
+            }
+            for key, val in idxrange.items():
+                select_idx[Multipole(key)] = np.full_like(
+                    self.r, False, dtype=bool
+                )
+                select_idx[slice(*val)] = True
+        else:
+            select_idx = {
+                multipole: np.full_like(self.r, False, dtype=bool)
+                for multipole in self.multipoles
+            }
+            for multipole in self.multipoles:
+                select_idx[multipole][slice(*idxrange)] = True
 
-        selector = np.logical_and(sel_range, sel_idx)
+        selector = {
+            multipole: np.logical_and(
+                select_range[multipole], select_idx[multipole]
+            )
+            for multipole in self.multipoles
+        }
 
         if not inplace:
             instance = self.__class__.load_from_dict({
-                'r': self.r[selector],
+                'r': self.r[selector[multipole]],
                 'Q': {
-                    multipole: Q_in_[selector, :][:, selector]
+                    multipole: Q_in_[
+                        selector[multipole], :
+                    ][
+                        :, selector[multipole]
+                    ]
                     for multipole, Q_in_ in self.Q.items()
                 }
             })
             instance.sources = self.sources
             return instance
 
-        self.r = self.r[selector]
+        self.r = self.r[selector[multipole]]
         self.Q = {
-            multipole: Qpole[selector, :][:, selector]
+            multipole: Qpole[selector[multipole], :][:, selector[multipole]]
             for multipole, Qpole in self.Q.items()
         }
         self.Q_diag = {
