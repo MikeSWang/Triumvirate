@@ -1,6 +1,7 @@
 .. title:: Home
 
 .. figure:: _static/Triumvirate.png
+    :class: dark-light
     :align: center
     :width: 67 %
 

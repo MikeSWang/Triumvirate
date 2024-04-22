@@ -151,7 +151,7 @@ autodoc_member_order = 'bysource'
 
 autosummary_generate = True
 
-bibtex_bibfiles = ['_static/refs.bib']
+bibtex_bibfiles = ["_static/refs.bib"]
 bibtex_reference_style = 'author_year'
 
 breathe_projects = {'Triumvirate': "apidoc_cpp/xml/"}

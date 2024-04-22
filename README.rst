@@ -4,6 +4,7 @@
     which is rendered on GitHub and included in documentation.
 
 .. figure:: https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/Triumvirate.png
+    :class: dark-light
     :align: center
     :width: 67 %
 
