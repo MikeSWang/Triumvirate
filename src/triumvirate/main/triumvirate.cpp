@@ -44,7 +44,7 @@
  *       trv::Binning::set_bins(std::vector) used for custom binning
  *       schemes specified by the external parameter file.
  *
- * @param binning Binning.
+ * @param _binning Binning.
  */
 void _set_custom_bins(trv::Binning& _binning) {
   // Clear any existing binning.

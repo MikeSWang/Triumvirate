@@ -91,7 +91,7 @@ class HankelTransform {
    * @param lowring If true (default), set the pivot value by the
    *                low-ringing condition.
    * @param extrap Extrapolation option.  If not
-   *               @ref `trv::array::ExtrapOption::NONE` (default),
+   *               @ref trv::array::ExtrapOption::NONE (default),
    *               the sample size for the transform is the smallest
    *               power of 2 that is greater than or equal to
    *               `extrap_exp` times the original number of
@@ -166,7 +166,7 @@ class HankelTransform {
    * @param[out] b Post-trasform sample values.
    *
    * @attention If extrapolation is enabled (`extrap` not
-   *            @ref `trv::array::ExtrapOption::NONE`, the pre-transform
+   *            @ref trv::array::ExtrapOption::NONE, the pre-transform
    *            samples are assumed to be real.
    */
   void biased_transform(std::complex<double>* a, std::complex<double>* b);
@@ -256,7 +256,7 @@ class SphericalBesselTransform: public HankelTransform {
    * @param lowring If true (default), set the pivot value by the
    *                low-ringing condition.
    * @param extrap Extrapolation option.  If not
-   *               @ref `trv::array::ExtrapOption::NONE` (default),
+   *               @ref trv::array::ExtrapOption::NONE (default),
    *               the sample size for the transform is the smallest
    *               power of 2 that is greater than or equal to
    *               `extrap_exp` times the original number of
@@ -318,7 +318,8 @@ class SphericalBesselTransform: public HankelTransform {
    * @f]
    *
    * @note This is equivalent to the (forward biased) Hankel transform for
-   *       @f$ A(r) = r^{3/2} a(r) @f$ and $B(k) = (2\pi / k)^{3/2} b(k)$
+   *       @f$ A(r) = r^{3/2} a(r) @f$ and
+   *       @f$ B(k) = (2\pi / k)^{3/2} b(k) @f$
    *       with @f$ \mu = \ell + 1/2 @f$ and the same @f$ q @f$.
    *
    * @param[in] a Pre-transform sample values.  Must even in length
@@ -344,7 +345,7 @@ class SphericalBesselTransform: public HankelTransform {
    * @param[out] post_samples Post-transform multipoles samples.
    *
    * @attention If extrapolation is enabled (`extrap` not
-   *            @ref `trv::array::ExtrapOption::NONE`, the pre-transform
+   *            @ref trv::array::ExtrapOption::NONE, the pre-transform
    *            samples are assumed to be real.
    */
   void transform_cosmological_multipole(
