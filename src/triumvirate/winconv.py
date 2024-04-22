@@ -14,42 +14,20 @@ Perform window convolution of two- and three-point statistics.
     WinConvFormulae
     ThreePointWindow
     calc_threept_ic
-    TwoPointWinConvBase
+    WinConvBase
     TwoPCFWinConv
     PowspecWinConv
-    ThreePointWinConvBase
     ThreePCFWinConv
     BispecWinConv
 
 
-.. |coeff_type| replace:: \
-    float or int or :class:`fractions.Fraction` or \
-    str or :class:`sympy.core.expr.Expr`
+.. |farr1d_type| replace:: 1-d array of float
 
-.. |multipole_type| replace:: \
-    str or int or tuple or :class:`~triumvirate.winconv.Multipole`
-
-.. |multipole_3pt_type| replace:: \
-    str or tuple or :class:`~triumvirate.winconv.Multipole`
-
-.. |wcterm_type| replace:: \
-    :class:`~triumvirate.winconv.WinConvTerm` or \
-    tuples of (|multipole_type|, |multipole_type|, |coeff_type|)
-
-.. |formulae_dict_type| replace:: \
-    dict of {|multipole_type|: sequence of |wcterm_type|}
+.. |farr2d_type| replace:: 2-d array of float
 
 .. |formulae_type| replace:: \
-    dict of \
-    {:class:`~triumvirate.winconv.Multipole`: \
+    dict of {:class:`~triumvirate.winconv.Multipole`: \
     list of :class:`~triumvirate.winconv.WinConvTerm`}
-
-.. |sampts_type| replace:: \
-    1-d array of float or dict of {|multipole_type|: 1-d array of float}
-
-.. |sampts_3pt_type| replace:: \
-    1-d array of float or \
-    dict of {|multipole_3pt_type|: 1-d array of float}
 
 """
 # STYLE: Standard naming convention is not always followed in this module
@@ -57,6 +35,7 @@ Perform window convolution of two- and three-point statistics.
 import warnings
 from dataclasses import dataclass
 from fractions import Fraction
+from typing import Union, Sequence
 
 import numpy as np
 try:
@@ -64,7 +43,7 @@ try:
 except ImportError:
     from scipy.integrate import simps as simpson  # scipy<1.6
 from scipy.interpolate import InterpolatedUnivariateSpline, RectBivariateSpline
-from sympy import latex, sympify
+from sympy import Expr, latex, sympify
 from sympy.physics.wigner import wigner_3j, wigner_9j
 
 from triumvirate._arrayops import MixedSignError, SpacingError, _check_1d_array
@@ -75,6 +54,17 @@ from triumvirate.transforms import (
     resample_lin,
 )
 
+
+SPLINE = 3
+"""Default spline order for interpolation (see :mod:`scipy.interpolate`).
+
+"""
+
+_EXT = 3
+"""Default extrapolation order for diagonal window interpolation
+(see :mod:`scipy.interpolate`).
+
+"""
 
 NAMED_FORMULAE = {
     # Wilson et al. (2016) [arXiv:1511.07799]
@@ -137,7 +127,8 @@ NAMED_FORMULAE = {
 }
 """Named formulae for window convolution.
 
-This is a `dict` where each key corresponds to a named formula below:
+This is a :obj:`dict` where each key corresponds to a named formula
+below---
 
 - ``'wilson+16'`` (for plane-parallel two-point statistics):
   Wilson et al., 2016.
@@ -148,22 +139,8 @@ This is a `dict` where each key corresponds to a named formula below:
   `MNRAS 484(1), 364 <https://doi.org/10.1093/mnras/sty3249>`_
   [`arXiv:1803.02132 <https://arxiv.org/abs/1803.02132>`_].
 
-The value for each key is itself a `dict` that is used to construct an
-instance of :class:`~triumvirate.winconv.WinConvFormulae`.
-
-"""
-
-SPLINE = 3
-"""Default spline order for interpolation.
-
-.. seealso:: :mod:`scipy.interpolate`
-
-"""
-
-_EXT = 3
-"""Default extrapolation order for diagonal window interpolation.
-
-.. seealso:: :mod:`scipy.interpolate`
+The value for each key is itself a :obj:`dict` that is used to construct
+an instance of :class:`~triumvirate.winconv.WinConvFormulae`.
 
 """
 
@@ -182,7 +159,7 @@ class Multipole:
 
     Parameters
     ----------
-    multipole : |multipole_type|
+    multipole : :py:const:`MultipoleLike`
         Multipole representation.
 
     Attributes
@@ -293,6 +270,22 @@ class Multipole:
             )
 
 
+MultipoleLike = Union[Multipole, tuple[Union[int, str]], str, int]
+"""Multipole-like type.
+
+"""
+
+Multipole3PtLike = Union[Multipole, tuple[Union[int, str]], str]
+"""Three-point multipole-like type.
+
+"""
+
+CoeffType = Union[float, int, Fraction, str, Expr]
+"""Coefficient-like type.
+
+"""
+
+
 def _N_prefactor(multipole=None, ell1=None, ell2=None, L=None):
     """Calculate the Wigner-3j--related pre-factor.
 
@@ -341,11 +334,11 @@ def calc_threept_winconv_coeff(multipole, multipole_Q, multipole_Z,
 
     Parameters
     ----------
-    multipole : |multipole_3pt_type|
+    multipole : :py:const:`Multipole3PtLike`
         Windowed multipole indices.
-    multipole_Q : |multipole_3pt_type|
+    multipole_Q : :py:const:`Multipole3PtLike`
         Window function multipole indices.
-    multipole_Z : |multipole_3pt_type|
+    multipole_Z : :py:const:`Multipole3PtLike`
         Unwindowed correlation function multipole indices.
     symb : bool, optional
         If `True` (default is `False`), return the coefficient as a
@@ -390,22 +383,22 @@ def calc_threept_winconv_coeff(multipole, multipole_Q, multipole_Z,
 
 @dataclass
 class WinConvTerm:
-    r"""Window convolution term as a tuple of three multiplicative
+    """Window convolution term as a tuple of three multiplicative
     factors including the coefficient, window function multipole
     and unwindowed correlation function (CF) multipole.
 
     Parameters
     ----------
-    multipole_Q : |multipole_type|
+    multipole_Q : :py:const:`MultipoleLike`
         Window function multipole index/indices.
-    multipole_Z : |multipole_type|
+    multipole_Z : :py:const:`MultipoleLike`
         Unwindowed-CF multipole index/indices.
-    coeff : |coeff_type|
+    coeff : :py:const:`CoeffType`
         Numerical coefficient for the convolution term.
 
     Attributes
     ----------
-    coeff : |coeff_type|
+    coeff : :py:const:`CoeffType`
         Numerical coefficient for the convolution term.
     multipole_Q : :class:`~triumvirate.winconv.Multipole`
         Window function multipole index/indices.
@@ -419,7 +412,7 @@ class WinConvTerm:
     Examples
     --------
     The following variables all correspond to the term
-    :math:`- 1 \cdot Q_{000} \zeta_{\mathrm{ic}}`:
+    :math:`- 1 \\cdot Q_{000} \\zeta_{\\mathrm{ic}}`:
 
     >>> term_a = WinConvTerm((0, 0, 0), 'ic', -1)
     >>> term_b = WinConvTerm('000', 'ic', Fraction(-1))
@@ -499,6 +492,19 @@ class WinConvTerm:
         return term_str
 
 
+WinConvTermLike = Union[
+    WinConvTerm, tuple[MultipoleLike, MultipoleLike, CoeffType]
+]
+"""Window convolution term--like type.
+
+"""
+
+FormulaeDictType = dict[MultipoleLike, Sequence[WinConvTermLike]]
+"""Formula dictionary type.
+
+"""
+
+
 class WinConvFormulae:
     """Window convolution formulae.
 
@@ -509,7 +515,7 @@ class WinConvFormulae:
 
     Parameters
     ----------
-    formulae : |formulae_dict_type|
+    formulae : :py:const:`FormulaeDictType`
         Window convolution formulae.
 
     Attributes
@@ -605,8 +611,7 @@ class WinConvFormulae:
 
         Parameters
         ----------
-        multipole : str or int or tuple or \
-                    :class:`~triumvirate.winconv.Multipole`
+        multipole : :py:const:`~triumvirate.winconv.MultipoleLike`
             Windowed CF multipole.
 
         Returns
@@ -665,7 +670,8 @@ class ThreePointWindow:
         Paired separation window function sample points, i.e. each row
         is :math:`(r_1, r_2)` where :math:`r_1` and :math:`r_2` are
         the separation sample points for the first and second dimensions.
-    flat_multipoles : dict of {|multipole_3pt_type|: 1-d array of float}
+    flat_multipoles : dict of \
+                      {:py:const:`Multipole3PtLike`: |farr1d_type|}
         Flattened window function multipole samples (each key is
         a multipole) evaluated at `paired_sampts`.
     alpha_contrast : float, optional
@@ -683,11 +689,13 @@ class ThreePointWindow:
     ----------
     multipoles : list of :class:`~triumvirate.winconv.Multipole`
         Window function multipoles.
-    r : 1-d array of float
+    r : |farr1d_type|
         window function separation sample points.
-    Q : dict of {:class:`~triumvirate.winconv.Multipole`: 2-d array}
+    Q : dict of \
+        {:class:`~triumvirate.winconv.Multipole`: |farr2d_type|}
         Window function multipole samples (each key is a multipole).
-    Q_diag : dict of {:class:`~triumvirate.winconv.Multipole`: 1-d array}
+    Q_diag : dict of \
+        {:class:`~triumvirate.winconv.Multipole`: |farr1d_type|}
         Diagonal of the window function multipole samples (each key
         is a multipole).
     sources : list of str
@@ -789,7 +797,7 @@ class ThreePointWindow:
 
         Parameters
         ----------
-        filepaths : dict of {|multipole_3pt_type|: str}
+        filepaths : dict of {:py:const:`Multipole3PtLike`: str}
             Window function file paths (values) for each multipole (key).
         subtract_shotnoise : bool, optional
             Whether to subtract the shot-noise contribution from the
@@ -975,7 +983,9 @@ class ThreePointWindow:
 
         Parameters
         ----------
-        rrange : tuple of float or None, optional
+        rrange : tuple of float or \
+                 dict of {:py:const:`Multipole3PtLike`: tuple of float}, \
+                 optional
             Range of separation sample points (default is `None`), e.g.
             ``(None, 300.)``.
         idxrange : tuple of int or None, optional
@@ -1113,11 +1123,13 @@ def _check_conv_range(r_conv, r_samp):
 
     Parameters
     ----------
-    r_conv : dict of {:class:`~triumvrate.winconv.Multipole`: 1-d array} \
-             or 1-d array of float
+    r_conv : dict of \
+             {:class:`~triumvrate.winconv.Multipole`: |farr1d_type|} \
+             or |farr1d_type|
         Convolution range sample points.
-    r_samp : dict of {:class:`~triumvrate.winconv.Multipole`: 1-d array} \
-             or 1-d array of float
+    r_samp : dict of \
+             {:class:`~triumvrate.winconv.Multipole`: |farr1d_type|} \
+             or |farr1d_type|
         Separation sample points.
 
     Returns
@@ -1165,7 +1177,7 @@ def _find_conv_range(*coords, spacing='lglin'):
 
     Parameters
     ----------
-    *coords : 1-d array of float
+    *coords : |farr1d_type|
         Sample points.
     spacing : {'lglin', 'lin'}, optional
         Spacing for the convolution range separation sample points,
@@ -1173,7 +1185,7 @@ def _find_conv_range(*coords, spacing='lglin'):
 
     Returns
     -------
-    coord_conv : 1-d array of float
+    coord_conv : |farr1d_type|
         Convolution range sample points.
 
     """
@@ -1202,9 +1214,9 @@ def _integrate_2d_samples(x, y, z):
 
     Parameters
     ----------
-    x, y : 1-d array of float
+    x, y : |farr1d_type|
         Sample points for both dimensions.
-    z : 2-d array of float
+    z : |farr2d_type|
         Sample values.
 
     Returns
@@ -1222,18 +1234,21 @@ def calc_threept_ic(window_sampts, window_multipoles, r, zeta,
 
     Parameters
     ----------
-    window_sampts : |sampts_3pt_type|
+    window_sampts : |farr1d_type| or \
+                    dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
         Window function multipole separation sample points, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
-    window_multipoles : dict of {|multipole_3pt_type|: 2-d array of float}
+    window_multipoles : dict of \
+                        {:py:const:`Multipole3PtLike`: |farr2d_type|}
         Window function multipole samples (each key is a multipole).
         Must contain the (0, 0, 0) monopole.
-    r : |sampts_3pt_type|
+    r : |farr1d_type| or \
+        dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
         Separation sample points for the input 3PCF multipoles, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
-    zeta : dict of {|multipole_3pt_type|: 2-d array of float}
+    zeta : dict of {:py:const:`Multipole3PtLike`: |farr2d_type|}
         Input 3PCF multipole samples (each key is a multipole)
         at sample points `r_in`.
     r_common : 1-d array of float, optional
@@ -1360,24 +1375,28 @@ class WinConvBase:
 
     Parameters
     ----------
-    formulae : str, |formulae_dict_type| or |formulae_type|
+    formulae : str, :py:const:`FormulaeDictType` or |formulae_type|
         Window convolution formulae (see
         :class:`~triumvirate.winconv.WinConvFormulae`).  If a string,
         it is assumed to be a named formula (see
         :py:const:`NAMED_FORMULAE`).
-    window_sampts : |sampts_type|
+    window_sampts : |farr1d_type| or \
+                    dict of {:py:const:`MultipoleLike`: |farr1d_type|}
         Window function multipole separation sample points, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
-    window_multipoles : dict of {|multipole_type|: array of float}
+    window_multipoles : dict of \
+                        {:py:const:`MultipoleLike`: array of float}
         Window function multipole samples (each key is a multipole).
 
     Attributes
     ----------
-    r_in : dict of {:class:`~triumvirate.winconv.Multipole`: 1-d array} \
+    r_in : dict of \
+           {:class:`~triumvirate.winconv.Multipole`: |farr1d_type|} \
            or None
         Separation sample points for the input CF multipoles.
-    r_out : dict of {:class:`~triumvirate.winconv.Multipole`: 1-d array} \
+    r_out : dict of \
+            {:class:`~triumvirate.winconv.Multipole`: |farr1d_type|} \
             or None
         Separation sample points for the output CF multipoles.
 
@@ -1440,11 +1459,17 @@ class WinConvBase:
 
         Parameters
         ----------
-        r_in : |sampts_type| or |sampts_3pt_type|
+        r_in : |farr1d_type| or \
+               dict of {:py:const:`MultipoleLike`: |farr1d_type|} or \
+               |farr2d_type| or \
+               dict of {:py:const:`MultipoleLike`: |farr2d_type|}
             Separation sample points for the input CF multipoles, either
             the same for all multipoles or a dictionary of sample points
             (value) for each multipole (key).
-        r_out : |sampts_type| or |sampts_3pt_type|
+        r_out : |farr1d_type| or \
+                dict of {:py:const:`MultipoleLike`: |farr1d_type|} or \
+                |farr2d_type| or \
+                dict of {:py:const:`MultipoleLike`: |farr2d_type|}
             Separation sample points for the output CF multipoles, either
             the same for all multipoles or a dictionary of sample points
             (value) for each multipole (key).  If `None` (default),
@@ -1554,18 +1579,20 @@ class TwoPCFWinConv(WinConvBase):
 
     Parameters
     ----------
-    formulae : str, |formulae_dict_type| or |formulae_type|
+    formulae : str, :py:const:`FormulaeDictType` or |formulae_type|
         Window convolution formulae (see
         :class:`~triumvirate.winconv.WinConvFormulae`).  If a string,
         it is assumed to be a named formula (see
         :py:const:`NAMED_FORMULAE`).
-    window_sampts : |sampts_type|
+    window_sampts : |farr1d_type| or \
+                    dict of {:py:const:`MultipoleLike`: |farr1d_type|}
         Window function multipole separation sample points, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
-    window_multipoles : dict of {|multipole_type|: 1-d array of float}
+    window_multipoles : dict of {:py:const:`MultipoleLike`: |farr1d_type|}
         Window function multipole samples (each key is a multipole).
-    r_in : |sampts_type|
+    r_in : |farr1d_type| or \
+           dict of {:py:const:`MultipoleLike`: |farr1d_type|}
         Separation sample points for the input 2PCF multipoles, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
@@ -1578,9 +1605,11 @@ class TwoPCFWinConv(WinConvBase):
 
     Attributes
     ----------
-    r_in : dict of {:class:`~triumvirate.winconv.Multipole`: 1-d array}
+    r_in : dict of \
+           {:class:`~triumvirate.winconv.Multipole`: |farr1d_type|}
         Separation sample points for the input 2PCF multipoles.
-    r_out : dict of {:class:`~triumvirate.winconv.Multipole`: 1-d array}
+    r_out : dict of \
+            {:class:`~triumvirate.winconv.Multipole`: |farr1d_type|}
         Separation sample points for the output 2PCF multipoles.
     spline : int
         Spline order for interpolation (default is :py:const:`SPLINE`).
@@ -1607,7 +1636,7 @@ class TwoPCFWinConv(WinConvBase):
 
         Parameters
         ----------
-        xi_in : dict of {|multipole_type|: 1-d array of float}
+        xi_in : dict of {:py:const:`MultipoleLike`: |farr1d_type|}
             Input 2PCF multipole samples (each key is a multipole)
             at sample points :attr:`r_in`.
 
@@ -1645,22 +1674,24 @@ class PowspecWinConv(WinConvBase):
 
     Parameters
     ----------
-    formulae : str, |formulae_dict_type| or |formulae_type|
+    formulae : str, :py:const:`FormulaeDictType` or |formulae_type|
         Window convolution formulae (see
         :class:`~triumvirate.winconv.WinConvFormulae`).  If a string,
         it is assumed to be a named formula (see
         :py:const:`NAMED_FORMULAE`).
-    window_sampts : |sampts_type|
+    window_sampts : |farr1d_type| or \
+                    dict of {:py:const:`MultipoleLike`: |farr1d_type|}
         Window function multipole separation sample points, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).  If not logarithmically
         spaced, these are respaced with the same range and number
         of points; `window_multipoles` are resampled accordingly.
-    window_multipoles : dict of {|multipole_type| : 1-d array of float}
+    window_multipoles : dict of {:py:const:`MultipoleLike`: |farr1d_type|}
         Window function multipole samples (each key is a multipole).
         If `window_sampts` needs to be logarithmically respaced, these are
         resampled accordingly.
-    k_in : |sampts_type|
+    k_in : |farr1d_type| or \
+           dict of {:py:const:`MultipoleLike`: |farr1d_type|}
         Wavenumber sample points for the input power spectrum multipoles,
         either the same for all multipoles or a dictionary of
         sample points (value) for each multipole (key).  Must be
@@ -1685,12 +1716,14 @@ class PowspecWinConv(WinConvBase):
 
     Attributes
     ----------
-    k_in : dict of {:class:`~triumvirate.winconv.Multipole`: 1-d array}
+    k_in : dict of \
+           {:class:`~triumvirate.winconv.Multipole`: |farr1d_type|}
         Logarithmically spaced wavenumber sample points for the
         input power spectrum multipoles.
-    k_out : 1-d array of float
+    k_out : |farr1d_type|
         Wavenumber sample points for the output power spectrum.
-    r_common : dict of {:class:`~triumvirate.winconv.Multipole`: 1-d array}
+    r_common : dict of \
+               {:class:`~triumvirate.winconv.Multipole`: |farr1d_type|}
         Logarithmically spaced separation sample points for multipoles
         of both the window function and the intermediate 2PCF
         (transformed from `P_in`).
@@ -1832,7 +1865,7 @@ class PowspecWinConv(WinConvBase):
 
         Parameters
         ----------
-        P_in : dict of {|multipole_type|: 1-d array of float}
+        P_in : dict of {:py:const:`MultipoleLike`: |farr1d_type|}
             Input power spectrum multipole samples (each key is
             a multipole) at sample points :attr:`k_in`.
         ret_xi : bool, optional
@@ -1842,7 +1875,7 @@ class PowspecWinConv(WinConvBase):
         Returns
         -------
         P_conv_out : dict of {:class:`~triumvirate.winconv.Multipole`: \
-                      1-d :class:`numpy.ndarray`}
+                     1-d :class:`numpy.ndarray`}
             Output windowed power spectrum multipole samples (each key is
             a multipole) at sample points :attr:`k_out`.
         xi_conv : dict of {:class:`~triumvirate.winconv.Multipole`: \
@@ -1882,18 +1915,21 @@ class ThreePCFWinConv(WinConvBase):
 
     Parameters
     ----------
-    formulae : str, |formulae_dict_type| or |formulae_type|
+    formulae : str, :py:const:`FormulaeDictType` or |formulae_type|
         Window convolution formulae (see
         :class:`~triumvirate.winconv.WinConvFormulae`).  If a string,
         it is assumed to be a named formula (see
         :py:const:`NAMED_FORMULAE`).
-    window_sampts : |sampts_3pt_type|
+    window_sampts : |farr1d_type| or \
+                    dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
         Window function multipole separation sample points, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
-    window_multipoles : dict of {|multipole_3pt_type|: 2-d array of float}
+    window_multipoles : dict of \
+                        {:py:const:`Multipole3PtLike`: |farr2d_type|}
         Window function multipole samples (each key is a multipole).
-    r_in : |sampts_3pt_type|
+    r_in : |farr1d_type| or \
+           dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
         Separation sample points for the input 3PCF multipoles, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
@@ -1906,9 +1942,9 @@ class ThreePCFWinConv(WinConvBase):
 
     Attributes
     ----------
-    r_in : dict of {str or tuple: 1-d array of float}
+    r_in : dict of {str or tuple: |farr1d_type|}
         Separation sample points for the input 3PCF.
-    r_out : dict of {str or tuple: 1-d array of float}
+    r_out : dict of {str or tuple: |farr1d_type|}
         Separation sample points for the output 3PCF.
     spline : int
         Spline order for interpolation (default is :py:const:`SPLINE`).
@@ -1933,21 +1969,21 @@ class ThreePCFWinConv(WinConvBase):
         self.initialise_sampts(r_in, r_out=r_out)
 
     def convolve(self, zeta_in, ic=None):
-        r"""Convolve 3PCF multipoles.
+        """Convolve 3PCF multipoles.
 
         Parameters
         ----------
-        zeta_in : dict of {|multipole_3pt_type|: 2-d array of float}
+        zeta_in : dict of {:py:const:`Multipole3PtLike`: |farr2d_type|}
             Input 3PCF multipole samples (each key is a multipole)
             at sample points :attr:`r_in`.
         ic : float, optional
-            Integral constraint :math:`\bar{\zeta}`.  If `None` (default)
+            Integral constraint :math:`\\bar{\\zeta}`.  If `None` (default)
             and required by the convolution formula, it is calculated
             from the input 3PCF and the window function.
 
         Returns
         -------
-        zeta_conv_out : dict of {:class:`~triumvirate.winconv.Multipole`: \\
+        zeta_conv_out : dict of {:class:`~triumvirate.winconv.Multipole`: \
                         2-d :class:`numpy.ndarray`}
             Output windowed 3PCF multipole samples (each key is
             a multipole) at sample points :attr:`r_out`.
@@ -2003,21 +2039,22 @@ class ThreePCFWinConv(WinConvBase):
         return zeta_conv_out
 
     def convolve_diag(self, zeta_diag_in, ic=None):
-        r"""Convolve diagonal 3PCF multipoles.
+        """Convolve diagonal 3PCF multipoles.
 
         Parameters
         ----------
-        zeta_diag_in : dict of {|multipole_3pt_type|: 1-d array of float}
+        zeta_diag_in : dict of \
+                       {:py:const:`Multipole3PtLike`: |farr1d_type|}
             Input diagonal 3PCF multipole samples (each key
             is a multipole) at sample points :attr:`r_in`.
         ic : float, optional
-            Integral constraint :math:`\bar{\zeta}`.  Cannot be `None`
+            Integral constraint :math:`\\bar{\\zeta}`.  Cannot be `None`
             (default) if required by the convolution formula.
 
         Returns
         -------
-        zeta_diag_conv_out : dict of {\\
-                             :class:`~triumvirate.winconv.Multipole`: \\
+        zeta_diag_conv_out : dict of \
+                             {:class:`~triumvirate.winconv.Multipole`: \
                              1-d :class:`numpy.ndarray`}
             Output windowed diagonal 3PCF multipole samples (each key
             is a multipole) at sample points :attr:`r_out`.
@@ -2076,22 +2113,25 @@ class BispecWinConv(WinConvBase):
 
     Parameters
     ----------
-    formulae : str, |formulae_dict_type| or |formulae_type|
+    formulae : str, :py:const:`FormulaeDictType` or |formulae_type|
         Window convolution formulae (see
         :class:`~triumvirate.winconv.WinConvFormulae`).  If a string,
         it is assumed to be a named formula (see
         :py:const:`NAMED_FORMULAE`).
-    window_sampts : |sampts_3pt_type|
+    window_sampts : |farr1d_type| or \
+                    dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
         Window function separation sample points, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).  If not logarithmically
         spaced, these are respaced with the same range and number
         of points; `window_multipoles` are resampled accordingly.
-    window_multipoles : dict of {|multipole_3pt_type|: 2-d array of float}
+    window_multipoles : dict of \
+                        {:py:const:`Multipole3PtLike`: |farr2d_type|}
         Window function multipole samples (each key is a multipole).
         If `window_sampts` needs to be logarithmically respaced, these are
         resampled accordingly.
-    k_in : |sampts_3pt_type|
+    k_in : |farr1d_type| or \
+           dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
         Wavenumber sample points for the input bispectrum multipoles,
         either the same for all multipoles or a dictionary of
         sample points (value) for each multipole (key).  Must be
@@ -2116,12 +2156,14 @@ class BispecWinConv(WinConvBase):
 
     Attributes
     ----------
-    k_in : dict of {:class:`~triumvirate.winconv.Multipole`: 1-d array}
+    k_in : dict of \
+           {:class:`~triumvirate.winconv.Multipole`: |farr1d_type|}
         Logarithmically spaced wavenumber sample points for the
         input bispectrum.
-    k_out : 1-d array of float
+    k_out : |farr1d_type|
         Wavenumber sample points for the output bispectrum.
-    r_common : dict of {:class:`~triumvirate.winconv.Multipole`: 1-d array}
+    r_common : dict of \
+               {:class:`~triumvirate.winconv.Multipole`: |farr1d_type|}
         Logarithmically spaced separation sample points for multipoles
         of both the window function and the intermediate 3PCF
         (transformed from `B_in`).
@@ -2262,15 +2304,15 @@ class BispecWinConv(WinConvBase):
         )
 
     def convolve(self, B_in, ic=None, ret_zeta=False):
-        r"""Convolve bispectrum multipoles.
+        """Convolve bispectrum multipoles.
 
         Parameters
         ----------
-        B_in : dict of {|multipole_3pt_type|: 2-d array of float}
+        B_in : dict of {:py:const:`Multipole3PtLike`: |farr2d_type|}
             Input bispectrum multipole samples (each key is a multipole)
             at sample points :attr:`k_in`.
         ic : float, optional
-            Integral constraint :math:`\bar{\zeta}`.  If `None` (default)
+            Integral constraint :math:`\\bar{\\zeta}`.  If `None` (default)
             and required by the convolution formula, it is calculated
             from the input bispectrum and the window function.
         ret_zeta : bool, optional
@@ -2279,11 +2321,11 @@ class BispecWinConv(WinConvBase):
 
         Returns
         -------
-        B_conv_out : dict of {:class:`~triumvirate.winconv.Multipole`: \\
+        B_conv_out : dict of {:class:`~triumvirate.winconv.Multipole`: \
                      2-d :class:`numpy.ndarray`}
             Output windowed bispectrum multipole samples (each key is
             a multipole) at sample points :attr:`k_out`.
-        zeta_conv : dict of {:class:`~triumvirate.winconv.Multipole`: \\
+        zeta_conv : dict of {:class:`~triumvirate.winconv.Multipole`: \
                     2-d :class:`numpy.ndarray`}
             Intermediate windowed 3PCF multipole samples (each key is
             a multipole) at sample points :attr:`r_common`
@@ -2322,29 +2364,30 @@ class BispecWinConv(WinConvBase):
         return B_conv_out
 
     # def convolve_diag(self, B_diag_in, ic=None, ret_zeta_diag=False):
-    #     r"""Convolve bispectrum multipoles assuming a diagonal form.
+    #     """Convolve bispectrum multipoles assuming a diagonal form.
 
     #     Parameters
     #     ----------
-    #     B_diag_in : dict of {|multipole_3pt_type|: 1-d array of float}
+    #     B_diag_in : dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
     #         Input bispectrum multipole samples (each key is a multipole)
     #         at sample points :attr:`k_in`.
     #     ic : float, optional
-    #         Integral constraint :math:`\bar{\zeta}` (default is `None`).
-    #         If required by the convolution formula, it must be provided.
+    #         Integral constraint :math:`\\bar{\\zeta}`
+    #         (default is `None`).  If required by the convolution formula,
+    #         it must be provided.
     #     ret_zeta_diag : bool, optional
     #         Whether to return the intermediate diagonal 3PCF multipoles
     #         (default is `False`).
 
     #     Returns
     #     -------
-    #     B_diag_conv_out : dict of \\
-    #                       {:class:`~triumvirate.winconv.Multipole`: \\
+    #     B_diag_conv_out : dict of \
+    #                       {:class:`~triumvirate.winconv.Multipole`: \
     #                       1-d :class:`numpy.ndarray`}
     #         Output windowed diagonal bispectrum multipole samples
     #         (each key is a multipole) at sample points :attr:`k_out`.
-    #     zeta_diag_conv : dict of \\
-    #                      {:class:`~triumvirate.winconv.Multipole`: \\
+    #     zeta_diag_conv : dict of \
+    #                      {:class:`~triumvirate.winconv.Multipole`: \
     #                      1-d :class:`numpy.ndarray`}
     #         Intermediate windowed diagonal 3PCF multipole samples
     #         (each key is a multipole) at sample points :attr:`r_common`
@@ -2355,7 +2398,9 @@ class BispecWinConv(WinConvBase):
     #     zeta_in = {}
     #     for multipole_Z in self._formulae._multipoles_Z_true:
     #         _, zeta_in[multipole_Z] = self._bdsjt[multipole_Z].\
-    #             transform_cosmo_multipoles(-1, np.diag(B_diag_in[multipole_Z]))
+    #             transform_cosmo_multipoles(
+    #                 -1, np.diag(B_diag_in[multipole_Z])
+    #             )
 
     #     # Perform 3PCF convolution.
     #     zeta_conv = self._winconv.convolve(zeta_in, ic=ic)
