@@ -1,11 +1,13 @@
 # Change Log
 
-## v0.4.0 (2023-1?-??)
+## v0.4.0 (2024-??-??)
 
 ### Bug fixes
 
-Fix various legacy issues in the non-public methods related to
-Hankel-like transforms.
+- Fix various legacy issues in the non-public methods related to
+  Hankel-like transforms.
+
+- Fix FFTW-related memory leaks.
 
 ### Features
 
@@ -26,7 +28,8 @@ Hankel-like transforms.
 
 ### Maintenance
 
-Update syntax and fix typos.
+- Enhance build recipes.
+- Update syntax and fix typos.
 
 ### Documentation
 
