@@ -35,7 +35,7 @@ Perform window convolution of two- and three-point statistics.
 import warnings
 from dataclasses import dataclass
 from fractions import Fraction
-from typing import Union, Sequence
+from typing import Dict, Sequence, Tuple, Union
 
 import numpy as np
 try:
@@ -270,12 +270,12 @@ class Multipole:
             )
 
 
-MultipoleLike = Union[Multipole, tuple[Union[int, str]], str, int]
+MultipoleLike = Union[Multipole, Tuple[Union[int, str], ...], str, int]
 """Multipole-like type.
 
 """
 
-Multipole3PtLike = Union[Multipole, tuple[Union[int, str]], str]
+Multipole3PtLike = Union[Multipole, Tuple[Union[int, str], ...], str]
 """Three-point multipole-like type.
 
 """
@@ -493,13 +493,13 @@ class WinConvTerm:
 
 
 WinConvTermLike = Union[
-    WinConvTerm, tuple[MultipoleLike, MultipoleLike, CoeffType]
+    WinConvTerm, Tuple[MultipoleLike, MultipoleLike, CoeffType]
 ]
 """Window convolution term--like type.
 
 """
 
-FormulaeDictType = dict[MultipoleLike, Sequence[WinConvTermLike]]
+FormulaeDictType = Dict[MultipoleLike, Sequence[WinConvTermLike]]
 """Formula dictionary type.
 
 """
