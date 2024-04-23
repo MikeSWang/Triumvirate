@@ -60,9 +60,7 @@ else:
 
 version_components = pkg_version.split('.')
 if len(version_components) > 3:
-    doc_version = 'latest (dev)'
-elif pkg_version == VERSION_STABLE:
-    doc_version = 'stable'
+    doc_version = 'devel'
 else:
     doc_version = pkg_version
 
