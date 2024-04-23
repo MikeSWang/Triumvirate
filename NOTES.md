@@ -19,6 +19,7 @@
 ## Code tags
 
 - The following code tags are in use:
+    - 'UPDATE';
     - 'RFE', 'FUTURE';
     - 'CAVEAT';
     - 'SEE';

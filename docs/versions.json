@@ -1,0 +1,10 @@
+[
+    {
+      "name": "latest (dev)",
+      "url": "https://triumvirate.readthedocs.io/en/latest/"
+    },
+    {
+      "version": "stable",
+      "url": "https://triumvirate.readthedocs.io/en/stable/"
+    }
+]

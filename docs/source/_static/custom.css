@@ -1,0 +1,4 @@
+/* Make left sidebar title invisible. */
+.bd-links__title {
+    display: none;
+}

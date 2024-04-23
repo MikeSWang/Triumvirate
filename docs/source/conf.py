@@ -17,6 +17,8 @@ sys.path.insert(0, os.path.abspath("../../src"))
 
 # -- Project information -------------------------------------------------
 
+VERSION_STABLE = '0.3.0'  # UPDATE: fallback version number
+
 # Directories and paths.
 root_dir = Path(
     inspect.getframeinfo(inspect.currentframe()).filename
@@ -56,6 +58,14 @@ else:
         pkg_date, datetime.now().year, pkg_author
     )
 
+version_components = pkg_version.split('.')
+if len(version_components) > 3:
+    doc_version = 'latest (dev)'
+elif pkg_version == VERSION_STABLE:
+    doc_version = 'stable'
+else:
+    doc_version = pkg_version
+
 
 # -- General configuration -----------------------------------------------
 
@@ -94,9 +104,21 @@ templates_path = ['_templates']
 
 # -- Options for HTML output ---------------------------------------------
 
+html_context = {
+    'github_user': 'MikeSWang',
+    'github_repo': pkg_name.capitalize(),
+    'github_version': 'main',
+    'doc_path': "docs/source",
+}  # theme: pydata_sphinx_theme
+
+html_css_files = ["custom.css"]  # theme: pydata_sphinx_theme
+
 html_favicon = '_static/Triumvirate.ico'
 
-html_logo = '_static/Triumvirate.png'
+# html_logo = '_static/Triumvirate.png'     # theme: sphinx_book_theme
+html_logo = '_static/Triumvirate-ls.png'  # theme: pydata_sphinx_theme
+
+html_show_sourcelink = False  # theme: pydata_sphinx_theme
 
 html_static_path = ['', '_static/']
 
@@ -104,20 +126,47 @@ html_title = 'Triumvirate Documentation'  # u'\u200c'
 
 html_last_updated_fmt = "%a, %Y-%m-%dT%H:%M:%S%z. Version {}".format(release)
 
-html_theme = 'sphinx_book_theme'
+html_sidebars = {
+    "**": [
+        'search-button-field',
+        'version-switcher',
+        'sidebar-nav-bs',
+    ]
+}  # theme: pydata_sphinx_theme
+
+html_theme = 'pydata_sphinx_theme'  # 'sphinx_book_theme'  #
 html_theme_options = {
     'announcement':
         "Version 0.4 is coming soon!",
-    'path_to_docs': "docs/source",
-    'repository_url': 'https://github.com/MikeSWang/Triumvirate',
-    'toc_title': 'On this page',
+    'back_to_top_button': True,         # theme: pydata_sphinx_theme
+    # 'path_to_docs': "docs/source",    # theme: sphinx_book_theme
+    # 'repository_url': 'https://github.com/MikeSWang/Triumvirate',
+    #                                   # theme: sphinx_book_theme
+    # 'toc_title': 'On this page',      # theme: sphinx_book_theme
     # 'extra_footer': "<div>{}</div>".format(None),
-    'home_page_in_toc': False,
-    'use_download_button': False,
-    'use_fullscreen_button': False,
-    'use_repository_button': False,
-    'use_source_button': True,
+    'footer_start': ['last-updated',],  # theme: pydata_sphinx_theme
+    'footer_center': [],                # theme: pydata_sphinx_theme
+    'footer_end': ['copyright',],       # theme: pydata_sphinx_theme
+    'header_links_before_dropdown': 6,  # theme: pydata_sphinx_theme
+    # 'home_page_in_toc': False,        # theme: sphinx_book_theme
+    'navbar_persistent': [],            # theme: pydata_sphinx_theme
+    "switcher": {
+        'json_url': (
+            "https://raw.githubusercontent.com/MikeSWang/Triumvirate/main/"
+            "docs/versions.json"
+        ),
+        'version_match': doc_version,
+    },                                  # theme: pydata_sphinx_theme
+    # 'use_download_button': False,     # theme: sphinx_book_theme
+    # 'use_fullscreen_button': False,   # theme: sphinx_book_theme
+    # 'use_repository_button': False,   # theme: sphinx_book_theme
+    # 'use_source_button': True,        # theme: sphinx_book_theme
     'icon_links': [
+        {
+            'name': 'GitHub',
+            'url': "https://github.com/MikeSWang/Triumvirate",
+            'icon': 'fa-brands fa-github',
+        },
         {
             'name': 'PyPI',
             'url': "https://pypi.org/project/Triumvirate",
@@ -135,11 +184,6 @@ html_theme_options = {
                 "?logo=Anaconda&color=informational"
             ),
             'type': 'url'
-        },
-        {
-            'name': 'GitHub',
-            'url': "https://github.com/MikeSWang/Triumvirate",
-            'icon': 'fa-brands fa-github',
         },
     ]
 }
