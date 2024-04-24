@@ -129,7 +129,11 @@ html_last_updated_fmt = "%a, %Y-%m-%dT%H:%M:%S%z. Version {}".format(release)
 html_sidebars = {
     "**": [
         'sidebar-nav-bs',
-    ]
+    ],
+    # "background": [],
+    # "installation": [],
+    # "releases": [],
+    # "faq": [],
 }  # theme: pydata_sphinx_theme
 
 html_theme = 'pydata_sphinx_theme'  # 'sphinx_book_theme'  #

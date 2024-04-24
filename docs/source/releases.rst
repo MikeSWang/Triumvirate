@@ -2,7 +2,7 @@
 Release History
 ***************
 
-v0.4.0 (2024-??-??)
+v0.4.0 (expected in 2024)
 ===================
 
 Bug fixes
