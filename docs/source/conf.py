@@ -113,6 +113,8 @@ html_css_files = ["custom.css"]  # theme: pydata_sphinx_theme
 
 html_favicon = '_static/Triumvirate.ico'
 
+html_js_files = ["custom-icons.js"]  # theme: pydata_sphinx_theme
+
 # html_logo = '_static/Triumvirate.png'     # theme: sphinx_book_theme
 html_logo = '_static/Triumvirate-ls.png'  # theme: pydata_sphinx_theme
 
@@ -126,8 +128,6 @@ html_last_updated_fmt = "%a, %Y-%m-%dT%H:%M:%S%z. Version {}".format(release)
 
 html_sidebars = {
     "**": [
-        'search-button-field',
-        'version-switcher',
         'sidebar-nav-bs',
     ]
 }  # theme: pydata_sphinx_theme
@@ -147,7 +147,21 @@ html_theme_options = {
     'footer_end': ['copyright',],       # theme: pydata_sphinx_theme
     'header_links_before_dropdown': 6,  # theme: pydata_sphinx_theme
     # 'home_page_in_toc': False,        # theme: sphinx_book_theme
-    'navbar_persistent': [],            # theme: pydata_sphinx_theme
+    'navbar_align': 'left',             # theme: pydata_sphinx_theme
+    'navbar_start': [
+        'navbar-logo',
+    ],                                  # theme: pydata_sphinx_theme
+    'navbar_center': [
+        'version-switcher',
+        'navbar-nav',
+    ],                                  # theme: pydata_sphinx_theme
+    'navbar_persistent': [
+        'search-button-field',
+        'theme-switcher',
+    ],                                  # theme: pydata_sphinx_theme
+    'navbar_end': [
+        'navbar-icon-links',
+    ],                                  # theme: pydata_sphinx_theme
     "switcher": {
         'json_url': (
             "https://raw.githubusercontent.com/MikeSWang/Triumvirate/main/"
@@ -165,23 +179,33 @@ html_theme_options = {
             'url': "https://github.com/MikeSWang/Triumvirate",
             'icon': 'fa-brands fa-github',
         },
+        # {
+        #     'name': 'PyPI',
+        #     'url': "https://pypi.org/project/Triumvirate",
+        #     'icon': (
+        #         "https://img.shields.io/pypi/v/Triumvirate"
+        #         "?logo=PyPI&color=informational"
+        #     ),
+        #     'type': 'url',
+        # },
         {
             'name': 'PyPI',
             'url': "https://pypi.org/project/Triumvirate",
-            'icon': (
-                "https://img.shields.io/pypi/v/Triumvirate"
-                "?logo=PyPI&color=informational"
-            ),
-            'type': 'url',
+            'icon': 'fa-custom fa-pypi',
         },
+        # {
+        #     'name': 'Conda',
+        #     'url': "https://anaconda.org/msw/triumvirate",
+        #     'icon': (
+        #         "https://img.shields.io/conda/vn/msw/triumvirate"
+        #         "?logo=Anaconda&color=informational"
+        #     ),
+        #     'type': 'url'
+        # },
         {
             'name': 'Conda',
             'url': "https://anaconda.org/msw/triumvirate",
-            'icon': (
-                "https://img.shields.io/conda/vn/msw/triumvirate"
-                "?logo=Anaconda&color=informational"
-            ),
-            'type': 'url'
+            'icon': 'fa-custom fa-anaconda',
         },
     ]
 }
