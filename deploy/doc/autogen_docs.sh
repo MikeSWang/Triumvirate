@@ -140,6 +140,7 @@ if [[ "$excl" != 'sphinx' ]]; then
     recycle_doxyfile "HAVE_DOT               = NO"
     recycle_doxyfile "HTML_HEADER            ="
     recycle_doxyfile "USE_MDFILE_AS_MAINPAGE ="
+    recycle_doxyfile "EXCLUDE_PATTERNS       = triumvirate.cpp"
     sed -i "s/\.\/source/..\/source/g" ${DOXYFILE_SPHINX}
     sed -i "s/\.\.\/src/..\/..\/src/g" ${DOXYFILE_SPHINX}
     sed -i "s/\.\.\/README.md//g" ${DOXYFILE_SPHINX}
