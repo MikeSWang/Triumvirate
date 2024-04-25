@@ -89,7 +89,7 @@ void ParticleCatalogue::reset_particles() {
 // Operators & reserved methods
 // ***********************************************************************
 
-ParticleCatalogue::ParticleData& ParticleCatalogue::operator[](const int pid) {
+ParticleData& ParticleCatalogue::operator[](const int pid) {
   return this->pdata[pid];
 }
 

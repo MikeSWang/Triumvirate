@@ -47,6 +47,18 @@
 namespace trv {
 
 /**
+ * @brief Particle data container.
+ *
+ */
+struct ParticleData {
+  double pos[3];  ///< particle position vector
+  double nz;      ///< redshift-dependent expected number density
+  double ws;      ///< particle sample weight
+  double wc;      ///< particle clustering weight
+  double w;       ///< particle overall weight
+};
+
+/**
  * @brief Particle catalogue.
  *
  * The catalogue object contains particle data and summary information,
@@ -57,16 +69,7 @@ class ParticleCatalogue {
  public:
   std::string source;  ///< catalogue source
 
-  /**
-   * @brief Particle data container.
-   */
-  struct ParticleData {
-    double pos[3];  ///< particle position vector
-    double nz;      ///< redshift-dependent expected number density
-    double ws;      ///< particle sample weight
-    double wc;      ///< particle clustering weight
-    double w;       ///< particle overall weight
-  }* pdata;         ///< particle data
+  ParticleData* pdata;  ///< particle data
 
   int ntotal;      ///< total number of particles
   double wtotal;   ///< total overall weight of particles
@@ -100,7 +103,7 @@ class ParticleCatalogue {
    * @brief Initialise particle data container.
    *
    * @attention This method does not set the values of
-   *            @ref trv::ParticleCatalogue.ParticleData,
+   *            @ref trv::ParticleCatalogue.pdata,
    *            @ref trv::ParticleCatalogue.wtotal,
    *            @ref trv::ParticleCatalogue.wstotal,
    *            @ref trv::ParticleCatalogue.pos_min or
