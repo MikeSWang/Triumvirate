@@ -3,14 +3,19 @@ version: 2
 build:
   os: ubuntu-lts-latest
   tools:
-    python: mambaforge-latest
+    python: miniconda-latest
   apt_packages:
     - libgsl-dev
     - libfftw3-dev
     - graphviz
   jobs:
+    post_checkout:
+      - git fetch --unshallow || true
+      - git fetch --all --tags || true
     pre_create_environment:
-      - mamba update --yes --quiet --name=base --channel=defaults mamba
+      - conda update --yes --quiet --name=base --channel=defaults conda
+    post_create_environment:
+      - conda list
     pre_install:
       - git update-index --assume-unchanged docs/environment.yml docs/source/conf.py
     pre_build:

@@ -2,9 +2,9 @@ breathe
 exhale
 myst-nb
 pydata-sphinx-theme
-sphinxcontrib-bibtex
+setuptools-scm
 sphinx-book-theme
 sphinx-copybutton
 sphinx-design
 sphinx-togglebutton
-setuptools-scm
+sphinxcontrib-bibtex

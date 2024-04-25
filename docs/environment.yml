@@ -4,14 +4,16 @@ channels:
 dependencies:
   - python
   - pip
+  - sphinx
   - doxygen
-  - breathe
-  - exhale
-  - myst-nb
-  - pydata-sphinx-theme
-  - sphinxcontrib-bibtex
-  - sphinx-book-theme
-  - sphinx-copybutton
-  - sphinx-design
-  - sphinx-togglebutton
-  - setuptools-scm
+  - pip:
+    - breathe
+    - exhale
+    - myst-nb
+    - pydata-sphinx-theme
+    - setuptools-scm
+    - sphinx-book-theme
+    - sphinx-copybutton
+    - sphinx-design
+    - sphinx-togglebutton
+    - sphinxcontrib-bibtex
