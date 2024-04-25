@@ -1,5 +1,5 @@
 """
-Field and mesh (:mod:`~triumvirate.fieldmesh`)
+Field and Mesh (:mod:`~triumvirate.fieldmesh`)
 ==========================================================================
 
 .. versionadded:: 0.3.0

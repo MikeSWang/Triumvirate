@@ -67,7 +67,6 @@ else:
 
 # -- General configuration -----------------------------------------------
 
-
 exclude_patterns = ['setup', 'config', 'tests', 'examples']
 
 extensions = [
@@ -87,7 +86,7 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_design',
     # 'sphinx_inline_tabs',
-    'sphinx_tabs.tabs',
+    # 'sphinx_tabs.tabs',
     'sphinx_togglebutton',
     'sphinxcontrib.bibtex',
 ]

@@ -6,6 +6,5 @@ sphinxcontrib-bibtex
 sphinx-book-theme
 sphinx-copybutton
 sphinx-design
-sphinx-tabs
 sphinx-togglebutton
 setuptools-scm
