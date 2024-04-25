@@ -111,7 +111,7 @@ html_context = {
 
 html_css_files = ["custom.css"]  # theme: pydata_sphinx_theme
 
-html_favicon = '_static/Triumvirate.ico'
+html_favicon = "_static/Triumvirate.ico"
 
 html_js_files = ["custom-icons.js"]  # theme: pydata_sphinx_theme
 
@@ -120,7 +120,7 @@ html_logo = '_static/Triumvirate-ls.png'  # theme: pydata_sphinx_theme
 
 html_show_sourcelink = False  # theme: pydata_sphinx_theme
 
-html_static_path = ['', '_static/']
+html_static_path = ["", "_static/"]
 
 html_title = 'Triumvirate Documentation'  # u'\u200c'
 
@@ -166,7 +166,8 @@ html_theme_options = {
     'navbar_end': [
         'navbar-icon-links',
     ],                                  # theme: pydata_sphinx_theme
-    "switcher": {
+    'navigation_with_keys': False,      # theme: pydata_sphinx_theme
+    'switcher': {
         'json_url': (
             "https://raw.githubusercontent.com/MikeSWang/Triumvirate/main/"
             "docs/versions.json"
@@ -218,6 +219,15 @@ html_theme_options = {
 # -- Extension configuration ---------------------------------------------
 
 autodoc_member_order = 'bysource'
+
+autodoc_type_aliases = dict(
+    DegreeType='triumvirate.winconv.DegreeType',
+    MultipoleLike='triumvirate.winconv.MultipoleLike',
+    Multipole3PtLike='triumvirate.winconv.Multipole3PtLike',
+    CoeffType='triumvirate.winconv.CoeffType',
+    WinConvTermLike='triumvirate.winconv.WinConvTermLike',
+    FormulaeDictType='triumvirate.winconv.FormulaeDictType',
+)
 
 autosummary_generate = True
 
@@ -308,6 +318,8 @@ def setup(app):
     app.connect('autodoc-skip-member', skip_cdef_member)
 
     return {
-        "parallel_read_safe": True,
-        "parallel_write_safe": True,
+        'parallel_read_safe': True,
+        'parallel_read_unsafe': False,
+        'parallel_write_safe': True,
+        'parallel_write_unsafe': False,
     }

@@ -534,8 +534,6 @@ def resample_lglin(sampts, samples, size=None, spline=3):
     --------
     Resample a 2-d function:
 
-    >>> import numpy as np
-    >>> from triumvirate.transforms import resample_lglin
     >>> def f(x, y): return np.exp(-x*np.sqrt(y))
     >>> sampts = 1.e-3 * np.arange(1., 51.)
     >>> samples = f(*np.meshgrid(sampts, sampts, indexing='ij'))
@@ -627,8 +625,6 @@ def resample_lin(sampts, samples, size=None, spline=3):
     --------
     Resample a 2-d function:
 
-    >>> import numpy as np
-    >>> from triumvirate.transforms import resample_lglin
     >>> def f(x, y): return np.exp(-x*np.sqrt(y))
     >>> sampts = 1.e-3 * np.arange(1., 51.)
     >>> samples = f(*np.meshgrid(sampts, sampts, indexing='ij'))

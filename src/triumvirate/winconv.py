@@ -30,6 +30,8 @@ Perform window convolution of two- and three-point statistics.
     list of :class:`~triumvirate.winconv.WinConvTerm`}
 
 """
+from __future__ import annotations
+
 # STYLE: Standard naming convention is not always followed in this module
 # for readability and clarity.
 import warnings
@@ -159,7 +161,7 @@ class Multipole:
 
     Parameters
     ----------
-    multipole : :py:const:`MultipoleLike`
+    multipole : :py:const:`~triumvirate.winconv.MultipoleLike`
         Multipole representation.
 
     Attributes
@@ -270,18 +272,58 @@ class Multipole:
             )
 
 
+DegreeType = Union[int, str]
+"""Degree type.
+
+This represents a spherical degree, which can be an integer or a string.
+
+Examples
+--------
+The following variables all have this type:
+
+>>> degree_a = 0
+>>> degree_b = '0'
+
+"""
+
 MultipoleLike = Union[Multipole, Tuple[Union[int, str], ...], str, int]
 """Multipole-like type.
+
+This represents a multipole index or indices.
+
+Examples
+--------
+The following variables all have this type:
+
+>>> multipole_a = Multipole((0,))
+>>> multipole_b = (0, '0')
+>>> multipole_c = '0'
+>>> multipole_d = 0
 
 """
 
 Multipole3PtLike = Union[Multipole, Tuple[Union[int, str], ...], str]
 """Three-point multipole-like type.
 
+This represents three-point multipole indices and is a subtype of
+:py:const:`~triumvirate.winconv.MultipoleLike`.
+
 """
 
 CoeffType = Union[float, int, Fraction, str, Expr]
-"""Coefficient-like type.
+"""Coefficient type.
+
+This represents a numerical coefficient (for a window convolution term).
+
+Examples
+--------
+The following variables all have this type:
+
+>>> coeff_a = 1.
+>>> coeff_b = 1
+>>> coeff_c = Fraction(1, 3)
+>>> coeff_d = '1/3'
+>>> coeff_e = sympify('1/3')
 
 """
 
@@ -334,11 +376,11 @@ def calc_threept_winconv_coeff(multipole, multipole_Q, multipole_Z,
 
     Parameters
     ----------
-    multipole : :py:const:`Multipole3PtLike`
+    multipole : :py:const:`~triumvirate.winconv.Multipole3PtLike`
         Windowed multipole indices.
-    multipole_Q : :py:const:`Multipole3PtLike`
+    multipole_Q : :py:const:`~triumvirate.winconv.Multipole3PtLike`
         Window function multipole indices.
-    multipole_Z : :py:const:`Multipole3PtLike`
+    multipole_Z : :py:const:`~triumvirate.winconv.Multipole3PtLike`
         Unwindowed correlation function multipole indices.
     symb : bool, optional
         If `True` (default is `False`), return the coefficient as a
@@ -389,16 +431,16 @@ class WinConvTerm:
 
     Parameters
     ----------
-    multipole_Q : :py:const:`MultipoleLike`
+    multipole_Q : :py:const:`~triumvirate.winconv.MultipoleLike`
         Window function multipole index/indices.
-    multipole_Z : :py:const:`MultipoleLike`
+    multipole_Z : :py:const:`~triumvirate.winconv.MultipoleLike`
         Unwindowed-CF multipole index/indices.
-    coeff : :py:const:`CoeffType`
+    coeff : :py:const:`~triumvirate.winconv.CoeffType`
         Numerical coefficient for the convolution term.
 
     Attributes
     ----------
-    coeff : :py:const:`CoeffType`
+    coeff : :py:const:`~triumvirate.winconv.CoeffType`
         Numerical coefficient for the convolution term.
     multipole_Q : :class:`~triumvirate.winconv.Multipole`
         Window function multipole index/indices.
@@ -495,12 +537,46 @@ class WinConvTerm:
 WinConvTermLike = Union[
     WinConvTerm, Tuple[MultipoleLike, MultipoleLike, CoeffType]
 ]
-"""Window convolution term--like type.
+r"""Window convolution term--like type.
+
+This represents a window convolution term.
+
+Alias of :py:class:`~typing.Union`\
+[:class:`~triumvirate.winconv.WinConvTerm`,
+:py:class:`~typing.Tuple`\
+[:py:const:`~triumvirate.winconv.MultipoleLike`,
+:py:const:`~triumvirate.winconv.MultipoleLike`,
+:py:const:`~triumvirate.winconv.CoeffType`]].
+
+Examples
+--------
+The following variables all have this type:
+
+>>> term_a = WinConvTerm((0, 0, 0), 'ic', -1)
+>>> term_b = ('000', 'ic', Fraction(-1))
 
 """
 
 FormulaeDictType = Dict[MultipoleLike, Sequence[WinConvTermLike]]
-"""Formula dictionary type.
+r"""Formula dictionary type.
+
+This represents a dictionary of window convolution formulae.
+
+Alias of :py:obj:`~typing.Dict`\
+[:py:const:`~triumvirate.winconv.MultipoleLike`,
+:py:class:`~typing.Sequence`\
+[:py:const:`~triumvirate.winconv.WinConvTermLike`]].
+
+Examples
+--------
+The following variables all have this type:
+
+>>> formulae_dict = {
+...     '000': [
+...         ('000', '000', 1),
+...         WinConvTerm((0, 0, 0), 'ic', -1),
+...     ],
+... }
 
 """
 
@@ -515,7 +591,7 @@ class WinConvFormulae:
 
     Parameters
     ----------
-    formulae : :py:const:`FormulaeDictType`
+    formulae : :py:const:`~triumvirate.winconv.FormulaeDictType`
         Window convolution formulae.
 
     Attributes
@@ -671,7 +747,8 @@ class ThreePointWindow:
         is :math:`(r_1, r_2)` where :math:`r_1` and :math:`r_2` are
         the separation sample points for the first and second dimensions.
     flat_multipoles : dict of \
-                      {:py:const:`Multipole3PtLike`: |farr1d_type|}
+                      {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+                      |farr1d_type|}
         Flattened window function multipole samples (each key is
         a multipole) evaluated at `paired_sampts`.
     alpha_contrast : float, optional
@@ -797,7 +874,9 @@ class ThreePointWindow:
 
         Parameters
         ----------
-        filepaths : dict of {:py:const:`Multipole3PtLike`: str}
+        filepaths : dict of \
+                    {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+                    str}
             Window function file paths (values) for each multipole (key).
         subtract_shotnoise : bool, optional
             Whether to subtract the shot-noise contribution from the
@@ -984,7 +1063,9 @@ class ThreePointWindow:
         Parameters
         ----------
         rrange : tuple of float or \
-                 dict of {:py:const:`Multipole3PtLike`: tuple of float}, \
+                 dict of \
+                 {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+                 tuple of float}, \
                  optional
             Range of separation sample points (default is `None`), e.g.
             ``(None, 300.)``.
@@ -1091,7 +1172,7 @@ class ThreePointWindow:
             Number(s) of points to resample to (default is `None`).
         spline : int, optional
             Spline order for interpolation
-            (default is :py:const:`SPLINE`).
+            (default is :py:const:`~triumvirate.winconv.SPLINE`).
             See :mod:`scipy.interpolate` for more details.
 
         """
@@ -1235,20 +1316,26 @@ def calc_threept_ic(window_sampts, window_multipoles, r, zeta,
     Parameters
     ----------
     window_sampts : |farr1d_type| or \
-                    dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
+                    dict of \
+                    {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+                    |farr1d_type|}
         Window function multipole separation sample points, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
     window_multipoles : dict of \
-                        {:py:const:`Multipole3PtLike`: |farr2d_type|}
+                        {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+                        |farr2d_type|}
         Window function multipole samples (each key is a multipole).
         Must contain the (0, 0, 0) monopole.
     r : |farr1d_type| or \
-        dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
+        dict of \
+        {:py:const:`~triumvirate.winconv.Multipole3PtLike`: |farr1d_type|}
         Separation sample points for the input 3PCF multipoles, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
-    zeta : dict of {:py:const:`Multipole3PtLike`: |farr2d_type|}
+    zeta : dict of \
+           {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+           |farr2d_type|}
         Input 3PCF multipole samples (each key is a multipole)
         at sample points `r_in`.
     r_common : 1-d array of float, optional
@@ -1258,7 +1345,8 @@ def calc_threept_ic(window_sampts, window_multipoles, r, zeta,
         If `True` (default is `False`), include only the leading-order
         term with the (0, 0, 0) multipole as an approximation.
     spline : int, optional
-        Spline order for interpolation (default is :py:const:`SPLINE`).
+        Spline order for interpolation (default is
+        :py:const:`~triumvirate.winconv.SPLINE`).
         See :mod:`scipy.interpolate` for more details.
 
     Returns
@@ -1381,7 +1469,9 @@ class WinConvBase:
         it is assumed to be a named formula (see
         :py:const:`NAMED_FORMULAE`).
     window_sampts : |farr1d_type| or \
-                    dict of {:py:const:`MultipoleLike`: |farr1d_type|}
+                    dict of \
+                    {:py:const:`~triumvirate.winconv.MultipoleLike`: \
+                    |farr1d_type|}
         Window function multipole separation sample points, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
@@ -1460,16 +1550,24 @@ class WinConvBase:
         Parameters
         ----------
         r_in : |farr1d_type| or \
-               dict of {:py:const:`MultipoleLike`: |farr1d_type|} or \
+               dict of \
+               {:py:const:`~triumvirate.winconv.MultipoleLike`: \
+               |farr1d_type|} or \
                |farr2d_type| or \
-               dict of {:py:const:`MultipoleLike`: |farr2d_type|}
+               dict of \
+               {:py:const:`~triumvirate.winconv.MultipoleLike`: \
+               |farr2d_type|}
             Separation sample points for the input CF multipoles, either
             the same for all multipoles or a dictionary of sample points
             (value) for each multipole (key).
         r_out : |farr1d_type| or \
-                dict of {:py:const:`MultipoleLike`: |farr1d_type|} or \
+                dict of \
+                {:py:const:`~triumvirate.winconv.MultipoleLike`: \
+                |farr1d_type|} or \
                 |farr2d_type| or \
-                dict of {:py:const:`MultipoleLike`: |farr2d_type|}
+                dict of \
+                {:py:const:`~triumvirate.winconv.MultipoleLike`: \
+                |farr2d_type|}
             Separation sample points for the output CF multipoles, either
             the same for all multipoles or a dictionary of sample points
             (value) for each multipole (key).  If `None` (default),
@@ -1579,20 +1677,27 @@ class TwoPCFWinConv(WinConvBase):
 
     Parameters
     ----------
-    formulae : str, :py:const:`FormulaeDictType` or |formulae_type|
+    formulae : str, :py:const:`~triumvirate.winconv.FormulaeDictType` or \
+              |formulae_type|
         Window convolution formulae (see
         :class:`~triumvirate.winconv.WinConvFormulae`).  If a string,
         it is assumed to be a named formula (see
-        :py:const:`NAMED_FORMULAE`).
+        :py:const:`~triumvirate.winconv.NAMED_FORMULAE`).
     window_sampts : |farr1d_type| or \
-                    dict of {:py:const:`MultipoleLike`: |farr1d_type|}
+                    dict of \
+                    {:py:const:`~triumvirate.winconv.MultipoleLike`: \
+                    |farr1d_type|}
         Window function multipole separation sample points, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
-    window_multipoles : dict of {:py:const:`MultipoleLike`: |farr1d_type|}
+    window_multipoles : dict of \
+                        {:py:const:`~triumvirate.winconv.MultipoleLike`: \
+                        |farr1d_type|}
         Window function multipole samples (each key is a multipole).
     r_in : |farr1d_type| or \
-           dict of {:py:const:`MultipoleLike`: |farr1d_type|}
+           dict of \
+           {:py:const:`~triumvirate.winconv.MultipoleLike`: \
+           |farr1d_type|}
         Separation sample points for the input 2PCF multipoles, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
@@ -1600,7 +1705,8 @@ class TwoPCFWinConv(WinConvBase):
         Separation sample points for the output 2PCF multipoles.
         If `None` (default), it is set to `r_in`.
     spline : int, optional
-        Spline order for interpolation (default is :py:const:`SPLINE`).
+        Spline order for interpolation (default is
+        :py:const:`~triumvirate.winconv.SPLINE`).
         See :mod:`scipy.interpolate` for more details.
 
     Attributes
@@ -1612,7 +1718,8 @@ class TwoPCFWinConv(WinConvBase):
             {:class:`~triumvirate.winconv.Multipole`: |farr1d_type|}
         Separation sample points for the output 2PCF multipoles.
     spline : int
-        Spline order for interpolation (default is :py:const:`SPLINE`).
+        Spline order for interpolation (default is
+        :py:const:`~triumvirate.winconv.SPLINE`).
 
 
     .. attention::
@@ -1636,13 +1743,16 @@ class TwoPCFWinConv(WinConvBase):
 
         Parameters
         ----------
-        xi_in : dict of {:py:const:`MultipoleLike`: |farr1d_type|}
+        xi_in : dict of \
+               {:py:const:`~triumvirate.winconv.MultipoleLike`: \
+               |farr1d_type|}
             Input 2PCF multipole samples (each key is a multipole)
             at sample points :attr:`r_in`.
 
         Returns
         -------
-        xi_conv_out : dict of {:class:`~triumvirate.winconv.Multipole`: \
+        xi_conv_out : dict of \
+                      {:class:`~triumvirate.winconv.Multipole`: \
                       1-d :class:`numpy.ndarray`}
             Output windowed 2PCF multipole samples (each key is
             a multipole) at sample points :attr:`r_out`.
@@ -1680,18 +1790,24 @@ class PowspecWinConv(WinConvBase):
         it is assumed to be a named formula (see
         :py:const:`NAMED_FORMULAE`).
     window_sampts : |farr1d_type| or \
-                    dict of {:py:const:`MultipoleLike`: |farr1d_type|}
+                    dict of \
+                    {:py:const:`~triumvirate.winconv.MultipoleLike`: \
+                    |farr1d_type|}
         Window function multipole separation sample points, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).  If not logarithmically
         spaced, these are respaced with the same range and number
         of points; `window_multipoles` are resampled accordingly.
-    window_multipoles : dict of {:py:const:`MultipoleLike`: |farr1d_type|}
+    window_multipoles : dict of \
+                        {:py:const:`~triumvirate.winconv.MultipoleLike`: \
+                        |farr1d_type|}
         Window function multipole samples (each key is a multipole).
         If `window_sampts` needs to be logarithmically respaced, these are
         resampled accordingly.
     k_in : |farr1d_type| or \
-           dict of {:py:const:`MultipoleLike`: |farr1d_type|}
+           dict of \
+           {:py:const:`~triumvirate.winconv.MultipoleLike`: \
+           |farr1d_type|}
         Wavenumber sample points for the input power spectrum multipoles,
         either the same for all multipoles or a dictionary of
         sample points (value) for each multipole (key).  Must be
@@ -1709,7 +1825,8 @@ class PowspecWinConv(WinConvBase):
         :class:`~triumvirate.transforms.SphericalBesselTransform`
         (default is `None`).
     spline : int or tuple of int, optional
-        Spline order for interpolation (default is :py:const:`SPLINE`).
+        Spline order for interpolation (default is
+        :py:const:`~triumvirate.winconv.SPLINE`).
         If a tuple, the first element is for configuration-space
         interpolation and the second element is for Fourier-space
         interpolation.  See :mod:`scipy.interpolate` for more details.
@@ -1728,8 +1845,8 @@ class PowspecWinConv(WinConvBase):
         of both the window function and the intermediate 2PCF
         (transformed from `P_in`).
     spline : tuple of int
-        Spline order (default is :py:const:`SPLINE`) for interpolation
-        in Fourier space and in configuration space.
+        Spline order (default is :py:const:`~triumvirate.winconv.SPLINE`)
+        for interpolation in Fourier space and in configuration space.
 
     Raises
     ------
@@ -1865,7 +1982,9 @@ class PowspecWinConv(WinConvBase):
 
         Parameters
         ----------
-        P_in : dict of {:py:const:`MultipoleLike`: |farr1d_type|}
+        P_in : dict of \
+               {:py:const:`~triumvirate.winconv.MultipoleLike`: \
+               |farr1d_type|}
             Input power spectrum multipole samples (each key is
             a multipole) at sample points :attr:`k_in`.
         ret_xi : bool, optional
@@ -1874,11 +1993,13 @@ class PowspecWinConv(WinConvBase):
 
         Returns
         -------
-        P_conv_out : dict of {:class:`~triumvirate.winconv.Multipole`: \
+        P_conv_out : dict of \
+                     {:class:`~triumvirate.winconv.Multipole`: \
                      1-d :class:`numpy.ndarray`}
             Output windowed power spectrum multipole samples (each key is
             a multipole) at sample points :attr:`k_out`.
-        xi_conv : dict of {:class:`~triumvirate.winconv.Multipole`: \
+        xi_conv : dict of \
+                  {:class:`~triumvirate.winconv.Multipole`: \
                   1-d :class:`numpy.ndarray`}, optional
             Intermediate windowed 2PCF multipole samples (each key is
             a multipole) at sample points :attr:`r_common`
@@ -1915,21 +2036,27 @@ class ThreePCFWinConv(WinConvBase):
 
     Parameters
     ----------
-    formulae : str, :py:const:`FormulaeDictType` or |formulae_type|
+    formulae : str, :py:const:`~triumvirate.winconv.FormulaeDictType` or \
+               |formulae_type|
         Window convolution formulae (see
         :class:`~triumvirate.winconv.WinConvFormulae`).  If a string,
         it is assumed to be a named formula (see
-        :py:const:`NAMED_FORMULAE`).
+        :py:const:`~triumvirate.winconv.NAMED_FORMULAE`).
     window_sampts : |farr1d_type| or \
-                    dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
+                    dict of \
+                    {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+                    |farr1d_type|}
         Window function multipole separation sample points, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
     window_multipoles : dict of \
-                        {:py:const:`Multipole3PtLike`: |farr2d_type|}
+                        {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+                        |farr2d_type|}
         Window function multipole samples (each key is a multipole).
     r_in : |farr1d_type| or \
-           dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
+           dict of \
+           {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+           |farr1d_type|}
         Separation sample points for the input 3PCF multipoles, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).
@@ -1937,7 +2064,8 @@ class ThreePCFWinConv(WinConvBase):
         Separation sample points for all output 3PCF multipoles.
         If `None` (default), it is set to `r_in`.
     spline : int, optional
-        Spline order for interpolation (default is :py:const:`SPLINE`).
+        Spline order for interpolation (default is
+        :py:const:`~triumvirate.winconv.SPLINE`).
         See :mod:`scipy.interpolate` for more details.
 
     Attributes
@@ -1947,7 +2075,8 @@ class ThreePCFWinConv(WinConvBase):
     r_out : dict of {str or tuple: |farr1d_type|}
         Separation sample points for the output 3PCF.
     spline : int
-        Spline order for interpolation (default is :py:const:`SPLINE`).
+        Spline order for interpolation (default is
+        :py:const:`~triumvirate.winconv.SPLINE`).
 
 
     .. attention::
@@ -1973,7 +2102,9 @@ class ThreePCFWinConv(WinConvBase):
 
         Parameters
         ----------
-        zeta_in : dict of {:py:const:`Multipole3PtLike`: |farr2d_type|}
+        zeta_in : dict of \
+                  {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+                  |farr2d_type|}
             Input 3PCF multipole samples (each key is a multipole)
             at sample points :attr:`r_in`.
         ic : float, optional
@@ -1983,7 +2114,8 @@ class ThreePCFWinConv(WinConvBase):
 
         Returns
         -------
-        zeta_conv_out : dict of {:class:`~triumvirate.winconv.Multipole`: \
+        zeta_conv_out : dict of \
+                        {:class:`~triumvirate.winconv.Multipole`: \
                         2-d :class:`numpy.ndarray`}
             Output windowed 3PCF multipole samples (each key is
             a multipole) at sample points :attr:`r_out`.
@@ -2044,7 +2176,8 @@ class ThreePCFWinConv(WinConvBase):
         Parameters
         ----------
         zeta_diag_in : dict of \
-                       {:py:const:`Multipole3PtLike`: |farr1d_type|}
+                       {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+                       |farr1d_type|}
             Input diagonal 3PCF multipole samples (each key
             is a multipole) at sample points :attr:`r_in`.
         ic : float, optional
@@ -2113,25 +2246,31 @@ class BispecWinConv(WinConvBase):
 
     Parameters
     ----------
-    formulae : str, :py:const:`FormulaeDictType` or |formulae_type|
+    formulae : str, :py:const:`~triumvirate.winconv.FormulaeDictType` or \
+              |formulae_type|
         Window convolution formulae (see
         :class:`~triumvirate.winconv.WinConvFormulae`).  If a string,
         it is assumed to be a named formula (see
-        :py:const:`NAMED_FORMULAE`).
+        :py:const:`~triumvirate.winconv.NAMED_FORMULAE`).
     window_sampts : |farr1d_type| or \
-                    dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
+                    dict of \
+                    {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+                    |farr1d_type|}
         Window function separation sample points, either
         the same for all multipoles or a dictionary of sample points
         (value) for each multipole (key).  If not logarithmically
         spaced, these are respaced with the same range and number
         of points; `window_multipoles` are resampled accordingly.
     window_multipoles : dict of \
-                        {:py:const:`Multipole3PtLike`: |farr2d_type|}
+                        {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+                        |farr2d_type|}
         Window function multipole samples (each key is a multipole).
         If `window_sampts` needs to be logarithmically respaced, these are
         resampled accordingly.
     k_in : |farr1d_type| or \
-           dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
+           dict of \
+           {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+           |farr1d_type|}
         Wavenumber sample points for the input bispectrum multipoles,
         either the same for all multipoles or a dictionary of
         sample points (value) for each multipole (key).  Must be
@@ -2149,7 +2288,8 @@ class BispecWinConv(WinConvBase):
         :class:`~triumvirate.transforms.DoubleSphericalBesselTransform`
         (default is `None`).
     spline : int or tuple of int, optional
-        Spline order for interpolation (default is :py:const:`SPLINE`).
+        Spline order for interpolation (default is
+        :py:const:`~triumvirate.winconv.SPLINE`).
         If a tuple, the first element is for configuration-space
         interpolation and the second element is for Fourier-space
         interpolation. See :mod:`scipy.interpolate` for more details.
@@ -2168,8 +2308,8 @@ class BispecWinConv(WinConvBase):
         of both the window function and the intermediate 3PCF
         (transformed from `B_in`).
     spline : tuple of int
-        Spline order (default is :py:const:`SPLINE`) for interpolation
-        in Fourier space and in configuration space.
+        Spline order (default is :py:const:`~triumvirate.winconv.SPLINE`)
+        for interpolation in Fourier space and in configuration space.
 
     Raises
     ------
@@ -2308,7 +2448,9 @@ class BispecWinConv(WinConvBase):
 
         Parameters
         ----------
-        B_in : dict of {:py:const:`Multipole3PtLike`: |farr2d_type|}
+        B_in : dict of \
+               {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+               |farr2d_type|}
             Input bispectrum multipole samples (each key is a multipole)
             at sample points :attr:`k_in`.
         ic : float, optional
@@ -2321,11 +2463,13 @@ class BispecWinConv(WinConvBase):
 
         Returns
         -------
-        B_conv_out : dict of {:class:`~triumvirate.winconv.Multipole`: \
+        B_conv_out : dict of \
+                     {:class:`~triumvirate.winconv.Multipole`: \
                      2-d :class:`numpy.ndarray`}
             Output windowed bispectrum multipole samples (each key is
             a multipole) at sample points :attr:`k_out`.
-        zeta_conv : dict of {:class:`~triumvirate.winconv.Multipole`: \
+        zeta_conv : dict of \
+                    {:class:`~triumvirate.winconv.Multipole`: \
                     2-d :class:`numpy.ndarray`}
             Intermediate windowed 3PCF multipole samples (each key is
             a multipole) at sample points :attr:`r_common`
@@ -2368,7 +2512,9 @@ class BispecWinConv(WinConvBase):
 
     #     Parameters
     #     ----------
-    #     B_diag_in : dict of {:py:const:`Multipole3PtLike`: |farr1d_type|}
+    #     B_diag_in : dict of \
+    #                 {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+    #                 |farr1d_type|}
     #         Input bispectrum multipole samples (each key is a multipole)
     #         at sample points :attr:`k_in`.
     #     ic : float, optional
