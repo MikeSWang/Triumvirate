@@ -85,6 +85,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
     'sphinx_copybutton',
+    'sphinx_design',
     # 'sphinx_inline_tabs',
     'sphinx_tabs.tabs',
     'sphinx_togglebutton',
