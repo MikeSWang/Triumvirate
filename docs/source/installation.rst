@@ -23,18 +23,22 @@ In a Conda environment, both libraries can be installed with
 
 Outside Conda environments, they can be installed using a package manager:
 
-.. tabs::
+.. tab-set::
 
-    .. code-tab:: console Linux
+    .. tab-item:: Linux
 
-        # Debian-based OS (e.g. Ubuntu); or
-        $ [sudo] apt[-get] install [-y] libgsl(-dev|27) libfftw3-(dev|3)
-        # Red Hat--based OS (e.g. CentOS)
-        $ [sudo] yum install [-y] gsl[-devel] fftw3-devel
+        .. code-block:: console
 
-    .. code-tab:: console macOS
+            # Debian-based OS (e.g. Ubuntu); or
+            $ [sudo] apt[-get] install [-y] libgsl(-dev|27) libfftw3-(dev|3)
+            # Red Hat--based OS (e.g. CentOS)
+            $ [sudo] yum install [-y] gsl[-devel] fftw3-devel
 
-        $ brew install gsl fftw
+    .. tab-item:: macOS
+
+        .. code-block:: console
+
+            $ brew install gsl fftw
 
 (select the appropriate option/version in the brackets above).
 
@@ -247,21 +251,27 @@ OpenMP parallelisation, pass ``useomp=true`` or ``useomp=1`` to `make`.
 To override the compilation settings used in the default |Makefile|_, set the
 environmental variables as shown in the following examples for macOS:
 
-.. tabs::
+.. tab-set::
 
-    .. code-tab:: console GCC
+    .. tab-item:: GCC
+        :sync: gcc
 
-        # Set GCC compiler (version 12 assumed here).
-        $ export CXX=$(brew --prefix gcc)/bin/g++-12
+        .. code-block:: console
 
-    .. code-tab:: console LLVM
+            # Set GCC compiler (version 12 assumed here).
+            $ export CXX=$(brew --prefix gcc)/bin/g++-12
 
-        # Assume Homebrew LLVM compiler and OpenMP library instead here.
-        $ export CXX=$(brew --prefix llvm)/bin/clang++
-        # Set OpenMP compilation flags.
-        $ export CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
-        # Set OpenMP linker flags.
-        $ export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
+    .. tab-item:: LLVM
+        :sync: llvm
+
+        .. code-block:: console
+
+            # Assume Homebrew LLVM compiler and OpenMP library instead here.
+            $ export CXX=$(brew --prefix llvm)/bin/clang++
+            # Set OpenMP compilation flags.
+            $ export CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
+            # Set OpenMP linker flags.
+            $ export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
 
 These commands are also included in the default |Makefile|_ (though commented
 out as they are an alternative to the default GCC set-up).
@@ -281,21 +291,27 @@ To override the compilation settings used by ``setup.py`` (e.g. to use a
 different compiler suite to the default GCC), set the environmental variables
 as shown in the following examples (for macOS with Homebrew package manager):
 
-.. tabs::
+.. tab-set::
 
-    .. code-tab:: console GCC
+    .. tab-item:: GCC
+        :sync: gcc
 
-        # Set GCC compiler (version 12 assumed here).
-        $ export PY_CXX=$(brew --prefix gcc)/bin/g++-12
+        .. code-block:: console
 
-    .. code-tab:: console LLVM
+            # Set GCC compiler (version 12 assumed here).
+            $ export PY_CXX=$(brew --prefix gcc)/bin/g++-12
 
-        # Set LLVM compiler.
-        $ export PY_CXX=$(brew --prefix llvm)/bin/clang++
-        # Set OpenMP compilation flags.
-        $ export PY_CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
-        # Set OpenMP linker flags.
-        $ export PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
+    .. tab-item:: LLVM
+        :sync: llvm
+
+        .. code-block:: console
+
+            # Set LLVM compiler.
+            $ export PY_CXX=$(brew --prefix llvm)/bin/clang++
+            # Set OpenMP compilation flags.
+            $ export PY_CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
+            # Set OpenMP linker flags.
+            $ export PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
 
 
 Parallelised building
