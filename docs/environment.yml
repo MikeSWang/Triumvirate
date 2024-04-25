@@ -1,0 +1,17 @@
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python
+  - pip
+  - doxygen
+  - breathe
+  - exhale
+  - myst-nb
+  - pydata-sphinx-theme
+  - sphinxcontrib-bibtex
+  - sphinx-book-theme
+  - sphinx-copybutton
+  - sphinx-design
+  - sphinx-togglebutton
+  - setuptools-scm
