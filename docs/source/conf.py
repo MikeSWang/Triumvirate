@@ -60,7 +60,7 @@ else:
 
 version_components = pkg_version.split('.')
 if len(version_components) > 3:
-    doc_version = 'devel'
+    doc_version = 'dev'
 else:
     doc_version = pkg_version
 
@@ -301,10 +301,8 @@ def skip_cdef_member(app, what, name, obj, skip, options):
 
     SKIP_LISTS = {
         'dataobjs.Binning': [
-            'bin_centres', 'bin_edges', 'bin_widths',
-            'bin_max', 'bin_min',
-            'num_bins',
-            'scheme', 'space',
+            'bin_centres', 'bin_edges', 'bin_max', 'bin_min', 'bin_widths',
+            'num_bins', 'scheme', 'space',
         ],
     }
 

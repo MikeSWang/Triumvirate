@@ -541,12 +541,11 @@ r"""Window convolution term--like type.
 
 This represents a window convolution term.
 
-Alias of :py:class:`~typing.Union`\
-[:class:`~triumvirate.winconv.WinConvTerm`,
+Alias of :class:`~triumvirate.winconv.WinConvTerm` |
 :py:class:`~typing.Tuple`\
 [:py:const:`~triumvirate.winconv.MultipoleLike`,
 :py:const:`~triumvirate.winconv.MultipoleLike`,
-:py:const:`~triumvirate.winconv.CoeffType`]].
+:py:const:`~triumvirate.winconv.CoeffType`].
 
 Examples
 --------

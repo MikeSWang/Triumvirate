@@ -1,11 +1,11 @@
 [
     {
-      "name": "latest (devel)",
-      "version": "devel",
+      "name": "dev (latest)",
+      "version": "dev",
       "url": "https://triumvirate.readthedocs.io/en/latest/"
     },
     {
-      "name": "stable (0.3.0)",
+      "name": "0.3.0 (stable)",
       "version": "0.3.0",
       "url": "https://triumvirate.readthedocs.io/en/stable/"
     }
