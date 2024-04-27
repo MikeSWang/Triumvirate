@@ -17,8 +17,6 @@ sys.path.insert(0, os.path.abspath("../../src"))
 
 # -- Project information -------------------------------------------------
 
-VERSION_STABLE = '0.3.0'  # UPDATE: fallback version number
-
 # Directories and paths.
 root_dir = Path(
     inspect.getframeinfo(inspect.currentframe()).filename
@@ -58,8 +56,12 @@ else:
         pkg_date, datetime.now().year, pkg_author
     )
 
-version_components = pkg_version.split('.')
-if len(version_components) > 3:
+# Set custom fields.
+anaconda_user = 'msw'
+github_user = 'MikeSWang'
+github_repo = pkg_name.capitalize()
+proj_name = github_repo
+if 'dev' in pkg_version:
     doc_version = 'dev'
 else:
     doc_version = pkg_version
@@ -104,26 +106,27 @@ templates_path = ['_templates']
 # -- Options for HTML output ---------------------------------------------
 
 html_context = {
-    'github_user': 'MikeSWang',
-    'github_repo': pkg_name.capitalize(),
+    'github_user': github_user,
+    'github_repo': github_repo,
     'github_version': 'main',
     'doc_path': "docs/source",
 }  # theme: pydata_sphinx_theme
 
 html_css_files = ["css/custom.css"]  # theme: pydata_sphinx_theme
 
-html_favicon = "_static/image/Triumvirate.ico"
+html_favicon = f"_static/image/{proj_name}.ico"
 
 html_js_files = ["js/custom-icons.js"]  # theme: pydata_sphinx_theme
 
-# html_logo = '_static/image/Triumvirate.png'   # theme: sphinx_book_theme
-html_logo = '_static/image/Triumvirate-ls.png'  # theme: pydata_sphinx_theme
+# html_logo = f'_static/image/{proj_name}.png'  # theme: sphinx_book_theme
+html_logo = \
+    f'_static/image/{proj_name}-ls.png'         # theme: pydata_sphinx_theme
 
 html_show_sourcelink = False  # theme: pydata_sphinx_theme
 
 html_static_path = ["", "_static/"]
 
-html_title = 'Triumvirate Documentation'  # u'\u200c'
+html_title = f'{proj_name} Documentation'  # u'\u200c'
 
 html_last_updated_fmt = "%a, %Y-%m-%dT%H:%M:%S%z. Version {}".format(release)
 
@@ -139,12 +142,14 @@ html_sidebars = {
 
 html_theme = 'pydata_sphinx_theme'  # 'sphinx_book_theme'  #
 html_theme_options = {
-    'announcement':
-        "Version 0.4 with full window convolution functionality "
-        "is coming soon (expected in 2024)!",
+    'announcement': (
+        "https://raw.githubusercontent.com/"
+        "{github_user}/{github_repo}/{github_version}/"
+        "{doc_path}/_templates/announce-banner.html"
+    ).format(**html_context),
     'back_to_top_button': True,         # theme: pydata_sphinx_theme
     # 'path_to_docs': "docs/source",    # theme: sphinx_book_theme
-    # 'repository_url': 'https://github.com/MikeSWang/Triumvirate',
+    # 'repository_url': f'https://github.com/{github_user}/{github_repo}',
     #                                   # theme: sphinx_book_theme
     # 'toc_title': 'On this page',      # theme: sphinx_book_theme
     # 'extra_footer': "<div>{}</div>".format(None),
@@ -171,9 +176,10 @@ html_theme_options = {
     'navigation_with_keys': False,      # theme: pydata_sphinx_theme
     'switcher': {
         'json_url': (
-            "https://raw.githubusercontent.com/MikeSWang/Triumvirate/main/"
+            "https://raw.githubusercontent.com/"
+            "{github_user}/{github_repo}/{github_version}/"
             "docs/versions.json"
-        ),
+        ).format(**html_context),
         'version_match': doc_version,
     },                                  # theme: pydata_sphinx_theme
     # 'use_download_button': False,     # theme: sphinx_book_theme
@@ -183,35 +189,36 @@ html_theme_options = {
     'icon_links': [
         {
             'name': 'GitHub',
-            'url': "https://github.com/MikeSWang/Triumvirate",
+            'url': f"https://github.com/{github_user}/{github_repo}",
             'icon': 'fa-brands fa-github',
         },
         # {
         #     'name': 'PyPI',
-        #     'url': "https://pypi.org/project/Triumvirate",
+        #     'url': f"https://pypi.org/project/{proj_name}",
         #     'icon': (
-        #         "https://img.shields.io/pypi/v/Triumvirate"
+        #         f"https://img.shields.io/pypi/v/{proj_name}"
         #         "?logo=PyPI&color=informational"
         #     ),
         #     'type': 'url',
         # },
         {
             'name': 'PyPI',
-            'url': "https://pypi.org/project/Triumvirate",
+            'url': f"https://pypi.org/project/{proj_name}",
             'icon': 'fa-custom fa-pypi',
         },
         # {
         #     'name': 'Conda',
-        #     'url': "https://anaconda.org/msw/triumvirate",
+        #     'url': f"https://anaconda.org/{anaconda_user}/{pkg_name}",
         #     'icon': (
-        #         "https://img.shields.io/conda/vn/msw/triumvirate"
+        #         "https://img.shields.io/conda/vn/"
+        #         f"{anaconda_user}/{pkg_name}"
         #         "?logo=Anaconda&color=informational"
         #     ),
         #     'type': 'url'
         # },
         {
             'name': 'Conda',
-            'url': "https://anaconda.org/msw/triumvirate",
+            'url': f"https://anaconda.org/{anaconda_user}/{pkg_name}",
             'icon': 'fa-custom fa-anaconda',
         },
     ]
@@ -222,22 +229,26 @@ html_theme_options = {
 
 autodoc_member_order = 'bysource'
 
-autodoc_type_aliases = dict(
-    DegreeType='triumvirate.winconv.DegreeType',
-    MultipoleLike='triumvirate.winconv.MultipoleLike',
-    Multipole3PtLike='triumvirate.winconv.Multipole3PtLike',
-    CoeffType='triumvirate.winconv.CoeffType',
-    WinConvTermLike='triumvirate.winconv.WinConvTermLike',
-    FormulaeDictType='triumvirate.winconv.FormulaeDictType',
-)
+TYPE_ALIASES_BY_MODULE = {
+    'triumvirate.wincov': [
+        'DegreeType', 'MultipoleLike', 'Multipole3PtLike',
+        'CoeffType', 'WinConvTermLike', 'FormulaeDictType',
+    ],
+}
+
+autodoc_type_aliases = {
+    ta: f"{mod_name}.{ta}"
+    for mod_name in TYPE_ALIASES_BY_MODULE.keys()
+    for ta in TYPE_ALIASES_BY_MODULE.get(mod_name, [])
+}
 
 autosummary_generate = True
 
 bibtex_bibfiles = ["_static/text/refs.bib"]
 bibtex_reference_style = 'author_year'
 
-breathe_projects = {'Triumvirate': "apidoc_cpp/xml/"}
-breathe_default_project = 'Triumvirate'
+breathe_projects = {proj_name: "apidoc_cpp/xml/"}
+breathe_default_project = proj_name
 breathe_implementation_filename_extensions = ['.cpp']
 
 exhale_args = {
@@ -283,8 +294,7 @@ myst_enable_extensions = [
 myst_dmath_double_inline = True
 
 myst_substitutions = {
-    'Triumvirate':
-        "<span style=\"font-variant: small-caps\">Triumvirate</span>",
+    proj_name: f"<span style=\"font-variant: small-caps\">{proj_name}</span>",
 }
 
 napoleon_include_special_with_doc = True
@@ -299,7 +309,7 @@ notfound_context = {
     'body': (
         "<h1>Have you been sniffing around?</h1>\n\n"
         "Like many a scientist's dream, this page is lost&hellip; "
-        "or never has been found."
+        "or has never existed."
     ),
 }
 
