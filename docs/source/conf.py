@@ -105,6 +105,11 @@ templates_path = ['_templates']
 
 # -- Options for HTML output ---------------------------------------------
 
+WINCONV_MOD_URL = (
+    "https://triumvirate.readthedocs.io/en/latest/"
+    "apidoc_py/triumvirate.winconv.html"
+)
+
 html_context = {
     'github_user': github_user,
     'github_repo': github_repo,
@@ -143,10 +148,11 @@ html_sidebars = {
 html_theme = 'pydata_sphinx_theme'  # 'sphinx_book_theme'  #
 html_theme_options = {
     'announcement': (
-        "https://raw.githubusercontent.com/"
-        "{github_user}/{github_repo}/{github_version}/"
-        "{doc_path}/_templates/announce-banner.html"
-    ).format(**html_context),
+        "&#128064; "
+        "Version 0.4 to be released soon (expected in 2024) with "
+        f"<a href=\"{WINCONV_MOD_URL}\">window convolution</a> "
+        "functionality!"
+    ),
     'back_to_top_button': True,         # theme: pydata_sphinx_theme
     # 'path_to_docs': "docs/source",    # theme: sphinx_book_theme
     # 'repository_url': f'https://github.com/{github_user}/{github_repo}',
