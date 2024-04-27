@@ -294,9 +294,10 @@ napoleon_use_ivar = True
 nb_execution_mode = 'off'
 
 notfound_context = {
-    'title': "Have you been sniffing around?",
+    'title': "Page not found",
     'body': (
-        "Like many a scientist's dream, this page is lost... "
+        "<h1>Have you been sniffing around?</h1>\n\n"
+        "Like many a scientist's dream, this page is lost&hellip; "
         "or never has been found."
     ),
 }

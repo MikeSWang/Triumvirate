@@ -184,8 +184,8 @@ if [[ "${READTHEDOCS}" != "True" ]]; then
     # Move static assets to a mirrored subdirectory
     # in the public HTML directory for Doxygen 'mainpage'.
     mkdir -p ${BUILD_HTML_PUBLIC_DIR}/${_STAT_MIRROR_IN_HTML_PUBLIC}
-    find ${STAT_DIR} -maxdepth 1 -type f \
-        -exec cp {} ${BUILD_HTML_PUBLIC_DIR}/${_STAT_MIRROR_IN_HTML_PUBLIC} \;
+    find ${STAT_DIR} -maxdepth 1 -type d -exec  \
+        cp -r {} ${BUILD_HTML_PUBLIC_DIR}/${_STAT_MIRROR_IN_HTML_PUBLIC} \;
 
     # Redirect HTML listings to the index page.
     echo -e "RewriteEngine On\nRewriteRule (.*)\$ index.html" \
