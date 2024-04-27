@@ -140,7 +140,8 @@ html_sidebars = {
 html_theme = 'pydata_sphinx_theme'  # 'sphinx_book_theme'  #
 html_theme_options = {
     'announcement':
-        "Version 0.4 is coming soon!",
+        "Version 0.4 with full window convolution functionality "
+        "is coming soon (expected in 2024)!",
     'back_to_top_button': True,         # theme: pydata_sphinx_theme
     # 'path_to_docs': "docs/source",    # theme: sphinx_book_theme
     # 'repository_url': 'https://github.com/MikeSWang/Triumvirate',
