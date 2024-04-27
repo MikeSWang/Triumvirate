@@ -10,6 +10,26 @@ html {
 }
 
 
+/** Remove underlining from 'inactive' links. */
+a {
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.prev-next-area {
+  a {
+    text-decoration: none;
+
+    p.prev-next-title {
+      text-decoration: none;
+    }
+  }
+}
+
+
 /* Make left sidebar title invisible. */
 .bd-links__title {
   display: none;
