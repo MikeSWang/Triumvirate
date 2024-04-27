@@ -29,7 +29,7 @@ build:
         ${READTHEDOCS_OUTPUT}/html/
       - mkdir -p ${READTHEDOCS_OUTPUT}/html/apiref_doxy/docs/source/_static/
       - >
-        find docs/source/_static/ -maxdepth 1 -type f -exec cp
+        find docs/source/_static/ -maxdepth 1 -type d -exec cp -r
         {} ${READTHEDOCS_OUTPUT}/html/apiref_doxy/docs/source/_static/ \;
 
 sphinx:
