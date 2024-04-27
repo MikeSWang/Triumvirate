@@ -1,12 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap');
 
-body {
-  font-family: 'Source Sans 3', sans-serif;
+/** Change font families. */
+html {
   font-optical-sizing: auto;
+
+  --pst-font-family-base-system: 'Source Sans 3', sans-serif, -apple-system,
+    Apple Color Emoji, Segoe UI, Segoe UI Symbol, Segoe UI Emoji;
+  --pst-font-family-monospace-system: Menlo, monospace;
 }
 
 
 /* Make left sidebar title invisible. */
 .bd-links__title {
-    display: none;
+  display: none;
 }
