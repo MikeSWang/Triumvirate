@@ -1,5 +1,5 @@
 <p align="center">
-<img src="docs/source/_static/Triumvirate.png" alt=Triumvirate-Logo width=67%>
+<img src="docs/source/_static/image/Triumvirate.png" alt=Triumvirate-Logo width=67%>
 </p>
 
 # Three-Point Clustering Measurements in LSS
@@ -119,7 +119,7 @@ for the relevant information in different formats.
 
 ## Acknowledgement
 
-<img src="docs/source/_static/ERC-Logo-Flag.png" alt="ERC" width="40%">
+<img src="docs/source/_static/image/ERC-Logo-Flag.png" alt="ERC" width="40%">
 
 This project has received funding from the European Research Council (ERC)
 under the European Union's Horizon 2020 research and innovation programme

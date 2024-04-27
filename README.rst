@@ -3,7 +3,7 @@
     should be periodically compared against the official read-me .md file
     which is rendered on GitHub and included in documentation.
 
-.. figure:: https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/Triumvirate.png
+.. figure:: https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/image/Triumvirate.png
     :class: dark-light
     :align: center
     :width: 67 %
@@ -170,7 +170,7 @@ different formats.
 Acknowledgement
 ===============
 
-.. figure:: https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/ERC-Logo-Flag.png
+.. figure:: https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/image/ERC-Logo-Flag.png
     :alt: ERC
     :align: left
     :width: 40%

@@ -110,14 +110,14 @@ html_context = {
     'doc_path': "docs/source",
 }  # theme: pydata_sphinx_theme
 
-html_css_files = ["custom.css"]  # theme: pydata_sphinx_theme
+html_css_files = ["css/custom.css"]  # theme: pydata_sphinx_theme
 
-html_favicon = "_static/Triumvirate.ico"
+html_favicon = "_static/image/Triumvirate.ico"
 
-html_js_files = ["custom-icons.js"]  # theme: pydata_sphinx_theme
+html_js_files = ["js/custom-icons.js"]  # theme: pydata_sphinx_theme
 
-# html_logo = '_static/Triumvirate.png'     # theme: sphinx_book_theme
-html_logo = '_static/Triumvirate-ls.png'  # theme: pydata_sphinx_theme
+# html_logo = '_static/image/Triumvirate.png'   # theme: sphinx_book_theme
+html_logo = '_static/image/Triumvirate-ls.png'  # theme: pydata_sphinx_theme
 
 html_show_sourcelink = False  # theme: pydata_sphinx_theme
 
@@ -232,7 +232,7 @@ autodoc_type_aliases = dict(
 
 autosummary_generate = True
 
-bibtex_bibfiles = ["_static/refs.bib"]
+bibtex_bibfiles = ["_static/text/refs.bib"]
 bibtex_reference_style = 'author_year'
 
 breathe_projects = {'Triumvirate': "apidoc_cpp/xml/"}
@@ -292,6 +292,14 @@ napoleon_use_param = False
 napoleon_use_ivar = True
 
 nb_execution_mode = 'off'
+
+notfound_context = {
+    'title': "Have you been sniffing around?",
+    'body': (
+        "Like many a scientist's dream, this page is lost... "
+        "or never has been found."
+    ),
+}
 
 todo_include_todos = True
 

@@ -1,6 +1,6 @@
 .. title:: Home
 
-.. figure:: _static/Triumvirate.png
+.. figure:: _static/image/Triumvirate.png
     :class: dark-light
     :align: center
     :width: 67 %
@@ -53,7 +53,7 @@ information in different formats.
 Acknowledgement
 ===============
 
-.. figure:: _static/ERC-Logo-Flag.png
+.. figure:: _static/image/ERC-Logo-Flag.png
     :alt: ERC
     :align: left
     :width: 40%
