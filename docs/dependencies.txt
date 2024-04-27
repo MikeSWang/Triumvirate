@@ -6,5 +6,6 @@ setuptools-scm
 sphinx-book-theme
 sphinx-copybutton
 sphinx-design
+sphinx-notfound-page
 sphinx-togglebutton
 sphinxcontrib-bibtex
