@@ -262,7 +262,7 @@ exhale_args = {
     'rootFileName': "apidoc_cpp.rst",
     'rootFileTitle': "C++ Library",
     'createTreeView': True,
-    'treeViewIsBootstrap': True,
+    'treeViewIsBootstrap': False,  # HACK: unknown issue with `exhale`
     'exhaleExecutesDoxygen': True,
     'exhaleUseDoxyfile': True,
     'doxygenStripFromPath': "..",
