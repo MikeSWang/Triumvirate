@@ -280,36 +280,19 @@ hoverxref_auto_ref = True
 hoverxref_mathjax = True
 hoverxref_sphinxtabs = True
 hoverxref_domains = [
+    'cpp',
     'py',
-    'cite',
+]
+hoverxref_roles = [
+    'ref',  # 'doc',
+    # 'package', 'mod',
+    'obj', 'exc', 'const', 'data',
+    'class', 'func', 'meth', 'attr',
 ]
 hoverxref_intersphinx = [
-    'readthedocs',
-    'sphinx',
-    'python',
     'numpy',
     'sympy',
 ]
-hoverxref_intersphinx_types = {
-    'readthedocs': 'modal',
-    'sphinx': 'tooltip',
-    'python': 'tooltip',
-    'numpy': 'tooltip',
-    'sympy': 'tooltip',
-}
-hoverxref_role_types = {
-    'hoverxref': 'modal',
-    'doc': 'modal',
-    'ref': 'modal',  # for hoverxref_auto_ref config
-    'confval': 'tooltip',  # for custom object
-    'mod': 'tooltip',
-    'obj': 'tooltip',
-    'exc': 'tooltip',
-    'class': 'tooltip',
-    'meth': 'tooltip',
-    'func': 'tooltip',
-    'const': 'tooltip',
-}
 
 intersphinx_mapping = {
     'python': ("https://docs.python.org/3", None),
