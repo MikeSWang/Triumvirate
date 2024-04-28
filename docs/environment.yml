@@ -15,6 +15,7 @@ dependencies:
     - sphinx-book-theme
     - sphinx-copybutton
     - sphinx-design
+    - sphinx-hoverxref
     - sphinx-notfound-page
     - sphinx-togglebutton
     - sphinxcontrib-bibtex

@@ -75,6 +75,7 @@ extensions = [
     'breathe',
     'exhale',
     'myst_nb',
+    'hoverxref.extension',
     'notfound.extension',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
@@ -273,6 +274,41 @@ exhale_args = {
             `Doxygen version <../apiref_doxy/index.html>`_
             of the C++ API reference.
     """),
+}
+
+hoverxref_auto_ref = True
+hoverxref_mathjax = True
+hoverxref_sphinxtabs = True
+hoverxref_domains = [
+    'py',
+    'cite',
+]
+hoverxref_intersphinx = [
+    'readthedocs',
+    'sphinx',
+    'python',
+    'numpy',
+    'sympy',
+]
+hoverxref_intersphinx_types = {
+    'readthedocs': 'modal',
+    'sphinx': 'tooltip',
+    'python': 'tooltip',
+    'numpy': 'tooltip',
+    'sympy': 'tooltip',
+}
+hoverxref_role_types = {
+    'hoverxref': 'modal',
+    'doc': 'modal',
+    'ref': 'modal',  # for hoverxref_auto_ref config
+    'confval': 'tooltip',  # for custom object
+    'mod': 'tooltip',
+    'obj': 'tooltip',
+    'exc': 'tooltip',
+    'class': 'tooltip',
+    'meth': 'tooltip',
+    'func': 'tooltip',
+    'const': 'tooltip',
 }
 
 intersphinx_mapping = {
