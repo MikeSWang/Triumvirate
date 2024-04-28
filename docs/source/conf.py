@@ -175,9 +175,9 @@ html_theme_options = {
     ],                                  # theme: pydata_sphinx_theme
     'navbar_persistent': [
         'search-button-field',
-        'theme-switcher',
     ],                                  # theme: pydata_sphinx_theme
     'navbar_end': [
+        'theme-switcher',
         'navbar-icon-links',
     ],                                  # theme: pydata_sphinx_theme
     'navigation_with_keys': False,      # theme: pydata_sphinx_theme
