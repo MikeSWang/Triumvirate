@@ -106,6 +106,8 @@ templates_path = ['_templates']
 
 # -- Options for HTML output ---------------------------------------------
 
+ANACONDA_CHANNEL_URL = f"https://anaconda.org/{anaconda_user}/{pkg_name}"
+
 WINCONV_MOD_URL = (
     "https://triumvirate.readthedocs.io/en/latest/"
     "apidoc_py/triumvirate.winconv.html"
@@ -153,6 +155,11 @@ html_theme_options = {
         "Version 0.4 to be released soon (expected in 2024) with "
         f"<a href=\"{WINCONV_MOD_URL}\">window convolution</a> "
         "functionality!"
+        "<br>"
+        "You can try out the developmental release "
+        f"`<a href=\"{ANACONDA_CHANNEL_URL}/files?channel=dev\">"
+        "msw/label/dev::triumvirate</a>` "
+        "from Anaconda."
     ),
     'back_to_top_button': True,         # theme: pydata_sphinx_theme
     # 'path_to_docs': "docs/source",    # theme: sphinx_book_theme
