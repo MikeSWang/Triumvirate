@@ -112,6 +112,11 @@ jobs:
             brew reinstall $(brew --cache --bottle-tag=${TARG_PLAT} $formula)
           done
 
+      - name: Set up Python 3
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
       - name: Install packaging requirements
         run: python -m pip install --upgrade twine
 
@@ -140,11 +145,7 @@ jobs:
           #   PY_LDFLAGS=-L$(brew --prefix)/lib
 
       - name: Verify built distribution
-        uses: knicknic/os-specific-run@v1.0.4
-        with:
-          # BUG: ``twine check`` fails to recognise ``--strict`` on macOS.
-          linux: python -m twine check --strict dist_arm64/*
-          macos: python -m twine check dist_arm64/*
+        run: python -m twine check --strict dist/*
 
       - name: Save wheel to bdist
         uses: actions/upload-artifact@v4
