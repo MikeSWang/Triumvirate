@@ -148,13 +148,13 @@ jobs:
       - name: Save wheel to bdist
         uses: actions/upload-artifact@v4
         with:
-          name: bdist_wheel_${{ github.ref_name }}
+          name: bdist_wheel_${{ matrix.os }}_${{ github.ref_name }}
           path: dist/*.whl
 
       - name: Save wheel to pypi_dist
         uses: actions/upload-artifact@v4
         with:
-          name: pypi_dist_${{ github.ref_name }}
+          name: pypi_dist_${{ matrix.os }}_${{ github.ref_name }}
           path: dist/*.whl
 
   build_conda:
@@ -241,13 +241,13 @@ jobs:
       - name: Save build to conda_bld
         uses: actions/upload-artifact@v4
         with:
-          name: conda_bld_${{ github.ref_name }}
+          name: conda_bld_${{ matrix.os }}_${{ github.ref_name }}
           path: dist/*
 
       - name: Save build to conda_dist
         uses: actions/upload-artifact@v4
         with:
-          name: conda_dist_${{ github.ref_name }}
+          name: conda_dist_${{ matrix.os }}_${{ github.ref_name }}
           path: |
             dist/**/*.tar.bz2
             dist/*.conda
