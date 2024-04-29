@@ -104,5 +104,5 @@ before-all = [
 
 [tool.cibuildwheel.macos]
 before-all = [
-    "brew install gsl fftw",
+    "brew install gsl fftw libomp",
 ]

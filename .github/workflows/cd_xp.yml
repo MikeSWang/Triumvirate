@@ -12,6 +12,7 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
       - 'v[0-9]+.[0-9]+.[0-9]+.post[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+.dev[0-9]+'
       - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
     paths:
       - deploy/pkg/conda_recipe_xp/**
@@ -44,8 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Use oldest supported OS for backward compatibility.
-        os: [ubuntu-20.04, macos-11]
+        os: [ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
 
@@ -58,6 +58,14 @@ jobs:
       github.event.inputs.run_build_bdist_xplat == 'true'
 
     steps:
+      # HACK: GitHub macOS runner defaults to a broken release of Xcode.
+      # See https://github.com/actions/runner-images/issues/9273.
+      - name: Pin Xcode version (macOS)
+        if: runner.os == 'macOS'
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
       - name: Checkout (automatic trigger)
         if: github.event_name != 'workflow_dispatch'
         uses: actions/checkout@v4
@@ -156,8 +164,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Use oldest supported OS for backward compatibility.
-        os: [ubuntu-20.04, macos-11]
+        os: [ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
 
@@ -174,6 +181,14 @@ jobs:
         shell: bash -el {0}
 
     steps:
+      # HACK: GitHub macOS runner defaults to a broken release of Xcode.
+      # See https://github.com/actions/runner-images/issues/9273.
+      - name: Pin Xcode version (macOS)
+        if: runner.os == 'macOS'
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -217,7 +232,7 @@ jobs:
         env:
           recipe_dir: deploy/pkg/conda_recipe_xp
           output_dir: dist_arm64/
-          variants: "{'python': ['3.8', '3.9', '3.10', '3.11']}"
+          variants: "{'python': ['3.8', '3.9', '3.10', '3.11', '3.12']}"
         run: |
           # Create output directory if non-existent.
           if [[ ! -d ${output_dir} ]]; then mkdir -p ${output_dir}; fi
