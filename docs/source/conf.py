@@ -157,8 +157,9 @@ html_theme_options = {
         "functionality!"
         "<br>"
         "You can try out the developmental release "
-        f"`<a href=\"{ANACONDA_CHANNEL_URL}/files?channel=dev\">"
-        "msw/label/dev::triumvirate</a>` "
+        f"<a href=\"{ANACONDA_CHANNEL_URL}/files?channel=dev\">"
+        "<code>msw/label/dev::triumvirate</code>"
+        "</a> "
         "from Anaconda."
     ),
     'back_to_top_button': True,         # theme: pydata_sphinx_theme
