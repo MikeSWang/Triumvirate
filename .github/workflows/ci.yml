@@ -60,6 +60,14 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      # HACK: GitHub macOS runner defaults to a broken release of Xcode.
+      # See https://github.com/actions/runner-images/issues/9273.
+      - name: Pin Xcode version (macOS)
+        if: runner.os == 'macOS'
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -80,7 +88,7 @@ jobs:
           macos: |
             # # Optional: Homebrew update is slow.
             # brew update
-            brew install gsl fftw
+            brew install gsl fftw libomp
 
       - name: Build and install (Linux)
         if: runner.os == 'Linux'
@@ -91,8 +99,9 @@ jobs:
         run: |
           # Override default compiler and OpenMP to GCC on macOS.
           export CXX=$(find $(brew --prefix gcc)/bin -type f -name 'g++*')
-          # Override ``-arch`` flags to exclude non-native architectures.
-          export ARCHFLAGS="-arch x86_64"
+          # # Optional: Override ``-arch`` flags to exclude non-native
+          # # architectures, relevant for x86_64 architecture only.
+          # export ARCHFLAGS="-arch x86_64"
           # # Optional: Eliminate linker version warning.
           # export MACOSX_DEPLOYMENT_TARGET=10.9
           # Build.
@@ -105,8 +114,9 @@ jobs:
           export CXX=$(brew --prefix llvm@15)/bin/clang++
           export CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
           export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
-          # Override ``-arch`` flags to exclude non-native architectures.
-          export ARCHFLAGS="-arch x86_64"
+          # # Optional: Override ``-arch`` flags to exclude non-native
+          # # architectures, relevant for x86_64 architecture only.
+          # export ARCHFLAGS="-arch x86_64"
           # # Optional: Eliminate linker version warning.
           # export MACOSX_DEPLOYMENT_TARGET=10.9
           # Build.
