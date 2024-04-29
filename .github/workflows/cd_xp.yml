@@ -145,7 +145,7 @@ jobs:
           #   PY_LDFLAGS=-L$(brew --prefix)/lib
 
       - name: Verify built distribution
-        run: python -m twine check --strict dist/*
+        run: python -m twine check --strict dist_arm64/*
 
       - name: Save wheel to bdist
         uses: actions/upload-artifact@v4
