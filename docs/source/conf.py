@@ -297,6 +297,7 @@ hoverxref_roles = [
     'obj', 'exc', 'const', 'data',
     'class', 'func', 'meth', 'attr',
 ]
+hoverxref_role_types = {role: 'tooltip' for role in hoverxref_roles}
 hoverxref_intersphinx = [
     'numpy',
     'sympy',

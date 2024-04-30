@@ -1,18 +1,37 @@
-# Build artifacts
+# Build/compilation
 build/
 
-# Byte-compiled
+## Bytecode
 __pycache__/
 *.py[cod]
 
-# C/C++ extensions
-*.so
-
-# Compiled objects
+## Objects
 *.o
 
-# Compiled static libraries
+## Shared libraries (C/C++ extensions)
+*.so
+
+## Static libraries
 *.a
+
+## Executables
+*.out
+
+# Tests
+.tox
+**/test_build/**
+**/test_output/
+
+## Cache
+.cache/
+.pytest_cache/
+
+## Coverage
+cover/
+*.cover
+coverage.xml
+.coverage
+.coverage.*
 
 # Distributions
 bdist/
@@ -31,25 +50,6 @@ eggs/
 wheelhouse/
 wheels/
 
-# Executables
-*.out
-
-# Tests/test coverage
-.tox
-**/test_build/**
-**/test_output/
-
-## Cache
-.cache/
-.pytest_cache/
-
-## Coverage
-cover/
-*.cover
-coverage.xml
-.coverage
-.coverage.*
-
 # Documentation
 docs/build/
 docs/source/api*/
@@ -57,17 +57,18 @@ docs/source/tutorials/**
 docs/source/Doxyfile
 docs/source/Doxyfile.conf.bak
 
-# Jupyter Notebook
+# Development
+## Jupyter Notebook
 .ipynb_checkpoints
 
-# Editors/explorers
+## Editors/explorers
 .vscode/
 .DS_Store
 
-# Storage
+## Storage
 storage/
 
-# Sandboxes
+## Sandboxes
 sandbox/
 
 # Exclusions

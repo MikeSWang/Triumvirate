@@ -10,13 +10,16 @@ build:
     - graphviz
   jobs:
     post_checkout:
+      # Fetch tags for doc versioning.
       - git fetch --unshallow || true
       - git fetch --all --tags || true
     pre_create_environment:
       - conda update --yes --quiet --name=base --channel=defaults conda
     post_create_environment:
+      # Check version solver outcome.
       - conda list
     pre_install:
+      # RTD modifies these files.
       - git update-index --assume-unchanged docs/environment.yml docs/source/conf.py
     pre_build:
       - pip install --editable . -vvv

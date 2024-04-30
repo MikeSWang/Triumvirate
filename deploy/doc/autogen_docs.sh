@@ -12,7 +12,7 @@ excl=${1#"excl_"}  # exclusion case: {"doxy", "sphinx"}
 
 # -- Directories & Paths -------------------------------------------------
 
-PROJ_NAME=triumvirate
+PKG_NAME=triumvirate
 
 # Set the ``docs`` directory (the working directory).
 THIS_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
@@ -43,10 +43,10 @@ BUILD_HTML_PUBLIC_DIR=./build/public_html/
 
 # Set source directory and subdirectories.
 SRC_DIR=../src/
-PKG_RESOURCES_DIR=${SRC_DIR}/${PROJ_NAME}/resources/
+PKG_RESOURCES_DIR=${SRC_DIR}/${PKG_NAME}/resources/
 
 # Set exclusion path patterns.
-EXCL_APIDOC_FILES=${APIDOC_PY_DIR}/${PROJ_NAME}.rst
+EXCL_APIDOC_FILES=${APIDOC_PY_DIR}/${PKG_NAME}.rst
 
 
 # -- Build Docs ----------------------------------------------------------
