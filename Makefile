@@ -109,20 +109,20 @@ DEPS := gsl fftw3
 # Dependencies are searched for by `pkg-config`.  Ensure the set-up of
 # `pkg-config` matches that of the dependencies (e.g. both are installed
 # by Conda in the same Conda environment).
-DEP_INCLUDES := $(shell pkg-config --cflags-only-I ${DEPS})
-DEP_CXXFLAGS := $(shell pkg-config --cflags-only-other ${DEPS})
-DEP_LDFLAGS := $(shell pkg-config --libs-only-other --libs-only-L ${DEPS})
-DEP_LDLIBS := $(shell pkg-config --libs-only-l ${DEPS})
+DEP_INCLUDES := $(shell pkg-config --silence-errors --cflags-only-I ${DEPS})
+DEP_CXXFLAGS := $(shell pkg-config --silence-errors --cflags-only-other ${DEPS})
+DEP_LDFLAGS := $(shell pkg-config --silence-errors --libs-only-other --libs-only-L ${DEPS})
+DEP_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPS})
 
 
 # -- Dependencies (test) -------------------------------------------------
 
 DEPS_TEST := gtest
 
-DEP_TEST_INCLUDES := $(shell pkg-config --cflags-only-I ${DEPS_TEST})
-DEP_TEST_CXXFLAGS := $(shell pkg-config --cflags-only-other ${DEPS_TEST})
-DEP_TEST_LDFLAGS := $(shell pkg-config --libs-only-other --libs-only-L ${DEPS_TEST})
-DEP_TEST_LDLIBS := $(shell pkg-config --libs-only-l ${DEPS_TEST})
+DEP_TEST_INCLUDES := $(shell pkg-config --silence-errors --cflags-only-I ${DEPS_TEST})
+DEP_TEST_CXXFLAGS := $(shell pkg-config --silence-errors --cflags-only-other ${DEPS_TEST})
+DEP_TEST_LDFLAGS := $(shell pkg-config --silence-errors --libs-only-other --libs-only-L ${DEPS_TEST})
+DEP_TEST_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPS_TEST})
 
 
 # -- Options -------------------------------------------------------------
