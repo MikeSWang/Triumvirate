@@ -94,9 +94,8 @@ class ParameterSet {
   std::string interlace = "false";
 
   // Derived mesh quantities.
-  double volume;         ///< box volume (in Mpc^3/h^3)
-  int nmesh;             ///< number of mesh grid cells
-                         // RFE: change to @c long long and take care of int()
+  double volume;    ///< box volume (in Mpc^3/h^3)
+  long long nmesh;  ///< number of mesh grid cells
 
   int assignment_order = 0;  ///< order of the assignment scheme
 

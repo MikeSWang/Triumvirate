@@ -26,7 +26,7 @@ cdef extern from "include/parameters.hpp":
         int ngrid[3]
 
         double volume
-        int nmesh
+        long long nmesh
 
         string alignment
         string padscale

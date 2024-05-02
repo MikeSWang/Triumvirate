@@ -132,7 +132,7 @@ class MeshField {
    * @param gid Grid index.
    * @returns Field value.
    */
-  const fftw_complex& operator[](int gid);
+  const fftw_complex& operator[](long long gid);
 
   // ---------------------------------------------------------------------
   // Mesh assignment

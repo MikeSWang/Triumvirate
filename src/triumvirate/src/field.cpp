@@ -178,7 +178,7 @@ void MeshField::reset_density_field() {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < this->params.nmesh; gid++) {
+  for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] = 0.;
     this->field[gid][1] = 0.;
   }
@@ -186,7 +186,7 @@ void MeshField::reset_density_field() {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
+    for (long long gid = 0; gid < this->params.nmesh; gid++) {
       this->field_s[gid][0] = 0.;
       this->field_s[gid][1] = 0.;
     }
@@ -198,7 +198,9 @@ void MeshField::reset_density_field() {
 // Operators & reserved methods
 // -----------------------------------------------------------------------
 
-const fftw_complex& MeshField::operator[](int gid) {return this->field[gid];}
+const fftw_complex& MeshField::operator[](long long gid) {
+  return this->field[gid];
+}
 
 
 // -----------------------------------------------------------------------
@@ -207,7 +209,8 @@ const fftw_complex& MeshField::operator[](int gid) {return this->field[gid];}
 
 long long MeshField::ret_grid_index(int i, int j, int k) {
   long long idx_grid =
-    (i * this->params.ngrid[1] + j) * this->params.ngrid[2] + k;
+    (i * static_cast<long long>(this->params.ngrid[1]) + j)
+    * this->params.ngrid[2] + k;
   return idx_grid;
 }
 
@@ -844,7 +847,7 @@ void MeshField::compute_unweighted_field_fluctuations_insitu(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < this->params.nmesh; gid++) {
+  for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] -= nbar;
     // this->field[gid][1] -= 0.; (unused)
   }
@@ -916,7 +919,7 @@ void MeshField::compute_ylm_wgtd_field(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < this->params.nmesh; gid++) {
+  for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] -= alpha * field_rand[gid][0];
     this->field[gid][1] -= alpha * field_rand[gid][1];
   }
@@ -925,7 +928,7 @@ void MeshField::compute_ylm_wgtd_field(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
+    for (long long gid = 0; gid < this->params.nmesh; gid++) {
       this->field_s[gid][0] -= alpha * field_rand.field_s[gid][0];
       this->field_s[gid][1] -= alpha * field_rand.field_s[gid][1];
     }
@@ -967,7 +970,7 @@ void MeshField::compute_ylm_wgtd_field(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < this->params.nmesh; gid++) {
+  for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] *= alpha;
     this->field[gid][1] *= alpha;
   }
@@ -1044,7 +1047,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < this->params.nmesh; gid++) {
+  for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] += std::pow(alpha, 2) * field_rand[gid][0];
     this->field[gid][1] += std::pow(alpha, 2) * field_rand[gid][1];
   }
@@ -1053,7 +1056,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
+    for (long long gid = 0; gid < this->params.nmesh; gid++) {
       this->field_s[gid][0] += std::pow(alpha, 2) * field_rand.field_s[gid][0];
       this->field_s[gid][1] += std::pow(alpha, 2) * field_rand.field_s[gid][1];
     }
@@ -1098,7 +1101,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < this->params.nmesh; gid++) {
+  for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] *= std::pow(alpha, 2);
     this->field[gid][1] *= std::pow(alpha, 2);
   }
@@ -1120,7 +1123,7 @@ void MeshField::fourier_transform() {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < this->params.nmesh; gid++) {
+  for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] *= this->vol_cell;
     this->field[gid][1] *= this->vol_cell;
   }
@@ -1138,7 +1141,7 @@ void MeshField::fourier_transform() {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-    for (int gid = 0; gid < this->params.nmesh; gid++) {
+    for (long long gid = 0; gid < this->params.nmesh; gid++) {
       this->field_s[gid][0] *= this->vol_cell;
       this->field_s[gid][1] *= this->vol_cell;
     }
@@ -1204,7 +1207,7 @@ void MeshField::inv_fourier_transform() {
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < this->params.nmesh; gid++) {
+  for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] /= this->vol;
     this->field[gid][1] /= this->vol;
   }
@@ -1364,7 +1367,7 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < this->params.nmesh; gid++) {
+  for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] /= double(nmodes);
     this->field[gid][1] /= double(nmodes);
   }
@@ -1479,7 +1482,7 @@ double MeshField::calc_grid_based_powlaw_norm(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:vol_int)
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < this->params.nmesh; gid++) {
+  for (long long gid = 0; gid < this->params.nmesh; gid++) {
     vol_int += std::pow(this->field[gid][0], order);
   }
 
@@ -2041,7 +2044,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < this->params.nmesh; gid++) {
+  for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->twopt_3d[gid][0] = 0.;
     this->twopt_3d[gid][1] = 0.;
   }  // likely redundant but safe
@@ -2252,7 +2255,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < this->params.nmesh; gid++) {
+  for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->twopt_3d[gid][0] = 0.;
     this->twopt_3d[gid][1] = 0.;
   }  // likely redundant but safe
@@ -2471,7 +2474,7 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < this->params.nmesh; gid++) {
+  for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->twopt_3d[gid][0] = 0.;
     this->twopt_3d[gid][1] = 0.;
   }  // likely redundant but safe

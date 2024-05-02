@@ -79,7 +79,7 @@ extern int count_ifft;  ///< number of IFFTs
  * @returns Size in gibibytes.
  */
 template <typename T>
-double size_in_gb(int num) {
+double size_in_gb(long long num) {
   const double BYTES_PER_GBYTES = 1073741824.;  // 1024³ bytes per gibibyte
   return double(num) * sizeof(T) / BYTES_PER_GBYTES;
 }

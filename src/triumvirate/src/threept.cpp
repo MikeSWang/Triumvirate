@@ -410,7 +410,7 @@ trv::BispecMeasurements compute_bispec(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-            for (int gid = 0; gid < params.nmesh; gid++) {
+            for (long long gid = 0; gid < params.nmesh; gid++) {
               std::complex<double> F_lm_a_gridpt(
                 F_lm_a[gid][0], F_lm_a[gid][1]
               );
@@ -466,7 +466,7 @@ trv::BispecMeasurements compute_bispec(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-            for (int gid = 0; gid < params.nmesh; gid++) {
+            for (long long gid = 0; gid < params.nmesh; gid++) {
               std::complex<double> F_lm_a_gridpt(
                 F_lm_a[gid][0], F_lm_a[gid][1]
               );
@@ -528,7 +528,7 @@ trv::BispecMeasurements compute_bispec(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-            for (int gid = 0; gid < params.nmesh; gid++) {
+            for (long long gid = 0; gid < params.nmesh; gid++) {
               std::complex<double> F_lm_a_gridpt(
                 F_lm_a[gid][0], F_lm_a[gid][1]
               );
@@ -585,7 +585,7 @@ trv::BispecMeasurements compute_bispec(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-              for (int gid = 0; gid < params.nmesh; gid++) {
+              for (long long gid = 0; gid < params.nmesh; gid++) {
                 std::complex<double> F_lm_a_gridpt(
                   F_lm_a[gid][0], F_lm_a[gid][1]
                 );
@@ -1087,7 +1087,7 @@ trv::ThreePCFMeasurements compute_3pcf(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:zeta_comp_real, zeta_comp_imag)
 #endif  // TRV_USE_OMP
-          for (int gid = 0; gid < params.nmesh; gid++) {
+          for (long long gid = 0; gid < params.nmesh; gid++) {
             std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
             std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
             std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
@@ -1331,7 +1331,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-          for (int gid = 0; gid < params.nmesh; gid++) {
+          for (long long gid = 0; gid < params.nmesh; gid++) {
             std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
             std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
             std::complex<double> G_00_gridpt(G_00[gid][0], G_00[gid][1]);
@@ -1383,7 +1383,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-          for (int gid = 0; gid < params.nmesh; gid++) {
+          for (long long gid = 0; gid < params.nmesh; gid++) {
             std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
             std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
             std::complex<double> G_00_gridpt(G_00[gid][0], G_00[gid][1]);
@@ -1441,7 +1441,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-          for (int gid = 0; gid < params.nmesh; gid++) {
+          for (long long gid = 0; gid < params.nmesh; gid++) {
             std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
             std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
             std::complex<double> G_00_gridpt(G_00[gid][0], G_00[gid][1]);
@@ -1494,7 +1494,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-            for (int gid = 0; gid < params.nmesh; gid++) {
+            for (long long gid = 0; gid < params.nmesh; gid++) {
               std::complex<double> F_lm_a_gridpt(
                 F_lm_a[gid][0], F_lm_a[gid][1]
               );
@@ -1952,7 +1952,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:zeta_comp_real, zeta_comp_imag)
 #endif  // TRV_USE_OMP
-        for (int gid = 0; gid < params.nmesh; gid++) {
+        for (long long gid = 0; gid < params.nmesh; gid++) {
           std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
           std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
           std::complex<double> G_00_gridpt(G_00[gid][0], G_00[gid][1]);
@@ -2305,7 +2305,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:zeta_comp_real, zeta_comp_imag)
 #endif  // TRV_USE_OMP
-          for (int gid = 0; gid < params.nmesh; gid++) {
+          for (long long gid = 0; gid < params.nmesh; gid++) {
             std::complex<double> F_lm_a_gridpt(F_lm_a[gid][0], F_lm_a[gid][1]);
             std::complex<double> F_lm_b_gridpt(F_lm_b[gid][0], F_lm_b[gid][1]);
             std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
@@ -2620,7 +2620,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-            for (int gid = 0; gid < params.nmesh; gid++) {
+            for (long long gid = 0; gid < params.nmesh; gid++) {
               std::complex<double> F_lm_a_gridpt(
                 F_lm_a[gid][0], F_lm_a[gid][1]
               );
@@ -2676,7 +2676,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-            for (int gid = 0; gid < params.nmesh; gid++) {
+            for (long long gid = 0; gid < params.nmesh; gid++) {
               std::complex<double> F_lm_a_gridpt(
                 F_lm_a[gid][0], F_lm_a[gid][1]
               );
@@ -2738,7 +2738,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-            for (int gid = 0; gid < params.nmesh; gid++) {
+            for (long long gid = 0; gid < params.nmesh; gid++) {
               std::complex<double> F_lm_a_gridpt(
                 F_lm_a[gid][0], F_lm_a[gid][1]
               );
@@ -2795,7 +2795,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
 #endif  // TRV_USE_OMP
-              for (int gid = 0; gid < params.nmesh; gid++) {
+              for (long long gid = 0; gid < params.nmesh; gid++) {
                 std::complex<double> F_lm_a_gridpt(
                   F_lm_a[gid][0], F_lm_a[gid][1]
                 );

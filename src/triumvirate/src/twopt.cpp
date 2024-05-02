@@ -152,7 +152,7 @@ double calc_powspec_normalisation_from_meshes(
 #ifdef TRV_USE_OMP
 #pragma omp parallel for reduction(+:norm)
 #endif  // TRV_USE_OMP
-  for (int gid = 0; gid < params.nmesh; gid++) {
+  for (long long gid = 0; gid < params.nmesh; gid++) {
     norm += mesh_data.field[gid][0] * mesh_rand.field[gid][0];
   }
 

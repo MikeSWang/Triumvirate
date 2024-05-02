@@ -317,6 +317,9 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   auto debug_par_int = [](std::string name, int value) {
     std::cout << name << ": " << value << std::endl;
   };
+  auto debug_par_longlong = [](std::string name, long long value) {
+    std::cout << name << ": " << value << std::endl;
+  };
   auto debug_par_double = [](std::string name, double value) {
     std::cout << name << ": " << value << std::endl;
   };
@@ -345,7 +348,8 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   debug_par_int("ngrid[0]", this->ngrid[0]);
   debug_par_int("ngrid[1]", this->ngrid[1]);
   debug_par_int("ngrid[2]", this->ngrid[2]);
-  debug_par_int("nmesh", this->nmesh);
+
+  debug_par_longlong("nmesh", this->nmesh);
 
   debug_par_int("ell1", this->ell1);
   debug_par_int("ell2", this->ell2);
@@ -634,8 +638,8 @@ int ParameterSet::validate() {
   // Validate and derive numerical parameters.
   this->volume =
     this->boxsize[0] * this->boxsize[1] * this->boxsize[2];  // derivation
-  this->nmesh =
-    this->ngrid[0] * this->ngrid[1] * this->ngrid[2];  // derivation
+  this->nmesh = static_cast<long long>(this->ngrid[0])
+    * this->ngrid[1] * this->ngrid[2];  // derivation
 
   if (this->volume <= 0.) {
     if (trvs::currTask == 0) {
