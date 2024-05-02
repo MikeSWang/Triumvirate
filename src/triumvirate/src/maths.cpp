@@ -240,7 +240,8 @@ store_reduced_spherical_harmonic_in_fourier_space(
         // The assigned flattened-grid array index is
         // (i * ngrid_y * ngrid_z + j * ngrid_z + k)
         // where ngrid is the grid number along each axis.
-        long long idx_grid = (i * ngrid[1] + j) * ngrid[2] + k;
+        long long idx_grid =
+          (i * static_cast<long long>(ngrid[1]) + j) * ngrid[2] + k;
 
         // This conforms to the (absurd) FFT array-ordering convention
         // that negative wavenumbers/frequencies come after zero and
@@ -281,7 +282,8 @@ store_reduced_spherical_harmonic_in_config_space(
         // The assigned flattened-grid array index is
         // (i * ngrid_y * ngrid_z + j * ngrid_z + k)
         // where ngrid is the grid number along each axis.
-        long long idx_grid = (i * ngrid[1] + j) * ngrid[2] + k;
+        long long idx_grid =
+          (i * static_cast<long long>(ngrid[1]) + j) * ngrid[2] + k;
 
         // This conforms to the (absurd) FFT array-ordering convention
         // that negative wavenumbers/frequencies come after zero and

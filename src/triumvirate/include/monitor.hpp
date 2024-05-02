@@ -85,6 +85,21 @@ double size_in_gb(long long num) {
 }
 
 /**
+ * @brief Return size in gibibytes.
+ *
+ * @tparam T A @c typename.
+ * @param num Number of type-double elements.
+ * @returns Size in gibibytes.
+ *
+ * @overload
+ */
+template <typename T>
+double size_in_gb(int num) {
+  const double BYTES_PER_GBYTES = 1073741824.;  // 1024³ bytes per gibibyte
+  return double(num) * sizeof(T) / BYTES_PER_GBYTES;
+}
+
+/**
  * @brief Update the maximum memory usage estimate.
  *
  */

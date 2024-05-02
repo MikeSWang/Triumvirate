@@ -36,7 +36,7 @@ Improvements
 
 - Add tracking of (I)FFTs.
 
-- Promote `trv::ParameterSet::nmesh` from `int` to `long long` and
+- Promote `trv::ParameterSet::nmesh` from type `int` to `long long` and
   refactor related methods and variables.
 
 Maintenance
