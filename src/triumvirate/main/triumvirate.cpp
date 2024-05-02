@@ -58,7 +58,7 @@ void _set_custom_bins(trv::Binning& _binning) {
   }
 
   // Implement 'custom' binning scheme for 'config' space.
-  double dbin_pad = 15.;
+  double dbin_pad = 10.;
   int nbin_pad = 5;
 
   _binning.bin_edges.push_back(0.);
@@ -66,8 +66,8 @@ void _set_custom_bins(trv::Binning& _binning) {
   _binning.bin_widths.push_back(1.);
 
   _binning.bin_edges.push_back(1.);
-  _binning.bin_centres.push_back(8.);
-  _binning.bin_widths.push_back(14.);
+  _binning.bin_centres.push_back(5.);
+  _binning.bin_widths.push_back(9.);
 
   for (int ibin = 1; ibin < nbin_pad; ibin++) {
     double edge_left = dbin_pad * ibin;
