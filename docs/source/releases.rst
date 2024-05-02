@@ -27,10 +27,17 @@ Improvements
 ------------
 
 - Refactor gamma function computations.
+
 - Refactor array operation checks.
+
 - Refactor FFTW plans.
+
 - Add logs to `trv::MeshField` and `trv::FieldStats` operations.
+
 - Add tracking of (I)FFTs.
+
+- Promote `trv::ParameterSet::nmesh` from `int` to `long long` and
+  refactor related methods and variables.
 
 Maintenance
 -----------
