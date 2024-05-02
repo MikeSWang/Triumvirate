@@ -49,6 +49,9 @@ double gbytesMaxMem = 0.;
 int count_fft = 0;
 int count_ifft = 0;
 
+bool wisdom_f_imported = false;
+bool wisdom_b_imported = false;
+
 auto clockStart = std::chrono::steady_clock::now();  ///< program starting time
 
 /// @cond DOXYGEN_DOC_MISC

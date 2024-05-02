@@ -72,6 +72,9 @@ ParameterSet::ParameterSet(const ParameterSet& other) {
   this->idx_bin = other.idx_bin;
 
   // Copy misc parameters.
+  this->use_fftw_wisdom = other.use_fftw_wisdom;
+  this->fftw_wisdom_file_f = other.fftw_wisdom_file_f;
+  this->fftw_wisdom_file_b = other.fftw_wisdom_file_b;
   this->save_binned_vectors = other.save_binned_vectors;
   this->verbose = other.verbose;
 }
@@ -108,7 +111,8 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   char norm_convention_[16] = "";
   char binning_[16] = "";
 
-  char save_binned_vectors_[16] = "";
+  char use_fftw_wisdom_[1024] = "";
+  char save_binned_vectors_[1024] = "";
 
   // ---------------------------------------------------------------------
   // Extraction
@@ -257,6 +261,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
 
     // -- Misc -------------------------------------------------------------
 
+    scan_par_str("use_fftw_wisdom", "%s %s %s", use_fftw_wisdom_);
     scan_par_str("save_binned_vectors", "%s %s %s", save_binned_vectors_);
 
     if (line_str.find("verbose") != std::string::npos) {
@@ -291,6 +296,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   this->norm_convention = norm_convention_;
   this->binning = binning_;
 
+  this->use_fftw_wisdom = use_fftw_wisdom_;
   this->save_binned_vectors = save_binned_vectors_;
 
   // Attribute derived parameters.
@@ -343,6 +349,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   debug_par_str("norm_convention", this->norm_convention);
   debug_par_str("binning", this->binning);
 
+  debug_par_str("use_fftw_wisdom", this->use_fftw_wisdom);
   debug_par_str("save_binned_vectors", this->save_binned_vectors);
 
   debug_par_int("ngrid[0]", this->ngrid[0]);
@@ -616,6 +623,32 @@ int ParameterSet::validate() {
     }
   }
 
+  if (this->use_fftw_wisdom == "false" || this->use_fftw_wisdom == "") {
+    this->use_fftw_wisdom = "";  // transmutation
+  } else {
+    this->use_fftw_wisdom += "/";  // transmutation
+  }
+
+  if (this->use_fftw_wisdom != "") {
+    char fftw_wisdom_file_f_[1024];
+    char fftw_wisdom_file_b_[1024];
+    std::snprintf(
+      fftw_wisdom_file_f_, sizeof(fftw_wisdom_file_f_),
+      "%sfftw_wisdom_cif_%dx%dx%d.dat",
+      this->use_fftw_wisdom.c_str(),
+      this->ngrid[0], this->ngrid[1], this->ngrid[2]
+    );
+    std::snprintf(
+      fftw_wisdom_file_b_, sizeof(fftw_wisdom_file_b_),
+      "%sfftw_wisdom_cib_%dx%dx%d.dat",
+      this->use_fftw_wisdom.c_str(),
+      this->ngrid[0], this->ngrid[1], this->ngrid[2]
+    );
+
+    this->fftw_wisdom_file_f = fftw_wisdom_file_f_;
+    this->fftw_wisdom_file_b = fftw_wisdom_file_b_;
+  }
+
   char default_bvec_sfilepath[1024];
   std::snprintf(
     default_bvec_sfilepath, sizeof(default_bvec_sfilepath),
@@ -629,6 +662,7 @@ int ParameterSet::validate() {
     this->save_binned_vectors = default_bvec_sfilepath;  // transmutation
   } else
   if (this->save_binned_vectors != "") {
+    // Check whether path is absolute.
     if (this->save_binned_vectors.rfind("/", 0) != 0) {
       this->save_binned_vectors = this->measurement_dir
         + this->save_binned_vectors;
@@ -912,6 +946,9 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
   print_par_int("num_bins = %d\n", this->num_bins);
   print_par_int("idx_bin = %d\n", this->idx_bin);
 
+  print_par_str("use_fftw_wisdom = %s\n", this->use_fftw_wisdom.c_str());
+  print_par_str("fftw_wisdom_file_f = %s\n", this->fftw_wisdom_file_f.c_str());
+  print_par_str("fftw_wisdom_file_b = %s\n", this->fftw_wisdom_file_b.c_str());
   print_par_str("save_binned_vectors = %s\n", this->save_binned_vectors);
   print_par_int("verbose = %d\n", this->verbose);
 

@@ -152,6 +152,13 @@ class ParameterSet {
   // Misc
   // ---------------------------------------------------------------------
 
+  /// use FFTW wisdom: {"false" (default), <abspath-to-dir>}
+  std::string use_fftw_wisdom = "false";
+
+  /// derived FFTW wisdom file paths
+  std::string fftw_wisdom_file_f;  ///< forward-transform wisdom file path
+  std::string fftw_wisdom_file_b;  ///< backward-transform wisdom file path
+
   /// save flag/path for detailed binning of vectors: {"true",
   ///                                                  "false" (default),
   ///                                                  <relpath-to-file>}

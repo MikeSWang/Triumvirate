@@ -20,6 +20,8 @@
 
 ### Improvements
 
+- Add support for FFTW wisdom for C++ routines.
+
 - Refactor gamma function computations.
 
 - Refactor array operation checks.

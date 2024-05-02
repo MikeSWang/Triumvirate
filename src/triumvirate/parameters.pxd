@@ -63,6 +63,9 @@ cdef extern from "include/parameters.hpp":
 
         # -- Misc --------------------------------------------------------
 
+        # string use_fftw_wisdom
+        # string fftw_wisdom_file_f
+        # string fftw_wisdom_file_b
         # string save_binned_vectors
         int verbose
 
