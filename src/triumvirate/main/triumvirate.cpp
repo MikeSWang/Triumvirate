@@ -251,6 +251,10 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  if (params.use_fftw_wisdom != "") {
+    trv::sys::make_write_dir(params.use_fftw_wisdom);
+  }
+
   // =====================================================================
   // B Measurements
   // =====================================================================
