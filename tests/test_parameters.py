@@ -124,6 +124,8 @@ def default_parameters():
         'form': 'diag',
         'norm_convention': 'particle',
         'binning': 'lin',
+        'fftw_scheme': 'measure',
+        'use_fftw_wisdom': False,
         'save_binned_vectors': False,
         'verbose': 20,
     }
@@ -371,10 +373,10 @@ def test_ParameterSet___setattr__(param_name, param_value, valid_paramset):
 def test_ParameterSet_names(valid_paramset):
     # There are three derived parameters after validation:
     # 'assignment_order', 'npoint', 'space'.
-    assert (
-        set(valid_paramset.names()) - set(_TMPL_PARAM_DICT.keys())
-        == {'assignment_order', 'npoint', 'space'}
-    ), "Parameter set names do not match internal records."
+    assert set(valid_paramset.names()) - set(_TMPL_PARAM_DICT.keys()) == {
+        'assignment_order', 'npoint', 'space',
+        'fftw_planner_flag', 'fftw_wisdom_file_f', 'fftw_wisdom_file_b'
+    }, "Parameter set names do not match internal records."
 
 
 def test_ParameterSet_items(valid_paramset):

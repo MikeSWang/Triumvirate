@@ -72,6 +72,8 @@ ParameterSet::ParameterSet(const ParameterSet& other) {
   this->idx_bin = other.idx_bin;
 
   // Copy misc parameters.
+  this->fftw_scheme = other.fftw_scheme;
+  this->fftw_planner_flag = other.fftw_planner_flag;
   this->use_fftw_wisdom = other.use_fftw_wisdom;
   this->fftw_wisdom_file_f = other.fftw_wisdom_file_f;
   this->fftw_wisdom_file_b = other.fftw_wisdom_file_b;
@@ -111,6 +113,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   char norm_convention_[16] = "";
   char binning_[16] = "";
 
+  char fftw_scheme_[16] = "";
   char use_fftw_wisdom_[1024] = "";
   char save_binned_vectors_[1024] = "";
 
@@ -261,6 +264,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
 
     // -- Misc -------------------------------------------------------------
 
+    scan_par_str("fftw_scheme", "%s %s %s", fftw_scheme_);
     scan_par_str("use_fftw_wisdom", "%s %s %s", use_fftw_wisdom_);
     scan_par_str("save_binned_vectors", "%s %s %s", save_binned_vectors_);
 
@@ -296,6 +300,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   this->norm_convention = norm_convention_;
   this->binning = binning_;
 
+  this->fftw_scheme = fftw_scheme_;
   this->use_fftw_wisdom = use_fftw_wisdom_;
   this->save_binned_vectors = save_binned_vectors_;
 
@@ -349,6 +354,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   debug_par_str("norm_convention", this->norm_convention);
   debug_par_str("binning", this->binning);
 
+  debug_par_str("fftw_scheme", this->fftw_scheme);
   debug_par_str("use_fftw_wisdom", this->use_fftw_wisdom);
   debug_par_str("save_binned_vectors", this->save_binned_vectors);
 
@@ -623,6 +629,27 @@ int ParameterSet::validate() {
     }
   }
 
+  if (this->fftw_scheme == "estimate") {
+    this->fftw_planner_flag = FFTW_ESTIMATE;  // derivation
+  } else
+  if (this->fftw_scheme == "measure" || this->fftw_scheme == "") {
+    this->fftw_planner_flag = FFTW_MEASURE;  // derivation
+  } else
+  if (this->fftw_scheme == "patient") {
+    this->fftw_planner_flag = FFTW_PATIENT;  // derivation
+  } else {
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "FFTW planner scheme is not supported: `fftw_scheme` = '%s'.",
+        this->fftw_scheme.c_str()
+      );
+      throw trvs::InvalidParameterError(
+        "FFTW planner scheme is not supported: `fftw_scheme` = '%s'.\n",
+        this->fftw_scheme.c_str()
+      );
+    }
+  }
+
   if (this->use_fftw_wisdom == "false" || this->use_fftw_wisdom == "") {
     this->use_fftw_wisdom = "";  // transmutation
   } else {
@@ -630,20 +657,53 @@ int ParameterSet::validate() {
   }
 
   if (this->use_fftw_wisdom != "") {
+    if (this->fftw_scheme != "measure" && this->fftw_scheme != "patient") {
+      if (trvs::currTask == 0) {
+        trvs::logger.error(
+          "FFTW wisdom is enabled but the planner scheme "
+          "is not 'measure' or 'patient': "
+          "`fftw_scheme` = '%s'.",
+          this->fftw_scheme.c_str()
+        );
+        throw trvs::InvalidParameterError(
+          "FFTW wisdom is enabled but the planner scheme "
+          "is not 'measure' or 'patient': "
+          "`fftw_scheme` = '%s'.\n",
+          this->fftw_scheme.c_str()
+        );
+      }
+    }
+
     char fftw_wisdom_file_f_[1024];
     char fftw_wisdom_file_b_[1024];
+
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
     std::snprintf(
       fftw_wisdom_file_f_, sizeof(fftw_wisdom_file_f_),
-      "%sfftw_wisdom_cif_%dx%dx%d.dat",
+      "%sfftw_omp_cif_%dx%dx%d.wisdom",
       this->use_fftw_wisdom.c_str(),
       this->ngrid[0], this->ngrid[1], this->ngrid[2]
     );
     std::snprintf(
       fftw_wisdom_file_b_, sizeof(fftw_wisdom_file_b_),
-      "%sfftw_wisdom_cib_%dx%dx%d.dat",
+      "%sfftw_omp_cib_%dx%dx%d.wisdom",
       this->use_fftw_wisdom.c_str(),
       this->ngrid[0], this->ngrid[1], this->ngrid[2]
     );
+#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+    std::snprintf(
+      fftw_wisdom_file_f_, sizeof(fftw_wisdom_file_f_),
+      "%sfftw_cif_%dx%dx%d.wisdom",
+      this->use_fftw_wisdom.c_str(),
+      this->ngrid[0], this->ngrid[1], this->ngrid[2]
+    );
+    std::snprintf(
+      fftw_wisdom_file_b_, sizeof(fftw_wisdom_file_b_),
+      "%sfftw_cib_%dx%dx%d.wisdom",
+      this->use_fftw_wisdom.c_str(),
+      this->ngrid[0], this->ngrid[1], this->ngrid[2]
+    );
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
     this->fftw_wisdom_file_f = fftw_wisdom_file_f_;
     this->fftw_wisdom_file_b = fftw_wisdom_file_b_;
@@ -946,11 +1006,13 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
   print_par_int("num_bins = %d\n", this->num_bins);
   print_par_int("idx_bin = %d\n", this->idx_bin);
 
+  print_par_str("fftw_scheme = %s\n", this->fftw_scheme);
   print_par_str("use_fftw_wisdom = %s\n", this->use_fftw_wisdom.c_str());
   print_par_str("fftw_wisdom_file_f = %s\n", this->fftw_wisdom_file_f.c_str());
   print_par_str("fftw_wisdom_file_b = %s\n", this->fftw_wisdom_file_b.c_str());
   print_par_str("save_binned_vectors = %s\n", this->save_binned_vectors);
   print_par_int("verbose = %d\n", this->verbose);
+  print_par_int("fftw_planner_flag = %d\n", this->fftw_planner_flag);
 
   std::fclose(ofileptr);
 

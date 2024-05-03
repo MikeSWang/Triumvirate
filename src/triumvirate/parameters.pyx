@@ -52,6 +52,8 @@ _TMPL_PARAM_DICT = {
     'range': [None, None],
     'num_bins': None,
     'idx_bin': None,
+    'fftw_scheme': 'measure',
+    'use_fftw_wisdom': False,
     'save_binned_vectors': False,
     'verbose': 20,
 }
@@ -477,6 +479,18 @@ cdef class ParameterSet:
 
         # -- Misc --------------------------------------------------------
 
+        if self._params['fftw_scheme'] is None:
+            self.thisptr.fftw_scheme = 'measure'.encode('utf-8')
+        else:
+            self.thisptr.fftw_scheme = \
+                self._params['fftw_scheme'].lower().encode('utf-8')
+
+        if not self._params['use_fftw_wisdom']:
+            self.thisptr.use_fftw_wisdom = 'false'.encode('utf-8')
+        else:
+            self.thisptr.use_fftw_wisdom = \
+                self._params['use_fftw_wisdom'].encode('utf-8')
+
         if self._params['verbose'] is None:
             self.thisptr.verbose = 20
         else:
@@ -505,6 +519,17 @@ cdef class ParameterSet:
         self._params['assignment_order'] = self.thisptr.assignment_order
         self._params['npoint'] = self.thisptr.npoint.decode('utf-8')
         self._params['space'] = self.thisptr.space.decode('utf-8')
+        self._params['fftw_planner_flag'] = self.thisptr.fftw_planner_flag
+        self._params['fftw_wisdom_file_f'] = \
+            self.thisptr.fftw_wisdom_file_f.decode('utf-8')
+        self._params['fftw_wisdom_file_b'] = \
+            self.thisptr.fftw_wisdom_file_b.decode('utf-8')
+
+        _use_fftw_wisdom = self.thisptr.use_fftw_wisdom.decode('utf-8')
+        if _use_fftw_wisdom.lower() in ['false', '']:
+            self._params['use_fftw_wisdom'] = False
+        else:
+            self._params['use_fftw_wisdom'] = _use_fftw_wisdom
 
         _interlace = self.thisptr.interlace.decode('utf-8')
         if _interlace.lower() == 'true':

@@ -71,8 +71,10 @@ extern double gbytesMaxMem;  ///< maximum memory usage in gibibytes
 extern int count_fft;   ///< number of FFTs
 extern int count_ifft;  ///< number of IFFTs
 
-extern bool wisdom_f_imported;  ///< wisdom import flag for forward transform
-extern bool wisdom_b_imported;  ///< wisdom import flag for backward transform
+/// wisdom import status for forward transform
+extern bool fftw_wisdom_f_imported;
+/// wisdom import status for backward transform
+extern bool fftw_wisdom_b_imported;
 
 /**
  * @brief Return size in gibibytes.

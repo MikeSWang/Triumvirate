@@ -32,6 +32,8 @@
 
 #include <sys/stat.h>
 
+#include <fftw3.h>
+
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -151,6 +153,12 @@ class ParameterSet {
   // ---------------------------------------------------------------------
   // Misc
   // ---------------------------------------------------------------------
+
+  /// FFTW scheme: {"estimate", "measure" (default), "patient"}
+  std::string fftw_scheme = "measure";
+
+  /// derived FFTW planner flag
+  unsigned fftw_planner_flag = FFTW_MEASURE;
 
   /// use FFTW wisdom: {"false" (default), <abspath-to-dir>}
   std::string use_fftw_wisdom = "false";

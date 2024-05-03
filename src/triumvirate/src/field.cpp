@@ -69,63 +69,85 @@ MeshField::MeshField(
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
     fftw_plan_with_nthreads(omp_get_max_threads());
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
-    bool import_wisdom_f = false;
-    bool import_wisdom_b = false;
-    bool export_wisdom_f = false;
-    bool export_wisdom_b = false;
+    bool import_fftw_wisdom_f = false;
+    bool import_fftw_wisdom_b = false;
+    bool export_fftw_wisdom_f = false;
+    bool export_fftw_wisdom_b = false;
     std::FILE* fftw_wisdom_file_f = nullptr;
     std::FILE* fftw_wisdom_file_b = nullptr;
 
     if (this->params.use_fftw_wisdom != "") {
-      if (!trv::sys::wisdom_f_imported) {
+      if (!trv::sys::fftw_wisdom_f_imported) {
         fftw_wisdom_file_f =
           std::fopen(this->params.fftw_wisdom_file_f.c_str(), "r");
         if (fftw_wisdom_file_f != nullptr) {
-          import_wisdom_f = true;
-          export_wisdom_f = false;
+          import_fftw_wisdom_f = true;
+          export_fftw_wisdom_f = false;
+          if (this->params.fftw_scheme == "patient") {
+            trvs::logger.warn(
+              "FFTW planner flag is set to `FFTW_PATIENT`. "
+              "Ensure that the FFTW wisdom file '%s' imported has been "
+              "generated with an equivalent or higher planner flag.",
+              this->params.fftw_scheme.c_str(),
+              this->params.fftw_wisdom_file_f.c_str()
+            );
+          }
         } else {
-          import_wisdom_f = false;
-          export_wisdom_f = true;
+          import_fftw_wisdom_f = false;
+          export_fftw_wisdom_f = true;
           trvs::logger.info(
-            "No FFTW wisdom file '%s' for forward transforms could be imported.",
+            "No FFTW wisdom file '%s' "
+            "for forward transforms could be imported.",
             this->params.fftw_wisdom_file_f.c_str()
           );
         }
       }
 
-      if (!trv::sys::wisdom_b_imported) {
+      if (!trv::sys::fftw_wisdom_b_imported) {
         fftw_wisdom_file_b =
           fopen(this->params.fftw_wisdom_file_b.c_str(), "r");
         if (fftw_wisdom_file_b != nullptr) {
-          import_wisdom_b = true;
-          export_wisdom_b = false;
+          import_fftw_wisdom_b = true;
+          export_fftw_wisdom_b = false;
+          if (this->params.fftw_scheme == "patient") {
+            trvs::logger.warn(
+              "FFTW planner flag is set to `FFTW_PATIENT`. "
+              "Ensure that the FFTW wisdom file '%s' imported has been "
+              "generated with an equivalent or higher planner flag.",
+              this->params.fftw_scheme.c_str(),
+              this->params.fftw_wisdom_file_b.c_str()
+            );
+          }
         } else {
-          import_wisdom_b = false;
-          export_wisdom_b = true;
+          import_fftw_wisdom_b = false;
+          export_fftw_wisdom_b = true;
           trvs::logger.info(
-            "No FFTW wisdom file '%s' for backward transforms could be imported.",
+            "No FFTW wisdom file '%s' "
+            "for backward transforms could be imported.",
             this->params.fftw_wisdom_file_b.c_str()
           );
         }
       }
     }
 
-    if (import_wisdom_f) {
+    if (import_fftw_wisdom_f) {
       fftw_import_wisdom_from_filename(
         this->params.fftw_wisdom_file_f.c_str()
       );
-      trv::sys::wisdom_f_imported = true;
+      trv::sys::fftw_wisdom_f_imported = true;
       trvs::logger.info(
         "FFTW wisdom file '%s' for forward transforms has been imported.",
         this->params.fftw_wisdom_file_f.c_str()
       );
     }
+
     this->transform = fftw_plan_dft_3d(
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
       this->field, this->field,
-      FFTW_FORWARD, FFTW_MEASURE
+      FFTW_FORWARD, this->params.fftw_planner_flag
     );
-    if (export_wisdom_f) {
+
+    if (export_fftw_wisdom_f) {
       fftw_export_wisdom_to_filename(
         this->params.fftw_wisdom_file_f.c_str()
       );
@@ -133,24 +155,27 @@ MeshField::MeshField(
         "FFTW wisdom file '%s' for forward transforms has been exported.",
         this->params.fftw_wisdom_file_f.c_str()
       );
+      trv::sys::fftw_wisdom_f_imported = true;
     }
 
-    if (import_wisdom_b) {
+    if (import_fftw_wisdom_b) {
       fftw_import_wisdom_from_filename(
         this->params.fftw_wisdom_file_b.c_str()
       );
-      trv::sys::wisdom_b_imported = true;
+      trv::sys::fftw_wisdom_b_imported = true;
       trvs::logger.info(
         "FFTW wisdom file '%s' for backward transforms has been imported.",
         this->params.fftw_wisdom_file_b.c_str()
       );
     }
+
     this->inv_transform = fftw_plan_dft_3d(
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
       this->field, this->field,
-      FFTW_BACKWARD, FFTW_MEASURE
+      FFTW_BACKWARD, this->params.fftw_planner_flag
     );
-    if (export_wisdom_b) {
+
+    if (export_fftw_wisdom_b) {
       fftw_export_wisdom_to_filename(
         this->params.fftw_wisdom_file_b.c_str()
       );
@@ -158,13 +183,14 @@ MeshField::MeshField(
         "FFTW wisdom file '%s' for backward transforms has been exported.",
         this->params.fftw_wisdom_file_b.c_str()
       );
+      trv::sys::fftw_wisdom_b_imported = true;
     }
 
     if (this->params.interlace == "true") {
       this->transform_s = fftw_plan_dft_3d(
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
         this->field_s, this->field_s,
-        FFTW_FORWARD, FFTW_MEASURE
+        FFTW_FORWARD, this->params.fftw_planner_flag
       );
     }
     this->plan_ini = true;
@@ -1617,7 +1643,7 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
     this->inv_transform = fftw_plan_dft_3d(
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
       this->twopt_3d, this->twopt_3d,
-      FFTW_BACKWARD, FFTW_MEASURE
+      FFTW_BACKWARD, this->params.fftw_planner_flag
     );
 
     this->plan_ini = true;
