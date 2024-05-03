@@ -114,7 +114,6 @@ MeshField::MeshField(
       fftw_import_wisdom_from_filename(
         this->params.fftw_wisdom_file_f.c_str()
       );
-      std::fclose(fftw_wisdom_file_f);
       trv::sys::wisdom_f_imported = true;
       trvs::logger.info(
         "FFTW wisdom file '%s' for forward transforms has been imported.",
@@ -130,7 +129,6 @@ MeshField::MeshField(
       fftw_export_wisdom_to_filename(
         this->params.fftw_wisdom_file_f.c_str()
       );
-      std::fclose(fftw_wisdom_file_f);
       trvs::logger.info(
         "FFTW wisdom file '%s' for forward transforms has been exported.",
         this->params.fftw_wisdom_file_f.c_str()
@@ -141,7 +139,6 @@ MeshField::MeshField(
       fftw_import_wisdom_from_filename(
         this->params.fftw_wisdom_file_b.c_str()
       );
-      std::fclose(fftw_wisdom_file_b);
       trv::sys::wisdom_b_imported = true;
       trvs::logger.info(
         "FFTW wisdom file '%s' for backward transforms has been imported.",
@@ -157,7 +154,6 @@ MeshField::MeshField(
       fftw_export_wisdom_to_filename(
         this->params.fftw_wisdom_file_b.c_str()
       );
-      std::fclose(fftw_wisdom_file_b);
       trvs::logger.info(
         "FFTW wisdom file '%s' for backward transforms has been exported.",
         this->params.fftw_wisdom_file_b.c_str()
@@ -172,6 +168,9 @@ MeshField::MeshField(
       );
     }
     this->plan_ini = true;
+
+    if (fftw_wisdom_file_f != nullptr) {std::fclose(fftw_wisdom_file_f);}
+    if (fftw_wisdom_file_b != nullptr) {std::fclose(fftw_wisdom_file_b);}
   }
 
   // Calculate grid sizes in configuration space.
