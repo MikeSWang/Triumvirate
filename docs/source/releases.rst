@@ -26,7 +26,7 @@ Features
 Improvements
 ------------
 
-- Add support for FFTW wisdom for C++ routines.
+- Add support for FFTW planner flags and wisdom.
 
 - Refactor gamma function computations.
 
