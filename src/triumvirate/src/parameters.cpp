@@ -444,12 +444,12 @@ int ParameterSet::validate() {
         "`catalogue_type` = '%s'.",
         this->catalogue_type.c_str()
       );
-      throw trvs::InvalidParameterError(
-        "Catalogue type must be 'survey', 'random', 'sim' or 'none': "
-        "`catalogue_type` = '%s'.\n",
-        this->catalogue_type.c_str()
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Catalogue type must be 'survey', 'random', 'sim' or 'none': "
+      "`catalogue_type` = '%s'.\n",
+      this->catalogue_type.c_str()
+    );
 #endif  // !TRV_EXTCALL
   }
 
@@ -459,11 +459,11 @@ int ParameterSet::validate() {
         "Box alignment must be 'centre' or 'pad': `alignment` = '%s'.",
         this->alignment.c_str()
       );
-      throw trvs::InvalidParameterError(
-        "Box alignment must be 'centre' or 'pad': `alignment` = '%s'.\n",
-        this->alignment.c_str()
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Box alignment must be 'centre' or 'pad': `alignment` = '%s'.\n",
+      this->alignment.c_str()
+    );
   }
   if (!(this->padscale == "box" || this->padscale == "grid")) {
     if (trvs::currTask == 0) {
@@ -471,11 +471,11 @@ int ParameterSet::validate() {
         "Pad scale must be 'box' or 'grid': `padscale` = '%s'.",
         this->padscale.c_str()
       );
-      throw trvs::InvalidParameterError(
-        "Pad scale must be 'box' or 'grid': `padscale` = '%s'.\n",
-        this->padscale.c_str()
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Pad scale must be 'box' or 'grid': `padscale` = '%s'.\n",
+      this->padscale.c_str()
+    );
   }
 
   if (this->assignment == "ngp") {
@@ -496,12 +496,12 @@ int ParameterSet::validate() {
         "'ngp', 'cic', 'tsc' or 'pcs': `assignment` = '%s'.",
         this->assignment.c_str()
       );
-      throw trvs::InvalidParameterError(
-        "Mesh assignment scheme must be "
-        "'ngp', 'cic', 'tsc' or 'pcs': `assignment` = '%s'.\n",
-        this->assignment.c_str()
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Mesh assignment scheme must be "
+      "'ngp', 'cic', 'tsc' or 'pcs': `assignment` = '%s'.\n",
+      this->assignment.c_str()
+    );
   }
   if (this->interlace == "true" || this->interlace == "on") {
     this->interlace = "true";  // transmutation
@@ -515,12 +515,12 @@ int ParameterSet::validate() {
         "`interlace` = '%s'.",
         this->interlace.c_str()
       );
-      throw trvs::InvalidParameterError(
-        "Interlacing must be 'true'/'on' or 'false'/'off': "
-        "`interlace` = '%s'.\n",
-        this->interlace.c_str()
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Interlacing must be 'true'/'on' or 'false'/'off': "
+      "`interlace` = '%s'.\n",
+      this->interlace.c_str()
+    );
   }
 
   if (this->statistic_type == "powspec") {
@@ -553,11 +553,11 @@ int ParameterSet::validate() {
         "Statistic type is not recognised: `statistic_type` = '%s'.",
         this->statistic_type.c_str()
       );
-      throw trvs::InvalidParameterError(
-        "Statistic type is not recognised: `statistic_type` = '%s'.\n",
-        this->statistic_type.c_str()
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Statistic type is not recognised: `statistic_type` = '%s'.\n",
+      this->statistic_type.c_str()
+    );
 #endif  // !TRV_EXTCALL
   }
   if (!(
@@ -571,11 +571,11 @@ int ParameterSet::validate() {
         "Three-point statistic form is not recognised: `form` = '%s'.",
         this->form.c_str()
       );
-      throw trvs::InvalidParameterError(
-        "Three-point statistic form is not recognised: `form` = '%s'.\n",
-        this->form.c_str()
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Three-point statistic form is not recognised: `form` = '%s'.\n",
+      this->form.c_str()
+    );
   }
   if (!(
     this->norm_convention == "none"
@@ -589,12 +589,12 @@ int ParameterSet::validate() {
         "'mesh' or 'mesh-mixed': `norm_convention` = '%s'.",
         this->norm_convention.c_str()
       );
-      throw trvs::InvalidParameterError(
-        "Normalisation convention must be 'mesh', 'particle', "
-        "'mesh' or 'mesh-mixed': `norm_convention` = '%s'.\n",
-        this->norm_convention.c_str()
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Normalisation convention must be 'mesh', 'particle', "
+      "'mesh' or 'mesh-mixed': `norm_convention` = '%s'.\n",
+      this->norm_convention.c_str()
+    );
   }
   if (this->norm_convention == "mesh-mixed" && this->npoint != "2pt") {
     if (trvs::currTask == 0) {
@@ -603,12 +603,12 @@ int ParameterSet::validate() {
         "two-point statistics: `npoint` = '%s'.",
         this->npoint.c_str()
       );
-      throw trvs::InvalidParameterError(
-        "Normalisation convention 'mesh-mixed' only applies to "
-        "two-point statistics: `npoint` = '%s'.\n",
-        this->npoint.c_str()
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Normalisation convention 'mesh-mixed' only applies to "
+      "two-point statistics: `npoint` = '%s'.\n",
+      this->npoint.c_str()
+    );
   }
   if (!(
     this->binning == "lin"
@@ -622,11 +622,11 @@ int ParameterSet::validate() {
         "Binning scheme is unrecognised: `binning` = '%s'.",
         this->binning.c_str()
       );
-      throw trvs::InvalidParameterError(
-        "Binning scheme is unrecognised: `binning` = '%s'.\n",
-        this->binning.c_str()
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Binning scheme is unrecognised: `binning` = '%s'.\n",
+      this->binning.c_str()
+    );
   }
 
   if (this->fftw_scheme == "estimate") {
@@ -643,11 +643,11 @@ int ParameterSet::validate() {
         "FFTW planner scheme is not supported: `fftw_scheme` = '%s'.",
         this->fftw_scheme.c_str()
       );
-      throw trvs::InvalidParameterError(
-        "FFTW planner scheme is not supported: `fftw_scheme` = '%s'.\n",
-        this->fftw_scheme.c_str()
-      );
     }
+    throw trvs::InvalidParameterError(
+      "FFTW planner scheme is not supported: `fftw_scheme` = '%s'.\n",
+      this->fftw_scheme.c_str()
+    );
   }
 
   if (this->use_fftw_wisdom == "false" || this->use_fftw_wisdom == "") {
@@ -665,13 +665,13 @@ int ParameterSet::validate() {
           "`fftw_scheme` = '%s'.",
           this->fftw_scheme.c_str()
         );
-        throw trvs::InvalidParameterError(
-          "FFTW wisdom is enabled but the planner scheme "
-          "is not 'measure' or 'patient': "
-          "`fftw_scheme` = '%s'.\n",
-          this->fftw_scheme.c_str()
-        );
       }
+      throw trvs::InvalidParameterError(
+        "FFTW wisdom is enabled but the planner scheme "
+        "is not 'measure' or 'patient': "
+        "`fftw_scheme` = '%s'.\n",
+        this->fftw_scheme.c_str()
+      );
     }
 
     char fftw_wisdom_file_f_[1024];
@@ -743,13 +743,13 @@ int ParameterSet::validate() {
         "or `boxsize` is unset.",
         this->nmesh
       );
-      throw trvs::InvalidParameterError(
-        "Derived total box volume is non-positive: `volume` = '%d'. "
-        "Possible numerical overflow due to large `boxsize`, "
-        "or `boxsize` is unset.\n",
-        this->nmesh
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Derived total box volume is non-positive: `volume` = '%d'. "
+      "Possible numerical overflow due to large `boxsize`, "
+      "or `boxsize` is unset.\n",
+      this->nmesh
+    );
   }
   if (this->nmesh <= 0) {
     if (trvs::currTask == 0) {
@@ -759,22 +759,24 @@ int ParameterSet::validate() {
         "or `ngrid` is unset.",
         this->nmesh
       );
-      throw trvs::InvalidParameterError(
-        "Derived total mesh grid number is non-positive: `nmesh` = '%d'. "
-        "Possible numerical overflow due to large `ngrid`, "
-        "or `ngrid` is unset.\n",
-        this->nmesh
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Derived total mesh grid number is non-positive: `nmesh` = '%d'. "
+      "Possible numerical overflow due to large `ngrid`, "
+      "or `ngrid` is unset.\n",
+      this->nmesh
+    );
   }
 
   if (this->alignment == "pad") {
     if (this->padfactor < 0.) {
-      trvs::logger.error(
-        "Padding is enabled but the padding factor is negative: "
-        "`padfactor` = '%lg'.",
-        this->padfactor
-      );
+      if (trvs::currTask == 0) {
+        trvs::logger.error(
+          "Padding is enabled but the padding factor is negative: "
+          "`padfactor` = '%lg'.",
+          this->padfactor
+        );
+      }
       throw trvs::InvalidParameterError(
         "Padding is enabled but the padding factor is negative: "
         "`padfactor` = '%lg'.\n",
@@ -782,11 +784,13 @@ int ParameterSet::validate() {
       );
     }
     if (this->padscale == "box" && this->padfactor >= 1.) {
-      trvs::logger.error(
-        "Padding is enabled but the %s padding factor is too large "
-        "for the box size: `padfactor` = '%lg'.",
-        this->padscale.c_str(), this->padfactor
-      );
+      if (trvs::currTask == 0) {
+        trvs::logger.error(
+          "Padding is enabled but the %s padding factor is too large "
+          "for the box size: `padfactor` = '%lg'.",
+          this->padscale.c_str(), this->padfactor
+        );
+      }
       throw trvs::InvalidParameterError(
         "Padding is enabled but the %s padding factor is too large "
         "for the box size: `padfactor` = '%lg'.\n",
@@ -798,11 +802,13 @@ int ParameterSet::validate() {
         || this->padfactor >= this->ngrid[1]
         || this->padfactor >= this->ngrid[2]
     )) {
-      trvs::logger.error(
-        "Padding is enabled but the %s padding factor is too large "
-        "for the mesh grid numbers: `padfactor` = '%lg'.",
-        this->padscale.c_str(), this->padfactor
-      );
+      if (trvs::currTask == 0) {
+        trvs::logger.error(
+          "Padding is enabled but the %s padding factor is too large "
+          "for the mesh grid numbers: `padfactor` = '%lg'.",
+          this->padscale.c_str(), this->padfactor
+        );
+      }
       throw trvs::InvalidParameterError(
         "Padding is enabled but the %s padding factor is too large "
         "for the mesh grid numbers: `padfactor` = '%lg'.\n",
@@ -812,15 +818,19 @@ int ParameterSet::validate() {
   }
 
   if (this->bin_min < 0.) {
-    trvs::logger.error("Lower bin edge must be non-negative.");
+    if (trvs::currTask == 0) {
+      trvs::logger.error("Lower bin edge must be non-negative.");
+    }
     throw trvs::InvalidParameterError(
       "Lower bin edge must be non-negative.\n"
     );
   }
   if (this->bin_min >= this->bin_max) {
-    trvs::logger.error(
-      "Lower bin edge must be less than the upper bin edge."
-    );
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Lower bin edge must be less than the upper bin edge."
+      );
+    }
     throw trvs::InvalidParameterError(
       "Lower bin edge must be less than the upper bin edge.\n"
     );
@@ -830,10 +840,12 @@ int ParameterSet::validate() {
       *std::min_element(this->ngrid, this->ngrid + 3)
       / *std::max_element(this->boxsize, this->boxsize + 3);
     if (this->bin_min > wavenum_nyquist) {
-      trvs::logger.warn(
-        "Lower wavenumber limit exceeds the Nyquist wavenumber %.4f.",
-        wavenum_nyquist
-      );
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "Lower wavenumber limit exceeds the Nyquist wavenumber %.4f.",
+          wavenum_nyquist
+        );
+      }
     }
   } else
   if (this->space == "config") {
@@ -841,20 +853,22 @@ int ParameterSet::validate() {
       *std::max_element(this->boxsize, this->boxsize + 3)
       / *std::min_element(this->ngrid, this->ngrid + 3);
     if (this->bin_max < separation_nyquist) {
-      trvs::logger.warn(
-        "Upper separation limit undershoots the Nyquist scale %.4f.",
-        separation_nyquist
-      );
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "Upper separation limit undershoots the Nyquist scale %.4f.",
+          separation_nyquist
+        );
+      }
     }
   }
 
   if (this->num_bins < 2) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Number of bins `num_bins` must be >= 2.");
-      throw trvs::InvalidParameterError(
-        "Number of bins `num_bins` must be >= 2.\n"
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Number of bins `num_bins` must be >= 2.\n"
+    );
   }
 
   if (
@@ -864,10 +878,10 @@ int ParameterSet::validate() {
   ) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Fixed bin index `idx_bin` must be >= 0.");
-      throw trvs::InvalidParameterError(
-        "Fixed bin index `idx_bin` must be >= 0.\n"
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Fixed bin index `idx_bin` must be >= 0.\n"
+    );
   }
 
   // Check for parameter conflicts.
@@ -881,11 +895,11 @@ int ParameterSet::validate() {
           "Binning scheme '%s' requires `num_bins` >= %d.",
           this->binning.c_str(), nbin_pad + 2
         );
-        throw trvs::InvalidParameterError(
-          "Binning scheme '%s' requires `num_bins` >= %d.\n",
-          this->binning.c_str(), nbin_pad + 2
-        );
       }
+      throw trvs::InvalidParameterError(
+        "Binning scheme '%s' requires `num_bins` >= %d.\n",
+        this->binning.c_str(), nbin_pad + 2
+      );
     }
   }
 
@@ -894,10 +908,10 @@ int ParameterSet::validate() {
       trvs::logger.error(
         "Bin index `idx_bin` must be < `num_bins`."
       );
-      throw trvs::InvalidParameterError(
-        "Bin index `idx_bin` must be < `num_bins`.\n"
-      );
     }
+    throw trvs::InvalidParameterError(
+      "Bin index `idx_bin` must be < `num_bins`.\n"
+    );
   }
 
   if (this->npoint == "3pt" && this->interlace == "true") {
@@ -941,11 +955,11 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
         "Non-existent or unwritable output directory: %s.",
         this->measurement_dir.c_str()
       );
-      throw trvs::IOError(
-        "Non-existent or unwritable output directory: %s.\n",
-        this->measurement_dir.c_str()
-      );
     }
+    throw trvs::IOError(
+      "Non-existent or unwritable output directory: %s.\n",
+      this->measurement_dir.c_str()
+    );
   }
 
   // Define convenience function for printing parameters.

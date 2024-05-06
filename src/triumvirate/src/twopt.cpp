@@ -57,8 +57,8 @@ double calc_powspec_normalisation_from_particles(
   if (particles.pdata == nullptr) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Particle data are uninitialised.");
-      throw trvs::InvalidDataError("Particle data are uninitialised.\n");
     }
+    throw trvs::InvalidDataError("Particle data are uninitialised.\n");
   }
 
   double norm = 0.;  // I₂
@@ -77,11 +77,11 @@ double calc_powspec_normalisation_from_particles(
         "Particle 'nz' values appear to be all zeros. "
         "Check the input catalogue contains valid 'nz' field."
       );
-      throw trvs::InvalidDataError(
-        "Particle 'nz' values appear to be all zeros. "
-        "Check the input catalogue contains valid 'nz' field.\n"
-      );
     }
+    throw trvs::InvalidDataError(
+      "Particle 'nz' values appear to be all zeros. "
+      "Check the input catalogue contains valid 'nz' field.\n"
+    );
   }
 
   double norm_factor = 1. / (alpha * norm);  // 1/I₂
@@ -210,8 +210,8 @@ double calc_powspec_shotnoise_from_particles(
   if (particles.pdata == nullptr) {
     if (trvs::currTask == 0) {
       trvs::logger.error("Particle data are uninitialised.");
-      throw trvs::InvalidDataError("Particle data are uninitialised.\n");
     }
+    throw trvs::InvalidDataError("Particle data are uninitialised.\n");
   }
 
   double shotnoise = 0.;
@@ -578,10 +578,12 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
   double norm = double(catalogue_data.ntotal) * double(catalogue_data.ntotal)
     / params.volume;
   if (std::fabs(1 - norm * norm_factor) > eps_norm) {
-    trvs::logger.warn(
-      "Power spectrum normalisation input differs from "
-      "expected value for an unweight field in a periodic box."
-    );
+    if (trvs::currTask == 0) {
+      trvs::logger.warn(
+        "Power spectrum normalisation input differs from "
+        "expected value for an unweight field in a periodic box."
+      );
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -673,10 +675,12 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
   double norm = double(catalogue_data.ntotal) * double(catalogue_data.ntotal)
     / params.volume;
   if (std::fabs(1 - norm * norm_factor) > eps_norm) {
-    trvs::logger.warn(
-      "Two-point correlation function normalisation input differs from "
-      "expected value for an unweight field in a periodic box."
-    );
+    if (trvs::currTask == 0) {
+      trvs::logger.warn(
+        "Two-point correlation function normalisation input differs from "
+        "expected value for an unweight field in a periodic box."
+      );
+    }
   }
 
   // ---------------------------------------------------------------------

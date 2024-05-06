@@ -84,21 +84,25 @@ MeshField::MeshField(
           import_fftw_wisdom_f = true;
           export_fftw_wisdom_f = false;
           if (this->params.fftw_scheme == "patient") {
-            trvs::logger.warn(
-              "FFTW planner flag is set to `FFTW_PATIENT`. "
-              "Ensure that the FFTW wisdom file '%s' imported has been "
-              "generated with an equivalent or higher planner flag.",
-              this->params.fftw_wisdom_file_f.c_str()
-            );
+            if (trvs::currTask == 0) {
+              trvs::logger.warn(
+                "FFTW planner flag is set to `FFTW_PATIENT`. "
+                "Ensure that the FFTW wisdom file '%s' imported has been "
+                "generated with an equivalent or higher planner flag.",
+                this->params.fftw_wisdom_file_f.c_str()
+              );
+            }
           }
         } else {
           import_fftw_wisdom_f = false;
           export_fftw_wisdom_f = true;
-          trvs::logger.info(
-            "No FFTW wisdom file '%s' "
-            "for forward transforms could be imported.",
-            this->params.fftw_wisdom_file_f.c_str()
-          );
+          if (trvs::currTask == 0) {
+            trvs::logger.info(
+              "No FFTW wisdom file '%s' "
+              "for forward transforms could be imported.",
+              this->params.fftw_wisdom_file_f.c_str()
+            );
+          }
         }
       }
 
@@ -109,21 +113,25 @@ MeshField::MeshField(
           import_fftw_wisdom_b = true;
           export_fftw_wisdom_b = false;
           if (this->params.fftw_scheme == "patient") {
-            trvs::logger.warn(
-              "FFTW planner flag is set to `FFTW_PATIENT`. "
-              "Ensure that the FFTW wisdom file '%s' imported has been "
-              "generated with an equivalent or higher planner flag.",
-              this->params.fftw_wisdom_file_b.c_str()
-            );
+            if (trvs::currTask == 0) {
+              trvs::logger.warn(
+                "FFTW planner flag is set to `FFTW_PATIENT`. "
+                "Ensure that the FFTW wisdom file '%s' imported has been "
+                "generated with an equivalent or higher planner flag.",
+                this->params.fftw_wisdom_file_b.c_str()
+              );
+            }
           }
         } else {
           import_fftw_wisdom_b = false;
           export_fftw_wisdom_b = true;
-          trvs::logger.info(
-            "No FFTW wisdom file '%s' "
-            "for backward transforms could be imported.",
-            this->params.fftw_wisdom_file_b.c_str()
-          );
+          if (trvs::currTask == 0) {
+            trvs::logger.info(
+              "No FFTW wisdom file '%s' "
+              "for backward transforms could be imported.",
+              this->params.fftw_wisdom_file_b.c_str()
+            );
+          }
         }
       }
     }
@@ -133,10 +141,12 @@ MeshField::MeshField(
         this->params.fftw_wisdom_file_f.c_str()
       );
       trv::sys::fftw_wisdom_f_imported = true;
-      trvs::logger.info(
-        "FFTW wisdom file '%s' for forward transforms has been imported.",
-        this->params.fftw_wisdom_file_f.c_str()
-      );
+      if (trvs::currTask == 0) {
+        trvs::logger.info(
+          "FFTW wisdom file '%s' for forward transforms has been imported.",
+          this->params.fftw_wisdom_file_f.c_str()
+        );
+      }
     }
 
     this->transform = fftw_plan_dft_3d(
@@ -149,10 +159,12 @@ MeshField::MeshField(
       fftw_export_wisdom_to_filename(
         this->params.fftw_wisdom_file_f.c_str()
       );
-      trvs::logger.info(
-        "FFTW wisdom file '%s' for forward transforms has been exported.",
-        this->params.fftw_wisdom_file_f.c_str()
-      );
+      if (trvs::currTask == 0) {
+        trvs::logger.info(
+          "FFTW wisdom file '%s' for forward transforms has been exported.",
+          this->params.fftw_wisdom_file_f.c_str()
+        );
+      }
       trv::sys::fftw_wisdom_f_imported = true;
     }
 
@@ -161,10 +173,12 @@ MeshField::MeshField(
         this->params.fftw_wisdom_file_b.c_str()
       );
       trv::sys::fftw_wisdom_b_imported = true;
-      trvs::logger.info(
-        "FFTW wisdom file '%s' for backward transforms has been imported.",
-        this->params.fftw_wisdom_file_b.c_str()
-      );
+      if (trvs::currTask == 0) {
+        trvs::logger.info(
+          "FFTW wisdom file '%s' for backward transforms has been imported.",
+          this->params.fftw_wisdom_file_b.c_str()
+        );
+      }
     }
 
     this->inv_transform = fftw_plan_dft_3d(
@@ -177,10 +191,12 @@ MeshField::MeshField(
       fftw_export_wisdom_to_filename(
         this->params.fftw_wisdom_file_b.c_str()
       );
-      trvs::logger.info(
-        "FFTW wisdom file '%s' for backward transforms has been exported.",
-        this->params.fftw_wisdom_file_b.c_str()
-      );
+      if (trvs::currTask == 0) {
+        trvs::logger.info(
+          "FFTW wisdom file '%s' for backward transforms has been exported.",
+          this->params.fftw_wisdom_file_b.c_str()
+        );
+      }
       trv::sys::fftw_wisdom_b_imported = true;
     }
 
@@ -391,11 +407,11 @@ void MeshField::assign_weighted_field_to_mesh(
         "Unsupported mesh assignment scheme: '%s'.",
         this->params.assignment.c_str()
       );
-      throw trvs::InvalidParameterError(
-        "Unsupported mesh assignment scheme: '%s'.\n",
-        this->params.assignment.c_str()
-      );
     };
+    throw trvs::InvalidParameterError(
+      "Unsupported mesh assignment scheme: '%s'.\n",
+      this->params.assignment.c_str()
+    );
   }
 }
 
@@ -1731,9 +1747,11 @@ trv::BinnedVectors FieldStats::record_binned_vectors(
     cellsizes[1] = this->dk[1];
     cellsizes[2] = this->dk[2];
   } else {
-    trvs::logger.error(
-      "Invalid binning space: '%s'.", binning.space.c_str()
-    );
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Invalid binning space: '%s'.", binning.space.c_str()
+      );
+    }
     throw trvs::InvalidDataError(
       "Invalid binning space: '%s'.", binning.space.c_str()
     );
@@ -1917,9 +1935,11 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
 
   // Check mesh fields compatibility and reuse methods of the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
-    trvs::logger.error(
-      "Input mesh fields have incompatible physical properties."
-    );
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Input mesh fields have incompatible physical properties."
+      );
+    }
     throw trvs::InvalidDataError(
       "Input mesh fields have incompatible physical properties.\n"
     );
@@ -1970,10 +1990,12 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
   const int n_sample = 1e6;
   const double dk_sample = 1.e-5;
   if (kbinning.bin_max > n_sample * dk_sample) {
-    trvs::logger.warn(
-      "Input bin range exceeds sampled range. "
-      "Statistics in bins beyond sampled range are uncomputed."
-    );
+    if (trvs::currTask == 0) {
+      trvs::logger.warn(
+        "Input bin range exceeds sampled range. "
+        "Statistics in bins beyond sampled range are uncomputed."
+      );
+    }
   }
 
   int* nmodes_sample = new int[n_sample];
@@ -2103,9 +2125,11 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   // Check mesh fields compatibility and reuse properties and methods of
   // the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
-    trvs::logger.error(
-      "Input mesh fields have incompatible physical properties."
-    );
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Input mesh fields have incompatible physical properties."
+      );
+    }
     throw trvs::InvalidDataError(
       "Input mesh fields have incompatible physical properties.\n"
     );
@@ -2204,10 +2228,12 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   const int n_sample = 1e6;
   const double dr_sample = 1.e-1;
   if (rbinning.bin_max > n_sample * dr_sample) {
-    trvs::logger.warn(
-      "Input bin range exceeds sampled range. "
-      "Statistics in bins beyond sampled range are uncomputed."
-    );
+    if (trvs::currTask == 0) {
+      trvs::logger.warn(
+        "Input bin range exceeds sampled range. "
+        "Statistics in bins beyond sampled range are uncomputed."
+      );
+    }
   }
 
   int* npairs_sample = new int[n_sample];
@@ -2316,9 +2342,11 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   // Check mesh fields compatibility and reuse properties and methods of
   // the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
-    trvs::logger.error(
-      "Input mesh fields have incompatible physical properties."
-    );
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Input mesh fields have incompatible physical properties."
+      );
+    }
     throw trvs::InvalidDataError(
       "Input mesh fields have incompatible physical properties.\n"
     );
@@ -2537,9 +2565,11 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   // Check mesh fields compatibility and reuse properties and methods of
   // the first mesh field.
   if (!this->if_fields_compatible(field_a, field_b)) {
-    trvs::logger.error(
-      "Input mesh fields have incompatible physical properties."
-    );
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Input mesh fields have incompatible physical properties."
+      );
+    }
     throw trvs::InvalidDataError(
       "Input mesh fields have incompatible physical properties.\n"
     );
@@ -2714,9 +2744,11 @@ std::function<double(int, int, int)> FieldStats::ret_calc_shotnoise_aliasing()
     };
   }
 
-  trvs::logger.error(
-    "Invalid assignment scheme: '%s'.", this->params.assignment.c_str()
-  );
+  if (trvs::currTask == 0) {
+    trvs::logger.error(
+      "Invalid assignment scheme: '%s'.", this->params.assignment.c_str()
+    );
+  }
   throw trvs::InvalidParameterError(
     "Invalid assignment scheme: '%s'.\n", this->params.assignment.c_str()
   );
