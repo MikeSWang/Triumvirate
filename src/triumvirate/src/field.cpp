@@ -1415,8 +1415,10 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
     );
   }
 
-  // Reset field values to zero.
-  this->reset_density_field();
+  // The nested for-loops below should cover all grid point computations
+  // so that this is redundant. [tag:redundancy]
+  // // Reset field values to zero.
+  // this->reset_density_field();
 
   // Reset effective wavenumber and wavevector modes.
   k_eff = 0.;
@@ -1455,10 +1457,12 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
           k_eff += k_;
           nmodes++;
         }
-        // else {
-        //   this->field[idx_grid][0] = 0.;  // unused
-        //   this->field[idx_grid][1] = 0.;  // unused
-        // }
+        else {
+          // This is necessary when the field is not reset to zero.
+          // See comment [tag:redundancy] above.
+          this->field[idx_grid][0] = 0.;
+          this->field[idx_grid][1] = 0.;
+        }
       }
     }
   }
@@ -1497,8 +1501,10 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
     );
   }
 
-  // Reset field values to zero.
-  this->reset_density_field();
+  // The nested for-loops below cover all grid point computations
+  // so this is redundant.
+  // // Reset field values to zero.
+  // this->reset_density_field();
 
   // Compute the field weighted by the spherical Bessel function and
   // reduced spherical harmonics.
@@ -2146,15 +2152,17 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
 #endif  // !DBG_FLAG_NOAC
   }
 
-  // Set up 3-d two-point statistics mesh grids (before inverse
-  // Fourier transform).
-#ifdef TRV_USE_OMP
-#pragma omp parallel for
-#endif  // TRV_USE_OMP
-  for (long long gid = 0; gid < this->params.nmesh; gid++) {
-    this->twopt_3d[gid][0] = 0.;
-    this->twopt_3d[gid][1] = 0.;
-  }  // likely redundant but safe
+// The nested for-loops below cover all grid point computations so this
+// is redundant.
+//   // Set up 3-d two-point statistics mesh grids (before inverse
+//   // Fourier transform).
+// #ifdef TRV_USE_OMP
+// #pragma omp parallel for simd
+// #endif  // TRV_USE_OMP
+//   for (long long gid = 0; gid < this->params.nmesh; gid++) {
+//     this->twopt_3d[gid][0] = 0.;
+//     this->twopt_3d[gid][1] = 0.;
+//   }  // likely redundant but safe
 
   // Compute shot noise--subtracted mode powers on mesh grids.
   for (int i = 0; i < this->params.ngrid[0]; i++) {
@@ -2357,15 +2365,17 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
 #endif  // !DBG_FLAG_NOAC
   }
 
-  // Set up 3-d two-point statistics mesh grids (before inverse
-  // Fourier transform).
-#ifdef TRV_USE_OMP
-#pragma omp parallel for
-#endif  // TRV_USE_OMP
-  for (long long gid = 0; gid < this->params.nmesh; gid++) {
-    this->twopt_3d[gid][0] = 0.;
-    this->twopt_3d[gid][1] = 0.;
-  }  // likely redundant but safe
+// The nested for-loops below cover all grid point computations so this
+// is redundant.
+//   // Set up 3-d two-point statistics mesh grids (before inverse
+//   // Fourier transform).
+// #ifdef TRV_USE_OMP
+// #pragma omp parallel for simd
+// #endif  // TRV_USE_OMP
+//   for (long long gid = 0; gid < this->params.nmesh; gid++) {
+//     this->twopt_3d[gid][0] = 0.;
+//     this->twopt_3d[gid][1] = 0.;
+//   }  // likely redundant but safe
 
   // Compute meshed statistics.
 #ifdef TRV_USE_OMP
@@ -2576,15 +2586,17 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
 #endif  // !DBG_FLAG_NOAC
   }
 
-  // Set up 3-d two-point statistics mesh grids (before inverse
-  // Fourier transform).
-#ifdef TRV_USE_OMP
-#pragma omp parallel for
-#endif  // TRV_USE_OMP
-  for (long long gid = 0; gid < this->params.nmesh; gid++) {
-    this->twopt_3d[gid][0] = 0.;
-    this->twopt_3d[gid][1] = 0.;
-  }  // likely redundant but safe
+// The nested for-loops below cover all grid point computations so this
+// is redundant.
+//   // Set up 3-d two-point statistics mesh grids (before inverse
+//   // Fourier transform).
+// #ifdef TRV_USE_OMP
+// #pragma omp parallel for simd
+// #endif  // TRV_USE_OMP
+//   for (long long gid = 0; gid < this->params.nmesh; gid++) {
+//     this->twopt_3d[gid][0] = 0.;
+//     this->twopt_3d[gid][1] = 0.;
+//   }  // likely redundant but safe
 
   // Compute meshed statistics.
 #ifdef TRV_USE_OMP
