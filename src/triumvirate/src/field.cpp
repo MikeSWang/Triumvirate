@@ -53,6 +53,7 @@ MeshField::MeshField(
   this->field = fftw_alloc_complex(this->params.nmesh);
 
   trvs::count_cgrid += 1;
+  trvs::count_grid += 1;
   trvs::update_maxcntgrid();
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   trvs::update_maxmem();
@@ -61,6 +62,7 @@ MeshField::MeshField(
     this->field_s = fftw_alloc_complex(this->params.nmesh);
 
     trvs::count_cgrid += 1;
+    trvs::count_grid += 1;
     trvs::update_maxcntgrid();
     trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
     trvs::update_maxmem();
@@ -248,6 +250,7 @@ MeshField::MeshField(
   this->field = fftw_alloc_complex(this->params.nmesh);
 
   trvs::count_cgrid += 1;
+  trvs::count_grid += 1;
   trvs::update_maxcntgrid();
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   trvs::update_maxmem();
@@ -256,6 +259,7 @@ MeshField::MeshField(
     this->field_s = fftw_alloc_complex(this->params.nmesh);
 
     trvs::count_cgrid += 1;
+    trvs::count_grid += 1;
     trvs::update_maxcntgrid();
     trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
     trvs::update_maxmem();
@@ -297,17 +301,20 @@ MeshField::~MeshField() {
 
   if (this->window_assign_order != -1) {
     trvs::count_rgrid -= 1;
+    trvs::count_grid -= .5;
     trvs::gbytesMem -= trvs::size_in_gb<double>(this->params.nmesh);
   }
 
   if (this->field != nullptr) {
     fftw_free(this->field); this->field = nullptr;
     trvs::count_cgrid -= 1;
+    trvs::count_grid -= 1;
     trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   }
   if (this->field_s != nullptr) {
     fftw_free(this->field_s); this->field_s = nullptr;
     trvs::count_cgrid -= 1;
+    trvs::count_grid -= 1;
     trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   }
 }
@@ -992,11 +999,8 @@ void MeshField::compute_assignment_window_in_fourier(int order) {
     this->window.resize(this->params.nmesh, 0.);  // if not yet initialised
 
     trvs::count_rgrid += 1;
+    trvs::count_grid += .5;
     trvs::update_maxcntgrid();
-    trvs::logger.info(
-      "Allocated grid for field stats; current rgrid count %d; max rgrid count %d.",
-      trvs::count_rgrid, trvs::max_count_rgrid
-    );
     trvs::gbytesMem += trvs::size_in_gb<double>(this->params.nmesh);
     trvs::update_maxmem();
   }
@@ -1737,6 +1741,7 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
     this->twopt_3d = fftw_alloc_complex(this->params.nmesh);
 
     trvs::count_cgrid += 1;
+    trvs::count_grid += 1;
     trvs::update_maxcntgrid();
     trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
     trvs::update_maxmem();
@@ -1757,6 +1762,7 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
 FieldStats::~FieldStats() {
   if (this->alias_ini) {
     trvs::count_rgrid -= 1;
+    trvs::count_grid -= .5;
     trvs::gbytesMem -= trvs::size_in_gb<double>(this->params.nmesh);
   }
 
@@ -1764,6 +1770,7 @@ FieldStats::~FieldStats() {
     fftw_destroy_plan(this->inv_transform);
     fftw_free(this->twopt_3d); this->twopt_3d = nullptr;
     trvs::count_cgrid -= 1;
+    trvs::count_grid -= 1;
     trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   }
 }
@@ -2939,11 +2946,8 @@ void FieldStats::compute_shotnoise_aliasing() {
   this->alias_sn.resize(this->params.nmesh, 0.);  // initialise
 
   trvs::count_rgrid += 1;
+  trvs::count_grid += .5;
   trvs::update_maxcntgrid();
-  trvs::logger.info(
-    "Allocated grid for field stats; current rgrid count %d; max rgrid count %d.",
-    trvs::count_rgrid, trvs::max_count_rgrid
-  );
   trvs::gbytesMem += trvs::size_in_gb<double>(this->params.nmesh);
   trvs::update_maxmem();
 

@@ -68,10 +68,12 @@ extern int currTask;  ///< current task
 extern double gbytesMem;     ///< current memory usage in gibibytes
 extern double gbytesMaxMem;  ///< maximum memory usage in gibibytes
 
-extern int count_rgrid;      ///< number of 3-d real grids
-extern int count_cgrid;      ///< number of 3-d complex grids
-extern int max_count_rgrid;  ///< maximum number of 3-d real grids
-extern int max_count_cgrid;  ///< maximum number of 3-d complex grids
+extern int count_rgrid;       ///< number of 3-d real grids
+extern int count_cgrid;       ///< number of 3-d complex grids
+extern float count_grid;      ///< number of grids
+extern int max_count_rgrid;   ///< maximum number of 3-d real grids
+extern int max_count_cgrid;   ///< maximum number of 3-d complex grids
+extern float max_count_grid;  ///< maximum number of grids
 
 extern int count_fft;   ///< number of FFTs
 extern int count_ifft;  ///< number of IFFTs

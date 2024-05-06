@@ -870,10 +870,16 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (trv::sys::max_count_cgrid > 0 || trv::sys::max_count_rgrid > 0) {
+  if (
+    trv::sys::max_count_grid > 0 ||
+    trv::sys::max_count_cgrid > 0 ||
+    trv::sys::max_count_rgrid > 0
+  ) {
     if (trv::sys::currTask == 0) {
       trv::sys::logger.info(
-        "Maximum number of concurrent 3-d grids: %d complex, %d real.",
+        "Maximum number of concurrent 3-d grids: "
+        "%.1f complex-equivalent, %d complex, %d real.",
+        trv::sys::max_count_grid,
         trv::sys::max_count_cgrid, trv::sys::max_count_rgrid
       );
     }

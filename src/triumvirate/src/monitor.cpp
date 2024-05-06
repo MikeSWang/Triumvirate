@@ -48,8 +48,10 @@ double gbytesMaxMem = 0.;
 
 int count_rgrid = 0;
 int count_cgrid = 0;
+float count_grid = 0.;
 int max_count_rgrid = 0;
 int max_count_cgrid = 0;
+float max_count_grid = 0.;
 
 int count_fft = 0;
 int count_ifft = 0;
@@ -75,6 +77,9 @@ void update_maxcntgrid() {
   trv::sys::max_count_cgrid =
     (trv::sys::count_cgrid > trv::sys::max_count_cgrid) ?
     trv::sys::count_cgrid : trv::sys::max_count_cgrid;
+  trv::sys::max_count_grid =
+    (trv::sys::count_grid > trv::sys::max_count_grid) ?
+    trv::sys::count_grid : trv::sys::max_count_grid;
 }
 
 std::string show_current_datetime() {
