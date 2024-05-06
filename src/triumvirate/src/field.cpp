@@ -285,7 +285,7 @@ MeshField::~MeshField() {
 
 void MeshField::reset_density_field() {
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
   for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] = 0.;
@@ -293,7 +293,7 @@ void MeshField::reset_density_field() {
   }
   if (this->params.interlace == "true") {
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
     for (long long gid = 0; gid < this->params.nmesh; gid++) {
       this->field_s[gid][0] = 0.;
@@ -930,7 +930,7 @@ void MeshField::compute_unweighted_field(ParticleCatalogue& particles) {
   trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles.ntotal; pid++) {
     unit_weight[pid][0] = 1.;
@@ -953,7 +953,7 @@ void MeshField::compute_unweighted_field_fluctuations_insitu(
   double nbar = double(particles.ntotal) / this->vol;
 
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
   for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] -= nbar;
@@ -1025,7 +1025,7 @@ void MeshField::compute_ylm_wgtd_field(
 
   // Subtract to compute fluctuations, i.e. δn_LM.
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
   for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] -= alpha * field_rand[gid][0];
@@ -1034,7 +1034,7 @@ void MeshField::compute_ylm_wgtd_field(
 
   if (this->params.interlace == "true") {
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
     for (long long gid = 0; gid < this->params.nmesh; gid++) {
       this->field_s[gid][0] -= alpha * field_rand.field_s[gid][0];
@@ -1076,7 +1076,7 @@ void MeshField::compute_ylm_wgtd_field(
 
   // Apply the normalising alpha contrast.
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
   for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] *= alpha;
@@ -1153,7 +1153,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
 
   // Add to compute quadratic fluctuations, i.e. N_LM.
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
   for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] += std::pow(alpha, 2) * field_rand[gid][0];
@@ -1162,7 +1162,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
 
   if (this->params.interlace == "true") {
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
     for (long long gid = 0; gid < this->params.nmesh; gid++) {
       this->field_s[gid][0] += std::pow(alpha, 2) * field_rand.field_s[gid][0];
@@ -1207,7 +1207,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
   // Apply mean-density matching normalisation (i.e. alpha contrast)
   // to compute N_LM.
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
   for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] *= std::pow(alpha, 2);
@@ -1229,7 +1229,7 @@ void MeshField::fourier_transform() {
 
   // Apply FFT volume normalisation, where ∫d³x ↔ dV Σᵢ, dV =: `vol_cell`.
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
   for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] *= this->vol_cell;
@@ -1247,7 +1247,7 @@ void MeshField::fourier_transform() {
   // Interlace with the shadow field.
   if (this->params.interlace == "true") {
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
     for (long long gid = 0; gid < this->params.nmesh; gid++) {
       this->field_s[gid][0] *= this->vol_cell;
@@ -1313,7 +1313,7 @@ void MeshField::inv_fourier_transform() {
   // Apply inverse FFT volume normalisation, where ∫d³k/(2π)³ ↔ (1/V) Σᵢ,
   // V =: `vol`.
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
   for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] /= this->vol;
@@ -1473,7 +1473,7 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
 
   // Average over wavevector modes in the band.
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
   for (long long gid = 0; gid < this->params.nmesh; gid++) {
     this->field[gid][0] /= double(nmodes);
@@ -1569,7 +1569,7 @@ double MeshField::calc_grid_based_powlaw_norm(
   trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
-#pragma omp parallel for
+#pragma omp parallel for simd
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles.ntotal; pid++) {
     weight[pid][0] = particles[pid].w;
@@ -1588,7 +1588,7 @@ double MeshField::calc_grid_based_powlaw_norm(
   double vol_int = 0.;
 
 #ifdef TRV_USE_OMP
-#pragma omp parallel for reduction(+:vol_int)
+#pragma omp parallel for simd reduction(+:vol_int)
 #endif  // TRV_USE_OMP
   for (long long gid = 0; gid < this->params.nmesh; gid++) {
     vol_int += std::pow(this->field[gid][0], order);
