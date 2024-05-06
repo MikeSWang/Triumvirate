@@ -22,6 +22,7 @@
     - 'UPDATE';
     - 'RFE', 'FUTURE';
     - 'CAVEAT';
+    - 'NOTE';
     - 'SEE';
     - 'STYLE'.
 

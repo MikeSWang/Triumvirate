@@ -368,6 +368,7 @@ double SphericalBesselCalculator::eval(double x) {
   if (x >= this->split) {
     return gsl_sf_bessel_jl(this->order, x);
   } else {
+    // NOTE: This is a computational bottleneck.
     return gsl_spline_eval(this->spline, x, this->accel);
   }
 }

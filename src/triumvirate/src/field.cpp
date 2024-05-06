@@ -62,7 +62,7 @@ MeshField::MeshField(
     trvs::update_maxmem();
   }
 
-  this->reset_density_field();  // likely redundant but safe
+  this->reset_density_field();  // initialise; likely redundant but safe
 
   // Initialise FFTW plans.
   if (plan_ini) {
@@ -239,7 +239,7 @@ MeshField::MeshField(
     trvs::update_maxmem();
   }
 
-  this->reset_density_field();  // likely redundant but safe
+  this->reset_density_field();  // initialise; likely redundant but safe
 
   // Initialise FFTW plans.
   this->transform = transform;
@@ -408,14 +408,14 @@ void MeshField::assign_weighted_field_to_mesh_ngp(
   // to which a single particle is assigned.
   const int order = 1;
 
-  // Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ), where δᴰ ↔ δᴷ / dV,
-  // dV =: `vol_cell`.
+  // Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ),
+  // where δᴰ ↔ δᴷ / dV, dV =: `vol_cell`.
   const double inv_vol_cell = 1 / this->vol_cell;
 
   // Reset field values to zero.
   this->reset_density_field();
 
-  // Assign particles to grid cells.
+  // Perform assignment.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -518,15 +518,14 @@ void MeshField::assign_weighted_field_to_mesh_cic(
   // to which a single particle is assigned.
   const int order = 2;
 
-  // Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ), where δᴰ ↔ δᴷ / dV,
-  // dV =: `vol_cell`.
+  // Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ),
+  // where δᴰ ↔ δᴷ / dV, dV =: `vol_cell`.
   const double inv_vol_cell = 1 / this->vol_cell;
 
   // Reset field values to zero.
   this->reset_density_field();
 
-  // Assign particles to grid cells.
-
+  // Perform assignment.
 #ifdef TRV_USE_OMP
 #pragma omp parallel for
 #endif  // TRV_USE_OMP
@@ -630,8 +629,8 @@ void MeshField::assign_weighted_field_to_mesh_tsc(
   // to which a single particle is assigned.
   const int order = 3;
 
-  // Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ), where δᴰ ↔ δᴷ / dV,
-  // dV =: `vol_cell`.
+  // Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ),
+  // where δᴰ ↔ δᴷ / dV, dV =: `vol_cell`.
   const double inv_vol_cell = 1 / this->vol_cell;
 
   // Reset field values to zero.
@@ -779,7 +778,7 @@ void MeshField::assign_weighted_field_to_mesh_pcs(
   const int order = 4;
 
   // Here the field is given by Σᵢ wᵢ δᴰ(x - xᵢ),
-  // where δᴰ corresponds to δᴷ / dV, dV =: `vol_cell`.
+  // where δᴰ ↔ δᴷ / dV, dV =: `vol_cell`.
   const double inv_vol_cell = 1 / this->vol_cell;
 
   // Reset field values to zero.
@@ -1650,7 +1649,6 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
   }
 }
 
-// An empty destructor is redundant but left here for future implementations.
 FieldStats::~FieldStats() {
   if (this->plan_ini) {
     fftw_destroy_plan(this->inv_transform);
