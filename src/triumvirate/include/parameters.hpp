@@ -160,7 +160,7 @@ class ParameterSet {
   /// derived FFTW planner flag
   unsigned fftw_planner_flag = FFTW_MEASURE;
 
-  /// use FFTW wisdom: {"false" (default), <abspath-to-dir>}
+  /// use FFTW wisdom: {"false" (default), <path-to-dir>}
   std::string use_fftw_wisdom = "false";
 
   /// derived FFTW wisdom file paths
