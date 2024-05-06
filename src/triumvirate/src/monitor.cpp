@@ -46,6 +46,11 @@ int currTask = 0;
 double gbytesMem = 0.;
 double gbytesMaxMem = 0.;
 
+int count_rgrid = 0;
+int count_cgrid = 0;
+int max_count_rgrid = 0;
+int max_count_cgrid = 0;
+
 int count_fft = 0;
 int count_ifft = 0;
 
@@ -61,6 +66,15 @@ Logger logger(LogLevel::NSET);  ///< default logger at `NSET` logging level
 void update_maxmem() {
   trv::sys::gbytesMaxMem = (trv::sys::gbytesMem > trv::sys::gbytesMaxMem) ?
     trv::sys::gbytesMem : trv::sys::gbytesMaxMem;
+}
+
+void update_maxcntgrid() {
+  trv::sys::max_count_rgrid =
+    (trv::sys::count_rgrid > trv::sys::max_count_rgrid) ?
+    trv::sys::count_rgrid : trv::sys::max_count_rgrid;
+  trv::sys::max_count_cgrid =
+    (trv::sys::count_cgrid > trv::sys::max_count_cgrid) ?
+    trv::sys::count_cgrid : trv::sys::max_count_cgrid;
 }
 
 std::string show_current_datetime() {

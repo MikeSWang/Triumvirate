@@ -52,12 +52,16 @@ MeshField::MeshField(
   // and increase allocated memory.
   this->field = fftw_alloc_complex(this->params.nmesh);
 
+  trvs::count_cgrid += 1;
+  trvs::update_maxcntgrid();
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   trvs::update_maxmem();
 
   if (this->params.interlace == "true") {
     this->field_s = fftw_alloc_complex(this->params.nmesh);
 
+    trvs::count_cgrid += 1;
+    trvs::update_maxcntgrid();
     trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
     trvs::update_maxmem();
   }
@@ -243,12 +247,16 @@ MeshField::MeshField(
   // and increase allocated memory.
   this->field = fftw_alloc_complex(this->params.nmesh);
 
+  trvs::count_cgrid += 1;
+  trvs::update_maxcntgrid();
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   trvs::update_maxmem();
 
   if (this->params.interlace == "true") {
     this->field_s = fftw_alloc_complex(this->params.nmesh);
 
+    trvs::count_cgrid += 1;
+    trvs::update_maxcntgrid();
     trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
     trvs::update_maxmem();
   }
@@ -287,12 +295,19 @@ MeshField::~MeshField() {
     }
   }
 
+  if (this->window_assign_order != -1) {
+    trvs::count_rgrid -= 1;
+    trvs::gbytesMem -= trvs::size_in_gb<double>(this->params.nmesh);
+  }
+
   if (this->field != nullptr) {
     fftw_free(this->field); this->field = nullptr;
+    trvs::count_cgrid -= 1;
     trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   }
   if (this->field_s != nullptr) {
     fftw_free(this->field_s); this->field_s = nullptr;
+    trvs::count_cgrid -= 1;
     trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   }
 }
@@ -914,6 +929,25 @@ OMP_ATOMIC
 double MeshField::calc_assignment_window_in_fourier(
   int i, int j, int k, int order
 ) {
+  if (order < 0) {
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Invalid window assignment order: %d. Must be non-negative.",
+        order
+      );
+    }
+    throw trvs::InvalidParameterError(
+      "Invalid window assignment order: %d. Must be non-negative.\n",
+      order
+    );
+  }
+
+  // Return the pre-computed window value.
+  if (order == this->window_assign_order) {
+    long long idx_grid = this->ret_grid_index(i, j, k);
+    return this->window[idx_grid];
+  }
+
   this->shift_grid_indices_fourier(i, j, k);
 
   double u_x = M_PI * i / double(this->params.ngrid[0]);
@@ -928,6 +962,60 @@ double MeshField::calc_assignment_window_in_fourier(
   double wk = wk_x * wk_y * wk_z;
 
   return std::pow(wk, order);
+}
+
+void MeshField::compute_assignment_window_in_fourier(int order) {
+  if (order < 0) {
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "Invalid window assignment order: %d. Must be non-negative.",
+        order
+      );
+    }
+    throw trvs::InvalidParameterError(
+      "Invalid window assignment order: %d. Must be non-negative.\n",
+      order
+    );
+  }
+
+  if (this->window_assign_order == order) {return;}  // if computed already
+
+  if (trvs::currTask == 0) {
+    trvs::logger.debug(
+      "Computing interpolation window in Fourier space "
+      "for assignment order %d.",
+      order
+    );
+  }
+
+  if (this->window_assign_order == -1) {
+    this->window.resize(this->params.nmesh, 0.);  // if not yet initialised
+
+    trvs::count_rgrid += 1;
+    trvs::update_maxcntgrid();
+    trvs::logger.info(
+      "Allocated grid for field stats; current rgrid count %d; max rgrid count %d.",
+      trvs::count_rgrid, trvs::max_count_rgrid
+    );
+    trvs::gbytesMem += trvs::size_in_gb<double>(this->params.nmesh);
+    trvs::update_maxmem();
+  }
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for collapse(3)
+#endif  // TRV_USE_OMP
+  for (int i = 0; i < this->params.ngrid[0]; i++) {
+    for (int j = 0; j < this->params.ngrid[1]; j++) {
+      for (int k = 0; k < this->params.ngrid[2]; k++) {
+        long long idx_grid = this->ret_grid_index(i, j, k);
+        this->window[idx_grid] = this->calc_assignment_window_in_fourier(
+          i, j, k, order
+        );
+      }
+    }
+  }
+
+  this->window_assign_order = order;  // set assignment order/flag
 }
 
 
@@ -1392,6 +1480,8 @@ void MeshField::apply_assignment_compensation() {
     );
   }
 
+  this->compute_assignment_window_in_fourier(this->params.assignment_order);
+
 #ifdef TRV_USE_OMP
 #pragma omp parallel for collapse(3)
 #endif  // TRV_USE_OMP
@@ -1399,13 +1489,8 @@ void MeshField::apply_assignment_compensation() {
     for (int j = 0; j < this->params.ngrid[1]; j++) {
       for (int k = 0; k < this->params.ngrid[2]; k++) {
         long long idx_grid = this->ret_grid_index(i, j, k);
-
-        double win = this->calc_assignment_window_in_fourier(
-          i, j, k, this->params.assignment_order
-        );
-
-        this->field[idx_grid][0] /= win;
-        this->field[idx_grid][1] /= win;
+        this->field[idx_grid][0] /= this->window[idx_grid];
+        this->field[idx_grid][1] /= this->window[idx_grid];
       }
     }
   }
@@ -1439,6 +1524,8 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   nmodes = 0;
 
   // Perform wavevector mode binning in the band.
+  this->compute_assignment_window_in_fourier(this->params.assignment_order);
+
 #ifdef TRV_USE_OMP
 #pragma omp parallel for collapse(3) reduction(+:k_eff, nmodes)
 #endif  // TRV_USE_OMP
@@ -1459,10 +1546,7 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
           );
 
           // Apply assignment compensation.
-          double win = this->calc_assignment_window_in_fourier(
-            i, j, k, this->params.assignment_order
-          );
-          fk /= win;
+          fk /= this->window[idx_grid];
 
           // Weight the field.
           this->field[idx_grid][0] = (ylm[idx_grid] * fk).real();
@@ -1522,6 +1606,8 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
 
   // Compute the field weighted by the spherical Bessel function and
   // reduced spherical harmonics.
+  this->compute_assignment_window_in_fourier(this->params.assignment_order);
+
 #ifdef TRV_USE_OMP
 #pragma omp parallel
 #endif  // TRV_USE_OMP
@@ -1547,10 +1633,7 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
           field_fourier[idx_grid][0], field_fourier[idx_grid][1]
         );
 
-        double win = this->calc_assignment_window_in_fourier(
-          i, j, k, this->params.assignment_order
-        );
-        fk /= win;
+        fk /= this->window[idx_grid];
 
         // Weight the field including the volume normalisation,
         // where ∫d³k/(2π)³ ↔ (1/V) Σᵢ, V =: `vol`.
@@ -1653,6 +1736,8 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
   if (plan_ini) {
     this->twopt_3d = fftw_alloc_complex(this->params.nmesh);
 
+    trvs::count_cgrid += 1;
+    trvs::update_maxcntgrid();
     trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(this->params.nmesh);
     trvs::update_maxmem();
 
@@ -1670,9 +1755,15 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
 }
 
 FieldStats::~FieldStats() {
+  if (this->alias_ini) {
+    trvs::count_rgrid -= 1;
+    trvs::gbytesMem -= trvs::size_in_gb<double>(this->params.nmesh);
+  }
+
   if (this->plan_ini) {
     fftw_destroy_plan(this->inv_transform);
     fftw_free(this->twopt_3d); this->twopt_3d = nullptr;
+    trvs::count_cgrid -= 1;
     trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   }
 }
@@ -1731,6 +1822,19 @@ bool FieldStats::if_fields_compatible(
   }
 
   return flag_compatible;
+}
+
+long long FieldStats::ret_grid_index(int i, int j, int k) {
+  long long idx_grid =
+    (i * static_cast<long long>(this->params.ngrid[1]) + j)
+    * this->params.ngrid[2] + k;
+  return idx_grid;
+}
+
+void FieldStats::shift_grid_indices_fourier(int& i, int& j, int& k) {
+  i = (i < this->params.ngrid[0]/2) ? i : i - this->params.ngrid[0];
+  j = (j < this->params.ngrid[1]/2) ? j : j - this->params.ngrid[1];
+  k = (k < this->params.ngrid[2]/2) ? k : k - this->params.ngrid[2];
 }
 
 trv::BinnedVectors FieldStats::record_binned_vectors(
@@ -1945,16 +2049,22 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
     );
   }
 
-  auto ret_grid_index = [&field_a](int i, int j, int k) {
-    return field_a.ret_grid_index(i, j, k);
-  };
+  // auto ret_grid_index = [&field_a](int i, int j, int k) {
+  //   return field_a.ret_grid_index(i, j, k);
+  // };
 
   auto ret_grid_wavevector = [&field_a](int i, int j, int k, double kvec[3]) {
     field_a.get_grid_wavevector(i, j, k, kvec);
   };
 
-  std::function<double(int, int, int)> calc_shotnoise_aliasing =
-    this->ret_calc_shotnoise_aliasing();
+  this->compute_shotnoise_aliasing();
+
+  std::function<double(int, int, int)> calc_shotnoise_aliasing = [this](
+    int i, int j, int k
+  ) {
+    long long idx_grid = ret_grid_index(i, j, k);
+    return this->alias_sn[idx_grid];
+  };
 
   std::function<double(int, int, int)> calc_win_pk, calc_win_sn;
   int assignment_order = this->params.assignment_order;
@@ -2135,16 +2245,22 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
     );
   }
 
-  auto ret_grid_index = [&field_a](int i, int j, int k) {
-    return field_a.ret_grid_index(i, j, k);
-  };
+  // auto ret_grid_index = [&field_a](int i, int j, int k) {
+  //   return field_a.ret_grid_index(i, j, k);
+  // };
 
   auto ret_grid_pos_vector = [&field_a](int i, int j, int k, double rvec[3]) {
     field_a.get_grid_pos_vector(i, j, k, rvec);
   };
 
-  std::function<double(int, int, int)> calc_shotnoise_aliasing =
-    this->ret_calc_shotnoise_aliasing();
+  this->compute_shotnoise_aliasing();
+
+  std::function<double(int, int, int)> calc_shotnoise_aliasing = [this](
+    int i, int j, int k
+  ) {
+    long long idx_grid = ret_grid_index(i, j, k);
+    return this->alias_sn[idx_grid];
+  };
 
   std::function<double(int, int, int)> calc_win_pk, calc_win_sn;
   int assignment_order = this->params.assignment_order;
@@ -2352,16 +2468,22 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
     );
   }
 
-  auto ret_grid_index = [&field_a](int i, int j, int k) {
-    return field_a.ret_grid_index(i, j, k);
-  };
+  // auto ret_grid_index = [&field_a](int i, int j, int k) {
+  //   return field_a.ret_grid_index(i, j, k);
+  // };
 
   auto ret_grid_pos_vector = [&field_a](int i, int j, int k, double rvec[3]) {
     field_a.get_grid_pos_vector(i, j, k, rvec);
   };
 
-  std::function<double(int, int, int)> calc_shotnoise_aliasing =
-    this->ret_calc_shotnoise_aliasing();
+  this->compute_shotnoise_aliasing();
+
+  std::function<double(int, int, int)> calc_shotnoise_aliasing = [this](
+    int i, int j, int k
+  ) {
+    long long idx_grid = ret_grid_index(i, j, k);
+    return this->alias_sn[idx_grid];
+  };
 
   std::function<double(int, int, int)> calc_win_pk, calc_win_sn;
   int assignment_order = this->params.assignment_order;
@@ -2575,16 +2697,22 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
     );
   }
 
-  auto ret_grid_index = [&field_a](int i, int j, int k) {
-    return field_a.ret_grid_index(i, j, k);
-  };
+  // auto ret_grid_index = [&field_a](int i, int j, int k) {
+  //   return field_a.ret_grid_index(i, j, k);
+  // };
 
   auto ret_grid_pos_vector = [&field_a](int i, int j, int k, double rvec[3]) {
     field_a.get_grid_pos_vector(i, j, k, rvec);
   };
 
-  std::function<double(int, int, int)> calc_shotnoise_aliasing =
-    this->ret_calc_shotnoise_aliasing();
+  this->compute_shotnoise_aliasing();
+
+  std::function<double(int, int, int)> calc_shotnoise_aliasing = [this](
+    int i, int j, int k
+  ) {
+    long long idx_grid = ret_grid_index(i, j, k);
+    return this->alias_sn[idx_grid];
+  };
 
   std::function<double(int, int, int)> calc_win_pk, calc_win_sn;
   int assignment_order = this->params.assignment_order;
@@ -2757,9 +2885,7 @@ std::function<double(int, int, int)> FieldStats::ret_calc_shotnoise_aliasing()
 void FieldStats::get_shotnoise_aliasing_sin2(
   int i, int j, int k, double& cx2, double& cy2, double& cz2
 ) {
-  i = (i < this->params.ngrid[0]/2) ? i : i - this->params.ngrid[0];
-  j = (j < this->params.ngrid[1]/2) ? j : j - this->params.ngrid[1];
-  k = (k < this->params.ngrid[2]/2) ? k : k - this->params.ngrid[2];
+  this->shift_grid_indices_fourier(i, j, k);
 
   double u_x = M_PI * i / double(this->params.ngrid[0]);
   double u_y = M_PI * j / double(this->params.ngrid[1]);
@@ -2797,6 +2923,46 @@ double FieldStats::calc_shotnoise_aliasing_pcs(int i, int j, int k) {
   return (1. - 4./3. * cx2 + 2./5. * cx2 * cx2 - 4./315. * cx2 * cx2 * cx2)
     * (1. - 4./3. * cy2 + 2./5. * cy2 * cy2 - 4./315. * cy2 * cy2 * cy2)
     * (1. - 4./3. * cz2 + 2./5. * cz2 * cz2 - 4./315. * cz2 * cz2 * cz2);
+}
+
+void FieldStats::compute_shotnoise_aliasing() {
+  if (this->alias_ini) {return;}  // if computed already
+
+  if (trvs::currTask == 0) {
+    trvs::logger.debug(
+      "Computing shot noise aliasing function in Fourier space "
+      "for assignment order %d.",
+      this->params.assignment_order
+    );
+  }
+
+  this->alias_sn.resize(this->params.nmesh, 0.);  // initialise
+
+  trvs::count_rgrid += 1;
+  trvs::update_maxcntgrid();
+  trvs::logger.info(
+    "Allocated grid for field stats; current rgrid count %d; max rgrid count %d.",
+    trvs::count_rgrid, trvs::max_count_rgrid
+  );
+  trvs::gbytesMem += trvs::size_in_gb<double>(this->params.nmesh);
+  trvs::update_maxmem();
+
+  std::function<double(int, int, int)> calc_shotnoise_aliasing =
+    this->ret_calc_shotnoise_aliasing();
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for collapse(3)
+#endif  // TRV_USE_OMP
+  for (int i = 0; i < this->params.ngrid[0]; i++) {
+    for (int j = 0; j < this->params.ngrid[1]; j++) {
+      for (int k = 0; k < this->params.ngrid[2]; k++) {
+        long long idx_grid = ret_grid_index(i, j, k);
+        this->alias_sn[idx_grid] = calc_shotnoise_aliasing(i, j, k);
+      }
+    }
+  }
+
+  this->alias_ini = true;  // set aliasing flag
 }
 
 }  // namespace trv

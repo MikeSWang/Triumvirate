@@ -408,6 +408,11 @@ class MeshField {
   double calc_grid_based_powlaw_norm(ParticleCatalogue& particles, int order);
 
  private:
+  /// assignment window on mesh
+  std::vector<double> window;
+  /// window assignment order (default -1 if unassigned)
+  int window_assign_order = -1;
+
   /// half-grid shifted complex field on mesh
   fftw_complex* field_s = nullptr;
 
@@ -516,6 +521,16 @@ class MeshField {
    * @returns Window value.
    */
   double calc_assignment_window_in_fourier(int i, int j, int k, int order = 0);
+
+  /**
+   * @brief Compute the interpolation window at each mesh grid
+   *        in Fourier space for different assignment schemes and store
+   *        the values in @ref trv::MeshField.window.
+   *
+   * @param order Order of the assignment scheme
+   *              (default is 0 as placeholder).
+   */
+  void compute_assignment_window_in_fourier(int order = 0);
 };
 
 
@@ -739,6 +754,11 @@ class FieldStats {
   /// FFTW plan initialisation flag
   bool plan_ini = false;
 
+  /// shot-noise aliasing scale-dependence function
+  std::vector<double> alias_sn;
+  /// shot-noise aliasing function initialisation flag
+  bool alias_ini = false;
+
   // ---------------------------------------------------------------------
   // Utilities
   // ---------------------------------------------------------------------
@@ -758,6 +778,25 @@ class FieldStats {
    * @param num_bins Number of bins.
    */
   void resize_stats(int num_bins);
+
+  /**
+   * @brief Return the grid cell index.
+   *
+   * @param i, j, k Grid index in each dimension.
+   * @returns Grid cell index.
+   *
+   * @see trv::MeshField::ret_grid_index
+   */
+  long long ret_grid_index(int i, int j, int k);
+
+  /**
+   * @brief Shift the grid indices on a discrete Fourier mesh grid.
+   *
+   * @param i, j, k Grid index in each dimension.
+   *
+   * @see trv::MeshField::shift_grid_indices_fourier
+   */
+  void shift_grid_indices_fourier(int& i, int& j, int& k);
 
   // ---------------------------------------------------------------------
   // Sampling corrections
@@ -822,6 +861,12 @@ class FieldStats {
    * @returns Function value.
    */
   double calc_shotnoise_aliasing_pcs(int i, int j, int k);
+
+  /**
+   * Compute the shot-noise aliasing function.
+   *
+   */
+  void compute_shotnoise_aliasing();
 };
 
 }  // namespace trv

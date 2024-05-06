@@ -68,6 +68,11 @@ extern int currTask;  ///< current task
 extern double gbytesMem;     ///< current memory usage in gibibytes
 extern double gbytesMaxMem;  ///< maximum memory usage in gibibytes
 
+extern int count_rgrid;      ///< number of 3-d real grids
+extern int count_cgrid;      ///< number of 3-d complex grids
+extern int max_count_rgrid;  ///< maximum number of 3-d real grids
+extern int max_count_cgrid;  ///< maximum number of 3-d complex grids
+
 extern int count_fft;   ///< number of FFTs
 extern int count_ifft;  ///< number of IFFTs
 
@@ -109,6 +114,12 @@ double size_in_gb(int num) {
  *
  */
 void update_maxmem();
+
+/**
+ * @brief Update the maximum 3-d grid counts.
+ *
+ */
+void update_maxcntgrid();
 
 /**
  * @brief Return the current date-time string in

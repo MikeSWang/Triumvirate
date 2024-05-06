@@ -862,10 +862,21 @@ int main(int argc, char* argv[]) {
   );
 
   if (trv::sys::count_fft > 0 || trv::sys::count_ifft > 0) {
-    trv::sys::logger.info(
-      "Number of FFTs: %d forward, %d backward.",
-      trv::sys::count_fft, trv::sys::count_ifft
-    );
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.info(
+        "Number of FFTs: %d forward, %d backward.",
+        trv::sys::count_fft, trv::sys::count_ifft
+      );
+    }
+  }
+
+  if (trv::sys::max_count_cgrid > 0 || trv::sys::max_count_rgrid > 0) {
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.info(
+        "Maximum number of concurrent 3-d grids: %d complex, %d real.",
+        trv::sys::max_count_cgrid, trv::sys::max_count_rgrid
+      );
+    }
   }
 
   if (trv::sys::currTask == 0) {

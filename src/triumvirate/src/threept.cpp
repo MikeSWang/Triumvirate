@@ -316,6 +316,8 @@ trv::BispecMeasurements compute_bispec(
   std::vector< std::complex<double> > ylm_k_b(params.nmesh);
   std::vector< std::complex<double> > ylm_r_a(params.nmesh);
   std::vector< std::complex<double> > ylm_r_b(params.nmesh);
+  trvs::count_cgrid += 4;
+  trvs::update_maxcntgrid();
   trvs::gbytesMem +=
     trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
   trvs::update_maxmem();
@@ -757,9 +759,6 @@ trv::BispecMeasurements compute_bispec(
           );
         }
       }
-
-      trvs::gbytesMem -=
-        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
 
@@ -784,6 +783,10 @@ trv::BispecMeasurements compute_bispec(
   delete[] k1bin_dv; delete[] k2bin_dv;
   delete[] k1eff_dv; delete[] k2eff_dv;
   delete[] bk_dv; delete[] sn_dv;
+
+  trvs::count_cgrid -= 4;
+  trvs::gbytesMem -=
+    trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
@@ -895,6 +898,8 @@ trv::ThreePCFMeasurements compute_3pcf(
   std::vector< std::complex<double> > ylm_r_b(params.nmesh);
   std::vector< std::complex<double> > ylm_k_a(params.nmesh);
   std::vector< std::complex<double> > ylm_k_b(params.nmesh);
+  trvs::count_cgrid += 4;
+  trvs::update_maxcntgrid();
   trvs::gbytesMem +=
     trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
   trvs::update_maxmem();
@@ -1112,9 +1117,6 @@ trv::ThreePCFMeasurements compute_3pcf(
           );
         }
       }
-
-      trvs::gbytesMem -=
-        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
 
@@ -1139,6 +1141,10 @@ trv::ThreePCFMeasurements compute_3pcf(
   delete[] r1bin_dv; delete[] r2bin_dv;
   delete[] r1eff_dv; delete[] r2eff_dv;
   delete[] zeta_dv; delete[] sn_dv;
+
+  trvs::count_cgrid -= 4;
+  trvs::gbytesMem -=
+    trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
@@ -1251,6 +1257,8 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   std::vector< std::complex<double> > ylm_k_b(params.nmesh);
   std::vector< std::complex<double> > ylm_r_a(params.nmesh);
   std::vector< std::complex<double> > ylm_r_b(params.nmesh);
+  trvs::count_cgrid += 4;
+  trvs::update_maxcntgrid();
   trvs::gbytesMem +=
     trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
   trvs::update_maxmem();
@@ -1648,9 +1656,6 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           m1_, m2_
         );
       }
-
-      trvs::gbytesMem -=
-        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
 
@@ -1675,6 +1680,10 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   delete[] k1bin_dv; delete[] k2bin_dv;
   delete[] k1eff_dv; delete[] k2eff_dv;
   delete[] bk_dv; delete[] sn_dv;
+
+  trvs::count_cgrid -= 4;
+  trvs::gbytesMem -=
+    trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
@@ -1783,6 +1792,8 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   std::vector< std::complex<double> > ylm_r_b(params.nmesh);
   std::vector< std::complex<double> > ylm_k_a(params.nmesh);
   std::vector< std::complex<double> > ylm_k_b(params.nmesh);
+  trvs::count_cgrid += 4;
+  trvs::update_maxcntgrid();
   trvs::gbytesMem +=
     trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
   trvs::update_maxmem();
@@ -1976,9 +1987,6 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
           m1_, m2_
         );
       }
-
-      trvs::gbytesMem -=
-        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
 
@@ -2003,6 +2011,10 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   delete[] r1bin_dv; delete[] r2bin_dv;
   delete[] r1eff_dv; delete[] r2eff_dv;
   delete[] zeta_dv; delete[] sn_dv;
+
+  trvs::count_cgrid -= 4;
+  trvs::gbytesMem -=
+    trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
@@ -2112,6 +2124,8 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   std::vector< std::complex<double> > ylm_r_b(params.nmesh);
   std::vector< std::complex<double> > ylm_k_a(params.nmesh);
   std::vector< std::complex<double> > ylm_k_b(params.nmesh);
+  trvs::count_cgrid += 4;
+  trvs::update_maxcntgrid();
   trvs::gbytesMem +=
     trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
   trvs::update_maxmem();
@@ -2330,9 +2344,6 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           );
         }
       }
-
-      trvs::gbytesMem -=
-        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
 
@@ -2357,6 +2368,10 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   delete[] r1bin_dv; delete[] r2bin_dv;
   delete[] r1eff_dv; delete[] r2eff_dv;
   delete[] zeta_dv; delete[] sn_dv;
+
+  trvs::count_cgrid -= 4;
+  trvs::gbytesMem -=
+    trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
@@ -2489,6 +2504,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   std::vector< std::complex<double> > ylm_k_b(params.nmesh);
   std::vector< std::complex<double> > ylm_r_a(params.nmesh);
   std::vector< std::complex<double> > ylm_r_b(params.nmesh);
+  trvs::count_cgrid += 4;
+  trvs::update_maxcntgrid();
   trvs::gbytesMem +=
     trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
   trvs::update_maxmem();
@@ -3041,9 +3058,6 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           );
         }
       }
-
-      trvs::gbytesMem -=
-        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
     }
   }
 
@@ -3074,6 +3088,10 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   delete[] k1bin_dv; delete[] k2bin_dv;
   delete[] k1eff_dv; delete[] k2eff_dv;
   delete[] bk_dv; delete[] sn_dv;
+
+  trvs::count_cgrid -= 4;
+  trvs::gbytesMem -=
+    trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
 
   if (trvs::currTask == 0) {
     trvs::logger.stat(
