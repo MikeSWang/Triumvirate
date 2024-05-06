@@ -311,6 +311,15 @@ trv::BispecMeasurements compute_bispec(
 
   FieldStats stats_sn(params);
 
+  // Initialise reduced-spherical-harmonic weights on mesh grids.
+  std::vector< std::complex<double> > ylm_k_a(params.nmesh);
+  std::vector< std::complex<double> > ylm_k_b(params.nmesh);
+  std::vector< std::complex<double> > ylm_r_a(params.nmesh);
+  std::vector< std::complex<double> > ylm_r_b(params.nmesh);
+  trvs::gbytesMem +=
+    trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
+  trvs::update_maxmem();
+
   // Compute bispectrum terms including shot noise.
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -327,15 +336,6 @@ trv::BispecMeasurements compute_bispec(
         }
       }
       if (flag_vanishing == "true") {continue;}
-
-      // Initialise reduced-spherical-harmonic weights on mesh grids.
-      std::vector< std::complex<double> > ylm_k_a(params.nmesh);
-      std::vector< std::complex<double> > ylm_k_b(params.nmesh);
-      std::vector< std::complex<double> > ylm_r_a(params.nmesh);
-      std::vector< std::complex<double> > ylm_r_b(params.nmesh);
-      trvs::gbytesMem +=
-        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
-      trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_fourier_space(
@@ -890,6 +890,15 @@ trv::ThreePCFMeasurements compute_3pcf(
 
   FieldStats stats_sn(params);
 
+  // Initialise reduced-spherical-harmonic weights on mesh grids.
+  std::vector< std::complex<double> > ylm_r_a(params.nmesh);
+  std::vector< std::complex<double> > ylm_r_b(params.nmesh);
+  std::vector< std::complex<double> > ylm_k_a(params.nmesh);
+  std::vector< std::complex<double> > ylm_k_b(params.nmesh);
+  trvs::gbytesMem +=
+    trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
+  trvs::update_maxmem();
+
   // Compute 3PCF terms including shot noise.
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -907,15 +916,6 @@ trv::ThreePCFMeasurements compute_3pcf(
         }
       }
       if (flag_vanishing == "true") {continue;}
-
-      // Initialise reduced-spherical-harmonic weights on mesh grids.
-      std::vector< std::complex<double> > ylm_r_a(params.nmesh);
-      std::vector< std::complex<double> > ylm_r_b(params.nmesh);
-      std::vector< std::complex<double> > ylm_k_a(params.nmesh);
-      std::vector< std::complex<double> > ylm_k_b(params.nmesh);
-      trvs::gbytesMem +=
-        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
-      trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_config_space(
@@ -1246,6 +1246,15 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
   FieldStats stats_sn(params);
 
+  // Initialise/reset spherical harmonic mesh grids.
+  std::vector< std::complex<double> > ylm_k_a(params.nmesh);
+  std::vector< std::complex<double> > ylm_k_b(params.nmesh);
+  std::vector< std::complex<double> > ylm_r_a(params.nmesh);
+  std::vector< std::complex<double> > ylm_r_b(params.nmesh);
+  trvs::gbytesMem +=
+    trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
+  trvs::update_maxmem();
+
   // Compute bispectrum terms including shot noise.
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -1259,15 +1268,6 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         params.ell1, params.ell2, params.ELL, m1_, m2_, M_
       );  // Wigner 3-j's
       if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
-
-      // Initialise/reset spherical harmonic mesh grids.
-      std::vector< std::complex<double> > ylm_k_a(params.nmesh);
-      std::vector< std::complex<double> > ylm_k_b(params.nmesh);
-      std::vector< std::complex<double> > ylm_r_a(params.nmesh);
-      std::vector< std::complex<double> > ylm_r_b(params.nmesh);
-      trvs::gbytesMem +=
-        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
-      trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_fourier_space(
@@ -1778,6 +1778,15 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
 
   FieldStats stats_sn(params);
 
+  // Initialise/reset spherical harmonic mesh grids.
+  std::vector< std::complex<double> > ylm_r_a(params.nmesh);
+  std::vector< std::complex<double> > ylm_r_b(params.nmesh);
+  std::vector< std::complex<double> > ylm_k_a(params.nmesh);
+  std::vector< std::complex<double> > ylm_k_b(params.nmesh);
+  trvs::gbytesMem +=
+    trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
+  trvs::update_maxmem();
+
   // Compute 3PCF terms including shot noise.
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -1791,15 +1800,6 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         params.ell1, params.ell2, params.ELL, m1_, m2_, M_
       );  // Wigner 3-j's
       if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
-
-      // Initialise/reset spherical harmonic mesh grids.
-      std::vector< std::complex<double> > ylm_r_a(params.nmesh);
-      std::vector< std::complex<double> > ylm_r_b(params.nmesh);
-      std::vector< std::complex<double> > ylm_k_a(params.nmesh);
-      std::vector< std::complex<double> > ylm_k_b(params.nmesh);
-      trvs::gbytesMem +=
-        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
-      trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_config_space(
@@ -2107,6 +2107,15 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
 
   FieldStats stats_sn(params);
 
+  // Initialise reduced-spherical-harmonic weights on mesh grids.
+  std::vector< std::complex<double> > ylm_r_a(params.nmesh);
+  std::vector< std::complex<double> > ylm_r_b(params.nmesh);
+  std::vector< std::complex<double> > ylm_k_a(params.nmesh);
+  std::vector< std::complex<double> > ylm_k_b(params.nmesh);
+  trvs::gbytesMem +=
+    trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
+  trvs::update_maxmem();
+
   // Compute 3PCF window terms including shot noise.
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -2124,15 +2133,6 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         }
       }
       if (flag_vanishing == "true") {continue;}
-
-      // Initialise reduced-spherical-harmonic weights on mesh grids.
-      std::vector< std::complex<double> > ylm_r_a(params.nmesh);
-      std::vector< std::complex<double> > ylm_r_b(params.nmesh);
-      std::vector< std::complex<double> > ylm_k_a(params.nmesh);
-      std::vector< std::complex<double> > ylm_k_b(params.nmesh);
-      trvs::gbytesMem +=
-        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
-      trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_config_space(
@@ -2484,6 +2484,15 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
   FieldStats stats_sn(params);
 
+  // Initialise reduced-spherical-harmonic weights on mesh grids.
+  std::vector< std::complex<double> > ylm_k_a(params.nmesh);
+  std::vector< std::complex<double> > ylm_k_b(params.nmesh);
+  std::vector< std::complex<double> > ylm_r_a(params.nmesh);
+  std::vector< std::complex<double> > ylm_r_b(params.nmesh);
+  trvs::gbytesMem +=
+    trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
+  trvs::update_maxmem();
+
   // Compute bispectrum terms.
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
@@ -2500,15 +2509,6 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         }
       }
       if (flag_vanishing == "true") {continue;}
-
-      // Initialise reduced-spherical-harmonic weights on mesh grids.
-      std::vector< std::complex<double> > ylm_k_a(params.nmesh);
-      std::vector< std::complex<double> > ylm_k_b(params.nmesh);
-      std::vector< std::complex<double> > ylm_r_a(params.nmesh);
-      std::vector< std::complex<double> > ylm_r_b(params.nmesh);
-      trvs::gbytesMem +=
-        trvs::size_in_gb< std::complex<double> >(4*params.nmesh);
-      trvs::update_maxmem();
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_fourier_space(
