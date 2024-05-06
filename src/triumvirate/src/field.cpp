@@ -88,7 +88,6 @@ MeshField::MeshField(
               "FFTW planner flag is set to `FFTW_PATIENT`. "
               "Ensure that the FFTW wisdom file '%s' imported has been "
               "generated with an equivalent or higher planner flag.",
-              this->params.fftw_scheme.c_str(),
               this->params.fftw_wisdom_file_f.c_str()
             );
           }
@@ -114,7 +113,6 @@ MeshField::MeshField(
               "FFTW planner flag is set to `FFTW_PATIENT`. "
               "Ensure that the FFTW wisdom file '%s' imported has been "
               "generated with an equivalent or higher planner flag.",
-              this->params.fftw_scheme.c_str(),
               this->params.fftw_wisdom_file_b.c_str()
             );
           }
