@@ -28,6 +28,10 @@ Improvements
 
 - Add support for FFTW planner flags and wisdom.
 
+- Refactor assignment and aliasing compensation.
+
+- Refactor mesh field (re-)initialisation.
+
 - Refactor gamma function computations.
 
 - Refactor array operation checks.
@@ -36,7 +40,7 @@ Improvements
 
 - Add logs to `trv::MeshField` and `trv::FieldStats` operations.
 
-- Add tracking of (I)FFTs.
+- Add tracking of (I)FFTs and 3-d grids.
 
 - Promote `trv::ParameterSet::nmesh` from type `int` to `long long` and
   refactor related methods and variables.
@@ -44,6 +48,7 @@ Improvements
 Maintenance
 -----------
 
+- Refactor logger message emission.
 - Enhance build recipes.
 - Update syntax and fix typos.
 
