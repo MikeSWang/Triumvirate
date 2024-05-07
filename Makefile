@@ -20,7 +20,7 @@ SCM_LOC_SCHEME ?= node-and-date
 # Preamble
 # ------------------------------------------------------------------------
 
-# Escape commas.
+# Escape characters
 COMMA := ,
 
 
@@ -85,7 +85,7 @@ else ifeq (${OS}, Darwin)
 # check the version number with ``brew info gcc``.
 CXX ?= $(shell find $(brew --prefix gcc)/bin -type f -name 'g++*')
 
-# # Use alternatively LLVM compiler from Homebrew (brew formula 'llvm').
+# Use LLVM compiler from Homebrew (brew formula 'llvm').
 # CXX ?= $(shell brew --prefix llvm)/bin/clang++
 
 else  # OS
@@ -133,7 +133,7 @@ CXXFLAGS += -Wall -O3 ${DEP_CXXFLAGS}
 LDFLAGS += \
 	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \
 	${DEP_LDFLAGS}
-LDLIBS += $(if ${DEP_LDLIBS},${DEP_LDLIBS},-lgsl -lgslcblas -lm -lfftw3)
+LDLIBS += $(if ${DEP_LDLIBS},${DEP_LDLIBS},-lgsl -lgslcblas -lfftw3 -lm)
 
 PIPOPTS ?= --user
 
@@ -191,28 +191,29 @@ endif  # DIRAC_HOST
 # OpenMP: enabled with ``useomp=(true|1)``; disabled otherwise
 ifdef useomp
 
+# Assume GCC implementation by default. [adapt]
 ifeq ($(strip ${useomp}), $(filter $(strip ${useomp}), true 1))
 
-# Assume GCC OpenMP implementation by default. [adapt]
 ifeq (${OS}, Linux)
 
+# Use GCC implementation.
 CXXFLAGS_OMP ?= -fopenmp
 LDFLAGS_OMP ?= -fopenmp
 # LDLIBS_OMP ?= -lgomp
 
-# # Use alternatively Intel OpenMP implementation.
+# Use Intel implementation.
 # CXXFLAGS_OMP ?= -qopenmp
 # LDFLAGS_OMP ?= -qopenmp
 # # LDLIBS_OMP ?= -liomp5
 
 else ifeq (${OS}, Darwin)
 
+# Use GCC implementation.
 CXXFLAGS_OMP ?= -fopenmp
 LDFLAGS_OMP ?= -fopenmp
 # LDLIBS_OMP ?= -lgomp
 
-# # Use alternatively LLVM OpenMP implementation from Homebrew
-# # (brew formula 'libomp').
+# Use LLVM implementation from Homebrew (brew formula 'libomp').
 # CXXFLAGS_OMP ?= -I$(shell brew --prefix libomp)/include -Xpreprocessor -fopenmp
 # LDFLAGS_OMP ?= -L$(shell brew --prefix libomp)/lib
 # LDLIBS_OMP ?= -lomp
@@ -351,7 +352,7 @@ uninstall: cppuninstall pyuninstall
 
 cppuninstall:
 	@echo "Uninstalling Triumvirate C++ library/program..."
-	@echo "  ... removing builds..."
+	@echo "  removing builds..."
 	@find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".gitignore" -exec rm -r {} +
 
 pyuninstall:
