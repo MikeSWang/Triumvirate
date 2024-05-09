@@ -288,50 +288,85 @@ class Logger {
 
 extern Logger logger;  ///< default logger (at `NSET` logging level)
 
+/**
+ * @brief Progress bar for tracking tasks.
+ *
+ */
 class ProgressBar {
  public:
   std::string name;     ///< progress bar name
-  int num_tasks = 1;    ///< total number of tasks
+  int task_count = 1;   ///< total task count
   int task_idx = 0;     ///< task index
-  float progress = 0.;  ///< progress value
+  float progress = 0.;  ///< progress value in [0, 1] interval
 
   /**
-   * @brief Construct a progress bar with the specified width.
+   * @brief Construct a progress bar.
    *
-   * @param num_tasks Total number of tasks.
-   * @param task_idx_ini Initial task index.
-   * @param progress_ini Initial progress value.
+   * @param task_count Total task count (at least 1).
    * @param name Progress bar name (default is an empty string).
-   * @param bar_width Progress bar width.
-   * @param nodes Progress values at which the update is shown by the bar
-   *              (default is an empty vector).
    */
-  ProgressBar(
-    int num_tasks, int task_idx_ini = 0, float progress_ini = 0.,
-    std::string name = "", int bar_width = 70,
-    std::vector<float> nodes = std::vector<float>()
-  );
+  ProgressBar(int task_count, std::string name = "");
+
+  /**
+   * @brief Set progress bar width.
+   *
+   * @param bar_width Progress bar width (at least 1).
+   */
+  void set_bar_width(int bar_width);
+
+  /**
+   * @brief Set progress bar width.
+   *
+   * @param nodes Progress values (strictly increasing in the interval
+   *              [0, 1]) at which the bar is updated.
+   */
+  void set_nodes(std::vector<float> nodes);
+
+  /**
+   * @brief Set current (or initial) task index.
+   *
+   * @param task_idx Current task index within the total task count.
+   *
+   * @note When the tas index is zero, it means no task has completed yet.
+   */
+  void set_task_idx(int task_idx);
+
+  /**
+   * @brief Set current (or initial) progress value.
+   *
+   * @param progress Current progress value in the interval [0, 1].
+   */
+  void set_progress(float progress);
 
   /**
    * @brief Update the progress bar.
    *
-   * @param task_idx_now Current task index.
+   * @param task_idx_now Latest completed task index.
+   *
+   * @note When the tas index is zero, it means no task has completed yet.
    */
   void update(int task_idx_now);
 
   /**
    * @brief Update the progress bar.
    *
-   * @param progress_now Current progress value.
+   * @param progress_now Latest progress value.
    *
    * @overload
    */
   void update(float progress_now);
 
  private:
-  int bar_width = 70;        ///< progress bar width
+  int bar_width = 50;        ///< progress bar width
+
   std::vector<float> nodes;  ///< progress nodes
   int next_node_idx = 0;     ///< next progress node index
+
+  /**
+   * @brief Set default progress nodes at percentage points.
+   *
+   */
+  void set_default_pcpt_nodes();
 };
 
 

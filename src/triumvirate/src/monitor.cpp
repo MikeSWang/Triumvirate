@@ -270,35 +270,65 @@ void Logger::error(const char* fmt_string, ...) {
   }
 }
 
-ProgressBar::ProgressBar(
-  int num_tasks, int task_idx_ini, float progress_ini,
-  std::string name, int bar_width,
-  std::vector<float> nodes
-) {
+ProgressBar::ProgressBar(int task_count, std::string name) {
   this->name = name;
-  this->bar_width = bar_width;
 
-  this->num_tasks = num_tasks;
-  this->task_idx = task_idx_ini;
-  this->progress = progress_ini;
-
-  if (nodes.size() > 0) {
-    this->nodes = nodes;
-  } else {
-    this->nodes.resize(101, 0.);
-    for (int pcpt = 0; pcpt <= 100; ++pcpt) {
-      this->nodes.push_back(static_cast<float>(pcpt) / 100.);
-    }
+  if (task_count < 1) {
+    throw InvalidParameterError(
+      "Progress bar must count at least one task in total."
+    );
   }
+  this->task_count = task_count;
 
-  while (progress_ini > this->nodes[this->next_node_idx]) {
+  this->set_default_pcpt_nodes();
+}
+
+void ProgressBar::set_bar_width(int width) {
+  if (width < 1) {
+    throw InvalidParameterError("Progress bar width must be at least 1.");
+  }
+  this->bar_width = width;
+}
+
+void ProgressBar::set_nodes(std::vector<float> nodes) {
+  if (nodes.size() < 1) {
+    throw InvalidParameterError(
+      "Progress bar nodes must have at least one element."
+    );
+  }
+  this->nodes = nodes;
+}
+
+void ProgressBar::set_task_idx(int task_idx) {
+  if (task_idx < 0 or task_idx > this->task_count) {
+    throw InvalidParameterError(
+      "Progress bar task index must be non-negative and "
+      "within the total task count."
+    );
+  }
+  this->task_idx = task_idx;
+
+  float progress = float(this->task_idx) / float(this->task_count);
+  this->set_progress(progress);
+}
+
+void ProgressBar::set_progress(float progress) {
+  if (progress < 0. or progress > 1.) {
+    throw InvalidParameterError(
+      "Progress bar progress must be within the range [0, 1]."
+    );
+  }
+  this->progress = progress;
+
+  this->next_node_idx = 0;
+  while (this->progress > this->nodes[this->next_node_idx]) {
     this->next_node_idx += 1;
   }
 }
 
 void ProgressBar::update(int task_idx_now) {
   this->task_idx = task_idx_now;
-  float progress_now = float(task_idx_now) / float(this->num_tasks);
+  float progress_now = float(this->task_idx) / float(this->task_count);
   this->update(progress_now);
 }
 
@@ -307,24 +337,42 @@ void ProgressBar::update(float progress_now) {
 
   if (this->progress <= 1.) {
     if (this->progress >= this->nodes[this->next_node_idx]) {
-      int bar_pos = this->bar_width * this->progress;
+      int pos = this->bar_width * this->progress;
 
-      std::cout << this->name << " [";
-      for (int i = 0; i < this->bar_width; ++i) {
-          if (i < bar_pos) {std::cout << "=";}
-          else if (i == bar_pos) {std::cout << ">";}
-          else {std::cout << " ";}
+      if (this->name != "") {
+        std::cout << this->name << " [";
+      } else {
+        std::cout << "[";
       }
-      std::cout << "] " << int(progress * 100.0) << " %\r";
+
+      for (int ichar = 0; ichar < this->bar_width; ichar++) {
+          if (ichar < pos) {
+            std::cout << "=";
+          } else
+          if (ichar == pos) {
+            std::cout << ">";
+          }
+          else {
+            std::cout << " ";
+          }
+      }
+      std::cout << "] " << int(progress * 100.) << " %\r";
       std::cout.flush();
 
       this->next_node_idx += 1;
     }
-    if (this->progress == 1.) {std::cout << std::endl;}
   } else {
     throw InvalidDataError(
       "Progress bar has already completed: progress %f > 1.\n", this->progress
     );
+  }
+  if (this->progress == 1.) {std::cout << std::endl;}
+}
+
+void ProgressBar::set_default_pcpt_nodes() {
+  this->nodes.resize(101, 0.);
+  for (int pcpt = 0; pcpt <= 100; ++pcpt) {
+    this->nodes.push_back(float(pcpt) / 100.);
   }
 }
 
