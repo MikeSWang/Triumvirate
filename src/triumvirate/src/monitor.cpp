@@ -270,6 +270,61 @@ void Logger::error(const char* fmt_string, ...) {
   }
 }
 
+ProgressBar::ProgressBar(
+  int num_tasks, int task_idx_ini, float progress_ini, int bar_width,
+  std::vector<float> nodes
+) {
+  this->bar_width = bar_width;
+
+  this->num_tasks = num_tasks;
+  this->task_idx = task_idx_ini;
+  this->progress = progress_ini;
+
+  if (nodes.size() > 0) {
+    this->nodes = nodes;
+  } else {
+    this->nodes.resize(101, 0.);
+    for (int pcpt = 0; pcpt <= 100; ++pcpt) {
+      this->nodes.push_back(static_cast<float>(pcpt) / 100.);
+    }
+  }
+
+  while (progress_ini > this->nodes[this->next_node_idx]) {
+    this->next_node_idx += 1;
+  }
+}
+
+void ProgressBar::update(int task_idx_now) {
+  this->task_idx = task_idx_now;
+  float progress_now = float(task_idx_now) / float(this->num_tasks);
+  this->update(progress_now);
+}
+
+void ProgressBar::update(float progress_now) {
+  this->progress = progress_now;
+
+  if (this->progress <= 1.) {
+    if (this->progress >= this->nodes[this->next_node_idx]) {
+      int bar_pos = this->bar_width * this->progress;
+
+      std::cout << "[";
+      for (int i = 0; i < this->bar_width; ++i) {
+          if (i < bar_pos) {std::cout << "=";}
+          else if (i == bar_pos) {std::cout << ">";}
+          else {std::cout << " ";}
+      }
+      std::cout << "] " << int(progress * 100.0) << " %\r";
+      std::cout.flush();
+
+      this->next_node_idx += 1;
+    }
+  } else {
+    throw InvalidDataError(
+      "Progress bar has already completed: progress %f > 1.\n", this->progress
+    );
+  }
+}
+
 
 // ***********************************************************************
 // Program exceptions

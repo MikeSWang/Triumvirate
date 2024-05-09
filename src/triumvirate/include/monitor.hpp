@@ -35,8 +35,10 @@
 #include <chrono>
 #include <cstdarg>
 #include <cstdio>
+#include <iostream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 /// @cond DOXYGEN_DOC_MACROS
 // Declares OMP macros.
@@ -285,6 +287,49 @@ class Logger {
 };
 
 extern Logger logger;  ///< default logger (at `NSET` logging level)
+
+class ProgressBar {
+ public:
+  int num_tasks = 1;      ///< total number of tasks
+  int task_idx = 0;       ///< task index
+  float progress = 0.;    ///< progress value
+
+  /**
+   * @brief Construct a progress bar with the specified width.
+   *
+   * @param num_tasks Total number of tasks.
+   * @param task_idx_ini Initial task index.
+   * @param progress_ini Initial progress value.
+   * @param bar_width Progress bar width.
+   * @param nodes Progress values at which the update is shown by the bar
+   *              (default is an empty vector).
+   */
+  ProgressBar(
+    int num_tasks, int task_idx_ini = 0, float progress_ini = 0.,
+    int bar_width = 70, std::vector<float> nodes = std::vector<float>()
+  );
+
+  /**
+   * @brief Update the progress bar.
+   *
+   * @param task_idx_now Current task index.
+   */
+  void update(int task_idx_now);
+
+  /**
+   * @brief Update the progress bar.
+   *
+   * @param progress_now Current progress value.
+   *
+   * @overload
+   */
+  void update(float progress_now);
+
+ private:
+  int bar_width = 70;        ///< progress bar width
+  std::vector<float> nodes;  ///< progress nodes
+  int next_node_idx = 0;     ///< next progress node index
+};
 
 
 // ***********************************************************************
