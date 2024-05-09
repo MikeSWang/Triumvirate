@@ -887,14 +887,14 @@ int main(int argc, char* argv[]) {
 
   if (trv::sys::currTask == 0) {
     trv::sys::logger.info(
-      "Minimal estimate of peak memory usage: %.1f gigabytes.",
+      "Minimal estimate of peak memory usage: %.1f gibibytes.",
       trv::sys::gbytesMaxMem
     );
   }
   if (trv::sys::gbytesMem > 0.) {
     if (trv::sys::currTask == 0) {
       trv::sys::logger.warn(
-        "Uncleared dynamically allocated memory: %.1f gigabytes.",
+        "Uncleared dynamically allocated memory: %.1f gibibytes.",
         trv::sys::gbytesMem
       );
     }
