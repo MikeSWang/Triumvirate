@@ -19,13 +19,10 @@
 ## Code tags
 
 - The following code tags are in use:
-    - 'UPDATE';
-    - 'RFE', 'FUTURE';
-    - 'CAVEAT';
-    - 'NOTE';
-    - 'SEE';
-    - 'STYLE'.
+    - 'NOTE', 'STYLE';
+    - 'CAVEAT', 'UPDATE';
+    - 'RFE', 'FUTURE'.
 
 - The following code tags are available for use:
-    - 'FIXME', 'TODO', 'QUEST';
-    - 'WARNING', 'HACK'.
+    - 'WARNING', 'HACK';
+    - 'FIXME', 'TODO', 'QUEST'.

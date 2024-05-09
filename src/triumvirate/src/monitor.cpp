@@ -201,7 +201,7 @@ void Logger::log(LogLevel entry_level, const char* fmt_string, ...) {
 
 void Logger::log(int level_entry, const char* fmt_string, ...) {
   if (level_entry >= this->level_limit) {
-    // SEE: trv::sys::LogLevel.
+    // CAVEAT: See @ref trv::sys::LogLevel.
     level_entry /= 10;
 
     std::string log_type;

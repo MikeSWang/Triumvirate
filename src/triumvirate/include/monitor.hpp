@@ -62,6 +62,8 @@ namespace sys {
 // Program tracking
 // ***********************************************************************
 
+// STYLE: Standard naming convention is not followed below.
+
 // RFE: Implement MPI.
 extern int currTask;  ///< current task
 
