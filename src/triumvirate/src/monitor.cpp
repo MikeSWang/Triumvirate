@@ -271,9 +271,11 @@ void Logger::error(const char* fmt_string, ...) {
 }
 
 ProgressBar::ProgressBar(
-  int num_tasks, int task_idx_ini, float progress_ini, int bar_width,
+  int num_tasks, int task_idx_ini, float progress_ini,
+  std::string name, int bar_width,
   std::vector<float> nodes
 ) {
+  this->name = name;
   this->bar_width = bar_width;
 
   this->num_tasks = num_tasks;
@@ -307,7 +309,7 @@ void ProgressBar::update(float progress_now) {
     if (this->progress >= this->nodes[this->next_node_idx]) {
       int bar_pos = this->bar_width * this->progress;
 
-      std::cout << "[";
+      std::cout << this->name << " [";
       for (int i = 0; i < this->bar_width; ++i) {
           if (i < bar_pos) {std::cout << "=";}
           else if (i == bar_pos) {std::cout << ">";}
@@ -318,6 +320,7 @@ void ProgressBar::update(float progress_now) {
 
       this->next_node_idx += 1;
     }
+    if (this->progress == 1.) {std::cout << std::endl;}
   } else {
     throw InvalidDataError(
       "Progress bar has already completed: progress %f > 1.\n", this->progress
