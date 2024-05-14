@@ -155,11 +155,29 @@ MeshField::MeshField(
       }
     }
 
+    auto pre_plan_f_timept = std::chrono::system_clock::now();
     this->transform = fftw_plan_dft_3d(
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
       this->field, this->field,
       FFTW_FORWARD, this->params.fftw_planner_flag
     );
+    auto post_plan_f_timept = std::chrono::system_clock::now();
+
+    double plan_f_time = std::chrono::duration<double>(
+      post_plan_f_timept - pre_plan_f_timept
+    ).count();
+    if (import_fftw_wisdom_f && plan_f_time > 1.) {
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "FFTW plan for forward transforms took %.3f (> 1.) seconds "
+          "despite importing wisdom file, which may have been created "
+          "under different runtime conditions. "
+          "A new wisdom file will be exported.",
+          plan_f_time
+        );
+      }
+      export_fftw_wisdom_f = true;
+    }
 
     if (export_fftw_wisdom_f) {
       fftw_export_wisdom_to_filename(
@@ -187,11 +205,29 @@ MeshField::MeshField(
       }
     }
 
+    auto pre_plan_b_timept = std::chrono::system_clock::now();
     this->inv_transform = fftw_plan_dft_3d(
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
       this->field, this->field,
       FFTW_BACKWARD, this->params.fftw_planner_flag
     );
+    auto post_plan_b_timept = std::chrono::system_clock::now();
+
+    double plan_b_time = std::chrono::duration<double>(
+      post_plan_b_timept - pre_plan_b_timept
+    ).count();
+    if (import_fftw_wisdom_b && plan_b_time > 1.) {
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "FFTW plan for backward transforms took %.3f (> 1.) seconds "
+          "despite importing wisdom file, which may have been created "
+          "under different runtime conditions. "
+          "A new wisdom file will be exported.",
+          plan_b_time
+        );
+      }
+      export_fftw_wisdom_b = true;
+    }
 
     if (export_fftw_wisdom_b) {
       fftw_export_wisdom_to_filename(
