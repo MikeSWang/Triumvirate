@@ -1029,8 +1029,8 @@ class ThreePointWindow:
         win_obj = np.load(filepath, allow_pickle=True)
 
         self.r = win_obj['r']
-        self.Q = win_obj['Q']
-        self.Q_diag = win_obj['Q_diag']
+        self.Q = win_obj['Q'].item()
+        self.Q_diag = win_obj['Q_diag'].item()
 
         self.multipoles = win_obj['multipoles']
         self.sources = win_obj['sources']
