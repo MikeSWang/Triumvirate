@@ -1643,18 +1643,23 @@ class WinConvBase:
                     self.r_out[multipole], self._rQ_in[term.multipole_Q]
                 ):
                     msg = (
-                        "pole: {}; conv: {}, {}; wind: {}, {}".format(
-                            multipole,
-                            self.r_out[multipole].min(),
-                            self.r_out[multipole].max(),
-                            self._rQ_in[term.multipole_Q].min(),
-                            self._rQ_in[term.multipole_Q].max()
-                        )
+                        "Multipole: ({}); "
+                        "convolution range: {}, {}; "
+                        "CF sample range: {}, {}; "
+                        "window sample range: {}, {}."
+                    ).format(
+                        multipole,
+                        self.r_out[multipole].min(),
+                        self.r_out[multipole].max(),
+                        self.r_in[term.multipole_Z].min(),
+                        self.r_in[term.multipole_Z].max(),
+                        self._rQ_in[term.multipole_Q].min(),
+                        self._rQ_in[term.multipole_Q].max()
                     )
                     warnings.warn(
                         "The convolution range `r_out` is not fully covered "
                         "by the window function separation sample points. "
-                        "Inaccurate extrapolation may occur." + msg,
+                        "Inaccurate extrapolation may occur. " + msg,
                         category=ConvolutionRangeWarning
                     )
                 if (
@@ -1666,7 +1671,7 @@ class WinConvBase:
                     warnings.warn(
                         "The convolution range `r_out` is not fully covered "
                         "by the input CF separation sample points. "
-                        "Inaccurate extrapolation may occur.",
+                        "Inaccurate extrapolation may occur. " + msg,
                         category=ConvolutionRangeWarning
                     )
 
