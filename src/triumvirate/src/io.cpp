@@ -59,7 +59,7 @@ void make_write_dir(std::string dirstr) {
   if (dirstr.empty() || dirstr == "." || dirstr == "./" || dirstr == "/") {
     return;
   }
-  if (mkdir(dirstr.c_str(), 0777) && errno != EEXIST) {
+  if (mkdir(dirstr.c_str(), 0777) == -1 && errno != EEXIST) {
     trv::sys::logger.error(
       "Failed to create output measurement directory: %s.", dirstr.c_str()
     );
