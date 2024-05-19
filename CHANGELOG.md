@@ -1,6 +1,6 @@
 # Change Log
 
-## v0.4.0 (expected in 2024)
+## v0.4 (expected in 2024)
 
 ### Bug fixes
 
@@ -41,6 +41,7 @@
 
 ### Maintenance
 
+- Require C++17 standard.
 - Refactor logger message emission.
 - Enhance build recipes.
 - Update syntax and fix typos.
