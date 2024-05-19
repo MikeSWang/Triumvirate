@@ -275,7 +275,7 @@ ProgressBar::ProgressBar(int task_count, std::string name) {
 
   if (task_count < 1) {
     throw InvalidParameterError(
-      "Progress bar must count at least one task in total."
+      "Progress bar must count at least one task in total.\n"
     );
   }
   this->task_count = task_count;
@@ -285,7 +285,7 @@ ProgressBar::ProgressBar(int task_count, std::string name) {
 
 void ProgressBar::set_bar_width(int width) {
   if (width < 1) {
-    throw InvalidParameterError("Progress bar width must be at least 1.");
+    throw InvalidParameterError("Progress bar width must be at least 1.\n");
   }
   this->bar_width = width;
 }
@@ -293,7 +293,7 @@ void ProgressBar::set_bar_width(int width) {
 void ProgressBar::set_nodes(std::vector<float> nodes) {
   if (nodes.size() < 1) {
     throw InvalidParameterError(
-      "Progress bar nodes must have at least one element."
+      "Progress bar nodes must have at least one element.\n"
     );
   }
   this->nodes = nodes;
@@ -303,7 +303,7 @@ void ProgressBar::set_task_idx(int task_idx) {
   if (task_idx < 0 or task_idx > this->task_count) {
     throw InvalidParameterError(
       "Progress bar task index must be non-negative and "
-      "within the total task count."
+      "within the total task count.\n"
     );
   }
   this->task_idx = task_idx;
@@ -315,7 +315,7 @@ void ProgressBar::set_task_idx(int task_idx) {
 void ProgressBar::set_progress(float progress) {
   if (progress < 0. or progress > 1.) {
     throw InvalidParameterError(
-      "Progress bar progress must be within the range [0, 1]."
+      "Progress bar progress must be within the range [0, 1].\n"
     );
   }
   this->progress = progress;

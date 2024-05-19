@@ -402,7 +402,7 @@ trv::PowspecMeasurements compute_powspec(
     }
 
     if (trvs::currTask == 0) {
-      trvs::logger.stat("Power spectrum term at order M = %d computed.", M_);
+      trvs::logger.stat("Power spectrum term computed at order M = %d.", M_);
     }
   }
 
@@ -515,7 +515,7 @@ trv::TwoPCFMeasurements compute_corrfunc(
 
     if (trvs::currTask == 0) {
       trvs::logger.stat(
-        "Two-point correlation function term at order M = %d computed.", M_
+        "Two-point correlation function term computed at order M = %d.", M_
       );
     }
   }
@@ -818,7 +818,7 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
 
     if (trvs::currTask == 0) {
       trvs::logger.stat(
-        "Two-point correlation function window term at order M = %d computed.",
+        "Two-point correlation function window term computed at order M = %d.",
         M_
       );
     }

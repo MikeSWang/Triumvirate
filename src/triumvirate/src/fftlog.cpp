@@ -456,7 +456,7 @@ void SphericalBesselTransform::transform_cosmological_multipole(
 ) {
   if (abs(dir) != 1) {
     throw trvs::InvalidParameterError(
-      "The transform direction must be either +1 (forward) or -1 (backward)."
+      "The transform direction must be either +1 (forward) or -1 (backward).\n"
     );
   }
 

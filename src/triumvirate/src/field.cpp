@@ -104,8 +104,8 @@ MeshField::MeshField(
           export_fftw_wisdom_f = true;
           if (trvs::currTask == 0) {
             trvs::logger.info(
-              "No FFTW wisdom file '%s' "
-              "for forward transforms could be imported.",
+              "No FFTW wisdom file for forward transforms "
+              "could be imported: %s",
               this->params.fftw_wisdom_file_f.c_str()
             );
           }
@@ -133,8 +133,8 @@ MeshField::MeshField(
           export_fftw_wisdom_b = true;
           if (trvs::currTask == 0) {
             trvs::logger.info(
-              "No FFTW wisdom file '%s' "
-              "for backward transforms could be imported.",
+              "No FFTW wisdom file for backward transforms "
+              "could be imported: %s",
               this->params.fftw_wisdom_file_b.c_str()
             );
           }
@@ -149,7 +149,7 @@ MeshField::MeshField(
       trv::sys::fftw_wisdom_f_imported = true;
       if (trvs::currTask == 0) {
         trvs::logger.info(
-          "FFTW wisdom file '%s' for forward transforms has been imported.",
+          "FFTW wisdom file for forward transforms has been imported: %s",
           this->params.fftw_wisdom_file_f.c_str()
         );
       }
@@ -185,7 +185,7 @@ MeshField::MeshField(
       );
       if (trvs::currTask == 0) {
         trvs::logger.info(
-          "FFTW wisdom file '%s' for forward transforms has been exported.",
+          "FFTW wisdom file for forward transforms has been exported: %s",
           this->params.fftw_wisdom_file_f.c_str()
         );
       }
@@ -199,7 +199,7 @@ MeshField::MeshField(
       trv::sys::fftw_wisdom_b_imported = true;
       if (trvs::currTask == 0) {
         trvs::logger.info(
-          "FFTW wisdom file '%s' for backward transforms has been imported.",
+          "FFTW wisdom file for backward transforms has been imported: %s",
           this->params.fftw_wisdom_file_b.c_str()
         );
       }
@@ -235,7 +235,7 @@ MeshField::MeshField(
       );
       if (trvs::currTask == 0) {
         trvs::logger.info(
-          "FFTW wisdom file '%s' for backward transforms has been exported.",
+          "FFTW wisdom file for backward transforms has been exported: %s",
           this->params.fftw_wisdom_file_b.c_str()
         );
       }
@@ -429,7 +429,7 @@ void MeshField::assign_weighted_field_to_mesh(
 ) {
   if (trvs::currTask == 0) {
     trvs::logger.debug(
-      "Performing mesh assignment scheme '%s' to %s.",
+      "Performing mesh assignment scheme '%s' to '%s'.",
       this->params.assignment.c_str(),
       this->name.c_str()
     );
@@ -1365,7 +1365,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
 void MeshField::fourier_transform() {
   if (trvs::currTask == 0) {
     trvs::logger.debug(
-      "Performing Fourier transform of %s.", this->name.c_str()
+      "Performing Fourier transform of '%s'.", this->name.c_str()
     );
   }
 
@@ -1448,7 +1448,7 @@ void MeshField::fourier_transform() {
 void MeshField::inv_fourier_transform() {
   if (trvs::currTask == 0) {
     trvs::logger.debug(
-      "Performing inverse Fourier transform of %s.", this->name.c_str()
+      "Performing inverse Fourier transform of '%s'.", this->name.c_str()
     );
   }
 
@@ -1479,7 +1479,7 @@ void MeshField::inv_fourier_transform() {
 void MeshField::apply_wide_angle_pow_law_kernel() {
   if (trvs::currTask == 0) {
     trvs::logger.debug(
-      "Applying wide-angle power-law kernel to %s.", this->name.c_str()
+      "Applying wide-angle power-law kernel to '%s'.", this->name.c_str()
     );
   }
 
@@ -1516,7 +1516,7 @@ void MeshField::apply_wide_angle_pow_law_kernel() {
 void MeshField::apply_assignment_compensation() {
   if (trvs::currTask == 0) {
     trvs::logger.debug(
-      "Applying assignment compensation to %s.", this->name.c_str()
+      "Applying assignment compensation to '%s'.", this->name.c_str()
     );
   }
 
@@ -1549,7 +1549,7 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Performing inverse Fourier transform to spherical harmonic weighted "
-      "%s in wavenumber bands [%f, %f).",
+      "'%s' in wavenumber bands [%f, %f).",
       this->name.c_str(), k_lower, k_upper
     );
   }
@@ -1634,7 +1634,7 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Performing inverse Fourier transform to spherical Bessel weighted "
-      "%s at separation `r` = %f.",
+      "'%s' at separation r = %f.",
       this->name.c_str(), r
     );
   }
@@ -1900,7 +1900,7 @@ trv::BinnedVectors FieldStats::record_binned_vectors(
       );
     }
     throw trvs::InvalidDataError(
-      "Invalid binning space: '%s'.", binning.space.c_str()
+      "Invalid binning space: '%s'.\n", binning.space.c_str()
     );
   }
 
@@ -2058,7 +2058,7 @@ OMP_CRITICAL
 
     if (trvs::currTask == 0) {
       trvs::logger.info(
-        "Check binned-vectors file for reference: %s.", save_file.c_str()
+        "Check binned-vectors file for reference: %s", save_file.c_str()
       );
     }
   }

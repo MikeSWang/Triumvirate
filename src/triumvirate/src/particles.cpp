@@ -168,9 +168,9 @@ int ParticleCatalogue::load_catalogue_file(
   if (fin.fail()) {
     fin.close();
     if (trvs::currTask == 0) {
-      trvs::logger.error("Failed to open file '%s'.", this->source.c_str());
+      trvs::logger.error("Failed to open file: %s", this->source.c_str());
     }
-    throw trvs::IOError("Failed to open file '%s'.\n", this->source.c_str());
+    throw trvs::IOError("Failed to open file: %s\n", this->source.c_str());
   }
 
   // Initialise particle data.

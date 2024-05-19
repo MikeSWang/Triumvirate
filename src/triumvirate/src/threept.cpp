@@ -755,7 +755,7 @@ trv::BispecMeasurements compute_bispec(
         count_terms++;
         if (trvs::currTask == 0) {
           trvs::logger.stat(
-            "Bispectrum term at orders (m1, m2, M) = (%d, %d, %d) computed.",
+            "Bispectrum term computed at orders (m1, m2, M) = (%d, %d, %d).",
             m1_, m2_, M_
           );
         }
@@ -1114,8 +1114,8 @@ trv::ThreePCFMeasurements compute_3pcf(
         count_terms++;
         if (trvs::currTask == 0) {
           trvs::logger.stat(
-            "Three-point correlation function term at orders "
-            "(m1, m2, M) = (%d, %d, %d) computed.",
+            "Three-point correlation function term computed at orders "
+            "(m1, m2, M) = (%d, %d, %d).",
             m1_, m2_, M_
           );
         }
@@ -1657,7 +1657,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       count_terms++;
       if (trvs::currTask == 0) {
         trvs::logger.stat(
-          "Bispectrum term at orders (m1, m2, M) = (%d, %d, 0) computed.",
+          "Bispectrum term computed at orders (m1, m2, M) = (%d, %d, 0).",
           m1_, m2_
         );
       }
@@ -1989,8 +1989,8 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       count_terms++;
       if (trvs::currTask == 0) {
         trvs::logger.stat(
-          "Three-point correlation function term at orders "
-          "(m1, m2, M) = (%d, %d, 0) computed.",
+          "Three-point correlation function term computed at orders "
+          "(m1, m2, M) = (%d, %d, 0).",
           m1_, m2_
         );
       }
@@ -2347,8 +2347,8 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         count_terms++;
         if (trvs::currTask == 0) {
           trvs::logger.stat(
-            "Three-point correlation function window term at orders "
-            "(m1, m2, M) = (%d, %d, %d) computed.",
+            "Three-point correlation function window term computed at orders "
+            "(m1, m2, M) = (%d, %d, %d).",
             m1_, m2_, M_
           );
         }
@@ -3064,7 +3064,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         count_terms++;
         if (trvs::currTask == 0) {
           trvs::logger.stat(
-            "Bispectrum term at orders (m1, m2, M) = (%d, %d, %d) computed.",
+            "Bispectrum term computed at orders (m1, m2, M) = (%d, %d, %d).",
             m1_, m2_, M_
           );
         }

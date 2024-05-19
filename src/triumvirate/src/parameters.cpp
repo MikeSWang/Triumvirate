@@ -953,12 +953,12 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
   if (!(ofileptr = std::fopen(out_parameter_filepath, "w"))) {
     if (trvs::currTask == 0) {
       trvs::logger.error(
-        "Non-existent or unwritable output directory: %s.",
+        "Non-existent or unwritable output directory: %s",
         this->measurement_dir.c_str()
       );
     }
     throw trvs::IOError(
-      "Non-existent or unwritable output directory: %s.\n",
+      "Non-existent or unwritable output directory: %s\n",
       this->measurement_dir.c_str()
     );
   }
@@ -1033,7 +1033,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
 
   if (trvs::currTask == 0) {
     trvs::logger.info(
-      "Check used-parameter file for reference: %s.", out_parameter_filepath
+      "Check used-parameter file for reference: %s", out_parameter_filepath
     );
   }
 

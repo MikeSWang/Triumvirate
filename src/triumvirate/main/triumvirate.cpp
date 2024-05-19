@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
 
   if (trv::sys::currTask == 0) {
     trv::sys::logger.stat(
-      "[A] Parameters and source data are being initialised."
+      "[MAIN:TRV:A] Parameters and source data are being initialised."
     );
   }
 
@@ -129,7 +129,7 @@ int main(int argc, char* argv[]) {
   // ---------------------------------------------------------------------
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("[A.1] Reading parameters...");
+    trv::sys::logger.stat("[MAIN:TRV:A] Reading parameters...");
   }
 
   if (argc < 2) {
@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("[A.1] ... read parameters.");
+    trv::sys::logger.stat("[MAIN:TRV:A] ... read parameters.");
   }
 
   trv::sys::logger.reset_level(params.verbose);
@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
 
   if (params.catalogue_type != "none") {
     if (trv::sys::currTask == 0) {
-      trv::sys::logger.stat("[A.2] Reading catalogues...");
+      trv::sys::logger.stat("[MAIN:TRV:A] Reading catalogues...");
     }
   }
 
@@ -247,7 +247,7 @@ int main(int argc, char* argv[]) {
 
   if (params.catalogue_type != "none") {
     if (trv::sys::currTask == 0) {
-      trv::sys::logger.stat("[A.2] ... read catalogues.");
+      trv::sys::logger.stat("[MAIN:TRV:A] ... read catalogues.");
     }
   }
 
@@ -260,7 +260,9 @@ int main(int argc, char* argv[]) {
   // =====================================================================
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("[B] Clustering statistics are being measured.");
+    trv::sys::logger.stat(
+      "[MAIN:TRV:B] Clustering statistics are being measured."
+    );
   }
 
   // ---------------------------------------------------------------------
@@ -268,7 +270,7 @@ int main(int argc, char* argv[]) {
   // ---------------------------------------------------------------------
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("[B.1] Setting up binning...");
+    trv::sys::logger.stat("[MAIN:TRV:B] Setting up binning...");
   }
 
   trv::Binning binning(params);  // binning
@@ -279,7 +281,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("[B.1] ... set up binning.");
+    trv::sys::logger.stat("[MAIN:TRV:B] ... set up binning.");
   }
 
   // ---------------------------------------------------------------------
@@ -288,7 +290,7 @@ int main(int argc, char* argv[]) {
 
   if (params.catalogue_type != "none") {
     if (trv::sys::currTask == 0) {
-      trv::sys::logger.stat("[B.2] Computing lines of sight...");
+      trv::sys::logger.stat("[MAIN:TRV:B] Computing lines of sight...");
     }
   }
 
@@ -350,7 +352,7 @@ int main(int argc, char* argv[]) {
 
   if (params.catalogue_type != "none") {
     if (trv::sys::currTask == 0) {
-      trv::sys::logger.stat("[B.2] ... computed lines of sight.");
+      trv::sys::logger.stat("[MAIN:TRV:B] ... computed lines of sight.");
     }
   }
 
@@ -361,7 +363,7 @@ int main(int argc, char* argv[]) {
   if (params.catalogue_type != "none") {
     if (trv::sys::currTask == 0) {
       trv::sys::logger.stat(
-        "[B.3] Aligning catalogues inside measurement box..."
+        "[MAIN:TRV:B] Aligning catalogues inside measurement box..."
       );
     }
   }
@@ -427,7 +429,7 @@ int main(int argc, char* argv[]) {
   if (params.catalogue_type != "none") {
     if (trv::sys::currTask == 0) {
       trv::sys::logger.stat(
-        "[B.3] ... aligned catalogues inside measurement box."
+        "[MAIN:TRV:B] ... aligned catalogues inside measurement box."
       );
     }
   }
@@ -830,7 +832,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.info("Measurements saved to %s.", save_filepath);
+    trv::sys::logger.info("Measurements saved to: %s", save_filepath);
   }
 
   // =====================================================================
@@ -838,7 +840,7 @@ int main(int argc, char* argv[]) {
   // =====================================================================
 
   if (trv::sys::currTask == 0) {
-    trv::sys::logger.stat("[C] Data objects are being cleared.");
+    trv::sys::logger.stat("[MAIN:TRV:C] Data objects are being cleared.");
   }
 
   // Clear persistent and dynamic memory.
