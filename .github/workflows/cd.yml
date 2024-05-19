@@ -130,6 +130,8 @@ jobs:
           config-file: pyproject.toml
         env:
           # Default to GCC compiler and OpenMP on macOS.
+          # HACK: g++ binary is hardcoded when using CIBW on most recent
+          # macOS runners because of unusual Homebrew path configuration.
           CIBW_ENVIRONMENT_MACOS: >-
             PY_CXX=$(brew --prefix)/bin/g++-13
             PY_CXXFLAGS=-I$(brew --prefix)/include
