@@ -15,6 +15,7 @@ build:
   script:
     # Use Conda-provided compiler.
     - export PY_CXX=$CXX
+    - export PY_CXXFLAGS="${PY_CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY"
     # Enforce OpenMP support.
     - export PY_OMP=1
     # Default to LLVM OpenMP on macOS.
