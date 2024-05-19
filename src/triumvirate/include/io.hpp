@@ -29,8 +29,9 @@
 #define TRIUMVIRATE_INCLUDE_IO_HPP_INCLUDED_
 
 #include <sys/stat.h>
-#include <cerrno>
+#include <filesystem>
 #include <string>
+#include <system_error>
 
 #include "parameters.hpp"
 #include "particles.hpp"
@@ -50,7 +51,7 @@ namespace sys {
  * @param pathstr File path string.
  * @returns { @c true , @c false }
  */
-bool if_filepath_is_set(std::string pathstr);
+bool if_filepath_is_set(const std::string& pathstr);
 
 /**
  * @brief Make write directory.

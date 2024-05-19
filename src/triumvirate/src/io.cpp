@@ -34,7 +34,7 @@ namespace trv {
 
 namespace sys {
 
-bool if_filepath_is_set(std::string pathstr) {
+bool if_filepath_is_set(const std::string& pathstr) {
   // Check if the string is empty.
   if (pathstr.empty()) {return false;}
 
@@ -59,13 +59,28 @@ void make_write_dir(std::string dirstr) {
   if (dirstr.empty() || dirstr == "." || dirstr == "./" || dirstr == "/") {
     return;
   }
-  if (mkdir(dirstr.c_str(), 0755) == -1 && errno != EEXIST) {
-    trv::sys::logger.error(
-      "Failed to create output measurement directory: %s.", dirstr.c_str()
-    );
-    throw trv::sys::IOError(
-      "Failed to create output measurement directory: %s.\n", dirstr.c_str()
-    );
+
+  while (!dirstr.empty() && (dirstr.back() == '/')) {
+    dirstr.pop_back();
+  }
+
+  std::filesystem::path dir(dirstr);
+  std::error_code ec;
+  if (std::filesystem::create_directories(dir, ec)) {
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.info("Directory created: %s", dirstr.c_str());
+    }
+  } else {
+    if (ec) {
+      if (trv::sys::currTask == 0) {
+        trv::sys::logger.error(
+          "Failed to create directory: %s", dirstr.c_str()
+        );
+      }
+      throw trv::sys::IOError(
+        "Failed to create directory: %s\n", dirstr.c_str()
+      );
+    }
   }
 }
 
