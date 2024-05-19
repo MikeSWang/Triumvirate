@@ -131,7 +131,7 @@ jobs:
         env:
           # Default to GCC compiler and OpenMP on macOS.
           CIBW_ENVIRONMENT_MACOS: >-
-            PY_CXX=$(find $(brew --prefix gcc)/bin -type f -name 'g++*')
+            PY_CXX=$(brew --prefix)/bin/g++-13
             PY_CXXFLAGS=-I$(brew --prefix)/include
             PY_LDFLAGS=-L$(brew --prefix)/lib
           # # Switch to LLVM compiler and OpenMP on macOS.
