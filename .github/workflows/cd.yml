@@ -123,7 +123,7 @@ jobs:
         run: python -m pip install --upgrade twine
 
       - name: Build built distribution
-        uses: pypa/cibuildwheel@v2.18.0
+        uses: pypa/cibuildwheel@v2.18.1
         with:
           package-dir: .
           output-dir: dist/
