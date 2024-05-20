@@ -342,6 +342,10 @@ OPENMP_LIBS = {
 
 # -- Options -------------------------------------------------------------
 
+# List default compilation options.
+CFLAGS = ['-std=c++17',]
+
+
 def convert_macro(macro):
     """Convert a macro flag to a tuple.
 
@@ -376,7 +380,7 @@ def parse_cli_cflags():
     """
     cli_cflags = os.environ.get('PY_CXXFLAGS', '').split()
 
-    parsed_macros, parsed_cflags = [], []
+    parsed_macros, parsed_cflags = [], CFLAGS.copy()
     for cflag_ in cli_cflags:
         if cflag_.startswith('-D'):
             macro_ = convert_macro(cflag_)
@@ -728,6 +732,27 @@ def add_options_pkgs(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
     return macros, cflags, ldflags, libs, lib_dirs, include_dirs
 
 
+def cleanup_options(*args):
+    """Clean up compilation options by removing duplicates.
+
+    Parameters
+    ----------
+    args : list of list of str
+        List of compilation options.
+
+    Returns
+    -------
+    list of list of str
+        Cleaned-up compilation options.
+
+    """
+    ret_args = []
+    for arg in args:
+        ret_args.append(list(dict.fromkeys(arg)))
+
+    return ret_args
+
+
 # ========================================================================
 # Targets
 # ========================================================================
@@ -872,6 +897,9 @@ if __name__ == '__main__':
         macros, cflags, ldflags, libs, lib_dirs, include_dirs
     )
     macros, cflags, ldflags, libs, lib_dirs, include_dirs = add_options_pkgs(
+        macros, cflags, ldflags, libs, lib_dirs, include_dirs
+    )
+    macros, cflags, ldflags, libs, lib_dirs, include_dirs = cleanup_options(
         macros, cflags, ldflags, libs, lib_dirs, include_dirs
     )
 
