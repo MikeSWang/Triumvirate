@@ -23,8 +23,8 @@ ROOT=$(pwd)/tmp
 SOURCE_DIR=${ROOT}/source
 INSTALL_DIR=${ROOT}/build
 
-cd ${ROOT}
 mkdir -p ${SOURCE_DIR} ${INSTALL_DIR}
+cd ${ROOT}
 
 
 # ---- FFTW --------------------------------------------------------------
