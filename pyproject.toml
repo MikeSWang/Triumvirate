@@ -88,7 +88,7 @@ skip = [
     '*_ppc64le',
     '*_s390x',
 ]
-environment = { PY_BUILD_PARALLEL='-j' }
+environment = { PY_BUILD_PARALLEL='-j', SYSTEM_VERSION_COMPAT='0' }
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
 
