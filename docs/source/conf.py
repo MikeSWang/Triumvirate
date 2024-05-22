@@ -90,6 +90,7 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_design',
     # 'sphinx_inline_tabs',
+    'sphinx_search.extension',
     # 'sphinx_tabs.tabs',
     'sphinx_togglebutton',
     'sphinxcontrib.bibtex',

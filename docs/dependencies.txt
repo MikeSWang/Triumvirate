@@ -2,6 +2,7 @@ breathe
 exhale
 myst-nb
 pydata-sphinx-theme
+readthedocs-sphinx-search
 setuptools-scm
 sphinx-book-theme
 sphinx-copybutton
