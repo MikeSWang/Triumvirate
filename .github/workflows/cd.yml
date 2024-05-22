@@ -103,6 +103,12 @@ jobs:
       github.event.inputs.run_build_bdist == 'true'
 
     steps:
+      # HACK: GitHub (macOS) runner image version (for deployment target).
+      - name: Extract (macOS) runner image version
+        run: >-
+          echo "IMAGE_VERSION=$(sw_vers --productVersion | cut -d '.' -f 1).0"
+          >> $GITHUB_ENV
+
       # HACK: GitHub macOS runner defaults to a broken release of Xcode.
       # See https://github.com/actions/runner-images/issues/9273.
       - name: Pin Xcode version (macOS)
@@ -130,10 +136,15 @@ jobs:
           config-file: pyproject.toml
         env:
           # Default to GCC compiler and OpenMP on macOS.
+          # HACK: Hardcode g++ compiler choice on recent GitHub macOS
+          # runners owing to unusual Homebrew paths. In the CIBW workflow,
+          # Homebrew 'fftw' formula installs g++-14 as a dependency which
+          # conflicts with the runner image.
           CIBW_ENVIRONMENT_MACOS: >-
-            PY_CXX=$(find $(brew --prefix gcc)/bin -type f -name 'g++*')
+            PY_CXX=$(brew --prefix)/bin/g++-14
             PY_CXXFLAGS=-I$(brew --prefix)/include
             PY_LDFLAGS=-L$(brew --prefix)/lib
+            PY_OMP=1
           # # Switch to LLVM compiler and OpenMP on macOS.
           # CIBW_ENVIRONMENT_MACOS: >-
           #   PY_CXX=$(brew --prefix llvm@15)/bin/clang++
@@ -142,6 +153,14 @@ jobs:
           #   PY_OMP=1
           #   PY_CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
           #   PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
+          # HACK: Hardcode macOS deployment target to align with the
+          # GitHub runner image version. In the CIBW workflow,
+          # Homebrew-installed libraries and `delocate-wheel` enforce this.
+          MACOSX_DEPLOYMENT_TARGET: ${{ env.IMAGE_VERSION }}
+          SYSTEM_VERSION_COMPAT: '0'
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: |
+            delocate-listdeps {wheel}
+            delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
 
       - name: Verify built distribution
         run: python -m twine check --strict dist/*
