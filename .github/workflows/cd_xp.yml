@@ -126,6 +126,16 @@ jobs:
       - name: Install packaging requirements
         run: python -m pip install --upgrade twine
 
+      - name: Install (pre-)compiled dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          bash deploy/pkg/buildwheel_deps_macos.sh
+          if [[ $(uname -m) == 'arm64' ]]; then
+            echo "MACOSX_VERS_MIN=11.0" >> $GITHUB_ENV
+          elif [[ $(uname -m) == 'x86_64' ]]; then
+            echo "MACOSX_VERS_MIN=10.15" >> $GITHUB_ENV
+          fi
+
       - name: Build built distribution
         uses: pypa/cibuildwheel@v2.18.1
         with:
@@ -136,14 +146,14 @@ jobs:
           # Specify target architecture (ARM64).
           CIBW_ARCHS_LINUX: aarch64
           CIBW_ARCHS_MACOS: arm64
-          # Default to LLVM compiler and OpenMP on macOS.
-          CIBW_ENVIRONMENT_MACOS: >-
-            PY_CXX=$(brew --prefix llvm@15)/bin/clang++
-            PY_CXXFLAGS=-I$(brew --prefix)/include
-            PY_LDFLAGS=-L$(brew --prefix)/lib
-            PY_OMP=1
-            PY_CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
-            PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
+          # # Default to LLVM compiler and OpenMP on macOS.
+          # CIBW_ENVIRONMENT_MACOS: >-
+          #   PY_CXX=$(brew --prefix llvm@15)/bin/clang++
+          #   PY_CXXFLAGS=-I$(brew --prefix)/include
+          #   PY_LDFLAGS=-L$(brew --prefix)/lib
+          #   PY_OMP=1
+          #   PY_CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
+          #   PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
           # # Switch to GCC compiler and OpenMP on macOS.
           # # HACK: Hardcode g++ compiler choice on recent GitHub macOS
           # # runners owing to unusual Homebrew paths. In the CIBW workflow,
@@ -157,8 +167,20 @@ jobs:
           # HACK: Hardcode macOS deployment target to align with the
           # GitHub runner image version. In the CIBW workflow,
           # Homebrew-installed libraries and `delocate-wheel` enforce this.
-          MACOSX_DEPLOYMENT_TARGET: ${{ env.IMAGE_VERSION }}
+          # MACOSX_DEPLOYMENT_TARGET: ${{ env.IMAGE_VERSION }}
+          # SYSTEM_VERSION_COMPAT: '0'
+          MACOSX_DEPLOYMENT_TARGET: ${{ env.MACOSX_VERS_MIN }}
           SYSTEM_VERSION_COMPAT: '0'
+          CIBW_ENVIRONMENT_MACOS: >-
+            PY_CXX=clang++
+            PY_CXXFLAGS=-Itmp/deps/include
+            PY_LDFLAGS=-Ltmp/deps/lib
+            PY_OMP=1
+            PY_CXXFLAGS_OMP="-Xpreprocessor -fopenmp"
+            PY_LDFLAGS_OMP="-Xpreprocessor -fopenmp"
+            MACOSX_DEPLOYMENT_TARGET=${{ env.MACOSX_VERS_MIN }}
+            SYSTEM_VERSION_COMPAT=0
+          CIBW_BEFORE_ALL_MACOS:
 
       - name: Verify built distribution
         run: python -m twine check --strict dist_arm64/*
