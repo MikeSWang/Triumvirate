@@ -30,10 +30,10 @@ Perform window convolution of two- and three-point statistics.
     list of :class:`~triumvirate.winconv.WinConvTerm`}
 
 """
-from __future__ import annotations
-
 # STYLE: Standard naming convention is not always followed in this module
 # for readability and clarity.
+from __future__ import annotations
+
 import warnings
 from dataclasses import dataclass
 from fractions import Fraction
@@ -1645,16 +1645,13 @@ class WinConvBase:
                     msg = (
                         "Multipole: ({}); "
                         "convolution range: {}, {}; "
-                        "CF sample range: {}, {}; "
                         "window sample range: {}, {}."
                     ).format(
                         multipole,
                         self.r_out[multipole].min(),
                         self.r_out[multipole].max(),
-                        self.r_in[term.multipole_Z].min(),
-                        self.r_in[term.multipole_Z].max(),
                         self._rQ_in[term.multipole_Q].min(),
-                        self._rQ_in[term.multipole_Q].max()
+                        self._rQ_in[term.multipole_Q].max(),
                     )
                     warnings.warn(
                         "The convolution range `r_out` is not fully covered "
@@ -1668,6 +1665,17 @@ class WinConvBase:
                         self.r_out[multipole], self.r_in[term.multipole_Z]
                     )
                 ):
+                    msg = (
+                        "Multipole: ({}); "
+                        "convolution range: {}, {}; "
+                        "CF sample range: {}, {}. "
+                    ).format(
+                        multipole,
+                        self.r_out[multipole].min(),
+                        self.r_out[multipole].max(),
+                        self.r_in[term.multipole_Z].min(),
+                        self.r_in[term.multipole_Z].max(),
+                    )
                     warnings.warn(
                         "The convolution range `r_out` is not fully covered "
                         "by the input CF separation sample points. "
