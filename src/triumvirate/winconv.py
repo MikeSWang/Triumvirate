@@ -34,6 +34,7 @@ Perform window convolution of two- and three-point statistics.
 # for readability and clarity.
 from __future__ import annotations
 
+import os
 import warnings
 from dataclasses import dataclass
 from fractions import Fraction
@@ -47,6 +48,7 @@ except ImportError:
 from scipy.interpolate import InterpolatedUnivariateSpline, RectBivariateSpline
 from sympy import Expr, latex, sympify
 from sympy.physics.wigner import wigner_3j, wigner_9j
+from tqdm import tqdm
 
 from triumvirate._arrayops import MixedSignError, SpacingError, _check_1d_array
 from triumvirate.transforms import (
@@ -2592,3 +2594,128 @@ class BispecWinConv(WinConvBase):
     #     if ret_zeta_diag:
     #         return B_diag_conv_out, zeta_diag_conv
     #     return B_diag_conv_out
+
+    def gen_wc_matrix(self, ic=False, concat=False):
+        """Generate the window convolution matrix.
+
+        For each of the required windowed bispectrum multipoles,
+        this method runs :meth:`~BispecWinConv.convolve` over a basis of
+        model vectors defined for input wavenumber sample points.
+
+        Parameters
+        ----------
+        ic : bool, optional
+            If `True` (default is `False`), include integral-constraint
+            corrections.  Ignored if the window convolution formula
+            does not require it.
+        concat : bool, optional
+            if `True` (default is `False`), concatenate the convolution
+            matrices for each required multipole into a single matrix.
+
+        Returns
+        -------
+        conv_matrix : dict of \
+                      {:class:`~triumvirate.winconv.Multipole`: \
+                      2-d :class:`numpy.ndarray`} or \
+                      2-d :class:`numpy.ndarray`
+            Window convolution matrices or matrix.  If `concat` is
+            `False`, a dictionary of 2-d arrays is returned; otherwise, a
+            single 2-d array is returned.
+
+
+        .. attention::
+
+            The columns of each marix are ordered in stacks in
+            correspondence with the order of the multipoles given by
+            :attr:`~triumvirate.winconv.WinConvFormulae.multipoles_Z`
+            of the input `formulae` (cast to
+            :class:`~triumvirate.winconv.WinConvFormulae`).
+            Each column stack corresponds to a vector of unwindowed
+            bispectrum multipole at the input wavenumber sample points
+            :attr:`k_in`.  Each row corresponds to a windowed bispectrum
+            multipole at an output wavenumber sample point
+            in :attr:`k_out`.
+
+            For the concatenated window convolution matrix, the rows
+            are orderd in stacks in correspondence with the order of the
+            multipoles given by
+            :attr:`~triumvirate.winconv.WinConvFormulae.multipoles`
+            of the input `formulae` (cast to
+            :class:`~triumvirate.winconv.WinConvFormulae`).
+
+        """
+        ic = 0. if ic is False else None
+
+        # Set parallelism.
+        nthreads_env = os.environ.get('OMP_NUM_THREADS', None)
+
+        if self._transform_kwargs.get('threaded', False):
+            os.environ['OMP_NUM_THREADS'] = str(1)
+            warnings.warn(
+                "Number of OpenMP threads has been temporarily set to 1. "
+                "Multithreading of Hankel-like transforms is not recommended "
+                "for generating the window convolution matrix. "
+                "Consider re-initialising the window convolution object "
+                "without setting `threaded` to `True`."
+            )
+
+        # Define vectorisation and the basis.
+        dims_1d = [
+            len(self.k_in[multipole_Z])
+            for multipole_Z in self._formulae._multipoles_Z_true
+        ]
+        colstack_sizes = np.square(dims_1d)
+        colstack_nodes = np.cumsum(colstack_sizes)
+
+        dim_2d = np.sum(colstack_sizes)
+        basis_matrix = np.eye(dim_2d)
+
+        def win_convolve_vector(model_vector):
+            multipole_model_subvectors = np.split(model_vector, colstack_nodes)
+            B_model = {
+                multipole_Z: multipole_model_subvec.reshape((dim_1d, dim_1d))
+                for multipole_Z, multipole_model_subvec, dim_1d in zip(
+                    self._formulae._multipoles_Z_true,
+                    multipole_model_subvectors,
+                    dims_1d,
+                )
+            }
+            B_model_conv = self.convolve(B_model, ic=ic)
+            wc_model_vectors = {
+                multipole: B_model_conv_pole.flatten()
+                for multipole, B_model_conv_pole in B_model_conv.items()
+            }
+            return wc_model_vectors
+
+        # Generate the window convolution matrix.
+        conv_matrices = {
+            multipole: [] for multipole in self._formulae.multipoles
+        }
+
+        for basis_vector in tqdm(
+            basis_matrix.T, desc="Generating window convolution matrix"
+        ):
+            wc_basis_vectors = win_convolve_vector(basis_vector)
+            for multipole_ in self._formulae.multipoles:
+                conv_matrices[multipole_].append(wc_basis_vectors[multipole_])
+
+        for multipole_ in conv_matrices:
+            conv_matrices[multipole_] = np.column_stack(
+                conv_matrices[multipole_]
+            )
+
+        # Restore original parallelism.
+        if nthreads_env is None:
+            os.environ.pop('OMP_NUM_THREADS', None)
+        else:
+            os.environ['OMP_NUM_THREADS'] = nthreads_env
+
+        # STYLE: Non-Pythonic conditional returns.
+        if concat:
+            conv_matrix = np.row_stack([
+                conv_matrices[multipole_]
+                for multipole_ in self._formulae.multipoles
+            ])
+            return conv_matrix
+        else:
+            return conv_matrices
