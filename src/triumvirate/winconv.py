@@ -41,14 +41,14 @@ from fractions import Fraction
 from typing import Dict, Sequence, Tuple, Union
 
 import numpy as np
-try:
-    from scipy.integrate import simpson           # scipy>=1.6
-except ImportError:
-    from scipy.integrate import simps as simpson  # scipy<1.6
 from scipy.interpolate import InterpolatedUnivariateSpline, RectBivariateSpline
 from sympy import Expr, latex, sympify
 from sympy.physics.wigner import wigner_3j, wigner_9j
 from tqdm import tqdm
+try:
+    from scipy.integrate import simpson           # scipy>=1.6
+except ImportError:
+    from scipy.integrate import simps as simpson  # scipy<1.6
 
 from triumvirate._arrayops import MixedSignError, SpacingError, _check_1d_array
 from triumvirate.transforms import (
@@ -2614,10 +2614,8 @@ class BispecWinConv(WinConvBase):
 
         Returns
         -------
-        conv_matrix : dict of \
-                      {:class:`~triumvirate.winconv.Multipole`: \
-                      2-d :class:`numpy.ndarray`} or \
-                      2-d :class:`numpy.ndarray`
+        dict of {:class:`~triumvirate.winconv.Multipole`: \
+        2-d :class:`numpy.ndarray`} or 2-d :class:`numpy.ndarray`
             Window convolution matrices or matrix.  If `concat` is
             `False`, a dictionary of 2-d arrays is returned; otherwise, a
             single 2-d array is returned.
@@ -2625,23 +2623,24 @@ class BispecWinConv(WinConvBase):
 
         .. attention::
 
-            The columns of each marix are ordered in stacks in
-            correspondence with the order of the multipoles given by
+            The columns of each matrix are ordered in stacks
+            in correspondence with the order of the multipoles given by
             :attr:`~triumvirate.winconv.WinConvFormulae.multipoles_Z`
-            of the input `formulae` (cast to
-            :class:`~triumvirate.winconv.WinConvFormulae`).
-            Each column stack corresponds to a vector of unwindowed
-            bispectrum multipole at the input wavenumber sample points
-            :attr:`k_in`.  Each row corresponds to a windowed bispectrum
-            multipole at an output wavenumber sample point
-            in :attr:`k_out`.
+            of the input `formulae`
+            (cast to :class:`~triumvirate.winconv.WinConvFormulae`).
+            Each column stack corresponds to
+            a vector of an unwindowed bispectrum multipole
+            at a pair of input wavenumber sample points :attr:`k_in`.
+            Each row corresponds to the windowed bispectrum multipole
+            at a pair of output wavenumber sample points :attr:`k_out`.
+            A vector of any bispectrum multipole is obtained by flattening
+            the 2-d array of samples in row-major order
+            (see order 'C' in :func:`numpy.ndarray.flatten`).
 
-            For the concatenated window convolution matrix, the rows
-            are orderd in stacks in correspondence with the order of the
-            multipoles given by
+            The rows of the concatenated matrix are orderd in stacks
+            in correspondence with the order of the multipoles given by
             :attr:`~triumvirate.winconv.WinConvFormulae.multipoles`
-            of the input `formulae` (cast to
-            :class:`~triumvirate.winconv.WinConvFormulae`).
+            of the input `formulae`.
 
         """
         ic = 0. if ic is False else None
