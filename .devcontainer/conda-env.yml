@@ -21,6 +21,7 @@ dependencies:
   - sympy
   - astropy >= 4.2
   - pyyaml > 4
+  - tqdm
   # Test dependencies
   - flake8
   - pytest

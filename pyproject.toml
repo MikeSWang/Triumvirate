@@ -20,6 +20,7 @@ dependencies = [
     'sympy',
     'astropy>=4.2',
     'pyyaml>4',
+    'tqdm',
 ]
 description = "Three-point clustering measurements in large-scale structure analyses."
 classifiers = [

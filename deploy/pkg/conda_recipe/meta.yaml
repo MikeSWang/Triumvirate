@@ -48,6 +48,7 @@ requirements:
     - sympy
     - astropy >=4.2
     - pyyaml >4
+    - tqdm
 
 test:
   requires:
