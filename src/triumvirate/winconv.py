@@ -35,6 +35,8 @@ Perform window convolution of two- and three-point statistics.
 from __future__ import annotations
 
 import os
+import random
+import sys
 import warnings
 from dataclasses import dataclass
 from fractions import Fraction
@@ -51,6 +53,11 @@ except ImportError:
     from scipy.integrate import simps as simpson  # scipy<1.6
 
 from triumvirate._arrayops import MixedSignError, SpacingError, _check_1d_array
+from triumvirate._mpitools import (
+    allocate_tasks,
+    distribute_tasks,
+    restore_warnings,
+)
 from triumvirate.transforms import (
     DoubleSphericalBesselTransform,
     SphericalBesselTransform,
@@ -2307,6 +2314,12 @@ class BispecWinConv(WinConvBase):
         If a tuple, the first element is for configuration-space
         interpolation and the second element is for Fourier-space
         interpolation. See :mod:`scipy.interpolate` for more details.
+    comm : :class:`mpi4py.MPI.Comm`, optional
+        MPI communicator.  If `None` (default), no MPI parallelisation
+        is used.
+    comm_root : int, optional
+        Root process rank for MPI parallelisation (default is 0).
+        Ignored if `comm` is `None`.
 
     Attributes
     ----------
@@ -2342,9 +2355,18 @@ class BispecWinConv(WinConvBase):
 
     def __init__(self, formulae, window_sampts, window_multipoles,
                  k_in, k_out=None, r_common=None,
-                 transform_kwargs=None, spline=SPLINE):
+                 transform_kwargs=None, spline=SPLINE,
+                 comm=None, comm_root=0):
 
-        super().__init__(formulae, window_sampts, window_multipoles)
+        self.comm = comm
+        self.comm_root = comm_root
+
+        with warnings.catch_warnings(record=True) as any_warnings:
+            super().__init__(formulae, window_sampts, window_multipoles)
+
+        if any_warnings:
+            if self.comm is None or self.comm.rank == self.comm_root:
+                restore_warnings(any_warnings)
 
         # Initialise default transform parameters.
         self._transform_kwargs = transform_kwargs or {}
@@ -2595,8 +2617,8 @@ class BispecWinConv(WinConvBase):
     #         return B_diag_conv_out, zeta_diag_conv
     #     return B_diag_conv_out
 
-    def gen_wc_matrix(self, ic=False, concat=False):
-        """Generate the window convolution matrix.
+    def gen_winconv_mat(self, ic=False, concat=False):
+        """Generate the window convolution matrix/matrices.
 
         For each of the required windowed bispectrum multipoles,
         this method runs :meth:`~BispecWinConv.convolve` over a basis of
@@ -2645,29 +2667,14 @@ class BispecWinConv(WinConvBase):
         """
         ic = 0. if ic is False else None
 
-        # Set parallelism.
-        nthreads_env = os.environ.get('OMP_NUM_THREADS', None)
-
-        if self._transform_kwargs.get('threaded', False):
-            os.environ['OMP_NUM_THREADS'] = str(1)
-            warnings.warn(
-                "Number of OpenMP threads has been temporarily set to 1. "
-                "Multithreading of Hankel-like transforms is not recommended "
-                "for generating the window convolution matrix. "
-                "Consider re-initialising the window convolution object "
-                "without setting `threaded` to `True`."
-            )
-
-        # Define vectorisation and the basis.
+        # Define vectorisation.
         dims_1d = [
             len(self.k_in[multipole_Z])
             for multipole_Z in self._formulae._multipoles_Z_true
         ]
         colstack_sizes = np.square(dims_1d)
         colstack_nodes = np.cumsum(colstack_sizes)
-
         dim_2d = np.sum(colstack_sizes)
-        basis_matrix = np.eye(dim_2d)
 
         def win_convolve_vector(model_vector):
             multipole_model_subvectors = np.split(model_vector, colstack_nodes)
@@ -2686,35 +2693,123 @@ class BispecWinConv(WinConvBase):
             }
             return wc_model_vectors
 
-        # Generate the window convolution matrix.
-        conv_matrices = {
+        # Initialise the convolution matrices.
+        wc_matrices = {
             multipole: [] for multipole in self._formulae.multipoles
         }
 
-        for basis_vector in tqdm(
-            basis_matrix.T, desc="Generating window convolution matrix"
-        ):
-            wc_basis_vectors = win_convolve_vector(basis_vector)
-            for multipole_ in self._formulae.multipoles:
-                conv_matrices[multipole_].append(wc_basis_vectors[multipole_])
+        def return_wcmat(wcmat, concat):
+            return wcmat if (not concat or wcmat is None) \
+                else np.row_stack([
+                    wcmat[multipole] for multipole in self._formulae.multipoles
+                ])
 
-        for multipole_ in conv_matrices:
-            conv_matrices[multipole_] = np.column_stack(
-                conv_matrices[multipole_]
+        # Run without MPI parallelisation.
+        if self.comm is None:
+            basis_matrix = np.eye(dim_2d)
+            for basis_vector in tqdm(
+                basis_matrix.T,
+                desc="Generating window convolution matrix",
+                file=sys.stdout
+            ):
+                wc_basis_vectors = win_convolve_vector(basis_vector)
+                for multipole_ in self._formulae.multipoles:
+                    wc_matrices[multipole_].append(
+                        wc_basis_vectors[multipole_]
+                    )
+
+            for multipole_ in wc_matrices:
+                wc_matrices[multipole_] = np.column_stack(
+                    wc_matrices[multipole_]
+                )
+            return return_wcmat(wc_matrices, concat)
+
+        # Run with MPI parallelisation.
+        nthreads_env = os.environ.get('OMP_NUM_THREADS', None)
+        if self._transform_kwargs.get('threaded', False) \
+                and self.comm.rank == self.comm_root:
+            os.environ['OMP_NUM_THREADS'] = str(1)
+            warnings.warn(
+                "Number of OpenMP threads has been temporarily set to 1. "
+                "When MPI is enabled, "
+                "multithreading of Hankel-like transforms is not recommended "
+                "for generating the window convolution matrices. "
+                "Consider re-initialising window convolution "
+                "without setting `threaded` to `True`."
             )
 
-        # Restore original parallelism.
-        if nthreads_env is None:
-            os.environ.pop('OMP_NUM_THREADS', None)
+        if self.comm.rank == self.comm_root:
+            progbar_rank = random.randint(0, self.comm.size - 1)
         else:
-            os.environ['OMP_NUM_THREADS'] = nthreads_env
+            progbar_rank = None
+        progbar_rank = self.comm.bcast(progbar_rank, root=self.comm_root)
 
-        # STYLE: Non-Pythonic conditional returns.
-        if concat:
-            conv_matrix = np.row_stack([
-                conv_matrices[multipole_]
-                for multipole_ in self._formulae.multipoles
-            ])
-            return conv_matrix
+        segment_sizes = allocate_tasks(
+            task_total=dim_2d, proc_total=self.comm.size
+        )
+        segments = distribute_tasks(ntasks=segment_sizes)
+
+        # Generate the window convolution matrix.
+        segsize = segment_sizes[self.comm.rank]
+        segstart = segments[self.comm.rank].start
+
+        basis_vector_sublist = np.zeros((segsize, dim_2d))
+        np.fill_diagonal(
+            basis_vector_sublist[:, segstart:segstart + segsize],
+            1.
+        )
+
+        with warnings.catch_warnings(record=True) as any_warnings:
+            if self.comm.rank == progbar_rank:
+                progbar_desc = (
+                    "Generating window convolution matrix "
+                    f"(process rank {progbar_rank})"
+                )
+                wc_basis_vectors_sublist = list(tqdm(
+                    map(win_convolve_vector, basis_vector_sublist),
+                    total=len(basis_vector_sublist),
+                    desc=progbar_desc,
+                    file=sys.stdout
+                ))
+            else:
+                wc_basis_vectors_sublist = [
+                    win_convolve_vector(basis_vector)
+                    for basis_vector in basis_vector_sublist
+                ]
+        if any_warnings:
+            restore_warnings(any_warnings)
+
+        wc_basis_vectors_all = self.comm.gather(
+            wc_basis_vectors_sublist, root=self.comm_root
+        )
+        del basis_vector_sublist, wc_basis_vectors_sublist
+
+        if self.comm.rank == self.comm_root:
+            wc_basis_vectors_list = [
+                wc_basis_vectors
+                for wc_basis_vectors_sublist in wc_basis_vectors_all
+                for wc_basis_vectors in wc_basis_vectors_sublist
+            ]
+
+            for wc_basis_vectors in wc_basis_vectors_list:
+                for multipole_ in self._formulae.multipoles:
+                    wc_matrices[multipole_].append(
+                        wc_basis_vectors[multipole_]
+                    )
+            del wc_basis_vectors_list
+
+            for multipole_ in wc_matrices:
+                wc_matrices[multipole_] = np.column_stack(
+                    wc_matrices[multipole_]
+                )
         else:
-            return conv_matrices
+            wc_matrices = None
+
+        # Restore original parallelism.
+        if self.comm.rank == self.comm_root:
+            if nthreads_env is None:
+                os.environ.pop('OMP_NUM_THREADS', None)
+            else:
+                os.environ['OMP_NUM_THREADS'] = nthreads_env
+
+        return return_wcmat(wc_matrices, concat)

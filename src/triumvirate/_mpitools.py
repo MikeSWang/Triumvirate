@@ -9,6 +9,8 @@ MPI-based parallelisation tools.
     distribute_tasks
 
 """
+import warnings
+
 import numpy as np
 
 
@@ -95,3 +97,40 @@ def distribute_tasks(ntasks=None, task_total=None, proc_total=None):
     ]
 
     return segments
+
+
+def restore_warnings(captured_warnings, unique=True):
+    """Emit captured warnings.
+
+    Parameters
+    ----------
+    captured_warnings : list of :class:`warnings.WarningMessage`
+        List of recorded warnings as returned by
+        ``warnings.catch_warnings(record=True)``.
+    unique : bool, optional
+        If `True` (default), only emit unique warnings; otherwise, emit
+        all warnings.
+
+    """
+    if unique:
+        restored_warnings = []
+        seen_warnings = set()
+        for record in captured_warnings:
+            record_tuple = (
+                record.message, record.category, record.filename, record.lineno
+            )
+            if record_tuple not in seen_warnings:
+                restored_warnings.append(record)
+                seen_warnings.add(record_tuple)
+                print("Warning not seen before:", record.message)
+            else:
+                print("Warning seen before:", record.message)
+    else:
+        restored_warnings = captured_warnings
+
+    for record in restored_warnings:
+        warnings.showwarning(
+            record.message, record.category,
+            record.filename, record.lineno,
+            file=record.file, line=record.line
+        )
