@@ -2712,6 +2712,9 @@ class BispecWinConv(WinConvBase):
         ic = 0. if ic is False else None
 
         # Define vectorisation.
+        _winconv_catch_warnings = self._winconv._catch_warnings
+        self._winconv._catch_warnings = False
+
         dims_1d = [
             len(self.k_in[multipole_Z])
             for multipole_Z in self._formulae._multipoles_Z_true
@@ -2743,6 +2746,7 @@ class BispecWinConv(WinConvBase):
         }
 
         def return_wcmat(wcmat, concat):
+            self._winconv._catch_warnings = _winconv_catch_warnings
             return wcmat if (not concat or wcmat is None) \
                 else np.row_stack([
                     wcmat[multipole] for multipole in self._formulae.multipoles
@@ -2751,16 +2755,19 @@ class BispecWinConv(WinConvBase):
         # Run without MPI parallelisation.
         if self.comm is None:
             basis_matrix = np.eye(dim_2d)
-            for basis_vector in tqdm(
-                basis_matrix.T,
-                desc="Generating window convolution matrix",
-                file=sys.stdout
-            ):
-                wc_basis_vectors = win_convolve_vector(basis_vector)
-                for multipole_ in self._formulae.multipoles:
-                    wc_matrices[multipole_].append(
-                        wc_basis_vectors[multipole_]
-                    )
+            with warnings.catch_warnings(record=True) as caught_warnings:
+                for basis_vector in tqdm(
+                    basis_matrix.T,
+                    desc="Generating window convolution matrix",
+                    file=sys.stdout
+                ):
+                    wc_basis_vectors = win_convolve_vector(basis_vector)
+                    for multipole_ in self._formulae.multipoles:
+                        wc_matrices[multipole_].append(
+                            wc_basis_vectors[multipole_]
+                        )
+            if caught_warnings:
+                restore_warnings(caught_warnings)
 
             for multipole_ in wc_matrices:
                 wc_matrices[multipole_] = np.column_stack(
@@ -2781,9 +2788,6 @@ class BispecWinConv(WinConvBase):
                 "Consider re-initialising window convolution "
                 "without setting `threaded` to `True`."
             )
-
-        _winconv_catch_warnings = self._winconv._catch_warnings
-        self._winconv._catch_warnings = False
 
         if self.comm.rank == self.comm_root:
             progbar_rank = random.randint(0, self.comm.size - 1)
@@ -2862,7 +2866,5 @@ class BispecWinConv(WinConvBase):
                 os.environ.pop('OMP_NUM_THREADS', None)
             else:
                 os.environ['OMP_NUM_THREADS'] = nthreads_env
-
-        self._winconv._catch_warnings = _winconv_catch_warnings
 
         return return_wcmat(wc_matrices, concat)
