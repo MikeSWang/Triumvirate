@@ -99,7 +99,8 @@ def distribute_tasks(ntasks=None, task_total=None, proc_total=None):
     return segments
 
 
-def restore_warnings(captured_warnings, unique=True):
+def restore_warnings(captured_warnings, unique=True, show=True,
+                     comm=None, comm_root=0):
     """Emit captured warnings.
 
     Parameters
@@ -110,6 +111,14 @@ def restore_warnings(captured_warnings, unique=True):
     unique : bool, optional
         If `True` (default), only emit unique warnings; otherwise, emit
         all warnings.
+    show : bool, optional
+        If `True` (default), emit the warnings; otherwise, do not emit
+        the warnings.
+    comm : :class:`mpi4py.MPI.Comm`, optional
+        MPI communicator (default is `None`).
+    comm_root : int, optional
+        Root process rank of the MPI communicator (default is 0).
+        Ignored if `comm` is `None`.
 
     """
     if unique:
@@ -122,15 +131,15 @@ def restore_warnings(captured_warnings, unique=True):
             if record_tuple not in seen_warnings:
                 restored_warnings.append(record)
                 seen_warnings.add(record_tuple)
-                print("Warning not seen before:", record.message)
-            else:
-                print("Warning seen before:", record.message)
     else:
         restored_warnings = captured_warnings
 
-    for record in restored_warnings:
-        warnings.showwarning(
-            record.message, record.category,
-            record.filename, record.lineno,
-            file=record.file, line=record.line
-        )
+    if show and (comm is None or comm.rank == comm_root):
+        for record in restored_warnings:
+            warnings.showwarning(
+                record.message, record.category,
+                record.filename, record.lineno,
+                file=record.file, line=record.line
+            )
+
+    return restored_warnings

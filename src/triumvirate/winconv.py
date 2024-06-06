@@ -1486,6 +1486,11 @@ class WinConvBase:
     window_multipoles : dict of \
                         {:py:const:`MultipoleLike`: array of float}
         Window function multipole samples (each key is a multipole).
+    comm : :class:`mpi4py.MPI.Comm`, optional
+        MPI communicator (default is `None`).
+    comm_root : int, optional
+        Root process rank of the MPI communicator (default is 0).
+        Ignored if `comm` is `None`.
 
     Attributes
     ----------
@@ -1497,10 +1502,18 @@ class WinConvBase:
             {:class:`~triumvirate.winconv.Multipole`: |farr1d_type|} \
             or None
         Separation sample points for the output CF multipoles.
+    comm : :class:`mpi4py.MPI.Comm` or None
+        MPI communicator.
+    comm_root : int or None
+        Root process rank of any MPI communicator.
 
     """
 
-    def __init__(self, formulae, window_sampts, window_multipoles):
+    def __init__(self, formulae, window_sampts, window_multipoles,
+                 comm=None, comm_root=0):
+
+        self.comm = comm
+        self.comm_root = comm_root if comm else None
 
         # Constuct formulae object.
         if isinstance(formulae, str):
@@ -1651,46 +1664,50 @@ class WinConvBase:
                 if not _check_conv_range(
                     self.r_out[multipole], self._rQ_in[term.multipole_Q]
                 ):
-                    msg = (
-                        "Multipole: ({}); "
-                        "convolution range: {}, {}; "
-                        "window sample range: {}, {}."
-                    ).format(
-                        multipole,
-                        self.r_out[multipole].min(),
-                        self.r_out[multipole].max(),
-                        self._rQ_in[term.multipole_Q].min(),
-                        self._rQ_in[term.multipole_Q].max(),
-                    )
-                    warnings.warn(
-                        "The convolution range `r_out` is not fully covered "
-                        "by the window function separation sample points. "
-                        "Inaccurate extrapolation may occur. " + msg,
-                        category=ConvolutionRangeWarning
-                    )
+                    if self.comm is None or self.comm.rank == self.comm_root:
+                        msg = (
+                            "Multipole: ({}); "
+                            "convolution range: {}, {}; "
+                            "window sample range: {}, {}."
+                        ).format(
+                            multipole,
+                            self.r_out[multipole].min(),
+                            self.r_out[multipole].max(),
+                            self._rQ_in[term.multipole_Q].min(),
+                            self._rQ_in[term.multipole_Q].max(),
+                        )
+                        warnings.warn(
+                            "The convolution range `r_out` is not "
+                            "fully covered by the window function "
+                            "separation sample points. "
+                            "Inaccurate extrapolation may occur. " + msg,
+                            category=ConvolutionRangeWarning
+                        )
                 if (
                     term.multipole_Z not in WinConvTerm._SPEC_INDICES
                     and not _check_conv_range(
                         self.r_out[multipole], self.r_in[term.multipole_Z]
                     )
                 ):
-                    msg = (
-                        "Multipole: ({}); "
-                        "convolution range: {}, {}; "
-                        "CF sample range: {}, {}. "
-                    ).format(
-                        multipole,
-                        self.r_out[multipole].min(),
-                        self.r_out[multipole].max(),
-                        self.r_in[term.multipole_Z].min(),
-                        self.r_in[term.multipole_Z].max(),
-                    )
-                    warnings.warn(
-                        "The convolution range `r_out` is not fully covered "
-                        "by the input CF separation sample points. "
-                        "Inaccurate extrapolation may occur. " + msg,
-                        category=ConvolutionRangeWarning
-                    )
+                    if self.comm is None or self.comm.rank == self.comm_root:
+                        msg = (
+                            "Multipole: ({}); "
+                            "convolution range: {}, {}; "
+                            "CF sample range: {}, {}. "
+                        ).format(
+                            multipole,
+                            self.r_out[multipole].min(),
+                            self.r_out[multipole].max(),
+                            self.r_in[term.multipole_Z].min(),
+                            self.r_in[term.multipole_Z].max(),
+                        )
+                        warnings.warn(
+                            "The convolution range `r_out` is not "
+                            "fully covered by the input CF "
+                            "separation sample points. "
+                            "Inaccurate extrapolation may occur. " + msg,
+                            category=ConvolutionRangeWarning
+                        )
 
 
 class TwoPCFWinConv(WinConvBase):
@@ -2088,6 +2105,11 @@ class ThreePCFWinConv(WinConvBase):
         Spline order for interpolation (default is
         :py:const:`~triumvirate.winconv.SPLINE`).
         See :mod:`scipy.interpolate` for more details.
+    comm : :class:`mpi4py.MPI.Comm`, optional
+        MPI communicator (default is `None`).
+    comm_root : int, optional
+        Root process rank of the MPI communicator (default is 0).
+        Ignored if `comm` is `None`.
 
     Attributes
     ----------
@@ -2109,11 +2131,22 @@ class ThreePCFWinConv(WinConvBase):
     .. seealso:: :class:`~triumvirate.winconv.WinConvBase`
 
     """
+    _catch_warnings = True
 
     def __init__(self, formulae, window_sampts, window_multipoles,
-                 r_in, r_out=None, spline=SPLINE):
+                 r_in, r_out=None, spline=SPLINE,
+                 comm=None, comm_root=0):
 
-        super().__init__(formulae, window_sampts, window_multipoles)
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            super().__init__(
+                formulae, window_sampts, window_multipoles,
+                comm=comm, comm_root=comm_root
+            )
+        if caught_warnings:
+            restore_warnings(
+                caught_warnings, comm=self.comm, comm_root=self.comm_root
+            )
+
         self.spline = spline
 
         self.initialise_sampts(r_in, r_out=r_out)
@@ -2150,10 +2183,20 @@ class ThreePCFWinConv(WinConvBase):
         """
         # Enforce integral constraint.
         if 'ic' in self._formulae.multipoles_Z and ic is None:
-            ic = calc_threept_ic(
-                self._rQ_in, self._Q_in, self.r_in, zeta_in,
-                r_common=None, approx=False
-            )
+            if self._catch_warnings:
+                with warnings.catch_warnings(record=True) as caught_warnings:
+                    ic = calc_threept_ic(
+                        self._rQ_in, self._Q_in, self.r_in, zeta_in,
+                        r_common=None, approx=False
+                    )
+                restore_warnings(
+                    caught_warnings, comm=self.comm, comm_root=self.comm_root
+                )
+            else:
+                ic = calc_threept_ic(
+                    self._rQ_in, self._Q_in, self.r_in, zeta_in,
+                    r_common=None, approx=False
+                )
 
         # Perform convolution term by term.
         zeta_conv_out = {}
@@ -2318,7 +2361,7 @@ class BispecWinConv(WinConvBase):
         MPI communicator.  If `None` (default), no MPI parallelisation
         is used.
     comm_root : int, optional
-        Root process rank for MPI parallelisation (default is 0).
+        Root process rank of the MPI communicator (default is 0).
         Ignored if `comm` is `None`.
 
     Attributes
@@ -2358,15 +2401,15 @@ class BispecWinConv(WinConvBase):
                  transform_kwargs=None, spline=SPLINE,
                  comm=None, comm_root=0):
 
-        self.comm = comm
-        self.comm_root = comm_root
-
-        with warnings.catch_warnings(record=True) as any_warnings:
-            super().__init__(formulae, window_sampts, window_multipoles)
-
-        if any_warnings:
-            if self.comm is None or self.comm.rank == self.comm_root:
-                restore_warnings(any_warnings)
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            super().__init__(
+                formulae, window_sampts, window_multipoles,
+                comm=comm, comm_root=comm_root
+            )
+        if caught_warnings:
+            restore_warnings(
+                caught_warnings, comm=self.comm, comm_root=self.comm_root
+            )
 
         # Initialise default transform parameters.
         self._transform_kwargs = transform_kwargs or {}
@@ -2476,7 +2519,8 @@ class BispecWinConv(WinConvBase):
         # Set up 3PCF convolution.
         self._winconv = ThreePCFWinConv(
             self._formulae, self._rQ_in, self._Q_in,
-            self.r_in, r_out=self.r_common, spline=self.spline[0]
+            self.r_in, r_out=self.r_common, spline=self.spline[0],
+            comm=self.comm, comm_root=self.comm_root
         )
 
     def convolve(self, B_in, ic=None, ret_zeta=False):
@@ -2738,6 +2782,9 @@ class BispecWinConv(WinConvBase):
                 "without setting `threaded` to `True`."
             )
 
+        _winconv_catch_warnings = self._winconv._catch_warnings
+        self._winconv._catch_warnings = False
+
         if self.comm.rank == self.comm_root:
             progbar_rank = random.randint(0, self.comm.size - 1)
         else:
@@ -2759,7 +2806,7 @@ class BispecWinConv(WinConvBase):
             1.
         )
 
-        with warnings.catch_warnings(record=True) as any_warnings:
+        with warnings.catch_warnings(record=True) as caught_warnings:
             if self.comm.rank == progbar_rank:
                 progbar_desc = (
                     "Generating window convolution matrix "
@@ -2776,8 +2823,12 @@ class BispecWinConv(WinConvBase):
                     win_convolve_vector(basis_vector)
                     for basis_vector in basis_vector_sublist
                 ]
-        if any_warnings:
-            restore_warnings(any_warnings)
+
+        self.comm.Barrier()
+        if caught_warnings:
+            restore_warnings(
+                caught_warnings, comm=self.comm, comm_root=self.comm_root
+            )
 
         wc_basis_vectors_all = self.comm.gather(
             wc_basis_vectors_sublist, root=self.comm_root
@@ -2811,5 +2862,7 @@ class BispecWinConv(WinConvBase):
                 os.environ.pop('OMP_NUM_THREADS', None)
             else:
                 os.environ['OMP_NUM_THREADS'] = nthreads_env
+
+        self._winconv._catch_warnings = _winconv_catch_warnings
 
         return return_wcmat(wc_matrices, concat)
