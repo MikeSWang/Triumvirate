@@ -3073,6 +3073,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   }
 
   // ---->
+  // // Clean up FFTW master plans.
   // fftw_destroy_plan(fwd_master_plan);
   // fftw_destroy_plan(bwd_master_plan);
   // fftw_free(array_holder);

@@ -2827,6 +2827,7 @@ class BispecWinConv(WinConvBase):
                     win_convolve_vector(basis_vector)
                     for basis_vector in basis_vector_sublist
                 ]
+        del basis_vector_sublist
 
         self.comm.Barrier()
         if caught_warnings:
@@ -2834,30 +2835,129 @@ class BispecWinConv(WinConvBase):
                 caught_warnings, comm=self.comm, comm_root=self.comm_root
             )
 
-        wc_basis_vectors_all = self.comm.gather(
-            wc_basis_vectors_sublist, root=self.comm_root
-        )
-        del basis_vector_sublist, wc_basis_vectors_sublist
+        # ---->
+        # # Directly gather results from each process into a list of
+        # # sublists of dictionaries before sorting by keys and stacking.
+        # wc_basis_vectors_all = self.comm.gather(
+        #     wc_basis_vectors_sublist, root=self.comm_root
+        # )
+        # del wc_basis_vectors_sublist
 
-        if self.comm.rank == self.comm_root:
-            wc_basis_vectors_list = [
-                wc_basis_vectors
-                for wc_basis_vectors_sublist in wc_basis_vectors_all
+        # if self.comm.rank == self.comm_root:
+        #     wc_basis_vectors_list = [
+        #         wc_basis_vectors
+        #         for wc_basis_vectors_sublist in wc_basis_vectors_all
+        #         for wc_basis_vectors in wc_basis_vectors_sublist
+        #     ]
+
+        #     for wc_basis_vectors in wc_basis_vectors_list:
+        #         for multipole_ in self._formulae.multipoles:
+        #             wc_matrices[multipole_].append(
+        #                 wc_basis_vectors[multipole_]
+        #             )
+        #     del wc_basis_vectors_list
+
+        #     for multipole_ in wc_matrices:
+        #         wc_matrices[multipole_] = np.column_stack(
+        #             wc_matrices[multipole_]
+        #         )
+        # else:
+        #     wc_matrices = None
+        # ----<
+
+        # ---->
+        # # For each multipole, gather results from each process into a
+        # # list of sublist of arrays using a temporary dictionary
+        # # before de-nesting and stacking.
+        # wc_basis_vectors_all = {
+        #     multipole: [] for multipole in self._formulae.multipoles
+        # }
+        # for key in wc_basis_vectors_all:
+        #     wc_basis_vectors_all[key] = self.comm.gather(
+        #         [
+        #             wc_basis_vectors[key]
+        #             for wc_basis_vectors in wc_basis_vectors_sublist
+        #         ],
+        #         root=self.comm_root
+        #     )
+        # del wc_basis_vectors_sublist
+
+        # if self.comm.rank == self.comm_root:
+        #     wc_matrices = {
+        #         multipole: None for multipole in self._formulae.multipoles
+        #     }
+        #     for multipole_ in wc_matrices:
+        #         wc_matrices[multipole_] = np.column_stack([
+        #             wc_basis_vectors
+        #             for wc_basis_vectors_sublist
+        #             in wc_basis_vectors_all[multipole_]
+        #             for wc_basis_vectors
+        #             in wc_basis_vectors_sublist
+        #         ])
+        # else:
+        #     wc_matrices = None
+        # ----<
+
+        # ---->
+        # # For each multipole, gather results from each process into a
+        # # list of sublist of arrays before de-nesting and stacking directly.
+        # wc_matrices = {
+        #     multipole: [] for multipole in self._formulae.multipoles
+        # }
+        # for key in wc_matrices:
+        #     wc_matrices_pole = self.comm.gather(
+        #         [
+        #             wc_basis_vectors[key]
+        #             for wc_basis_vectors in wc_basis_vectors_sublist
+        #         ],
+        #         root=self.comm_root
+        #     )
+        #     if self.comm.rank == self.comm_root:
+        #         wc_matrices[key] = np.column_stack([
+        #             wc_basis_vectors
+        #             for wc_matrices_pole_sublist in wc_matrices_pole
+        #             for wc_basis_vectors in wc_matrices_pole_sublist
+        #         ])
+        # del wc_basis_vectors_sublist
+        # if self.comm.rank != self.comm_root:
+        #     wc_matrices = None
+        # ----<
+
+        # NOTE: This is the most memory-efficient gathering method.
+        # For each multipole, gather results from each process as a ravelled
+        # vector before de-ravelling and stacking.
+        wc_matrices = {
+            multipole: [] for multipole in self._formulae.multipoles
+        }
+        for key in wc_matrices:
+            sendbuf = np.asarray([
+                wc_basis_vectors[key]
                 for wc_basis_vectors in wc_basis_vectors_sublist
-            ]
-
-            for wc_basis_vectors in wc_basis_vectors_list:
-                for multipole_ in self._formulae.multipoles:
-                    wc_matrices[multipole_].append(
-                        wc_basis_vectors[multipole_]
-                    )
-            del wc_basis_vectors_list
-
-            for multipole_ in wc_matrices:
-                wc_matrices[multipole_] = np.column_stack(
-                    wc_matrices[multipole_]
-                )
-        else:
+            ])
+            sendsizes = sendbuf.size
+            recvsizes = self.comm.gather(sendsizes, root=self.comm_root)
+            if self.comm.rank == self.comm_root:
+                offsets = [
+                    sum(recvsizes[:rank]) for rank in range(self.comm.size)
+                ]
+                recvbuf = np.empty(sum(recvsizes), dtype=sendbuf.dtype)
+            else:
+                recvsizes = None
+                offsets = None
+                recvbuf = None
+            self.comm.Gatherv(
+                sendbuf=sendbuf.ravel(),
+                recvbuf=(recvbuf, (recvsizes, offsets)),
+                root=self.comm_root
+            )
+            if self.comm.rank == self.comm_root:
+                # Since operations are row-major, transpose the
+                # de-ravelled results.
+                wc_matrices[key] = recvbuf.reshape(
+                    (dim_2d, dim_2d)
+                ).T
+        del wc_basis_vectors_sublist
+        if self.comm.rank != self.comm_root:
             wc_matrices = None
 
         # Restore original parallelism.
