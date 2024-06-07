@@ -309,6 +309,7 @@ intersphinx_mapping = {
     'numpy': ("https://numpy.org/doc/stable/", None),
     'scipy': ("https://docs.scipy.org/doc/scipy", None),
     'sympy': ("https://docs.sympy.org/latest/", None),
+    'mpi4py': ("https://mpi4py.readthedocs.io/en/latest/", None),
     'astropy': ("https://docs.astropy.org/en/latest/", None),
     'nbodykit': ("https://nbodykit.readthedocs.io/en/latest/", None),
 }

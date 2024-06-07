@@ -2680,7 +2680,8 @@ class BispecWinConv(WinConvBase):
 
         Returns
         -------
-        dict of {:class:`~triumvirate.winconv.Multipole`: \
+        dict of \
+        {:class:`~triumvirate.winconv.Multipole`: \
         2-d :class:`numpy.ndarray`} or 2-d :class:`numpy.ndarray`
             Window convolution matrices or matrix.  If `concat` is
             `False`, a dictionary of 2-d arrays is returned; otherwise, a
@@ -2701,7 +2702,7 @@ class BispecWinConv(WinConvBase):
             at a pair of output wavenumber sample points :attr:`k_out`.
             A vector of any bispectrum multipole is obtained by flattening
             the 2-d array of samples in row-major order
-            (see order 'C' in :func:`numpy.ndarray.flatten`).
+            (see order 'C' in :meth:`numpy.ndarray.flatten`).
 
             The rows of the concatenated matrix are orderd in stacks
             in correspondence with the order of the multipoles given by
