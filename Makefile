@@ -482,6 +482,8 @@ pyclean:
 	@find ${DIR_PKG} -maxdepth 1 -name "*.cpp" -exec rm {} +
 	@echo "  removing Cythonised extensions..."
 	@find ${DIR_PKG} -maxdepth 1 -name "*.so" -exec rm {} +
+	@echo "  removing eggs..."
+	@find . -type d -name ".eggs" -exec rm -r {} +
 	@echo "  removing compiled bytecode..."
 	@find . -type d -name "__pycache__" -exec rm -r {} +
 	@echo "  removing Jupyter notebook checkpoints..."
@@ -505,6 +507,7 @@ distclean:
 	@echo "  removing wheels..."
 	@find . -type d -name "wheelhouse" -exec rm -r {} +
 	@echo "  removing eggs..."
+	@find . -name "*.eggs" -exec rm -r {} +
 	@find . -name "*.egg-info" -exec rm -r {} +
 
 runclean:
