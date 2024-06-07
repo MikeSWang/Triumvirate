@@ -2680,9 +2680,7 @@ class BispecWinConv(WinConvBase):
 
         Returns
         -------
-        dict of \
-        {:class:`~triumvirate.winconv.Multipole`: \
-        2-d :class:`numpy.ndarray`} or 2-d :class:`numpy.ndarray`
+        |wcmat_type|
             Window convolution matrices or matrix.  If `concat` is
             `False`, a dictionary of 2-d arrays is returned; otherwise, a
             single 2-d array is returned.
@@ -2708,6 +2706,11 @@ class BispecWinConv(WinConvBase):
             in correspondence with the order of the multipoles given by
             :attr:`~triumvirate.winconv.WinConvFormulae.multipoles`
             of the input `formulae`.
+
+
+        .. |wcmat_type| replace:: \
+            dict of {:class:`~triumvirate.winconv.Multipole`: \
+            2-d :class:`numpy.ndarray`} or 2-d :class:`numpy.ndarray`
 
         """
         ic = 0. if ic is False else None
