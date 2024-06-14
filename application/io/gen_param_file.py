@@ -213,7 +213,7 @@ def read_param_file(input_path, fmt):
     else:
         raise ValueError(f"Unsupported file format: {fmt}.")
 
-    print("Read parameter file {}.".format(input_path))
+    print("Read parameter template {}.".format(input_path))
 
     return params
 
