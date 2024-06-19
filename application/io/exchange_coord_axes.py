@@ -171,6 +171,7 @@ def main():
 
     # Save the transposed data table.
     np.savetxt(output_path, datatab_ex, fmt='%.9e', header=header)
+    print(f"Transpose-exchanged measurement file saved to: {output_path}")
 
 
 if __name__ == '__main__':
