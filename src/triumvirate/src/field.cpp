@@ -1594,8 +1594,7 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
 
           k_eff += k_;
           nmodes++;
-        }
-        else {
+        } else {
           // This is necessary when the field is not reset to zero.
           // See comment [tag:redundancy] above.
           this->field[idx_grid][0] = 0.;

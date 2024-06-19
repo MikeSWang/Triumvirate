@@ -137,6 +137,11 @@ class ParameterSet {
   ///                            "mesh-mixed"}
   std::string norm_convention = "particle";
 
+  // Derived measurement choices.
+  /// shape of the 3PCF measurement: {"full", "diag" (default), "off-diag",
+  ///                                 "row", "triu"}
+  std::string shape = "diag";
+
   // Measurement parameters.
   /// binning scheme: {"lin" (default), "log",
   ///                  "linpad", "logpad", "custom"}

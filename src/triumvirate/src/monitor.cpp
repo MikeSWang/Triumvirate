@@ -351,8 +351,7 @@ void ProgressBar::update(float progress_now) {
           } else
           if (ichar == pos) {
             std::cout << ">";
-          }
-          else {
+          } else {
             std::cout << " ";
           }
       }

@@ -576,6 +576,12 @@ int ParameterSet::validate() {
       "Three-point statistic form is not recognised: `form` = '%s'.\n",
       this->form.c_str()
     );
+  } else {
+    if (this->form == "full" && this->ell1 == this->ell2) {
+      this->shape = "triu";  // derivation
+    } else {
+      this->shape = this->form;  // derivation
+    }
   }
   if (!(
     this->norm_convention == "none"
@@ -875,13 +881,13 @@ int ParameterSet::validate() {
   if (
     this->idx_bin < 0
     && this->npoint == "3pt"
-    && (this->form == "off-diag" || this->form == "row")
+    && this->form == "row"
   ) {
     if (trvs::currTask == 0) {
-      trvs::logger.error("Fixed bin index `idx_bin` must be >= 0.");
+      trvs::logger.error("Fixed row bin index `idx_bin` must be >= 0.");
     }
     throw trvs::InvalidParameterError(
-      "Fixed bin index `idx_bin` must be >= 0.\n"
+      "Fixed row bin index `idx_bin` must be >= 0.\n"
     );
   }
 
@@ -904,14 +910,14 @@ int ParameterSet::validate() {
     }
   }
 
-  if (this->idx_bin >= this->num_bins) {
+  if (std::abs(this->idx_bin) >= this->num_bins) {
     if (trvs::currTask == 0) {
       trvs::logger.error(
-        "Bin index `idx_bin` must be < `num_bins`."
+        "Bin index `idx_bin` must be < `num_bins` in absolute value."
       );
     }
     throw trvs::InvalidParameterError(
-      "Bin index `idx_bin` must be < `num_bins`.\n"
+      "Bin index `idx_bin` must be < `num_bins` in absolute value.\n"
     );
   }
 
@@ -1015,6 +1021,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
   print_par_str("form = %s\n", this->form);
   print_par_str("norm_convention = %s\n", this->norm_convention);
   print_par_str("binning = %s\n", this->binning);
+  print_par_str("shape = %s\n", this->shape);
 
   print_par_double("bin_min = %.4f\n", this->bin_min);
   print_par_double("bin_max = %.4f\n", this->bin_max);
