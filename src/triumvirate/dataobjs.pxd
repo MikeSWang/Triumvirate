@@ -6,6 +6,8 @@ from libcpp.vector cimport vector
 
 cimport numpy as np
 
+np.import_array()
+
 
 cdef extern from "include/dataobjs.hpp":
     # --------------------------------------------------------------------

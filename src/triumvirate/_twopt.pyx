@@ -5,6 +5,7 @@ Two-Point Correlator Algorithms (:mod:`~triumvirate._twopt`)
 Declare and interface with two-point correlator algorithms.
 
 """
+# STYLE: Un-Pythonic import order to prioritise Cython imports.
 from cython.operator cimport dereference as deref
 from libc.stdlib cimport free, malloc
 from libcpp.string cimport string
@@ -19,6 +20,8 @@ from .dataobjs cimport (
     PowspecMeasurements, TwoPCFMeasurements, TwoPCFWindowMeasurements
 )
 from .parameters cimport CppParameterSet, ParameterSet
+
+np.import_array()
 
 
 cdef extern from "include/twopt.hpp":

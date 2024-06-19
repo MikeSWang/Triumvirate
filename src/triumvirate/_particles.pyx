@@ -9,6 +9,8 @@ cimport numpy as np
 
 from ._particles cimport CppParticleCatalogue
 
+np.import_array()
+
 
 cdef class _ParticleCatalogue:
 

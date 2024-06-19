@@ -11,6 +11,8 @@ cimport numpy as np
 from ._arrayops import _check_1d_array
 from ._fftlog cimport CppHankelTransform
 
+np.import_array()
+
 
 cdef class HankelTransform:
     """Hankel transform.

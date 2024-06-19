@@ -5,6 +5,7 @@ Three-Point Correlator Algorithms (:mod:`~triumvirate._threept`)
 Declare and interface with three-point correlator algorithms.
 
 """
+# STYLE: Un-Pythonic import order to prioritise Cython imports.
 from cython.operator cimport dereference as deref
 from libc.stdlib cimport free, malloc
 from libcpp cimport bool as bool_t
@@ -19,6 +20,8 @@ from .dataobjs cimport (
     BispecMeasurements, ThreePCFMeasurements, ThreePCFWindowMeasurements
 )
 from .parameters cimport CppParameterSet, ParameterSet
+
+np.import_array()
 
 
 cdef extern from "include/threept.hpp":

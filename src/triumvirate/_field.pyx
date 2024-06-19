@@ -5,6 +5,7 @@ Mesh field and statistics (:mod:`~triumvirate._field`)
 Parse mesh fields and their statistics.
 
 """
+# STYLE: Un-Pythonic import order to prioritise Cython imports.
 from cython.operator cimport dereference as deref
 
 import numpy as np
@@ -13,6 +14,8 @@ cimport numpy as np
 from ._field cimport CppFieldStats
 from .dataobjs cimport Binning
 from .parameters cimport ParameterSet
+
+np.import_array()
 
 
 def _record_binned_vectors(Binning binning not None,
