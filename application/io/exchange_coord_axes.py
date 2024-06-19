@@ -173,7 +173,11 @@ def main():
     datatab_ex = transpose_datatab(datatab)
 
     # Save the transposed data table.
-    np.savetxt(output_path, datatab_ex, fmt='%.9e', header=header)
+    fmt = '\t'.join(
+        (['%.9e'] * 2 + ['%10d']) * 2 +
+        ['% .9e'] * (datatab.shape[-1] - 6)
+    )
+    np.savetxt(output_path, datatab_ex, fmt=fmt, header=header)
     print(f"Transpose-exchanged measurement file saved to: {output_path}")
 
 
