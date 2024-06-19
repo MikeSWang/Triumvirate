@@ -150,9 +150,12 @@ def main():
     else:
         output_dir = Path(cfg.output_dir)
     if cfg.output_tag:
-        output_path = output_dir/(
-            output_filename.stem + cfg.output_tag + output_filename.suffix
-        )
+        if output_filename.suffix not in ('.dat', '.txt', '.csv', '.tsv'):
+            output_path = output_dir/(output_filename + cfg.output_tag)
+        else:
+            output_path = output_dir/(
+                output_filename.stem + cfg.output_tag + output_filename.suffix
+            )
     else:
         output_path = output_dir/output_filename
 
