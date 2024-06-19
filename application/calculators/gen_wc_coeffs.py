@@ -4,7 +4,10 @@ clustering statistics.
 
 Examples
 --------
-$ python gen_wc_coeffs.py 000 -u 000 110 220 -w 000 110 220
+
+.. code-block:: console
+
+    $ python gen_wc_coeffs.py 000 -u 000 110 220 -w 000 110 220
 
 """
 from argparse import ArgumentParser
