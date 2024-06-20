@@ -9,6 +9,8 @@
 
 - Fix FFTW-related memory leaks.
 
+- Fix asymmetric 2-dimensional three-point clustering statistics.
+
 ### Features
 
 - Add public API for Hankel-like transforms using the FFTLog algorithm
@@ -42,6 +44,8 @@
 ### Maintenance
 
 - Require C++17 standard.
+- Upgrade build against NumPy 2 and require Python 3.10+
+  ([gh-52](https://github.com/MikeSWang/Triumvirate/issues/52)).
 - Refactor logger message emission.
 - Enhance build recipes.
 - Update syntax and fix typos.
@@ -71,7 +75,7 @@ in [``threept.cpp``](src/triumvirate/src/threept.cpp).
 
 - Add more forms of three-point statistics including the off-diagonal and
   full form (the original 'full' form is renamed to 'row')
-  ([#22](https://github.com/MikeSWang/Triumvirate/issues/22)).
+  ([gh-22](https://github.com/MikeSWang/Triumvirate/issues/22)).
 
 ### Improvements
 

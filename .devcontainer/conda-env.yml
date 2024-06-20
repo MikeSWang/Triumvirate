@@ -4,24 +4,24 @@ channels:
   - conda-forge
 dependencies:
   # Build dependencies
-  - python >=3.8
-  - pip >=19.1
-  - setuptools >=61.0.0
-  - setuptools_scm >=6.4.0
-  - cython >=0.25
-  - extension-helpers
-  - pkg-config
+  - python >=3.10
+  - pip >=22.0
+  - setuptools >=61.0
+  - setuptools_scm >=6.4
+  - cython >=3.0
+  - extension-helpers >=1.1
   - gsl >=2.7
-  - fftw >=3
+  - fftw >=3.3
   - libgomp
   - llvm-openmp
+  - pkg-config
   # Runtime dependencies
-  - numpy >=1.17
-  - scipy >=1.6
-  - sympy
+  - numpy >=1.23
+  - scipy >=1.13
+  - sympy >=1.12.1
   - astropy >=4.2
-  - pyyaml >4
+  - pyyaml >=5.1
   - tqdm
   # Test dependencies
-  - flake8
-  - pytest
+  - flake8 >=4.0
+  - pytest >=7.0

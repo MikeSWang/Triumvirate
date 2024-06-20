@@ -1,5 +1,5 @@
 {% set name = 'Triumvirate' %}
-{% set version = environ.get('GIT_DESCRIBE_TAG', 'v0.3.0') %}
+{% set version = environ.get('GIT_DESCRIBE_TAG', 'v0.4.0') %}
 
 package:
   name: "{{ name|lower }}"
@@ -7,7 +7,7 @@ package:
 
 source:
   git_url: ../../../
-  # git_rev: v0.3.0
+  # git_rev: v0.4.0
   # path: ../../../
 
 build:
@@ -29,30 +29,30 @@ requirements:
   build:
     - {{ compiler('cxx') }}
   host:
-    - python
-    - pip >=19.1
+    - python >=3.10
+    - pip >=22.0
     # Use Conda-provided libraries.
     - gsl >=2.7
-    - fftw >=3
+    - fftw >=3.3
     - libgomp                 # [linux]
     - llvm-openmp             # [osx]
-    - setuptools >=61.0.0
-    - setuptools_scm >=6.4.0
-    - cython >=0.25
-    - extension-helpers
-    - numpy >=1.17,<2
+    - setuptools >=61.0
+    - setuptools_scm >=6.4
+    - cython >=3.0
+    - extension-helpers >=1.1
+    - numpy >=2.0
   run:
-    - python >=3.8
+    - python >=3.10
     - {{ pin_compatible("numpy") }}
-    - scipy >=1.6
-    - sympy
+    - scipy >=1.13
+    - sympy >=1.12.1
     - astropy >=4.2
-    - pyyaml >4
+    - pyyaml >=5.1
     - tqdm
 
 test:
   requires:
-    - pytest
+    - pytest >=7.0
   source_files:
     - tests/
   commands:

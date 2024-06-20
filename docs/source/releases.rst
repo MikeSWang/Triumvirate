@@ -13,6 +13,8 @@ Bug fixes
 
 - Fix FFTW-related memory leaks.
 
+- Fix asymmetric 2-dimensional three-point clustering statistics.
+
 Features
 --------
 
@@ -49,6 +51,8 @@ Maintenance
 -----------
 
 - Require C++17 standard.
+- Upgrade build against NumPy 2 and require Python 3.10+
+  (`gh-52 <https://github.com/MikeSWang/Triumvirate/issues/52>`_).
 - Refactor logger message emission.
 - Enhance build recipes.
 - Update syntax and fix typos.
@@ -83,7 +87,7 @@ Features
 
 - Add more forms of three-point statistics including the off-diagonal and
   full form (the original 'full' form is renamed to 'row')
-  (`#22 <https://github.com/MikeSWang/Triumvirate/issues/22>`_).
+  (`gh-22 <https://github.com/MikeSWang/Triumvirate/issues/22>`_).
 
 Improvements
 ------------
