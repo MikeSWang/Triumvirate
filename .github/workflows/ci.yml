@@ -103,7 +103,7 @@ jobs:
           # # architectures, relevant for x86_64 architecture only.
           # export ARCHFLAGS="-arch x86_64"
           # # Optional: Eliminate linker version warning.
-          # export MACOSX_DEPLOYMENT_TARGET=10.9
+          # export MACOSX_DEPLOYMENT_TARGET=10.13
           # Build.
           make clean; make -j install useomp=true
 
@@ -118,7 +118,7 @@ jobs:
           # # architectures, relevant for x86_64 architecture only.
           # export ARCHFLAGS="-arch x86_64"
           # # Optional: Eliminate linker version warning.
-          # export MACOSX_DEPLOYMENT_TARGET=10.9
+          # export MACOSX_DEPLOYMENT_TARGET=10.13
           # Build.
           make clean; make -j install useomp=true
 

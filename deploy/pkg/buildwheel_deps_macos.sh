@@ -15,7 +15,7 @@ ARCH=$(uname -m)
 if [[ $ARCH == "arm64" ]]; then
     export MACOSX_DEPLOYMENT_TARGET=11.0
 elif [[ $ARCH == "x86_64" ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.9
+    export MACOSX_DEPLOYMENT_TARGET=10.13
 fi
 
 # Set up paths and directories.
