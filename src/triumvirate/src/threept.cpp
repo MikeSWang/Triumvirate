@@ -241,13 +241,13 @@ trv::BispecMeasurements compute_bispec(
 
   // Set up output.
   int dv_dim = 0;  // data vector dimension
-  if (params.form == "diag" || params.form == "row" ) {
+  if (params.shape == "diag" || params.shape == "row" ) {
     dv_dim = kbinning.num_bins;
   } else
-  if (params.form == "off-diag") {
-    dv_dim = kbinning.num_bins - params.idx_bin;
+  if (params.shape == "off-diag") {
+    dv_dim = kbinning.num_bins - std::abs(params.idx_bin);
   } else
-  if (params.form == "full") {
+  if (params.shape == "full") {
     dv_dim = kbinning.num_bins * (kbinning.num_bins + 1) / 2;
   } else {
     if (trvs::currTask == 0) {
@@ -381,7 +381,7 @@ trv::BispecMeasurements compute_bispec(
         MeshField F_lm_a(params, true, "`F_lm_a`");  // F_lm_a
         MeshField F_lm_b(params, true, "`F_lm_b`");  // F_lm_b
 
-        if (params.form == "diag") {
+        if (params.shape == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
 
@@ -434,10 +434,16 @@ trv::BispecMeasurements compute_bispec(
           }
         }
 
-        if (params.form == "off-diag") {
+        if (params.shape == "off-diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-            int ibin_row = idx_dv;
-            int ibin_col = idx_dv + params.idx_bin;
+            int ibin_row, ibin_col;
+            if (params.idx_bin >= 0) {
+              ibin_row = idx_dv;
+              ibin_col = idx_dv + std::abs(params.idx_bin);
+            } else {
+              ibin_row = idx_dv + std::abs(params.idx_bin);
+              ibin_col = idx_dv;
+            }
 
             double k_lower_a = kbinning.bin_edges[ibin_row];
             double k_upper_a = kbinning.bin_edges[ibin_row + 1];
@@ -490,7 +496,7 @@ trv::BispecMeasurements compute_bispec(
           }
         }
 
-        if (params.form == "row") {
+        if (params.shape == "row") {
           int ibin_row = params.idx_bin;
 
           double k_lower_a = kbinning.bin_edges[ibin_row];
@@ -552,7 +558,7 @@ trv::BispecMeasurements compute_bispec(
           }
         }
 
-        if (params.form == "full") {
+        if (params.shape == "full") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
               int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
@@ -651,7 +657,7 @@ trv::BispecMeasurements compute_bispec(
             dn_00_for_sn, N_LM, Sbar_LM, params.ell1, m1_, kbinning
           );
 
-          if (params.form == "diag") {
+          if (params.shape == "diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin = idx_dv;
               sn_dv[idx_dv] += coupling * (
@@ -660,16 +666,21 @@ trv::BispecMeasurements compute_bispec(
             }
           }
 
-          if (params.form == "off-diag") {
+          if (params.shape == "off-diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-              int ibin_row = idx_dv;
+              int ibin_row;
+              if (params.idx_bin >= 0) {
+                ibin_row = idx_dv;
+              } else {
+                ibin_row = idx_dv + std::abs(params.idx_bin);
+              }
               sn_dv[idx_dv] += coupling * (
                 stats_sn.pk[ibin_row] - stats_sn.sn[ibin_row]
               );
             }
           }
 
-          if (params.form == "row") {
+          if (params.shape == "row") {
             std::complex<double> sn_row_ = coupling * (
               stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
             );
@@ -678,7 +689,7 @@ trv::BispecMeasurements compute_bispec(
             }
           }
 
-          if (params.form == "full") {
+          if (params.shape == "full") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
               std::complex<double> sn_row_ = coupling * (
                 stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
@@ -698,7 +709,7 @@ trv::BispecMeasurements compute_bispec(
             dn_00_for_sn, N_LM, Sbar_LM, params.ell2, m2_, kbinning
           );
 
-          if (params.form == "diag") {
+          if (params.shape == "diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin = idx_dv;
               sn_dv[idx_dv] += coupling * (
@@ -707,16 +718,21 @@ trv::BispecMeasurements compute_bispec(
             }
           }
 
-          if (params.form == "off-diag") {
+          if (params.shape == "off-diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-              int ibin_col = idx_dv + params.idx_bin;
+              int ibin_col;
+              if (params.idx_bin >= 0) {
+                ibin_col = idx_dv + params.idx_bin;
+              } else {
+                ibin_col = idx_dv;
+              }
               sn_dv[idx_dv] += coupling * (
                 stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
               );
             }
           }
 
-          if (params.form == "row") {
+          if (params.shape == "row") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin_col = idx_dv;
               sn_dv[idx_dv] += coupling * (
@@ -725,7 +741,7 @@ trv::BispecMeasurements compute_bispec(
             }
           }
 
-          if (params.form == "full") {
+          if (params.shape == "full") {
             for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
               std::complex<double> sn_col_ = coupling * (
                 stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
@@ -827,13 +843,13 @@ trv::ThreePCFMeasurements compute_3pcf(
 
   // Set up output.
   int dv_dim = 0;  // data vector dimension
-  if (params.form == "diag" || params.form == "row" ) {
+  if (params.shape == "diag" || params.shape == "row" ) {
     dv_dim = rbinning.num_bins;
   } else
-  if (params.form == "off-diag") {
-    dv_dim = rbinning.num_bins - params.idx_bin;
+  if (params.shape == "off-diag") {
+    dv_dim = rbinning.num_bins - std::abs(params.idx_bin);
   } else
-  if (params.form == "full") {
+  if (params.shape == "full") {
     dv_dim = rbinning.num_bins * (rbinning.num_bins + 1) / 2;
   } else {
     if (trvs::currTask == 0) {
@@ -973,27 +989,25 @@ trv::ThreePCFMeasurements compute_3pcf(
         );  // S|{i = j ≠ k}
 
         // Enforce the Kronecker delta in eq. (51) in the Paper.
-        if (params.form == "diag") {
+        if (params.shape == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
             sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
           }
         }
 
-        if (params.form == "off-diag") {
-          if (params.idx_bin == 0) {
-            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-              int ibin = idx_dv;
-              sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
-            }
+        if (params.shape == "off-diag" && params.idx_bin == 0) {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin = idx_dv;
+            sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
           }
         }
 
-        if (params.form == "row") {
+        if (params.shape == "row") {
           sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
         }
 
-        if (params.form == "full") {
+        if (params.shape == "full") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             // int idx_col = idx_row;
             int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2;
@@ -1003,7 +1017,7 @@ trv::ThreePCFMeasurements compute_3pcf(
 
         // Only record the binned coordinates and counts once.
         if (count_terms == 0) {
-          if (params.form == "diag") {
+          if (params.shape == "diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin = idx_dv;
 
@@ -1016,10 +1030,16 @@ trv::ThreePCFMeasurements compute_3pcf(
             }
           }
 
-          if (params.form == "off-diag") {
+          if (params.shape == "off-diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-              int ibin_row = idx_dv;
-              int ibin_col = idx_dv + params.idx_bin;
+              int ibin_row, ibin_col;
+              if (params.idx_bin >= 0) {
+                ibin_row = idx_dv;
+                ibin_col = idx_dv + std::abs(params.idx_bin);
+              } else {
+                ibin_row = idx_dv + std::abs(params.idx_bin);
+                ibin_col = idx_dv;
+              }
 
               r1bin_dv[idx_dv] = rbinning.bin_centres[ibin_row];
               r2bin_dv[idx_dv] = rbinning.bin_centres[ibin_col];
@@ -1030,7 +1050,7 @@ trv::ThreePCFMeasurements compute_3pcf(
             }
           }
 
-          if (params.form == "row") {
+          if (params.shape == "row") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin_row = params.idx_bin;
               int ibin_col = idx_dv;
@@ -1044,7 +1064,7 @@ trv::ThreePCFMeasurements compute_3pcf(
             }
           }
 
-          if (params.form == "full") {
+          if (params.shape == "full") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
               for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
                 int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
@@ -1185,13 +1205,13 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
   // Set up output.
   int dv_dim = 0;  // data vector dimension
-  if (params.form == "diag" || params.form == "row" ) {
+  if (params.shape == "diag" || params.shape == "row" ) {
     dv_dim = kbinning.num_bins;
   } else
-  if (params.form == "off-diag") {
-    dv_dim = kbinning.num_bins - params.idx_bin;
+  if (params.shape == "off-diag") {
+    dv_dim = kbinning.num_bins - std::abs(params.idx_bin);
   } else
-  if (params.form == "full") {
+  if (params.shape == "full") {
     dv_dim = kbinning.num_bins * (kbinning.num_bins + 1) / 2;
   } else {
     if (trvs::currTask == 0) {
@@ -1312,7 +1332,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       MeshField F_lm_a(params, true, "`F_lm_a`");  // F_lm_a
       MeshField F_lm_b(params, true, "`F_lm_b`");  // F_lm_b
 
-      if (params.form == "diag") {
+      if (params.shape == "diag") {
         for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
           int ibin = idx_dv;
 
@@ -1361,10 +1381,16 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         }
       }
 
-      if (params.form == "off-diag") {
+      if (params.shape == "off-diag") {
         for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-          int ibin_row = idx_dv;
-          int ibin_col = idx_dv + params.idx_bin;
+          int ibin_row, ibin_col;
+          if (params.idx_bin >= 0) {
+            ibin_row = idx_dv;
+            ibin_col = idx_dv + std::abs(params.idx_bin);
+          } else {
+            ibin_row = idx_dv + std::abs(params.idx_bin);
+            ibin_col = idx_dv;
+          }
 
           double k_lower_a = kbinning.bin_edges[ibin_row];
           double k_upper_a = kbinning.bin_edges[ibin_row + 1];
@@ -1413,7 +1439,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         }
       }
 
-      if (params.form == "row") {
+      if (params.shape == "row") {
         int ibin_row = params.idx_bin;
 
         double k_lower_a = kbinning.bin_edges[ibin_row];
@@ -1471,7 +1497,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         }
       }
 
-      if (params.form == "full") {
+      if (params.shape == "full") {
         for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
           for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
             int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
@@ -1553,7 +1579,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           dn_00_for_sn, N_L0, Sbar_LM, params.ell1, m1_, kbinning
         );
 
-        if (params.form == "diag") {
+        if (params.shape == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
             sn_dv[idx_dv] += coupling * (
@@ -1562,16 +1588,21 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           }
         }
 
-        if (params.form == "off-diag") {
+        if (params.shape == "off-diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-            int ibin_row = idx_dv;
+            int ibin_row;
+            if (params.idx_bin >= 0) {
+              ibin_row = idx_dv;
+            } else {
+              ibin_row = idx_dv + std::abs(params.idx_bin);
+            }
             sn_dv[idx_dv] += coupling * (
               stats_sn.pk[ibin_row] - stats_sn.sn[ibin_row]
             );
           }
         }
 
-        if (params.form == "row") {
+        if (params.shape == "row") {
           std::complex<double> sn_row_ = coupling * (
             stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
           );
@@ -1580,7 +1611,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           }
         }
 
-        if (params.form == "full") {
+        if (params.shape == "full") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             std::complex<double> sn_row_ = coupling * (
               stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
@@ -1600,7 +1631,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           dn_00_for_sn, N_L0, Sbar_LM, params.ell2, m2_, kbinning
         );
 
-        if (params.form == "diag") {
+        if (params.shape == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
             sn_dv[idx_dv] += coupling * (
@@ -1609,16 +1640,21 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           }
         }
 
-        if (params.form == "off-diag") {
+        if (params.shape == "off-diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-            int ibin_col = idx_dv + params.idx_bin;
+            int ibin_col;
+            if (params.idx_bin >= 0) {
+              ibin_col = idx_dv + params.idx_bin;
+            } else {
+              ibin_col = idx_dv;
+            }
             sn_dv[idx_dv] += coupling * (
               stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
             );
           }
         }
 
-        if (params.form == "row") {
+        if (params.shape == "row") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin_col = idx_dv;
             sn_dv[idx_dv] += coupling * (
@@ -1627,7 +1663,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           }
         }
 
-        if (params.form == "full") {
+        if (params.shape == "full") {
           for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
             std::complex<double> sn_col_ = coupling * (
               stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
@@ -1727,13 +1763,13 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
 
   // Set up output.
   int dv_dim = 0;  // data vector dimension
-  if (params.form == "diag" || params.form == "row" ) {
+  if (params.shape == "diag" || params.shape == "row" ) {
     dv_dim = rbinning.num_bins;
   } else
-  if (params.form == "off-diag") {
-    dv_dim = rbinning.num_bins - params.idx_bin;
+  if (params.shape == "off-diag") {
+    dv_dim = rbinning.num_bins - std::abs(params.idx_bin);
   } else
-  if (params.form == "full") {
+  if (params.shape == "full") {
     dv_dim = rbinning.num_bins * (rbinning.num_bins + 1) / 2;
   } else {
     if (trvs::currTask == 0) {
@@ -1851,27 +1887,25 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       );  // S|{i = j ≠ k}
 
       // Enforce the Kronecker delta in eq. (51) in the Paper.
-      if (params.form == "diag") {
+      if (params.shape == "diag") {
         for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
           int ibin = idx_dv;
           sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
         }
       }
 
-      if (params.form == "off-diag") {
-        if (params.idx_bin == 0) {
-          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-            int ibin = idx_dv;
-            sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
-          }
+      if (params.shape == "off-diag" && params.idx_bin == 0) {
+        for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+          int ibin = idx_dv;
+          sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
         }
       }
 
-      if (params.form == "row") {
+      if (params.shape == "row") {
         sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
       }
 
-      if (params.form == "full") {
+      if (params.shape == "full") {
         for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
           // int idx_col = idx_row;
           int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2;
@@ -1881,7 +1915,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
 
       // Only record the binned coordinates and counts once.
       if (count_terms == 0) {
-        if (params.form == "diag") {
+        if (params.shape == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
 
@@ -1894,10 +1928,16 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
           }
         }
 
-        if (params.form == "off-diag") {
+        if (params.shape == "off-diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-            int ibin_row = idx_dv;
-            int ibin_col = idx_dv + params.idx_bin;
+            int ibin_row, ibin_col;
+            if (params.idx_bin >= 0) {
+              ibin_row = idx_dv;
+              ibin_col = idx_dv + std::abs(params.idx_bin);
+            } else {
+              ibin_row = idx_dv + std::abs(params.idx_bin);
+              ibin_col = idx_dv;
+            }
 
             r1bin_dv[idx_dv] = rbinning.bin_centres[ibin_row];
             r2bin_dv[idx_dv] = rbinning.bin_centres[ibin_col];
@@ -1908,7 +1948,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
           }
         }
 
-        if (params.form == "row") {
+        if (params.shape == "row") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin_row = params.idx_bin;
             int ibin_col = idx_dv;
@@ -1922,7 +1962,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
           }
         }
 
-        if (params.form == "full") {
+        if (params.shape == "full") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
               int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
@@ -2063,13 +2103,13 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
 
   // Set up output.
   int dv_dim = 0;  // data vector dimension
-  if (params.form == "diag" || params.form == "row" ) {
+  if (params.shape == "diag" || params.shape == "row" ) {
     dv_dim = rbinning.num_bins;
   } else
-  if (params.form == "off-diag") {
-    dv_dim = rbinning.num_bins - params.idx_bin;
+  if (params.shape == "off-diag") {
+    dv_dim = rbinning.num_bins - std::abs(params.idx_bin);
   } else
-  if (params.form == "full") {
+  if (params.shape == "full") {
     dv_dim = rbinning.num_bins * (rbinning.num_bins + 1) / 2;
   } else {
     if (trvs::currTask == 0) {
@@ -2203,27 +2243,25 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         );  // S|{i = j ≠ k}
 
         // Enforce the Kronecker delta in eq. (51) in the Paper.
-        if (params.form == "diag") {
+        if (params.shape == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
             sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
           }
         }
 
-        if (params.form == "off-diag") {
-          if (params.idx_bin == 0) {
-            for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-              int ibin = idx_dv;
-              sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
-            }
+        if (params.shape == "off-diag" && params.idx_bin == 0) {
+          for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
+            int ibin = idx_dv;
+            sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
           }
         }
 
-        if (params.form == "row") {
+        if (params.shape == "row") {
           sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
         }
 
-        if (params.form == "full") {
+        if (params.shape == "full") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             // int idx_col = idx_row;
             int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2;
@@ -2232,7 +2270,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         }
 
         if (count_terms == 0) {
-          if (params.form == "diag") {
+          if (params.shape == "diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin = idx_dv;
 
@@ -2245,10 +2283,16 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
             }
           }
 
-          if (params.form == "off-diag") {
+          if (params.shape == "off-diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-              int ibin_row = idx_dv;
-              int ibin_col = idx_dv + params.idx_bin;
+              int ibin_row, ibin_col;
+              if (params.idx_bin >= 0) {
+                ibin_row = idx_dv;
+                ibin_col = idx_dv + std::abs(params.idx_bin);
+              } else {
+                ibin_row = idx_dv + std::abs(params.idx_bin);
+                ibin_col = idx_dv;
+              }
 
               r1bin_dv[idx_dv] = rbinning.bin_centres[ibin_row];
               r2bin_dv[idx_dv] = rbinning.bin_centres[ibin_col];
@@ -2259,7 +2303,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
             }
           }
 
-          if (params.form == "row") {
+          if (params.shape == "row") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin_row = params.idx_bin;
               int ibin_col = idx_dv;
@@ -2273,7 +2317,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
             }
           }
 
-          if (params.form == "full") {
+          if (params.shape == "full") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
               for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
                 int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
@@ -2425,13 +2469,13 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
   // Set up output.
   int dv_dim = 0;  // data vector dimension
-  if (params.form == "diag" || params.form == "row" ) {
+  if (params.shape == "diag" || params.shape == "row" ) {
     dv_dim = kbinning.num_bins;
   } else
-  if (params.form == "off-diag") {
-    dv_dim = kbinning.num_bins - params.idx_bin;
+  if (params.shape == "off-diag") {
+    dv_dim = kbinning.num_bins - std::abs(params.idx_bin);
   } else
-  if (params.form == "full") {
+  if (params.shape == "full") {
     dv_dim = kbinning.num_bins * (kbinning.num_bins + 1) / 2;
   } else {
     if (trvs::currTask == 0) {
@@ -2616,7 +2660,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         MeshField F_lm_a(params, true, "`F_lm_a`");  // F_lm_a
         MeshField F_lm_b(params, true, "`F_lm_b`");  // F_lm_b
 
-        if (params.form == "diag") {
+        if (params.shape == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
 
@@ -2669,10 +2713,16 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           }
         }
 
-        if (params.form == "off-diag") {
+        if (params.shape == "off-diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-            int ibin_row = idx_dv;
-            int ibin_col = idx_dv + params.idx_bin;
+            int ibin_row, ibin_col;
+            if (params.idx_bin >= 0) {
+              ibin_row = idx_dv;
+              ibin_col = idx_dv + std::abs(params.idx_bin);
+            } else {
+              ibin_row = idx_dv + std::abs(params.idx_bin);
+              ibin_col = idx_dv;
+            }
 
             double k_lower_a = kbinning.bin_edges[ibin_row];
             double k_upper_a = kbinning.bin_edges[ibin_row + 1];
@@ -2725,7 +2775,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           }
         }
 
-        if (params.form == "row") {
+        if (params.shape == "row") {
           int ibin_row = params.idx_bin;
 
           double k_lower_a = kbinning.bin_edges[params.idx_bin];
@@ -2787,7 +2837,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           }
         }
 
-        if (params.form == "full") {
+        if (params.shape == "full") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
               int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
@@ -2959,7 +3009,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             dn_LM_a_for_sn, N_LM_a, Sbar_LM, params.ell1, m1_, kbinning
           );
 
-          if (params.form == "diag") {
+          if (params.shape == "diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin = idx_dv;
               sn_dv[idx_dv] += coupling * (
@@ -2968,16 +3018,21 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             }
           }
 
-          if (params.form == "off-diag") {
+          if (params.shape == "off-diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-              int ibin_row = idx_dv;
+              int ibin_row;
+              if (params.idx_bin >= 0) {
+                ibin_row = idx_dv;
+              } else {
+                ibin_row = idx_dv + std::abs(params.idx_bin);
+              }
               sn_dv[idx_dv] += coupling * (
                 stats_sn.pk[ibin_row] - stats_sn.sn[ibin_row]
               );
             }
           }
 
-          if (params.form == "row") {
+          if (params.shape == "row") {
             std::complex<double> sn_row_ = coupling * (
               stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
             );
@@ -2986,7 +3041,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             }
           }
 
-          if (params.form == "full") {
+          if (params.shape == "full") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
               std::complex<double> sn_row_ = coupling * (
                 stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
@@ -3007,7 +3062,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             params.ell2, m2_, kbinning
           );
 
-          if (params.form == "diag") {
+          if (params.shape == "diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin = idx_dv;
               sn_dv[idx_dv] += coupling * (
@@ -3016,16 +3071,21 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             }
           }
 
-          if (params.form == "off-diag") {
+          if (params.shape == "off-diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-              int ibin_col = idx_dv + params.idx_bin;
+              int ibin_col;
+              if (params.idx_bin >= 0) {
+                ibin_col = idx_dv + params.idx_bin;
+              } else {
+                ibin_col = idx_dv;
+              }
               sn_dv[idx_dv] += coupling * (
                 stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
               );
             }
           }
 
-          if (params.form == "row") {
+          if (params.shape == "row") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin_col = idx_dv;
               sn_dv[idx_dv] += coupling * (
@@ -3034,7 +3094,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             }
           }
 
-          if (params.form == "full") {
+          if (params.shape == "full") {
             for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
               std::complex<double> sn_col_ = coupling * (
                 stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
