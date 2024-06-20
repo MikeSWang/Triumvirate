@@ -561,6 +561,63 @@ trv::BispecMeasurements compute_bispec(
           }
         }
 
+        if (params.shape == "full") {
+          for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+            for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+              int idx_dv = idx_row * params.num_bins + idx_col;
+
+              double k_lower_a = kbinning.bin_edges[idx_row];
+              double k_upper_a = kbinning.bin_edges[idx_row + 1];
+              double k_lower_b = kbinning.bin_edges[idx_col];
+              double k_upper_b = kbinning.bin_edges[idx_col + 1];
+
+              double k_eff_a_, k_eff_b_;
+              int nmodes_a_, nmodes_b_;
+
+              F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
+                dn_00, ylm_k_a, k_lower_a, k_upper_a, k_eff_a_, nmodes_a_
+              );
+              F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+                dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
+              );
+
+              if (count_terms == 0) {
+                k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
+                k2bin_dv[idx_dv] = kbinning.bin_centres[idx_col];
+                k1eff_dv[idx_dv] = k_eff_a_;
+                k2eff_dv[idx_dv] = k_eff_b_;
+                nmodes1_dv[idx_dv] = nmodes_a_;
+                nmodes2_dv[idx_dv] = nmodes_b_;
+              }
+
+              // B_{l₁ l₂ L}^{m₁ m₂ M}
+              double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
+              for (long long gid = 0; gid < params.nmesh; gid++) {
+                std::complex<double> F_lm_a_gridpt(
+                  F_lm_a[gid][0], F_lm_a[gid][1]
+                );
+                std::complex<double> F_lm_b_gridpt(
+                  F_lm_b[gid][0], F_lm_b[gid][1]
+                );
+                std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
+                std::complex<double> bk_gridpt =
+                  F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+
+                bk_comp_real += bk_gridpt.real();
+                bk_comp_imag += bk_gridpt.imag();
+              }
+
+              std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+              bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+            }
+          }
+        }
+
         if (params.shape == "triu") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
@@ -692,6 +749,18 @@ trv::BispecMeasurements compute_bispec(
             }
           }
 
+          if (params.shape == "full") {
+            for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+              std::complex<double> sn_row_ = coupling * (
+                stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
+              );
+              for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+                int idx_dv = idx_row * params.num_bins + idx_col;
+                sn_dv[idx_dv] += sn_row_;
+              }
+            }
+          }
+
           if (params.shape == "triu") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
               std::complex<double> sn_row_ = coupling * (
@@ -741,6 +810,18 @@ trv::BispecMeasurements compute_bispec(
               sn_dv[idx_dv] += coupling * (
                 stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
               );
+            }
+          }
+
+          if (params.shape == "full") {
+            for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+              std::complex<double> sn_col_ = coupling * (
+                stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
+              );
+              for (int idx_row = 0; idx_row <= params.num_bins; idx_row++) {
+                int idx_dv = idx_row * params.num_bins + idx_col;
+                sn_dv[idx_dv] += sn_col_;
+              }
             }
           }
 
@@ -1003,6 +1084,7 @@ trv::ThreePCFMeasurements compute_3pcf(
         }
 
         if (params.shape == "off-diag" && params.idx_bin == 0) {
+          // Note that ``idx_col == idx_row``.
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
             sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
@@ -1011,6 +1093,14 @@ trv::ThreePCFMeasurements compute_3pcf(
 
         if (params.shape == "row") {
           sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
+        }
+
+        if (params.shape == "full") {
+          for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+            // Note that ``idx_col == idx_row``.
+            int idx_dv = idx_row * params.num_bins + idx_row;
+            sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
+          }
         }
 
         if (params.shape == "triu") {
@@ -1067,6 +1157,21 @@ trv::ThreePCFMeasurements compute_3pcf(
               r2eff_dv[idx_dv] = stats_sn.r[ibin_col];
               npairs1_dv[idx_dv] = stats_sn.npairs[ibin_row];
               npairs2_dv[idx_dv] = stats_sn.npairs[ibin_col];
+            }
+          }
+
+          if (params.shape == "full") {
+            for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+              for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+                int idx_dv = idx_row * params.num_bins + idx_col;
+
+                r1bin_dv[idx_dv] = rbinning.bin_centres[idx_row];
+                r2bin_dv[idx_dv] = rbinning.bin_centres[idx_col];
+                r1eff_dv[idx_dv] = stats_sn.r[idx_row];
+                r2eff_dv[idx_dv] = stats_sn.r[idx_col];
+                npairs1_dv[idx_dv] = stats_sn.npairs[idx_row];
+                npairs2_dv[idx_dv] = stats_sn.npairs[idx_col];
+              }
             }
           }
 
@@ -1506,6 +1611,63 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         }
       }
 
+      if (params.shape == "full") {
+        for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+          for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+            int idx_dv = idx_row * params.num_bins + idx_col;
+
+            double k_lower_a = kbinning.bin_edges[idx_row];
+            double k_upper_a = kbinning.bin_edges[idx_row + 1];
+            double k_lower_b = kbinning.bin_edges[idx_col];
+            double k_upper_b = kbinning.bin_edges[idx_col + 1];
+
+            double k_eff_a_, k_eff_b_;
+            int nmodes_a_, nmodes_b_;
+
+            F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_00, ylm_k_a, k_lower_a, k_upper_a, k_eff_a_, nmodes_a_
+            );
+            F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+              dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
+            );
+
+            if (count_terms == 0) {
+              k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
+              k2bin_dv[idx_dv] = kbinning.bin_centres[idx_col];
+              k1eff_dv[idx_dv] = k_eff_a_;
+              k2eff_dv[idx_dv] = k_eff_b_;
+              nmodes1_dv[idx_dv] = nmodes_a_;
+              nmodes2_dv[idx_dv] = nmodes_b_;
+            }
+
+            // B_{l₁ l₂ L}^{m₁ m₂ M}
+            double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
+            for (long long gid = 0; gid < params.nmesh; gid++) {
+              std::complex<double> F_lm_a_gridpt(
+                F_lm_a[gid][0], F_lm_a[gid][1]
+              );
+              std::complex<double> F_lm_b_gridpt(
+                F_lm_b[gid][0], F_lm_b[gid][1]
+              );
+              std::complex<double> G_00_gridpt(G_00[gid][0], G_00[gid][1]);
+              std::complex<double> bk_gridpt =
+                F_lm_a_gridpt * F_lm_b_gridpt * G_00_gridpt;
+
+              bk_comp_real += bk_gridpt.real();
+              bk_comp_imag += bk_gridpt.imag();
+            }
+
+            std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+          }
+        }
+      }
+
       if (params.shape == "triu") {
         for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
           for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
@@ -1620,6 +1782,18 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           }
         }
 
+        if (params.shape == "full") {
+          for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+            std::complex<double> sn_row_ = coupling * (
+              stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
+            );
+            for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+              int idx_dv = idx_row * params.num_bins + idx_col;
+              sn_dv[idx_dv] += sn_row_;
+            }
+          }
+        }
+
         if (params.shape == "triu") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             std::complex<double> sn_row_ = coupling * (
@@ -1669,6 +1843,18 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
             sn_dv[idx_dv] += coupling * (
               stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
             );
+          }
+        }
+
+        if (params.shape == "full") {
+          for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+            std::complex<double> sn_col_ = coupling * (
+              stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
+            );
+            for (int idx_row = 0; idx_row <= params.num_bins; idx_row++) {
+              int idx_dv = idx_row * params.num_bins + idx_col;
+              sn_dv[idx_dv] += sn_col_;
+            }
           }
         }
 
@@ -1907,6 +2093,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       }
 
       if (params.shape == "off-diag" && params.idx_bin == 0) {
+        // Note that ``idx_col == idx_row``.
         for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
           int ibin = idx_dv;
           sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
@@ -1915,6 +2102,14 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
 
       if (params.shape == "row") {
         sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
+      }
+
+      if (params.shape == "full") {
+        for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+          // Note that ``idx_col == idx_row``.
+          int idx_dv = idx_row * params.num_bins + idx_row;
+          sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
+        }
       }
 
       if (params.shape == "triu") {
@@ -1971,6 +2166,21 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
             r2eff_dv[idx_dv] = stats_sn.r[ibin_col];
             npairs1_dv[idx_dv] = stats_sn.npairs[ibin_row];
             npairs2_dv[idx_dv] = stats_sn.npairs[ibin_col];
+          }
+        }
+
+        if (params.shape == "full") {
+          for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+            for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+              int idx_dv = idx_row * params.num_bins + idx_col;
+
+              r1bin_dv[idx_dv] = rbinning.bin_centres[idx_row];
+              r2bin_dv[idx_dv] = rbinning.bin_centres[idx_col];
+              r1eff_dv[idx_dv] = stats_sn.r[idx_row];
+              r2eff_dv[idx_dv] = stats_sn.r[idx_col];
+              npairs1_dv[idx_dv] = stats_sn.npairs[idx_row];
+              npairs2_dv[idx_dv] = stats_sn.npairs[idx_col];
+            }
           }
         }
 
@@ -2266,6 +2476,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         }
 
         if (params.shape == "off-diag" && params.idx_bin == 0) {
+          // Note that ``idx_col == idx_row``.
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
             sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
@@ -2274,6 +2485,14 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
 
         if (params.shape == "row") {
           sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
+        }
+
+        if (params.shape == "full") {
+          for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+            // Note that ``idx_col == idx_row``.
+            int idx_dv = idx_row * params.num_bins + idx_row;
+            sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
+          }
         }
 
         if (params.shape == "triu") {
@@ -2329,6 +2548,21 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
               r2eff_dv[idx_dv] = stats_sn.r[ibin_col];
               npairs1_dv[idx_dv] = stats_sn.npairs[ibin_row];
               npairs2_dv[idx_dv] = stats_sn.npairs[ibin_col];
+            }
+          }
+
+          if (params.shape == "full") {
+            for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+              for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+                int idx_dv = idx_row * params.num_bins + idx_col;
+
+                r1bin_dv[idx_dv] = rbinning.bin_centres[idx_row];
+                r2bin_dv[idx_dv] = rbinning.bin_centres[idx_col];
+                r1eff_dv[idx_dv] = stats_sn.r[idx_row];
+                r2eff_dv[idx_dv] = stats_sn.r[idx_col];
+                npairs1_dv[idx_dv] = stats_sn.npairs[idx_row];
+                npairs2_dv[idx_dv] = stats_sn.npairs[idx_col];
+              }
             }
           }
 
@@ -2855,6 +3089,63 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           }
         }
 
+        if (params.shape == "full") {
+          for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+            for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+              int idx_dv = idx_row * params.num_bins + idx_col;
+
+              double k_lower_a = kbinning.bin_edges[idx_row];
+              double k_upper_a = kbinning.bin_edges[idx_row + 1];
+              double k_lower_b = kbinning.bin_edges[idx_col];
+              double k_upper_b = kbinning.bin_edges[idx_col + 1];
+
+              double k_eff_a_, k_eff_b_;
+              int nmodes_a_, nmodes_b_;
+
+              F_lm_a.inv_fourier_transform_ylm_wgtd_field_band_limited(
+                dn_LM_a, ylm_k_a, k_lower_a, k_upper_a, k_eff_a_, nmodes_a_
+              );
+              F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
+                dn_LM_b, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
+              );
+
+              if (count_terms == 0) {
+                k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
+                k2bin_dv[idx_dv] = kbinning.bin_centres[idx_col];
+                k1eff_dv[idx_dv] = k_eff_a_;
+                k2eff_dv[idx_dv] = k_eff_b_;
+                nmodes1_dv[idx_dv] = nmodes_a_;
+                nmodes2_dv[idx_dv] = nmodes_b_;
+              }
+
+              // B_{l₁ l₂ L}^{m₁ m₂ M}
+              double bk_comp_real = 0., bk_comp_imag = 0.;
+
+#ifdef TRV_USE_OMP
+#pragma omp parallel for reduction(+:bk_comp_real, bk_comp_imag)
+#endif  // TRV_USE_OMP
+              for (long long gid = 0; gid < params.nmesh; gid++) {
+                std::complex<double> F_lm_a_gridpt(
+                  F_lm_a[gid][0], F_lm_a[gid][1]
+                );
+                std::complex<double> F_lm_b_gridpt(
+                  F_lm_b[gid][0], F_lm_b[gid][1]
+                );
+                std::complex<double> G_LM_gridpt(G_LM[gid][0], G_LM[gid][1]);
+                std::complex<double> bk_gridpt =
+                  F_lm_a_gridpt * F_lm_b_gridpt * G_LM_gridpt;
+
+                bk_comp_real += bk_gridpt.real();
+                bk_comp_imag += bk_gridpt.imag();
+              }
+
+              std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
+
+              bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+            }
+          }
+        }
+
         if (params.shape == "triu") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
@@ -3059,6 +3350,18 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             }
           }
 
+          if (params.shape == "full") {
+            for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
+              std::complex<double> sn_row_ = coupling * (
+                stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
+              );
+              for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+                int idx_dv = idx_row * params.num_bins + idx_col;
+                sn_dv[idx_dv] += sn_row_;
+              }
+            }
+          }
+
           if (params.shape == "triu") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
               std::complex<double> sn_row_ = coupling * (
@@ -3109,6 +3412,18 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
               sn_dv[idx_dv] += coupling * (
                 stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
               );
+            }
+          }
+
+          if (params.shape == "full") {
+            for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
+              std::complex<double> sn_col_ = coupling * (
+                stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
+              );
+              for (int idx_row = 0; idx_row <= params.num_bins; idx_row++) {
+                int idx_dv = idx_row * params.num_bins + idx_col;
+                sn_dv[idx_dv] += sn_col_;
+              }
             }
           }
 
