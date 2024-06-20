@@ -271,7 +271,7 @@ jobs:
         env:
           recipe_dir: deploy/pkg/conda_recipe_xp
           output_dir: dist_arm64/
-          variants: "{'python': ['3.9', '3.10', '3.11', '3.12']}"
+          variants: "{'python': ['3.10', '3.11', '3.12']}"
         run: |
           # Create output directory if non-existent.
           if [[ ! -d ${output_dir} ]]; then mkdir -p ${output_dir}; fi

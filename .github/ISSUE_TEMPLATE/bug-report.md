@@ -40,7 +40,7 @@ to help explain your problem.
 
 - Package version (e.g. 1.0.0)
 - OS (e.g. Linux, macOS)
-- Python version (e.g. 3.9) and environment (e.g. Conda)
+- Python version (e.g. 3.10) and environment (e.g. Conda)
 - C++ compiler version (e.g. GCC ``g++``, LLVM Clang++) and dependency
   libraries (e.g. ``libgomp``, ``libomp``)
 
