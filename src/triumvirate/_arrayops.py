@@ -739,9 +739,9 @@ def extrap2d_loglin_oscil(a, n_ext):
 # Reshaping
 # ========================================================================
 
-def reshape_threept_datatab(paired_coords, flat_multipole):
-    """Reshape flattened full-form three-point clustering measurements
-    into 2-d arrays.
+def reshape_threept_datatab(paired_coords, flat_multipole, shape='triu'):
+    """Reshape flattened three-point clustering measurements into 2-d
+    arrays.
 
     Parameters
     ----------
@@ -751,6 +751,11 @@ def reshape_threept_datatab(paired_coords, flat_multipole):
         Flattened multipole values corresponding to the
         paired coordinates, assuming the two coordinate variables
         are sampled at the same points.
+    shape : {'triu', 'full'}, optional
+        Shape of the input array without flattening.  If 'triu' (default),
+        it corresponds to an upper triangular matrix and the output
+        2-d array is symmetric; if 'full', it corresponds to a
+        full matrix.
 
     Returns
     -------
@@ -779,20 +784,38 @@ def reshape_threept_datatab(paired_coords, flat_multipole):
             "array must have the same length."
         )
 
-    nbins = (np.sqrt(8*flat_len + 1) - 1) / 2.
-    if not np.isclose(nbins, int(nbins)):
+    if shape == 'triu':
+        # Determine data dimensions.
+        nbins = (np.sqrt(8*flat_len + 1) - 1) / 2.
+        if not np.isclose(nbins, int(nbins)):
+            raise ValueError(
+                "Input arrays do not correspond to an upper triangular matrix."
+            )
+        nbins = int(nbins)
+
+        # Reshape the flattened multipole array into a symmetric matrix.
+        common_coords = paired_coords[:nbins, 1]
+
+        triu_indices = np.triu_indices(nbins)
+
+        multipole = np.zeros((nbins, nbins))
+        multipole[triu_indices] = flat_multipole
+        multipole.T[triu_indices] = flat_multipole
+    elif shape == 'full':
+        # Determine data dimensions.
+        nbins = np.sqrt(flat_len)
+        if not np.isclose(nbins, int(nbins)):
+            raise ValueError(
+                "Input arrays do not correspond to a square matrix."
+            )
+        nbins = int(nbins)
+
+        # Reshape the flattened multipole array into a full matrix.
+        common_coords = paired_coords[:nbins, 1]
+        multipole = flat_multipole.reshape((nbins, nbins))
+    else:
         raise ValueError(
-            "Input arrays do not correspond to an upper triangular matrix."
+            f"Invalid shape specified: '{shape}' not 'triu' or 'full'."
         )
-    nbins = int(nbins)
-
-    # Reshape the flattened multipole array into a symmetric matrix.
-    common_coords = paired_coords[:nbins, 1]
-
-    triu_indices = np.triu_indices(nbins)
-
-    multipole = np.zeros((nbins, nbins))
-    multipole[triu_indices] = flat_multipole
-    multipole.T[triu_indices] = flat_multipole
 
     return common_coords, multipole

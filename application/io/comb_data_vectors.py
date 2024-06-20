@@ -1,6 +1,9 @@
 """Combine two-point and three-point clustering multipole data vectors.
 
-Three-point clustering multipoles are assumed to take the diagonal form.
+.. caution::
+
+    Data vectors are assumed to be bona fide 1-d, i.e.
+    three-point clustering statistics are assumed to be in diagonal form.
 
 Examples
 --------

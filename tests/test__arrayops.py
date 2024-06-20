@@ -302,44 +302,56 @@ def test_extrap2d_loglin_oscil(a, n_ext, expected_output):
 
 
 @pytest.mark.parametrize(
-    "paired_coords, flat_multipole,"
+    "paired_coords, flat_multipole, shape,"
     "expected_common_coords, expected_multipole",
     [
         # Test case 1: Valid input
         (
             np.array([[0, 0], [0, 1], [1, 0]]),
             np.array([1, 2, 3]),
+            'triu',
             np.array([0, 1]),
-            np.array([[1, 2,], [2, 3],])
+            np.array([[1, 2,], [2, 3],]),
         ),
         # Test case 2: Invalid input - paired_coords is not a 2-d array
         (
             np.array([1, 2, 3]),
             np.array([1, 2, 3]),
             None,
-            None
+            None,
+            None,
         ),
         # Test case 3: Invalid input - unmatching dimensions
         (
             np.array([[1, 2], [2, 3], [3, 4]]),
             np.array([1, 2, 3, 4]),
             None,
-            None
+            None,
+            None,
         ),
         # Test case 4: Invalid input - not an upper triangular matrix
         (
             np.array([[1, 2], [2, 3], [3, 4]]),
             np.array([1, 2, 3, 4, 5, 6]),
             None,
-            None
-        )
+            None,
+            None,
+        ),
+        # Test case 5: Valid input
+        (
+            np.array([[0, 0], [0, 1], [1, 0], [1, 1]]),
+            np.array([1, 2, 3, 4]),
+            'full',
+            np.array([0, 1]),
+            np.array([[1, 2,], [3, 4],])
+        ),
     ]
 )
-def test_reshape_threept_datatab(paired_coords, flat_multipole,
+def test_reshape_threept_datatab(paired_coords, flat_multipole, shape,
                                  expected_common_coords, expected_multipole):
     if expected_common_coords is not None and expected_multipole is not None:
         common_coords, multipole = reshape_threept_datatab(
-            paired_coords, flat_multipole
+            paired_coords, flat_multipole, shape=shape
         )
         assert_array_equal(common_coords, expected_common_coords)
         assert_array_equal(multipole, expected_multipole)

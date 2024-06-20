@@ -13,7 +13,7 @@ Bug fixes
 
 - Fix FFTW-related memory leaks.
 
-- Fix asymmetric 2-dimensional three-point clustering statistics.
+- Fix asymmetric 2-d three-point clustering statistics.
 
 Features
 --------
