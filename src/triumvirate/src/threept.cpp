@@ -248,6 +248,9 @@ trv::BispecMeasurements compute_bispec(
     dv_dim = kbinning.num_bins - std::abs(params.idx_bin);
   } else
   if (params.shape == "full") {
+    dv_dim = kbinning.num_bins * kbinning.num_bins;
+  } else
+  if (params.shape == "triu") {
     dv_dim = kbinning.num_bins * (kbinning.num_bins + 1) / 2;
   } else {
     if (trvs::currTask == 0) {
@@ -558,7 +561,7 @@ trv::BispecMeasurements compute_bispec(
           }
         }
 
-        if (params.shape == "full") {
+        if (params.shape == "triu") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
               int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
@@ -689,7 +692,7 @@ trv::BispecMeasurements compute_bispec(
             }
           }
 
-          if (params.shape == "full") {
+          if (params.shape == "triu") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
               std::complex<double> sn_row_ = coupling * (
                 stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
@@ -741,7 +744,7 @@ trv::BispecMeasurements compute_bispec(
             }
           }
 
-          if (params.shape == "full") {
+          if (params.shape == "triu") {
             for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
               std::complex<double> sn_col_ = coupling * (
                 stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
@@ -850,6 +853,9 @@ trv::ThreePCFMeasurements compute_3pcf(
     dv_dim = rbinning.num_bins - std::abs(params.idx_bin);
   } else
   if (params.shape == "full") {
+    dv_dim = rbinning.num_bins * rbinning.num_bins;
+  } else
+  if (params.shape == "triu") {
     dv_dim = rbinning.num_bins * (rbinning.num_bins + 1) / 2;
   } else {
     if (trvs::currTask == 0) {
@@ -1007,9 +1013,9 @@ trv::ThreePCFMeasurements compute_3pcf(
           sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
         }
 
-        if (params.shape == "full") {
+        if (params.shape == "triu") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
-            // int idx_col = idx_row;
+            // Note that ``idx_col == idx_row``.
             int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2;
             sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
           }
@@ -1064,7 +1070,7 @@ trv::ThreePCFMeasurements compute_3pcf(
             }
           }
 
-          if (params.shape == "full") {
+          if (params.shape == "triu") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
               for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
                 int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
@@ -1212,6 +1218,9 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
     dv_dim = kbinning.num_bins - std::abs(params.idx_bin);
   } else
   if (params.shape == "full") {
+    dv_dim = kbinning.num_bins * kbinning.num_bins;
+  } else
+  if (params.shape == "triu") {
     dv_dim = kbinning.num_bins * (kbinning.num_bins + 1) / 2;
   } else {
     if (trvs::currTask == 0) {
@@ -1497,7 +1506,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         }
       }
 
-      if (params.shape == "full") {
+      if (params.shape == "triu") {
         for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
           for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
             int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
@@ -1611,7 +1620,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           }
         }
 
-        if (params.shape == "full") {
+        if (params.shape == "triu") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             std::complex<double> sn_row_ = coupling * (
               stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
@@ -1663,7 +1672,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           }
         }
 
-        if (params.shape == "full") {
+        if (params.shape == "triu") {
           for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
             std::complex<double> sn_col_ = coupling * (
               stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
@@ -1770,6 +1779,9 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
     dv_dim = rbinning.num_bins - std::abs(params.idx_bin);
   } else
   if (params.shape == "full") {
+    dv_dim = rbinning.num_bins * rbinning.num_bins;
+  } else
+  if (params.shape == "triu") {
     dv_dim = rbinning.num_bins * (rbinning.num_bins + 1) / 2;
   } else {
     if (trvs::currTask == 0) {
@@ -1905,9 +1917,9 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
       }
 
-      if (params.shape == "full") {
+      if (params.shape == "triu") {
         for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
-          // int idx_col = idx_row;
+          // Note that ``idx_col == idx_row``.
           int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2;
           sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
         }
@@ -1962,7 +1974,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
           }
         }
 
-        if (params.shape == "full") {
+        if (params.shape == "triu") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
               int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
@@ -2110,6 +2122,9 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
     dv_dim = rbinning.num_bins - std::abs(params.idx_bin);
   } else
   if (params.shape == "full") {
+    dv_dim = rbinning.num_bins * rbinning.num_bins;
+  } else
+  if (params.shape == "triu") {
     dv_dim = rbinning.num_bins * (rbinning.num_bins + 1) / 2;
   } else {
     if (trvs::currTask == 0) {
@@ -2261,9 +2276,9 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
         }
 
-        if (params.shape == "full") {
+        if (params.shape == "triu") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
-            // int idx_col = idx_row;
+            // Note that ``idx_col == idx_row``.
             int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2;
             sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
           }
@@ -2317,7 +2332,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
             }
           }
 
-          if (params.shape == "full") {
+          if (params.shape == "triu") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
               for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
                 int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
@@ -2476,6 +2491,9 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
     dv_dim = kbinning.num_bins - std::abs(params.idx_bin);
   } else
   if (params.shape == "full") {
+    dv_dim = kbinning.num_bins * kbinning.num_bins;
+  } else
+  if (params.shape == "triu") {
     dv_dim = kbinning.num_bins * (kbinning.num_bins + 1) / 2;
   } else {
     if (trvs::currTask == 0) {
@@ -2837,7 +2855,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           }
         }
 
-        if (params.shape == "full") {
+        if (params.shape == "triu") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
               int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
@@ -3041,7 +3059,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             }
           }
 
-          if (params.shape == "full") {
+          if (params.shape == "triu") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
               std::complex<double> sn_row_ = coupling * (
                 stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
@@ -3094,7 +3112,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             }
           }
 
-          if (params.shape == "full") {
+          if (params.shape == "triu") {
             for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
               std::complex<double> sn_col_ = coupling * (
                 stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
