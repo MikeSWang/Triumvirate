@@ -1,11 +1,16 @@
-"""Exchange coordinate axes of 2-d three-point clustering statistics.
+r"""Exchange coordinate axes of 2-d three-point clustering statistics.
 
 Examples
 --------
+To exchange the coordinate axes of a 2-d three-point clustering
+measurement file with path ``<input_path>`` and save the transposed
+measurement file to the output directory ``<output-dir>`` with the tag
+``<tag>``, run:
 
 .. code-block:: console
 
-    $ python exchange_coord_axes.py <input_path> --output-dir <output-dir>
+    $ python exchange_coord_axes.py <input_path> \
+    >   --output-dir <output-dir> --output-tag <tag>
 
 """
 import argparse

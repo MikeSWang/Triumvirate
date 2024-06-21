@@ -5,8 +5,14 @@
     Data vectors are assumed to be bona fide 1-d, i.e.
     three-point clustering statistics are assumed to be in diagonal form.
 
+
 Examples
 --------
+To combine the two-point clustering multipole data vectors ``pk0``,
+``pk2`` and ``pk4`` over realisations 1 to 256 from the input directory
+``<input-dir>`` with the regular expression tag
+(e.g.) ``'_DR12SGC-COMPSAM_V6C_(.*)_'`` and save the combined data vector
+to the output directory ``<output-dir>``, run:
 
 .. code-block:: console
 
@@ -14,8 +20,8 @@ Examples
     > --tag _DR12SGC-COMPSAM_V6C_(.*)_0.50z0.75
     > --range 1 256
     > --components pk0 pk2 pk4
-    > --input-dir storage/output/measurements/BOSS_DR12v5/Mocks/
-    > --output-dir storage/output/measurements/BOSS_DR12v5
+    > --input-dir <input-dir>
+    > --output-dir <output-dir>
 
 """
 import argparse

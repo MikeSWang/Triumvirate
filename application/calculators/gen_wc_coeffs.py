@@ -4,6 +4,10 @@ clustering statistics.
 
 Examples
 --------
+To generate the window convolution coefficients for the convolved
+multipole ``'000'`` from the window function multipoles ``000``, ``110``
+and ``220``, and the unwindowed multipoles ``000``, ``110`` and ``220``,
+run:
 
 .. code-block:: console
 

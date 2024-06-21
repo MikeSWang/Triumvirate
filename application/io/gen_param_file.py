@@ -1,10 +1,22 @@
-"""Generate parameter files from a template.
+r"""Generate parameter files from a template.
 
 For C++, the INI parameter files use '#' as the comment delimiter, and
 each parameter is specified by a single-line assignment in the form
 ``<param_name> = <param_value>``.
 
 For Python, YAML parameter files are used.
+
+Examples
+--------
+To generate a new parameter file ``<param-file>`` by modifying the
+template parameter file ``<template-path>`` with the modified
+parameter--value pairs ``<param-name1>`` and ``<param-value1>``, and
+``<param-name2>`` and ``<param-value2>``, run:
+
+.. code-block:: console
+
+    $ python gen_param_file.py <template-path> -o <param-file> \
+    >   -p <param-name1> <param-value1> -p <param-name2> <param-value2>
 
 """
 import argparse
