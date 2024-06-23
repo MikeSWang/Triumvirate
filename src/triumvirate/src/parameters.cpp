@@ -745,30 +745,30 @@ int ParameterSet::validate() {
   if (this->volume <= 0.) {
     if (trvs::currTask == 0) {
       trvs::logger.error(
-        "Derived total box volume is non-positive: `volume` = '%d'. "
+        "Derived total box volume is non-positive: `volume` = '%.6e'. "
         "Possible numerical overflow due to large `boxsize`, "
         "or `boxsize` is unset.",
-        this->nmesh
+        this->volume
       );
     }
     throw trvs::InvalidParameterError(
-      "Derived total box volume is non-positive: `volume` = '%d'. "
+      "Derived total box volume is non-positive: `volume` = '%.6e'. "
       "Possible numerical overflow due to large `boxsize`, "
       "or `boxsize` is unset.\n",
-      this->nmesh
+      this->volume
     );
   }
   if (this->nmesh <= 0) {
     if (trvs::currTask == 0) {
       trvs::logger.error(
-        "Derived total mesh grid number is non-positive: `nmesh` = '%d'. "
+        "Derived total mesh grid number is non-positive: `nmesh` = '%lld'. "
         "Possible numerical overflow due to large `ngrid`, "
         "or `ngrid` is unset.",
         this->nmesh
       );
     }
     throw trvs::InvalidParameterError(
-      "Derived total mesh grid number is non-positive: `nmesh` = '%d'. "
+      "Derived total mesh grid number is non-positive: `nmesh` = '%lld'. "
       "Possible numerical overflow due to large `ngrid`, "
       "or `ngrid` is unset.\n",
       this->nmesh
@@ -996,7 +996,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
   print_par_int("ngrid_z = %d\n", this->ngrid[2]);
 
   print_par_double("volume = %.6e\n", this->volume);
-  print_par_int("nmesh = %d\n", this->nmesh);
+  print_par_int("nmesh = %lld\n", this->nmesh);
 
   print_par_str("alignment = %s\n", this->alignment);
   print_par_str("padscale = %s\n", this->padscale);
