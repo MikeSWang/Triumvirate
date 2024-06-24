@@ -2,7 +2,7 @@
 Hankel-Like Transforms (:mod:`~triumvirate.transforms`)
 ==========================================================================
 
-.. versionadded:: 0.4.0
+.. versionadded:: 0.4.6
 
 
 Perform Hankel-like transforms in 1- and 2-d.

@@ -2,7 +2,7 @@
 Window Convolution (:mod:`~triumvirate.winconv`)
 ==========================================================================
 
-.. versionadded:: 0.4.0
+.. versionadded:: 0.5.0
 
 
 Perform window convolution of two- and three-point statistics.
@@ -68,6 +68,13 @@ from triumvirate.transforms import (
     SphericalBesselTransform,
     resample_lglin,
     resample_lin,
+)
+
+
+# TODO: Remove this warning in v0.5+ releases.
+warnings.warn(
+    "The `triumvirate.winconv` module is currently experimental. "
+    "Its behaviour has not been fully tested and may change in the future.",
 )
 
 

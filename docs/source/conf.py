@@ -152,16 +152,14 @@ html_sidebars = {
 html_theme = 'pydata_sphinx_theme'  # 'sphinx_book_theme'  #
 html_theme_options = {
     'announcement': (
-        "&#128064; "
-        "Version 0.4 to be released soon (expected in 2024) with "
+        "&#128064; Version 0.5 release expected in late 2024 with "
         f"<a href=\"{WINCONV_MOD_URL}\">window convolution</a> "
-        "functionality!"
-        "<br>"
-        "You can try out the developmental release "
+        "functionality! (Preview from Anaconda: "
         f"<a href=\"{ANACONDA_CHANNEL_URL}/files?channel=dev\">"
-        "<code>msw/label/dev::triumvirate</code>"
-        "</a> "
-        "from Anaconda."
+        "<code>msw/label/dev::triumvirate</code></a>)"
+        "<br>"
+        "&#128640; Version 0.4.6 is the latest stable release "
+        "with important bug fixes and significant performance improvements."
     ),
     'back_to_top_button': True,         # theme: pydata_sphinx_theme
     # 'path_to_docs': "docs/source",    # theme: sphinx_book_theme
@@ -285,7 +283,7 @@ exhale_args = {
     """),
 }
 
-hoverxref_auto_ref = True
+hoverxref_auto_ref = False
 hoverxref_mathjax = True
 hoverxref_sphinxtabs = True
 hoverxref_domains = [
@@ -293,8 +291,9 @@ hoverxref_domains = [
     'py',
 ]
 hoverxref_roles = [
-    'ref',  # 'doc',
+    'ref',
     # 'package', 'mod',
+    # 'doc',
     'obj', 'exc', 'const', 'data',
     'class', 'func', 'meth', 'attr',
 ]

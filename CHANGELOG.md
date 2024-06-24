@@ -1,24 +1,43 @@
 # Change Log
 
-## v0.4 (expected in 2024)
+## v0.5 (expected in 2024)
 
 ### Bug fixes
+
+### Features
+
+- Add public API for window convolution.
+
+### Improvements
+
+### Maintenance
+
+### Documentation
+
+- Add documentation for window convolution.
+
+### Miscellaneous
+
+
+## v0.4.6 (2024-06-24)
+
+### Bug fixes
+
+- Fix asymmetric 2-d three-point clustering statistics.
 
 - Fix various legacy issues in the non-public methods related to
   Hankel-like transforms.
 
 - Fix FFTW-related memory leaks.
 
-- Fix asymmetric 2-d three-point clustering statistics.
-
 ### Features
 
 - Add public API for Hankel-like transforms using the FFTLog algorithm
   with enhanced extrapolation options.
 
-- Add public API for window convolution.
-
 - Expose installation validation as a public function.
+
+- Add non-public API for window convolution (as part of a future release).
 
 ### Improvements
 
