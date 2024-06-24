@@ -98,7 +98,7 @@ def transpose_stat_str(pathlike, ret_multipole=False):
         )
     if stat_indices[0] == stat_indices[1]:
         raise ValueError("The first two multipole indices are the same.")
-    stat_indices_ex = stat_indices[1:] + [stat_indices[0]]
+    stat_indices_ex = [stat_indices[1], stat_indices[0]] + stat_indices[2:]
 
     multipole = index_sep.join(stat_indices)
     multipole_ex = index_sep.join(stat_indices_ex)
