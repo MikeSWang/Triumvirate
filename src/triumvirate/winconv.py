@@ -808,7 +808,7 @@ class ThreePointWindow:
         If `paired_sampts` and `flat_multipoles` have different lengths.
     ValueError
         If `paired_sampts` and `flat_multipoles` do not correspond to an
-        upper triangular matrix.
+        upper triangular or square matrix.
 
 
     .. attention::
