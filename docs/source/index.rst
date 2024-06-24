@@ -53,10 +53,15 @@ information in different formats.
 Acknowledgement
 ===============
 
-.. figure:: _static/image/ERC-Logo-Flag.png
+.. image:: _static/image/ERC-Logo-Flag-Dark.png
     :alt: ERC
-    :align: left
     :width: 40%
+    :class: only-dark
+
+.. image:: _static/image/ERC-Logo-Flag.png
+    :alt: ERC
+    :width: 40%
+    :class: only-light
 
 |br| This project has received funding from the European Research Council (ERC)
 under the European Union's Horizon 2020 research and innovation programme

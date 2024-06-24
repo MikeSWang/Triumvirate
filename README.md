@@ -119,7 +119,7 @@ for the relevant information in different formats.
 
 ## Acknowledgement
 
-<img src="docs/source/_static/image/ERC-Logo-Flag.png" alt="ERC" width="40%">
+<img src="docs/source/_static/image/ERC-Logo-Flag-Dark.png" alt="ERC" width="40%">
 
 This project has received funding from the European Research Council (ERC)
 under the European Union's Horizon 2020 research and innovation programme
