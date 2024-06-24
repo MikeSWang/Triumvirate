@@ -52,7 +52,12 @@ try:
 except ImportError:
     from scipy.integrate import simps as simpson  # scipy<1.6
 
-from triumvirate._arrayops import MixedSignError, SpacingError, _check_1d_array
+from triumvirate._arrayops import (
+    MixedSignError,
+    SpacingError,
+    _check_1d_array,
+    reshape_threept_datatab,
+)
 from triumvirate._mpitools import (
     allocate_tasks,
     distribute_tasks,
@@ -279,6 +284,11 @@ class Multipole:
             raise ValueError(
                 "Cannot compare multipole indices of different lengths."
             )
+
+    def _issym(self):
+        if len(self.index) == 1:
+            return True
+        return self.index[0] == self.index[1]
 
 
 DegreeType = Union[int, str]
@@ -750,7 +760,9 @@ class ThreePointWindow:
 
     Parameters
     ----------
-    paired_sampts : 2-d array of float
+    paired_sampts : |farr2d_type| or dict of \
+                    {:py:const:`~triumvirate.winconv.Multipole3PtLike`: \
+                    |farr2d_type|}
         Paired separation window function sample points, i.e. each row
         is :math:`(r_1, r_2)` where :math:`r_1` and :math:`r_2` are
         the separation sample points for the first and second dimensions.
@@ -774,8 +786,9 @@ class ThreePointWindow:
     ----------
     multipoles : list of :class:`~triumvirate.winconv.Multipole`
         Window function multipoles.
-    r : |farr1d_type|
-        window function separation sample points.
+    r : dict of \
+        {:class:`~triumvirate.winconv.Multipole`: |farr1d_type|}
+        Window function separation sample points.
     Q : dict of \
         {:class:`~triumvirate.winconv.Multipole`: |farr2d_type|}
         Window function multipole samples (each key is a multipole).
@@ -808,44 +821,33 @@ class ThreePointWindow:
     def __init__(self, paired_sampts, flat_multipoles, alpha_contrast=1.,
                  make_loglin=True):
 
-        # Check dimensions.
-        paired_sampts = np.squeeze(paired_sampts)
-        if paired_sampts.ndim != 2:
-            raise ValueError(
-                "Paired separation sample points must be a 2-d array."
-            )
-
-        for flat_multipole_ in flat_multipoles.values():
-            flat_multipole_ = np.squeeze(flat_multipole_)
-            if len(paired_sampts) != len(flat_multipole_):
-                raise ValueError(
-                    "Paired separation sample points and flattened multipole "
-                    "samples must have the same length."
-                )
-
-        nbins = (np.sqrt(8*len(paired_sampts) + 1) - 1) / 2.
-        if not np.isclose(nbins, int(nbins)):
-            raise ValueError(
-                "Paired separation sample points do not correspond to "
-                "an upper triangular matrix."
-            )
-        nbins = int(nbins)
-
         # Reshape arrays.
-        triu_indices = np.triu_indices(nbins)
+        if not isinstance(paired_sampts, dict):
+            paired_sampts = {
+                multipole: paired_sampts for multipole in flat_multipoles
+            }
 
-        rQ_in = paired_sampts[:nbins, 1]
-
+        rQ_in = {}
         Q_in = {}
         multipoles_in = []
-        for multipole, Qpole_flat in flat_multipoles.items():
-            Qpole_mat = np.zeros((nbins, nbins))
-            Qpole_mat[triu_indices] = Qpole_flat
-            Qpole_mat.T[triu_indices] = Qpole_flat
+        for multipole_ in flat_multipoles:
+            multipoles_in_ = Multipole(multipole_)
+            shape_ = 'triu' if multipoles_in_._issym() else 'full'
 
-            multipole_in = Multipole(multipole)
-            Q_in[multipole_in] = alpha_contrast**2 * Qpole_mat
-            multipoles_in.append(multipole_in)
+            try:
+                rQ_pole_, Q_pole_ = reshape_threept_datatab(
+                    paired_sampts[multipole_], flat_multipoles[multipole_],
+                    shape=shape_
+                )
+            except ValueError as err:
+                raise ValueError(
+                    f"Dimension or shape error in multipole {multipoles_in_}. "
+                    f"{err}"
+                )
+
+            rQ_in[multipoles_in_] = rQ_pole_
+            Q_in[multipoles_in_] = alpha_contrast**2 * Q_pole_
+            multipoles_in.append(multipoles_in_)
 
         self.r = rQ_in
         self.Q = Q_in
@@ -860,7 +862,8 @@ class ThreePointWindow:
 
         # Check sample spacing.
         try:
-            _check_1d_array(self.r, check_loglin=True)
+            for rQ_ in self.r.values():
+                _check_1d_array(rQ_, check_loglin=True)
         except (MixedSignError, SpacingError,):
             if make_loglin:
                 self.resample(
@@ -918,8 +921,7 @@ class ThreePointWindow:
             the same for all window function files.
 
         """
-        r1_eff, r2_eff = None, None
-
+        paired_sampts = {}
         flat_multipoles = {}
         sources = []
         for multipole, filepath in sorted(filepaths.items()):
@@ -944,28 +946,9 @@ class ThreePointWindow:
                 )
                 flat_multipoles[multipole] = Qpole_flat_raw
 
-            if r1_eff is not None:
-                if not np.allclose(r1_eff_, r1_eff):
-                    warnings.warn(
-                        "Effective separation sample points "
-                        "for the first dimension "
-                        "are not the same for all window function files."
-                    )
-            else:
-                r1_eff = r1_eff_
-            if r2_eff is not None:
-                if not np.allclose(r2_eff_, r2_eff):
-                    warnings.warn(
-                        "Effective separation sample points "
-                        "for the second dimension "
-                        "are not the same for all window function files."
-                    )
-            else:
-                r2_eff = r2_eff_
+            paired_sampts[multipole] = np.column_stack((r1_eff_, r2_eff_))
 
             sources.append(filepath)
-
-        paired_sampts = np.column_stack((r1_eff, r2_eff))
 
         self = cls(
             paired_sampts, flat_multipoles,
@@ -1037,7 +1020,7 @@ class ThreePointWindow:
 
         win_obj = np.load(filepath, allow_pickle=True)
 
-        self.r = win_obj['r']
+        self.r = win_obj['r'].item()
         self.Q = win_obj['Q'].item()
         self.Q_diag = win_obj['Q_diag'].item()
 
@@ -1093,13 +1076,13 @@ class ThreePointWindow:
         """
         if rrange is None:
             select_range = {
-                multipole: np.full_like(self.r, True, dtype=bool)
+                multipole: np.full_like(self.r[multipole], True, dtype=bool)
                 for multipole in self.multipoles
             }
         elif isinstance(rrange, dict):
             select_range = {
                 Multipole(multipole): np.logical_and(
-                    rmin <= self.r, self.r <= rmax
+                    rmin <= self.r[multipole], self.r[multipole] <= rmax
                 )
                 for multipole, (rmin, rmax) in rrange.items()
             }
@@ -1108,28 +1091,31 @@ class ThreePointWindow:
             rmin = rmin or 0.
             rmax = rmax or np.inf
             select_range = {
-                multipole: np.logical_and(rmin <= self.r, self.r <= rmax)
+                multipole: np.logical_and(
+                    rmin <= self.r[multipole],
+                    self.r[multipole] <= rmax
+                )
                 for multipole in self.multipoles
             }
 
         if idxrange is None:
             select_idx = {
-                multipole: np.full_like(self.r, True, dtype=bool)
+                multipole: np.full_like(self.r[multipole], True, dtype=bool)
                 for multipole in self.multipoles
             }
         elif isinstance(idxrange, dict):
             select_idx = {
-                multipole: np.full_like(self.r, True, dtype=bool)
+                multipole: np.full_like(self.r[multipole], True, dtype=bool)
                 for multipole in self.multipoles
             }
             for key, val in idxrange.items():
                 select_idx[Multipole(key)] = np.full_like(
-                    self.r, False, dtype=bool
+                    self.r[Multipole(key)], False, dtype=bool
                 )
                 select_idx[slice(*val)] = True
         else:
             select_idx = {
-                multipole: np.full_like(self.r, False, dtype=bool)
+                multipole: np.full_like(self.r[multipole], False, dtype=bool)
                 for multipole in self.multipoles
             }
             for multipole in self.multipoles:
@@ -1144,7 +1130,7 @@ class ThreePointWindow:
 
         if not inplace:
             instance = self.__class__.load_from_dict({
-                'r': self.r[selector[multipole]],
+                'r': self.r[multipole][selector[multipole]],
                 'Q': {
                     multipole: Q_in_[
                         selector[multipole], :
@@ -1157,7 +1143,10 @@ class ThreePointWindow:
             instance.sources = self.sources
             return instance
 
-        self.r = self.r[selector[multipole]]
+        self.r = {
+            multipole: self.r[multipole][selector[multipole]]
+            for multipole in self.multipoles
+        }
         self.Q = {
             multipole: Qpole[selector[multipole], :][:, selector[multipole]]
             for multipole, Qpole in self.Q.items()
@@ -1184,21 +1173,21 @@ class ThreePointWindow:
             See :mod:`scipy.interpolate` for more details.
 
         """
-        _rQ, _Q = None, {}
         if spacing == 'lglin':
-            for multipole, Qpole in self.Q.items():
-                _rQ, _Q[multipole] = resample_lglin(
-                    self.r, Qpole, size=size, spline=spline
-                )
+            _resampler = resample_lglin
         elif spacing == 'lin':
-            for multipole, Qpole in self.Q.items():
-                _rQ, _Q[multipole] = resample_lin(
-                    self.r, Qpole, size=size, spline=spline
-                )
+            _resampler = resample_lin
         else:
             raise ValueError("Unknown spacing type: {}".format(spacing))
 
-        self.r, self.Q = _rQ[0], _Q
+        _rQ, _Q = {}, {}
+        for multipole, Qpole in self.Q.items():
+            _rQ_, _Q_ = _resampler(
+                self.r[multipole], Qpole, size=size, spline=spline
+            )
+            _rQ[multipole], _Q[multipole] = _rQ_[0], _Q_
+
+        self.r, self.Q = _rQ, _Q
 
         self.Q_diag = {
             multipole: np.diag(Qpole)
