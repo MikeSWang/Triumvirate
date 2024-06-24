@@ -196,9 +196,10 @@ Contributing
 .. image:: https://img.shields.io/conda/pn/msw/triumvirate
     :alt: Platforms
 
-.. image:: https://github.com/codespaces/badge.svg
+.. image:: https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/image/GitHub-Codespace-badge.png
     :target: https://codespaces.new/MikeSWang/Triumvirate?hide_repo_select=true&ref=main
     :alt: Codespaces
+    :width: 249px
 
 User feedback and contributions are very welcome. Please refer to the
 `contribution guidelines
