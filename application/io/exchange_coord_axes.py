@@ -106,7 +106,7 @@ def transpose_stat_str(pathlike, ret_multipole=False):
     stat_field_ex = stat_type + multipole_ex
 
     pathlike_stem_ex = '_'.join([stat_field_ex] + nonstat_fields)
-    filenamelike_ex = Path(pathlike_stem_ex).with_suffix(pathlike.suffix)
+    filenamelike_ex = Path(pathlike_stem_ex + pathlike.suffix)
 
     if ret_multipole:
         return filenamelike_ex, stat_type, multipole_ex, multipole
