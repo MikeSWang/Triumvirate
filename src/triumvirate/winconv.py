@@ -4,6 +4,11 @@ Window Convolution (:mod:`~triumvirate.winconv`)
 
 .. versionadded:: 0.5.0
 
+.. caution::
+
+    The :mod:`~triumvirate.winconv` module is currently experimental.
+    Its behaviour has not been fully tested and may change in the future.
+
 
 Perform window convolution of two- and three-point statistics.
 
