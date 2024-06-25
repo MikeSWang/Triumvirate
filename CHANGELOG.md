@@ -19,6 +19,13 @@
 ### Miscellaneous
 
 
+## v0.4.7 (2024-06-25)
+
+### Bug fixes
+
+Fix Conda package dependency overpinning.
+
+
 ## v0.4.6 (2024-06-24)
 
 ### Bug fixes
