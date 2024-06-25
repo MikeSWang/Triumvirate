@@ -36,13 +36,37 @@ set_fallback_version_initpy () {
 #
 set_fallback_version_metayaml () {
     vers=$1
+
     versline="{% set version = environ.get('GIT_DESCRIBE_TAG', .*) %}"
     versfill="{% set version = environ.get('GIT_DESCRIBE_TAG', 'v${vers}') %}"
     for versfile in $(find deploy/pkg -type f -name "meta.yaml"); do
         sed -i "s/${versline}/${versfill}/g" ${versfile}
     done
+
+    versline="# git_rev: .*"
+    versfill="# git_rev: v${vers}"
+    for versfile in $(find deploy/pkg -type f -name "meta.yaml"); do
+        sed -i "s/${versline}/${versfill}/g" ${versfile}
+    done
+}
+
+# @brief Set fallback version number in ``versions.json`` files.
+#
+# @arg Version number.
+#
+set_fallback_version_switcher () {
+    vers=$1
+
+    versline="\"name\": \".* (stable)\","
+    versfill="\"name\": \"${vers} (stable)\","
+    sed -i "s/${versline}/${versfill}/g" docs/versions.json
+
+    versline="\"version\": \"[[:digit:]].*\","
+    versfill="\"version\": \"${vers}\","
+    sed -i "s/${versline}/${versfill}/g" docs/versions.json
 }
 
 # Increment fallback version based on the latest-release git tag.
 set_fallback_version_initpy $(get_latest_release)
 set_fallback_version_metayaml $(get_latest_release)
+set_fallback_version_switcher $(get_latest_release)

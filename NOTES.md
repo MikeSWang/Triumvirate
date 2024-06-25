@@ -2,7 +2,13 @@
 
 ## Pre-release checklist
 
-- [ ] Bump fallback version number;
+- [ ] Bump fallback version number
+      (by running [`autoinc_version.sh`](deploy/pkg/autoinc_version.sh)) in:
+    - [`__init__.py`](src/triumvirate/__init__.py)
+    - [RTD version switcher](docs/versions.json)
+    - [RTD announcement banner](docs/source/conf.py)
+    - [Conda recipe](deploy/pkg/conda_recipe/meta.yaml)
+    - [Conda recipe cross-platform](deploy/pkg/conda_recipe_xp/meta.yaml)
 - [ ] Check agreement amongst read-me pages:
     - [repo read-me](README.md)
     - [PyPI read-me](README.rst)

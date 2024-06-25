@@ -158,7 +158,7 @@ html_theme_options = {
         f"<a href=\"{ANACONDA_CHANNEL_URL}/files?channel=dev\">"
         "<code>msw/label/dev::triumvirate</code></a>)"
         "<br>"
-        "&#128640; Version 0.4.6 is the latest stable release "
+        "&#128640; Version 0.4 is the latest stable release "
         "with important bug fixes and significant performance improvements."
     ),
     'back_to_top_button': True,         # theme: pydata_sphinx_theme

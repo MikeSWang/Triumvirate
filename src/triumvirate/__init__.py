@@ -32,10 +32,10 @@ from ._valid_install import validate_installation  # noqa: F401
 
 
 __copyright__ = 'Copyright 2023, Mike S Wang & Naonori S Sugiyama'
-__date__ = '2023-10-04'
+__date__ = '2023-03-30'
 __license__ = 'GPL-3.0'
 
 try:
     __version__ = version('triumvirate')
 except PackageNotFoundError:
-    __version__ = '0.4.0'  # UPDATE: fallback version number
+    __version__ = '0.4.7'  # fallback version number
