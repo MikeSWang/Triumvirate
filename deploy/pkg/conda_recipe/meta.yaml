@@ -43,7 +43,7 @@ requirements:
     - numpy >=2.0
   run:
     - python >=3.10
-    - {{ pin_compatible('numpy', min_pin='1.23') }}
+    - numpy >=1.23
     - scipy >=1.13
     - sympy >=1.12.1
     - astropy >=4.2
