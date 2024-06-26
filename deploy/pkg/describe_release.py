@@ -55,12 +55,21 @@ def describe_version(cd="../../",
         Version of the current repository as release.
 
     """
-    version = get_version(
-        root=cd,
-        relative_to=__file__,
-        version_scheme=version_scheme,
-        local_scheme=local_scheme,
-    )
+    try:
+        version = get_version(
+            root=cd,
+            relative_to=__file__,
+            version_scheme=version_scheme,
+            local_scheme=local_scheme,
+        )
+    except ValueError as err:
+        if "already is a post release" in str(err):
+            version = get_version(
+                root=cd,
+                relative_to=__file__,
+                version_scheme='python-simplified-semver',
+                local_scheme=local_scheme,
+            )
 
     print(version)
 
