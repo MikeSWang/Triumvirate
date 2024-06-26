@@ -96,7 +96,7 @@ or ``useomp=1`` to the end of the second line as shown above.
 > https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
 > page in the documentation for more details.
 
-> [!NOTE]
+> [!TIP]
 > Pass option ``-j[N] -O`` to `make` to run multiple concurrent jobs
 > for parallel building (optional parameter ``N`` is the number of
 > parallel jobs; see [GNU Make Manual](
