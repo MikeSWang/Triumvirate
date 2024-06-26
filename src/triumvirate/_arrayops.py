@@ -39,35 +39,30 @@ class ShapeError(ValueError):
     """Exception raised when the array shape is incorrect.
 
     """
-    pass
 
 
 class OrderError(ValueError):
     """Exception raised when the array order is incorrect.
 
     """
-    pass
 
 
 class MixedSignError(ValueError):
     """Exception raised when the array signs are mixed.
 
     """
-    pass
 
 
 class SpacingError(ValueError):
     """Exception raised when the array spacing is incorrect.
 
     """
-    pass
 
 
 class DivergenceWarning(RuntimeWarning):
     """Warning issued when divergent behaviour is detected in an array.
 
     """
-    pass
 
 
 # ========================================================================

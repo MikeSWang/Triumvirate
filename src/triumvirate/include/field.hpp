@@ -90,7 +90,7 @@ class MeshField {
   MeshField(
     trv::ParameterSet& params,
     bool plan_ini = true,
-    const std::string name = "mesh-field"
+    const std::string& name = "mesh-field"
   );
 
   /**
@@ -107,7 +107,7 @@ class MeshField {
   MeshField(
     trv::ParameterSet& params,
     fftw_plan& transform, fftw_plan& inv_transform,
-    const std::string name = "mesh-field"
+    const std::string& name = "mesh-field"
   );
 
   /**

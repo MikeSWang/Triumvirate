@@ -130,7 +130,8 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
     }  // skip comment lines
     if (
       std::sscanf(
-        line_str.data(), "%s %s %s", dummy_str, dummy_equal, dummy_str
+        line_str.data(), "%1023s %1023s %1023s",
+        dummy_str, dummy_equal, dummy_str
       ) != 3
     ) {
       continue;
@@ -322,16 +323,16 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
 
 #ifdef DBG_PARS
   // Define convenience function for displaying debugged parameters.
-  auto debug_par_str = [](std::string name, std::string value) {
+  auto debug_par_str = [](const std::string& name, const std::string& value) {
     std::cout << name << ": " << value << std::endl;
   };
-  auto debug_par_int = [](std::string name, int value) {
+  auto debug_par_int = [](const std::string& name, int value) {
     std::cout << name << ": " << value << std::endl;
   };
-  auto debug_par_longlong = [](std::string name, long long value) {
+  auto debug_par_longlong = [](const std::string& name, long long value) {
     std::cout << name << ": " << value << std::endl;
   };
-  auto debug_par_double = [](std::string name, double value) {
+  auto debug_par_double = [](const std::string& name, double value) {
     std::cout << name << ": " << value << std::endl;
   };
 
@@ -970,7 +971,9 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
   }
 
   // Define convenience function for printing parameters.
-  auto print_par_str = [ofileptr](const char* fmt, std::string par_val) {
+  auto print_par_str = [ofileptr](
+    const char* fmt, const std::string& par_val
+  ) {
     std::fprintf(ofileptr, fmt, par_val.c_str());
   };
   auto print_par_int = [ofileptr](const char* fmt, int par_val) {

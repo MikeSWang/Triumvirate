@@ -178,7 +178,6 @@ class ConvolutionRangeWarning(UserWarning):
     the sample points.
 
     """
-    pass
 
 
 @dataclass

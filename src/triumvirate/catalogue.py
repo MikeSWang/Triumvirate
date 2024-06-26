@@ -35,7 +35,6 @@ class MissingValueError(ValueError):
     a catalogue.
 
     """
-    pass
 
 
 class DefaultValueWarning(UserWarning):
@@ -43,7 +42,6 @@ class DefaultValueWarning(UserWarning):
     to the default.
 
     """
-    pass
 
 
 class ParticleCatalogue:

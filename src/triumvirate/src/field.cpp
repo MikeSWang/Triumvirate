@@ -40,7 +40,7 @@ namespace trv {
 // -----------------------------------------------------------------------
 
 MeshField::MeshField(
-  trv::ParameterSet& params, bool plan_ini, const std::string name
+  trv::ParameterSet& params, bool plan_ini, const std::string& name
 ) {
   // Attach the full parameter set to @ref trv::MeshField.
   this->params = params;
@@ -273,7 +273,7 @@ MeshField::MeshField(
 MeshField::MeshField(
   trv::ParameterSet& params,
   fftw_plan& transform, fftw_plan& inv_transform,
-  const std::string name
+  const std::string& name
 ) {
   // Attach the full parameter set to @ref trv::MeshField.
   this->params = params;

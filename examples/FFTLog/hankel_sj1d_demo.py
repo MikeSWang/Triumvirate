@@ -257,7 +257,7 @@ def translate_extrap_mcfit(extrap_opt: int) -> Union[bool, Literal['const']]:
     if extrap_opt == 1:
         raise ValueError("Zero padding not available for `mcfit`.")
     if extrap_opt == 1:
-        raise 'const'
+        return 'const'
     if extrap_opt == 3:
         raise ValueError("Linear extrapolation not available for `mcfit`.")
     if extrap_opt == 4:

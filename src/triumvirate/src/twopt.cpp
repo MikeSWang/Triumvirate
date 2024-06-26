@@ -167,7 +167,7 @@ double calc_powspec_normalisation_from_meshes(
   trv::ParticleCatalogue& particles_data,
   trv::ParticleCatalogue& particles_rand,
   trv::ParameterSet& params, double alpha,
-  double padding, double cellsize, std::string assignment
+  double padding, double cellsize, const std::string& assignment
 ) {
   // Modify parameter set for normalisation.
   trv::ParameterSet params_norm(params);
