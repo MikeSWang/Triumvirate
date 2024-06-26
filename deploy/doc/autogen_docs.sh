@@ -91,6 +91,18 @@ recycle_doxyfile () {
     sed -i "s/${str_confvar} .*=.*/${str_confline}/g" ${DOXYFILE_SPHINX}
 }
 
+# @brief Modify README.md file temporarily.
+#
+# @arg Replacement strings.
+# @globals README_FILE
+# @locals str_line, str_line_new
+#
+recycle_readme () {
+    str_line=$1
+    str_line_new=$2
+    sed -i "s|${str_line}|${str_line_new}|g" ${README_FILE}
+}
+
 # Change to working directory.
 cd ${DOCS_DIR}
 
@@ -122,7 +134,16 @@ cp ${ROOT_DIR}/Makefile ${STAT_DIR}
 
 # Build Doxygen docs.
 if [[ "$excl" != 'doxy' ]]; then
+    # Temporarily alter README.md for Doxygen mainpage.
+    README_FILE=${ROOT_DIR}/README.md
+    cp ${README_FILE} ${README_FILE}.bak
+    recycle_readme "<img src=\"docs/source/_static/image/ERC-Logo-Flag.png#gh-light-mode-only\" alt=\"ERC\" width=\"40%\">"
+
+    # Build docs.
     doxygen ${DOXYFILE}
+
+    # Restore README.md.
+    mv ${README_FILE}.bak ${README_FILE}
 fi
 
 # Build Sphinx docs.
