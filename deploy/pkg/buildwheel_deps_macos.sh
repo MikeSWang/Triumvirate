@@ -43,7 +43,7 @@ SOURCE_FILE="${SOURCE_DIR}/${SOURCE_FILENAME}"
 mkdir -p "${SOURCE_DIR}/llvm-openmp" "${BUILD_DIR}/llvm-openmp"
 curl -L https://anaconda.org/conda-forge/llvm-openmp/18.1.5/download/${SOURCE_ARCH}/${SOURCE_FILENAME} -o "${SOURCE_FILE}"
 tar -zxvf "${SOURCE_FILE}" -C "${SOURCE_DIR}/llvm-openmp" && rm "${SOURCE_FILE}"
-tar -zxvf "${SOURCE_DIR}/llvm-openmp/pkg-llvm-openmp-*" -C "${BUILD_DIR}/llvm-openmp"
+tar -zxvf "${SOURCE_DIR}"/llvm-openmp/pkg-llvm-openmp-* -C "${BUILD_DIR}/llvm-openmp"
 
 # Copy OpenMP libraries to installation directory.
 cp -r "${BUILD_DIR}/llvm-openmp/include/." "${INSTALL_DIR}/include"
@@ -61,7 +61,7 @@ cp -r "${BUILD_DIR}/llvm-openmp/lib/." "${INSTALL_DIR}/lib"
 # tar -zxvf "${SOURCE_FILE}" -C "${SOURCE_DIR}" && rm "${SOURCE_FILE}"
 
 # # Configure and build GSL.
-# cd "${SOURCE_DIR}/fftw-*"
+# cd "${SOURCE_DIR}"/fftw-*
 # mkdir -p "${BUILD_DIR}/fftw"
 # CC=${CXX} ./configure --enable-shared --enable-openmp --prefix="${BUILD_DIR}/fftw"
 # make
@@ -82,8 +82,8 @@ SOURCE_FILE="${ROOT}/${SOURCE_FILENAME}"
 
 mkdir -p "${SOURCE_DIR}/fftw-3.3.10" "${BUILD_DIR}/fftw-3.3.10"
 curl -L https://anaconda.org/conda-forge/fftw/3.3.10/download/${SOURCE_ARCH}/${SOURCE_FILENAME} -o "${SOURCE_FILE}"
-tar -zxvf "${SOURCE_FILE}" -C ${SOURCE_DIR}/fftw-3.3.10 && rm "${SOURCE_FILE}"
-tar -zxvf "${SOURCE_DIR}/fftw-3.3.10/pkg-fftw-3.3.10-*" -C "${BUILD_DIR}/fftw-3.3.10"
+tar -zxvf "${SOURCE_FILE}" -C "${SOURCE_DIR}/fftw-3.3.10" && rm "${SOURCE_FILE}"
+tar -zxvf "${SOURCE_DIR}"/fftw-3.3.10/pkg-fftw-3.3.10-* -C "${BUILD_DIR}"/fftw-3.3.10
 
 # Move FFTW libraries to installation directory.
 cp -r "${BUILD_DIR}/fftw-3.3.10/include/." "${INSTALL_DIR}/include"
@@ -101,7 +101,7 @@ cp -r "${BUILD_DIR}/fftw-3.3.10/lib/." "${INSTALL_DIR}/lib"
 # tar -zxvf "${SOURCE_FILE}" -C "${SOURCE_DIR}" && rm "${SOURCE_FILE}"
 
 # # Configure and build GSL.
-# cd "${SOURCE_DIR}/gsl-*"
+# cd "${SOURCE_DIR}"/gsl-*
 # mkdir -p "${BUILD_DIR}/gsl"
 # CC=${CXX} ./configure --prefix="${BUILD_DIR}/gsl"
 # make
@@ -120,11 +120,11 @@ fi
 
 SOURCE_FILE="${SOURCE_DIR}/${SOURCE_FILENAME}"
 
-mkdir -p ${BUILD_DIR}/gsl-2.7
+mkdir -p "${BUILD_DIR}/gsl-2.7"
 curl -L https://anaconda.org/conda-forge/gsl/2.7/download/${SOURCE_ARCH}/${SOURCE_FILENAME} -o "${SOURCE_FILE}"
 tar -zxvf "${SOURCE_FILE}" -C "${BUILD_DIR}/gsl-2.7"
 
 # Copy GSL libraries to installation directory.
 cp -r "${BUILD_DIR}/gsl-2.7/include/." "${INSTALL_DIR}/include"
-find "${BUILD_DIR}/gsl-2.7/lib/*" -type d -exec cp -r {} "${INSTALL_DIR}/lib" \;
-find "${BUILD_DIR}/gsl-2.7/lib/*" -type f \( -name "*.a" -or -name "libgsl.*.dylib" \) -exec cp -r {} "${INSTALL_DIR}/lib" \;
+find "${BUILD_DIR}"/gsl-2.7/lib/* -type d -exec cp -r {} "${INSTALL_DIR}/lib" \;
+find "${BUILD_DIR}"/gsl-2.7/lib/* -type f \( -name "*.a" -or -name "libgsl.*.dylib" \) -exec cp -r {} "${INSTALL_DIR}/lib" \;
