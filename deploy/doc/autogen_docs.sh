@@ -100,7 +100,7 @@ recycle_doxyfile () {
 recycle_readme () {
     str_line=$1
     str_line_new=$2
-    sed -i "s|${str_line}|${str_line_new}|g" ${README_FILE}
+    sed -i "s|.*${str_line}.*|${str_line_new}|g" ${README_FILE}
 }
 
 # Change to working directory.
@@ -138,6 +138,7 @@ if [[ "$excl" != 'doxy' ]]; then
     README_FILE=${ROOT_DIR}/README.md
     cp ${README_FILE} ${README_FILE}.bak
     recycle_readme "<img src=\"docs/source/_static/image/ERC-Logo-Flag.png#gh-light-mode-only\" alt=\"ERC\" width=\"40%\">"
+    recycle_readme "Codacy Badge"
 
     # Build docs.
     doxygen ${DOXYFILE}
