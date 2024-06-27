@@ -76,7 +76,7 @@ jobs:
       - name: Save tarball to sdist
         uses: actions/upload-artifact@v4
         with:
-          name: sdist_tar_${{ github.ref_name }}
+          name: sdist_tar_gz_${{ github.ref_name }}
           path: dist/*.tar.gz
 
       - name: Save tarball to pypi_dist
@@ -107,7 +107,7 @@ jobs:
       - name: Extract (macOS) runner image version
         run: >-
           echo "IMAGE_VERSION=$(sw_vers --productVersion | cut -d '.' -f 1).0"
-          >> $GITHUB_ENV
+          >> "$GITHUB_ENV"
 
       # HACK: GitHub macOS runner defaults to a broken release of Xcode.
       # See https://github.com/actions/runner-images/issues/9273.
@@ -133,9 +133,9 @@ jobs:
         run: |
           bash deploy/pkg/buildwheel_deps_macos.sh
           if [[ $(uname -m) == 'arm64' ]]; then
-            echo "MACOSX_VERS_MIN=11.0" >> $GITHUB_ENV
+            echo "MACOSX_VERS_MIN=11.0" >> "$GITHUB_ENV"
           elif [[ $(uname -m) == 'x86_64' ]]; then
-            echo "MACOSX_VERS_MIN=10.15" >> $GITHUB_ENV
+            echo "MACOSX_VERS_MIN=10.15" >> "$GITHUB_ENV"
           fi
 
       - name: Build built distribution
@@ -187,13 +187,13 @@ jobs:
       - name: Save wheel to bdist
         uses: actions/upload-artifact@v4
         with:
-          name: bdist_wheel_${{ matrix.os }}_${{ github.ref_name }}
+          name: bdist_whl_${{ matrix.os }}_${{ github.ref_name }}
           path: dist/*.whl
 
       - name: Save wheel to pypi_dist
         uses: actions/upload-artifact@v4
         with:
-          name: pypi_dist_${{ matrix.os }}_${{ github.ref_name }}
+          name: pypi_dist_${{ runner.os }}_${{ runner.arch }}_${{ github.ref_name }}
           path: dist/*.whl
 
   build_conda:
@@ -243,7 +243,7 @@ jobs:
           # `cph` not found otherwise.
           conda_root=$(conda config --show root_prefix | sed 's/root_prefix: //')
           conda_env=${conda_root}/envs/conda_bld
-          export PATH=$PATH:${conda_root}/bin:${conda_env}/bin
+          export PATH="$PATH:${conda_root}/bin:${conda_env}/bin"
 
       - name: Override version
         if: github.event_name == 'workflow_dispatch'
@@ -274,7 +274,7 @@ jobs:
           conda build --strict-verify --no-anaconda-upload ${recipe_dir} \
             --variants "${variants}" --output-folder ${output_dir}
           # Transmute.
-          find ${output_dir} -name "*.tar.bz2" \
+          find ${output_dir} -name '*.tar.bz2' \
             -exec cph transmute {} .conda --out-folder ${output_dir} \;
 
       - name: Save build to conda_bld
@@ -286,7 +286,7 @@ jobs:
       - name: Save build to conda_dist
         uses: actions/upload-artifact@v4
         with:
-          name: conda_dist_${{ matrix.os }}_${{ github.ref_name }}
+          name: conda_dist_${{ runner.os }}_${{ runner.arch }}_${{ github.ref_name }}
           path: |
             dist/**/*.tar.bz2
             dist/*.conda
