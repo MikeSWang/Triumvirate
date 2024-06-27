@@ -15,11 +15,11 @@ excl=${1#"excl_"}  # exclusion case: {"doxy", "sphinx"}
 PKG_NAME=triumvirate
 
 # Set the ``docs`` directory (the working directory).
-THIS_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
-DOCS_DIR=${THIS_DIR}/../../docs
+THIS_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+DOCS_DIR="${THIS_DIR}/../../docs"
 
 # Set the project repository directory.
-ROOT_DIR=${DOCS_DIR}/..
+ROOT_DIR="${DOCS_DIR}/.."
 
 # Set Doxygen configuration file.
 DOXYFILE=./source/Doxyfile.conf
@@ -54,7 +54,7 @@ EXCL_APIDOC_FILES=${APIDOC_PY_DIR}/${PKG_NAME}.rst
 # @brief Get the project release number.
 #
 get_version_release () {
-    echo $(python ${ROOT_DIR}/deploy/pkg/describe_release.py)
+    echo $(python "${ROOT_DIR}/deploy/pkg/describe_release.py")
 }
 
 # @brief Replace strings in file.
@@ -104,7 +104,7 @@ recycle_readme () {
 }
 
 # Change to working directory.
-cd ${DOCS_DIR}
+cd "${DOCS_DIR}"
 
 # Clean up.
 make clean excl=$excl
@@ -133,10 +133,10 @@ cp -r ${PKG_RESOURCES_DIR}/* ${STAT_DIR}
 cp ${ROOT_DIR}/Makefile ${STAT_DIR}
 
 # Build Doxygen docs.
-if [[ "$excl" != 'doxy' ]]; then
+if [[ "$excl" != "doxy" ]]; then
     # Temporarily alter README.md for Doxygen mainpage.
-    README_FILE=${ROOT_DIR}/README.md
-    cp ${README_FILE} ${README_FILE}.bak
+    README_FILE="${ROOT_DIR}/README.md"
+    cp "${README_FILE}" "${README_FILE}.bak"
     recycle_readme "<img src=\"docs/source/_static/image/ERC-Logo-Flag.png#gh-light-mode-only\" alt=\"ERC\" width=\"40%\">"
     recycle_readme "Codacy Badge"
 
@@ -144,11 +144,11 @@ if [[ "$excl" != 'doxy' ]]; then
     doxygen ${DOXYFILE}
 
     # Restore README.md.
-    mv ${README_FILE}.bak ${README_FILE}
+    mv "${README_FILE}.bak" "${README_FILE}"
 fi
 
 # Build Sphinx docs.
-if [[ "$excl" != 'sphinx' ]]; then
+if [[ "$excl" != "sphinx" ]]; then
     # Bridge Doxygen and Sphinx docs.
     mkdir -p ${APIREF_DOXY_DIR}
     cp -r ${BUILD_HTML_DOXY_DIR}/** ${APIREF_DOXY_DIR}

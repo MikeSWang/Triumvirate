@@ -1,4 +1,5 @@
-#! /bin/bash
+#!/usr/bin/env sh
+#
 # @file prepare_pkg_artifacts.sh
 # @author Mike S Wang
 # @brief Prepare package artifacts from GitHub Actions.
@@ -25,7 +26,7 @@ artifact_ids=()
 artifact_names="pypi_dist.*${release_tag} conda_dist.*${release_tag}"
 for artifact_name in ${artifact_names};
 do
-    id=$(python deploy/pkg/list_pkg_artifacts.py ${release_tag} --filter name "$artifact_name" --id-only)
+    id=$(python deploy/pkg/list_pkg_artifacts.py ${release_tag} --filter name $artifact_name --id-only)
     artifact_ids+=(${id})
 done
 

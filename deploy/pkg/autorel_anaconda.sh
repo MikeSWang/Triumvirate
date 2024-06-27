@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 #
 # @file autorel_anaconda.sh
-#
 # @author Mike S Wang
 # @brief Build and verify release distributions for the Anaconda repository.
 # @arg Non-native architecture case, {"", "arm64"}.
@@ -47,6 +46,6 @@ find ${DIST_DIR} -name "*.tar.bz2" \
   -exec cph transmute {} .conda --out-folder ${DIST_DIR} \;
 
 # Optionally upload to Anaconda.
-if $upload_flag; then
+if ${upload_flag}; then
     anaconda upload ${DIST_DIR}/**/*.tar.bz2
 fi

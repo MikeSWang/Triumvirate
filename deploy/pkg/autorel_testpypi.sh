@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 #
 # @file autorel_testpypi.sh
-#
 # @author Mike S Wang
 # @brief Build and upload release distributions to the TestPyPI index.
 #
@@ -34,7 +33,7 @@ rm -rf ${DIST_DIR}
 python -m build --sdist --outdir ${DIST_DIR} .
 
 # Optionally build built-distribution.
-if $build_wheel; then
+if ${build_wheel}; then
     python -m cibuildwheel --platform linux --output-dir ${DIST_DIR} .
 fi
 
@@ -42,6 +41,6 @@ fi
 python -m twine check --strict ${DIST_DIR}/*.tar.gz ${DIST_DIR}/*.whl
 
 # Optionally upload to [Test]PyPI.
-if $upload_flag; then
+if ${upload_flag}; then
     python -m twine upload --repository testpypi --verbose ${DIST_DIR}/*
 fi
