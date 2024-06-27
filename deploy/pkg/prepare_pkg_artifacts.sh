@@ -11,17 +11,15 @@ release_tag=$1
 tmp_dir=$(mktemp -d)
 
 # GitHub attributes
-GITHUB_OWNER=MikeSWang
-GITHUB_REPO=Triumvirate
-GITHUB_TOKEN_ARTIFACTS="$(sed '2q;d' ~/.github_auth)"
-GITHUB_URL_ACTIONS="https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/artifacts"
+export GITHUB_OWNER=MikeSWang
+export GITHUB_REPO=Triumvirate
+export GITHUB_TOKEN_ARTIFACTS="$(sed '2q;d' ~/.github_auth)"
+export GITHUB_URL_ACTIONS="https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/artifacts"
 
-GITHUB_HEADER_ACCEPT="Accept: application/vnd.github+json"
-GITHUB_HEADER_AUTH="Authorization: Bearer ${GITHUB_TOKEN_ARTIFACTS}"
+export GITHUB_HEADER_ACCEPT="Accept: application/vnd.github+json"
+export GITHUB_HEADER_AUTH="Authorization: Bearer ${GITHUB_TOKEN_ARTIFACTS}"
 
 # Query artifact IDs.
-# e.g.
-# artifact_names="pypi_dist_macos-13_v0.4.7.post1 conda_dist_macos-13_v0.4.7.post1"
 artifact_ids=()
 artifact_names="pypi_dist.*${release_tag} conda_dist.*${release_tag}"
 for artifact_name in ${artifact_names};
@@ -57,6 +55,16 @@ find ${dist_dir} -type f -name '*.tar.bz2' -exec mv {} ${release_dir}/conda-rele
 
 find ${release_dir} -mindepth 1 -type d ! -name '*-release' -exec rm -rf {} +
 
+DEST_DIR=~/Downloads/releases
+if [[ -d ${DEST_DIR} ]]; then
+    read -p "Destination release directory already exists: ${DEST_DIR}. Remove? (y/[n]) " ans_prompt
+    flag_rm=$(echo "$ans_prompt" | tr '[:upper:]' '[:lower:]')
+    if [[ ${flag_rm} == 'y' ]]; then
+        rm -r ${DEST_DIR}
+    else
+        exit 1
+    fi
+fi
 mv ${release_dir} ~/Downloads/
 
-rm -rf ${tmp_dir}
+rm -r ${tmp_dir}
