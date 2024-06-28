@@ -123,7 +123,7 @@ cdef class ParameterSet:
         if param_filepath is not None:
             self._source = str(Path(param_filepath).absolute())
             with open(param_filepath, 'r') as param_file:
-                self._params = yaml.load(param_file, Loader=yaml.Loader)
+                self._params = yaml.load(param_file, Loader=yaml.SafeLoader)
         if param_dict is not None:
             self._source = 'dict'
             self._params = param_dict
@@ -585,7 +585,7 @@ def fetch_paramset_template(format, ret_defaults=False):
     tml_filepath = pkg_root_dir/"resources"/"params_template.yml"
 
     text_template = tml_filepath.read_text()
-    dict_template = yaml.load(text_template, Loader=yaml.Loader)
+    dict_template = yaml.load(text_template, Loader=yaml.SafeLoader)
 
     if not ret_defaults:
         if format.lower() == 'text':

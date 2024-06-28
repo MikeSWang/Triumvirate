@@ -3,11 +3,11 @@
 # @file autogen_docs.sh
 # @author Mike S Wang
 # @brief Automate documentation generation locally and on `RTD <rtfd.io>`_.
-# @arg Exclusion case, {"excl_doxy", "excl_sphinx"}.
+# @arg Exclusion case, {'excl_doxy', 'excl_sphinx'}.
 #
 
 # Parse command-line arguments.
-excl=${1#"excl_"}  # exclusion case: {"doxy", "sphinx"}
+excl=${1#'excl_'}  # exclusion case: {'doxy', 'sphinx'}
 
 
 # -- Directories & Paths -------------------------------------------------
@@ -64,7 +64,7 @@ get_version_release () {
 # @arg String replacement.
 #
 replace_in_file () {
-    sed -i "s/${2}/${3}/g" ${1}
+    sed -i "s|${2}|${3}|g" "${1}"
 }
 
 # @brief Replace key--value pairs in Doxyfile.conf.
@@ -74,9 +74,9 @@ replace_in_file () {
 # @locals str_confline, str_confvar
 #
 replace_in_doxyfile () {
-    str_confline=$1
-    str_confvar=$(printf ${str_confline} | tr -s ' ' | cut -d ' ' -f 1)
-    sed -i "s/${str_confvar} .*=.*/${str_confline}/g" ${DOXYFILE}
+    str_confline="$1"
+    str_confvar=$(printf "${str_confline}" | tr -s ' ' | cut -d ' ' -f 1)
+    sed -i "s|${str_confvar} .*=.*|${str_confline}|g" ${DOXYFILE}
 }
 
 # @brief Replace key--value pairs in Doxyfile[.conf].
@@ -86,9 +86,9 @@ replace_in_doxyfile () {
 # @locals str_confline, str_confvar
 #
 recycle_doxyfile () {
-    str_confline=$1
-    str_confvar=$(printf ${str_confline} | tr -s ' ' | cut -d ' ' -f 1)
-    sed -i "s/${str_confvar} .*=.*/${str_confline}/g" ${DOXYFILE_SPHINX}
+    str_confline="$1"
+    str_confvar=$(printf "${str_confline}" | tr -s ' ' | cut -d ' ' -f 1)
+    sed -i "s|${str_confvar} .*=.*|${str_confline}|g" ${DOXYFILE_SPHINX}
 }
 
 # @brief Modify README.md file temporarily.
@@ -100,18 +100,18 @@ recycle_doxyfile () {
 recycle_readme () {
     str_line=$1
     str_line_new=$2
-    sed -i "s|.*${str_line}.*|${str_line_new}|g" ${README_FILE}
+    sed -i "s|.*${str_line}.*|${str_line_new}|g" "${README_FILE}"
 }
 
 # Change to working directory.
 cd "${DOCS_DIR}"
 
 # Clean up.
-make clean excl=$excl
+make clean excl=${excl}
 
 # Extract version number.
 vers=$(get_version_release)
-if [[ "${READTHEDOCS}" == "True" ]]; then
+if [[ "${READTHEDOCS}" == 'True' ]]; then
     echo ${vers} > RTD_VERSION.tmp
 fi
 
@@ -122,7 +122,7 @@ cp ${DOXYFILE} ${DOXYFILE}.bak
 replace_in_doxyfile "PROJECT_NUMBER         = ${vers}"
 
 # HACK: Ensure RTD Doxygen backward compatibility.
-if [[ "${READTHEDOCS}" == "True" ]]; then
+if [[ "${READTHEDOCS}" == 'True' ]]; then
     MATHJAX_RELPATH="https:\/\/cdn.jsdelivr.net\/npm\/mathjax@2"
     replace_in_file ${THMS_DIR}/doxygen-header.html "\$darkmode"
     replace_in_doxyfile "MATHJAX_RELPATH        = ${MATHJAX_RELPATH}"
@@ -130,15 +130,17 @@ fi
 
 # Prepare static assets.
 cp -r ${PKG_RESOURCES_DIR}/* ${STAT_DIR}
-cp ${ROOT_DIR}/Makefile ${STAT_DIR}
+cp "${ROOT_DIR}/Makefile" ${STAT_DIR}
 
 # Build Doxygen docs.
-if [[ "$excl" != "doxy" ]]; then
+if [[ ${excl} != 'doxy' ]]; then
     # Temporarily alter README.md for Doxygen mainpage.
     README_FILE="${ROOT_DIR}/README.md"
     cp "${README_FILE}" "${README_FILE}.bak"
-    recycle_readme "<img src=\"docs/source/_static/image/ERC-Logo-Flag.png#gh-light-mode-only\" alt=\"ERC\" width=\"40%\">"
-    recycle_readme "Codacy Badge"
+    recycle_readme "ERC-Logo-Flag.png#gh-light-mode-only"
+    recycle_readme "\[CI\]"
+    recycle_readme "\[Docs\]"
+    recycle_readme "\[Codacy Badge\]"
 
     # Build docs.
     doxygen ${DOXYFILE}
@@ -148,7 +150,7 @@ if [[ "$excl" != "doxy" ]]; then
 fi
 
 # Build Sphinx docs.
-if [[ "$excl" != "sphinx" ]]; then
+if [[ ${excl} != 'sphinx' ]]; then
     # Bridge Doxygen and Sphinx docs.
     mkdir -p ${APIREF_DOXY_DIR}
     cp -r ${BUILD_HTML_DOXY_DIR}/** ${APIREF_DOXY_DIR}
@@ -163,27 +165,27 @@ if [[ "$excl" != "sphinx" ]]; then
     recycle_doxyfile "HTML_HEADER            ="
     recycle_doxyfile "USE_MDFILE_AS_MAINPAGE ="
     recycle_doxyfile "EXCLUDE_PATTERNS       = triumvirate.cpp"
-    sed -i "s/\.\/source/..\/source/g" ${DOXYFILE_SPHINX}
-    sed -i "s/\.\.\/src/..\/..\/src/g" ${DOXYFILE_SPHINX}
-    sed -i "s/\.\.\/README.md//g" ${DOXYFILE_SPHINX}
+    sed -i "s|\.\/source|..\/source|g" ${DOXYFILE_SPHINX}
+    sed -i "s|\.\.\/src|..\/..\/src|g" ${DOXYFILE_SPHINX}
+    sed -i "s|\.\.\/README.md||g" ${DOXYFILE_SPHINX}
 
     # Build docs with Breathe+Exhale.
     sphinx-apidoc -efEMT -d 1 -t ${TMPL_DIR} -o ${APIDOC_PY_DIR} ${SRC_DIR}
 
     rm ${EXCL_APIDOC_FILES}
 
-    if [[ "${READTHEDOCS}" != "True" ]]; then
-        make html SPHINXOPTS="-j auto"
+    if [[ "${READTHEDOCS}" != 'True' ]]; then
+        make html SPHINXOPTS='-j auto'
     fi
 
     # Clean up.
-    if [[ "${READTHEDOCS}" != "True" ]]; then rm ${DOXYFILE_SPHINX}; fi
+    if [[ "${READTHEDOCS}" != 'True' ]]; then rm ${DOXYFILE_SPHINX}; fi
 fi
 
 
 # -- Organise Docs -------------------------------------------------------
 
-if [[ "${READTHEDOCS}" != "True" ]]; then
+if [[ "${READTHEDOCS}" != 'True' ]]; then
     # Set directories.
     _APIREF_DOXY=${APIREF_DOXY_DIRNAME}
     _APIREF_DOXY_IN_HTML_SPHINX=_static/${_APIREF_DOXY}/

@@ -21,6 +21,7 @@ parameter--value pairs ``<param-name1>`` and ``<param-value1>``, and
 """
 import argparse
 import warnings
+from ast import literal_eval
 from copy import deepcopy
 from functools import reduce
 from operator import getitem
@@ -56,7 +57,7 @@ def configure():
     )
 
     parser.add_argument(
-        '--fmt', type=str, choices=['ini', 'yaml'], default=None,
+        '--fmt', type=str, choices=['ini', 'yml', 'yaml'], default=None,
         help="parameter file format (default inferred from extension)"
     )
 
@@ -111,7 +112,7 @@ def setitem_nested_dict(dictionary, keychain, value):
 
     try:
         if isinstance(base_dict[key_child], list):
-            base_dict[key_child] = eval(value)
+            base_dict[key_child] = literal_eval(value)
         else:
             base_dict[key_child] = type(base_dict[key_child])(value)
     except KeyError as err:
@@ -207,7 +208,7 @@ def read_param_file(input_path, fmt):
     ----------
     input_path : str
         Input file path.
-    fmt : {'ini', 'yaml'}
+    fmt : {'ini', 'yml', 'yaml'}
         Input file format.
 
     Returns
@@ -219,9 +220,9 @@ def read_param_file(input_path, fmt):
     if fmt == 'ini':
         with open(input_path, 'r') as input_file:
             params = input_file.readlines()
-    elif fmt == 'yaml':
+    elif fmt == 'yml' or fmt == 'yaml':
         with open(input_path, 'r') as input_file:
-            params = yaml.load(input_file, Loader=yaml.Loader)
+            params = yaml.load(input_file, Loader=yaml.SafeLoader)
     else:
         raise ValueError(f"Unsupported file format: {fmt}.")
 
@@ -249,7 +250,7 @@ def write_param_file(params, output_path, fmt):
     if fmt == 'ini':
         with open(output_path, 'w') as output_file:
             output_file.write(params)
-    elif fmt == 'yaml':
+    elif fmt == 'yml' or fmt == 'yaml':
         with open(output_path, 'w') as output_file:
             yaml.dump(
                 params, output_file, sort_keys=False, default_flow_style=False
@@ -270,7 +271,7 @@ if __name__ == '__main__':
 
     if config.fmt == 'ini':
         pars_modified = gen_cpp_params(pars_template, config.modify)
-    if config.fmt == 'yaml':
+    if config.fmt == 'yml' or config.fmt == 'yaml':
         pars_modified = gen_python_params(pars_template, config.modify)
 
     write_param_file(pars_modified, config.output, config.fmt)

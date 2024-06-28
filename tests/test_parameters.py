@@ -428,7 +428,7 @@ def test_ParameterSet_save(valid_paramset, tmp_path):
     valid_paramset.save(filepath=param_filepath)
 
     with open(param_filepath, 'r') as param_file:
-        valid_param_dict = yaml.load(param_file, Loader=yaml.Loader)
+        valid_param_dict = yaml.load(param_file, Loader=yaml.SafeLoader)
 
     assert dict(valid_paramset.items()) == valid_param_dict, \
         "Loaded parameter set does not match the saved one."

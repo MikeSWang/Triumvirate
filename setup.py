@@ -144,7 +144,7 @@ class BuildExt(build_ext):
         super().finalize_options()
 
         _num_procs = get_build_num_procs()
-        if self.parallel is None and _num_procs is not None:
+        if getattr(self, 'parallel', None) is None and _num_procs is not None:
             self.parallel = _num_procs
 
     def build_extensions(self):

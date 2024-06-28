@@ -3,7 +3,7 @@
 # @file prepare_pkg_artifacts.sh
 # @author Mike S Wang
 # @brief Prepare package artifacts from GitHub Actions.
-# @arg release_tag, the release tag to download artifacts for.
+# @arg Release tag to download artifacts for.
 #
 
 release_tag=$1
@@ -58,7 +58,7 @@ find ${release_dir} -mindepth 1 -type d ! -name '*-release' -exec rm -rf {} +
 DEST_DIR=~/Downloads/releases
 if [[ -d ${DEST_DIR} ]]; then
     read -p "Destination release directory already exists: ${DEST_DIR}. Remove? (y/[n]) " ans_prompt
-    flag_rm=$(echo "$ans_prompt" | tr '[:upper:]' '[:lower:]')
+    flag_rm=$(echo "${ans_prompt}" | tr '[:upper:]' '[:lower:]')
     if [[ ${flag_rm} == 'y' ]]; then
         rm -r ${DEST_DIR}
     else

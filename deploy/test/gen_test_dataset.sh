@@ -16,19 +16,19 @@ MULTIPOLES="0 2"
 for degree in ${MULTIPOLES}
 do
     ${TESTPROG} --output-tag _gpp \
-        --case sim --statistic "powspec" \
+        --case sim --statistic 'powspec' \
         --multipole $degree --range ${KRANGE}
     ${TESTPROG} --output-tag _gpp \
-        --case sim --statistic "2pcf" \
+        --case sim --statistic '2pcf' \
         --multipole $degree --range ${RRANGE}
     ${TESTPROG} --output-tag _lpp \
-        --case survey --statistic "powspec" \
+        --case survey --statistic 'powspec' \
         --multipole $degree --range ${KRANGE}
     ${TESTPROG} --output-tag _lpp \
-        --case survey --statistic "2pcf" \
+        --case survey --statistic '2pcf' \
         --multipole $degree --range ${RRANGE}
     ${TESTPROG} \
-        --case random --statistic "2pcf" \
+        --case random --statistic '2pcf' \
         --multipole $degree --range ${RRANGE}
 done
 
@@ -39,41 +39,41 @@ MULTIPOLES="000 202"
 for degrees in ${MULTIPOLES}
 do
     ${TESTPROG} --output-tag _gpp \
-        --case sim --statistic "bispec" \
+        --case sim --statistic 'bispec' \
         --multipole $degrees --range ${KRANGE}
     ${TESTPROG} --output-tag _gpp \
-        --case sim --statistic "3pcf" \
+        --case sim --statistic '3pcf' \
         --multipole $degrees --range ${RRANGE}
     ${TESTPROG} --output-tag _lpp \
-        --case survey --statistic "bispec" \
+        --case survey --statistic 'bispec' \
         --multipole $degrees --range ${KRANGE}
     ${TESTPROG} --output-tag _lpp \
-        --case survey --statistic "3pcf" \
+        --case survey --statistic '3pcf' \
         --multipole $degrees --range ${RRANGE}
     ${TESTPROG} \
-        --case random --statistic "3pcf" \
+        --case random --statistic '3pcf' \
         --multipole $degrees --range ${RRANGE}
 done
 
 ## Row form (0th bin)
-FORM="row"
+FORM='row'
 
 MULTIPOLES="000"
 for degrees in ${MULTIPOLES}
 do
     ${TESTPROG} --output-tag _gpp \
-        --case sim --statistic "bispec" \
+        --case sim --statistic 'bispec' \
         --multipole $degrees --range ${KRANGE} --form ${FORM}
     ${TESTPROG} --output-tag _gpp \
-        --case sim --statistic "3pcf" \
+        --case sim --statistic '3pcf' \
         --multipole $degrees --range ${RRANGE} --form ${FORM}
     ${TESTPROG} --output-tag _lpp \
-        --case survey --statistic "bispec" \
+        --case survey --statistic 'bispec' \
         --multipole $degrees --range ${KRANGE} --form ${FORM}
     ${TESTPROG} --output-tag _lpp \
-        --case survey --statistic "3pcf" \
+        --case survey --statistic '3pcf' \
         --multipole $degrees --range ${RRANGE} --form ${FORM}
     ${TESTPROG} \
-        --case random --statistic "3pcf" \
+        --case random --statistic '3pcf' \
         --multipole $degrees --range ${RRANGE} --form ${FORM}
 done

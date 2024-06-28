@@ -180,16 +180,24 @@ void Logger::log(LogLevel entry_level, const char* fmt_string, ...) {
     switch (entry_level) {
       case LogLevel::NSET:
         log_type = "\b";
+        break;
       case LogLevel::DBUG:
         log_type = "DBUG";
+        break;
       case LogLevel::STAT:
         log_type = "STAT";
+        break;
       case LogLevel::INFO:
         log_type = "INFO";
+        break;
       case LogLevel::WARN:
         log_type = "WARN";
+        break;
       case LogLevel::ERRO:
         log_type = "ERRO";
+        break;
+      default:
+        throw InvalidParameterError("Unsupported log level.");
     }
 
     std::va_list args;
@@ -206,16 +214,26 @@ void Logger::log(int level_entry, const char* fmt_string, ...) {
 
     std::string log_type;
     switch (level_entry) {
+      case LogLevel::NSET:
+        log_type = "\b";
+        break;
       case LogLevel::DBUG:
         log_type = "DBUG";
+        break;
       case LogLevel::STAT:
         log_type = "STAT";
+        break;
       case LogLevel::INFO:
         log_type = "INFO";
+        break;
       case LogLevel::WARN:
         log_type = "WARN";
+        break;
       case LogLevel::ERRO:
         log_type = "ERRO";
+        break;
+      default:
+        throw InvalidParameterError("Unsupported log level.");
     }
 
     std::va_list args;

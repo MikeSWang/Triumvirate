@@ -164,114 +164,132 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
 
     if (line_str.find("boxsize_x") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %lg", dummy_str, dummy_equal, &boxsize_x
+        line_str.data(), "%1023s %1023s %lg",
+        dummy_str, dummy_equal, &boxsize_x
       );
     }
     if (line_str.find("boxsize_y") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %lg", dummy_str, dummy_equal, &boxsize_y
+        line_str.data(), "%1023s %1023s %lg",
+        dummy_str, dummy_equal, &boxsize_y
       );
     }
     if (line_str.find("boxsize_z") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %lg", dummy_str, dummy_equal, &boxsize_z
+        line_str.data(), "%1023s %1023s %lg",
+        dummy_str, dummy_equal, &boxsize_z
       );
     }
 
     if (line_str.find("ngrid_x") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &ngrid_x
+        line_str.data(), "%1023s %1023s %d",
+        dummy_str, dummy_equal, &ngrid_x
       );
     }
     if (line_str.find("ngrid_y") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &ngrid_y
+        line_str.data(), "%1023s %1023s %d",
+        dummy_str, dummy_equal, &ngrid_y
       );
     }
     if (line_str.find("ngrid_z") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &ngrid_z
+        line_str.data(), "%1023s %1023s %d", dummy_str, dummy_equal, &ngrid_z
       );
     }
 
-    scan_par_str("alignment", "%s %s %s", alignment_);
-    scan_par_str("padscale", "%s %s %s", padscale_);
+    scan_par_str("alignment", "%1023s %1023s %1023s", alignment_);
+    scan_par_str("padscale", "%1023s %1023s %1023s", padscale_);
 
     if (line_str.find("padfactor") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %lg", dummy_str, dummy_equal, &this->padfactor
+        line_str.data(), "%1023s %1023s %lg",
+        dummy_str, dummy_equal, &this->padfactor
       );
     }
 
-    scan_par_str("assignment", "%s %s %s", assignment_);
-    scan_par_str("interlace", "%s %s %s", interlace_);
+    scan_par_str("assignment", "%1023s %1023s %1023s", assignment_);
+    scan_par_str("interlace", "%1023s %1023s %1023s", interlace_);
 
     // -- Measurement ----------------------------------------------------
 
-    scan_par_str("catalogue_type", "%s %s %s", catalogue_type_);
-    scan_par_str("statistic_type", "%s %s %s", statistic_type_);
-    scan_par_str("form", "%s %s %s", form_);
-    scan_par_str("norm_convention", "%s %s %s", norm_convention_);
-    scan_par_str("binning", "%s %s %s", binning_);
+    scan_par_str("catalogue_type", "%1023s %1023s %1023s", catalogue_type_);
+    scan_par_str("statistic_type", "%1023s %1023s %1023s", statistic_type_);
+    scan_par_str("form", "%1023s %1023s %1023s", form_);
+    scan_par_str("norm_convention", "%1023s %1023s %1023s", norm_convention_);
+    scan_par_str("binning", "%1023s %1023s %1023s", binning_);
 
     if (line_str.find("ell1") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->ell1
+        line_str.data(), "%1023s %1023s %d",
+        dummy_str, dummy_equal, &this->ell1
       );
     }
     if (line_str.find("ell2") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->ell2
+        line_str.data(), "%1023s %1023s %d",
+        dummy_str, dummy_equal, &this->ell2
       );
     }
     if (line_str.find("ELL") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->ELL
+        line_str.data(), "%1023s %1023s %d",
+        dummy_str, dummy_equal, &this->ELL
       );
     }
 
     if (line_str.find("i_wa") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->i_wa
+        line_str.data(), "%1023s %1023s %d",
+        dummy_str, dummy_equal, &this->i_wa
       );
     }
     if (line_str.find("j_wa") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->j_wa
+        line_str.data(), "%1023s %1023s %d",
+        dummy_str, dummy_equal, &this->j_wa
       );
     }
 
     if (line_str.find("bin_min") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %lg", dummy_str, dummy_equal, &this->bin_min
+        line_str.data(), "%1023s %1023s %lg",
+        dummy_str, dummy_equal, &this->bin_min
       );
     }
     if (line_str.find("bin_max") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %lg", dummy_str, dummy_equal, &this->bin_max
+        line_str.data(), "%1023s %1023s %lg",
+        dummy_str, dummy_equal, &this->bin_max
       );
     }
 
     if (line_str.find("num_bins") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->num_bins
+        line_str.data(), "%1023s %1023s %d",
+        dummy_str, dummy_equal, &this->num_bins
       );
     }
     if (line_str.find("idx_bin") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->idx_bin
+        line_str.data(), "%1023s %1023s %d",
+        dummy_str, dummy_equal, &this->idx_bin
       );
     }
 
     // -- Misc -------------------------------------------------------------
 
-    scan_par_str("fftw_scheme", "%s %s %s", fftw_scheme_);
-    scan_par_str("use_fftw_wisdom", "%s %s %s", use_fftw_wisdom_);
-    scan_par_str("save_binned_vectors", "%s %s %s", save_binned_vectors_);
+    scan_par_str("fftw_scheme", "%1023s %1023s %1023s", fftw_scheme_);
+    scan_par_str("use_fftw_wisdom", "%1023s %1023s %1023s", use_fftw_wisdom_);
+    scan_par_str(
+      "save_binned_vectors", "%1023s %1023s %1023s", save_binned_vectors_
+    );
 
     if (line_str.find("verbose") != std::string::npos) {
       std::sscanf(
-        line_str.data(), "%s %s %d", dummy_str, dummy_equal, &this->verbose
+        line_str.data(), "%1023s %1023s %d",
+        dummy_str, dummy_equal, &this->verbose
       );
     }
   }

@@ -3,7 +3,7 @@
 # @file autorel_anaconda.sh
 # @author Mike S Wang
 # @brief Build and verify release distributions for the Anaconda repository.
-# @arg Non-native architecture case, {"", "arm64"}.
+# @arg Non-native architecture case, {'', 'arm64'}.
 #
 
 # Parse options.
@@ -21,7 +21,7 @@ shift "$((OPTIND-1))"
 if [[ -z "${1}" ]]; then
   arch_suffix=
 else
-  arch_suffix=_${1}  # non-native architecture case: {"arm64"}
+  arch_suffix=_${1}  # non-native architecture case: {'arm64'}
 fi
 
 # Set directories and paths.
@@ -42,7 +42,7 @@ conda build --strict-verify --no-anaconda-upload ${RECIPE_DIR} \
   --variants "{'python': ['3.10', '3.11', '3.12']}"
 
 # Transmute compression formats.
-find ${DIST_DIR} -name "*.tar.bz2" \
+find ${DIST_DIR} -name '*.tar.bz2' \
   -exec cph transmute {} .conda --out-folder ${DIST_DIR} \;
 
 # Optionally upload to Anaconda.
