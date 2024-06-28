@@ -290,10 +290,14 @@ def combine_components(components_bins, components_coords, components_counts,
 
     """
     # Check numbers of components agree.
-    assert len(components_bins) == len(components_coords) \
-        == len(components_counts) \
-        == len(components_vectors) == len(components_vectors_shotnoise), \
-        "Number of components do not agree."
+    if not (
+        len(components_bins)
+        == len(components_coords)
+        == len(components_counts)
+        == len(components_vectors)
+        == len(components_vectors_shotnoise)
+    ):
+        raise ValueError("Number of components do not agree.")
 
     # Combine components.
     data_bin_centres = np.concatenate(components_bins)
