@@ -4,6 +4,7 @@
 
 # Three-Point Clustering Measurements in LSS
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3ad509dbfb1247948f77e6f36f325494)](https://app.codacy.com/gh/MikeSWang/Triumvirate?utm_source=github.com&utm_medium=referral&utm_content=MikeSWang/Triumvirate&utm_campaign=Badge_Grade)
 [![Release](https://img.shields.io/github/v/release/MikeSWang/Triumvirate?display_name=tag&sort=semver&logo=Git)](https://github.com/MikeSWang/Triumvirate/releases/latest)
 [![CI](https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/ci.yml?label=ci&logo=GitHubActions)](https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/readthedocs/triumvirate/latest?logo=ReadtheDocs)](https://readthedocs.org/projects/triumvirate/builds/)
