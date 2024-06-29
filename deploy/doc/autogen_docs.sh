@@ -141,6 +141,7 @@ if [[ ${excl} != 'doxy' ]]; then
     recycle_readme "\[CI\]"
     recycle_readme "\[Docs\]"
     recycle_readme "\[Codacy Badge\]"
+    recycle_readme "\`\`\`bash session" "\`\`\`console"
 
     # Build docs.
     doxygen ${DOXYFILE}
