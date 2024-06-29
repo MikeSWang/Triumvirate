@@ -1,36 +1,36 @@
 {
-    "name": "Triumvirate-Dev",
-	"build": {
-		"context": "..",
-		"dockerfile": "Dockerfile"
-	},
-    "features": {
-        "ghcr.io/mamba-org/devcontainer-features/micromamba:1": {
-            "version": "latest",
-            "channels": "conda-forge",
-            "autoActivate": false,
-            "envFile": "/tmp/conda-tmp/conda-env.yml",
-            "envName": "trv-dev"
-        }
-    },
-    "onCreateCommand": "bash .devcontainer/onCreate.sh",
-    "postCreateCommand": "bash .devcontainer/postCreate.sh",
-    "postStartCommand": "bash .devcontainer/postStart.sh",
-    "waitFor": "postStartCommand",
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "ms-vscode.makefile-tools",
-                "ms-vscode.cpptools",
-                "ms-python.python",
-                "ms-python.vscode-pylance",
-                "ms-python.flake8",
-                "github.copilot",
-                "ktnrg45.vscode-cython",
-                "cschlosser.doxdocgen",
-                "lextudio.restructuredtext",
-                "trond-snekvik.simple-rst"
-            ]
-        }
+  "name": "Triumvirate-Dev",
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/mamba-org/devcontainer-features/micromamba:1": {
+      "version": "latest",
+      "channels": "conda-forge",
+      "autoActivate": false,
+      "envFile": "/tmp/conda-tmp/conda-env.yml",
+      "envName": "trv-dev"
     }
+  },
+  "onCreateCommand": "bash .devcontainer/onCreate.sh",
+  "postCreateCommand": "bash .devcontainer/postCreate.sh",
+  "postStartCommand": "bash .devcontainer/postStart.sh",
+  "waitFor": "postStartCommand",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.makefile-tools",
+        "ms-vscode.cpptools",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.flake8",
+        "github.copilot",
+        "ktnrg45.vscode-cython",
+        "cschlosser.doxdocgen",
+        "lextudio.restructuredtext",
+        "trond-snekvik.simple-rst"
+      ]
+    }
+  }
 }
