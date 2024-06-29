@@ -304,10 +304,9 @@ store_reduced_spherical_harmonic_in_config_space(
 // Spherical Bessel function
 // ***********************************************************************
 
-SphericalBesselCalculator::SphericalBesselCalculator(const int ell) {
-  // Declare order of the spherical Bessel function.
-  this->order = ell;
-
+SphericalBesselCalculator::SphericalBesselCalculator(
+  const int ell
+) : order(ell) {
   // Set up sampling range and number.
   this->split = (this->split >= this->order * this->order) ?
     this->split : this->order * this->order;

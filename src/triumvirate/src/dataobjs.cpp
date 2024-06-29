@@ -34,10 +34,8 @@ namespace trv {
 // Binning schemes
 // ***********************************************************************
 
-Binning::Binning(std::string space, std::string scheme) {
-  this->space = space;
-  this->scheme = scheme;
-}
+Binning::Binning(std::string space, std::string scheme) :
+  space(space), scheme(scheme) {}
 
 Binning::Binning(trv::ParameterSet& params) : Binning::Binning(
   params.space, params.binning
