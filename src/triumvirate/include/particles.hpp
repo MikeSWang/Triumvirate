@@ -92,7 +92,7 @@ class ParticleCatalogue {
    *       when an instance is created as a standalone without
    *       @c ParameterSet .
    */
-  ParticleCatalogue(int verbose = -1);
+  explicit ParticleCatalogue(int verbose = -1);
 
   /**
    * @brief Destruct the particle catalogue.

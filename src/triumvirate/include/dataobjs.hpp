@@ -71,7 +71,7 @@ class Binning {
    * @param scheme Binning scheme, one of
    *               {"lin", "log", "linpad", "logpad"}.
    */
-  Binning(std::string space, std::string scheme);
+  explicit Binning(std::string space, std::string scheme);
 
   /**
    * @brief Construct binning from a parameter set.
@@ -80,7 +80,7 @@ class Binning {
    *
    * @overload
    */
-  Binning(trv::ParameterSet& params);
+  explicit Binning(trv::ParameterSet& params);
 
   /**
    * @brief Set bins.

@@ -305,7 +305,7 @@ class ProgressBar {
    * @param task_count Total task count (at least 1).
    * @param name Progress bar name (default is an empty string).
    */
-  ProgressBar(int task_count, std::string name = "");
+  explicit ProgressBar(int task_count, std::string name = "");
 
   /**
    * @brief Set progress bar width.

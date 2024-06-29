@@ -264,7 +264,7 @@ class SphericalBesselCalculator {
    *
    * @param ell Order @f$ \ell @f$.
    */
-  SphericalBesselCalculator(const int ell);
+  explicit SphericalBesselCalculator(const int ell);
 
   /**
    * @brief Copy an interpolated function calculator.

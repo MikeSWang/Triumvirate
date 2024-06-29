@@ -87,7 +87,7 @@ class MeshField {
    *                 (default is `true`).
    * @param name Field name (default is "mesh-field").
    */
-  MeshField(
+  explicit MeshField(
     trv::ParameterSet& params,
     bool plan_ini = true,
     const std::string& name = "mesh-field"
@@ -104,7 +104,7 @@ class MeshField {
    *
    * @overload
    */
-  MeshField(
+  explicit MeshField(
     trv::ParameterSet& params,
     fftw_plan& transform, fftw_plan& inv_transform,
     const std::string& name = "mesh-field"
@@ -571,7 +571,7 @@ class FieldStats {
    * @param plan_ini Flag for FFTW plan initialisation
    *                 (default is `true`).
    */
-  FieldStats(trv::ParameterSet& params, bool plan_ini = true);
+  explicit FieldStats(trv::ParameterSet& params, bool plan_ini = true);
 
   /**
    * @brief Destruct two-point statistics.
