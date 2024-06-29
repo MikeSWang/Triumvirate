@@ -105,3 +105,9 @@ before-all = [
 before-all = [
     "brew install gsl fftw libomp",
 ]
+
+[tool.codespell]
+skip = "publication/joss/paper.bib,"
+ignore-words-list = "ERRO,"
+count = true
+quiet-level = 3
