@@ -324,6 +324,8 @@ class ParticleCatalogue:
                         pass
 
         if self._backend == 'astropy':
+            if format == 'text':
+                format = 'ascii'
             if table_kwargs is None:
                 table_kwargs = {}
             if format.startswith('ascii'):
