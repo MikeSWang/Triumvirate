@@ -31,23 +31,28 @@ from triumvirate._arrayops import (
     [
         # Test case 1: check sorted array
         (
-            np.array([1., 3., 2.]), True, False, False, False, OrderError,
+            np.array([1., 3., 2.,]), True, False, False, False,
+            OrderError,
         ),
         # Test case 2: check mixed sign entries at endpoints
         (
-            np.array([1., -2., 3.]), False, True, False, False, MixedSignError,
+            np.array([1., -2., 3.,]), False, True, False, False,
+            MixedSignError,
         ),
         # Test case 3: check linearly spaced array
         (
-            np.array([1., 2., 4.]), False, False, True, False, SpacingError,
+            np.array([1., 2., 4.,]), False, False, True, False,
+            SpacingError,
         ),
         # Test case 4: check log-linearly spaced array
         (
-            np.array([1., 2., 3.]), False, False, False, True, SpacingError,
+            np.array([1., 2., 3.,]), False, False, False, True,
+            SpacingError,
         ),
         # Test case 5: check array dimension
         (
-            np.array([[1., 2., 3.]]*2), False, False, False, False, ShapeError,
+            np.array([[1., 2., 3.,]]*2), False, False, False, False,
+            ShapeError,
         ),
     ],
 )
@@ -72,27 +77,27 @@ def test__check_1d_array(a,
     [
         # Test case 1: check sorted array
         (
-            np.array([[1., 2., 3.], [2., 3., 2.]]),
+            np.array([[1., 2., 3.,], [2., 3., 2.,]]),
             True, False, False, False, OrderError,
         ),
         # Test case 2: check mixed sign entries at endpoints
         (
-            np.array([[1., 2., 3.], [2., -3., 2.]]),
+            np.array([[1., 2., 3.,], [2., -3., 2.,]]),
             False, True, False, False, MixedSignError,
         ),
         # Test case 3: check linearly spaced array
         (
-            np.array([[1., 2., 3.], [1., 2., 4.]]),
+            np.array([[1., 2., 3.,], [1., 2., 4.,]]),
             False, False, True, False, SpacingError,
         ),
         # Test case 4: check log-linearly spaced array
         (
-            np.array([[1., 2., 3.], [1., 2., 4.]]),
+            np.array([[1., 2., 3.,], [1., 2., 4.,]]),
             False, False, False, True, SpacingError,
         ),
         # Test case 5: check array dimension
         (
-            np.array([1, 2, 3]), False, False, False, False, ShapeError,
+            np.array([1, 2, 3,]), False, False, False, False, ShapeError,
         ),
     ],
 )
@@ -203,13 +208,15 @@ def test_extrap_loglin_oscil(a, n_ext, expected_output):
     [
         # Test case 1: extrapolate with positive padding
         (
-            np.array([[1, 2, 3], [4, 5, 6]]), 1,
-            [-1, 1], [-1, -1], [-1, -2, -1], [1,  2, -1],
+            np.array([[1, 2, 3,], [4, 5, 6,]]), 1,
+            [-1, 1,], [-1, -1,], [-1, -2, -1,], [1, 2, -1,],
             np.array([
+                # autopep8: off
                 [-1, -1, -2, -1, -1,],
                 [-1,  1,  2,  3, -1,],
                 [ 1,  4,  5,  6, -1,],  # noqa: E201
                 [ 1,  1,  2, -1, -1,],  # noqa: E201
+                # autopep8: on
             ]),
         ),
     ],
@@ -227,12 +234,14 @@ def test_extrap2d_pad(a, n_ext, crow_lower, crow_upper, ccol_lower, ccol_upper,
     [
         # Test case 1: extrapolate bilinearly
         (
-            np.array([[1, 2, 3], [4, 5, 6]]), 1,
+            np.array([[1, 2, 3,], [4, 5, 6,]]), 1,
             np.array([
+                # autopep8: off
                 [-3, -2, -1,  0,  1,],
                 [ 0,  1,  2,  3,  4,],  # noqa: E201
                 [ 3,  4,  5,  6,  7,],  # noqa: E201
                 [ 6,  7,  8,  9, 10,],  # noqa: E201
+                # autopep8: on
             ]),
         ),
     ],
@@ -249,10 +258,12 @@ def test_extrap2d_lin(a, n_ext, expected_output):
         (
             np.array([[1., 2., 4.,], [2., 4., 8.,]]), 1,
             np.array([
+                # autopep8: off
                 [ .25,  .5, 1.,  2.,  4.,],  # noqa: E201
                 [ .5 , 1. , 2.,  4.,  8.,],  # noqa: E201, E203
                 [1.  , 2. , 4.,  8., 16.,],  # noqa: E201, E203
                 [2.  , 4. , 8., 16., 32.,],  # noqa: E201, E203
+                # autopep8: on
             ]),
         ),
     ],
@@ -268,16 +279,19 @@ def test_extrap2d_loglin(a, n_ext, expected_output):
         # Test case 1: Extrapolate log-linearly with oscillatory behavior
         (
             np.array([
-                [1. ,  2.,  4.,  8.,  4.,  2., 1.],  # noqa: E203
-                [2. ,  4.,  8., 16.,  8.,  4., 2.],  # noqa: E203
-                [4. ,  8., 16., 32., 16.,  8., 4.],  # noqa: E203
-                [8. , 16., 32., 64., 32., 16., 8.],  # noqa: E203
-                [4. ,  8., 16., 32., 16.,  8., 4.],  # noqa: E203
-                [2. ,  4.,  8., 16.,  8.,  4., 2.],  # noqa: E203
-                [1. ,  2.,  4.,  8.,  4.,  2., 1.],  # noqa: E203
+                # autopep8: off
+                [1. ,  2.,  4.,  8.,  4.,  2., 1.,],  # noqa: E203
+                [2. ,  4.,  8., 16.,  8.,  4., 2.,],  # noqa: E203
+                [4. ,  8., 16., 32., 16.,  8., 4.,],  # noqa: E203
+                [8. , 16., 32., 64., 32., 16., 8.,],  # noqa: E203
+                [4. ,  8., 16., 32., 16.,  8., 4.,],  # noqa: E203
+                [2. ,  4.,  8., 16.,  8.,  4., 2.,],  # noqa: E203
+                [1. ,  2.,  4.,  8.,  4.,  2., 1.,],  # noqa: E203
+                # autopep8: on
             ]),
             1,
             np.array([
+                # autopep8: off
                 [ .25,  .5,  1.,  2.,  4.,  2.,  1.,  .5,  .25,],  # noqa: E201
                 [ .5 , 1. ,  2.,  4.,  8.,  4.,  2., 1. ,  .5 ,],  # noqa: E201, E203, E501
                 [1.  , 2. ,  4.,  8., 16.,  8.,  4., 2. , 1.  ,],  # noqa: E201, E203, E501
@@ -287,6 +301,7 @@ def test_extrap2d_loglin(a, n_ext, expected_output):
                 [1.  , 2. ,  4.,  8., 16.,  8.,  4., 2. , 1.  ,],  # noqa: E201, E203, E501
                 [ .5 , 1. ,  2.,  4.,  8.,  4.,  2., 1. ,  .5 ,],  # noqa: E201, E203, E501
                 [ .25,  .5,  1.,  2.,  4.,  2.,  1.,  .5,  .25,],  # noqa: E201
+                # autopep8: on
             ])
         )
     ]
@@ -310,13 +325,13 @@ def test_extrap2d_loglin_oscil(a, n_ext, expected_output):
             np.array([[0, 0], [0, 1], [1, 0]]),
             np.array([1, 2, 3]),
             'triu',
-            np.array([0, 1]),
+            np.array([0, 1,]),
             np.array([[1, 2,], [2, 3],]),
         ),
         # Test case 2: Invalid input - paired_coords is not a 2-d array
         (
-            np.array([1, 2, 3]),
-            np.array([1, 2, 3]),
+            np.array([1, 2, 3,]),
+            np.array([1, 2, 3,]),
             None,
             None,
             None,
@@ -324,7 +339,7 @@ def test_extrap2d_loglin_oscil(a, n_ext, expected_output):
         # Test case 3: Invalid input - unmatching dimensions
         (
             np.array([[1, 2], [2, 3], [3, 4]]),
-            np.array([1, 2, 3, 4]),
+            np.array([1, 2, 3, 4,]),
             None,
             None,
             None,
@@ -332,7 +347,7 @@ def test_extrap2d_loglin_oscil(a, n_ext, expected_output):
         # Test case 4: Invalid input - not an upper triangular matrix
         (
             np.array([[1, 2], [2, 3], [3, 4]]),
-            np.array([1, 2, 3, 4, 5, 6]),
+            np.array([1, 2, 3, 4, 5, 6,]),
             None,
             None,
             None,
@@ -340,10 +355,10 @@ def test_extrap2d_loglin_oscil(a, n_ext, expected_output):
         # Test case 5: Valid input
         (
             np.array([[0, 0], [0, 1], [1, 0], [1, 1]]),
-            np.array([1, 2, 3, 4]),
+            np.array([1, 2, 3, 4,]),
             'full',
             np.array([0, 1]),
-            np.array([[1, 2,], [3, 4],])
+            np.array([[1, 2,], [3, 4,],])
         ),
     ]
 )

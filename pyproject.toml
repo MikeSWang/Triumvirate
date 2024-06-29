@@ -114,6 +114,13 @@ before-all = [
     "brew install gsl fftw libomp",
 ]
 
+[tool.autopep8]
+in-place = true
+recursive = true
+aggressive = 3
+max_line_length = 79
+ignore = "E226,"
+
 [tool.codespell]
 skip = "publication/joss/paper.bib,"
 ignore-words-list = "ERRO,"
