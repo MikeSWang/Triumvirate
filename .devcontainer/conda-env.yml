@@ -23,5 +23,5 @@ dependencies:
   - pyyaml >=5.1
   - tqdm
   # Test dependencies
-  - flake8 >=4.0
+  - pre-commit >=3.7
   - pytest >=7.0
