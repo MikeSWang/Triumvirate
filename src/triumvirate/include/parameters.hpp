@@ -114,7 +114,7 @@ class ParameterSet {
 
   // Derived measurement type.
   std::string npoint;  ///< <i>N</i>-point case: {"2pt", "3pt", "none"}
-  std::string space;   ///< coordinte space: {"fourier", "config"}
+  std::string space;   ///< coordinate space: {"fourier", "config"}
 
   // Measurement indexing.
   /// spherical degree associated with the first wavevector

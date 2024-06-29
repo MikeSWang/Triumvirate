@@ -958,7 +958,7 @@ int ParameterSet::validate() {
     this->save_binned_vectors = default_bvec_sfilepath;  // transmutation
     if (trvs::currTask == 0) {
       trvs::logger.warn(
-        "`save_binned_vectors` is overriden, as `statistic_type` is '%s' "
+        "`save_binned_vectors` is overridden, as `statistic_type` is '%s' "
         "so binned vectors are saved as the output to the default path.",
         this->statistic_type.c_str()
       );

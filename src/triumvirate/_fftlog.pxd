@@ -1,4 +1,4 @@
-"""Interface with the FFTLog algoritms for the Hankel and
+"""Interface with the FFTLog algorithms for the Hankel and
 associated transforms.
 
 """

@@ -235,10 +235,10 @@ def display_py_environs():
     PY_ENV_VARS = [
         'PY_CXX',
         'PY_INCLUDES',  # typically included in 'CPPFLAGS'
-        'PY_CXXFLAGS',  # untypically includes macros in 'CPPFLAGS'
-        'PY_LDFLAGS',  # untypically includes 'LDLIBS'
+        'PY_CXXFLAGS',  # atypically includes macros in 'CPPFLAGS'
+        'PY_LDFLAGS',  # atypically includes 'LDLIBS'
         'PY_NO_OMP',  # disable OpenMP explicitly
-        'PY_OMP',  # enable OpenMP explicitly unless overriden by `PY_NO_OMP`
+        'PY_OMP',  # enable OpenMP explicitly unless overridden by `PY_NO_OMP`
         'PY_CXXFLAGS_OMP',
         'PY_LDFLAGS_OMP',
         'PY_BUILD_PARALLEL',
@@ -602,7 +602,7 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
     if os.environ.get('PY_OMP') is None and not check_openmp_support():
         prioprint(
             "OpenMP is disabled as "
-            "it is not supported in this build enviromnent."
+            "it is not supported in this build environment."
         )
         return macros, cflags, ldflags, libs, lib_dirs, include_dirs
 
@@ -758,9 +758,9 @@ def cleanup_options(*args):
 # ========================================================================
 
 CYTHON_DIRECTIVES = {
-   'language_level': '3',
-   'c_string_encoding': 'utf-8',
-   'embedsignature': True,
+    'language_level': '3',
+    'c_string_encoding': 'utf-8',
+    'embedsignature': True,
 }
 
 EXT_CONFIGS = {

@@ -128,7 +128,7 @@ def read_measurements(stat, directory, fnpattern, sn_range=None):
     Parameters
     ----------
     stat : {'pk', 'xi', bk', 'zeta'}
-        Statictic.
+        Statistic.
     directory : path-like
         File directory.
     fnpattern : str

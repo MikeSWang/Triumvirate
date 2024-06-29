@@ -262,7 +262,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
  * @param rbinning Separation binning.
  * @param alpha Alpha contrast.
  * @param norm_factor Normalisation factor.
- * @param wide_angle Whether wide-angle corretions or not
+ * @param wide_angle Whether wide-angle corrections or not
  *                   (default is `false`).
  * @returns Three-point correlation function window measurements.
  */

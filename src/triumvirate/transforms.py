@@ -238,7 +238,7 @@ class SphericalBesselTransform:
         return post_sampts, post_samples
 
     def _perform_extrap(self, arr):
-        """Perform extrapolation according to interal attributes.
+        """Perform extrapolation according to internal attributes.
 
         Parameters
         ----------
@@ -476,7 +476,7 @@ class DoubleSphericalBesselTransform:
         return post_sampts, post_samples
 
     def _perform_extrap(self, arr):
-        """Perform extrapolation according to interal attributes.
+        """Perform extrapolation according to internal attributes.
 
         Parameters
         ----------

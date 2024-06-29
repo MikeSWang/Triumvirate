@@ -64,7 +64,7 @@ same Conda environment).
 
     These library compilation options are automatically configured and set
     by the default |Makefile|_ in the package distribution(s)
-    (located at the repository diretory root) during build processes.
+    (located at the repository directory root) during build processes.
 
 
 OpenMP library
@@ -188,7 +188,7 @@ repository directory.
 
 .. hint::
 
-    The default |Makefile|_ (located at the repository diretory root)
+    The default |Makefile|_ (located at the repository directory root)
     should work in most build environments, but may need to be modified
     as appropriate for the build environment.
 
@@ -226,7 +226,7 @@ end of the second line as shown above.
 .. note::
 
     The latest release is on the |main|_ branch. The default |Makefile|_
-    (located at the repository diretory root) should work in most build
+    (located at the repository directory root) should work in most build
     environments, but may need to be modified as appropriate.
 
 
