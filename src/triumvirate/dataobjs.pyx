@@ -162,7 +162,7 @@ cdef class Binning:
     def set_grid_based_bins(self, boxsize, ngrid):
         """Set linear binning based on a mesh grid.
 
-        The binning :attr:`scheme` is overriden to 'lin'.  The bin width
+        The binning :attr:`scheme` is overridden to 'lin'.  The bin width
         is given by the grid resolution in configuration space or the
         fundamental wavenumber in Fourier space.  The bin minimum is zero
         and the bin maximum is half the box size in configuration space or

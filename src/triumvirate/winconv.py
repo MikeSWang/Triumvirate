@@ -1516,7 +1516,7 @@ class WinConvBase:
         self.comm = comm
         self.comm_root = comm_root if comm else None
 
-        # Constuct formulae object.
+        # Construct formulae object.
         if isinstance(formulae, str):
             try:
                 formulae = NAMED_FORMULAE[formulae.lower()]
@@ -2703,7 +2703,7 @@ class BispecWinConv(WinConvBase):
             the 2-d array of samples in row-major order
             (see order 'C' in :meth:`numpy.ndarray.flatten`).
 
-            The rows of the concatenated matrix are orderd in stacks
+            The rows of the concatenated matrix are ordered in stacks
             in correspondence with the order of the multipoles given by
             :attr:`~triumvirate.winconv.WinConvFormulae.multipoles`
             of the input `formulae`.

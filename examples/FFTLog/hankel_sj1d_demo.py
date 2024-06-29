@@ -106,7 +106,7 @@ def parse_parameters() -> argparse.Namespace:
     if pars.test_case == 'sj-cosmo' and pars.degree != 0:
         pars.degree = 0
         warnings.warn(
-            "Spherical Bessel transform degree overriden to 0 "
+            "Spherical Bessel transform degree overridden to 0 "
             "when external cosmological multipole samples are referenced "
             "as they are computed for the monopole only."
         )

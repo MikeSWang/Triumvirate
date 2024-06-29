@@ -76,7 +76,7 @@ class Binning {
   /**
    * @brief Construct binning from a parameter set.
    *
-   * @param params Paramater set.
+   * @param params Parameter set.
    *
    * @overload
    */

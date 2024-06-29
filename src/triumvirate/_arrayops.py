@@ -365,7 +365,7 @@ def extrap_loglin_oscil(a, n_ext):
         idx_rbank = 0
 
     # Check for oscillations and further restrict extrapolation to a range
-    # excluding the innermost peak/trough with at least 2 points on either
+    # excluding the innermost peak/through with at least 2 points on either
     # 'bank' of the 'zero river'.
     lngrad_lbank = np.nan_to_num(np.gradient(np.log(np.abs(a[:idx_lbank]))))
     signchange_lngrad_lbank = np.nonzero(np.diff(np.sign(lngrad_lbank)))[0]

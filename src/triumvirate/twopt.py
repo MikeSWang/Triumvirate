@@ -683,7 +683,7 @@ def compute_powspec(catalogue_data, catalogue_rand,
 
     Specify multipole `degree` 2 and provide customised
     :class:`~triumvirate.dataobjs.Binning` object ``binning``.
-    Whether `paramset` provided or not, relevant parameters are overriden
+    Whether `paramset` provided or not, relevant parameters are overridden
     by the supplied keyword arguments.
 
     >>> results = compute_powspec(

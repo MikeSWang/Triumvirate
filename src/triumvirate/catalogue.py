@@ -517,7 +517,7 @@ class ParticleCatalogue:
         if _axes_overflow:
             warnings.warn(
                 "Catalogue extent exceeds the box size along axis {} ({})."
-                "Some partcles may lie outside the box after centring."
+                "Some particles may lie outside the box after centring."
                 .format(set(_axes_overflow), self)
             )
         if catalogue_ref is not None:
@@ -526,7 +526,7 @@ class ParticleCatalogue:
             if _axes_overflow_ref:
                 warnings.warn(
                     "Catalogue extent exceeds the box size along axis {} ({})."
-                    "Some partcles may lie outside the box after centring."
+                    "Some particles may lie outside the box after centring."
                     .format(set(_axes_overflow_ref), catalogue_ref_)
                 )
 
@@ -605,7 +605,7 @@ class ParticleCatalogue:
         if _axes_overflow:
             warnings.warn(
                 "Catalogue extent exceeds the box size along axis {} ({})."
-                "Some partcles may lie outside the box after padding."
+                "Some particles may lie outside the box after padding."
                 .format(set(_axes_overflow), self)
             )
         if catalogue_ref is not None:
@@ -614,7 +614,7 @@ class ParticleCatalogue:
             if _axes_overflow_ref:
                 warnings.warn(
                     "Catalogue extent exceeds the box size along axis {} ({})."
-                    "Some partcles may lie outside the box after padding."
+                    "Some particles may lie outside the box after padding."
                     .format(set(_axes_overflow_ref), catalogue_ref_)
                 )
 

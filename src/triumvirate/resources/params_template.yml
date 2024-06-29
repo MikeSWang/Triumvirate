@@ -22,7 +22,7 @@ files:
 # FUTURE: This parameter currently has no effect in the Python interface.
 # Field names of catalogue data columns as a list in the order of
 # appearance.  If unset, the catalogue files are assumed to contain
-# an approriate header.
+# an appropriate header.
 catalogue_columns: []
 
 # Tags to be appended as an input/output filename suffix.
@@ -62,7 +62,7 @@ padfactor:
 assignment: tsc
 
 # Interlacing switch: {true/on, false/off (default))}.
-# The switch is overriden to `false` when measuring three-point statistics.
+# The switch is overridden to `false` when measuring three-point statistics.
 interlace: off
 
 

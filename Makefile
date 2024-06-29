@@ -452,7 +452,7 @@ ${TEST_EXES}: ${TEST_SRCS}
 	$(CXX) $(CPPFLAGS_TEST) $(CXXFLAGS_TEST) $< -o $@ $(LDFLAGS_TEST) $(LDLIBS_TEST)
 
 pytest:
-	@echo "Peforming Triumvirate Python tests..."
+	@echo "Performing Triumvirate Python tests..."
 	@if [ ! -d ${DIR_TESTOUT} ]; then \
 	    echo "  making output subdirectory in test directory..."; \
 	    mkdir -p ${DIR_TESTOUT}; \

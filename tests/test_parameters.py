@@ -320,7 +320,7 @@ def test_ParameterSet___setitem__(param_name, param_value, valid_paramset):
         valid_paramset[param_name] = param_value
         with pytest.raises(AssertionError):
             assert valid_paramset[param_name] == param_value, \
-                "Parameter setting overriden."
+                "Parameter setting overridden."
         valid_paramset['statistic_type'] = 'powspec'
 
     # Otherwise, parameter setting should work.
@@ -361,7 +361,7 @@ def test_ParameterSet___setattr__(param_name, param_value, valid_paramset):
         setattr(valid_paramset, param_name, param_value)
         with pytest.raises(AssertionError):
             assert getattr(valid_paramset, param_name) == param_value, \
-                "Parameter setting overriden."
+                "Parameter setting overridden."
         valid_paramset.statistic_type = 'powspec'
 
     # Otherwise, parameter setting should work.

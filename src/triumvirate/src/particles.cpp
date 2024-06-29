@@ -458,7 +458,7 @@ void ParticleCatalogue::centre_in_box(
         trvs::logger.warn(
           "Catalogue extent exceeds the box size along axis %d: "
           "span = %.3f, boxsize = %.3f (source=%s). "
-          "Some partcles may lie outside the box after centring.",
+          "Some particles may lie outside the box after centring.",
           iaxis,
           catalogue.pos_span[iaxis], boxsize[iaxis],
           catalogue.source.c_str()
@@ -489,7 +489,7 @@ void ParticleCatalogue::centre_in_box(
         trvs::logger.warn(
           "Catalogue extent exceeds the box size along axis %d: "
           "span = %.3f, boxsize = %.3f (source=%s). "
-          "Some partcles may lie outside the box after centring.",
+          "Some particles may lie outside the box after centring.",
           iaxis,
           catalogue.pos_span[iaxis], boxsize[iaxis],
           catalogue.source.c_str()
@@ -505,7 +505,7 @@ void ParticleCatalogue::centre_in_box(
         trvs::logger.warn(
           "Catalogue extent exceeds the box size along axis %d: "
           "span = %.3f, boxsize = %.3f (source=%s). "
-          "Some partcles may lie outside the box after centring.",
+          "Some particles may lie outside the box after centring.",
           iaxis,
           catalogue_ref.pos_span[iaxis], boxsize[iaxis],
           catalogue_ref.source.c_str()
@@ -537,7 +537,7 @@ void ParticleCatalogue::pad_in_box(
         trvs::logger.warn(
           "Catalogue extent exceeds the box size along axis %d: "
           "span = %.3f, boxsize = %.3f (source=%s). "
-          "Some partcles may lie outside the box after padding.",
+          "Some particles may lie outside the box after padding.",
           iaxis,
           catalogue.pos_span[iaxis], boxsize[iaxis],
           catalogue.source.c_str()
@@ -566,7 +566,7 @@ void ParticleCatalogue::pad_in_box(
         trvs::logger.warn(
           "Catalogue extent exceeds the box size along axis %d: "
           "span = %.3f, boxsize = %.3f (source=%s). "
-          "Some partcles may lie outside the box after padding.",
+          "Some particles may lie outside the box after padding.",
           iaxis,
           catalogue.pos_span[iaxis], boxsize[iaxis],
           catalogue.source.c_str()
@@ -582,7 +582,7 @@ void ParticleCatalogue::pad_in_box(
         trvs::logger.warn(
           "Catalogue extent exceeds the box size along axis %d: "
           "span = %.3f, boxsize = %.3f (source=%s). "
-          "Some partcles may lie outside the box after padding.",
+          "Some particles may lie outside the box after padding.",
           iaxis,
           catalogue_ref.pos_span[iaxis], boxsize[iaxis],
           catalogue_ref.source.c_str()

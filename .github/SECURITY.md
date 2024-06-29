@@ -16,7 +16,7 @@ receiving security updates.
 You can report a vulnerability privately on GitHub via the repository's
 [security section](https://github.com/MikeSWang/Triumvirate/security).
 
-We will respond as soon as possible if a vulnerability is admited, and
+We will respond as soon as possible if a vulnerability is admitted, and
 provide a security update as a matter of priority. The exact timing depends
 on the available resources and the severity of the vulnerability.
 

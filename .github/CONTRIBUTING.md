@@ -48,7 +48,7 @@ if you are adding new features.
 
 [![Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/MikeSWang/Triumvirate?hide_repo_select=true&ref=main)
 
-A developement container (dev container) is made available through
+A development container (dev container) is made available through
 GitHub Codespaces. It provides a web-based cloud development environment
 in the form of Visual Studio Code, and is pre-configured for building
 and developing this project.
