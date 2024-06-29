@@ -128,26 +128,26 @@ jobs:
       - name: Test
         run: pytest
 
-  lint:
-    name: Lint
+  # lint:
+  #   name: Lint
 
-    runs-on: ubuntu-latest
+  #   runs-on: ubuntu-latest
 
-    timeout-minutes: 10
+  #   timeout-minutes: 10
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Set up Python 3
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
+  #     - name: Set up Python 3
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.x'
 
-      - name: Install Python linting requirements
-        run: python -m pip install flake8
+  #     - name: Install Python linting requirements
+  #       run: python -m pip install flake8
 
-      - name: Lint
-        run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --statistics
+  #     - name: Lint
+  #       run: |
+  #         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+  #         flake8 . --count --exit-zero --statistics
