@@ -17,6 +17,7 @@ prune examples
 prune publication
 exclude .gitattributes
 exclude .gitignore
+exclude .mailmap
 exclude .readthedocs.yml
 exclude CITATION.md
 exclude CONTRIBUTING.md
