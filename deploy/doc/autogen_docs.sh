@@ -140,8 +140,16 @@ if [[ ${excl} != 'doxy' ]]; then
     recycle_readme "ERC-Logo-Flag.png#gh-light-mode-only"
     recycle_readme "\[CI\]"
     recycle_readme "\[Docs\]"
-    recycle_readme "\[Codacy Badge\]"
+    recycle_readme "\[pre-commit.ci-Status\]"
+    recycle_readme "\[Codacy-Badge\]"
     recycle_readme "\`\`\`bash session" "\`\`\`console"
+    recycle_readme "\[Release-Date\]"
+    recycle_readme "\[Commits-Since\]"
+    recycle_readme "\[Build-Issues\]"
+    recycle_readme "\[Bug-Issues\]"
+    recycle_readme "\[Feature-Issues\]"
+    recycle_readme "\[Pull-Requests\]"
+    recycle_readme "\[pre-commit\]"
 
     # Build docs.
     doxygen ${DOXYFILE}
