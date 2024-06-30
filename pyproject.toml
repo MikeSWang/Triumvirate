@@ -133,3 +133,38 @@ skip = "publication/joss/paper.bib,"
 ignore-words-list = "ERRO,"
 count = true
 quiet-level = 3
+
+[tool.ruff]
+target-version = 'py310'
+line-length = 79
+exclude = [
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".ipynb_checkpoints",
+    ".nox",
+    ".pyenv",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+[tool.ruff.lint]
+fixable = ['ALL']
+unfixable = []
+
+# [tool.ruff.format]
+# quote-style = 'preserve'
+# indent-style = 'space'
+# line-ending = 'auto'
+# skip-magic-trailing-comma = true
+# docstring-code-format = false
+# docstring-code-line-length = 'dynamic'
