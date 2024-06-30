@@ -58,6 +58,9 @@ docs/source/Doxyfile
 docs/source/Doxyfile.conf.bak
 
 # Development
+## Linters
+.ruff_cache/
+
 ## Jupyter Notebook
 .ipynb_checkpoints
 
