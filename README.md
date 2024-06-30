@@ -149,6 +149,8 @@ which have improved the functionality and documentation of the code.
 [![Feature-Issues](https://img.shields.io/github/issues/MikeSWang/Triumvirate/feature)](https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Afeature)
 [![PullRequests](https://img.shields.io/github/issues-pr/MikeSWang/Triumvirate)](https://github.com/MikeSWang/Triumvirate/pulls)
 
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+
 [![Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/MikeSWang/Triumvirate?hide_repo_select=true&ref=main)
 
 User feedback and contributions are very welcome. Please refer to the
