@@ -43,6 +43,14 @@ and always include doc-strings (ideally in the [``numpydoc``](
 https://numpydoc.readthedocs.io/en/latest/format.html) format) and unit tests
 if you are adding new features.
 
+A number of quality control tools are used for this project, including
+GitHub Actions, Codacy and ``pre-commit``. At the minimum level, please install
+``pre-commit`` in your developmental environment and run it (or install as
+a Git hook) against the [``pre-commit`` configuration file](.pre-commit-config.yaml)
+(which should be discovered and used by default). For more details,
+please see [``pre-commit``](https://pre-commit.com) and
+[``pre-commit.ci``](https://pre-commit.ci) documentation.
+
 
 ## Development Container
 
