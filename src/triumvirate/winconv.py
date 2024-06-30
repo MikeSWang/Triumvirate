@@ -457,8 +457,8 @@ def calc_threept_winconv_coeff(multipole, multipole_Q, multipole_Z,
 @dataclass
 class WinConvTerm:
     """Window convolution term as a tuple of three multiplicative
-    factors including the coefficient, window function multipole
-    and unwindowed correlation function (CF) multipole.
+    factors including the coefficient, window function multipole and
+    unwindowed correlation function (CF) multipole.
 
     Parameters
     ----------
@@ -674,7 +674,6 @@ class WinConvFormulae:
     Q_\\mathrm{000} \\zeta_\\mathrm{000} \
 - Q_\\mathrm{000} \\zeta_\\mathrm{ic} \
 + \\frac{1}{3} Q_\\mathrm{110} \\zeta_\\mathrm{110}
-
 
     """
 
@@ -1566,8 +1565,8 @@ class WinConvBase:
         self.r_in, self.r_out = None, None
 
     def initialise_sampts(self, r_in, r_out=None, enforce_coverage=False):
-        """Initialise sample points :attr:`r_in` and :attr:`r_out`
-        for the input and output CF multipoles.
+        """Initialise sample points :attr:`r_in` and :attr:`r_out` for
+        the input and output CF multipoles.
 
         Parameters
         ----------
