@@ -1,4 +1,5 @@
 [build-system]
+build-backend = 'setuptools.build_meta'
 requires = [
     'setuptools>=61.0',
     'setuptools_scm>=6.4',
@@ -6,13 +7,36 @@ requires = [
     'extension-helpers>=1.1',
     'numpy>=2.0',
 ]
-build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'Triumvirate'
-authors = [{name = 'Mike S Wang'}, {name = 'Naonori S Sugiyama'}]
-maintainers = [{name = 'Mike S Wang', email = "mikeshengbo.wang@ed.ac.uk"}]
+description = "Three-point clustering measurements in large-scale structure analyses."
+authors = [
+    {name = 'Mike S Wang'},
+    {name = 'Naonori S Sugiyama'},
+]
+maintainers = [
+    {name = 'Mike S Wang', email = "32841762+MikeSWang@users.noreply.github.com"},
+]
 license = {file = "LICENCE"}
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: C++",
+    "Programming Language :: Cython",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dynamic = [
+  'version',
+  'readme',
+]
 requires-python = '>=3.10'
 dependencies = [
     'numpy>=1.23',
@@ -21,22 +45,6 @@ dependencies = [
     'astropy>=4.2',
     'pyyaml>=5.1',
     'tqdm',
-]
-description = "Three-point clustering measurements in large-scale structure analyses."
-classifiers = [
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-    "Operating System :: POSIX :: Linux",
-    "Operating System :: MacOS",
-    "Programming Language :: C++",
-    "Programming Language :: Cython",
-    "Programming Language :: Python",
-    "Topic :: Scientific/Engineering :: Astronomy",
-    "Topic :: Scientific/Engineering :: Information Analysis",
-    "Topic :: Scientific/Engineering :: Physics",
-]
-dynamic = [
-  'version',
-  'readme',
 ]
 
 [project.optional-dependencies]
