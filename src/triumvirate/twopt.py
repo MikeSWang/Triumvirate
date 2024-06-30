@@ -57,8 +57,8 @@ ASSIGNMENT = 'cic'
 
 def _amalgamate_parameters(paramset=None, params_sampling=None,
                            degree=None, binning=None, **type_kwargs):
-    """Amalgamate a parameter set by overriding sampling parameters
-    and the measured multipole degree and coordinate binning.
+    """Amalgamate a parameter set by overriding sampling parameters and
+    the measured multipole degree and coordinate binning.
 
     Parameters
     ----------
@@ -190,8 +190,8 @@ def _get_measurement_filename(paramset):
 
 def _print_measurement_header(paramset, norm_factor_part, norm_factor_mesh,
                               norm_factor_meshes):
-    """Print two-point statistic measurement header including
-    sampling parameters, normalisation factors and data table columns.
+    """Print two-point statistic measurement header including sampling
+    parameters, normalisation factors and data table columns.
 
     Parameters
     ----------
@@ -813,8 +813,8 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
                                 paramset=None, params_sampling=None,
                                 degree=None, binning=None, types=None,
                                 save=False, logger=None):
-    """Compute two-point statistics from a simulation-box catalogue
-    in the global plane-parallel approximation.
+    """Compute two-point statistics from a simulation-box catalogue in
+    the global plane-parallel approximation.
 
     Parameters
     ----------
@@ -1045,8 +1045,8 @@ def compute_powspec_in_gpp_box(catalogue_data,
                                degree=None, binning=None, sampling_params=None,
                                paramset=None,
                                save=False, logger=None):
-    """Compute power spectrum from a simulation-box catalogue
-    in the global plane-parallel approximation.
+    """Compute power spectrum from a simulation-box catalogue in the
+    global plane-parallel approximation.
 
     Parameters
     ----------
@@ -1129,8 +1129,8 @@ def compute_corrfunc_in_gpp_box(catalogue_data,
                                 sampling_params=None,
                                 paramset=None,
                                 save=False, logger=None):
-    """Compute correlation function from a simulation-box catalogue
-    in the global plane-parallel approximation.
+    """Compute correlation function from a simulation-box catalogue in
+    the global plane-parallel approximation.
 
     Parameters
     ----------

@@ -52,8 +52,8 @@ from .parameters import (
 def _amalgamate_parameters(paramset=None, params_sampling=None,
                            degrees=None, wa_orders=None, binning=None,
                            form=None, idx_bin=None, **type_kwargs):
-    """Amalgamate a parameter set by overriding sampling parameters
-    and measurement parameters.
+    """Amalgamate a parameter set by overriding sampling parameters and
+    measurement parameters.
 
     Parameters
     ----------
@@ -240,8 +240,8 @@ def _get_measurement_filename(paramset):
 
 def _print_measurement_header(paramset, norm_factor_part, norm_factor_mesh,
                               norm_factor_meshes):
-    """Print three-point statistic measurement header including
-    sampling parameters, normalisation factors and data table columns.
+    """Print three-point statistic measurement header including sampling
+    parameters, normalisation factors and data table columns.
 
     Parameters
     ----------
@@ -675,8 +675,8 @@ def compute_bispec(catalogue_data, catalogue_rand,
                    sampling_params=None,
                    paramset=None,
                    save=False, logger=None):
-    """Compute bispectrum from survey-like data and random catalogues
-    in the local plane-parallel approximation.
+    """Compute bispectrum from survey-like data and random catalogues in
+    the local plane-parallel approximation.
 
     Parameters
     ----------
@@ -800,8 +800,8 @@ def compute_3pcf(catalogue_data, catalogue_rand,
                  sampling_params=None,
                  paramset=None,
                  save=False, logger=None):
-    """Compute three-point correlation function from survey-like
-    data and random catalogues in the local plane-parallel approximation.
+    """Compute three-point correlation function from survey-like data
+    and random catalogues in the local plane-parallel approximation.
 
     Parameters
     ----------
@@ -1200,8 +1200,8 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
                                 degrees=None, binning=None,
                                 form=None, idx_bin=None, types=None,
                                 save=False, logger=None):
-    """Compute three-point statistics from a simulation-box catalogue
-    in the global plane-parallel approximation.
+    """Compute three-point statistics from a simulation-box catalogue in
+    the global plane-parallel approximation.
 
     Parameters
     ----------
@@ -1449,8 +1449,8 @@ def compute_bispec_in_gpp_box(catalogue_data,
                               sampling_params=None,
                               paramset=None,
                               save=False, logger=None):
-    """Compute bispectrum from a simulation-box catalogue
-    in the global plane-parallel approximation.
+    """Compute bispectrum from a simulation-box catalogue in the global
+    plane-parallel approximation.
 
     Parameters
     ----------
@@ -1657,8 +1657,8 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
                         sampling_params=None,
                         paramset=None,
                         save=False, logger=None):
-    """Compute three-point correlation function window
-    from a random catalogue.
+    """Compute three-point correlation function window from a
+    random catalogue.
 
     Parameters
     ----------

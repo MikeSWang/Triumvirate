@@ -38,8 +38,8 @@ class MissingValueError(ValueError):
 
 
 class DefaultValueWarning(UserWarning):
-    """Warning issued when values of a field are not provided and set
-    to the default.
+    """Warning issued when values of a field are not provided and set to
+    the default.
 
     """
 

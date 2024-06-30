@@ -121,6 +121,13 @@ aggressive = 3
 max_line_length = 79
 ignore = "E226,"
 
+[tool.docformatter]
+recursive = true
+wrap-summaries = 72
+wrap-descriptions = 72
+blank = true
+close-quotes-on-newline = true
+
 [tool.codespell]
 skip = "publication/joss/paper.bib,"
 ignore-words-list = "ERRO,"
