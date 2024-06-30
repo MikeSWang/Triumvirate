@@ -32,8 +32,7 @@ class _LoggerFormatter(logging.Formatter):
         h, remainder_time = divmod(elapsed_time, 3600)
         m, s = divmod(remainder_time, 60)
 
-        record.elapsed = \
-            "(+{:02d}:{:02d}:{:02d})".format(int(h), int(m), int(s))
+        record.elapsed = f"(+{int(h):02d}:{int(m):02d}:{int(s):02d})"
 
         return logging.Formatter.format(self, record)
 

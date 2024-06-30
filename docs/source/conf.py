@@ -40,7 +40,7 @@ pkg = sys.modules[pkg_name]
 
 pkg_date = pkg.__date__.split('-').pop(0)
 if os.environ.get('READTHEDOCS') == 'True':
-    with open(docs_dir/"RTD_VERSION.tmp", 'r') as vers_file:
+    with open(docs_dir/"RTD_VERSION.tmp") as vers_file:
         pkg_version = vers_file.readline().strip()
 else:
     pkg_version = pkg.__version__
@@ -50,9 +50,9 @@ project = pkg_name
 # author = pkg_author
 release = pkg_version
 if datetime.now().year == int(pkg_date):
-    copyright = '{0}, {1}'.format(pkg_date, pkg_author)
+    copyright = f'{pkg_date}, {pkg_author}'
 else:
-    copyright = u'{0}\u2013{1}, {2}'.format(
+    copyright = '{}\u2013{}, {}'.format(
         pkg_date, datetime.now().year, pkg_author
     )
 
@@ -137,7 +137,7 @@ html_static_path = ["", "_static/"]
 
 html_title = f'{proj_name} Documentation'  # u'\u200c'
 
-html_last_updated_fmt = "%a, %Y-%m-%dT%H:%M:%S%z. Version {}".format(release)
+html_last_updated_fmt = f"%a, %Y-%m-%dT%H:%M:%S%z. Version {release}"
 
 html_sidebars = {
     "**": [

@@ -158,7 +158,7 @@ def setup_params(config):
             'ELL': int(config.multipole[2]),
         }
     else:
-        raise ValueError("Invalid multipole: {}.".format(config.multipole))
+        raise ValueError(f"Invalid multipole: {config.multipole}.")
 
     return ParameterSet(param_dict=param_dict, logger=logger)
 
@@ -194,7 +194,7 @@ if __name__ == '__main__':
             logger=logger
         )
     else:
-        raise ValueError("Invalid case: {}.".format(config.case))
+        raise ValueError(f"Invalid case: '{config.case}'.")
 
     if params['statistic_type'] == 'powspec' \
             and params['catalogue_type'] == 'survey':

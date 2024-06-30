@@ -120,7 +120,7 @@ def run_nbodykit(config):
     # Load catalogue.
     data_ctlgpath = osp.join(config.input_dir, config.data_ctlgfile)
 
-    print("Loading catalogue: {}.".format(data_ctlgpath))
+    print(f"Loading catalogue from: {data_ctlgpath}")
 
     ctlg_data = CSVCatalog(data_ctlgpath, config.ctlg_fields)
 
@@ -189,7 +189,7 @@ def save_results(results, config):
     Path(outpath).parent.mkdir(parents=True, exist_ok=True)
     np.savetxt(outpath, outtable, fmt=fmt, header=header)
 
-    print("Saved correlation function to {}.".format(outpath))
+    print(f"Saved correlation function to: {outpath}")
 
 
 if __name__ == '__main__':

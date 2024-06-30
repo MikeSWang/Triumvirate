@@ -189,7 +189,7 @@ def main():
 
     # Transpose the measurement file header.
     headerlines = []
-    with open(cfg.input_path, 'r') as measurement_file:
+    with open(cfg.input_path) as measurement_file:
         line = measurement_file.readline()
         while line.startswith('#'):
             headerlines.append(line)

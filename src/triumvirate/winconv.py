@@ -693,11 +693,11 @@ class WinConvFormulae:
             self._formulae[multipole] = terms
 
         self.multipoles = sorted(self._formulae.keys())
-        self.multipoles_Q = sorted(set([
+        self.multipoles_Q = sorted({
             term.multipole_Q
             for formula in self._formulae.values()
             for term in formula
-        ]))
+        })
 
         _multipoles_Z = []
         _multipoles_extras = []
@@ -1189,7 +1189,7 @@ class ThreePointWindow:
         elif spacing == 'lin':
             _resampler = resample_lin
         else:
-            raise ValueError("Unknown spacing type: {}".format(spacing))
+            raise ValueError(f"Unknown spacing type: '{spacing}'.")
 
         _rQ, _Q = {}, {}
         for multipole, Qpole in self.Q.items():
@@ -1289,7 +1289,7 @@ def _find_conv_range(*coords, spacing='lglin'):
     elif spacing == 'lin':
         coord_conv = np.linspace(coord_min, coord_max, nsamp)
     else:
-        raise ValueError("Unknown spacing type: {}".format(spacing))
+        raise ValueError(f"Unknown spacing type: '{spacing}'.")
 
     return coord_conv
 

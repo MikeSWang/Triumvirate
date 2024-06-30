@@ -167,7 +167,7 @@ def read_measurements(stat, directory, fnpattern, sn_range=None):
                 paths_found.append(os.path.join(directory, filename))
 
     if len(paths_found) == 0:
-        raise IOError(
+        raise OSError(
             f"No filename of pattern {fnpattern} found in {directory}."
         )
 
