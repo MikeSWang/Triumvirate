@@ -7,7 +7,8 @@
 [![Release](https://img.shields.io/github/v/release/MikeSWang/Triumvirate?display_name=tag&sort=semver&logo=Git)](https://github.com/MikeSWang/Triumvirate/releases/latest)
 [![CI](https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/ci.yml?label=ci&logo=GitHubActions)](https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/readthedocs/triumvirate/latest?logo=ReadtheDocs)](https://readthedocs.org/projects/triumvirate/builds/)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/009fa0a74d5c400bbe383bd8b3249a5b)](https://app.codacy.com/gh/MikeSWang/Triumvirate/dashboard?utm_campaign=Badge_grade)
+[![pre-commit.ci-Status](https://results.pre-commit.ci/badge/github/MikeSWang/Triumvirate/main.svg)](https://results.pre-commit.ci/latest/github/MikeSWang/Triumvirate/main)
+[![Codacy-Badge](https://app.codacy.com/project/badge/Grade/009fa0a74d5c400bbe383bd8b3249a5b)](https://app.codacy.com/gh/MikeSWang/Triumvirate/dashboard?utm_campaign=Badge_grade)
 
 ``Triumvirate`` is a Python/C++ software package for measuring three-point (and
 two-point) clustering statistics in large-scale structure (LSS) cosmological
@@ -141,13 +142,13 @@ which have improved the functionality and documentation of the code.
 ## Contributing/Development
 
 ![Platforms](https://img.shields.io/conda/pn/msw/triumvirate)
-[![ReleaseDate](https://img.shields.io/github/release-date-pre/MikeSWang/Triumvirate)](https://github.com/MikeSWang/Triumvirate/releases/latest)
-![CommitsSince](https://img.shields.io/github/commits-since/MikeSWang/Triumvirate/latest/main)
+[![Release-Date](https://img.shields.io/github/release-date-pre/MikeSWang/Triumvirate)](https://github.com/MikeSWang/Triumvirate/releases/latest)
+![Commits-Since](https://img.shields.io/github/commits-since/MikeSWang/Triumvirate/latest/main)
 
 [![Build-Issues](https://img.shields.io/github/issues/MikeSWang/Triumvirate/build)](https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Abuild)
 [![Bug-Issues](https://img.shields.io/github/issues/MikeSWang/Triumvirate/bug)](https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Abug)
 [![Feature-Issues](https://img.shields.io/github/issues/MikeSWang/Triumvirate/feature)](https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Afeature)
-[![PullRequests](https://img.shields.io/github/issues-pr/MikeSWang/Triumvirate)](https://github.com/MikeSWang/Triumvirate/pulls)
+[![Pull-Requests](https://img.shields.io/github/issues-pr/MikeSWang/Triumvirate)](https://github.com/MikeSWang/Triumvirate/pulls)
 
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 
