@@ -2,7 +2,9 @@ default_language_version:
     python: 'python3.10'
 
 ci:
-  autofix_prs: false
+  autofix_prs: true
+  autofix_commit_msg: "[pre-commit.ci] Auto-fixes from pre-commit.com hooks"
+  autoupdate_commit_msg: "[pre-commit.ci] Auto-update `pre-commit` hooks"
   autoupdate_schedule: 'weekly'
   skip: ['pyupgrade', 'docformatter', 'setup-cfg-fmt']
 
