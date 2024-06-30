@@ -1,0 +1,26 @@
+# Perform ``pre-commit.ci`` checks.
+#
+# See:
+# - https://github.com/pre-commit/action
+# - https://github.com/pre-commit-ci/lite-action
+#
+name: pre-commit
+
+on:
+  pull_request:
+
+jobs:
+  pre-commit:
+    name: Run pre-commit checks
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - uses: pre-commit-ci/lite-action@v1.0.2
+        if: always()
