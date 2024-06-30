@@ -930,4 +930,3 @@ if __name__ == '__main__':
         ext_modules=cython_ext_modules,
         libraries=pkg_libraries,
     )
-
