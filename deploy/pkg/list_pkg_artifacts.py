@@ -159,7 +159,7 @@ def get_latest_artifacts(artifacts_list):
         Latest package artifact list.
 
     """
-    unique_names = set(artifact['name'] for artifact in artifacts_list)
+    unique_names = {artifact['name'] for artifact in artifacts_list}
 
     latest_ids = {}
     for name in unique_names:

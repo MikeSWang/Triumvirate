@@ -218,15 +218,15 @@ def read_param_file(input_path, fmt):
 
     """
     if fmt == 'ini':
-        with open(input_path, 'r') as input_file:
+        with open(input_path) as input_file:
             params = input_file.readlines()
     elif fmt == 'yml' or fmt == 'yaml':
-        with open(input_path, 'r') as input_file:
+        with open(input_path) as input_file:
             params = yaml.load(input_file, Loader=yaml.SafeLoader)
     else:
         raise ValueError(f"Unsupported file format: {fmt}.")
 
-    print("Read parameter template {}.".format(input_path))
+    print(f"Read parameter template from: {input_path}")
 
     return params
 
@@ -258,7 +258,7 @@ def write_param_file(params, output_path, fmt):
     else:
         raise ValueError(f"Unsupported file format: {fmt}.")
 
-    print("Generated parameter file {}.".format(output_path))
+    print(f"Generated parameter file: {output_path}")
 
 
 if __name__ == '__main__':

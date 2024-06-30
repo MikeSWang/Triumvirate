@@ -259,7 +259,7 @@ def save_results(results, config):
     Path(outpath).parent.mkdir(parents=True, exist_ok=True)
     np.savetxt(outpath, outtable, header=header, fmt=fmt)
 
-    print("Saved power spectrum to {}.".format(outpath))
+    print(f"Saved power spectrum to: {outpath}")
 
 
 if __name__ == '__main__':

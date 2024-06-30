@@ -320,7 +320,7 @@ def test_ParticleCatalogue_write_attrs_as_header(ref_catalogue,
 
     if ref_catalogue is None:
         assert (
-            "Catalogue source: {}".format(minimal_catalogue._source)
+            f"Catalogue source: {minimal_catalogue._source}"
         ) in header
         assert (
             "Catalogue size: ntotal = {:d}, wtotal = {:.3f}, wstotal = {:.3f}"

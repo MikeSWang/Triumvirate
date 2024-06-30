@@ -240,7 +240,7 @@ def test_ParameterSet___cinit__(param_filepath, param_dict, test_param_dir,
         param_dict = make_template_parameters_valid(param_dict)
         ParameterSet(param_dict=param_dict)
     elif param_filepath is not None and param_dict is None:
-        with open(param_filepath, 'r') as tmpl_parameter_file:
+        with open(param_filepath) as tmpl_parameter_file:
             param_text = make_template_parameters_valid(
                 tmpl_parameter_file.read()
             )
@@ -427,7 +427,7 @@ def test_ParameterSet_save(valid_paramset, tmp_path):
 
     valid_paramset.save(filepath=param_filepath)
 
-    with open(param_filepath, 'r') as param_file:
+    with open(param_filepath) as param_file:
         valid_param_dict = yaml.load(param_file, Loader=yaml.SafeLoader)
 
     assert dict(valid_paramset.items()) == valid_param_dict, \

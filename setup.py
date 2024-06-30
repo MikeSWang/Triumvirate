@@ -122,7 +122,7 @@ def get_pkg_version_scheme(default_ver_scheme='no-guess-dev',
         'local_scheme': loc_scheme,
     }
 
-    prioprint("Versioning scheme: {}".format(scheme))
+    prioprint(f"Versioning scheme: {scheme}")
 
     return scheme
 
@@ -365,7 +365,7 @@ def convert_macro(macro):
         return (macro_.pop(), None)
     if len(macro_) == 2:
         return tuple(macro_)
-    raise ValueError("Invalid macro to convert: {}.".format(macro_))
+    raise ValueError(f"Invalid macro to convert: {macro_}.")
 
 
 def parse_cli_cflags():
@@ -456,9 +456,7 @@ def parse_cli_cflags_omp():
             elif len(macro_) == 2:
                 parsed_macros_omp.append(tuple(macro_))
             else:
-                raise ValueError(
-                    "Invalid macro in CXXFLAG_OMP: {}.".format(cflag_)
-                )
+                raise ValueError(f"Invalid macro in CXXFLAG_OMP: {cflag_}.")
         else:
             parsed_cflags_omp.append(cflag_)
 

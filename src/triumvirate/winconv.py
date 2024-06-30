@@ -43,9 +43,10 @@ import os
 import random
 import sys
 import warnings
+from collections.abc import Sequence
 from dataclasses import dataclass
 from fractions import Fraction
-from typing import Dict, Sequence, Tuple, Union
+from typing import Union
 
 import numpy as np
 from scipy.interpolate import InterpolatedUnivariateSpline, RectBivariateSpline
@@ -316,7 +317,7 @@ The following variables all have this type:
 
 """
 
-MultipoleLike = Union[Multipole, Tuple[Union[int, str], ...], str, int]
+MultipoleLike = Union[Multipole, tuple[Union[int, str], ...], str, int]
 """Multipole-like type.
 
 This represents a multipole index or indices.
@@ -332,7 +333,7 @@ The following variables all have this type:
 
 """
 
-Multipole3PtLike = Union[Multipole, Tuple[Union[int, str], ...], str]
+Multipole3PtLike = Union[Multipole, tuple[Union[int, str], ...], str]
 """Three-point multipole-like type.
 
 This represents three-point multipole indices and is a subtype of
@@ -565,14 +566,14 @@ class WinConvTerm:
 
 
 WinConvTermLike = Union[
-    WinConvTerm, Tuple[MultipoleLike, MultipoleLike, CoeffType]
+    WinConvTerm, tuple[MultipoleLike, MultipoleLike, CoeffType]
 ]
 r"""Window convolution term--like type.
 
 This represents a window convolution term.
 
 Alias of :class:`~triumvirate.winconv.WinConvTerm` |
-:py:class:`~typing.Tuple`\
+:py:class:`tuple`\
 [:py:const:`~triumvirate.winconv.MultipoleLike`,
 :py:const:`~triumvirate.winconv.MultipoleLike`,
 :py:const:`~triumvirate.winconv.CoeffType`].
@@ -586,14 +587,14 @@ The following variables all have this type:
 
 """
 
-FormulaeDictType = Dict[MultipoleLike, Sequence[WinConvTermLike]]
+FormulaeDictType = dict[MultipoleLike, Sequence[WinConvTermLike]]
 r"""Formula dictionary type.
 
 This represents a dictionary of window convolution formulae.
 
-Alias of :py:obj:`~typing.Dict`\
+Alias of :py:class:`dict`\
 [:py:const:`~triumvirate.winconv.MultipoleLike`,
-:py:class:`~typing.Sequence`\
+:py:class:`~collections.abc.Sequence`\
 [:py:const:`~triumvirate.winconv.WinConvTermLike`]].
 
 Examples
@@ -693,11 +694,11 @@ class WinConvFormulae:
             self._formulae[multipole] = terms
 
         self.multipoles = sorted(self._formulae.keys())
-        self.multipoles_Q = sorted(set([
+        self.multipoles_Q = sorted({
             term.multipole_Q
             for formula in self._formulae.values()
             for term in formula
-        ]))
+        })
 
         _multipoles_Z = []
         _multipoles_extras = []
@@ -1189,7 +1190,7 @@ class ThreePointWindow:
         elif spacing == 'lin':
             _resampler = resample_lin
         else:
-            raise ValueError("Unknown spacing type: {}".format(spacing))
+            raise ValueError(f"Unknown spacing type: '{spacing}'.")
 
         _rQ, _Q = {}, {}
         for multipole, Qpole in self.Q.items():
@@ -1289,7 +1290,7 @@ def _find_conv_range(*coords, spacing='lglin'):
     elif spacing == 'lin':
         coord_conv = np.linspace(coord_min, coord_max, nsamp)
     else:
-        raise ValueError("Unknown spacing type: {}".format(spacing))
+        raise ValueError(f"Unknown spacing type: '{spacing}'.")
 
     return coord_conv
 

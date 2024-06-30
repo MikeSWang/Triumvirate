@@ -12,9 +12,10 @@ import argparse
 import os.path as osp
 import sys
 import warnings
+from collections.abc import Callable
 from functools import wraps
 from time import time
-from typing import Callable, Literal, Self, Tuple, Union
+from typing import Literal, Self
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -138,7 +139,7 @@ def get_sampts(centre: float, shorten: float) -> np.ndarray:
 
 def get_analy_func_pair(
     testcase: Literal['hankel-sym', 'hankel-asym', 'sj-sym', 'sj-asym']
-) -> Tuple[Tuple[Callable, str], Tuple[Callable, str]]:
+) -> tuple[tuple[Callable, str], tuple[Callable, str]]:
     """Get pre- and post-transform analytical functions for the given
     test case.
 
@@ -209,7 +210,7 @@ def get_external_samples(
     presamp_file: str,
     postsamp_file: str,
     samp_dir: str = "examples/FFTLog/storage/input/samps"
-) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
+) -> tuple[tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]:
     """Get pre- and post-transform samples from external files.
 
     Parameters
@@ -233,7 +234,7 @@ def get_external_samples(
     return presamples, postsamples
 
 
-def translate_extrap_mcfit(extrap_opt: int) -> Union[bool, Literal['const']]:
+def translate_extrap_mcfit(extrap_opt: int) -> bool | Literal['const']:
     """Translate the extrapolation option for `mcfit`.
 
     Parameters
@@ -299,11 +300,11 @@ class comparison_plot:
         self,
         comp_type: Literal['analytic', 'samples'],
         plot_diff: bool = True,
-        xlim: Union[Tuple[float, float], None] = None,
-        ylim: Union[Tuple[float, float], None] = None,
-        xlabel: Union[str, None] = None,
-        ylabel: Union[str, None] = None,
-        title: Union[str, None] = None,
+        xlim: tuple[float, float] | None = None,
+        ylim: tuple[float, float] | None = None,
+        xlabel: str | None = None,
+        ylabel: str | None = None,
+        title: str | None = None,
         timed: bool = False,
     ) -> None:
         # Store figure attributes.
@@ -660,7 +661,7 @@ BIAS: float = 0.
 PIVOT: float = 1.
 LOWRING: bool = True
 NSAMP: int = 768
-LGRANGE: Tuple[float, float] = (-5., 5.)
+LGRANGE: tuple[float, float] = (-5., 5.)
 EXPAND: float = 1.25
 PK_PRE_SAMP_FILE: str = "pk_lg_presamps.dat"
 XIR_POST_SAMP_FILE: str = "xir_lg_postsamps{}.dat"
