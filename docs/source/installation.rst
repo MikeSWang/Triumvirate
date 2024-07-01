@@ -113,6 +113,7 @@ Python package
 .. image:: https://img.shields.io/pypi/v/Triumvirate?logo=PyPI&color=informational
     :target: https://pypi.org/project/Triumvirate
     :alt: PyPI
+
 .. image:: https://img.shields.io/conda/v/msw/triumvirate?logo=Anaconda&color=informational
     :target: https://anaconda.org/msw/triumvirate
     :alt: Conda
@@ -196,7 +197,11 @@ repository directory.
 Development mode
 ================
 
-Both the Python package and the C++ library/program can be set up in
+.. image:: https://img.shields.io/github/v/release/MikeSWang/Triumvirate?display_name=tag&sort=semver&logo=Git
+    :target: https://github.com/MikeSWang/Triumvirate/releases/latest
+    :alt: Release
+
+|br| Both the Python package and the C++ library/program can be set up in
 development mode with `make`, provided that dependency requirements are
 satisfied (see '`Dependencies`_' above).
 

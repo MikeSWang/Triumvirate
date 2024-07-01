@@ -24,6 +24,14 @@ Three-Point Clustering Measurements in LSS
 ..     :target: https://readthedocs.org/projects/triumvirate/builds/
 ..     :alt: Docs
 
+.. .. image:: https://results.pre-commit.ci/badge/github/MikeSWang/Triumvirate/main.svg
+..     :target: https://results.pre-commit.ci/latest/github/MikeSWang/Triumvirate/main
+..     :alt: pre-commit.ci-Status
+
+.. .. image:: https://app.codacy.com/project/badge/Grade/009fa0a74d5c400bbe383bd8b3249a5b
+..     :target: https://app.codacy.com/gh/MikeSWang/Triumvirate/dashboard?utm_campaign=Badge_grade
+..     :alt: Codacy-Badge
+
 |Triumvirate| is a Python/C++ software package for measuring three-point (and
 two-point) clustering statistics in large-scale structure (LSS) cosmological
 analyses.
@@ -196,12 +204,37 @@ Contributing
 .. image:: https://img.shields.io/conda/pn/msw/triumvirate
     :alt: Platforms
 
+.. .. image:: https://img.shields.io/github/release-date-pre/MikeSWang/Triumvirate
+..     :target: https://github.com/MikeSWang/Triumvirate/releases/latest
+..     :alt: Release-Date
 
+.. .. image:: https://img.shields.io/github/commits-since/MikeSWang/Triumvirate/latest/main
+..     :alt: Commits-Since
 
-.. image:: https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/image/GitHub-Codespace-badge.png
-    :target: https://codespaces.new/MikeSWang/Triumvirate?hide_repo_select=true&ref=main
-    :alt: Codespaces
-    :width: 249px
+.. .. image:: https://img.shields.io/github/issues/MikeSWang/Triumvirate/build
+..     :target: https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Abuild
+..     :alt: Build-Issues
+
+.. .. image:: https://img.shields.io/github/issues/MikeSWang/Triumvirate/bug
+..     :target: https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Abug
+..     :alt: Bug-Issues
+
+.. .. image:: https://img.shields.io/github/issues/MikeSWang/Triumvirate/feature
+..     :target: https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Afeature
+..     :alt: Feature-Issues
+
+.. .. image:: https://img.shields.io/github/issues-pr/MikeSWang/Triumvirate
+..     :target: https://github.com/MikeSWang/Triumvirate/pulls
+..     :alt: Pull-Requests
+
+.. .. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit
+..     :target: https://github.com/pre-commit/pre-commit
+..     :alt: pre-commit
+
+.. .. image:: https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/image/GitHub-Codespace-badge.png
+..     :target: https://codespaces.new/MikeSWang/Triumvirate?hide_repo_select=true&ref=main
+..     :alt: Codespaces
+..     :width: 249px
 
 User feedback and contributions are very welcome. Please refer to the
 `contribution guidelines

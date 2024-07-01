@@ -139,7 +139,7 @@ if [[ ${excl} != 'doxy' ]]; then
     cp "${README_FILE}" "${README_FILE}.bak"
     recycle_readme "\`\`\`bash session" "\`\`\`console"
     recycle_readme "ERC-Logo-Flag.png#gh-light-mode-only"
-    recycle_readme "\[Release\]"
+    # recycle_readme "\[Release\]"
     recycle_readme "\[CI\]"
     recycle_readme "\[Docs\]"
     recycle_readme "\[pre-commit.ci-Status\]"

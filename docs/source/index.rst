@@ -53,15 +53,15 @@ information in different formats.
 Acknowledgement
 ===============
 
-.. image:: _static/image/ERC-Logo-Flag-Dark.png
-    :alt: ERC
-    :width: 40%
-    :class: only-dark
-
 .. image:: _static/image/ERC-Logo-Flag.png
     :alt: ERC
     :width: 40%
     :class: only-light
+
+.. image:: _static/image/ERC-Logo-Flag-Dark.png
+    :alt: ERC
+    :width: 40%
+    :class: only-dark
 
 |br| This project has received funding from the European Research Council (ERC)
 under the European Union's Horizon 2020 research and innovation programme
@@ -83,6 +83,38 @@ Contributing
 
 .. image:: https://img.shields.io/conda/pn/msw/triumvirate
     :alt: Platforms
+
+.. .. image:: https://img.shields.io/github/release-date-pre/MikeSWang/Triumvirate
+..     :target: https://github.com/MikeSWang/Triumvirate/releases/latest
+..     :alt: Release-Date
+
+.. .. image:: https://img.shields.io/github/commits-since/MikeSWang/Triumvirate/latest/main
+..     :alt: Commits-Since
+
+.. .. image:: https://img.shields.io/github/issues/MikeSWang/Triumvirate/build
+..     :target: https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Abuild
+..     :alt: Build-Issues
+
+.. .. image:: https://img.shields.io/github/issues/MikeSWang/Triumvirate/bug
+..     :target: https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Abug
+..     :alt: Bug-Issues
+
+.. .. image:: https://img.shields.io/github/issues/MikeSWang/Triumvirate/feature
+..     :target: https://github.com/MikeSWang/Triumvirate/issues?q=is%3Aopen+is%3Aissue+label%3Afeature
+..     :alt: Feature-Issues
+
+.. .. image:: https://img.shields.io/github/issues-pr/MikeSWang/Triumvirate
+..     :target: https://github.com/MikeSWang/Triumvirate/pulls
+..     :alt: Pull-Requests
+
+.. .. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit
+..     :target: https://github.com/pre-commit/pre-commit
+..     :alt: pre-commit
+
+.. .. image:: https://github.com/MikeSWang/Triumvirate/raw/main/docs/source/_static/image/GitHub-Codespace-badge.png
+..     :target: https://codespaces.new/MikeSWang/Triumvirate?hide_repo_select=true&ref=main
+..     :alt: Codespaces
+..     :width: 249px
 
 |br| User feedback and contributions are very welcome. Please refer to the
 `contribution guidelines
