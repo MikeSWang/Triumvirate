@@ -159,7 +159,11 @@ By default, the package is installed with OpenMP enabled if it is supported.
 C++ library & program
 =====================
 
-|Triumvirate| as either a static library or a binary executable can be
+.. image:: https://img.shields.io/github/v/release/MikeSWang/Triumvirate?display_name=tag&sort=semver&logo=Git
+    :target: https://github.com/MikeSWang/Triumvirate/releases/latest
+    :alt: Release
+
+|br| |Triumvirate| as either a static library or a binary executable can be
 built using `make`, provided that dependency requirements are satisfied
 (see '`Dependencies`_' above).
 
@@ -197,11 +201,7 @@ repository directory.
 Development mode
 ================
 
-.. image:: https://img.shields.io/github/v/release/MikeSWang/Triumvirate?display_name=tag&sort=semver&logo=Git
-    :target: https://github.com/MikeSWang/Triumvirate/releases/latest
-    :alt: Release
-
-|br| Both the Python package and the C++ library/program can be set up in
+Both the Python package and the C++ library/program can be set up in
 development mode with `make`, provided that dependency requirements are
 satisfied (see '`Dependencies`_' above).
 
