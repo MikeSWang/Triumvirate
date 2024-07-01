@@ -1314,7 +1314,7 @@ def _integrate_2d_samples(x, y, z):
         Integrated value.
 
     """
-    return simpson(simpson(z * y * y, y, axis=-1) * x * x, x, axis=-1)
+    return simpson(simpson(z * y * y, x=y, axis=-1) * x * x, x=x, axis=-1)
 
 
 def calc_threept_ic(window_sampts, window_multipoles, r, zeta,
