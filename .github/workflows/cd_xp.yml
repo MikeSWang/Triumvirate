@@ -61,11 +61,11 @@ jobs:
       - name: Extract platform architecture
         run: |
           if [[ $(uname -m) == 'arm64' ]]; then
-            echo "TARGET_ARCH=x86_64" >> "$GITHUB_ENV"
-            echo "TARGET_ARCH_ALT=x86_64" >> "$GITHUB_ENV"
+            echo "TARGET_ARCH=x86_64" >> "${GITHUB_ENV}"
+            echo "TARGET_ARCH_ALT=x86_64" >> "${GITHUB_ENV}"
           elif [[ $(uname -m) == 'x86_64' ]]; then
-            echo "TARGET_ARCH=arm64" >> "$GITHUB_ENV"
-            echo "TARGET_ARCH_ALT=aarch64" >> "$GITHUB_ENV"
+            echo "TARGET_ARCH=arm64" >> "${GITHUB_ENV}"
+            echo "TARGET_ARCH_ALT=aarch64" >> "${GITHUB_ENV}"
           fi
 
       # HACK: GitHub macOS runner image version (for deployment target).
@@ -73,7 +73,7 @@ jobs:
         if: runner.os == 'macOS'
         run: >-
           echo "IMAGE_VERSION=$(sw_vers --productVersion | cut -d '.' -f 1).0"
-          >> "$GITHUB_ENV"
+          >> "${GITHUB_ENV}"
 
       # HACK: GitHub macOS runner defaults to a broken release of Xcode.
       # See https://github.com/actions/runner-images/issues/9273.
@@ -141,9 +141,9 @@ jobs:
         run: |
           bash deploy/pkg/buildwheel_deps_macos.sh
           if [[ $(uname -m) == 'arm64' ]]; then
-            echo "MACOSX_VERS_MIN=11.0" >> "$GITHUB_ENV"
+            echo "MACOSX_VERS_MIN=11.0" >> "${GITHUB_ENV}"
           elif [[ $(uname -m) == 'x86_64' ]]; then
-            echo "MACOSX_VERS_MIN=10.15" >> "$GITHUB_ENV"
+            echo "MACOSX_VERS_MIN=10.15" >> "${GITHUB_ENV}"
           fi
 
       - name: Build built distribution
@@ -233,11 +233,11 @@ jobs:
       - name: Extract platform architecture
         run: |
           if [[ $(uname -m) == 'arm64' ]]; then
-            echo "TARGET_ARCH=x86_64" >> "$GITHUB_ENV"
-            echo "TARGET_ARCH_ALT=x86_64" >> "$GITHUB_ENV"
+            echo "TARGET_ARCH=x86_64" >> "${GITHUB_ENV}"
+            echo "TARGET_ARCH_ALT=x86_64" >> "${GITHUB_ENV}"
           elif [[ $(uname -m) == 'x86_64' ]]; then
-            echo "TARGET_ARCH=arm64" >> "$GITHUB_ENV"
-            echo "TARGET_ARCH_ALT=aarch64" >> "$GITHUB_ENV"
+            echo "TARGET_ARCH=arm64" >> "${GITHUB_ENV}"
+            echo "TARGET_ARCH_ALT=aarch64" >> "${GITHUB_ENV}"
           fi
 
       # HACK: GitHub macOS runner defaults to a broken release of Xcode.

@@ -24,23 +24,23 @@ shift "$((OPTIND-1))"
 DIST_DIR=dist/
 
 # Clean distribution directory.
-rm -rf ${DIST_DIR}
+rm -rf "${DIST_DIR}"
 
 # Install/upgrade distribution tools.
 # python -m pip install --upgrade build cibuildwheel twine
 
 # Build source-distribution.
-python -m build --sdist --outdir ${DIST_DIR} .
+python -m build --sdist --outdir "${DIST_DIR}" .
 
 # Optionally build built-distribution.
 if ${build_wheel}; then
-    python -m cibuildwheel --platform linux --output-dir ${DIST_DIR} .
+    python -m cibuildwheel --platform linux --output-dir "${DIST_DIR}" .
 fi
 
 # Check
-python -m twine check --strict ${DIST_DIR}/*.tar.gz ${DIST_DIR}/*.whl
+python -m twine check --strict "${DIST_DIR}"/*.tar.gz "${DIST_DIR}"/*.whl
 
 # Optionally upload to [Test]PyPI.
 if ${upload_flag}; then
-    python -m twine upload --repository testpypi --verbose ${DIST_DIR}/*
+    python -m twine upload --repository testpypi --verbose "${DIST_DIR}"/*
 fi

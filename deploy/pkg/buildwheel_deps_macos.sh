@@ -10,10 +10,10 @@
 set -x
 
 # Detect macOS architecture and set deployment target.
-ARCH=$(uname -m)
-if [[ ${ARCH} == 'arm64' ]]; then
+ARCH="$(uname -m)"
+if [[ "${ARCH}" == 'arm64' ]]; then
     export MACOSX_DEPLOYMENT_TARGET=11.0
-elif [[ ${ARCH} == 'x86_64' ]]; then
+elif [[ "${ARCH}" == 'x86_64' ]]; then
     export MACOSX_DEPLOYMENT_TARGET=10.13
 fi
 
@@ -30,10 +30,10 @@ cd "${ROOT}"
 # ---- OMP ---------------------------------------------------------------
 
 # Download and extract OpenMP libraries.
-if [[ ${ARCH} == 'arm64' ]]; then
+if [[ "${ARCH}" == 'arm64' ]]; then
     SOURCE_ARCH='osx-arm64'
     SOURCE_FILENAME='llvm-openmp-18.1.5-hde57baf_0.conda'
-elif [[ ${ARCH} == 'x86_64' ]]; then
+elif [[ "${ARCH}" == 'x86_64' ]]; then
     SOURCE_ARCH='osx-64'
     SOURCE_FILENAME='llvm-openmp-18.1.5-h39e0ece_0.conda'
 fi
@@ -63,17 +63,17 @@ cp -r "${BUILD_DIR}/llvm-openmp/lib/." "${INSTALL_DIR}/lib"
 # # Configure and build GSL.
 # cd "${SOURCE_DIR}"/fftw-*
 # mkdir -p "${BUILD_DIR}/fftw"
-# CC=${CXX} ./configure --enable-shared --enable-openmp --prefix="${BUILD_DIR}/fftw"
+# CC="${CXX}" ./configure --enable-shared --enable-openmp --prefix="${BUILD_DIR}/fftw"
 # make
 # make install
 # cd -
 # ------------------------------------------------------------------------
 
 # Download and extract FFTW libraries.
-if [[ ${ARCH} == 'arm64' ]]; then
+if [[ "${ARCH}" == 'arm64' ]]; then
     SOURCE_ARCH='osx-arm64'
     SOURCE_FILENAME='fftw-3.3.10-nompi_h3046061_108.conda'
-elif [[ ${ARCH} == 'x86_64' ]]; then
+elif [[ "${ARCH}" == 'x86_64' ]]; then
     SOURCE_ARCH='osx-64'
     SOURCE_FILENAME='fftw-3.3.10-nompi_h4fa670e_108.conda'
 fi
@@ -103,17 +103,17 @@ cp -r "${BUILD_DIR}/fftw-3.3.10/lib/." "${INSTALL_DIR}/lib"
 # # Configure and build GSL.
 # cd "${SOURCE_DIR}"/gsl-*
 # mkdir -p "${BUILD_DIR}/gsl"
-# CC=${CXX} ./configure --prefix="${BUILD_DIR}/gsl"
+# CC="${CXX}" ./configure --prefix="${BUILD_DIR}/gsl"
 # make
 # make install
 # cd -
 # ------------------------------------------------------------------------
 
 # Download and extract GSL libraries.
-if [[ ${ARCH} == 'arm64' ]]; then
+if [[ "${ARCH}" == 'arm64' ]]; then
     SOURCE_ARCH='osx-arm64'
     SOURCE_FILENAME='gsl-2.7-h6e638da_0.tar.bz2'
-elif [[ ${ARCH} == 'x86_64' ]]; then
+elif [[ "${ARCH}" == 'x86_64' ]]; then
     SOURCE_ARCH='osx-64'
     SOURCE_FILENAME='gsl-2.7-h93259b0_0.tar.bz2'
 fi

@@ -11,13 +11,13 @@
 #
 get_latest_release () {
     # release_tags=$(git tag -l --sort=-v:refname | grep -E "^v[[:digit:]]+")
-    release_local=$(git describe --tag)
+    release_local="$(git describe --tag)"
     # release_local=$(python deploy/pkg/describe_release.py)
 
     # release_latest=$(printf ${release_tags} | cut -d ' ' -f 1)
-    release_latest=$(printf ${release_local} | cut -d '-' -f 1)
+    release_latest=$(printf "${release_local}" | cut -d '-' -f 1)
 
-    printf $(printf ${release_latest} | sed -e "s/^v//")
+    printf $(printf "${release_latest}" | sed -e "s/^v//")
 }
 
 # @brief Set fallback version number in ``__init__.py`` file.
@@ -26,11 +26,11 @@ get_latest_release () {
 # @locals vers, versfile, versline, versfill
 #
 set_fallback_version_initpy () {
-    vers=$1
+    vers="$1"
     versfile=src/triumvirate/__init__.py
     versline="__version__ = '.*'.*"
     versfill="__version__ = '${vers}'  # fallback version number"
-    sed -i "s/${versline}/${versfill}/g" ${versfile}
+    sed -i "s/${versline}/${versfill}/g" "${versfile}"
 }
 
 # @brief Set fallback version number in ``meta.yaml`` files.
@@ -39,18 +39,18 @@ set_fallback_version_initpy () {
 # @locals vers, versline, versfill
 #
 set_fallback_version_metayaml () {
-    vers=$1
+    vers="$1"
 
     versline="{% set version = environ.get('GIT_DESCRIBE_TAG', .*) %}"
     versfill="{% set version = environ.get('GIT_DESCRIBE_TAG', 'v${vers}') %}"
     for versfile in $(find deploy/pkg -type f -name 'meta.yaml'); do
-        sed -i "s/${versline}/${versfill}/g" ${versfile}
+        sed -i "s/${versline}/${versfill}/g" "${versfile}"
     done
 
     versline="# git_rev: .*"
     versfill="# git_rev: v${vers}"
     for versfile in $(find deploy/pkg -type f -name 'meta.yaml'); do
-        sed -i "s/${versline}/${versfill}/g" ${versfile}
+        sed -i "s/${versline}/${versfill}/g" "${versfile}"
     done
 }
 
@@ -60,19 +60,19 @@ set_fallback_version_metayaml () {
 # @locals vers, version_switcher_file, versline, versfill
 #
 set_fallback_version_switcher () {
-    vers=$1
+    vers="$1"
     version_switcher_file=docs/versions.json
 
     versline="\"name\": \".* (stable)\","
     versfill="\"name\": \"${vers} (stable)\","
-    sed -i "s/${versline}/${versfill}/g" ${version_switcher_file}
+    sed -i "s/${versline}/${versfill}/g" "${version_switcher_file}"
 
     versline="\"version\": \"[[:digit:]].*\","
     versfill="\"version\": \"${vers}\","
-    sed -i "s/${versline}/${versfill}/g" ${version_switcher_file}
+    sed -i "s/${versline}/${versfill}/g" "${version_switcher_file}"
 }
 
 # Increment fallback version based on the latest-release git tag.
-set_fallback_version_initpy $(get_latest_release)
-set_fallback_version_metayaml $(get_latest_release)
-set_fallback_version_switcher $(get_latest_release)
+set_fallback_version_initpy "$(get_latest_release)"
+set_fallback_version_metayaml "$(get_latest_release)"
+set_fallback_version_switcher "$(get_latest_release)"
