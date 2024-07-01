@@ -1,12 +1,3 @@
----
-name: Pull Request
-about: Send a pull request
-title: "[PR] <insert-pull-request-title>"
-labels: pull-request
-assignees: MikeSWang
-
----
-
 ## Relates to
 
 If this pull request is related to (an) issue(s), please add the link(s) here.
@@ -37,3 +28,4 @@ Please describe the implementation details related to the issue(s).
 - [ ] Read the [contribution guidelines](CONTRIBUTING.md).
 - [ ] Write unit tests.
 - [ ] Write doc-strings and comments.
+- [ ] Run `pre-commit.ci` (this is automated by a hook upon PR submission.)
