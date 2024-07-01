@@ -81,7 +81,10 @@ which have improved the functionality and documentation of the code.
 Contributing
 ============
 
-User feedback and contributions are very welcome. Please refer to the
+.. image:: https://img.shields.io/conda/pn/msw/triumvirate
+    :alt: Platforms
+
+|br| User feedback and contributions are very welcome. Please refer to the
 `contribution guidelines
 <https://github.com/MikeSWang/Triumvirate/blob/main/.github/CONTRIBUTING.md>`_.
 
