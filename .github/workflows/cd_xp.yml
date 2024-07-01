@@ -1,7 +1,7 @@
 # Provide continuous delivery (CD) for target platforms
 # from non-native build platforms.
 #
-# CD deliverables for target platforms (ARM64-based):
+# CD deliverables for target platforms:
 # - (non-natively) built Python wheel distributions (for PyPI);
 # - (non-natively) built Conda packages (for Anaconda).
 #
@@ -58,15 +58,26 @@ jobs:
       github.event.inputs.run_build_bdist_xplat == 'true'
 
     steps:
-      # HACK: GitHub (macOS) runner image version (for deployment target).
-      - name: Extract (macOS) runner image version
+      - name: Extract platform architecture
+        run: |
+          if [[ $(uname -m) == 'arm64' ]]; then
+            echo "TARGET_ARCH=x86_64" >> "$GITHUB_ENV"
+            echo "TARGET_ARCH_ALT=x86_64" >> "$GITHUB_ENV"
+          elif [[ $(uname -m) == 'x86_64' ]]; then
+            echo "TARGET_ARCH=arm64" >> "$GITHUB_ENV"
+            echo "TARGET_ARCH_ALT=aarch64" >> "$GITHUB_ENV"
+          fi
+
+      # HACK: GitHub macOS runner image version (for deployment target).
+      - name: Extract runner image version (macOS only)
+        if: runner.os == 'macOS'
         run: >-
           echo "IMAGE_VERSION=$(sw_vers --productVersion | cut -d '.' -f 1).0"
           >> "$GITHUB_ENV"
 
       # HACK: GitHub macOS runner defaults to a broken release of Xcode.
       # See https://github.com/actions/runner-images/issues/9273.
-      - name: Pin Xcode version (macOS)
+      - name: Pin Xcode version (macOS only)
         if: runner.os == 'macOS'
         uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -99,16 +110,15 @@ jobs:
         if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@v3
         with:
-          # Specify target architecture (ARM64).
-          platforms: linux/arm64
+          # Specify target architecture.
+          platforms: linux/${{ env.TARGET_ARCH }}
 
       # Adapt Homebrew for non-native macOS runner.
-      - name: Set up Homebrew (macOS)
+      - name: Set up Homebrew (macOS only)
         if: runner.os == 'macOS'
         run: |
-          # (Re-)install (OpenMP) dependency formulae
-          # to match target platform (ARM64-based).
-          TARG_PLAT=arm64_big_sur
+          # (Re-)install (OpenMP) dependency formulae to match target platform.
+          TARG_PLAT=${{ env.TARGET_ARCH }}_big_sur
           for formula in gsl fftw; do
             brew fetch --force --bottle-tag=${TARG_PLAT} $formula
             brew install $(brew --cache --bottle-tag=${TARG_PLAT} $formula)
@@ -126,7 +136,7 @@ jobs:
       - name: Install packaging requirements
         run: python -m pip install --upgrade twine
 
-      - name: Install (pre-)compiled dependencies (macOS)
+      - name: Install (pre-)compiled dependencies (macOS only)
         if: runner.os == 'macOS'
         run: |
           bash deploy/pkg/buildwheel_deps_macos.sh
@@ -140,12 +150,12 @@ jobs:
         uses: pypa/cibuildwheel@v2.19.1
         with:
           package-dir: .
-          output-dir: dist_arm64/
+          output-dir: dist/
           config-file: pyproject.toml
         env:
-          # Specify target architecture (ARM64).
-          CIBW_ARCHS_LINUX: aarch64
-          CIBW_ARCHS_MACOS: arm64
+          # Specify target architecture.
+          CIBW_ARCHS_LINUX: ${{ env.TARGET_ARCH_ALT }}
+          CIBW_ARCHS_MACOS: ${{ env.TARGET_ARCH }}
           # # Default to LLVM compiler and OpenMP on macOS.
           # CIBW_ENVIRONMENT_MACOS: >-
           #   PY_CXX=$(brew --prefix llvm@15)/bin/clang++
@@ -183,19 +193,19 @@ jobs:
           CIBW_BEFORE_ALL_MACOS:
 
       - name: Verify built distribution
-        run: python -m twine check --strict dist_arm64/*
+        run: python -m twine check --strict dist/*
 
       - name: Save wheel to bdist
         uses: actions/upload-artifact@v4
         with:
           name: bdist_whl_${{ matrix.os }}_${{ github.ref_name }}
-          path: dist_arm64/*.whl
+          path: dist/*.whl
 
       - name: Save wheel to pypi_dist
         uses: actions/upload-artifact@v4
         with:
-          name: pypi_dist_${{ runner.os }}_${{ runner.arch }}_${{ github.ref_name }}
-          path: dist_arm64/*.whl
+          name: pypi_dist_${{ runner.os }}_${{ env.TARGET_ARCH }}_${{ github.ref_name }}
+          path: dist/*.whl
 
   build_conda_xplat:
     name: Build Conda package
@@ -220,9 +230,19 @@ jobs:
         shell: bash -el {0}
 
     steps:
+      - name: Extract platform architecture
+        run: |
+          if [[ $(uname -m) == 'arm64' ]]; then
+            echo "TARGET_ARCH=x86_64" >> "$GITHUB_ENV"
+            echo "TARGET_ARCH_ALT=x86_64" >> "$GITHUB_ENV"
+          elif [[ $(uname -m) == 'x86_64' ]]; then
+            echo "TARGET_ARCH=arm64" >> "$GITHUB_ENV"
+            echo "TARGET_ARCH_ALT=aarch64" >> "$GITHUB_ENV"
+          fi
+
       # HACK: GitHub macOS runner defaults to a broken release of Xcode.
       # See https://github.com/actions/runner-images/issues/9273.
-      - name: Pin Xcode version (macOS)
+      - name: Pin Xcode version (macOS only)
         if: runner.os == 'macOS'
         uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -240,7 +260,7 @@ jobs:
           channels: conda-forge
           channel-priority: strict
           # # Specify architecture.
-          # architecture: ${{ matrix.arch }}
+          # architecture: ${{ env.TARGET_ARCH }}
 
       - name: Install packaging requirements
         run: |
@@ -270,7 +290,7 @@ jobs:
       - name: Build Conda package
         env:
           recipe_dir: deploy/pkg/conda_recipe_xp
-          output_dir: dist_arm64/
+          output_dir: dist/
           variants: "{'python': ['3.10', '3.11', '3.12']}"
         run: |
           # Create output directory if non-existent.
@@ -286,12 +306,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: conda_bld_${{ matrix.os }}_${{ github.ref_name }}
-          path: dist_arm64/*
+          path: dist/*
 
       - name: Save build to conda_dist
         uses: actions/upload-artifact@v4
         with:
-          name: conda_dist_${{ runner.os }}_${{ runner.arch }}_${{ github.ref_name }}
+          name: conda_dist_${{ runner.os }}_${{ env.TARGET_ARCH }}_${{ github.ref_name }}
           path: |
-            dist_arm64/**/*.tar.bz2
-            dist_arm64/*.conda
+            dist/**/*.tar.bz2
+            dist/*.conda
