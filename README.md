@@ -181,7 +181,7 @@ Release notes are included in the [change log](CHANGELOG.md).
 
 ``Triumvirate`` is made freely available under the [GPL-3.0 licence](
 https://www.gnu.org/licenses/gpl-3.0.en.html) (or any later version).
-Please see [``LICENCE``](LICENCE) (located at the repository directory root)
+Please see [``LICENCE``](./LICENCE) (located at the repository directory root)
 for full terms and conditions.
 
 &copy; 2023 Mike S Wang & Naonori S Sugiyama
