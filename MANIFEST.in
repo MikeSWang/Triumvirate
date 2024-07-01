@@ -18,9 +18,11 @@ prune publication
 exclude .gitattributes
 exclude .gitignore
 exclude .mailmap
+exclude .pre-commit-config.yaml
 exclude .readthedocs.yml
-exclude CITATION.md
+exclude README.md
 exclude CONTRIBUTING.md
+exclude CITATION.md
+exclude CITATION.cff
 exclude NOTES.md
 include Makefile
-include CITATION.cff
