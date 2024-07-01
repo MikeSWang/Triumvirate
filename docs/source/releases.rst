@@ -40,7 +40,7 @@ back from ``'nbodykit'`` to ``'astropy'`` in |catalogue.py|_.
 Improvements
 ------------
 
-Add various tools to project configuration file: `autopep8`, `codespell`
+Add various tools to project configuration file: `autopep8`, `codespell`,
 `docformatter` and `ruff`.
 
 Maintenance

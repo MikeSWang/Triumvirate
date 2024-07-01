@@ -29,7 +29,7 @@ back from ``'nbodykit'`` to ``'astropy'`` in
 
 ### Improvements
 
-Add various tools to project configuration file: `autopep8`, `codespell`
+Add various tools to project configuration file: `autopep8`, `codespell`,
 `docformatter` and `ruff`.
 
 ### Maintenance
