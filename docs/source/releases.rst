@@ -28,6 +28,27 @@ Miscellaneous
 -------------
 
 
+v0.4.8 (2024-07-01)
+===================
+
+Bug fixes
+---------
+
+Fix file format `fmt` keyword processing error when the reader falls
+back from ``'nbodykit'`` to ``'astropy'`` in |catalogue.py|_.
+
+Improvements
+------------
+
+Add various tools to project configuration file: `autopep8`, `codespell`
+`docformatter` and `ruff`.
+
+Maintenance
+-----------
+
+Update syntax and fix typos.
+
+
 v0.4.7 (2024-06-25)
 ===================
 
@@ -270,6 +291,9 @@ v0.1.0 (2023-03-30)
 Initial public release (`major version 0 <https://semver.org/#spec-item-4>`_):
 publish to the PyPI Index (Anaconda repository pending).
 
+
+.. |catalogue.py| replace:: ``catalogue.py``
+.. _catalogue.py: https://github.com/MikeSWang/Triumvirate/blob/main/src/triumvirate/catalogue.py
 
 .. |threept.cpp| replace:: ``threept.cpp``
 .. _threept.cpp: https://github.com/MikeSWang/Triumvirate/blob/main/src/triumvirate/src/threept.cpp
