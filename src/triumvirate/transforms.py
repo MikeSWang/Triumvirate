@@ -319,8 +319,8 @@ class DoubleSphericalBesselTransform:
         Power-law bias indices.
     size : int
         Sample size for either dimension.
-    pivot : float
-        Pivot value used for both dimensions.
+    pivot : (float, float)
+        Pivot values used for both dimensions.
 
     Raises
     ------
@@ -394,10 +394,10 @@ class DoubleSphericalBesselTransform:
 
     @property
     def pivot(self):
-        """Pivot value.
+        """Pivot values.
 
         """
-        return self._fbsjt[self._rep]._pivot
+        return (self._fbsjt[0]._pivot, self._fbsjt[1]._pivot)
 
     def transform(self, pre_samples):
         """Transform samples at initialised sample points.
