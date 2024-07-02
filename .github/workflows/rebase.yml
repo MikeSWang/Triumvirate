@@ -1,0 +1,38 @@
+# GitHub action to automatically rebase PRs
+#
+name: auto-pr-rebase
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  rebase:
+    name: Rebase PRs
+
+    runs-on: ubuntu-latest
+
+    if: >-
+      github.event.issue.pull_request != '' &&
+      (
+        contains(github.event.comment.body, '/rebase') ||
+        contains(github.event.comment.body, '/autosquash')
+      )
+
+    steps:
+      - name: Checkout the latest code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0 # otherwise will fail to push refs to repo
+
+      - name: Rebase automatically
+        uses: cirrus-actions/rebase@1.8
+        with:
+          autosquash: >-
+            ${{
+              contains(github.event.comment.body, '/autosquash') ||
+              contains(github.event.comment.body, '/rebase-autosquash')
+            }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

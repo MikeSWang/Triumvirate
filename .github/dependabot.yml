@@ -11,9 +11,9 @@ updates:
     schedule:
       interval: weekly
     commit-message:
-      prefix: "[pip] "
+      prefix: "[gh-actions] "
     labels:
-      - "maintenance"
+      - 'maintenance'
     assignees:
       - MikeSWang
     reviewers:
@@ -26,7 +26,7 @@ updates:
     commit-message:
       prefix: "[gh-actions] "
     labels:
-      - "workflows"
+      - 'workflows'
     assignees:
       - MikeSWang
     reviewers:
