@@ -113,7 +113,7 @@ def run_pypower(config):
         Power spectrum measurements.
 
     """
-    def get_dtype():
+    def _get_dtype():  # numpydoc ignore=GL08
         return list(zip(config.ctlg_fields, repeat(float)))
 
     # Load catalogues.
@@ -129,11 +129,11 @@ def run_pypower(config):
         )
     )
 
-    gcat = np.loadtxt(data_ctlgpath, dtype=get_dtype())
+    gcat = np.loadtxt(data_ctlgpath, dtype=_get_dtype())
     if rand_ctlgpath is None:
         rcat = None
     else:
-        rcat = np.loadtxt(rand_ctlgpath, dtype=get_dtype())
+        rcat = np.loadtxt(rand_ctlgpath, dtype=_get_dtype())
 
     # Process catalogues.
     data_positions1 = np.column_stack((gcat['x'], gcat['y'], gcat['z']))

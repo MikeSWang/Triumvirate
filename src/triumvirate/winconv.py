@@ -292,15 +292,34 @@ class Multipole:
         return self.index[idx]
 
     def _iscomp(self, other):
+        """Check if the multipole indices are comparable.
+
+        Parameters
+        ----------
+        other : :class:`~triumvirate.winconv.Multipole`
+            Multipole to compare against.
+
+        Raises
+        ------
+        ValueError
+            When the multipole indices are not of the same length.
+
+        """
         if len(self.index) != len(other.index):
             raise ValueError(
                 "Cannot compare multipole indices of different lengths."
             )
 
     def _issym(self):
-        if len(self.index) == 1:
-            return True
-        return self.index[0] == self.index[1]
+        """Check if the multipole indices are symmetric.
+
+        Returns
+        -------
+        bool
+            Whether the multipole indices are symmetric.
+
+        """
+        return (len(self.index) == 1) or (self.index[0] == self.index[1])
 
 
 DegreeType = Union[int, str]

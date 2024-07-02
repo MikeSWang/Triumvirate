@@ -31,11 +31,17 @@ import yaml
 
 
 class ParentKeyError(KeyError):
-    pass
+    """Exception raised when a parent key is missing in a
+    nested dictionary.
+
+    """
 
 
 class ChildKeyError(KeyError):
-    pass
+    """Exception raised when a child key is missing in a
+    nested dictionary.
+
+    """
 
 
 def configure():
