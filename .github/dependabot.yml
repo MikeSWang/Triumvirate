@@ -11,7 +11,7 @@ updates:
     schedule:
       interval: weekly
     commit-message:
-      prefix: "[pip] "
+      prefix: "[gh-actions] "
     labels:
       - 'maintenance'
     assignees:
