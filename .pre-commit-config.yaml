@@ -15,9 +15,9 @@ repos:
       - id: check-added-large-files
         args: ['--enforce-all',]
         exclude: "^(\
-            tests/test_input/.*|\
-            docs/source/_static/.*|\
-            CHANGELOG.md|\
+          tests/test_input/.*|\
+          docs/source/_static/.*|\
+          CHANGELOG.md|\
         )$"
       - id: check-executables-have-shebangs
       - id: check-json
@@ -27,7 +27,7 @@ repos:
       - id: check-yaml
         exclude: "(\
           .*.github/.*|\
-          deploy/pkg/conda_recipe.*/meta.yaml\
+          deploy/pkg/conda_recipe.*/meta.yaml|\
         )"
       - id: debug-statements
       - id: detect-private-key
@@ -40,7 +40,7 @@ repos:
         exclude: "(\
           .*.ipynb|\
           .*.vscode/.*|\
-          deploy/pkg/conda_recipe.*/meta.yaml\
+          deploy/pkg/conda_recipe.*/meta.yaml|\
         )"
       - id: requirements-txt-fixer
       - id: trailing-whitespace
@@ -52,7 +52,7 @@ repos:
       args: [--py310-plus]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.5.0"
+    rev: v0.5.0
     hooks:
       - id: ruff
         args: ['--fix']
@@ -60,12 +60,12 @@ repos:
   - repo: https://github.com/hhatto/autopep8
     rev: v2.3.1
     hooks:
-    - id: autopep8
+      - id: autopep8
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.1.0
+    rev: '7.1.0'
     hooks:
-    - id: flake8
+      - id: flake8
 
   - repo: https://github.com/PyCQA/docformatter
     rev: v1.7.5
