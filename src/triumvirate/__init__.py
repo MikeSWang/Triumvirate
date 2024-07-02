@@ -33,7 +33,7 @@ from ._valid_install import validate_installation  # noqa: F401
 
 __copyright__ = 'Copyright 2023, Mike S Wang & Naonori S Sugiyama'
 __date__ = '2023-03-30'
-__license__ = 'GPL-3.0'
+__license__ = 'GPL-3.0-or-later'
 
 try:
     __version__ = version('triumvirate')
