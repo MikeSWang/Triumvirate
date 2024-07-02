@@ -140,7 +140,7 @@ jobs:
           fi
 
       - name: Build built distribution
-        uses: pypa/cibuildwheel@v2.19.1
+        uses: pypa/cibuildwheel@v2.19.2
         with:
           package-dir: .
           output-dir: dist/
