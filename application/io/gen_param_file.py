@@ -108,7 +108,7 @@ def setitem_nested_dict(dictionary, keychain, value):
     dictionary: dict
         Output dictionary.
 
-    """
+    """  # numpydoc ignore=PR04
     key_parents, key_child = keychain[:-1], keychain[-1]
 
     try:

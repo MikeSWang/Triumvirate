@@ -1,6 +1,6 @@
 """
 Hankel-Like Transforms (:mod:`~triumvirate.transforms`)
-==========================================================================
+=======================================================
 
 .. versionadded:: 0.4.6
 
@@ -13,7 +13,7 @@ Perform Hankel-like transforms in 1- and 2-d.
     resample_lglin
     resample_lin
 
-"""
+"""  # numpydoc ignore=SS01
 from collections.abc import Sequence
 
 import numpy as np
@@ -161,14 +161,22 @@ class SphericalBesselTransform:
     def size(self):
         """Sample size of the transform.
 
-        """
+        Returns
+        -------
+        int
+
+        """  # numpydoc ignore=RT03
         return self._fbht.size
 
     @property
     def pivot(self):
         """Pivot value.
 
-        """
+        Returns
+        -------
+        float
+
+        """  # numpydoc ignore=RT03
         return self._fbht._pivot
 
     def transform(self, pre_samples):
@@ -387,16 +395,24 @@ class DoubleSphericalBesselTransform:
 
     @property
     def size(self):
-        """Sample size of the transform.
+        """Sample size of the transform for either dimension.
 
-        """
+        Returns
+        -------
+        int
+
+        """  # numpydoc ignore=RT03
         return self._fbsjt[self._rep].size
 
     @property
     def pivot(self):
-        """Pivot values.
+        """Pivot values for both dimensions.
 
-        """
+        Returns
+        -------
+        tuple of float
+
+        """  # numpydoc ignore=RT03
         return (self._fbsjt[0]._pivot, self._fbsjt[1]._pivot)
 
     def transform(self, pre_samples):

@@ -1,6 +1,6 @@
 """
 Three-Point Clustering Statistics (:mod:`~triumvirate.threept`)
-==========================================================================
+===============================================================
 
 Measure three-point clustering statistics from catalogues.
 
@@ -24,7 +24,7 @@ Window function estimator
 .. autosummary::
     compute_3pcf_window
 
-"""
+"""  # numpydoc ignore=GL07,SS01
 import warnings
 from pathlib import Path
 

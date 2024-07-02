@@ -1,6 +1,6 @@
 """
 Mesh field and statistics (:mod:`~triumvirate._field`)
-==========================================================================
+======================================================
 
 Parse mesh fields and their statistics.
 

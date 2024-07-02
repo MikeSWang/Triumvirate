@@ -1,6 +1,6 @@
 """
 FFTLog algorithm (:mod:`~triumvirate._fftlog`)
-==========================================================================
+==============================================
 
 Implement the FFTLog algorithm for Hankel-related transforms.
 

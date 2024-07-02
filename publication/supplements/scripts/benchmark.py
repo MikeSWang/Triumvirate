@@ -54,7 +54,14 @@ root_dir = Path(os.path.dirname(os.path.abspath(
 
 
 def configure():
-    """Configure benchmarking."""
+    """Configure benchmarking.
+
+    Returns
+    -------
+    argparse.Namespace
+        Parsed command-line arguments.
+
+    """
 
     cfg = ArgumentParser(
         description="Benchmark performance of `Triumvirate`."

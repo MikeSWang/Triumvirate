@@ -161,7 +161,7 @@ def get_analy_func_pair(
     -------
     Pre- and post-transform functions with their TeX strings.
 
-    """
+    """  # numpydoc ignore=RT03
     match testcase:
         case 'hankel-sym':
             return ((
@@ -384,7 +384,7 @@ def get_testcase(pars: argparse.Namespace) -> None:
     pars
         Parsed command-line parameters.
 
-    """
+    """  # numpydoc ignore=RT01
     testcase = pars.test_case
     showdiff = pars.show_diff
     timed = pars.time
@@ -648,7 +648,12 @@ def get_testcase(pars: argparse.Namespace) -> None:
 def main() -> Literal[0]:
     """Main function.
 
-    """
+    Returns
+    -------
+    0
+        Exit code (0 on success).
+
+    """  # numpydoc ignore=RT01
     pars = parse_parameters()
     runner = get_testcase(pars)
     runner()

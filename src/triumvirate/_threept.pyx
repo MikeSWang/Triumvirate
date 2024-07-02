@@ -1,6 +1,6 @@
 """
 Three-Point Correlator Algorithms (:mod:`~triumvirate._threept`)
-==========================================================================
+================================================================
 
 Declare and interface with three-point correlator algorithms.
 

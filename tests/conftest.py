@@ -103,7 +103,7 @@ def test_logger():
 
 
 @pytest.fixture
-def valid_paramset():
+def valid_paramset():  # numpydoc ignore=GL08
     param_dict = fetch_paramset_template('dict')
 
     for ax_name in ['x', 'y', 'z']:

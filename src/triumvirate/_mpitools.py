@@ -1,6 +1,6 @@
 """
 MPI Tools (:mod:`~triumvirate._mpitools`)
-==========================================================================
+=========================================
 
 MPI-based parallelisation tools.
 
@@ -8,7 +8,7 @@ MPI-based parallelisation tools.
     allocate_tasks
     distribute_tasks
 
-"""
+"""  # numpydoc ignore=SS01
 import warnings
 
 import numpy as np
@@ -119,6 +119,11 @@ def restore_warnings(captured_warnings, unique=True, show=True,
     comm_root : int, optional
         Root process rank of the MPI communicator (default is 0).
         Ignored if `comm` is `None`.
+
+    Returns
+    -------
+    restored_warnings : list of :class:`warnings.WarningMessage`
+        Restored warnings.
 
     """
     if unique:

@@ -1,6 +1,6 @@
 """
 Window Convolution (:mod:`~triumvirate.winconv`)
-==========================================================================
+================================================
 
 .. versionadded:: 0.5.0
 
@@ -34,7 +34,7 @@ Perform window convolution of two- and three-point statistics.
     dict of {:class:`~triumvirate.winconv.Multipole`: \
     list of :class:`~triumvirate.winconv.WinConvTerm`}
 
-"""
+"""  # numpydoc ignore=SS01
 # STYLE: Standard naming convention is not always followed in this module
 # for readability and clarity.
 from __future__ import annotations
@@ -1248,10 +1248,10 @@ def _check_conv_range(r_conv, r_samp):
 
     .. note:: There is a small relative tolerance for the range check.
 
-    """
+    """  # numpydoc ignore=RT03
     RTOL = 1.e-5
 
-    def _check_coverage(rc, rs):
+    def _check_coverage(rc, rs):  # numpydoc ignore=GL08
         # Check if the convolution range `rc` is fully covered by the
         # sample points `rs`.
         try:
@@ -1332,7 +1332,7 @@ def _integrate_2d_samples(x, y, z):
     float
         Integrated value.
 
-    """
+    """  # numpydoc ignore=SS03
     return simpson(simpson(z * y * y, x=y, axis=-1) * x * x, x=x, axis=-1)
 
 
@@ -2694,7 +2694,7 @@ class BispecWinConv(WinConvBase):
             corrections.  Ignored if the window convolution formula
             does not require it.
         concat : bool, optional
-            if `True` (default is `False`), concatenate the convolution
+            If `True` (default is `False`), concatenate the convolution
             matrices for each required multipole into a single matrix.
 
         Returns
@@ -2731,7 +2731,7 @@ class BispecWinConv(WinConvBase):
             dict of {:class:`~triumvirate.winconv.Multipole`: \
             2-d :class:`numpy.ndarray`} or 2-d :class:`numpy.ndarray`
 
-        """
+        """  # numpydoc ignore=RT03
         ic = 0. if ic is False else None
 
         # Define vectorisation.
@@ -2746,7 +2746,7 @@ class BispecWinConv(WinConvBase):
         colstack_nodes = np.cumsum(colstack_sizes)
         dim_2d = np.sum(colstack_sizes)
 
-        def win_convolve_vector(model_vector):
+        def win_convolve_vector(model_vector):  # numpydoc ignore=GL08
             multipole_model_subvectors = np.split(model_vector, colstack_nodes)
             B_model = {
                 multipole_Z: multipole_model_subvec.reshape((dim_1d, dim_1d))
@@ -2768,7 +2768,7 @@ class BispecWinConv(WinConvBase):
             multipole: [] for multipole in self._formulae.multipoles
         }
 
-        def return_wcmat(wcmat, concat):
+        def _return_wcmat(wcmat, concat):  # numpydoc ignore=GL08
             self._winconv._catch_warnings = _winconv_catch_warnings
             return wcmat if (not concat or wcmat is None) \
                 else np.row_stack([
@@ -2796,7 +2796,7 @@ class BispecWinConv(WinConvBase):
                 wc_matrices[multipole_] = np.column_stack(
                     wc_matrices[multipole_]
                 )
-            return return_wcmat(wc_matrices, concat)
+            return _return_wcmat(wc_matrices, concat)
 
         # Run with MPI parallelisation.
         nthreads_env = os.environ.get('OMP_NUM_THREADS', None)
@@ -2990,4 +2990,4 @@ class BispecWinConv(WinConvBase):
             else:
                 os.environ['OMP_NUM_THREADS'] = nthreads_env
 
-        return return_wcmat(wc_matrices, concat)
+        return _return_wcmat(wc_matrices, concat)

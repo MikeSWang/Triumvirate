@@ -178,10 +178,14 @@ class BuildClib(build_clib):
     """
 
     def build_libraries(self, libraries):
-        """Modify compiler and compilation configuration in
-        :meth:`setuptools.command.build_clib.build_clib.build_libraries`.
+        """Modify compiler and compilation configuration for libraries.
 
-        """
+        See also
+        --------
+        :meth:`setuptools.command.build_clib.build_clib.build_libraries`
+            For the original method this overrides.
+
+        """  # numpydoc ignore=PR01
         OPTS_TO_REMOVE = ['-Wstrict-prototypes', '-Wl,-pie',]  # noqa: E231
         for opt in OPTS_TO_REMOVE:
             try:
@@ -223,6 +227,13 @@ def get_build_num_procs():
 
 def prioprint(*args, **kwargs):
     """`print` with high priority.
+
+    Parameters
+    ----------
+    *args
+        Positional arguments passed to :func:`print`.
+    **kwargs
+        Keyword arguments passed to :func:`print`.
 
     """
     print(*args, file=sys.stderr, **kwargs)
@@ -317,6 +328,12 @@ def get_compiler():
 def set_cli_compiler(compiler=None):
     """Set command-line compiler through the ``CC``and ``CXX``
     environmental variables.
+
+    Parameters
+    ----------
+    compiler : str, optional
+        Compiler to use.  If `None` (default), :func:`get_compiler` is
+        used to determine the compiler.
 
     """
     _compiler = compiler or get_compiler()
@@ -570,7 +587,7 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
         Libraries without the '-l' prefix.
     lib_dirs : list of str
         Library directories without the '-L' prefix.
-    include_dirs :list of str
+    include_dirs : list of str
         ``INCLUDES`` directories without the '-I' prefix.
 
     Returns
@@ -735,7 +752,7 @@ def cleanup_options(*args):
 
     Parameters
     ----------
-    args : list of list of str
+    *args : list of list of str
         List of compilation options.
 
     Returns

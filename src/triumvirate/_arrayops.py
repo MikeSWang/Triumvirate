@@ -1,6 +1,6 @@
 """
 Array Operations (:mod:`~triumvirate._arrayops`)
-==========================================================================
+================================================
 
 Perform array operations.
 
@@ -28,7 +28,7 @@ Perform array operations.
     extrap2d_loglin_oscil
     reshape_threept_datatab
 
-"""
+"""  # numpydoc ignore=SS01
 import warnings
 from collections.abc import Sequence
 
@@ -109,7 +109,7 @@ def _check_1d_array(a, check_sorted=False, check_epsign=False,
     if a.ndim != 1 or a.size < 2:
         raise ShapeError("Input array is not 1-d.")
 
-    def _check_epsign(a, strict=False):
+    def _check_epsign(a, strict=False):  # numpydoc ignore=GL08
         if strict:
             same_sign_l = a[0] * a[1] > 0.
             same_sign_r = a[-1] * a[-2] > 0.
@@ -179,7 +179,7 @@ def _check_2d_array(a, check_sorted=False, check_epsign=False,
     if a.ndim != 2 or a.size < 4:
         raise ShapeError("Input array is not 2-d.")
 
-    def _check_epsign(a, strict=False):
+    def _check_epsign(a, strict=False):  # numpydoc ignore=GL08
         if strict:
             same_sign_l = np.all(a[:, 0] * a[:, 1] > 0.)
             same_sign_r = np.all(a[:, -1] * a[:, -2] > 0.)

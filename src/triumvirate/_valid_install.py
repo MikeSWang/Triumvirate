@@ -1,6 +1,6 @@
 """
 Installation Validation (:mod:`~triumvirate._valid_install`)
-==========================================================================
+============================================================
 
 Check whether the Cython extensions have been compiled correctly by
 performing test computations.
@@ -8,7 +8,7 @@ performing test computations.
 It is not meant to replace the full `pytest` suite, and does not check the
 correctness of the computed results.
 
-"""
+"""  # numpydoc ignore=SS01
 import warnings
 
 import numpy as np

@@ -24,7 +24,7 @@ cosmological analyses.
     You should have received a copy of the GNU General Public License along
     with this program.  If not, see `<https://www.gnu.org/licenses/>`_.
 
-"""
+"""  # numpydoc ignore=SS03
 from importlib.metadata import PackageNotFoundError, version
 
 # Installation validation

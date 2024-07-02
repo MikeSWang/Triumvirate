@@ -1,6 +1,6 @@
 """
 Field and Mesh (:mod:`~triumvirate.fieldmesh`)
-==========================================================================
+==============================================
 
 .. versionadded:: 0.3.0
 
@@ -10,7 +10,7 @@ Handle fields and mesh grids.
 .. autosummary::
     record_binned_vectors
 
-"""
+"""  # numpydoc ignore=SS01
 import numpy as np
 
 from ._field import _record_binned_vectors

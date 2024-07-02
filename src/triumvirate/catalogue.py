@@ -1,6 +1,6 @@
 """
 Catalogue (:mod:`~triumvirate.catalogue`)
-==========================================================================
+=========================================
 
 Handle catalogue I/O and processing.
 
@@ -9,7 +9,7 @@ Handle catalogue I/O and processing.
     DefaultValueWarning
     ParticleCatalogue
 
-"""
+"""  # numpydoc ignore=SS01
 import warnings
 
 import numpy as np
@@ -189,6 +189,11 @@ class ParticleCatalogue:
         logger : :class:`logging.Logger`, optional
             Program logger (default is `None`).
 
+        Returns
+        -------
+        :class:`~triumvirate.catalogue.ParticleCatalogue`
+            Particle catalogue object.
+
 
         .. _format_and_names_arguments:
 
@@ -267,7 +272,7 @@ class ParticleCatalogue:
         .. _'Reading Catalogs from Disk': \
             https://nbodykit.readthedocs.io/en/latest/catalogs/reading.html
 
-        """
+        """  # numpydoc ignore=RT03
         self = object.__new__(cls)
 
         self._logger = logger
@@ -474,7 +479,7 @@ class ParticleCatalogue:
             The invocation of this method resets the particle data
             column ``'nz'``.
 
-        """
+        """  # numpydoc ignore=PR02,PR10
         if np.isscalar(boxsize):
             boxsize = [boxsize, boxsize, boxsize]
 
@@ -504,7 +509,7 @@ class ParticleCatalogue:
             that the mid-point of particle coordinate extents in the
             reference catalogue is at the centre of the box.
 
-        """
+        """  # numpydoc ignore=PR02,PR10
         if np.isscalar(boxsize):
             boxsize = [boxsize, boxsize, boxsize]
 
@@ -789,7 +794,7 @@ class ParticleCatalogue:
         -------
         The same quantity in a non-Dask-array form.
 
-        """
+        """  # numpydoc ignore=PR04,RT03
         try:
             return quant.compute()
         except AttributeError:

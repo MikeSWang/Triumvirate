@@ -278,6 +278,9 @@ def combine_components(components_bins, components_coords, components_counts,
         Data vectors of raw measurements for all components.
     components_vectors_shotnoise : list of :class:`numpy.ndarray`
         Data vectors of shot noise measurements for all components.
+    save : path-like, optional
+        If not `None` (default), this is the path to save the combined
+        data vector to.
 
     Returns
     -------

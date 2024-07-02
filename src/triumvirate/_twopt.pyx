@@ -1,6 +1,6 @@
 """
 Two-Point Correlator Algorithms (:mod:`~triumvirate._twopt`)
-==========================================================================
+============================================================
 
 Declare and interface with two-point correlator algorithms.
 

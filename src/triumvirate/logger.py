@@ -1,13 +1,13 @@
 """
 Program Logger (:mod:`~triumvirate.logger`)
-==========================================================================
+===========================================
 
 Configure the program logger.
 
 .. autosummary::
     setup_logger
 
-"""
+"""  # numpydoc ignore=SS01
 import logging
 import sys
 import time
@@ -84,9 +84,12 @@ class _CppLogAdapter(logging.LoggerAdapter):
 def _format_warning(message, category, filename, lineno, line=None):
     """Modify formatter for warning messages in logged record.
 
-    See :func:`warnings.formatwarning` for implementation details.
+    See Also
+    --------
+    :func:`warnings.formatwarning`
+        For implementation details.
 
-    """
+    """  # numpydoc ignore=PR01,RT01
     msg = warnings.WarningMessage(
         message, category, filename, lineno, None, line
     )

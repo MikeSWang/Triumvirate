@@ -1,6 +1,6 @@
 """
 Two-Point Clustering Statistics (:mod:`~triumvirate.twopt`)
-==========================================================================
+===========================================================
 
 Measure two-point clustering statistics from catalogues.
 
@@ -24,7 +24,7 @@ Window function estimator
 .. autosummary::
     compute_corrfunc_window
 
-"""
+"""  # numpydoc ignore=GL07,SS01
 import warnings
 from pathlib import Path
 
