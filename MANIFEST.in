@@ -19,7 +19,7 @@ exclude .gitattributes
 exclude .gitignore
 exclude .mailmap
 exclude .pre-commit-config.yaml
-exclude .readthedocs.yml
+exclude .readthedocs.yaml
 exclude README.md
 exclude CONTRIBUTING.md
 exclude CITATION.md

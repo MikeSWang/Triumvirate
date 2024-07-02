@@ -10,6 +10,7 @@ build:
     - pyproject.toml
     - Makefile
     - MANIFEST.in
+    - deploy/pkg/**/*
     - .github/workflows/ci*.yml
     - .github/workflows/cd*.yml
 
@@ -17,19 +18,28 @@ documentation:
 - changed-files:
   - any-glob-to-any-file:
     - docs/**/*
-    - deploy/doc/**/*
     - README.*
-    - .readthedocs.yml
+    - CHANGELOG.*
+    - CITATION.*
+    - deploy/doc/**/*
+    - .readthedocs.yaml
 
 maintenance:
 - changed-files:
   - any-glob-to-any-file:
-    - .github/**/*.md
-    - CHANGELOG.md
+    - setup.py
+    - setup.cfg
+    - pyproject.toml
+    - Makefile
+    - MANIFEST.in
     - NOTES.md
+    - deploy/test/**/*
+    - .github/**/*.md
 
 workflows:
 - changed-files:
   - any-glob-to-any-file:
-    - .github/**/*.yml
     - deploy/**/*
+    - .pre-commit-config.yaml
+    - .readthedocs.yaml
+    - .github/**/*.yml
