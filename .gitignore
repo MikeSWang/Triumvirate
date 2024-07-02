@@ -1,5 +1,5 @@
 # Build/compilation
-build/
+build/**
 
 ## Bytecode
 __pycache__/
@@ -51,7 +51,7 @@ wheelhouse/
 wheels/
 
 # Documentation
-docs/build/
+docs/build/**
 docs/source/api*/
 docs/source/tutorials/**
 docs/source/Doxyfile
@@ -86,9 +86,9 @@ docs/source/_static/params_template.*
 publication/supplements/**/*.npy
 
 # Exceptions
-## Directories: .gitignore (empty directories)
-!**/build/.gitignore
-!**/test_build/.gitignore
+## Directories: .gitkeep (empty directories)
+!**/build/.gitkeep
+!**/test_build/.gitkeep
 
 ## Directories: examples/**/storage (demo data)
 !examples/**/storage
