@@ -149,8 +149,8 @@ class ParticleCatalogue:
 
     @classmethod
     def read_from_file(cls, filepath, reader='astropy', names=None,
-                       format='ascii.no_header', table_kwargs=None,
-                       file_kwargs=None, name_mapping=None, logger=None):
+                       format='ascii.no_header', name_mapping=None,
+                       table_kwargs=None, file_kwargs=None, logger=None):
         """Read particle data from file.
 
         Parameters
