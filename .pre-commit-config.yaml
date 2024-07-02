@@ -6,7 +6,7 @@ ci:
   autofix_commit_msg: "[pre-commit.ci] Auto-fixes from pre-commit.com hooks"
   autoupdate_commit_msg: "[pre-commit.ci] Auto-update `pre-commit` hooks"
   autoupdate_schedule: 'weekly'
-  skip: ['pyupgrade', 'docformatter', 'setup-cfg-fmt']
+  skip: ['pyupgrade', 'setup-cfg-fmt']
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -48,8 +48,8 @@ repos:
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.16.0
     hooks:
-    - id: pyupgrade
-      args: [--py310-plus]
+      - id: pyupgrade
+        args: ['--py310-plus']
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.5.0
@@ -67,12 +67,22 @@ repos:
     hooks:
       - id: flake8
 
-  - repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.5
+  - repo: https://github.com/numpy/numpydoc
+    rev: v1.7.0
     hooks:
-      - id: docformatter
-        additional_dependencies: [tomli]
-        args: ['--in-place', '--config', './pyproject.toml']
+      - id: numpydoc-validation
+        exclude: "^(\
+          docs/source/conf.py|\
+          examples/FFTLog/hankel_sj1d_demo.py|\
+          examples/FFTLog/sj2d_demo.py|\
+        )$"
+
+  # - repo: https://github.com/PyCQA/docformatter
+  #   rev: v1.7.5
+  #   hooks:
+  #     - id: docformatter
+  #       additional_dependencies: ['tomli']
+  #       args: ['--in-place', '--config', './pyproject.toml']
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
@@ -83,7 +93,7 @@ repos:
   - repo: https://github.com/asottile/setup-cfg-fmt
     rev: v2.5.0
     hooks:
-    - id: setup-cfg-fmt
+      - id: setup-cfg-fmt
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0

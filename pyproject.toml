@@ -121,12 +121,39 @@ aggressive = 3
 max_line_length = 79
 ignore = "E226,"
 
-[tool.docformatter]
-recursive = true
-wrap-summaries = 72
-wrap-descriptions = 72
-blank = true
-close-quotes-on-newline = true
+[tool.numpydoc_validation]
+checks = [
+    'all',
+    'ES01',
+    'EX01',
+    'GL01',
+    'GL02',
+    'GL03',
+    'GL06',
+    'RT02',
+    'SA01',
+    'SS06',
+]
+exclude = [
+    'test_.*',
+    '\.__init__$',
+    '\.__repr__$',
+    '\.__str__$',
+    '\.__hash__$',
+    '\.__len__$',
+    '\.__ge__$',
+    '\.__gt__$',
+    '\.__le__$',
+    '\.__lt__$',
+    '\.__getitem__$',
+]
+
+# [tool.docformatter]
+# recursive = true
+# wrap-summaries = 72
+# wrap-descriptions = 72
+# blank = true
+# close-quotes-on-newline = true
 
 [tool.codespell]
 skip = "publication/joss/paper.bib,"
