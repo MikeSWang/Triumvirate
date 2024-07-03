@@ -61,6 +61,9 @@ docs/source/Doxyfile.conf.bak
 ## Linters
 .ruff_cache/
 
+## CI generated
+deploy/pkg/patches/**
+
 ## Jupyter Notebook
 .ipynb_checkpoints
 
@@ -89,6 +92,7 @@ publication/supplements/**/*.npy
 ## Directories: .gitkeep (empty directories)
 !**/build/.gitkeep
 !**/test_build/.gitkeep
+!deploy/pkg/patches/.gitkeep
 
 ## Directories: examples/**/storage (demo data)
 !examples/**/storage
