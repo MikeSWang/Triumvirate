@@ -102,3 +102,17 @@ repos:
         args: ['--write-changes']
         additional_dependencies:
           - tomli
+
+  - repo: https://github.com/espressif/conventional-precommit-linter
+    rev: v1.9.0
+    hooks:
+      - id: conventional-precommit-linter
+        stages: [commit-msg]
+        args:
+          - '--types=BUILD,CI,DOCS,ENH,FEAT,FIX,MAINT,MISC,REV,STYLE,TEST'
+          - '--scopes=python,cpp,script,markup,ci'
+          - '--subject-min-length=8'
+          - '--subject-max-length=128'
+          - '--body-max-line-length=1028'
+          - '--allow-breaking'
+          - '--summary-uppercase'
