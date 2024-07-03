@@ -1,0 +1,14 @@
+{% if context.history.unreleased | length > 0 -%}
+{# UNRELEASED #}
+## Unreleased
+{% for type_, commits in context.history.unreleased | dictsort %}
+### {{ type_ | capitalize }}
+{% for commit in commits %}
+{% if type_ != "unknown" %}
+* {{ commit.commit.message.rstrip() }}
+{% else %}
+* {{ commit.commit.message.rstrip() }}
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% endif -%}
