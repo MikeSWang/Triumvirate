@@ -109,8 +109,8 @@ repos:
       - id: conventional-precommit-linter
         stages: [commit-msg]
         args:
-          - '--types=BUILD,CI,DOCS,ENH,FEAT,FIX,MAINT,MISC,REV,STYLE,TEST'
-          - '--scopes=python,cpp,script,markup,ci'
+          - '--types=API,BUILD,CI,DOC,ENH,FEAT,FIX,MAINT,MISC,REV,STYLE,TEST'
+          - '--scopes=py,cpp,cfg,script,markup,ci,gh,env,ext'
           - '--subject-min-length=8'
           - '--subject-max-length=128'
           - '--body-max-line-length=1028'
