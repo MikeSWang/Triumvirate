@@ -3,7 +3,7 @@
 {% for type_, commits in context.history.unreleased | dictsort %}
 ### {{ type_ | capitalize }}
 {% for commit in commits %}
-- {{ commit.commit.message.rstrip() }}
+- {{ commit.descriptions[0].rstrip() }}
 {% endfor %}
 {% endfor -%}
 {% endif %}

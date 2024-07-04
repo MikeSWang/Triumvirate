@@ -49,6 +49,18 @@ def _logged_parse_error(commit: Commit,
     return ParseError(commit, error=error)
 
 
+def _endswith_brackets(string: str) -> bool:  # numpydoc ignore=GL08
+    pattern = r"(\[[^\]]*\]|\([^\)]*\))$"
+    match = re.search(pattern, string)
+    return (match is not None)
+
+
+def add_full_stop(text: str) -> str:  # numpydoc ignore=GL08
+    if not _endswith_brackets(text) and text[-1] not in ['.', '!', '?']:
+        text = text + '.'
+    return text
+
+
 @dataclass
 class TRVParserOptions(ParserOptions):  # numpydoc ignore=GL08
     major_tags: tuple[str, ...] = ('API',)
@@ -148,7 +160,7 @@ class TRVCommitParser(CommitParser[ParseResult, TRVParserOptions]):
             )
 
         descriptions = parse_paragraphs(parsed_text) if parsed_text else []
-        descriptions.insert(0, parsed_subject)  # insert subject at the top
+        descriptions.insert(0, add_full_stop(parsed_subject))  # insert subject
 
         # Parse breaking changes.
         breaking_descriptions = [
