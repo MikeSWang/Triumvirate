@@ -2,11 +2,12 @@
 Commits format.
 
 """
+from __future__ import annotations
+
 import logging
 import re
-# from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-from git.objects.commit import Commit
 from pydantic.dataclasses import dataclass
 from semantic_release import (
     CommitParser,
@@ -18,8 +19,8 @@ from semantic_release import (
 )
 from semantic_release.commit_parser.util import breaking_re, parse_paragraphs
 
-# if TYPE_CHECKING:
-#     from git.objects.commit import Commit
+if TYPE_CHECKING:
+    from git.objects.commit import Commit
 
 
 TAG_TITLES = {
