@@ -51,6 +51,7 @@ requirements:
     - sympy >=1.12.1
     - astropy >=4.2
     - pyyaml >=5.1
+    - mpi4py >=3.1.5
     - tqdm
 
 test:

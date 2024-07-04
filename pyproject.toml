@@ -48,6 +48,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+mpi = ['mpi4py>=3.1.5']
 nbk = ['nbodykit']
 
 [project.urls]
