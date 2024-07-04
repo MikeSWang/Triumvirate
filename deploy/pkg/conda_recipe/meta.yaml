@@ -28,6 +28,10 @@ build:
 requirements:
   build:
     - {{ compiler('cxx') }}
+    # See: https://conda-forge.org/docs/maintainer/knowledge_base/#openmp
+    # and https://github.com/conda-forge/openmp-feedstock/issues/126
+    # - libgomp                 # [linux]
+    # - llvm-openmp             # [osx]
   host:
     - python
     - pip >=22.0
