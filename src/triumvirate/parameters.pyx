@@ -367,14 +367,24 @@ cdef class ParameterSet:
         # -- Mesh sampling -----------------------------------------------
 
         # Attribute numerical parameters.
-        if None in self._params['boxsize'].values():
+        try:
+            if None in self._params['boxsize'].values():
+                raise InvalidParameterError(
+                    "`boxsize` parameters must be set."
+                )
+        except KeyError:
             raise InvalidParameterError("`boxsize` parameters must be set.")
         self.thisptr.boxsize = [
             float(self._params['boxsize']['x']),
             float(self._params['boxsize']['y']),
             float(self._params['boxsize']['z']),
         ]
-        if None in self._params['ngrid'].values():
+        try:
+            if None in self._params['ngrid'].values():
+                raise InvalidParameterError(
+                    "`ngrid` parameters must be set."
+                )
+        except KeyError:
             raise InvalidParameterError("`ngrid` parameters must be set.")
         self.thisptr.ngrid = [
             self._params['ngrid']['x'],
@@ -382,22 +392,20 @@ cdef class ParameterSet:
             self._params['ngrid']['z'],
         ]
 
-        if self._params['padfactor'] is not None:
-            self.thisptr.padfactor = self._params['padfactor']
+        if (padfactor_ := self._params.get('padfactor')) is not None:
+            self.thisptr.padfactor = padfactor_
 
         # Attribute string parameters.
-        if self._params['alignment'] is not None:
-            self.thisptr.alignment = \
-                self._params['alignment'].lower().encode('utf-8')
-        if self._params['padscale'] is not None:
-            self.thisptr.padscale = \
-                self._params['padscale'].lower().encode('utf-8')
-        if self._params['assignment'] is not None:
-            self.thisptr.assignment = \
-                self._params['assignment'].lower().encode('utf-8')
-        if self._params['interlace'] is not None:  # possibly convert from bool
-            self.thisptr.interlace = \
-                str(self._params['interlace']).lower().encode('utf-8')
+        if (alignment_ := self._params.get('alignment')) is not None:
+            self.thisptr.alignment = alignment_.lower().encode('utf-8')
+        if (padscale_ := self._params.get('padscale')) is not None:
+            self.thisptr.padscale = padscale_.lower().encode('utf-8')
+        if (assignment_ := self._params.get('assignment')) is not None:
+            self.thisptr.assignment = assignment_.lower().encode('utf-8')
+        if (
+            interlace_ := self._params.get('interlace')
+        ) is not None:  # possibly convert from bool
+            self.thisptr.interlace = str(interlace_).lower().encode('utf-8')
 
         # Attribute derived parameters.
         self.thisptr.volume = np.prod(list(self._params['boxsize'].values()))
@@ -406,65 +414,70 @@ cdef class ParameterSet:
         # -- Measurement -------------------------------------------------
 
         # Attribute numerical parameters.
-        if self._params['degrees']['ell1'] is not None:
-            self.thisptr.ell1 = self._params['degrees']['ell1']
-        if self._params['degrees']['ell2'] is not None:
-            self.thisptr.ell2 = self._params['degrees']['ell2']
-        if self._params['degrees']['ELL'] is not None:
-            self.thisptr.ELL = self._params['degrees']['ELL']
-        # else:
-        #     raise InvalidParameterError("`ELL` parameter must be set.")
+        # Although these parameters may not have to be set, they must be
+        # present in any parameter file or dictionary.
+        try:
+            if self._params['degrees']['ell1'] is not None:
+                self.thisptr.ell1 = self._params['degrees']['ell1']
+            if self._params['degrees']['ell2'] is not None:
+                self.thisptr.ell2 = self._params['degrees']['ell2']
+            if self._params['degrees']['ELL'] is not None:
+                self.thisptr.ELL = self._params['degrees']['ELL']
+        except KeyError:
+            raise InvalidParameterError(
+                "`degrees` parameters must be present even if left unset."
+            )
 
-        if self._params['wa_orders']['i'] is not None:
-            self.thisptr.i_wa = self._params['wa_orders']['i']
-        if self._params['wa_orders']['j'] is not None:
-            self.thisptr.j_wa = self._params['wa_orders']['j']
+        try:
+            if self._params['wa_orders']['i'] is not None:
+                self.thisptr.i_wa = self._params['wa_orders']['i']
+            if self._params['wa_orders']['j'] is not None:
+                self.thisptr.j_wa = self._params['wa_orders']['j']
+        except KeyError:
+            raise InvalidParameterError(
+                "`wa_orders` parameters must be present even if left unset."
+            )
 
-        if self._params['range'] is None or None in self._params['range']:
+        try:
+            if self._params['range'] is None or None in self._params['range']:
+                raise InvalidParameterError("`range` parameters must be set.")
+        except KeyError:
             raise InvalidParameterError("`range` parameters must be set.")
         self.thisptr.bin_min = float(self._params['range'][0])
         self.thisptr.bin_max = float(self._params['range'][1])
 
-        if self._params['num_bins'] is not None:
-            self.thisptr.num_bins = self._params['num_bins']
+        if (num_bins_ := self._params.get('num_bins')) is not None:
+            self.thisptr.num_bins = num_bins_
         else:
             raise InvalidParameterError("`num_bins` parameter must be set.")
-        if self._params['idx_bin'] is not None:
-            self.thisptr.idx_bin = self._params['idx_bin']
+        if (idx_bin_ := self._params.get('idx_bin')) is not None:
+            self.thisptr.idx_bin = idx_bin_
 
         # Attribute string parameters.
-        if self._params['catalogue_type'] is not None:
+        if (catalogue_type_ := self._params.get('catalogue_type')) is not None:
             self.thisptr.catalogue_type = \
-                self._params['catalogue_type'].lower().encode('utf-8')
-        # else:
-        #     raise InvalidParameterError(
-        #         "`catalogue_type` parameter must be set."
-        #     )
-        if self._params['statistic_type'] is not None:
+                catalogue_type_.lower().encode('utf-8')
+        if (statistic_type_ := self._params.get('statistic_type')) is not None:
             self.thisptr.statistic_type = \
-                self._params['statistic_type'].lower().encode('utf-8')
-        # else:
-        #     raise InvalidParameterError(
-        #         "`statistic_type` parameter must be set."
-        #     )
+                statistic_type_.lower().encode('utf-8')
 
-        if self._params['form'] is not None:
-            self.thisptr.form = \
-                self._params['form'].lower().encode('utf-8')
-        if self._params['form'] in {'off-diag', 'row'} \
-                and self._params['idx_bin'] is None:
-            raise InvalidParameterError(
-                "`idx_bin` parameter must be set "
-                "when `form` is 'off-diag' or 'row'."
-            )
+        if (form_ := self._params.get('form')) is not None:
+            self.thisptr.form = form_.lower().encode('utf-8')
+            if form_ in {'off-diag', 'row'} \
+                    and self._params.get('idx_bin') is None:
+                raise InvalidParameterError(
+                    "`idx_bin` parameter must be set "
+                    "when `form` is 'off-diag' or 'row'."
+                )
 
-        if self._params['norm_convention'] is not None:
+        if (
+            norm_convention_ := self._params.get('norm_convention')
+        ) is not None:
             self.thisptr.norm_convention = \
-                self._params['norm_convention'].lower().encode('utf-8')
+                norm_convention_.lower().encode('utf-8')
 
-        if self._params['binning'] is not None:
-            self.thisptr.binning = \
-                self._params['binning'].lower().encode('utf-8')
+        if (binning_ := self._params.get('binning')) is not None:
+            self.thisptr.binning = binning_.lower().encode('utf-8')
 
         # Attribute otherwise-derived parameters.
         assignment_order_ = self._params.get('assignment_order', 0)
@@ -479,22 +492,17 @@ cdef class ParameterSet:
 
         # -- Misc --------------------------------------------------------
 
-        if self._params['fftw_scheme'] is None:
-            self.thisptr.fftw_scheme = 'measure'.encode('utf-8')
-        else:
-            self.thisptr.fftw_scheme = \
-                self._params['fftw_scheme'].lower().encode('utf-8')
+        if (fftw_scheme_ := self._params.get('fftw_scheme')) is not None:
+            self.thisptr.fftw_scheme = fftw_scheme_.encode('utf-8')
 
-        if not self._params['use_fftw_wisdom']:
-            self.thisptr.use_fftw_wisdom = 'false'.encode('utf-8')
-        else:
+        if (
+            use_fftw_wisdom_ := self._params.get('use_fftw_wisdom')
+        ) is not None:
             self.thisptr.use_fftw_wisdom = \
-                self._params['use_fftw_wisdom'].encode('utf-8')
+                str(use_fftw_wisdom_).lower().encode('utf-8')
 
-        if self._params['verbose'] is None:
-            self.thisptr.verbose = 20
-        else:
-            self.thisptr.verbose = self._params['verbose']
+        if (verbose_ := self._params.get('verbose')) is not None:
+            self.thisptr.verbose = verbose_
 
         # ----------------------------------------------------------------
         # Validation
