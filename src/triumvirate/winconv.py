@@ -2799,7 +2799,7 @@ class BispecWinConv(WinConvBase):
             return _return_wcmat(wc_matrices, concat)
 
         # Run with MPI parallelisation.
-        nthreads_env = os.environ.get('OMP_NUM_THREADS', None)
+        nthreads_env = os.getenv('OMP_NUM_THREADS')
         if self._transform_kwargs.get('threaded', False) \
                 and self.comm.rank == self.comm_root:
             os.environ['OMP_NUM_THREADS'] = str(1)

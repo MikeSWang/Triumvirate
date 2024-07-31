@@ -27,12 +27,12 @@ def configure():
     parser.add_argument('tag', help='release tag')
     parser.add_argument(
         '--github-owner',
-        default=os.environ.get('GITHUB_OWNER', 'MikeSWang'),
+        default=os.getenv('GITHUB_OWNER', 'MikeSWang'),
         help="GitHub owner"
     )
     parser.add_argument(
         '--github-repo',
-        default=os.environ.get('GITHUB_REPO', 'Triumvirate'),
+        default=os.getenv('GITHUB_REPO', 'Triumvirate'),
         help="GitHub repository"
     )
     parser.add_argument(
@@ -69,28 +69,24 @@ def get_artifact_data(config):
         Package artifact data.
 
     """
-    github_header_accept = os.environ.get(
+    github_header_accept = os.getenv(
         'GITHUB_HEADER_ACCEPT',
         "Accept: application/vnd.github+json"
     )
 
-    github_header_auth = os.environ.get('GITHUB_HEADER_AUTH', None)
+    github_header_auth = os.getenv('GITHUB_HEADER_AUTH')
     if github_header_auth is None:
         github_header_auth_prefix = "Authorization: token "
-        github_token_artifacts = ''
-        try:
-            github_token_artifacts = os.environ['GITHUB_TOKEN_ARTIFACTS']
-        except KeyError:
-            try:
-                github_token_artifacts = os.environ['GITHUB_TOKEN']
-            except KeyError:
-                raise RuntimeError(
-                    "Neither of the following environment variable is set: "
-                    "GITHUB_TOKEN, GITHUB_TOKEN_ARTIFACTS"
-                )
+        github_token_artifacts = \
+            os.getenv('GITHUB_TOKEN_ARTIFACTS') or os.getenv('GITHUB_TOKEN')
+        if github_token_artifacts is None:
+            raise RuntimeError(
+                "Neither of the following environment variable is set: "
+                "GITHUB_TOKEN, GITHUB_TOKEN_ARTIFACTS"
+            )
         github_header_auth = github_header_auth_prefix + github_token_artifacts
 
-    github_url_actions = os.environ.get(
+    github_url_actions = os.getenv(
         'GITHUB_URL_ACTIONS',
         "https://api.github.com/repos/"
         f"{config.github_owner}/{config.github_repo}/"

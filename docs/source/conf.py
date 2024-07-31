@@ -39,7 +39,7 @@ import_module(pkg_name)
 pkg = sys.modules[pkg_name]
 
 pkg_date = pkg.__date__.split('-').pop(0)
-if os.environ.get('READTHEDOCS') == 'True':
+if os.getenv('READTHEDOCS') == 'True':
     with open(docs_dir/"RTD_VERSION.tmp") as vers_file:
         pkg_version = vers_file.readline().strip()
 else:

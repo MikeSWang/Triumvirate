@@ -112,9 +112,9 @@ def get_pkg_version_scheme(default_ver_scheme='no-guess-dev',
         For available version schemes.
 
     """
-    ver_scheme = os.environ.get('PY_SCM_VER_SCHEME', '').strip() \
+    ver_scheme = os.getenv('PY_SCM_VER_SCHEME', '').strip() \
         or default_ver_scheme
-    loc_scheme = os.environ.get('PY_SCM_LOC_SCHEME', '').strip() \
+    loc_scheme = os.getenv('PY_SCM_LOC_SCHEME', '').strip() \
         or default_loc_scheme
 
     scheme = {
@@ -211,7 +211,7 @@ def get_build_num_procs():
         of no parallelisation.
 
     """
-    flag_parallel = os.environ.get('PY_BUILD_PARALLEL', '').strip()
+    flag_parallel = os.getenv('PY_BUILD_PARALLEL', '').strip()
     if '-j' == flag_parallel:
         num_procs = cpu_count()
     elif '-j' in flag_parallel:
@@ -257,7 +257,7 @@ def display_py_environs():
         'PY_SCM_LOC_SCHEME',
     ]
     for env_var in PY_ENV_VARS:
-        prioprint("{}={}".format(env_var, os.environ.get(env_var)))
+        prioprint(f"{env_var}={os.getenv(env_var)}")
 
 
 def display_py_options():
@@ -273,7 +273,7 @@ def display_py_options():
         'lib_dirs',
     ]
     for opt_type in PY_OPT_TYPES:
-        prioprint("{}={}".format(opt_type, globals().get(opt_type)))
+        prioprint(f"{opt_type}={globals().get(opt_type)}")
 
 
 # ========================================================================
@@ -320,7 +320,7 @@ def get_compiler():
         Build compiler.
 
     """
-    compiler = os.environ.get('PY_CXX', COMPILERS[get_platform()])
+    compiler = os.getenv('PY_CXX', COMPILERS[get_platform()])
 
     return compiler
 
@@ -395,7 +395,7 @@ def parse_cli_cflags():
         Parsed `macros` and `cflags`.
 
     """
-    cli_cflags = os.environ.get('PY_CXXFLAGS', '').split()
+    cli_cflags = os.getenv('PY_CXXFLAGS', '').split()
 
     parsed_macros, parsed_cflags = [], CFLAGS.copy()
     for cflag_ in cli_cflags:
@@ -418,7 +418,7 @@ def parse_cli_ldflags():
         Parsed `ldflags`, `libs` and `lib_dirs`.
 
     """
-    cli_ldflags = os.environ.get('PY_LDFLAGS', '').split()
+    cli_ldflags = os.getenv('PY_LDFLAGS', '').split()
 
     parsed_ldflags, parsed_libs, parsed_lib_dirs = [], [], []
     for ldflag_ in cli_ldflags:
@@ -445,7 +445,7 @@ def parse_cli_includes():
 
     """
     parsed_include_dirs = \
-        os.environ.get('PY_INCLUDES', '').replace('-I', '').split()
+        os.getenv('PY_INCLUDES', '').replace('-I', '').split()
 
     return parsed_include_dirs
 
@@ -460,7 +460,7 @@ def parse_cli_cflags_omp():
         Parsed `macros` and `include_dirs` for OpenMP.
 
     """
-    cli_cflags_omp = os.environ.get('PY_CXXFLAGS_OMP', '').split()
+    cli_cflags_omp = os.getenv('PY_CXXFLAGS_OMP', '').split()
     if not cli_cflags_omp:
         return None
 
@@ -490,7 +490,7 @@ def parse_cli_ldflags_omp():
         Parsed `ldflags`, `libs` and `lib_dirs` for OpenMP.
 
     """
-    cli_ldflags_omp = os.environ.get('PY_LDFLAGS_OMP', '').split()
+    cli_ldflags_omp = os.getenv('PY_LDFLAGS_OMP', '').split()
     if not cli_ldflags_omp:
         return None
 
@@ -609,12 +609,12 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
 
     """
     # Check if OpenMP is explicitly disabled.
-    if os.environ.get('PY_NO_OMP') is not None:
+    if os.getenv('PY_NO_OMP') is not None:
         prioprint("OpenMP is disabled explicitly.")
         return macros, cflags, ldflags, libs, lib_dirs, include_dirs
 
     # Check if OpenMP is unsupported.
-    if os.environ.get('PY_OMP') is None and not check_openmp_support():
+    if os.getenv('PY_OMP') is None and not check_openmp_support():
         prioprint(
             "OpenMP is disabled as "
             "it is not supported in this build environment."
@@ -883,7 +883,7 @@ def define_pkg_extension(ext_name,
         ext_module_kwargs.update(ext_kwargs)
 
     return Extension(
-        '{}.{}'.format(get_pkg_name(), ext_name),
+        f'{get_pkg_name()}.{ext_name}',
         sources=sources, language=EXT_LANG, **ext_module_kwargs
     )
 
