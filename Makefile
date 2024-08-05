@@ -353,7 +353,7 @@ uninstall: cppuninstall pyuninstall
 cppuninstall:
 	@echo "Uninstalling Triumvirate C++ library/program..."
 	@echo "  removing builds..."
-	@find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".gitignore" -exec rm -r {} +
+	@find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".git*" -exec rm -r {} +
 
 pyuninstall:
 	@echo "Uninstalling Triumvirate Python package (in pip mode)..."
@@ -474,7 +474,7 @@ buildclean: cppclean pyclean
 cppclean:
 	@echo "Cleaning up Triumvirate C++ build..."
 	@echo "  removing builds..."
-	@find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".gitignore" -exec rm -r {} +
+	@find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".git*" -exec rm -r {} +
 
 pyclean:
 	@echo "Cleaning up Triumvirate Python build..."
