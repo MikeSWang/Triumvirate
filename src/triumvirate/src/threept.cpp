@@ -791,7 +791,8 @@ trv::BispecMeasurements compute_bispec(
               std::complex<double> sn_row_ = coupling * (
                 stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
               );
-              for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
+              for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++)
+              {
                 int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
                   + (idx_col - idx_row);
                 sn_dv[idx_dv] += sn_row_;
@@ -1202,9 +1203,10 @@ trv::ThreePCFMeasurements compute_3pcf(
 
           if (params.shape == "triu") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
-              for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
+              for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++)
+              {
                 int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
-                + (idx_col - idx_row);
+                  + (idx_col - idx_row);
 
                 r1bin_dv[idx_dv] = rbinning.bin_centres[idx_row];
                 r2bin_dv[idx_dv] = rbinning.bin_centres[idx_col];
@@ -2213,7 +2215,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
               int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
-              + (idx_col - idx_row);
+                + (idx_col - idx_row);
 
               r1bin_dv[idx_dv] = rbinning.bin_centres[idx_row];
               r2bin_dv[idx_dv] = rbinning.bin_centres[idx_col];
@@ -2593,9 +2595,10 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
 
           if (params.shape == "triu") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
-              for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
+              for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++)
+              {
                 int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
-                + (idx_col - idx_row);
+                  + (idx_col - idx_row);
 
                 r1bin_dv[idx_dv] = rbinning.bin_centres[idx_row];
                 r2bin_dv[idx_dv] = rbinning.bin_centres[idx_col];
@@ -3392,7 +3395,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
               std::complex<double> sn_row_ = coupling * (
                 stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
               );
-              for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
+              for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++)
+              {
                 int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
                   + (idx_col - idx_row);
                 sn_dv[idx_dv] += sn_row_;
