@@ -54,6 +54,37 @@
 namespace trv {
 
 // ***********************************************************************
+// Spherical orders
+// ***********************************************************************
+
+/**
+ * @brief Spherical order triplet @f$ (m_1, m_2, M) @f$.
+ *
+ */
+struct SphericalOrderTriplet {
+  int m1, m2, M;  ///< spherical orders
+
+  /**
+   * @brief Return the sum with another spherical order triplet.
+   *
+   */
+  SphericalOrderTriplet operator+(const SphericalOrderTriplet& other);
+
+  /**
+   * @brief Check if the spherical orders are all zeros.
+   *
+   */
+  bool is_zeros();
+
+  /**
+   * @brief Check if another triplet is the additive inverse.
+   *
+   */
+  bool is_inverse(const SphericalOrderTriplet& other);
+};
+
+
+// ***********************************************************************
 // Coupling coefficients
 // ***********************************************************************
 

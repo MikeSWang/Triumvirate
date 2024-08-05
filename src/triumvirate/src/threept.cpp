@@ -32,6 +32,31 @@ namespace trvm = trv::maths;
 namespace trv {
 
 // ***********************************************************************
+// Spherical orders
+// ***********************************************************************
+
+SphericalOrderTriplet SphericalOrderTriplet::operator+(
+  const SphericalOrderTriplet& other
+) {
+  SphericalOrderTriplet sph_order_triplet = {
+    this->m1 + other.m1, this->m2 + other.m2, this->M + other.M
+  };
+  return sph_order_triplet;
+}
+
+bool SphericalOrderTriplet::is_zeros() {
+  return (this->m1 == 0) && (this->m2 == 0) && (this->M == 0);
+}
+
+bool SphericalOrderTriplet::is_inverse(const SphericalOrderTriplet& other) {
+  return
+    (this->m1 + other.m1 == 0) &&
+    (this->m2 + other.m2 == 0) &&
+    (this->M + other.M == 0);
+}
+
+
+// ***********************************************************************
 // Coupling coefficients
 // ***********************************************************************
 
