@@ -137,7 +137,7 @@ if [[ ${excl} != 'doxy' ]]; then
     # Temporarily alter README.md for Doxygen mainpage.
     README_FILE="${ROOT_DIR}/README.md"
     cp "${README_FILE}" "${README_FILE}.bak"
-    recycle_readme "\`\`\`bash session" "\`\`\`console"
+    # recycle_readme "\`\`\`bash session" "\`\`\`console"
     recycle_readme "ERC-Logo-Flag.png#gh-light-mode-only"
     # recycle_readme "\[Release\]"
     recycle_readme "\[CI\]"

@@ -99,17 +99,17 @@ is optional).
 First `git clone` the desired branch/release from the GitHub repository and
 change into the repository directory path:
 
-.. code-block:: console
+.. code-block:: sh
 
-    $ git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
-    $ cd Triumvirate
+    git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
+    cd Triumvirate
 
 Then, execute in shell:
 
-.. code-block:: console
+.. code-block:: sh
 
-    $ make clean
-    $ make [py|cpp]install [useomp=(true|1)]
+    make clean
+    make [py|cpp]install [useomp=(true|1)]
 
 where ``cpplibinstall`` or ``cppappbuild`` respectively builds the C++
 static library or binary executable only, ``cppinstall`` builds both,

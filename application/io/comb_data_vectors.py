@@ -1,4 +1,4 @@
-"""Combine two-point and three-point clustering multipole data vectors.
+r"""Combine two-point and three-point clustering multipole data vectors.
 
 .. caution::
 
@@ -16,12 +16,12 @@ to the output directory ``<output-dir>``, run:
 
 .. code-block:: console
 
-    $ python comb_data_vectors.py
-    > --tag _DR12SGC-COMPSAM_V6C_(.*)_0.50z0.75
-    > --range 1 256
-    > --components pk0 pk2 pk4
-    > --input-dir <input-dir>
-    > --output-dir <output-dir>
+    $ python comb_data_vectors.py \
+    >   --tag _DR12SGC-COMPSAM_V6C_(.*)_0.50z0.75
+    >   --range 1 256
+    >   --components pk0 pk2 pk4
+    >   --input-dir <input-dir>
+    >   --output-dir <output-dir>
 
 """
 import argparse

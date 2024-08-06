@@ -17,9 +17,9 @@ been installed on your system, please ignore this subsection.
 
 In a Conda environment, both libraries can be installed with
 
-.. code-block:: console
+.. code-block:: sh
 
-    $ conda install -c conda-forge gsl fftw
+    conda install -c conda-forge gsl fftw
 
 Outside Conda environments, they can be installed using a package manager:
 
@@ -27,18 +27,18 @@ Outside Conda environments, they can be installed using a package manager:
 
     .. tab-item:: Linux
 
-        .. code-block:: console
+        .. code-block:: sh
 
             # Debian-based OS (e.g. Ubuntu); or
-            $ [sudo] apt[-get] install [-y] libgsl(-dev|27) libfftw3-(dev|3)
+            [sudo] apt[-get] install [-y] libgsl(-dev|27) libfftw3-(dev|3)
             # Red Hat--based OS (e.g. CentOS)
-            $ [sudo] yum install [-y] gsl[-devel] fftw3-devel
+            [sudo] yum install [-y] gsl[-devel] fftw3-devel
 
     .. tab-item:: macOS
 
-        .. code-block:: console
+        .. code-block:: sh
 
-            $ brew install gsl fftw
+            brew install gsl fftw
 
 (select the appropriate option/version in the brackets above).
 
@@ -51,9 +51,9 @@ to ensure that they are included and linked during |Triumvirate| compilation.
 To check the compilation options for using these libraries, `pkg-config`
 may be of help:
 
-.. code-block:: console
+.. code-block:: sh
 
-    $ pkg-config --cflags --libs gsl fftw3
+    pkg-config --cflags --libs gsl fftw3
 
 However, it is not guaranteed that `pkg-config` always detects the
 relevant settings, and it is important to ensure the set-up of `pkg-config`
@@ -78,33 +78,33 @@ For GCC compilers, the relevant library is ``libgomp`` (typically distributed
 with the compiler). On Linux systems, it can be additionally installed either
 in a Conda environment with
 
-.. code-block:: console
+.. code-block:: sh
     :caption: Linux
 
-    $ conda install -c conda-forge libgomp
+    conda install -c conda-forge libgomp
 
 or outside Conda environments using a package manager:
 
-.. code-block:: console
+.. code-block:: sh
     :caption: Linux
 
     # Debian-based OS (e.g. Ubuntu); or
-    $ [sudo] apt[-get] install [-y] libgomp1
+    [sudo] apt[-get] install [-y] libgomp1
     # Red Hat--based OS (e.g. CentOS)
-    $ [sudo] yum install [-y] libgomp
+    [sudo] yum install [-y] libgomp
 
 For LLVM compilers, the relevant library is ``libomp``. It can be installed
 either in a Conda environment with
 
-.. code-block:: console
+.. code-block:: sh
 
-    $ conda install -c conda-forge llvm-openmp
+    conda install -c conda-forge llvm-openmp
 
 or outside Conda environments using the Homebrew package manager:
 
-.. code-block:: console
+.. code-block:: sh
 
-    $ brew install libomp
+    brew install libomp
 
 
 Python package
@@ -126,15 +126,15 @@ activated with ``conda activate <env>``).
 
 To install from |PyPI-repo|, execute in shell:
 
-.. code-block:: console
+.. code-block:: sh
 
-    $ python -m pip install triumvirate
+    python -m pip install triumvirate
 
 To install using |conda-repo|, execute in shell:
 
-.. code-block:: console
+.. code-block:: sh
 
-    $ conda install -c msw triumvirate
+    conda install -c msw triumvirate
 
 By default, the package is installed with OpenMP enabled if it is supported.
 
@@ -145,15 +145,15 @@ By default, the package is installed with OpenMP enabled if it is supported.
     and avoidance of dependency conflicts, it is recommended that
     ``conda-forge`` should be set as the highest-priority channel,
 
-    .. code-block:: console
+    .. code-block:: sh
 
-        $ conda config --prepend channels conda-forge
+        conda config --prepend channels conda-forge
 
     and optionally, it is good practice to use ``strict`` channel priority,
 
-    .. code-block:: console
+    .. code-block:: sh
 
-        $ conda config --set channel_priority strict
+        conda config --set channel_priority strict
 
 
 C++ library & program
@@ -170,17 +170,17 @@ built using `make`, provided that dependency requirements are satisfied
 First, obtain the source by cloning the GitHub repository and change into
 its local directory path:
 
-.. code-block:: console
+.. code-block:: sh
 
-    $ git clone git@github.com:MikeSWang/Triumvirate.git [--branch <branch-or-release>]
-    $ cd Triumvirate
+    git clone git@github.com:MikeSWang/Triumvirate.git [--branch <branch-or-release>]
+    cd Triumvirate
 
 Then, execute in shell:
 
-.. code-block:: console
+.. code-block:: sh
 
-    $ make clean
-    $ make cppinstall|cpplibinstall|cppappbuild [useomp=(true|1)]
+    make clean
+    make cppinstall|cpplibinstall|cppappbuild [useomp=(true|1)]
 
 Here ``cppinstall`` builds both the static library and the binary executable,
 ``cpplibinstall`` only the former and ``cppappbuild`` only the latter.
@@ -209,17 +209,17 @@ As in '`C++ library & program`_' above, first ``git clone`` the desired
 branch/release from the GitHub repository and change into the repository
 directory path:
 
-.. code-block:: console
+.. code-block:: sh
 
-    $ git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
-    $ cd Triumvirate
+    git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
+    cd Triumvirate
 
 Then, execute in shell:
 
-.. code-block:: console
+.. code-block:: sh
 
-    $ make clean
-    $ make ([py|cpp]install)|(cpp[libinstall|appbuild]) [useomp=(true|1)]
+    make clean
+    make ([py|cpp]install)|(cpp[libinstall|appbuild]) [useomp=(true|1)]
 
 where ``cpplibinstall`` or ``cppappbuild`` respectively builds the C++
 static library or binary executable only, ``cppinstall`` builds both,
@@ -261,22 +261,22 @@ environmental variables as shown in the following examples for macOS:
     .. tab-item:: GCC
         :sync: gcc
 
-        .. code-block:: console
+        .. code-block:: sh
 
             # Set GCC compiler (version 12 assumed here).
-            $ export CXX=$(brew --prefix gcc)/bin/g++-12
+            export CXX=$(brew --prefix gcc)/bin/g++-12
 
     .. tab-item:: LLVM
         :sync: llvm
 
-        .. code-block:: console
+        .. code-block:: sh
 
             # Assume Homebrew LLVM compiler and OpenMP library instead here.
-            $ export CXX=$(brew --prefix llvm)/bin/clang++
+            export CXX=$(brew --prefix llvm)/bin/clang++
             # Set OpenMP compilation flags.
-            $ export CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
+            export CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
             # Set OpenMP linker flags.
-            $ export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
+            export LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
 
 These commands are also included in the default |Makefile|_ (though commented
 out as they are an alternative to the default GCC set-up).
@@ -301,22 +301,22 @@ as shown in the following examples (for macOS with Homebrew package manager):
     .. tab-item:: GCC
         :sync: gcc
 
-        .. code-block:: console
+        .. code-block:: sh
 
             # Set GCC compiler (version 12 assumed here).
-            $ export PY_CXX=$(brew --prefix gcc)/bin/g++-12
+            export PY_CXX=$(brew --prefix gcc)/bin/g++-12
 
     .. tab-item:: LLVM
         :sync: llvm
 
-        .. code-block:: console
+        .. code-block:: sh
 
             # Set LLVM compiler.
-            $ export PY_CXX=$(brew --prefix llvm)/bin/clang++
+            export PY_CXX=$(brew --prefix llvm)/bin/clang++
             # Set OpenMP compilation flags.
-            $ export PY_CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
+            export PY_CXXFLAGS_OMP="-I$(brew --prefix libomp)/include -fopenmp"
             # Set OpenMP linker flags.
-            $ export PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
+            export PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
 
 
 Parallelised building

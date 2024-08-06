@@ -53,17 +53,17 @@ measurement pipeline. The guide to running the program can be found in
     (see :doc:`installation`), you can set the environmental variable
     ``OMP_NUM_THREADS`` for multithreaded execution:
 
-    .. code-block:: console
+    .. code-block:: sh
 
-        $ export OMP_NUM_THREADS=<num-threads>
+        export OMP_NUM_THREADS=<num-threads>
 
     In general, the following process affinity settings are found to be
     performant:
 
-    .. code-block:: console
+    .. code-block:: sh
 
-        $ export OMP_PLACES=threads
-        $ export OMP_PROC_BIND=spread
+        export OMP_PLACES=threads
+        export OMP_PROC_BIND=spread
 
     However, the optimal settings may vary depending on the system.
 

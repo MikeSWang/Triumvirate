@@ -9,9 +9,9 @@ multipole ``'000'`` from the window function multipoles ``000``, ``110``
 and ``220``, and the unwindowed multipoles ``000``, ``110`` and ``220``,
 run:
 
-.. code-block:: console
+.. code-block:: sh
 
-    $ python gen_wc_coeffs.py 000 -u 000 110 220 -w 000 110 220
+    python gen_wc_coeffs.py 000 -u 000 110 220 -w 000 110 220
 
 """
 from argparse import ArgumentParser
