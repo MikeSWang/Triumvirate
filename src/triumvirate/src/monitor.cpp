@@ -20,7 +20,7 @@
 /**
  * @file monitor.cpp
  * @authors Mike S Wang (https://github.com/MikeSWang),
- *          Naonori Sugiyama (https://github.com/naonori)
+ *          Naonori S Sugiyama (https://github.com/naonori)
  *
  */
 
@@ -472,19 +472,22 @@ const char* InvalidDataError::what() const noexcept {
 // Program notices
 // ***********************************************************************
 
-void display_prog_notice() {
+void display_prog_logo() {
+  std::printf("\n");
   std::printf(
     "     //\\        ___  __                      __       ___  ___      \n"
     "    //  \\        |  |__) | |  | |\\/| \\  / | |__)  /\\   |  |__    \n"
     "   //    \\       |  |  \\ | \\__/ |  |  \\/  | |  \\ /~~\\  |  |___ \n"
     "  //      \\                                                         \n"
-    " //________\\    (C) 2023 Mike S Wang & Naonori Sugiyama [GPLv3]     \n"
+    " //________\\    • Three-Point Clustering Measurements in LSS •      \n"
     "                                                                     \n"
-    " •••  Three-Point Clustering Measurements in LSS  •••              \n\n"
+    "(C) 2023 Mike S Wang & Naonori S Sugiyama [GPL-3.0]                  \n"
   );
+  std::printf("\n");
 }
 
 void display_prog_licence() {
+  std::printf("LICENCE NOTICE >\n\n");
   std::printf(
     "This program is free software: you can redistribute it and/or modify \n"
     "it under the terms of the GNU General Public License as published by \n"
@@ -498,8 +501,32 @@ void display_prog_licence() {
     "                                                                     \n"
     "You should have received a copy of the GNU General Public License    \n"
     "along with this program. If not, see <https://www.gnu.org/licenses/>.\n"
-    "                                                                     \n"
   );
+  std::printf("\n");
+}
+
+void display_prog_info() {
+#ifndef TRV_USE_OMP
+#define _OPENMP 0
+#endif  // !TRV_USE_OMP
+  std::printf("PROGRAM INFORMATION >\n\n");
+  std::printf("OpenMP version: %d\n", _OPENMP);
+  std::printf("\n");
+}
+
+void display_prog_logbars(int endpoint) {
+  if (endpoint == 0) {
+    // std::printf("%s\n", std::string(80, '>').c_str());
+    std::printf("TRIUMVIRATE LOG >\n\n");
+  } else
+  if (endpoint == 1) {
+    // std::printf("%s\n", std::string(80, '<').c_str());
+    // std::printf("\nTRIUMVIRATE LOG <\n");
+  } else {
+    throw InvalidParameterError(
+      "Invalid endpoint for log bars: %d.\n", endpoint
+    );
+  }
 }
 
 }  // namespace trv::sys

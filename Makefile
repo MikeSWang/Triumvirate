@@ -252,12 +252,12 @@ WOMP := without
 
 endif  # useomp
 
-# Visual enhancements: enabled with `uselogo=(true|1)`; disabled otherwise
-ifdef uselogo
-ifeq ($(strip ${uselogo}), $(filter $(strip ${uselogo}), true 1))
-CPPFLAGS += -DTRV_USE_LOGO
-endif  # uselogo==(true|1)
-endif  # uselogo
+# Visual enhancements: enabled with `usedisp=(true|1)`; disabled otherwise
+ifdef usedisp
+ifeq ($(strip ${usedisp}), $(filter $(strip ${usedisp}), true 1))
+CPPFLAGS += -DTRV_DISP
+endif  # usedisp==(true|1)
+endif  # usedisp
 
 # Profiler flags: enabled with `useprof=(true|1)`; disabled otherwise
 ifdef useprof

@@ -20,7 +20,7 @@
 /**
  * @file maths.hpp
  * @authors Mike S Wang (https://github.com/MikeSWang),
- *          Naonori Sugiyama (https://github.com/naonori)
+ *          Naonori S Sugiyama (https://github.com/naonori)
  * @brief Mathematical calculations.
  *
  * Mathematical calculations provided include:

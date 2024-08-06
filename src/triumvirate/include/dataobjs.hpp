@@ -20,7 +20,7 @@
 /**
  * @file dataobjs.hpp
  * @authors Mike S Wang (https://github.com/MikeSWang),
- *          Naonori Sugiyama (https://github.com/naonori)
+ *          Naonori S Sugiyama (https://github.com/naonori)
  * @brief Clustering measurement data objects.
  *
  * Clustering measurement data objects provided include:

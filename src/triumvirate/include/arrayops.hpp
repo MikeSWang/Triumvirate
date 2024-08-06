@@ -20,7 +20,7 @@
 /**
  * @file arrayops.hpp
  * @authors Mike S Wang (https://github.com/MikeSWang),
- *          Naonori Sugiyama (https://github.com/naonori)
+ *          Naonori S Sugiyama (https://github.com/naonori)
  * @brief Array operations.
  *
  * 1- or 2-d array operations provided include:

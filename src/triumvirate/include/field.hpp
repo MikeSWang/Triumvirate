@@ -20,7 +20,7 @@
 /**
  * @file field.hpp
  * @authors Mike S Wang (https://github.com/MikeSWang),
- *          Naonori Sugiyama (https://github.com/naonori)
+ *          Naonori S Sugiyama (https://github.com/naonori)
  * @brief Mesh field (with one-point statistics) and
  *        pseudo two-point statistics.
  *

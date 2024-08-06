@@ -20,7 +20,7 @@
 /**
  * @file io.hpp
  * @authors Mike S Wang (https://github.com/MikeSWang),
- *          Naonori Sugiyama (https://github.com/naonori)
+ *          Naonori S Sugiyama (https://github.com/naonori)
  * @brief I/O support including custom exceptions and utility functions.
  *
  */

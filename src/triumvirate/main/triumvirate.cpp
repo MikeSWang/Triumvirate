@@ -20,7 +20,7 @@
 /**
  * @file triumvirate.cpp
  * @authors Mike S Wang (https://github.com/MikeSWang),
- *          Naonori Sugiyama (https://github.com/naonori)
+ *          Naonori S Sugiyama (https://github.com/naonori)
  * @brief Perform two- and three-point clustering statistic measurements.
  *
  */
@@ -105,13 +105,16 @@ void _set_custom_bins(trv::Binning& _binning) {
  * @returns Exit status.
  */
 int main(int argc, char* argv[]) {
-#ifdef TRV_USE_LOGO
-  trv::sys::display_prog_notice();
-  // trv::sys::display_prog_licence();
-#endif  // TRV_USE_LOGO
+#ifdef TRV_DISP
+  if (trv::sys::currTask == 0) {
+    trv::sys::display_prog_logo();
+    trv::sys::display_prog_licence();
+    trv::sys::display_prog_info();
+  }
+#endif  // TRV_DISP
 
   if (trv::sys::currTask == 0) {
-    std::printf("%s\n", std::string(80, '>').c_str());
+    trv::sys::display_prog_logbars(0);
   }
 
   // =====================================================================
@@ -903,7 +906,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (trv::sys::currTask == 0) {
-    std::printf("%s\n", std::string(80, '<').c_str());
+    trv::sys::display_prog_logbars(1);
   }
 
   return 0;

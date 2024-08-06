@@ -20,7 +20,7 @@
 /**
  * @file monitor.hpp
  * @authors Mike S Wang (https://github.com/MikeSWang),
- *          Naonori Sugiyama (https://github.com/naonori)
+ *          Naonori S Sugiyama (https://github.com/naonori)
  * @brief Provide tracking of program resources and exceptions.
  *
  * This module defines the global variables and functions to track
@@ -476,16 +476,29 @@ class InvalidDataError: public std::runtime_error {
 // ***********************************************************************
 
 /**
- * @brief Display program notice including logo in @c stdout.
+ * @brief Display program logo in @c stdout.
  *
  */
-void display_prog_notice();
+void display_prog_logo();
 
 /**
  * @brief Display program licence in @c stdout.
  *
  */
 void display_prog_licence();
+
+/**
+ * @brief Display program information in @c stdout.
+ *
+ */
+void display_prog_info();
+
+/**
+ * @brief Display program log bars in @c stdout.
+ *
+ * @param endpoint Progress bar endpoint, either 0 (start) or 1 (finish).
+ */
+void display_prog_logbars(int endpoint);
 
 }  // namespace trv::sys
 }  // namespace trv

@@ -20,7 +20,7 @@
 /**
  * @file parameters.hpp
  * @authors Mike S Wang (https://github.com/MikeSWang),
- *          Naonori Sugiyama (https://github.com/naonori)
+ *          Naonori S Sugiyama (https://github.com/naonori)
  * @brief Program parameter configuration.
  *
  * This module provides a parameter set object with methods for reading,

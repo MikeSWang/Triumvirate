@@ -20,7 +20,7 @@
 /**
  * @file twopt.hpp
  * @authors Mike S Wang (https://github.com/MikeSWang),
- *          Naonori Sugiyama (https://github.com/naonori)
+ *          Naonori S Sugiyama (https://github.com/naonori)
  * @brief Two-point statistic computations.
  *
  * This module provides the computation of two-point statistics including:
