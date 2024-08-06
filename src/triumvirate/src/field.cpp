@@ -498,8 +498,8 @@ void MeshField::assign_weighted_field_to_mesh_ngp(
 
     for (int iaxis = 0; iaxis < 3; iaxis++) {
       // Carefully set covered sampling window grid indices.
-      double loc_grid = this->params.ngrid[iaxis] *
-        particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
+      double loc_grid = this->params.ngrid[iaxis]
+        * particles[pid].pos[iaxis] / this->params.boxsize[iaxis];
 
       int idx_grid = int(loc_grid);
       if (loc_grid - idx_grid >= 0.5) {

@@ -862,8 +862,8 @@ int ParameterSet::validate() {
     );
   }
   if (this->space == "fourier") {
-    double wavenum_nyquist = M_PI *
-      *std::min_element(this->ngrid, this->ngrid + 3)
+    double wavenum_nyquist = M_PI
+      * *std::min_element(this->ngrid, this->ngrid + 3)
       / *std::max_element(this->boxsize, this->boxsize + 3);
     if (this->bin_min > wavenum_nyquist) {
       if (trvs::currTask == 0) {
@@ -875,8 +875,8 @@ int ParameterSet::validate() {
     }
   } else
   if (this->space == "config") {
-    double separation_nyquist = 2 *
-      *std::max_element(this->boxsize, this->boxsize + 3)
+    double separation_nyquist = 2
+      * *std::max_element(this->boxsize, this->boxsize + 3)
       / *std::min_element(this->ngrid, this->ngrid + 3);
     if (this->bin_max < separation_nyquist) {
       if (trvs::currTask == 0) {

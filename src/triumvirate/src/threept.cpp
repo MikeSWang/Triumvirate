@@ -1903,8 +1903,8 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         double k_a = k1eff_dv[idx_dv];
         double k_b = k2eff_dv[idx_dv];
 
-        std::complex<double> S_ij_k = parity *
-          stats_sn.compute_uncoupled_shotnoise_for_bispec_per_bin(
+        std::complex<double> S_ij_k = parity
+          * stats_sn.compute_uncoupled_shotnoise_for_bispec_per_bin(
             dn_L0_for_sn, N_00, ylm_r_a, ylm_r_b, sj_a, sj_b,
             Sbar_L0, k_a, k_b
           );  // S|{i = j ≠ k}
@@ -3474,8 +3474,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           double k_a = k1eff_dv[idx_dv];
           double k_b = k2eff_dv[idx_dv];
 
-          std::complex<double> S_ij_k = parity *
-            stats_sn.compute_uncoupled_shotnoise_for_bispec_per_bin(
+          std::complex<double> S_ij_k = parity
+            * stats_sn.compute_uncoupled_shotnoise_for_bispec_per_bin(
               dn_LM_c_for_sn, N_LM_c, ylm_r_a, ylm_r_b, sj_a, sj_b,
               Sbar_LM, k_a, k_b
             );  // S|{i = j ≠ k}
