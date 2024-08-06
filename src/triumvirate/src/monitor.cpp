@@ -506,11 +506,13 @@ void display_prog_licence() {
 }
 
 void display_prog_info() {
-#ifndef TRV_USE_OMP
-#define _OPENMP 0
-#endif  // !TRV_USE_OMP
+#ifdef TRV_USE_OMP
+#define _OMP_VERSION _OPENMP
+#else  // !TRV_USE_OMP
+#define _OMP_VERSION 0
+#endif  // TRV_USE_OMP
   std::printf("PROGRAM INFORMATION >\n\n");
-  std::printf("OpenMP version: %d\n", _OPENMP);
+  std::printf("OpenMP version: %d\n", _OMP_VERSION);
   std::printf("\n");
 }
 
