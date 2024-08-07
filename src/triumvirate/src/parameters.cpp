@@ -544,21 +544,108 @@ int ParameterSet::validate() {
 
   if (this->statistic_type == "powspec") {
     this->npoint = "2pt"; this->space = "fourier";  // derivation
+    if (this->catalogue_type == "random" || this->catalogue_type == "none") {
+      if (trvs::currTask == 0) {
+        trvs::logger.error(
+          "Power spectrum requires 'sim' or 'survey' catalogue(s): "
+          "`catalogue_type` = '%s'.",
+          this->catalogue_type.c_str()
+        );
+      }
+      throw trvs::InvalidParameterError(
+        "Power spectrum requires 'sim' or 'survey' catalogue(s): "
+        "`catalogue_type` = '%s'.\n",
+        this->catalogue_type.c_str()
+      );
+    }
   } else
-  if (
-    this->statistic_type == "2pcf" || this->statistic_type == "2pcf-win"
-  ) {
+  if (this->statistic_type == "2pcf") {
     this->npoint = "2pt"; this->space = "config";  // derivation
+    if (this->catalogue_type == "random" || this->catalogue_type == "none") {
+      if (trvs::currTask == 0) {
+        trvs::logger.error(
+          "Two-point correlation function requires 'sim' or 'survey' "
+          "catalogue(s): `catalogue_type` = '%s'.",
+          this->catalogue_type.c_str()
+        );
+      }
+      throw trvs::InvalidParameterError(
+        "Two-point correlation function requires 'sim' or 'survey' "
+        "catalogue(s): `catalogue_type` = '%s'.\n",
+        this->catalogue_type.c_str()
+      );
+    }
+  } else
+  if (this->statistic_type == "2pcf-win") {
+    this->npoint = "2pt"; this->space = "config";  // derivation
+    if (this->catalogue_type != "random") {
+      if (trvs::currTask == 0) {
+        trvs::logger.error(
+          "Two-point correlation function window requires 'random' catalogue: "
+          "`catalogue_type` = '%s'.",
+          this->catalogue_type.c_str()
+        );
+      }
+      throw trvs::InvalidParameterError(
+        "Two-point correlation function window requires 'random' catalogue: "
+        "`catalogue_type` = '%s'.\n",
+        this->catalogue_type.c_str()
+      );
+    }
   } else
   if (this->statistic_type == "bispec") {
     this->npoint = "3pt"; this->space = "fourier";  // derivation
+    if (this->catalogue_type == "random" || this->catalogue_type == "none") {
+      if (trvs::currTask == 0) {
+        trvs::logger.error(
+          "Bispectrum requires 'sim' or 'survey' catalogue(s): "
+          "`catalogue_type` = '%s'.",
+          this->catalogue_type.c_str()
+        );
+      }
+      throw trvs::InvalidParameterError(
+        "Bispectrum requires 'sim' or 'survey' catalogue(s): "
+        "`catalogue_type` = '%s'.\n",
+        this->catalogue_type.c_str()
+      );
+    }
+  } else
+  if (this->statistic_type == "3pcf") {
+    this->npoint = "3pt"; this->space = "config";  // derivation
+    if (this->catalogue_type == "random" || this->catalogue_type == "none") {
+      if (trvs::currTask == 0) {
+        trvs::logger.error(
+          "Three-point correlation function requires 'sim' or 'survey' "
+          "catalogue(s): `catalogue_type` = '%s'.",
+          this->catalogue_type.c_str()
+        );
+      }
+      throw trvs::InvalidParameterError(
+        "Three-point correlation function requires 'sim' or 'survey' "
+        "catalogue(s): `catalogue_type` = '%s'.\n",
+        this->catalogue_type.c_str()
+      );
+    }
   } else
   if (
-    this->statistic_type == "3pcf"
-    || this->statistic_type == "3pcf-win"
+    this->statistic_type == "3pcf-win"
     || this->statistic_type == "3pcf-win-wa"
   ) {
     this->npoint = "3pt"; this->space = "config";  // derivation
+    if (this->catalogue_type != "random") {
+      if (trvs::currTask == 0) {
+        trvs::logger.error(
+          "Three-point correlation function window requires 'random' "
+          "catalogue: `catalogue_type` = '%s'.",
+          this->catalogue_type.c_str()
+        );
+      }
+      throw trvs::InvalidParameterError(
+        "Three-point correlation function window requires 'random' "
+        "catalogue: `catalogue_type` = '%s'.\n",
+        this->catalogue_type.c_str()
+      );
+    }
   } else
   if (this->statistic_type == "modes") {
     this->npoint = "none"; this->space = "fourier";  // derivation
