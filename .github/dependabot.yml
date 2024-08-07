@@ -11,7 +11,7 @@ updates:
     schedule:
       interval: weekly
     commit-message:
-      prefix: "[gh-actions] "
+      prefix: "[dependabot] "
     labels:
       - 'maintenance'
     assignees:
@@ -24,7 +24,7 @@ updates:
     schedule:
       interval: daily
     commit-message:
-      prefix: "[gh-actions] "
+      prefix: "[dependabot] "
     labels:
       - 'workflows'
     assignees:

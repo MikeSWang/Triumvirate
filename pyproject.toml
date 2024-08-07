@@ -215,7 +215,7 @@ prerelease = false
 
 [tool.semantic_release.changelog]
 template_dir = "deploy/pkg/tmpl"
-exclude_commit_patterns = ['\[gh-actions\]', '\[pre-commit.ci\]',]
+exclude_commit_patterns = ['\[dependabot\]', '\[pre-commit.ci\]',]
 
 [tool.semantic_release.changelog.environment]
 block_start_string = '{%'
