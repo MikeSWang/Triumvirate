@@ -521,7 +521,7 @@ void display_prog_info() {
 #define _OMP_VERSION std::to_string(_OPENMP)
 #define _OMP_NTHREADS omp_get_max_threads()
 #else  // !TRV_USE_OMP
-#define _OMP_VERSION "unknown"
+#define _OMP_VERSION std::string("unknown")
 #define _OMP_NTHREADS 1
 #endif  // TRV_USE_OMP
   std::printf("OpenMP version: %s\n", _OMP_VERSION.c_str());
