@@ -245,7 +245,11 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector) {
   std::vector<int> indices(sorting_vector.size());
 
 #ifdef TRV_USE_OMP
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma omp parallel for simd
+#else  // !__GNUC__ || __clang__
+#pragma omp parallel for
+#endif  // __GNUC__ && !__clang__
 #endif  // TRV_USE_OMP
   for (int i = 0; i < int(sorting_vector.size()); i++) {
       indices[i] = i;

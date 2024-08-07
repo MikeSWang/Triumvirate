@@ -1711,7 +1711,11 @@ double MeshField::calc_grid_based_powlaw_norm(
   trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma omp parallel for simd
+#else  // !__GNUC__ || __clang__
+#pragma omp parallel for
+#endif  // __GNUC__ && !__clang__
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles.ntotal; pid++) {
     weight[pid][0] = particles[pid].w;
@@ -1730,7 +1734,11 @@ double MeshField::calc_grid_based_powlaw_norm(
   double vol_int = 0.;
 
 #ifdef TRV_USE_OMP
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma omp parallel for simd reduction(+:vol_int)
+#else  // !__GNUC__ || __clang__
+#pragma omp parallel for reduction(+:vol_int)
+#endif  // __GNUC__ && !__clang__
 #endif  // TRV_USE_OMP
   for (long long gid = 0; gid < this->params.nmesh; gid++) {
     vol_int += std::pow(this->field[gid][0], order);

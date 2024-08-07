@@ -104,7 +104,11 @@ double calc_bispec_normalisation_from_particles(
   double norm = 0.;  // I₃
 
 #ifdef TRV_USE_OMP
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma omp parallel for simd reduction(+:norm)
+#else  // !__GNUC__ || __clang__
+#pragma omp parallel for reduction(+:norm)
+#endif  // __GNUC__ && !__clang__
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles.ntotal; pid++) {
     norm += particles[pid].ws

@@ -331,7 +331,11 @@ void ParticleCatalogue::calc_total_weights() {
   double wtotal = 0., wstotal = 0.;
 
 #ifdef TRV_USE_OMP
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma omp parallel for simd reduction(+:wtotal, wstotal)
+#else  // !__GNUC__ || __clang__
+#pragma omp parallel for reduction(+:wtotal, wstotal)
+#endif  // __GNUC__ && !__clang__
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < this->ntotal; pid++) {
     wtotal += this->pdata[pid].w;

@@ -64,7 +64,11 @@ double calc_powspec_normalisation_from_particles(
   double norm = 0.;  // I₂
 
 #ifdef TRV_USE_OMP
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma omp parallel for simd reduction(+:norm)
+#else  // !__GNUC__ || __clang__
+#pragma omp parallel for reduction(+:norm)
+#endif  // __GNUC__ && !__clang__
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles.ntotal; pid++) {
     norm += particles[pid].ws
@@ -122,7 +126,11 @@ double calc_powspec_normalisation_from_meshes(
   trvs::update_maxmem();
 
 #ifdef TRV_USE_OMP
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma omp parallel for simd
+#else  // !__GNUC__ || __clang__
+#pragma omp parallel for
+#endif  // __GNUC__ && !__clang__
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles_data.ntotal; pid++) {
     weight_data[pid][0] = particles_data[pid].w;
@@ -130,7 +138,11 @@ double calc_powspec_normalisation_from_meshes(
   }
 
 #ifdef TRV_USE_OMP
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma omp parallel for simd
+#else  // !__GNUC__ || __clang__
+#pragma omp parallel for
+#endif  // __GNUC__ && !__clang__
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles_rand.ntotal; pid++) {
     weight_rand[pid][0] = particles_rand[pid].w;
@@ -150,7 +162,11 @@ double calc_powspec_normalisation_from_meshes(
   double norm = 0.;
 
 #ifdef TRV_USE_OMP
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma omp parallel for simd reduction(+:norm)
+#else  // !__GNUC__ || __clang__
+#pragma omp parallel for reduction(+:norm)
+#endif  // __GNUC__ && !__clang__
 #endif  // TRV_USE_OMP
   for (long long gid = 0; gid < params.nmesh; gid++) {
     norm += mesh_data.field[gid][0] * mesh_rand.field[gid][0];
@@ -217,7 +233,11 @@ double calc_powspec_shotnoise_from_particles(
   double shotnoise = 0.;
 
 #ifdef TRV_USE_OMP
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma omp parallel for simd reduction(+:shotnoise)
+#else  // !__GNUC__ || __clang__
+#pragma omp parallel for reduction(+:shotnoise)
+#endif  // __GNUC__ && !__clang__
 #endif  // TRV_USE_OMP
   for (int pid = 0; pid < particles.ntotal; pid++) {
     shotnoise +=
