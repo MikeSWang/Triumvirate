@@ -506,20 +506,35 @@ void display_prog_licence() {
 }
 
 void display_prog_info() {
+  std::printf("RUNTIME INFORMATION >\n\n");
+
+#ifdef GSL_VERSION
+#define _GSL_VERSION GSL_VERSION
+#else  // !GSL_VERSION
+#define _GSL_VERSION "unknown"
+#endif  // GSL_VERSION
+  std::printf("GSL version: %s\n", _GSL_VERSION);
+
+  std::printf("FFTW version: %s\n", fftw_version);
+
 #ifdef TRV_USE_OMP
-#define _OMP_VERSION _OPENMP
+#define _OMP_VERSION std::to_string(_OPENMP)
+#define _OMP_NTHREADS omp_get_max_threads()
 #else  // !TRV_USE_OMP
-#define _OMP_VERSION 0
+#define _OMP_VERSION "unknown"
+#define _OMP_NTHREADS 1
 #endif  // TRV_USE_OMP
-  std::printf("PROGRAM INFORMATION >\n\n");
-  std::printf("OpenMP version: %d\n", _OMP_VERSION);
+  std::printf("OpenMP version: %s\n", _OMP_VERSION.c_str());
+
+  std::printf("Thread number: %d\n", _OMP_NTHREADS);
+
   std::printf("\n");
 }
 
 void display_prog_logbars(int endpoint) {
   if (endpoint == 0) {
     // std::printf("%s\n", std::string(80, '>').c_str());
-    std::printf("TRIUMVIRATE LOG >\n\n");
+    std::printf("PROGRAM LOG >\n\n");
   } else
   if (endpoint == 1) {
     // std::printf("%s\n", std::string(80, '<').c_str());

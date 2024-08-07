@@ -40,6 +40,9 @@
 #include <string>
 #include <vector>
 
+#include <fftw3.h>
+#include <gsl/gsl_version.h>
+
 /// @cond DOXYGEN_DOC_MACROS
 // Declares OMP macros.
 #ifdef TRV_USE_OMP
