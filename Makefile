@@ -129,7 +129,7 @@ DEP_TEST_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPS_TEST
 
 INCLUDES += -I${DIR_PKG_INCLUDE} ${DEP_INCLUDES}
 CPPFLAGS += -MMD -MP
-CXXFLAGS += -std=c++17 -mtune=native -Wall -O3 ${DEP_CXXFLAGS}
+CXXFLAGS += -std=c++17 -Wall -O3 ${DEP_CXXFLAGS}
 LDFLAGS += \
 	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \
 	${DEP_LDFLAGS}
