@@ -399,7 +399,7 @@ def test_ParameterSet_get(param_name, param_value, valid_paramset):
 @pytest.mark.parametrize(
     "update_args, update_kwargs",
     [
-        ([dict(verbose=60)], {'catalogue_type': 'random'}),
+        ([dict(verbose=60)], {'fftw_scheme': 'patient'}),
     ]
 )
 def test_ParameterSet_update(update_args, update_kwargs, valid_paramset):
