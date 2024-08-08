@@ -28,7 +28,7 @@ do
         --case survey --statistic '2pcf' \
         --multipole $degree --range ${RRANGE}
     ${TESTPROG} \
-        --case random --statistic '2pcf' \
+        --case random --statistic '2pcf-win' \
         --multipole $degree --range ${RRANGE}
 done
 
@@ -51,7 +51,7 @@ do
         --case survey --statistic '3pcf' \
         --multipole $degrees --range ${RRANGE}
     ${TESTPROG} \
-        --case random --statistic '3pcf' \
+        --case random --statistic '3pcf-win' \
         --multipole $degrees --range ${RRANGE}
 done
 

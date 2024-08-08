@@ -85,8 +85,8 @@ def setup_config():
     )
     parser.add_argument(
         '--statistic', type=str, choices=[
-            'powspec', '2pcf',
-            'bispec', '3pcf',
+            'powspec', '2pcf', '2pcf-win',
+            'bispec', '3pcf', '3pcf-win',
         ],
         help="statistic type"
     )
@@ -216,7 +216,7 @@ if __name__ == '__main__':
         compute_corrfunc_in_gpp_box(
             ctlg_data, paramset=params, save='.txt', logger=logger
         )
-    if params['statistic_type'] == '2pcf' \
+    if params['statistic_type'] == '2pcf-win' \
             and params['catalogue_type'] == 'random':
         compute_corrfunc_window(
             ctlg_rand, paramset=params, save='.txt', logger=logger
@@ -242,7 +242,7 @@ if __name__ == '__main__':
         compute_3pcf_in_gpp_box(
             ctlg_data, paramset=params, save='.txt', logger=logger
         )
-    if params['statistic_type'] == '3pcf' \
+    if params['statistic_type'] == '3pcf-win' \
             and params['catalogue_type'] == 'random':
         compute_3pcf_window(
             ctlg_rand, paramset=params, save='.txt', logger=logger
