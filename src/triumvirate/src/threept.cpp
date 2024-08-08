@@ -266,7 +266,8 @@ trv::BispecMeasurements compute_bispec(
 
   double alpha = catalogue_data.wstotal / catalogue_rand.wstotal;
 
-  std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
+  std::complex<double> factor_phase =
+    std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   // Set up output.
   int dv_dim = 0;  // data vector dimension
@@ -356,6 +357,7 @@ trv::BispecMeasurements compute_bispec(
   trvs::update_maxmem();
 
   // Compute bispectrum terms including shot noise.
+  std::vector<trv::SphericalOrderTriplet> sph_orders_computed;
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
@@ -390,11 +392,37 @@ trv::BispecMeasurements compute_bispec(
         );
 
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+        // Check if the current spherical order triplet is redundant.
+        SphericalOrderTriplet sph_order_current = {m1_, m2_, M_};
+
+        std::string flag_redundant = "false";
+        for (SphericalOrderTriplet sph_order : sph_orders_computed) {
+          if (sph_order_current.is_inverse(sph_order)) {
+            flag_redundant = "true";
+          }
+        }
+        if (flag_redundant == "true") {continue;}
+
         // Calculate the coupling coefficient.
         double coupling = trv::calc_coupling_coeff_3pt(
           params.ell1, params.ell2, params.ELL, m1_, m2_, M_
         );  // Wigner 3-j's
         if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
+
+        // The factors consist of products of
+        // ```
+        // {std::pow(-1., params.ell1 + params.ell2 + params.ELL),
+        //  1},
+        // {std::pow(-1., m1_ + m2_ + M_),
+        //  std::pow(-1., 2*M_)} ≡ 1,
+        // {std::pow(-1., params.ell1 + params.ell2),
+        //  std::pow(-1., params.ELL)} ≡ std::pow(-1., params.ELL)}
+        // ```
+        // which, by parity symmetry & Wigner 3-j properties, simplify to:
+        double factor_mirror = sph_order_current.is_zeros() ?
+          0. : std::pow(-1., params.ELL);
+        double factor_mirror_w3j = sph_order_current.is_zeros() ?
+          0. : 1.;  // std::pow(-1., params.ell1 + params.ell2 + params.ELL);
 
         // ·······························································
         // Raw bispectrum
@@ -462,7 +490,9 @@ trv::BispecMeasurements compute_bispec(
 
             std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+            bk_dv[idx_dv] += coupling * vol_cell * (
+              bk_component + factor_mirror * std::conj(bk_component)
+            );
           }
         }
 
@@ -524,7 +554,9 @@ trv::BispecMeasurements compute_bispec(
 
             std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+            bk_dv[idx_dv] += coupling * vol_cell * (
+              bk_component + factor_mirror * std::conj(bk_component)
+            );
           }
         }
 
@@ -586,7 +618,9 @@ trv::BispecMeasurements compute_bispec(
 
             std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+            bk_dv[idx_dv] += coupling * vol_cell * (
+              bk_component + factor_mirror * std::conj(bk_component)
+            );
           }
         }
 
@@ -642,7 +676,9 @@ trv::BispecMeasurements compute_bispec(
 
               std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-              bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+              bk_dv[idx_dv] += coupling * vol_cell * (
+                bk_component + factor_mirror * std::conj(bk_component)
+              );
             }
           }
         }
@@ -700,7 +736,9 @@ trv::BispecMeasurements compute_bispec(
 
               std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-              bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+              bk_dv[idx_dv] += coupling * vol_cell * (
+                bk_component + factor_mirror * std::conj(bk_component)
+              );
             }
           }
         }
@@ -749,9 +787,10 @@ trv::BispecMeasurements compute_bispec(
           if (params.shape == "diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin = idx_dv;
-              sn_dv[idx_dv] += coupling * (
+              std::complex<double> S_i_jk = coupling * (
                 stats_sn.pk[ibin] - stats_sn.sn[ibin]
               );
+              sn_dv[idx_dv] += S_i_jk + factor_mirror * std::conj(S_i_jk);
             }
           }
 
@@ -763,43 +802,47 @@ trv::BispecMeasurements compute_bispec(
               } else {
                 ibin_row = idx_dv + std::abs(params.idx_bin);
               }
-              sn_dv[idx_dv] += coupling * (
+              std::complex<double> S_i_jk = coupling * (
                 stats_sn.pk[ibin_row] - stats_sn.sn[ibin_row]
               );
+              sn_dv[idx_dv] += S_i_jk + factor_mirror * std::conj(S_i_jk);
             }
           }
 
           if (params.shape == "row") {
-            std::complex<double> sn_row_ = coupling * (
+            std::complex<double> S_i_jk_row_ = coupling * (
               stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
             );
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-              sn_dv[idx_dv] += sn_row_;
+              sn_dv[idx_dv] +=
+                S_i_jk_row_ + factor_mirror * std::conj(S_i_jk_row_);
             }
           }
 
           if (params.shape == "full") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
-              std::complex<double> sn_row_ = coupling * (
+              std::complex<double> S_i_jk_row_ = coupling * (
                 stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
               );
               for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
                 int idx_dv = idx_row * params.num_bins + idx_col;
-                sn_dv[idx_dv] += sn_row_;
+                sn_dv[idx_dv] +=
+                  S_i_jk_row_ + factor_mirror * std::conj(S_i_jk_row_);
               }
             }
           }
 
           if (params.shape == "triu") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
-              std::complex<double> sn_row_ = coupling * (
+              std::complex<double> S_i_jk_row_ = coupling * (
                 stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
               );
               for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++)
               {
                 int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
                   + (idx_col - idx_row);
-                sn_dv[idx_dv] += sn_row_;
+                sn_dv[idx_dv] +=
+                  S_i_jk_row_ + factor_mirror * std::conj(S_i_jk_row_);
               }
             }
           }
@@ -814,9 +857,11 @@ trv::BispecMeasurements compute_bispec(
           if (params.shape == "diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin = idx_dv;
-              sn_dv[idx_dv] += coupling * (
+              std::complex<double> S_ik_j_ki = coupling * (
                 stats_sn.pk[ibin] - stats_sn.sn[ibin]
               );
+              sn_dv[idx_dv] +=
+                S_ik_j_ki + factor_mirror * std::conj(S_ik_j_ki);
             }
           }
 
@@ -828,42 +873,48 @@ trv::BispecMeasurements compute_bispec(
               } else {
                 ibin_col = idx_dv;
               }
-              sn_dv[idx_dv] += coupling * (
+              std::complex<double> S_ik_j_ki = coupling * (
                 stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
               );
+              sn_dv[idx_dv] +=
+                S_ik_j_ki + factor_mirror * std::conj(S_ik_j_ki);
             }
           }
 
           if (params.shape == "row") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin_col = idx_dv;
-              sn_dv[idx_dv] += coupling * (
+              std::complex<double> S_ik_j_ki = coupling * (
                 stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
               );
+              sn_dv[idx_dv] +=
+                S_ik_j_ki + factor_mirror * std::conj(S_ik_j_ki);
             }
           }
 
           if (params.shape == "full") {
             for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
-              std::complex<double> sn_col_ = coupling * (
+              std::complex<double> S_ik_j_ki_col_ = coupling * (
                 stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
               );
               for (int idx_row = 0; idx_row <= params.num_bins; idx_row++) {
                 int idx_dv = idx_row * params.num_bins + idx_col;
-                sn_dv[idx_dv] += sn_col_;
+                sn_dv[idx_dv] +=
+                  S_ik_j_ki_col_ + factor_mirror * std::conj(S_ik_j_ki_col_);
               }
             }
           }
 
           if (params.shape == "triu") {
             for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
-              std::complex<double> sn_col_ = coupling * (
+              std::complex<double> S_ik_j_ki_col_ = coupling * (
                 stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
               );
               for (int idx_row = 0; idx_row <= idx_col; idx_row++) {
                 int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
                   + (idx_col - idx_row);
-                sn_dv[idx_dv] += sn_col_;
+                sn_dv[idx_dv] +=
+                  S_ik_j_ki_col_ + factor_mirror * std::conj(S_ik_j_ki_col_);
               }
             }
           }
@@ -873,19 +924,22 @@ trv::BispecMeasurements compute_bispec(
           double k_a = k1eff_dv[idx_dv];
           double k_b = k2eff_dv[idx_dv];
 
-          std::complex<double> S_ij_k = parity *
-            stats_sn.compute_uncoupled_shotnoise_for_bispec_per_bin(
+          std::complex<double> S_ij_k = coupling
+            * stats_sn.compute_uncoupled_shotnoise_for_bispec_per_bin(
               dn_LM_for_sn, N_00, ylm_r_a, ylm_r_b, sj_a, sj_b,
               Sbar_LM, k_a, k_b
             );  // S|{i = j ≠ k}
 
-          sn_dv[idx_dv] += coupling * S_ij_k;
+          sn_dv[idx_dv] += factor_phase * (
+            S_ij_k + factor_mirror_w3j * std::conj(S_ij_k)
+          );
         }
 
+        sph_orders_computed.push_back(sph_order_current);
         count_terms++;
         if (trvs::currTask == 0) {
           trvs::logger.stat(
-            "Bispectrum term computed at orders (m1, m2, M) = (%d, %d, %d).",
+            "Bispectrum term computed at orders (m₁, m₂, M) = ±(%d, %d, %d).",
             m1_, m2_, M_
           );
         }
@@ -953,7 +1007,9 @@ trv::ThreePCFMeasurements compute_3pcf(
 
   double alpha = catalogue_data.wstotal / catalogue_rand.wstotal;
 
-  std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
+  std::complex<double> factor_phase =
+    std::pow(trvm::M_I, params.ell1 + params.ell2);
+  double factor_parity = std::pow(-1., params.ell1 + params.ell2);
 
   // Set up output.
   int dv_dim = 0;  // data vector dimension
@@ -1041,10 +1097,10 @@ trv::ThreePCFMeasurements compute_3pcf(
   trvs::update_maxmem();
 
   // Compute 3PCF terms including shot noise.
+  std::vector<trv::SphericalOrderTriplet> sph_orders_computed;
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      // Check for vanishing cases where all Wigner-3j symbols are zero.
       // Check for if all Wigner-3j symbols are zero.
       std::string flag_vanishing = "true";
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -1076,11 +1132,35 @@ trv::ThreePCFMeasurements compute_3pcf(
         );
 
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+        // Check if the current spherical order triplet is redundant.
+        SphericalOrderTriplet sph_order_current = {m1_, m2_, M_};
+
+        std::string flag_redundant = "false";
+        for (SphericalOrderTriplet sph_order : sph_orders_computed) {
+          if (sph_order_current.is_inverse(sph_order)) {
+            flag_redundant = "true";
+          }
+        }
+        if (flag_redundant == "true") {continue;}
+
         // Calculate the coupling coefficient.
         double coupling = trv::calc_coupling_coeff_3pt(
           params.ell1, params.ell2, params.ELL, m1_, m2_, M_
         );  // Wigner 3-j's
         if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
+
+        // The factor should be
+        // ```
+        // std::pow(-1., params.ell1 + params.ell2 + params.ELL) *
+        // std::pow(-1., m1_ + m2_ + M_) *
+        // {std::pow(-1., params.ell1 + params.ell2), 1};
+        // ```
+        // which, by parity symmetry and Wigner 3-j properties,
+        // simplifies to:
+        double factor_mirror = sph_order_current.is_zeros() ?
+          0. : std::pow(-1., params.ELL);
+        double factor_mirror_w3j = sph_order_current.is_zeros() ?
+          0. : 1.;  // std::pow(-1., params.ell1 + params.ell2 + params.ELL);
 
         // ·······························································
         // Shot noise
@@ -1109,7 +1189,10 @@ trv::ThreePCFMeasurements compute_3pcf(
         if (params.shape == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
-            sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
+            sn_dv[idx_dv] += coupling * factor_parity * (
+              stats_sn.xi[ibin]
+              + factor_mirror_w3j * std::conj(stats_sn.xi[ibin])
+            );
           }
         }
 
@@ -1117,19 +1200,28 @@ trv::ThreePCFMeasurements compute_3pcf(
           // Note that ``idx_col == idx_row``.
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
-            sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
+            sn_dv[idx_dv] += coupling * factor_parity * (
+              stats_sn.xi[ibin]
+              + factor_mirror_w3j * std::conj(stats_sn.xi[ibin])
+            );
           }
         }
 
         if (params.shape == "row") {
-          sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
+          sn_dv[params.idx_bin] += coupling * factor_parity * (
+            stats_sn.xi[params.idx_bin]
+            + factor_mirror_w3j * std::conj(stats_sn.xi[params.idx_bin])
+          );
         }
 
         if (params.shape == "full") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             // Note that ``idx_col == idx_row``.
             int idx_dv = idx_row * params.num_bins + idx_row;
-            sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
+            sn_dv[idx_dv] += coupling * factor_parity * (
+              stats_sn.xi[idx_row]
+              + factor_mirror_w3j * std::conj(stats_sn.xi[idx_row])
+            );
           }
         }
 
@@ -1137,7 +1229,10 @@ trv::ThreePCFMeasurements compute_3pcf(
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             // Note that ``idx_col == idx_row``.
             int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2;
-            sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
+            sn_dv[idx_dv] += coupling * factor_parity * (
+              stats_sn.xi[idx_row]
+              + factor_mirror_w3j * std::conj(stats_sn.xi[idx_row])
+            );
           }
         }
 
@@ -1270,14 +1365,17 @@ trv::ThreePCFMeasurements compute_3pcf(
 
           std::complex<double> zeta_component(zeta_comp_real, zeta_comp_imag);
 
-          zeta_dv[idx_dv] += parity * coupling * vol_cell * zeta_component;
+          zeta_dv[idx_dv] += coupling * vol_cell * factor_phase * (
+            zeta_component + factor_mirror * std::conj(zeta_component)
+          );
         }
 
+        sph_orders_computed.push_back(sph_order_current);
         count_terms++;
         if (trvs::currTask == 0) {
           trvs::logger.stat(
             "Three-point correlation function term computed at orders "
-            "(m1, m2, M) = (%d, %d, %d).",
+            "(m₁, m₂, M) = ±(%d, %d, %d).",
             m1_, m2_, M_
           );
         }
@@ -1343,7 +1441,8 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   // Set up/check input.
   validate_multipole_coupling(params);
 
-  std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
+  std::complex<double> factor_phase =
+    std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   // Set up output.
   int dv_dim = 0;  // data vector dimension
@@ -1434,6 +1533,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   trvs::update_maxmem();
 
   // Compute bispectrum terms including shot noise.
+  std::vector<trv::SphericalOrderTriplet> sph_orders_computed;
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
@@ -1441,11 +1541,37 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       // M = 0 for any spherical-harmonic-weighted field fluctuations.
       int M_ = 0;
 
+      // Check if the current spherical order triplet is redundant.
+      SphericalOrderTriplet sph_order_current = {m1_, m2_, M_};
+
+      std::string flag_redundant = "false";
+      for (SphericalOrderTriplet sph_order : sph_orders_computed) {
+        if (sph_order_current.is_inverse(sph_order)) {
+          flag_redundant = "true";
+        }
+      }
+      if (flag_redundant == "true") {continue;}
+
       // Calculate the coupling coefficient.
       double coupling = trv::calc_coupling_coeff_3pt(
         params.ell1, params.ell2, params.ELL, m1_, m2_, M_
       );  // Wigner 3-j's
       if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
+
+      // The factor consist of products of
+      // ```
+      // {std::pow(-1., params.ell1 + params.ell2 + params.ELL),
+      //  1},
+      // {std::pow(-1., m1_ + m2_ + M_),
+      //  std::pow(-1., 2*M_)} ≡ 1,
+      // {std::pow(-1., params.ell1 + params.ell2),
+      //  std::pow(-1., params.ELL)} ≡ std::pow(-1., params.ELL)}
+      // ```
+      // which, by parity symmetry & Wigner 3-j properties, simplify to:
+      double factor_mirror = sph_order_current.is_zeros() ?
+        0. : std::pow(-1., params.ELL);
+      double factor_mirror_w3j = sph_order_current.is_zeros() ?
+        0. : 1.;  // std::pow(-1., params.ell1 + params.ell2 + params.ELL);
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_fourier_space(
@@ -1522,7 +1648,9 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
           std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-          bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+          bk_dv[idx_dv] += coupling * vol_cell * (
+            bk_component + factor_mirror * std::conj(bk_component)
+          );
         }
       }
 
@@ -1580,7 +1708,9 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
           std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-          bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+          bk_dv[idx_dv] += coupling * vol_cell * (
+            bk_component + factor_mirror * std::conj(bk_component)
+          );
         }
       }
 
@@ -1638,7 +1768,9 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
           std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-          bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+          bk_dv[idx_dv] += coupling * vol_cell * (
+            bk_component + factor_mirror * std::conj(bk_component)
+          );
         }
       }
 
@@ -1694,7 +1826,9 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
             std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+            bk_dv[idx_dv] += coupling * vol_cell * (
+              bk_component + factor_mirror * std::conj(bk_component)
+            );
           }
         }
       }
@@ -1752,7 +1886,9 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
 
             std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+            bk_dv[idx_dv] += coupling * vol_cell * (
+              bk_component + factor_mirror * std::conj(bk_component)
+            );
           }
         }
       }
@@ -1784,9 +1920,10 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         if (params.shape == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
-            sn_dv[idx_dv] += coupling * (
+            std::complex<double> S_i_jk = coupling * (
               stats_sn.pk[ibin] - stats_sn.sn[ibin]
             );
+            sn_dv[idx_dv] += S_i_jk + factor_mirror * std::conj(S_i_jk);
           }
         }
 
@@ -1798,42 +1935,46 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
             } else {
               ibin_row = idx_dv + std::abs(params.idx_bin);
             }
-            sn_dv[idx_dv] += coupling * (
+            std::complex<double> S_i_jk = coupling * (
               stats_sn.pk[ibin_row] - stats_sn.sn[ibin_row]
             );
+            sn_dv[idx_dv] += S_i_jk + factor_mirror * std::conj(S_i_jk);
           }
         }
 
         if (params.shape == "row") {
-          std::complex<double> sn_row_ = coupling * (
+          std::complex<double> S_i_jk_row_ = coupling * (
             stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
           );
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-            sn_dv[idx_dv] += sn_row_;
+            sn_dv[idx_dv] +=
+              S_i_jk_row_ + factor_mirror * std::conj(S_i_jk_row_);
           }
         }
 
         if (params.shape == "full") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
-            std::complex<double> sn_row_ = coupling * (
+            std::complex<double> S_i_jk_row_ = coupling * (
               stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
             );
             for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
               int idx_dv = idx_row * params.num_bins + idx_col;
-              sn_dv[idx_dv] += sn_row_;
+              sn_dv[idx_dv] +=
+                S_i_jk_row_ + factor_mirror * std::conj(S_i_jk_row_);
             }
           }
         }
 
         if (params.shape == "triu") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
-            std::complex<double> sn_row_ = coupling * (
+            std::complex<double> S_i_jk_row_ = coupling * (
               stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
             );
             for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++) {
               int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
                 + (idx_col - idx_row);
-              sn_dv[idx_dv] += sn_row_;
+              sn_dv[idx_dv] +=
+                S_i_jk_row_ + factor_mirror * std::conj(S_i_jk_row_);
             }
           }
         }
@@ -1848,9 +1989,10 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         if (params.shape == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
-            sn_dv[idx_dv] += coupling * (
+            std::complex<double> S_ik_j_ki = coupling * (
               stats_sn.pk[ibin] - stats_sn.sn[ibin]
             );
+            sn_dv[idx_dv] += S_ik_j_ki + factor_mirror * std::conj(S_ik_j_ki);
           }
         }
 
@@ -1862,42 +2004,46 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
             } else {
               ibin_col = idx_dv;
             }
-            sn_dv[idx_dv] += coupling * (
+            std::complex<double> S_ik_j_ki = coupling * (
               stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
             );
+            sn_dv[idx_dv] += S_ik_j_ki + factor_mirror * std::conj(S_ik_j_ki);
           }
         }
 
         if (params.shape == "row") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin_col = idx_dv;
-            sn_dv[idx_dv] += coupling * (
+            std::complex<double> S_ik_j_ki = coupling * (
               stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
             );
+            sn_dv[idx_dv] += S_ik_j_ki + factor_mirror * std::conj(S_ik_j_ki);
           }
         }
 
         if (params.shape == "full") {
           for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
-            std::complex<double> sn_col_ = coupling * (
+            std::complex<double> S_ik_j_ki_col_ = coupling * (
               stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
             );
             for (int idx_row = 0; idx_row <= params.num_bins; idx_row++) {
               int idx_dv = idx_row * params.num_bins + idx_col;
-              sn_dv[idx_dv] += sn_col_;
+              sn_dv[idx_dv] +=
+                S_ik_j_ki_col_ + factor_mirror * std::conj(S_ik_j_ki_col_);
             }
           }
         }
 
         if (params.shape == "triu") {
           for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
-            std::complex<double> sn_col_ = coupling * (
+            std::complex<double> S_ik_j_ki_col_ = coupling * (
               stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
             );
             for (int idx_row = 0; idx_row <= idx_col; idx_row++) {
               int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
                 + (idx_col - idx_row);
-              sn_dv[idx_dv] += sn_col_;
+              sn_dv[idx_dv] +=
+                S_ik_j_ki_col_ + factor_mirror * std::conj(S_ik_j_ki_col_);
             }
           }
         }
@@ -1907,19 +2053,22 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         double k_a = k1eff_dv[idx_dv];
         double k_b = k2eff_dv[idx_dv];
 
-        std::complex<double> S_ij_k = parity
+        std::complex<double> S_ij_k = coupling
           * stats_sn.compute_uncoupled_shotnoise_for_bispec_per_bin(
             dn_L0_for_sn, N_00, ylm_r_a, ylm_r_b, sj_a, sj_b,
             Sbar_L0, k_a, k_b
           );  // S|{i = j ≠ k}
 
-        sn_dv[idx_dv] += coupling * S_ij_k;
+        sn_dv[idx_dv] += factor_phase * (
+          S_ij_k + factor_mirror_w3j * std::conj(S_ij_k)
+        );
       }
 
+      sph_orders_computed.push_back(sph_order_current);
       count_terms++;
       if (trvs::currTask == 0) {
         trvs::logger.stat(
-          "Bispectrum term computed at orders (m1, m2, M) = (%d, %d, 0).",
+          "Bispectrum term computed at orders (m₁, m₂, M) = ±(%d, %d, 0).",
           m1_, m2_
         );
       }
@@ -1985,7 +2134,9 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   // Set up/check input.
   validate_multipole_coupling(params);
 
-  std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
+  std::complex<double> factor_phase =
+    std::pow(trvm::M_I, params.ell1 + params.ell2);
+  double factor_parity = std::pow(-1., params.ell1 + params.ell2);
 
   // Set up output.
   int dv_dim = 0;  // data vector dimension
@@ -2071,6 +2222,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   trvs::update_maxmem();
 
   // Compute 3PCF terms including shot noise.
+  std::vector<trv::SphericalOrderTriplet> sph_orders_computed;
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
@@ -2078,11 +2230,35 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       // M = 0 for any spherical-harmonic-weighted field fluctuations.
       int M_ = 0;
 
+      // Check if the current spherical order triplet is redundant.
+      SphericalOrderTriplet sph_order_current = {m1_, m2_, M_};
+
+      std::string flag_redundant = "false";
+      for (SphericalOrderTriplet sph_order : sph_orders_computed) {
+        if (sph_order_current.is_inverse(sph_order)) {
+          flag_redundant = "true";
+        }
+      }
+      if (flag_redundant == "true") {continue;}
+
       // Calculate the coupling coefficient.
       double coupling = trv::calc_coupling_coeff_3pt(
         params.ell1, params.ell2, params.ELL, m1_, m2_, M_
       );  // Wigner 3-j's
       if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
+
+      // The factor should be
+      // ```
+      // std::pow(-1., params.ell1 + params.ell2 + params.ELL) *
+      // std::pow(-1., m1_ + m2_ + M_) *
+      // {std::pow(-1., params.ell1 + params.ell2), 1};
+      // ```
+      // which, by parity symmetry and Wigner 3-j properties,
+      // simplifies to:
+      double factor_mirror = sph_order_current.is_zeros() ?
+        0. : std::pow(-1., params.ELL);
+      double factor_mirror_w3j = sph_order_current.is_zeros() ?
+        0. : 1.;  // std::pow(-1., params.ell1 + params.ell2 + params.ELL);
 
       trvm::SphericalHarmonicCalculator::
         store_reduced_spherical_harmonic_in_config_space(
@@ -2119,7 +2295,10 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       if (params.shape == "diag") {
         for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
           int ibin = idx_dv;
-          sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
+          sn_dv[idx_dv] += coupling * factor_parity * (
+            stats_sn.xi[ibin]
+            + factor_mirror_w3j * std::conj(stats_sn.xi[ibin])
+          );
         }
       }
 
@@ -2127,19 +2306,28 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         // Note that ``idx_col == idx_row``.
         for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
           int ibin = idx_dv;
-          sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
+          sn_dv[idx_dv] += coupling * factor_parity * (
+            stats_sn.xi[ibin]
+            + factor_mirror_w3j * std::conj(stats_sn.xi[ibin])
+          );
         }
       }
 
       if (params.shape == "row") {
-        sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
+        sn_dv[params.idx_bin] += coupling * factor_parity * (
+          stats_sn.xi[params.idx_bin]
+          + factor_mirror_w3j * std::conj(stats_sn.xi[params.idx_bin])
+        );
       }
 
       if (params.shape == "full") {
         for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
           // Note that ``idx_col == idx_row``.
           int idx_dv = idx_row * params.num_bins + idx_row;
-          sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
+          sn_dv[idx_dv] += coupling * factor_parity * (
+            stats_sn.xi[idx_row]
+            + factor_mirror_w3j * std::conj(stats_sn.xi[idx_row])
+          );
         }
       }
 
@@ -2147,7 +2335,10 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
           // Note that ``idx_col == idx_row``.
           int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2;
-          sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
+          sn_dv[idx_dv] += coupling * factor_parity * (
+            stats_sn.xi[idx_row]
+            + factor_mirror_w3j * std::conj(stats_sn.xi[idx_row])
+          );
         }
       }
 
@@ -2276,14 +2467,17 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
 
         std::complex<double> zeta_component(zeta_comp_real, zeta_comp_imag);
 
-        zeta_dv[idx_dv] += parity * coupling * vol_cell * zeta_component;
+        zeta_dv[idx_dv] += coupling * vol_cell * factor_phase * (
+          zeta_component + factor_mirror * std::conj(zeta_component)
+        );
       }
 
+      sph_orders_computed.push_back(sph_order_current);
       count_terms++;
       if (trvs::currTask == 0) {
         trvs::logger.stat(
           "Three-point correlation function term computed at orders "
-          "(m1, m2, M) = (%d, %d, 0).",
+          "(m₁, m₂, M) = ±(%d, %d, 0).",
           m1_, m2_
         );
       }
@@ -2352,7 +2546,9 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   // Set up/check input.
   validate_multipole_coupling(params);
 
-  std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
+  std::complex<double> factor_phase =
+    std::pow(trvm::M_I, params.ell1 + params.ell2);
+  double factor_parity = std::pow(-1., params.ell1 + params.ell2);
 
   // Set up output.
   int dv_dim = 0;  // data vector dimension
@@ -2436,10 +2632,10 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   trvs::update_maxmem();
 
   // Compute 3PCF window terms including shot noise.
+  std::vector<trv::SphericalOrderTriplet> sph_orders_computed;
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
-      // Check for vanishing cases where all Wigner-3j symbols are zero.
       // Check for if all Wigner-3j symbols are zero.
       std::string flag_vanishing = "true";
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
@@ -2471,11 +2667,35 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         );
 
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+        // Check if the current spherical order triplet is redundant.
+        SphericalOrderTriplet sph_order_current = {m1_, m2_, M_};
+
+        std::string flag_redundant = "false";
+        for (SphericalOrderTriplet sph_order : sph_orders_computed) {
+          if (sph_order_current.is_inverse(sph_order)) {
+            flag_redundant = "true";
+          }
+        }
+        if (flag_redundant == "true") {continue;}
+
         // Calculate the coupling coefficient.
         double coupling = trv::calc_coupling_coeff_3pt(
           params.ell1, params.ell2, params.ELL, m1_, m2_, M_
         );  // Wigner 3-j's
         if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
+
+        // The factor should be
+        // ```
+        // std::pow(-1., params.ell1 + params.ell2 + params.ELL) *
+        // std::pow(-1., m1_ + m2_ + M_) *
+        // {std::pow(-1., params.ell1 + params.ell2), 1};
+        // ```
+        // which, by parity symmetry and Wigner 3-j properties,
+        // simplifies to:
+        double factor_mirror = sph_order_current.is_zeros() ?
+          0. : std::pow(-1., params.ELL);
+        double factor_mirror_w3j = sph_order_current.is_zeros() ?
+          0. : 1.;  // std::pow(-1., params.ell1 + params.ell2 + params.ELL);
 
         // ·······························································
         // Shot noise
@@ -2502,7 +2722,10 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         if (params.shape == "diag") {
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
-            sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
+            sn_dv[idx_dv] += coupling * factor_parity * (
+              stats_sn.xi[ibin]
+              + factor_mirror_w3j * std::conj(stats_sn.xi[ibin])
+            );
           }
         }
 
@@ -2510,19 +2733,28 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           // Note that ``idx_col == idx_row``.
           for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
             int ibin = idx_dv;
-            sn_dv[idx_dv] += coupling * stats_sn.xi[ibin];
+            sn_dv[idx_dv] += coupling * factor_parity * (
+              stats_sn.xi[ibin]
+              + factor_mirror_w3j * std::conj(stats_sn.xi[ibin])
+            );
           }
         }
 
         if (params.shape == "row") {
-          sn_dv[params.idx_bin] += coupling * stats_sn.xi[params.idx_bin];
+          sn_dv[params.idx_bin] += coupling * factor_parity * (
+            stats_sn.xi[params.idx_bin]
+            + factor_mirror_w3j * std::conj(stats_sn.xi[params.idx_bin])
+          );
         }
 
         if (params.shape == "full") {
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             // Note that ``idx_col == idx_row``.
             int idx_dv = idx_row * params.num_bins + idx_row;
-            sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
+            sn_dv[idx_dv] += coupling * factor_parity * (
+              stats_sn.xi[idx_row]
+              + factor_mirror_w3j * std::conj(stats_sn.xi[idx_row])
+            );
           }
         }
 
@@ -2530,7 +2762,10 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
             // Note that ``idx_col == idx_row``.
             int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2;
-            sn_dv[idx_dv] += coupling * stats_sn.xi[idx_row];
+            sn_dv[idx_dv] += coupling * factor_parity * (
+              stats_sn.xi[idx_row]
+              + factor_mirror_w3j * std::conj(stats_sn.xi[idx_row])
+            );
           }
         }
 
@@ -2666,14 +2901,17 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
 
           std::complex<double> zeta_component(zeta_comp_real, zeta_comp_imag);
 
-          zeta_dv[idx_dv] += parity * coupling * vol_cell * zeta_component;
+          zeta_dv[idx_dv] += coupling * vol_cell * factor_phase * (
+            zeta_component + factor_mirror * std::conj(zeta_component)
+          );
         }
 
+        sph_orders_computed.push_back(sph_order_current);
         count_terms++;
         if (trvs::currTask == 0) {
           trvs::logger.stat(
             "Three-point correlation function window term computed at orders "
-            "(m1, m2, M) = (%d, %d, %d).",
+            "(m₁, m₂, M) = ±(%d, %d, %d).",
             m1_, m2_, M_
           );
         }
@@ -2746,7 +2984,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
   double alpha = catalogue_data.wstotal / catalogue_rand.wstotal;
 
-  std::complex<double> parity = std::pow(trvm::M_I, params.ell1 + params.ell2);
+  std::complex<double> factor_phase =
+    std::pow(trvm::M_I, params.ell1 + params.ell2);
 
   // Set up output.
   int dv_dim = 0;  // data vector dimension
@@ -2850,6 +3089,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   trvs::update_maxmem();
 
   // Compute bispectrum terms.
+  std::vector<trv::SphericalOrderTriplet> sph_orders_computed;
   int count_terms = 0;
   for (int m1_ = - params.ell1; m1_ <= params.ell1; m1_++) {
     for (int m2_ = - params.ell2; m2_ <= params.ell2; m2_++) {
@@ -2884,11 +3124,37 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         );
 
       for (int M_ = - params.ELL; M_ <= params.ELL; M_++) {
+        // Check if the current spherical order triplet is redundant.
+        SphericalOrderTriplet sph_order_current = {m1_, m2_, M_};
+
+        std::string flag_redundant = "false";
+        for (SphericalOrderTriplet sph_order : sph_orders_computed) {
+          if (sph_order_current.is_inverse(sph_order)) {
+            flag_redundant = "true";
+          }
+        }
+        if (flag_redundant == "true") {continue;}
+
         // Calculate the coupling coefficient.
         double coupling = trv::calc_coupling_coeff_3pt(
           params.ell1, params.ell2, params.ELL, m1_, m2_, M_
         );  // Wigner 3-j's
         if (std::fabs(coupling) < trvm::eps_coupling) {continue;}
+
+        // The factors consist of products of
+        // ```
+        // {std::pow(-1., params.ell1 + params.ell2 + params.ELL),
+        //  1},
+        // {std::pow(-1., m1_ + m2_ + M_),
+        //  std::pow(-1., 2*M_)} ≡ 1,
+        // {std::pow(-1., params.ell1 + params.ell2),
+        //  std::pow(-1., params.ELL)} ≡ std::pow(-1., params.ELL)}
+        // ```
+        // which, by parity symmetry & Wigner 3-j properties, simplify to:
+        double factor_mirror = sph_order_current.is_zeros() ?
+          0. : std::pow(-1., params.ELL);
+        double factor_mirror_w3j = sph_order_current.is_zeros() ?
+          0. : 1.;  // std::pow(-1., params.ell1 + params.ell2 + params.ELL);
 
         // ·······························································
         // Raw bispectrum
@@ -2993,7 +3259,9 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
             std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+            bk_dv[idx_dv] += coupling * vol_cell * (
+              bk_component + factor_mirror * std::conj(bk_component)
+            );
           }
         }
 
@@ -3055,7 +3323,9 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
             std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+            bk_dv[idx_dv] += coupling * vol_cell * (
+              bk_component + factor_mirror * std::conj(bk_component)
+            );
           }
         }
 
@@ -3117,7 +3387,9 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
             std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-            bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+            bk_dv[idx_dv] += coupling * vol_cell * (
+              bk_component + factor_mirror * std::conj(bk_component)
+            );
           }
         }
 
@@ -3173,7 +3445,9 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
               std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-              bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+              bk_dv[idx_dv] += coupling * vol_cell * (
+                bk_component + factor_mirror * std::conj(bk_component)
+              );
             }
           }
         }
@@ -3231,7 +3505,9 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
               std::complex<double> bk_component(bk_comp_real, bk_comp_imag);
 
-              bk_dv[idx_dv] += coupling * vol_cell * bk_component;
+              bk_dv[idx_dv] += coupling * vol_cell * (
+                bk_component + factor_mirror * std::conj(bk_component)
+              );
             }
           }
         }
@@ -3353,9 +3629,10 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           if (params.shape == "diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin = idx_dv;
-              sn_dv[idx_dv] += coupling * (
+              std::complex<double> S_i_jk = coupling * (
                 stats_sn.pk[ibin] - stats_sn.sn[ibin]
               );
+              sn_dv[idx_dv] += S_i_jk + factor_mirror * std::conj(S_i_jk);
             }
           }
 
@@ -3367,43 +3644,47 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
               } else {
                 ibin_row = idx_dv + std::abs(params.idx_bin);
               }
-              sn_dv[idx_dv] += coupling * (
+              std::complex<double> S_i_jk = coupling * (
                 stats_sn.pk[ibin_row] - stats_sn.sn[ibin_row]
               );
+              sn_dv[idx_dv] += S_i_jk + factor_mirror * std::conj(S_i_jk);
             }
           }
 
           if (params.shape == "row") {
-            std::complex<double> sn_row_ = coupling * (
+            std::complex<double> S_i_jk_row_ = coupling * (
               stats_sn.pk[params.idx_bin] - stats_sn.sn[params.idx_bin]
             );
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-              sn_dv[idx_dv] += sn_row_;
+              sn_dv[idx_dv] +=
+                S_i_jk_row_ + factor_mirror * std::conj(S_i_jk_row_);
             }
           }
 
           if (params.shape == "full") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
-              std::complex<double> sn_row_ = coupling * (
+              std::complex<double> S_i_jk_row_ = coupling * (
                 stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
               );
               for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
                 int idx_dv = idx_row * params.num_bins + idx_col;
-                sn_dv[idx_dv] += sn_row_;
+                sn_dv[idx_dv] +=
+                  S_i_jk_row_ + factor_mirror * std::conj(S_i_jk_row_);
               }
             }
           }
 
           if (params.shape == "triu") {
             for (int idx_row = 0; idx_row < params.num_bins; idx_row++) {
-              std::complex<double> sn_row_ = coupling * (
+              std::complex<double> S_i_jk_row_ = coupling * (
                 stats_sn.pk[idx_row] - stats_sn.sn[idx_row]
               );
               for (int idx_col = idx_row; idx_col < params.num_bins; idx_col++)
               {
                 int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
                   + (idx_col - idx_row);
-                sn_dv[idx_dv] += sn_row_;
+                sn_dv[idx_dv] +=
+                  S_i_jk_row_ + factor_mirror * std::conj(S_i_jk_row_);
               }
             }
           }
@@ -3419,9 +3700,11 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           if (params.shape == "diag") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin = idx_dv;
-              sn_dv[idx_dv] += coupling * (
+              std::complex<double> S_ik_j_ki = coupling * (
                 stats_sn.pk[ibin] - stats_sn.sn[ibin]
               );
+              sn_dv[idx_dv] +=
+                S_ik_j_ki + factor_mirror * std::conj(S_ik_j_ki);
             }
           }
 
@@ -3433,42 +3716,48 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
               } else {
                 ibin_col = idx_dv;
               }
-              sn_dv[idx_dv] += coupling * (
+              std::complex<double> S_ik_j_ki = coupling * (
                 stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
               );
+              sn_dv[idx_dv] +=
+                S_ik_j_ki + factor_mirror * std::conj(S_ik_j_ki);
             }
           }
 
           if (params.shape == "row") {
             for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
               int ibin_col = idx_dv;
-              sn_dv[idx_dv] += coupling * (
+              std::complex<double> S_ik_j_ki = coupling * (
                 stats_sn.pk[ibin_col] - stats_sn.sn[ibin_col]
               );
+              sn_dv[idx_dv] +=
+                S_ik_j_ki + factor_mirror * std::conj(S_ik_j_ki);
             }
           }
 
           if (params.shape == "full") {
             for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
-              std::complex<double> sn_col_ = coupling * (
+              std::complex<double> S_ik_j_ki_col_ = coupling * (
                 stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
               );
               for (int idx_row = 0; idx_row <= params.num_bins; idx_row++) {
                 int idx_dv = idx_row * params.num_bins + idx_col;
-                sn_dv[idx_dv] += sn_col_;
+                sn_dv[idx_dv] +=
+                  S_ik_j_ki_col_ + factor_mirror * std::conj(S_ik_j_ki_col_);
               }
             }
           }
 
           if (params.shape == "triu") {
             for (int idx_col = 0; idx_col < params.num_bins; idx_col++) {
-              std::complex<double> sn_col_ = coupling * (
+              std::complex<double> S_ik_j_ki_col_ = coupling * (
                 stats_sn.pk[idx_col] - stats_sn.sn[idx_col]
               );
               for (int idx_row = 0; idx_row <= idx_col; idx_row++) {
                 int idx_dv = (2*params.num_bins - idx_row + 1) * idx_row / 2
                   + (idx_col - idx_row);
-                sn_dv[idx_dv] += sn_col_;
+                sn_dv[idx_dv] +=
+                  S_ik_j_ki_col_ + factor_mirror * std::conj(S_ik_j_ki_col_);
               }
             }
           }
@@ -3478,19 +3767,22 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           double k_a = k1eff_dv[idx_dv];
           double k_b = k2eff_dv[idx_dv];
 
-          std::complex<double> S_ij_k = parity
+          std::complex<double> S_ij_k = coupling
             * stats_sn.compute_uncoupled_shotnoise_for_bispec_per_bin(
               dn_LM_c_for_sn, N_LM_c, ylm_r_a, ylm_r_b, sj_a, sj_b,
               Sbar_LM, k_a, k_b
             );  // S|{i = j ≠ k}
 
-          sn_dv[idx_dv] += coupling * S_ij_k;
+          sn_dv[idx_dv] += factor_phase * (
+            S_ij_k + factor_mirror_w3j * std::conj(S_ij_k)
+          );
         }
 
+        sph_orders_computed.push_back(sph_order_current);
         count_terms++;
         if (trvs::currTask == 0) {
           trvs::logger.stat(
-            "Bispectrum term computed at orders (m1, m2, M) = (%d, %d, %d).",
+            "Bispectrum term computed at orders (m₁, m₂, M) = ±(%d, %d, %d).",
             m1_, m2_, M_
           );
         }
