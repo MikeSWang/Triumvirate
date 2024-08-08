@@ -34,6 +34,7 @@ TAG_TITLES = {
     'FIX': "Bug fixes",
     'MAINT': "Maintenance",
     'MISC': "Miscellaneous",
+    'REL': "None",
     'REV': "None",
     'STYLE': "None",
     'TEST': "None",

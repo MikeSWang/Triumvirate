@@ -1,6 +1,6 @@
 # Change Log
 
-## v0.5 (expected in 2024)
+## v0.6 (expected in 2024)
 
 ### Bug fixes
 
@@ -17,6 +17,36 @@
 - Add documentation for window convolution.
 
 ### Miscellaneous
+
+
+## v0.5.0 (2024-08-09)
+
+### Bug fixes
+
+- Remove assumption of the same pivot value for both dimensions in double
+  spherical Bessel transform.
+
+- Enforce `scipy.integrate.simpson` keyword-only argument (scipy&gt;=1.12).
+
+### Improvements
+
+- Reduce computational redundancy for spherical orders
+  ([gh-68](https://github.com/MikeSWang/Triumvirate/issues/68)).
+
+- Allow non-mandatory parameters to be missing at initialisation.
+
+- Make OpenMP ``simd`` directives compiler-aware.
+
+- Add and update C++ program runtime information.
+
+### Maintenance
+
+- Update tests after computational redundancy refactoring and
+  parameter validation behaviour changes.
+
+- Add `mpi4py` dependency to Conda environment and project configuration files.
+
+- Refactor syntax and formatting and fix typos.
 
 
 ## v0.4.8 (2024-07-01)
@@ -88,15 +118,20 @@ Fix Conda package dependency overpinning.
 ### Maintenance
 
 - Require C++17 standard.
+
 - Upgrade build against NumPy 2 and require Python 3.10+
   ([gh-52](https://github.com/MikeSWang/Triumvirate/issues/52)).
+
 - Refactor logger message emission.
+
 - Enhance build recipes.
+
 - Update syntax and fix typos.
 
 ### Documentation
 
 - Add version context to documentation.
+
 - Add and update details to/in various documentation components.
 
 ### Miscellaneous
@@ -131,11 +166,13 @@ in [``threept.cpp``](src/triumvirate/src/threept.cpp).
 ### Maintenance
 
 - Update syntax and fix typos.
+
 - Add and update test data after API changes.
 
 ### Documentation
 
 - Add and update details to/in various documentation components.
+
 - Update and rerun tutorial notebooks after API changes.
 
 
@@ -160,7 +197,9 @@ Fix parity factor in three-point correlation functions in
 ### Maintenance
 
 - Remove reality-condition division in mode/pair counts for generality.
+
 - Update test data.
+
 - Update syntax.
 
 ### Documentation

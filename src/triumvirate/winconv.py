@@ -2,7 +2,7 @@
 Window Convolution (:mod:`~triumvirate.winconv`)
 ================================================
 
-.. versionadded:: 0.5.0
+.. versionadded:: 0.6.0
 
 .. caution::
 
@@ -77,7 +77,7 @@ from triumvirate.transforms import (
 )
 
 
-# TODO: Remove this warning in v0.5+ releases.
+# TODO: Remove this warning in v0.6+ releases.
 warnings.warn(
     "The `triumvirate.winconv` module is currently experimental. "
     "Its behaviour has not been fully tested and may change in the future.",
