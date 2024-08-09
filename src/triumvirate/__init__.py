@@ -9,7 +9,7 @@ cosmological analyses.
 
 .. topic:: GNU General Public License, version 3
 
-    Copyright (C) 2023, Mike S Wang & Naonori S Sugiyama
+    Copyright (C) 2023 Mike S Wang & Naonori S Sugiyama
 
     This program is free software: you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
@@ -31,7 +31,7 @@ from importlib.metadata import PackageNotFoundError, version
 from ._valid_install import validate_installation  # noqa: F401
 
 
-__copyright__ = 'Copyright 2023, Mike S Wang & Naonori S Sugiyama'
+__copyright__ = 'Copyright (C) 2023 Mike S Wang & Naonori S Sugiyama'
 __date__ = '2023-03-30'
 __license__ = 'GPL-3.0-or-later'
 

@@ -1,4 +1,6 @@
-// Copyright (C) [GPLv3 Licence]
+// Triumvirate: Three-Point Clustering Measurements in LSS
+//
+// Copyright (C) 2023 Mike S Wang & Naonori S Sugiyama [GPL-3.0]
 //
 // This file is part of the Triumvirate program. See the COPYRIGHT
 // and LICENCE files at the top-level directory of this distribution
@@ -481,7 +483,7 @@ void display_prog_logo() {
     "  //      \\                                                         \n"
     " //________\\    • Three-Point Clustering Measurements in LSS •      \n"
     "                                                                     \n"
-    "(C) 2023 Mike S Wang & Naonori S Sugiyama [GPL-3.0]                  \n"
+    "Copyright (C) 2023 Mike S Wang & Naonori S Sugiyama [GPL-3.0]        \n"
   );
   std::printf("\n");
 }
