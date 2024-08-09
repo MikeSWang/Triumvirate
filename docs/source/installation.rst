@@ -44,7 +44,7 @@ Outside Conda environments, they can be installed using a package manager:
 
 Another option is to build these libraries from the source, following the
 instructions from `'GSL - GNU Scientific Library'
-<https://www.gnu.org/software/gsl/>`_ and `'FFTW' <https://www.fftw.org>`_.
+<https://www.gnu.org/software/gsl/>`_ and `FFTW <https://www.fftw.org>`_.
 In this case, path environmental variables may need to be set/modified
 to ensure that they are included and linked during |Triumvirate| compilation.
 
@@ -282,15 +282,15 @@ These commands are also included in the default |Makefile|_ (though commented
 out as they are an alternative to the default GCC set-up).
 
 
-Python setup
-------------
+Python set-up
+-------------
 
 By default, OpenMP support is automatically detected for Python installation
 (except when building through `make`). To *disable* OpenMP parallelisation
 explicitly, set the environmental variable ``PY_NO_OMP`` with
-:code:`export PY_NO_OMP=''` (and unset with :code:`unset PY_NO_OMP` to
+:code:`export PY_NO_OMP` (and unset with :code:`unset PY_NO_OMP` to
 re-enable it); to *enforce* OpenMP parallelisation explicitly, set the
-environmental variable ``PY_OMP`` (to any non-empty value).
+environmental variable ``PY_OMP`` (to any value).
 
 To override the compilation settings used by ``setup.py`` (e.g. to use a
 different compiler suite to the default GCC), set the environmental variables
@@ -326,7 +326,7 @@ Building the C++ library/program or the Python package from a
 source distribution can be parallelised.
 
 When using `make`, pass the ``-j[N]`` option where the optional parameter
-``N`` is the number of concurrent jobs (see also `'GNU Make Manual'
+``N`` is the number of concurrent jobs (see also `GNU Make Manual
 <https://www.gnu.org/software/make/manual/html_node/Options-Summary.html>`_).
 
 For the Python setup, set the environmental variable ``PY_BUILD_PARALLEL``
