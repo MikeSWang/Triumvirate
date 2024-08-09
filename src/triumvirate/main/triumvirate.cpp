@@ -107,11 +107,37 @@ void _set_custom_bins(trv::Binning& _binning) {
  * @returns Exit status.
  */
 int main(int argc, char* argv[]) {
+
+  for (int idx_arg = 0; idx_arg < argc; idx_arg++) {
+    std::string arg = argv[idx_arg];
+    if (arg == "-h" || arg == "--help") {
+      std::printf(
+        "Triumvirate: Three-Point Clustering Measurements in LSS\n"
+        "\n"
+        "Usage: triumvirate [-h] [--version] <parameter-ini-file>\n"
+        "\n"
+        "Positional arguments:\n"
+        "  <parameter-ini-file>  path to the parameter INI file\n"
+        "\n"
+        "Options:\n"
+        "  -h, --help  show help message and exit\n"
+        "  --version   show version and licensing information and exit\n"
+      );
+      return 0;
+    }
+    if (arg == "--version") {
+      trv::sys::display_prog_logo();
+      trv::sys::display_prog_licence();
+      trv::sys::display_prog_info();
+      return 0;
+    }
+  }
+
 #ifdef TRV_DISP
   if (trv::sys::currTask == 0) {
     trv::sys::display_prog_logo();
-    trv::sys::display_prog_licence();
-    trv::sys::display_prog_info();
+    trv::sys::display_prog_licence(true);
+    trv::sys::display_prog_info(true);
   }
 #endif  // TRV_DISP
 

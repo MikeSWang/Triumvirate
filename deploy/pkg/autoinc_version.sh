@@ -20,6 +20,19 @@ get_latest_release () {
     printf $(printf "${release_latest}" | sed -e "s/^v//")
 }
 
+# @brief Set fallback version number in C++ header file.
+#
+# @arg Version number.
+# @locals vers, versfile, versline, versfill
+#
+set_fallback_version_trv () {
+    vers="$1"
+    versfile=src/triumvirate/include/monitor.hpp
+    versline="#define __TRV_VERSION__ .*"
+    versfill="#define __TRV_VERSION__ \"${vers}\"  \/\/ (fallback) version number"
+    sed -i "s/${versline}/${versfill}/g" "${versfile}"
+}
+
 # @brief Set fallback version number in ``__init__.py`` file.
 #
 # @arg Version number.
@@ -73,6 +86,7 @@ set_fallback_version_switcher () {
 }
 
 # Increment fallback version based on the latest-release git tag.
+set_fallback_version_trv "$(get_latest_release)"
 set_fallback_version_initpy "$(get_latest_release)"
 set_fallback_version_metayaml "$(get_latest_release)"
 set_fallback_version_switcher "$(get_latest_release)"

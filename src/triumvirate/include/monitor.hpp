@@ -45,6 +45,10 @@
 #include <fftw3.h>
 #include <gsl/gsl_version.h>
 
+#ifndef __TRV_VERSION__
+#define __TRV_VERSION__ "0.5.0"  // (fallback) version number
+#endif  // !__TRV_VERSION__
+
 /// @cond DOXYGEN_DOC_MACROS
 // Declares OMP macros.
 #ifdef TRV_USE_OMP
@@ -489,14 +493,16 @@ void display_prog_logo();
 /**
  * @brief Display program licence in @c stdout.
  *
+ * @param brief Display brief notice only (default is @c false).
  */
-void display_prog_licence();
+void display_prog_licence(bool brief = false);
 
 /**
  * @brief Display program information in @c stdout.
  *
+ * @param runtime Display runtime information (default is @c false).
  */
-void display_prog_info();
+void display_prog_info(bool runtime = false);
 
 /**
  * @brief Display program log bars in @c stdout.

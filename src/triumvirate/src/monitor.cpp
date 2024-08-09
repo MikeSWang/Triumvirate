@@ -482,33 +482,53 @@ void display_prog_logo() {
     "   //    \\       |  |  \\ | \\__/ |  |  \\/  | |  \\ /~~\\  |  |___ \n"
     "  //      \\                                                         \n"
     " //________\\    • Three-Point Clustering Measurements in LSS •      \n"
-    "                                                                     \n"
-    "Copyright (C) 2023 Mike S Wang & Naonori S Sugiyama [GPL-3.0]        \n"
   );
   std::printf("\n");
 }
 
-void display_prog_licence() {
-  std::printf("LICENCE NOTICE >\n\n");
-  std::printf(
-    "This program is free software: you can redistribute it and/or modify \n"
-    "it under the terms of the GNU General Public License as published by \n"
-    "the Free Software Foundation, either version 3 of the License, or    \n"
-    "(at your option) any later version.                                  \n"
-    "                                                                     \n"
-    "This program is distributed in the hope that it will be useful, but  \n"
-    "WITHOUT ANY WARRANTY; without even the implied warranty of           \n"
-    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU     \n"
-    "General Public License for more details.                             \n"
-    "                                                                     \n"
-    "You should have received a copy of the GNU General Public License    \n"
-    "along with this program. If not, see <https://www.gnu.org/licenses/>.\n"
-  );
+void display_prog_licence(bool brief) {
+  std::printf("Copyright (C) 2023 Mike S Wang & Naonori S Sugiyama\n");
+  std::printf("\n");
+  if (brief) {
+    std::printf("LICENCE NOTICE >\n\n");
+    std::printf(
+      "This program comes with ABSOLUTELY NO WARRANTY. This is     \n"
+      "free software, and you are welcome to redistribute it under \n"
+      "certain conditions; run `triumvirate --version` for details.\n"
+    );
+  } else {
+    std::printf("LICENCE: GPL-3.0-or-later >\n\n");
+    std::printf(
+      "This program is free software: you can redistribute it and/or modify \n"
+      "it under the terms of the GNU General Public License as published by \n"
+      "the Free Software Foundation, either version 3 of the License, or    \n"
+      "(at your option) any later version.                                  \n"
+      "                                                                     \n"
+      "This program is distributed in the hope that it will be useful, but  \n"
+      "WITHOUT ANY WARRANTY; without even the implied warranty of           \n"
+      "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU     \n"
+      "General Public License for more details.                             \n"
+      "                                                                     \n"
+      "You should have received a copy of the GNU General Public License    \n"
+      "along with this program. If not, see <https://www.gnu.org/licenses/>.\n"
+    );
+  }
   std::printf("\n");
 }
 
-void display_prog_info() {
-  std::printf("RUNTIME INFORMATION >\n\n");
+void display_prog_info(bool runtime) {
+  if (runtime) {
+    std::printf("RUNTIME INFORMATION >\n\n");
+  } else {
+    std::printf("PROGRAM INFORMATION >\n\n");
+  }
+
+#ifdef __TRV_VERSION__
+#define _TRV_VERSION std::string(__TRV_VERSION__)
+#else  // !__TRV_VERSION__
+#define _TRV_VERSION "unknown"
+#endif  // __TRV_VERSION__
+  std::printf("Triumvirate version: %s\n", _TRV_VERSION.c_str());
 
 #ifdef GSL_VERSION
 #define _GSL_VERSION GSL_VERSION
@@ -528,7 +548,9 @@ void display_prog_info() {
 #endif  // TRV_USE_OMP
   std::printf("OpenMP version: %s\n", _OMP_VERSION.c_str());
 
-  std::printf("Thread number: %d\n", _OMP_NTHREADS);
+  if (runtime) {
+    std::printf("Thread number: %d\n", _OMP_NTHREADS);
+  }
 
   std::printf("\n");
 }
