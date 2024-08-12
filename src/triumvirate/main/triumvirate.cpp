@@ -114,18 +114,18 @@ int main(int argc, char* argv[]) {
       std::printf(
         "Triumvirate: Three-Point Clustering Measurements in LSS\n"
         "\n"
-        "Usage: triumvirate [-h] [--version] <parameter-ini-file>\n"
+        "Usage: triumvirate [-h] [-V] <parameter-ini-file>\n"
         "\n"
         "Positional arguments:\n"
         "  <parameter-ini-file>  path to the parameter INI file\n"
         "\n"
         "Options:\n"
-        "  -h, --help  show help message and exit\n"
-        "  --version   show version and licensing information and exit\n"
+        "  -h, --help     show help message and exit\n"
+        "  -V, --version  show version and licensing information and exit\n"
       );
       return 0;
     }
-    if (arg == "--version") {
+    if (arg == "-V" || arg == "--version") {
       trv::sys::display_prog_logo();
       trv::sys::display_prog_licence();
       trv::sys::display_prog_info();

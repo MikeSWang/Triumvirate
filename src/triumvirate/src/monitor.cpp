@@ -497,7 +497,8 @@ void display_prog_licence(bool brief) {
       "certain conditions; run `triumvirate --version` for details.\n"
     );
   } else {
-    std::printf("LICENCE: GPL-3.0-or-later >\n\n");
+    std::printf("LICENCE >\n\n");
+    std::printf("GPL-3.0-or-later\n\n");
     std::printf(
       "This program is free software: you can redistribute it and/or modify \n"
       "it under the terms of the GNU General Public License as published by \n"
