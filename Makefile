@@ -483,7 +483,8 @@ pyclean:
 	@echo "  removing Cythonised extensions..."
 	@find ${DIR_PKG} -maxdepth 1 -name "*.so" -exec rm {} +
 	@echo "  removing eggs..."
-	@find . -type d -name ".eggs" -exec rm -r {} +
+	@find . -type d -name "*.eggs" -exec rm -r {} +
+	@find . -type d -name "*.egg-info" -exec rm -r {} +
 	@echo "  removing compiled bytecode..."
 	@find . -type d -name "__pycache__" -exec rm -r {} +
 	@echo "  removing Jupyter notebook checkpoints..."
