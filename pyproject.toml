@@ -57,21 +57,16 @@ Documentation = "https://triumvirate.readthedocs.io/"
 Source = "https://github.com/MikeSWang/Triumvirate"
 Changelog = "https://github.com/MikeSWang/Triumvirate/blob/main/CHANGELOG.md"
 
-[tool.setuptools]
-include-package-data = true
+# [tool.setuptools]
+# include-package-data = true
 
 [tool.setuptools.dynamic]
 # version = {attr = 'triumvirate.__version__'}
 readme = {file = "README.rst"}
 
-[tool.setuptools.packages.find]
-where = ['src']
-namespaces = false
-exclude = [
-    'triumvirate.include*',
-    'triumvirate.src*',
-    'triumvirate.resources*',
-]
+# [tool.setuptools.packages.find]
+# where = ['src']
+# namespaces = true
 
 [tool.setuptools.package-data]
 'triumvirate' = ["*.pxd", "*.pyx"]
