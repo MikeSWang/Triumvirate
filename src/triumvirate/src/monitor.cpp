@@ -474,6 +474,21 @@ const char* InvalidDataError::what() const noexcept {
 // Program notices
 // ***********************************************************************
 
+void display_help() {
+  std::printf(
+    "Triumvirate: Three-Point Clustering Measurements in LSS\n"
+    "\n"
+    "Usage: triumvirate [-h] [-V] <parameter-ini-file>\n"
+    "\n"
+    "Positional arguments:\n"
+    "  <parameter-ini-file>  path to the parameter INI file\n"
+    "\n"
+    "Options:\n"
+    "  -h, --help     show help message and exit\n"
+    "  -V, --version  show version and licensing information and exit\n"
+  );
+}
+
 void display_prog_logo() {
   std::printf("\n");
   std::printf(

@@ -485,6 +485,12 @@ class InvalidDataError: public std::runtime_error {
 // ***********************************************************************
 
 /**
+ * @brief Display help message in @c stdout.
+ *
+ */
+void display_help();
+
+/**
  * @brief Display program logo in @c stdout.
  *
  */

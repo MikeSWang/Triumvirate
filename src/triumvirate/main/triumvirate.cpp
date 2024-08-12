@@ -108,21 +108,10 @@ void _set_custom_bins(trv::Binning& _binning) {
  */
 int main(int argc, char* argv[]) {
 
-  for (int idx_arg = 0; idx_arg < argc; idx_arg++) {
+  for (int idx_arg = 1; idx_arg < argc; idx_arg++) {
     std::string arg = argv[idx_arg];
     if (arg == "-h" || arg == "--help") {
-      std::printf(
-        "Triumvirate: Three-Point Clustering Measurements in LSS\n"
-        "\n"
-        "Usage: triumvirate [-h] [-V] <parameter-ini-file>\n"
-        "\n"
-        "Positional arguments:\n"
-        "  <parameter-ini-file>  path to the parameter INI file\n"
-        "\n"
-        "Options:\n"
-        "  -h, --help     show help message and exit\n"
-        "  -V, --version  show version and licensing information and exit\n"
-      );
+      trv::sys::display_help();
       return 0;
     }
     if (arg == "-V" || arg == "--version") {
@@ -130,6 +119,11 @@ int main(int argc, char* argv[]) {
       trv::sys::display_prog_licence();
       trv::sys::display_prog_info();
       return 0;
+    }
+    if (argc > 2 && arg.rfind("-", 0) == 0) {
+      std::fprintf(stderr, "Unknown option: %s\n\n", arg.c_str());
+      trv::sys::display_help();
+      return 1;
     }
   }
 
