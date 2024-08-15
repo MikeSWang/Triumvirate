@@ -5,11 +5,11 @@
 Check the table below to see which versions of `Triumvirate` are currently
 receiving security updates.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 0.5.x   | :white_check_mark: |
-| 0.4.x   | :white_check_mark: |
-| < 0.4   | :x:                |
+| Version | Supported          | Expiry  |
+| ------- | ------------------ | ------- |
+| 0.5.x   | :white_check_mark: | 2025-07 |
+| 0.4.x   | :white_check_mark: | 2025-01 |
+| < 0.4   | :x:                | 2024-04 |
 
 ## Reporting a Vulnerability
 
