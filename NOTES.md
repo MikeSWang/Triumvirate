@@ -2,13 +2,16 @@
 
 ## Pre-release checklist
 
+- [ ] Generate version number and change log for new release
+      (by running [`prerelease_ops.sh`](deploy/pkg/prerelease_ops.sh))
 - [ ] Bump fallback version number
       (by running [`autoinc_version.sh`](deploy/pkg/autoinc_version.sh)) in:
+    - [`monitor.hpp`](src/triumvirate/include/monitor.hpp)
     - [`__init__.py`](src/triumvirate/__init__.py)
-    - [RTD version switcher](docs/versions.json)
-    - [RTD announcement banner](docs/source/conf.py)
     - [Conda recipe](deploy/pkg/conda_recipe/meta.yaml)
     - [Conda recipe cross-platform](deploy/pkg/conda_recipe_xp/meta.yaml)
+    - [RTD version switcher](docs/versions.json)
+    - [RTD announcement banner](docs/source/conf.py)
 - [ ] Check agreement amongst read-me pages:
     - [repo read-me](README.md)
     - [PyPI read-me](README.rst)
@@ -26,9 +29,11 @@
 
 - The following code tags are in use:
     - 'NOTE', 'STYLE';
-    - 'CAVEAT', 'UPDATE';
-    - 'RFE', 'FUTURE'.
+    - 'CAVEAT';
+    - 'RFE', 'FUTURE';
+    - 'TODO'.
 
 - The following code tags are available for use:
-    - 'WARNING', 'HACK';
-    - 'FIXME', 'TODO', 'QUEST'.
+    - 'WARNING';
+    - 'HACK';
+    - 'FIXME', 'QUEST'.
