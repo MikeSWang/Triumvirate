@@ -142,6 +142,7 @@ which have improved the functionality and documentation of the code.
 ## Contributing/Development
 
 ![Platforms](https://img.shields.io/conda/pn/msw/triumvirate)
+![Python-Version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fgithub.com%2FMikeSWang%2FTriumvirate%2Fraw%2Fmain%2Fpyproject.toml&logo=python)
 [![Release-Date](https://img.shields.io/github/release-date-pre/MikeSWang/Triumvirate)](https://github.com/MikeSWang/Triumvirate/releases/latest)
 ![Commits-Since](https://img.shields.io/github/commits-since/MikeSWang/Triumvirate/latest/main)
 
