@@ -426,6 +426,32 @@ trv::BispecMeasurements compute_bispec(
         double factor_mirror_w3j = sph_order_current.is_zeros() ?
           0. : 1.;  // std::pow(-1., params.ell1 + params.ell2 + params.ELL);
 
+        // Set up FFT counter and progress bar.
+        int progbar_task_count = 4 + 3 * dv_dim;
+        std::stringstream progbar_name_ss;
+        progbar_name_ss
+          << "component orders (" << m1_ << ", " << m2_ << ", " << M_ << ")";
+        trvs::ProgressBar progbar(progbar_task_count, progbar_name_ss.str());
+
+        std::vector<float> progbar_nodes;
+        if (params.progbar != "false" && params.progbar != "true") {
+          progbar_nodes = trvs::set_nodes_by_str(params.progbar);
+          if (progbar_nodes.size() > 0) {
+            progbar.set_nodes(progbar_nodes);
+          }
+        }
+
+        int count_fftw_init = trvs::count_fft + trvs::count_ifft;
+        auto update_progbar = [&]() {
+          if (params.progbar != "false") {
+            if (trvs::currTask == 0) {
+              progbar.update(
+                trvs::count_fft + trvs::count_ifft - count_fftw_init
+              );
+            }
+          }
+        };
+
         // ·······························································
         // Raw bispectrum
         // ·······························································
@@ -439,6 +465,7 @@ trv::BispecMeasurements compute_bispec(
         G_LM.fourier_transform();
         G_LM.apply_assignment_compensation();
         G_LM.inv_fourier_transform();
+        update_progbar();
 
         MeshField F_lm_a(params, true, "`F_lm_a`");  // F_lm_a
         MeshField F_lm_b(params, true, "`F_lm_b`");  // F_lm_b
@@ -459,6 +486,7 @@ trv::BispecMeasurements compute_bispec(
             F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
               dn_00, ylm_k_b, k_lower, k_upper, k_eff_b_, nmodes_b_
             );
+            update_progbar();
 
             if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[ibin];
@@ -523,6 +551,7 @@ trv::BispecMeasurements compute_bispec(
             F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
               dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
             );
+            update_progbar();
 
             if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
@@ -587,6 +616,7 @@ trv::BispecMeasurements compute_bispec(
             F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
               dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
             );
+            update_progbar();
 
             if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
@@ -645,6 +675,7 @@ trv::BispecMeasurements compute_bispec(
               F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
                 dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
               );
+              update_progbar();
 
               if (count_terms == 0) {
                 k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
@@ -705,6 +736,7 @@ trv::BispecMeasurements compute_bispec(
               F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
                 dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
               );
+              update_progbar();
 
               if (count_terms == 0) {
                 k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
@@ -765,6 +797,7 @@ trv::BispecMeasurements compute_bispec(
           params.ELL, M_
         );
         N_LM.fourier_transform();
+        update_progbar();
 
         std::complex<double> Sbar_LM = calc_ylm_wgtd_shotnoise_amp_for_bispec(
           catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -931,6 +964,7 @@ trv::BispecMeasurements compute_bispec(
               dn_LM_for_sn, N_00, ylm_r_a, ylm_r_b, sj_a, sj_b,
               Sbar_LM, k_a, k_b
             );  // S|{i = j ≠ k}
+          update_progbar();
 
           sn_dv[idx_dv] += factor_phase * (
             S_ij_k + factor_mirror_w3j * std::conj(S_ij_k)
@@ -1164,6 +1198,32 @@ trv::ThreePCFMeasurements compute_3pcf(
         double factor_mirror_w3j = sph_order_current.is_zeros() ?
           0. : 1.;  // std::pow(-1., params.ell1 + params.ell2 + params.ELL);
 
+        // Set up FFT counter and progress bar.
+        int progbar_task_count = 4 + 2 * dv_dim;
+        std::stringstream progbar_name_ss;
+        progbar_name_ss
+          << "component orders (" << m1_ << ", " << m2_ << ", " << M_ << ")";
+        trvs::ProgressBar progbar(progbar_task_count, progbar_name_ss.str());
+
+        std::vector<float> progbar_nodes;
+        if (params.progbar != "false" && params.progbar != "true") {
+          progbar_nodes = trvs::set_nodes_by_str(params.progbar);
+          if (progbar_nodes.size() > 0) {
+            progbar.set_nodes(progbar_nodes);
+          }
+        }
+
+        int count_fftw_init = trvs::count_fft + trvs::count_ifft;
+        auto update_progbar = [&]() {
+          if (params.progbar != "false") {
+            if (trvs::currTask == 0) {
+              progbar.update(
+                trvs::count_fft + trvs::count_ifft - count_fftw_init
+              );
+            }
+          }
+        };
+
         // ·······························································
         // Shot noise
         // ·······························································
@@ -1177,6 +1237,7 @@ trv::ThreePCFMeasurements compute_3pcf(
           params.ELL, M_
         );
         dn_LM_for_sn.fourier_transform();
+        update_progbar();
 
         std::complex<double> Sbar_LM = calc_ylm_wgtd_shotnoise_amp_for_bispec(
           catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -1186,6 +1247,7 @@ trv::ThreePCFMeasurements compute_3pcf(
         stats_sn.compute_uncoupled_shotnoise_for_3pcf(
           dn_LM_for_sn, N_00, ylm_r_a, ylm_r_b, Sbar_LM, rbinning
         );  // S|{i = j ≠ k}
+        update_progbar();
 
         // Enforce the Kronecker delta in eq. (51) in the Paper.
         if (params.shape == "diag") {
@@ -1333,6 +1395,7 @@ trv::ThreePCFMeasurements compute_3pcf(
         G_LM.fourier_transform();
         G_LM.apply_assignment_compensation();
         G_LM.inv_fourier_transform();
+        update_progbar();
 
         MeshField F_lm_a(params, true, "`F_lm_a`");  // F_lm_a
         MeshField F_lm_b(params, true, "`F_lm_b`");  // F_lm_b
@@ -1347,6 +1410,7 @@ trv::ThreePCFMeasurements compute_3pcf(
           F_lm_b.inv_fourier_transform_sjl_ylm_wgtd_field(
             dn_00, ylm_k_b, sj_b, r_b
           );
+          update_progbar();
 
           // ζ_{l₁ l₂ L}^{m₁ m₂ M}
           double zeta_comp_real = 0., zeta_comp_imag = 0.;
@@ -1592,6 +1656,32 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           params.ell2, m2_, params.boxsize, params.ngrid, ylm_r_b
         );
 
+      // Set up FFT counter and progress bar.
+      int progbar_task_count = 2 + 3 * dv_dim;
+      std::stringstream progbar_name_ss;
+      progbar_name_ss
+        << "component orders (" << m1_ << ", " << m2_ << ", " << M_ << ")";
+      trvs::ProgressBar progbar(progbar_task_count, progbar_name_ss.str());
+
+      std::vector<float> progbar_nodes;
+      if (params.progbar != "false" && params.progbar != "true") {
+        progbar_nodes = trvs::set_nodes_by_str(params.progbar);
+        if (progbar_nodes.size() > 0) {
+          progbar.set_nodes(progbar_nodes);
+        }
+      }
+
+      int count_fftw_init = trvs::count_fft + trvs::count_ifft;
+      auto update_progbar = [&]() {
+        if (params.progbar != "false") {
+          if (trvs::currTask == 0) {
+            progbar.update(
+              trvs::count_fft + trvs::count_ifft - count_fftw_init
+            );
+          }
+        }
+      };
+
       // ·································································
       // Raw bispectrum
       // ·································································
@@ -1601,6 +1691,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       G_00.fourier_transform();
       G_00.apply_assignment_compensation();
       G_00.inv_fourier_transform();
+      update_progbar();
 
       MeshField F_lm_a(params, true, "`F_lm_a`");  // F_lm_a
       MeshField F_lm_b(params, true, "`F_lm_b`");  // F_lm_b
@@ -1621,6 +1712,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
             dn_00, ylm_k_b, k_lower, k_upper, k_eff_b_, nmodes_b_
           );
+          update_progbar();
 
           if (count_terms == 0) {
             k1bin_dv[idx_dv] = kbinning.bin_centres[ibin];
@@ -1681,6 +1773,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
             dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
           );
+          update_progbar();
 
           if (count_terms == 0) {
             k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
@@ -1741,6 +1834,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
           F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
             dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
           );
+          update_progbar();
 
           if (count_terms == 0) {
             k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
@@ -1795,6 +1889,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
             F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
               dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
             );
+            update_progbar();
 
             if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
@@ -1855,6 +1950,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
             F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
               dn_00, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
             );
+            update_progbar();
 
             if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
@@ -2060,6 +2156,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
             dn_L0_for_sn, N_00, ylm_r_a, ylm_r_b, sj_a, sj_b,
             Sbar_L0, k_a, k_b
           );  // S|{i = j ≠ k}
+        update_progbar();
 
         sn_dv[idx_dv] += factor_phase * (
           S_ij_k + factor_mirror_w3j * std::conj(S_ij_k)
@@ -2279,6 +2376,32 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
           params.ell2, m2_, params.boxsize, params.ngrid, ylm_k_b
         );
 
+      // Set up FFT counter and progress bar.
+      int progbar_task_count = 3 + 2 * dv_dim;
+      std::stringstream progbar_name_ss;
+      progbar_name_ss
+        << "component orders (" << m1_ << ", " << m2_ << ", " << M_ << ")";
+      trvs::ProgressBar progbar(progbar_task_count, progbar_name_ss.str());
+
+      std::vector<float> progbar_nodes;
+      if (params.progbar != "false" && params.progbar != "true") {
+        progbar_nodes = trvs::set_nodes_by_str(params.progbar);
+        if (progbar_nodes.size() > 0) {
+          progbar.set_nodes(progbar_nodes);
+        }
+      }
+
+      int count_fftw_init = trvs::count_fft + trvs::count_ifft;
+      auto update_progbar = [&]() {
+        if (params.progbar != "false") {
+          if (trvs::currTask == 0) {
+            progbar.update(
+              trvs::count_fft + trvs::count_ifft - count_fftw_init
+            );
+          }
+        }
+      };
+
       // ·································································
       // Shot noise
       // ·································································
@@ -2292,6 +2415,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       stats_sn.compute_uncoupled_shotnoise_for_3pcf(
         dn_L0_for_sn, N_00, ylm_r_a, ylm_r_b, Sbar_L0, rbinning
       );  // S|{i = j ≠ k}
+      update_progbar();
 
       // Enforce the Kronecker delta in eq. (51) in the Paper.
       if (params.shape == "diag") {
@@ -2435,6 +2559,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       G_00.fourier_transform();
       G_00.apply_assignment_compensation();
       G_00.inv_fourier_transform();
+      update_progbar();
 
       MeshField F_lm_a(params, true, "`F_lm_a`");  // F_lm_a
       MeshField F_lm_b(params, true, "`F_lm_b`");  // F_lm_b
@@ -2449,6 +2574,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         F_lm_b.inv_fourier_transform_sjl_ylm_wgtd_field(
           dn_00, ylm_k_b, sj_b, r_b
         );
+        update_progbar();
 
         // ζ_{l₁ l₂ L}^{m₁ m₂ M}
         double zeta_comp_real = 0., zeta_comp_imag = 0.;
@@ -2699,6 +2825,32 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         double factor_mirror_w3j = sph_order_current.is_zeros() ?
           0. : 1.;  // std::pow(-1., params.ell1 + params.ell2 + params.ELL);
 
+        // Set up FFT counter and progress bar.
+        int progbar_task_count = 4 + 2 * dv_dim;
+        std::stringstream progbar_name_ss;
+        progbar_name_ss
+          << "component orders (" << m1_ << ", " << m2_ << ", " << M_ << ")";
+        trvs::ProgressBar progbar(progbar_task_count, progbar_name_ss.str());
+
+        std::vector<float> progbar_nodes;
+        if (params.progbar != "false" && params.progbar != "true") {
+          progbar_nodes = trvs::set_nodes_by_str(params.progbar);
+          if (progbar_nodes.size() > 0) {
+            progbar.set_nodes(progbar_nodes);
+          }
+        }
+
+        int count_fftw_init = trvs::count_fft + trvs::count_ifft;
+        auto update_progbar = [&]() {
+          if (params.progbar != "false") {
+            if (trvs::currTask == 0) {
+              progbar.update(
+                trvs::count_fft + trvs::count_ifft - count_fftw_init
+              );
+            }
+          }
+        };
+
         // ·······························································
         // Shot noise
         // ·······························································
@@ -2711,6 +2863,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           catalogue_rand, los_rand, alpha, params.ELL, M_
         );
         n_LM_for_sn.fourier_transform();
+        update_progbar();
 
         std::complex<double> Sbar_LM = calc_ylm_wgtd_shotnoise_amp_for_bispec(
           catalogue_rand, los_rand, alpha, params.ELL, M_
@@ -2719,6 +2872,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         stats_sn.compute_uncoupled_shotnoise_for_3pcf(
           n_LM_for_sn, N_00, ylm_r_a, ylm_r_b, Sbar_LM, rbinning
         );  // S|{i = j ≠ k}
+        update_progbar();
 
         // Enforce the Kronecker delta in eq. (51) in the Paper.
         if (params.shape == "diag") {
@@ -2864,6 +3018,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
         G_LM.fourier_transform();
         G_LM.apply_assignment_compensation();
         G_LM.inv_fourier_transform();
+        update_progbar();
 
         // Perform wide-angle corrections if required.
         if (wide_angle) {
@@ -2883,6 +3038,8 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           F_lm_b.inv_fourier_transform_sjl_ylm_wgtd_field(
             n_00, ylm_k_b, sj_b, r_b
           );
+
+          update_progbar();
 
           // ζ_{l₁ l₂ L}^{m₁ m₂ M}
           double zeta_comp_real = 0., zeta_comp_imag = 0.;
@@ -3158,6 +3315,32 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         double factor_mirror_w3j = sph_order_current.is_zeros() ?
           0. : 1.;  // std::pow(-1., params.ell1 + params.ell2 + params.ELL);
 
+        // Set up FFT counter and progress bar.
+        int progbar_task_count = 10 + 3 * dv_dim;
+        std::stringstream progbar_name_ss;
+        progbar_name_ss
+          << "component orders (" << m1_ << ", " << m2_ << ", " << M_ << ")";
+        trvs::ProgressBar progbar(progbar_task_count, progbar_name_ss.str());
+
+        std::vector<float> progbar_nodes;
+        if (params.progbar != "false" && params.progbar != "true") {
+          progbar_nodes = trvs::set_nodes_by_str(params.progbar);
+          if (progbar_nodes.size() > 0) {
+            progbar.set_nodes(progbar_nodes);
+          }
+        }
+
+        int count_fftw_init = trvs::count_fft + trvs::count_ifft;
+        auto update_progbar = [&]() {
+          if (params.progbar != "false") {
+            if (trvs::currTask == 0) {
+              progbar.update(
+                trvs::count_fft + trvs::count_ifft - count_fftw_init
+              );
+            }
+          }
+        };
+
         // ·······························································
         // Raw bispectrum
         // ·······························································
@@ -3176,6 +3359,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           );
         }
         dn_LM_a.fourier_transform();
+        update_progbar();
 
         MeshField dn_LM_b(params, true, "`dn_LM_b`");  // δn_LM_b
         if (los_choice == 1) {
@@ -3190,6 +3374,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           );
         }
         dn_LM_b.fourier_transform();
+        update_progbar();
 
         MeshField G_LM(params, true, "`G_LM`");  // G_LM
         if (los_choice == 2) {
@@ -3206,6 +3391,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
         G_LM.fourier_transform();
         G_LM.apply_assignment_compensation();
         G_LM.inv_fourier_transform();
+        update_progbar();
 
         double vol_cell = G_LM.vol_cell;
 
@@ -3228,6 +3414,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
               dn_LM_b, ylm_k_b, k_lower, k_upper, k_eff_b_, nmodes_b_
             );
+            update_progbar();
 
             if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[ibin];
@@ -3292,6 +3479,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
               dn_LM_b, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
             );
+            update_progbar();
 
             if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
@@ -3356,6 +3544,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
             F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
               dn_LM_b, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
             );
+            update_progbar();
 
             if (count_terms == 0) {
               k1bin_dv[idx_dv] = kbinning.bin_centres[ibin_row];
@@ -3414,6 +3603,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
               F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
                 dn_LM_b, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
               );
+              update_progbar();
 
               if (count_terms == 0) {
                 k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
@@ -3474,6 +3664,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
               F_lm_b.inv_fourier_transform_ylm_wgtd_field_band_limited(
                 dn_LM_b, ylm_k_b, k_lower_b, k_upper_b, k_eff_b_, nmodes_b_
               );
+              update_progbar();
 
               if (count_terms == 0) {
                 k1bin_dv[idx_dv] = kbinning.bin_centres[idx_row];
@@ -3534,6 +3725,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           );
         }
         dn_LM_a_for_sn.fourier_transform();
+        update_progbar();
 
         MeshField dn_LM_b_for_sn(params, true, "`dn_LM_b_for_sn`");  // δn_LM_b(k)
                                                                // (for shot
@@ -3550,6 +3742,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           );
         }
         dn_LM_b_for_sn.fourier_transform();
+        update_progbar();
 
         // δn_LM_c(k) (for shot noise)
         MeshField dn_LM_c_for_sn(params, true, "`dn_LM_c_for_sn`");
@@ -3565,6 +3758,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           );
         }
         dn_LM_c_for_sn.fourier_transform();
+        update_progbar();
 
         MeshField N_LM_a(params, true, "`N_LM_a`");  // N_LM_a(k)
         if (los_choice == 0) {
@@ -3579,6 +3773,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           );
         }
         N_LM_a.fourier_transform();
+        update_progbar();
 
         MeshField N_LM_b(params, true, "`N_LM_b`");  // N_LM_b(k)
         if (los_choice == 1) {
@@ -3593,6 +3788,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           );
         }
         N_LM_b.fourier_transform();
+        update_progbar();
 
         MeshField N_LM_c(params, true, "`N_LM_c`");  // N_LM_c(k)
         if (los_choice == 2) {
@@ -3607,6 +3803,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           );
         }
         N_LM_c.fourier_transform();
+        update_progbar();
 
         std::complex<double> Sbar_LM = calc_ylm_wgtd_shotnoise_amp_for_bispec(
           catalogue_data, catalogue_rand, los_data, los_rand, alpha,
@@ -3774,6 +3971,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
               dn_LM_c_for_sn, N_LM_c, ylm_r_a, ylm_r_b, sj_a, sj_b,
               Sbar_LM, k_a, k_b
             );  // S|{i = j ≠ k}
+          update_progbar();
 
           sn_dv[idx_dv] += factor_phase * (
             S_ij_k + factor_mirror_w3j * std::conj(S_ij_k)
