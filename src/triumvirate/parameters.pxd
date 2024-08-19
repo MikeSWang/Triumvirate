@@ -58,6 +58,7 @@ cdef extern from "include/parameters.hpp":
 
         double bin_min
         double bin_max
+        double cutoff_nyq
 
         int num_bins
         int idx_bin

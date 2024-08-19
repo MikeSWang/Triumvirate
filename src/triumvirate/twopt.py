@@ -44,6 +44,7 @@ from .dataobjs import Binning
 from .parameters import (
     _modify_measurement_parameters,
     _modify_sampling_parameters,
+    _set_ngrid_from_cutoff,
     fetch_paramset_template,
     ParameterSet,
 )
@@ -75,6 +76,7 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         - 'ngrid': sequence of [int, int, int];
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
+        - 'cutoff_nyq': float;
 
         and exactly one of the following only when 'alignment' is 'pad'---
 
@@ -460,6 +462,18 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
                 paramset['boxsize']['x'],
                 paramset['boxsize']['y'],
                 paramset['boxsize']['z']
+            )
+
+    if None in paramset['ngrid'].values():
+        _set_ngrid_from_cutoff(paramset)
+        paramset._validate()
+        if logger:
+            logger.info(
+                "Mesh number determined from the Nyquist cutoff: "
+                "(%d, %d, %d).",
+                paramset['ngrid']['x'],
+                paramset['ngrid']['y'],
+                paramset['ngrid']['z']
             )
 
     if paramset['alignment'] == 'centre':
@@ -945,6 +959,18 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
                 paramset['boxsize']['x'],
                 paramset['boxsize']['y'],
                 paramset['boxsize']['z']
+            )
+
+    if None in paramset['ngrid'].values():
+        _set_ngrid_from_cutoff(paramset)
+        paramset._validate()
+        if logger:
+            logger.info(
+                "Mesh number determined from the Nyquist cutoff: "
+                "(%d, %d, %d).",
+                paramset['ngrid']['x'],
+                paramset['ngrid']['y'],
+                paramset['ngrid']['z']
             )
 
     catalogue_data.periodise(

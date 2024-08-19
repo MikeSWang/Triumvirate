@@ -81,12 +81,14 @@ class ParameterSet {
   // Mesh properties.
   /// box size (in Mpc/h) in each dimension
   double boxsize[3] = {0., 0., 0.};
-  /// grid number in each dimension
+  /// grid cell number in each dimension
   int ngrid[3] = {0, 0, 0};
-
-  // Mesh alignment.
   /// box expansion factor (if @c boxsize is not given)
   double expand = 1.;
+  /// Nyquist cutoff wavenumber or separation (in Mpc/h or h/Mpc)
+  double cutoff_nyq = 0.;  ///< Nyquist cutoff (in Mpc/h or h/Mpc)
+
+  // Mesh alignment.
   /// box alignment: {"centre" (default), "pad"}
   std::string alignment = "centre";
   /// padding scale (if @c alignment is "pad"): {"box" (default), "grid"}
@@ -263,9 +265,17 @@ void override_paramset_by_envvars(trv::ParameterSet& params);
  * @param[in] spans Particle coordinate span in each dimension.
  * @param[in,out] params Parameter set.
  */
-void set_boxsize_from_expansion(
+void set_boxsize_from_expand(
   const double spans[3], trv::ParameterSet& params
 );
+
+/**
+ * @brief Set the grid cell numbers from the box size and the
+ *        Nyquist cutoff.
+ *
+ * @param[in,out] params Parameter set.
+ */
+void set_ngrid_from_cutoff(trv::ParameterSet& params);
 
 }  // namespace trv
 

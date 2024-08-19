@@ -397,7 +397,10 @@ int main(int argc, char* argv[]) {
 
   if (params.catalogue_type == "survey") {
     if (params.volume == 0.) {
-      trv::set_boxsize_from_expansion(catalogue_data.pos_span, params);
+      trv::set_boxsize_from_expand(catalogue_data.pos_span, params);
+      if (params.nmesh == 0) {
+        trv::set_ngrid_from_cutoff(params);
+      }
     }
     if (params.alignment == "pad") {
       if (params.padscale == "grid") {
@@ -428,13 +431,19 @@ int main(int argc, char* argv[]) {
   } else
   if (params.catalogue_type == "sim") {
     if (params.volume == 0.) {
-      trv::set_boxsize_from_expansion(catalogue_data.pos_span, params);
+      trv::set_boxsize_from_expand(catalogue_data.pos_span, params);
+      if (params.nmesh == 0) {
+        trv::set_ngrid_from_cutoff(params);
+      }
     }
     catalogue_data.offset_coords_for_periodicity(params.boxsize);
   } else
   if (params.catalogue_type == "random") {
     if (params.volume == 0.) {
-      trv::set_boxsize_from_expansion(catalogue_rand.pos_span, params);
+      trv::set_boxsize_from_expand(catalogue_rand.pos_span, params);
+      if (params.nmesh == 0) {
+        trv::set_ngrid_from_cutoff(params);
+      }
     }
     if (params.alignment == "pad") {
       if (params.padscale == "grid") {

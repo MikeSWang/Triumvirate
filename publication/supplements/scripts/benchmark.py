@@ -108,7 +108,7 @@ def configure():
     )
     cfg.add_argument(
         '-g', '--ngrid', dest='ngrid', type=int, nargs='+',
-        help="benchmark parameter: grid number per dimension"
+        help="benchmark parameter: mesh grid number per dimension"
     )
     cfg.add_argument(
         '-n', '--niter', dest='niter', type=int,

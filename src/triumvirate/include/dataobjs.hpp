@@ -122,7 +122,7 @@ class Binning {
    * configuration space or the Nyquist wavenumber in Fourier space.
    *
    * @param boxsize_max (Maximum) box size.
-   * @param ngrid_min (Minimum) grid number.
+   * @param ngrid_min (Minimum) grid cell number.
    *
    * @attention @ref trv::Binning.scheme is reset to "lin".
    *

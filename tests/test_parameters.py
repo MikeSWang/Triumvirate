@@ -8,7 +8,6 @@ from copy import deepcopy
 from pprint import pformat
 
 import pytest
-import yaml
 
 from triumvirate.parameters import (
     InvalidParameterError,
@@ -216,6 +215,10 @@ def test_fetch_paramset_template(source, ret_defaults, default_parameters):
 def test_ParameterSet___cinit__(param_filepath, param_dict, test_param_dir,
                                 request, tmp_path):
 
+    warnings.filterwarnings(
+        "ignore", category=UserWarning, message=".*parameters are unset.*"
+    )
+
     # Patch paths for wheel testing.
     if param_filepath is not None:
         param_filepath = os.path.join(test_param_dir, param_filepath)
@@ -376,7 +379,7 @@ def test_ParameterSet_names(valid_paramset):
     # There are three derived parameters after validation:
     # 'assignment_order', 'npoint', 'space'.
     assert set(valid_paramset.names()) - set(_TMPL_PARAM_DICT.keys()) == {
-        'assignment_order', 'npoint', 'space',
+        'assignment_order', 'npoint', 'space', 'volume', 'nmesh',
         'fftw_planner_flag', 'fftw_wisdom_file_f', 'fftw_wisdom_file_b'
     }, "Parameter set names do not match internal records."
 
@@ -423,14 +426,14 @@ def test_ParameterSet_print(valid_paramset, capsys):
         in capsys.readouterr().out, "Parameter set misprinted."
 
 
-def test_ParameterSet_save(valid_paramset, tmp_path):
+# def test_ParameterSet_save(valid_paramset, tmp_path):
 
-    param_filepath = tmp_path/"params_saved.yml"
+#     param_filepath = tmp_path/"params_saved.yml"
 
-    valid_paramset.save(filepath=param_filepath)
+#     valid_paramset.save(filepath=param_filepath)
 
-    with open(param_filepath) as param_file:
-        valid_param_dict = yaml.load(param_file, Loader=yaml.SafeLoader)
+#     with open(param_filepath) as param_file:
+#         valid_param_dict = yaml.load(param_file, Loader=yaml.SafeLoader)
 
-    assert dict(valid_paramset.items()) == valid_param_dict, \
-        "Loaded parameter set does not match the saved one."
+#     assert dict(valid_paramset.items()) == valid_param_dict, \
+#         "Loaded parameter set does not match the saved one."

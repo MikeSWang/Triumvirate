@@ -54,6 +54,7 @@ _TMPL_PARAM_DICT = {
     'range': [None, None],
     'num_bins': None,
     'idx_bin': None,
+    'cutoff_nyq': None,
     'fftw_scheme': 'measure',
     'use_fftw_wisdom': False,
     'save_binned_vectors': False,
@@ -382,18 +383,19 @@ cdef class ParameterSet:
                 float(self._params['boxsize']['y']),
                 float(self._params['boxsize']['z']),
             ]
-        try:
-            if None in self._params['ngrid'].values():
-                raise InvalidParameterError(
-                    "`ngrid` parameters must be set."
-                )
-        except KeyError:
-            raise InvalidParameterError("`ngrid` parameters must be set.")
-        self.thisptr.ngrid = [
-            self._params['ngrid']['x'],
-            self._params['ngrid']['y'],
-            self._params['ngrid']['z'],
-        ]
+
+        if None in self._params['ngrid'].values():
+            warnings.warn(
+                "`ngrid` parameters are unset. In this case, "
+                "the grid cell number will be computed using the box size "
+                "and the Nyquist cutoff.",
+            )
+        else:
+            self.thisptr.ngrid = [
+                self._params['ngrid']['x'],
+                self._params['ngrid']['y'],
+                self._params['ngrid']['z'],
+            ]
 
         if (expand_ := self._params.get('expand')) is not None:
             self.thisptr.expand = expand_
@@ -414,8 +416,21 @@ cdef class ParameterSet:
             self.thisptr.interlace = str(interlace_).lower().encode('utf-8')
 
         # Attribute derived parameters.
-        self.thisptr.volume = np.prod(list(self._params['boxsize'].values()))
-        self.thisptr.nmesh = np.prod(list(self._params['ngrid'].values()))
+        try:
+            self._params['volume'] = np.prod(list(
+                self._params['boxsize'].values()
+            ))
+        except TypeError:
+            self._params['volume'] = 0.
+        self.thisptr.volume = self._params['volume']
+
+        try:
+            self._params['nmesh'] = np.prod(list(
+                self._params['ngrid'].values()
+            ))
+        except TypeError:
+            self._params['nmesh'] = 0
+        self.thisptr.nmesh = self._params['nmesh']
 
         # -- Measurement -------------------------------------------------
 
@@ -458,6 +473,17 @@ cdef class ParameterSet:
             raise InvalidParameterError("`num_bins` parameter must be set.")
         if (idx_bin_ := self._params.get('idx_bin')) is not None:
             self.thisptr.idx_bin = idx_bin_
+
+        if self._params['nmesh'] == 0:
+            if (cutoff_nyq_ := self._params.get('cutoff_nyq')) is not None:
+                self.thisptr.cutoff_nyq = cutoff_nyq_
+                if self._params['volume'] > 0.:
+                    self._params = _set_ngrid_from_cutoff(self._params)
+            else:
+                raise InvalidParameterError(
+                    "`cutoff_nyq` parameter must be set "
+                    "when any of the grid cell numbers are unset."
+                )
 
         # Attribute string parameters.
         if (catalogue_type_ := self._params.get('catalogue_type')) is not None:
@@ -586,8 +612,7 @@ def fetch_paramset_template(format, ret_defaults=False):
     """Fetch a parameter set template, either as a YAML file
     (with explanatory text) or as a dictionary.
 
-    The returned template parameters are not validated as some mandatory
-    values are unset.
+    The returned template parameters are not validated.
 
     Parameters
     ----------
@@ -658,6 +683,7 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
         - 'alignment': {'centre', 'pad'}
         - 'assignment': {'ngp', 'cic', 'tsc', 'pcs'};
         - 'interlace': bool;
+        - 'cutoff_nyq': float;
 
         and exactly one of the following parameters only when 'alignment'
         is 'pad'---
@@ -742,6 +768,10 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
     if 'interlace' in params_sampling.keys():
         paramset['interlace'] = params_sampling['interlace']
         if params_default: params_default.pop('interlace', None)
+
+    if 'cutoff_nyq' in params_sampling.keys():
+        paramset['cutoff_nyq'] = params_sampling['cutoff_nyq']
+        if params_default: params_default.pop('cutoff_nyq', None)
 
     if ret_defaults:
         return paramset, params_default
@@ -829,6 +859,39 @@ def _modify_measurement_parameters(paramset, params_measure=None,
 
     if ret_defaults:
         return paramset, params_default
+    return paramset
+
+
+def _set_ngrid_from_cutoff(paramset):
+    """Set the mesh grid size from the Nyquist cutoff.
+
+    Parameters
+    ----------
+    paramset : dict-like
+        Parameter set to be updated.
+
+    Returns
+    -------
+    paramset : dict-like
+        Modified parameter set.
+
+    """
+    for ax in ['x', 'y', 'z']:
+        if paramset['space'] == 'fourier':
+            ngrid_ = int(np.ceil(
+                paramset['boxsize'][ax] * paramset['cutoff_nyq'] / np.pi
+            ))
+        elif paramset['space'] == 'config':
+            ngrid_ = int(
+                2 * np.ceil(paramset['boxsize'][ax] / paramset['cutoff_nyq'])
+            )
+        else:
+            raise ValueError(
+                "Space must be either 'fourier' or 'config': "
+                f"`space` = '{paramset['space']}'."
+            )
+        paramset['ngrid'][ax] = ngrid_ + ngrid_ % 2
+
     return paramset
 
 

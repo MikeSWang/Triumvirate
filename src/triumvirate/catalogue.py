@@ -129,7 +129,7 @@ class ParticleCatalogue:
         else:
             self._backend = 'astropy'
 
-        self._source = 'extdata:{}'.format(id(self._pdata))
+        self._source = f'extdata:{id(self._pdata)}'
 
         # Compute catalogue properties.
         self._calc_bounds(init=True)
@@ -393,7 +393,7 @@ class ParticleCatalogue:
 
     def __str__(self):
         try:
-            return "ParticleCatalogue(source={})".format(self._source)
+            return f"ParticleCatalogue(source={self._source})"
         except NameError:
             return "ParticleCatalogue(address={})".format(
                 object.__str__(self).split()[-1].lstrip().rstrip('>')
@@ -558,7 +558,7 @@ class ParticleCatalogue:
         boxsize : float or sequence of [float, float, float]
             Box size in each dimension.
         ngrid : int or sequence of [int, int, int], optional
-            Grid number in each dimension (default is `None`).
+            Grid cell number in each dimension (default is `None`).
             Must be provided if `ngrid_pad` is set.
         boxsize_pad : float or sequence of [float, float, float], optional
             Box size padding factor.  If not `None` (default), then

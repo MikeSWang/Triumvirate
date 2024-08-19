@@ -37,7 +37,7 @@ def record_binned_vectors(binning, paramset=None, boxsize=None, ngrid=None):
         if `paramset` is `None`.  This will override the corresponding
         entries in `paramset`.
     ngrid : int or sequence of [int, int, int], optional
-        Grid number in each dimension (default is `None`).  Must be
+        Grid cell number in each dimension (default is `None`).  Must be
         provided if `paramset` is set.  This will override the
         corresponding entries in `paramset`.
 

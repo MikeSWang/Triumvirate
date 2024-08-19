@@ -73,6 +73,7 @@ ParameterSet::ParameterSet(const ParameterSet& other) {
   this->bin_max = other.bin_max;
   this->num_bins = other.num_bins;
   this->idx_bin = other.idx_bin;
+  this->cutoff_nyq = other.cutoff_nyq;
 
   // Copy misc parameters.
   this->fftw_scheme = other.fftw_scheme;
@@ -290,6 +291,13 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
       );
     }
 
+    if (line_str.find("cutoff_nyq") != std::string::npos) {
+      std::sscanf(
+        line_str.data(), "%1023s %1023s %lg",
+        dummy_str, dummy_equal, &this->cutoff_nyq
+      );
+    }
+
     // -- Misc -------------------------------------------------------------
 
     scan_par_str("fftw_scheme", "%1023s %1023s %1023s", fftw_scheme_);
@@ -415,6 +423,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   debug_par_double("padfactor", this->padfactor);
   debug_par_double("bin_min", this->bin_min);
   debug_par_double("bin_max", this->bin_max);
+  debug_par_double("cutoff_nyq", this->cutoff_nyq);
 #endif  // DBG_PARS
 
   return this->validate(true);
@@ -881,12 +890,12 @@ int ParameterSet::validate(bool init) {
     if (this->expand < 1.) {
       if (trvs::currTask == 0) {
         trvs::logger.error(
-          "The box expansion factor must be >= 1: `expand` = %lg.",
+          "The box expansion factor must be >= 1: `expand` = %lg",
           this->expand
         );
       }
       throw trvs::InvalidParameterError(
-        "The box expansion factor must be >= 1: `expand` = %lg.\n",
+        "The box expansion factor must be >= 1: `expand` = %lg\n",
         this->expand
       );
     }
@@ -894,7 +903,7 @@ int ParameterSet::validate(bool init) {
       if (trvs::currTask == 0) {
         trvs::logger.warn(
           "The box expansion factor is expected to be unity "
-          "for 'sim' catalogue(s): `expand` = '%lg'.",
+          "for 'sim' catalogue(s): `expand` = %lg",
           this->expand
         );
       }
@@ -902,19 +911,30 @@ int ParameterSet::validate(bool init) {
   }
   if (this->nmesh <= 0) {
     if (trvs::currTask == 0) {
-      trvs::logger.error(
-        "Derived total mesh grid number is non-positive: `nmesh` = '%lld'. "
+      trvs::logger.warn(
+        "Derived total mesh grid number is non-positive: `nmesh` = %lld. "
         "Possible numerical overflow due to large `ngrid`, "
-        "or `ngrid` is unset.",
+        "or `ngrid` is unset. "
+        "In the latter case, the grid cell number will be calculated using "
+        "the Nyquist cutoff and the box size.",
         this->nmesh
       );
     }
-    throw trvs::InvalidParameterError(
-      "Derived total mesh grid number is non-positive: `nmesh` = '%lld'. "
-      "Possible numerical overflow due to large `ngrid`, "
-      "or `ngrid` is unset.\n",
-      this->nmesh
-    );
+    if (this->cutoff_nyq < 0.) {
+      if (trvs::currTask == 0) {
+        trvs::logger.error(
+          "The Nyquist cutoff must be non-negative: `cutoff_nyq` = %lg",
+          this->cutoff_nyq
+        );
+      }
+      throw trvs::InvalidParameterError(
+        "The Nyquist cutoff must be non-negative: `cutoff_nyq` = %lg\n",
+        this->cutoff_nyq
+      );
+    }
+    if (this->volume > 0.) {
+      set_ngrid_from_cutoff(*this);
+    }
   }
 
   if (this->alignment == "pad") {
@@ -922,13 +942,13 @@ int ParameterSet::validate(bool init) {
       if (trvs::currTask == 0) {
         trvs::logger.error(
           "Padding is enabled but the padding factor is negative: "
-          "`padfactor` = '%lg'.",
+          "`padfactor` = %lg",
           this->padfactor
         );
       }
       throw trvs::InvalidParameterError(
         "Padding is enabled but the padding factor is negative: "
-        "`padfactor` = '%lg'.\n",
+        "`padfactor` = %lg\n",
         this->padfactor
       );
     }
@@ -936,13 +956,13 @@ int ParameterSet::validate(bool init) {
       if (trvs::currTask == 0) {
         trvs::logger.error(
           "Padding is enabled but the %s padding factor is too large "
-          "for the box size: `padfactor` = '%lg'.",
+          "for the box size: `padfactor` = %lg",
           this->padscale.c_str(), this->padfactor
         );
       }
       throw trvs::InvalidParameterError(
         "Padding is enabled but the %s padding factor is too large "
-        "for the box size: `padfactor` = '%lg'.\n",
+        "for the box size: `padfactor` = %lg\n",
         this->padscale.c_str(), this->padfactor
       );
     }
@@ -954,13 +974,13 @@ int ParameterSet::validate(bool init) {
       if (trvs::currTask == 0) {
         trvs::logger.error(
           "Padding is enabled but the %s padding factor is too large "
-          "for the mesh grid numbers: `padfactor` = '%lg'.",
+          "for the mesh grid numbers: `padfactor` = %lg",
           this->padscale.c_str(), this->padfactor
         );
       }
       throw trvs::InvalidParameterError(
         "Padding is enabled but the %s padding factor is too large "
-        "for the mesh grid numbers: `padfactor` = '%lg'.\n",
+        "for the mesh grid numbers: `padfactor` = %lg\n",
         this->padscale.c_str(), this->padfactor
       );
     }
@@ -1238,7 +1258,7 @@ void override_paramset_by_envvars(trv::ParameterSet& params) {
   params.validate();
 }
 
-void set_boxsize_from_expansion(
+void set_boxsize_from_expand(
   const double spans[3], trv::ParameterSet& params
 ) {
   for (int iaxis = 0; iaxis < 3; iaxis++) {
@@ -1252,6 +1272,38 @@ void set_boxsize_from_expansion(
       "Box size has been set from particle coordinate spans and "
       "expansion factor: (%.3f, %.3f, %.3f).",
       params.boxsize[0], params.boxsize[1], params.boxsize[2]
+    );
+  }
+}
+
+void set_ngrid_from_cutoff(trv::ParameterSet& params) {
+  for (int iaxis = 0; iaxis < 3; iaxis++) {
+    int ngrid_;
+    if (params.space == "fourier") {
+      ngrid_ = static_cast<int>(std::ceil(
+        params.boxsize[iaxis] * params.cutoff_nyq / M_PI
+      ));
+    } else
+    if (params.space == "config") {
+      ngrid_ = static_cast<int>(std::ceil(
+        2. * params.boxsize[iaxis] / params.cutoff_nyq
+      ));
+    } else {
+      throw trvs::InvalidParameterError(
+        "Space must be 'fourier' or 'config': `space` = '%s'.\n",
+        params.space.c_str()
+      );
+    }
+    params.ngrid[iaxis] = ngrid_ + (ngrid_ % 2);
+  }
+
+  params.validate();
+
+  if (trvs::currTask == 0) {
+    trvs::logger.info(
+      "Mesh grid numbers have been set from Nyquist cutoff and "
+      "box size: (%d, %d, %d).",
+      params.ngrid[0], params.ngrid[1], params.ngrid[2]
     );
   }
 }

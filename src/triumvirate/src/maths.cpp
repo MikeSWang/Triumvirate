@@ -241,7 +241,7 @@ store_reduced_spherical_harmonic_in_fourier_space(
         // the right, i.e. along z-axis, y-axis and then x-axis.
         // The assigned flattened-grid array index is
         // (i * ngrid_y * ngrid_z + j * ngrid_z + k)
-        // where ngrid is the grid number along each axis.
+        // where ngrid is the grid cell number along each axis.
         long long idx_grid =
           (i * static_cast<long long>(ngrid[1]) + j) * ngrid[2] + k;
 
@@ -283,7 +283,7 @@ store_reduced_spherical_harmonic_in_config_space(
         // the right, i.e. along z-axis, y-axis and then x-axis.
         // The assigned flattened-grid array index is
         // (i * ngrid_y * ngrid_z + j * ngrid_z + k)
-        // where ngrid is the grid number along each axis.
+        // where ngrid is the grid cell number along each axis.
         long long idx_grid =
           (i * static_cast<long long>(ngrid[1]) + j) * ngrid[2] + k;
 

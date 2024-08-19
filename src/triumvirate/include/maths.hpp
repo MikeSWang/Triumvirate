@@ -217,7 +217,7 @@ class SphericalHarmonicCalculator {
    * @param[in] ell Degree @f$ \ell @f$.
    * @param[in] m Order @f$ m @f$.
    * @param[in] boxsize Box size in each dimension.
-   * @param[in] ngrid Grid number in each dimension.
+   * @param[in] ngrid Grid cell number in each dimension.
    * @param[out] ylm_out Stored @f$ y_\ell^m @f$ values.
    * @throws trv::sys::InvalidDataError When the output variable is
    *                                    not provided.
@@ -235,7 +235,7 @@ class SphericalHarmonicCalculator {
    * @param[in] ell Degree @f$ \ell @f$.
    * @param[in] m Order @f$ m @f$.
    * @param[in] boxsize Box size in each dimension.
-   * @param[in] ngrid Grid number in each dimension.
+   * @param[in] ngrid Grid cell number in each dimension.
    * @param[out] ylm_out Stored @f$ y_\ell^m @f$ values.
    * @throws trv::sys::InvalidDataError When the output variable
    *                                    is not provided.

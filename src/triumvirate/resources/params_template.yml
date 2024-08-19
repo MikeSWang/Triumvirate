@@ -38,7 +38,7 @@ boxsize:
   y:
   z:
 
-# Grid cell number in each dimension. [mandatory]
+# Grid cell number in each dimension.
 ngrid:
   x:
   y:
@@ -48,6 +48,12 @@ ngrid:
 # The box is expanded by this factor in each dimension when
 # box size is not set.
 expand: 1.
+
+# Nyquist cut-off in either wavenumber or separation.
+# Only applicable when the grid cell number `ngrid` is unset, which is
+# then determined from this and the box size.
+# The measurement range is also truncated at this value if unset.
+cutoff_nyq:
 
 # Box alignment: {'centre' (default), 'pad'}.
 # The catalogues are either centred or padded from the

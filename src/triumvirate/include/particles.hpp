@@ -286,8 +286,8 @@ class ParticleCatalogue {
    *
    * @param catalogue Particle catalogue.
    * @param boxsize Box size in each dimension.
-   * @param ngrid Grid number in each dimension.
-   * @param ngrid_pad Grid number factor for padding.
+   * @param ngrid Grid cell number in each dimension.
+   * @param ngrid_pad Grid cell number factor for padding.
    */
   static void pad_grids(
     ParticleCatalogue& catalogue,
@@ -305,8 +305,8 @@ class ParticleCatalogue {
    * @param catalogue Primary particle catalogue.
    * @param catalogue_ref Secondary reference particle catalogue.
    * @param boxsize Box size in each dimension.
-   * @param ngrid Grid number in each dimension.
-   * @param ngrid_pad Grid number factor for padding.
+   * @param ngrid Grid cell number in each dimension.
+   * @param ngrid_pad Grid cell number factor for padding.
    *
    * @overload
    */
