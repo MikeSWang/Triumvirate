@@ -1174,4 +1174,36 @@ int ParameterSet::print_to_file() {
   return ParameterSet::print_to_file(ofilepath);
 }
 
+void override_paramset_by_envvars(trv::ParameterSet& params) {
+  // Override the output tag.
+  char* ev_tag = std::getenv("TRV_OVERRIDE_OUTPUT_TAG");
+  if (ev_tag != nullptr) {
+    params.output_tag = std::string(ev_tag);
+  }
+
+  // Override the FFTW scheme.
+  char* ev_fftw_scheme = std::getenv("TRV_OVERRIDE_FFTW_SCHEME");
+  if (ev_fftw_scheme != nullptr) {
+    params.fftw_scheme = std::string(ev_fftw_scheme);
+  }
+
+  // Override the FFTW wisdom option.
+  char* ev_use_fftw_wisdom = std::getenv("TRV_OVERRIDE_USE_FFTW_WISDOM");
+  if (ev_use_fftw_wisdom != nullptr) {
+    params.use_fftw_wisdom = std::string(ev_use_fftw_wisdom);
+  }
+
+  // Override the verbosity level.
+  char* ev_verbose = std::getenv("TRV_OVERRIDE_VERBOSE");
+  if (ev_verbose != nullptr) {
+    params.verbose = std::stoi(ev_verbose);
+  }
+
+  // Override the progress bar.
+  char* ev_progbar = std::getenv("TRV_OVERRIDE_PROGBAR");
+  if (ev_progbar != nullptr) {
+    params.progbar = std::string(ev_progbar);
+  }
+}
+
 }  // namespace trv

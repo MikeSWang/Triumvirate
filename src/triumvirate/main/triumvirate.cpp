@@ -180,6 +180,8 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  trv::override_paramset_by_envvars(params);
+
   trv::sys::make_write_dir(params.measurement_dir);
   if (params.print_to_file()) {
     if (trv::sys::currTask == 0) {

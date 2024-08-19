@@ -39,6 +39,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <string>
@@ -242,6 +243,16 @@ class ParameterSet {
    */
   int print_to_file();
 };
+
+/**
+ * @brief Override parameter set by environment variables.
+ *
+ * The environment variables are expected to be in the form
+ * ``TRV_OVERRIDE_<PARAMETER_NAME>``.
+ *
+ * @param[in,out] params Parameter set object.
+ */
+void override_paramset_by_envvars(trv::ParameterSet& params);
 
 }  // namespace trv
 
