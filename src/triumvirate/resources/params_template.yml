@@ -147,4 +147,9 @@ save_binned_vectors: false
 # }.
 verbose: 20
 
+# Progress bar display switch: {'true', 'false' (default), <int-%-point>}.
+# If an integer percentage is provided, the progress bar is update/displayed
+# at that percentage-point interval, e.g. 10 for every 10%.
+progbar: false
+
 ...

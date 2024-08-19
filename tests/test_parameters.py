@@ -128,6 +128,7 @@ def default_parameters():
         'use_fftw_wisdom': False,
         'save_binned_vectors': False,
         'verbose': 20,
+        'progbar': False,
     }
 
 

@@ -359,12 +359,7 @@ void ProgressBar::update(float progress_now) {
     if (this->progress >= this->nodes[this->next_node_idx]) {
       int pos = this->bar_width * this->progress;
 
-      if (this->name != "") {
-        std::cout << this->name << " [";
-      } else {
-        std::cout << "[";
-      }
-
+      std::cout << "[";
       for (int ichar = 0; ichar < this->bar_width; ichar++) {
           if (ichar < pos) {
             std::cout << "=";
@@ -375,7 +370,13 @@ void ProgressBar::update(float progress_now) {
             std::cout << " ";
           }
       }
-      std::cout << "] " << int(progress * 100.) << " %\r";
+      std::cout << "] " << int(progress * 100.) << "%";
+
+      if (this->name != "") {
+        std::cout << " < " << this->name;
+      }
+
+      std::cout << "\r";
       std::cout.flush();
 
       this->next_node_idx += 1;
@@ -393,6 +394,35 @@ void ProgressBar::set_default_pcpt_nodes() {
   for (int pcpt = 0; pcpt <= 100; ++pcpt) {
     this->nodes.push_back(float(pcpt) / 100.);
   }
+}
+
+std::vector<float> set_nodes_by_str(std::string interval_str) {
+  try {
+    std::stof(interval_str);
+  } catch (const std::invalid_argument& e) {
+    throw InvalidParameterError(
+      "Progress bar interval must be a float number.\n"
+    );
+  }
+
+  float interval = std::stof(interval_str);
+  if (!(0. < interval && interval < 100.)) {
+    throw InvalidParameterError(
+      "Progress bar interval must be in (0, 100) interval.\n"
+    );
+  }
+  interval /= 100.;
+
+  std::vector<float> nodes = {interval};
+  while (nodes.back() < 1.) {
+    if (nodes.back() + interval < 1.) {
+      nodes.push_back(nodes.back() + interval);
+    } else {
+      nodes.push_back(1.);
+    }
+  }
+
+  return nodes;
 }
 
 

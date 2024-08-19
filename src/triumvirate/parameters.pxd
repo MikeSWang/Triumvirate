@@ -70,6 +70,7 @@ cdef extern from "include/parameters.hpp":
         string fftw_wisdom_file_b
         # string save_binned_vectors
         int verbose
+        string progbar
 
         # ----------------------------------------------------------------
         # Methods

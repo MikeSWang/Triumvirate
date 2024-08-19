@@ -183,6 +183,9 @@ class ParameterSet {
   ///                           30 (INFO), 40 (WARN), 50 (ERRO)}
   int verbose = 20;
 
+  /// display a progress bar: {"true", "false" (default), <int-%-point>}
+  std::string progbar = "false";
+
   /**
    * @brief Construct a parameter set.
    */

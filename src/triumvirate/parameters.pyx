@@ -56,6 +56,7 @@ _TMPL_PARAM_DICT = {
     'use_fftw_wisdom': False,
     'save_binned_vectors': False,
     'verbose': 20,
+    'progbar': False,
 }
 
 
@@ -504,6 +505,9 @@ cdef class ParameterSet:
         if (verbose_ := self._params.get('verbose')) is not None:
             self.thisptr.verbose = verbose_
 
+        if (progbar_ := self._params.get('progbar')) is not None:
+            self.thisptr.progbar = str(progbar_).lower().encode('utf-8')
+
         # ----------------------------------------------------------------
         # Validation
         # ----------------------------------------------------------------
@@ -549,6 +553,19 @@ cdef class ParameterSet:
                 "C++ instance of trv::ParameterSet did not return "
                 "a recognised 'interlace' string in {'true', 'false'}."
             )
+
+        _progbar = self.thisptr.progbar.decode('utf-8')
+        try:
+            self._params['progbar'] = int(_progbar)
+        except ValueError:
+            try:
+                self._params['progbar'] = bool(_progbar)
+            except ValueError:
+                raise RuntimeError(
+                    "C++ instance of trv::ParameterSet did not return "
+                    "a recognised 'verbose' value "
+                    "'true', 'false' or an integer."
+                )
 
         self._validity = True
 

@@ -378,6 +378,20 @@ class ProgressBar {
   void set_default_pcpt_nodes();
 };
 
+/**
+ * @brief Set a node list possibly from a string.
+ *
+ * If the string corresponds to a number between 0 and 100, that is then
+ * the percentage-point interval at which the nodes are set as by
+ * ProgressBar::set_nodes().
+ *
+ * @param interval_str Interval string.
+ * @returns Node list.
+ * @throws trv::sys::InvalidParameterError If the interval string
+ *                                         is invalid.
+ */
+std::vector<float> set_nodes_by_str(std::string interval_str);
+
 
 // ***********************************************************************
 // Program exceptions

@@ -81,6 +81,7 @@ ParameterSet::ParameterSet(const ParameterSet& other) {
   this->fftw_wisdom_file_b = other.fftw_wisdom_file_b;
   this->save_binned_vectors = other.save_binned_vectors;
   this->verbose = other.verbose;
+  this->progbar = other.progbar;
 }
 
 int ParameterSet::read_from_file(char* parameter_filepath) {
@@ -118,6 +119,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   char fftw_scheme_[16] = "";
   char use_fftw_wisdom_[1024] = "";
   char save_binned_vectors_[1024] = "";
+  char progbar_[16] = "";
 
   // ---------------------------------------------------------------------
   // Extraction
@@ -287,6 +289,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
     scan_par_str(
       "save_binned_vectors", "%1023s %1023s %1023s", save_binned_vectors_
     );
+    scan_par_str("progbar", "%1023s %1023s %1023s", progbar_);
 
     if (line_str.find("verbose") != std::string::npos) {
       std::sscanf(
@@ -324,6 +327,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   this->fftw_scheme = fftw_scheme_;
   this->use_fftw_wisdom = use_fftw_wisdom_;
   this->save_binned_vectors = save_binned_vectors_;
+  this->progbar = progbar_;
 
   // Attribute derived parameters.
   this->boxsize[0] = boxsize_x;
@@ -378,6 +382,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   debug_par_str("fftw_scheme", this->fftw_scheme);
   debug_par_str("use_fftw_wisdom", this->use_fftw_wisdom);
   debug_par_str("save_binned_vectors", this->save_binned_vectors);
+  debug_par_str("progbar", this->progbar);
 
   debug_par_int("ngrid[0]", this->ngrid[0]);
   debug_par_int("ngrid[1]", this->ngrid[1]);
@@ -1143,6 +1148,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
   print_par_str("fftw_wisdom_file_f = %s\n", this->fftw_wisdom_file_f.c_str());
   print_par_str("fftw_wisdom_file_b = %s\n", this->fftw_wisdom_file_b.c_str());
   print_par_str("save_binned_vectors = %s\n", this->save_binned_vectors);
+  print_par_str("progbar = %s\n", this->progbar);
   print_par_int("verbose = %d\n", this->verbose);
   print_par_int("fftw_planner_flag = %d\n", this->fftw_planner_flag);
 
