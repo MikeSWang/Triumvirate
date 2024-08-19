@@ -22,8 +22,8 @@ cdef extern from "include/parameters.hpp":
 
         # -- Mesh sampling -----------------------------------------------
 
-        double boxsize[3]
-        int ngrid[3]
+        double[3] boxsize
+        int[3] ngrid
 
         double volume
         long long nmesh
