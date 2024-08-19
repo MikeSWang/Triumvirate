@@ -11,6 +11,7 @@ Configure program parameter set.
     fetch_paramset_template
 
 """
+import warnings
 from pathlib import Path
 from pprint import pformat, pprint
 
@@ -37,6 +38,7 @@ _TMPL_PARAM_DICT = {
     },
     'boxsize': {'x': None, 'y': None, 'z': None},
     'ngrid': {'x': None, 'y': None, 'z': None},
+    'expand': 1.,
     'alignment': 'centre',
     'padscale': 'box',
     'padfactor': None,
@@ -368,18 +370,18 @@ cdef class ParameterSet:
         # -- Mesh sampling -----------------------------------------------
 
         # Attribute numerical parameters.
-        try:
-            if None in self._params['boxsize'].values():
-                raise InvalidParameterError(
-                    "`boxsize` parameters must be set."
-                )
-        except KeyError:
-            raise InvalidParameterError("`boxsize` parameters must be set.")
-        self.thisptr.boxsize = [
-            float(self._params['boxsize']['x']),
-            float(self._params['boxsize']['y']),
-            float(self._params['boxsize']['z']),
-        ]
+        if None in self._params['boxsize'].values():
+            warnings.warn(
+                "`boxsize` parameters are unset. In this case, "
+                "the box size will be computed using the particle "
+                "coordinate spans and the box expansion factor.",
+            )
+        else:
+            self.thisptr.boxsize = [
+                float(self._params['boxsize']['x']),
+                float(self._params['boxsize']['y']),
+                float(self._params['boxsize']['z']),
+            ]
         try:
             if None in self._params['ngrid'].values():
                 raise InvalidParameterError(
@@ -392,6 +394,9 @@ cdef class ParameterSet:
             self._params['ngrid']['y'],
             self._params['ngrid']['z'],
         ]
+
+        if (expand_ := self._params.get('expand')) is not None:
+            self.thisptr.expand = expand_
 
         if (padfactor_ := self._params.get('padfactor')) is not None:
             self.thisptr.padfactor = padfactor_
@@ -512,9 +517,9 @@ cdef class ParameterSet:
         # Validation
         # ----------------------------------------------------------------
 
-        self._validate()
+        self._validate(True)
 
-    def _validate(self):
+    def _validate(self, init=False):
         """Validate extracted parameters.
 
         """
@@ -523,7 +528,7 @@ cdef class ParameterSet:
         except (AttributeError, TypeError):
             pass
 
-        if self.thisptr.validate() != 0:
+        if self.thisptr.validate(init) != 0:
             raise InvalidParameterError("Invalid measurement parameters.")
 
         # Fetch validated parameters that have been derived or transmuted.
@@ -558,9 +563,11 @@ cdef class ParameterSet:
         try:
             self._params['progbar'] = int(_progbar)
         except ValueError:
-            try:
-                self._params['progbar'] = bool(_progbar)
-            except ValueError:
+            if _progbar == 'true':
+                self._params['progbar'] = True
+            elif _progbar == 'false':
+                self._params['progbar'] = False
+            else:
                 raise RuntimeError(
                     "C++ instance of trv::ParameterSet did not return "
                     "a recognised 'verbose' value "
@@ -645,6 +652,7 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
         Dictionary containing any number of the following
         sampling parameters---
 
+        - 'expand': float;
         - 'boxsize': [float, float, float];
         - 'ngrid': [int, int, int];
         - 'alignment': {'centre', 'pad'}
@@ -692,6 +700,9 @@ def _modify_sampling_parameters(paramset, params_sampling=None,
                 "`params_default` should be a subdictionary of `paramset`."
             )
 
+    if 'expand' in params_sampling.keys():
+        paramset['expand'] = params_sampling['expand']
+        if params_default: params_default.pop('expand', None)
     if 'alignment' in params_sampling.keys():
         paramset['alignment'] = params_sampling['alignment']
         if params_default: params_default.pop('alignment', None)

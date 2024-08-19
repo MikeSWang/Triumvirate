@@ -117,6 +117,7 @@ def make_template_parameters_valid(tmpl_params):
 @pytest.fixture
 def default_parameters():
     return {
+        'expand': 1.,
         'alignment': 'centre',
         'padscale': 'box',
         'assignment': 'tsc',

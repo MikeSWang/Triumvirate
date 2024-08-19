@@ -28,7 +28,7 @@ tags:
 
 # -- Sampling ------------------------------------------------------------
 
-# Box size in each dimension (in length units). [mandatory]
+# Box size in each dimension (in length units).
 boxsize:
   x: 1000.
   y: 1000.
@@ -39,6 +39,11 @@ ngrid:
   x: 64
   y: 64
   z: 64
+
+# Box expansion factor: {1. (default), >1.}.
+# The box is expanded by this factor in each dimension when
+# box size is not set.
+expand: 1.
 
 # Box alignment: {'centre' (default), 'pad'}.
 # The catalogues are either centred or padded from the

@@ -28,6 +28,7 @@ cdef extern from "include/parameters.hpp":
         double volume
         long long nmesh
 
+        double expand
         string alignment
         string padscale
         double padfactor
@@ -76,7 +77,7 @@ cdef extern from "include/parameters.hpp":
         # Methods
         # ----------------------------------------------------------------
 
-        int validate() except +
+        int validate(bool_t init) except +
 
         # int print_to_file(char* out_parameter_filepath)
         # int print_to_file()

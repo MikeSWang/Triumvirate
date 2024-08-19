@@ -85,6 +85,8 @@ class ParameterSet {
   int ngrid[3] = {0, 0, 0};
 
   // Mesh alignment.
+  /// box expansion factor (if @c boxsize is not given)
+  double expand = 1.;
   /// box alignment: {"centre" (default), "pad"}
   std::string alignment = "centre";
   /// padding scale (if @c alignment is "pad"): {"box" (default), "grid"}
@@ -216,13 +218,14 @@ class ParameterSet {
   /**
    * @brief Validate parameters.
    *
+   * @param init Initialisation flag.
    * @returns Exit status.
    * @throws trv::sys::InvalidParameterError When a parameter is invalid.
    *
    * @note This method is called by
    *       @ref trv::ParameterSet::read_from_file().
    */
-  int validate();
+  int validate(bool init = false);
 
   /**
    * @brief Print out extracted parameters to a file in the
@@ -250,9 +253,19 @@ class ParameterSet {
  * The environment variables are expected to be in the form
  * ``TRV_OVERRIDE_<PARAMETER_NAME>``.
  *
- * @param[in,out] params Parameter set object.
+ * @param[in,out] params Parameter set.
  */
 void override_paramset_by_envvars(trv::ParameterSet& params);
+
+/**
+ * @brief Set the box size parameters from the box expansion factor.
+ *
+ * @param[in] spans Particle coordinate span in each dimension.
+ * @param[in,out] params Parameter set.
+ */
+void set_boxsize_from_expansion(
+  const double spans[3], trv::ParameterSet& params
+);
 
 }  // namespace trv
 

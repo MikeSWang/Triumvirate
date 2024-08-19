@@ -69,6 +69,7 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
+        - 'expand': float;
         - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
@@ -347,6 +348,7 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
+        - 'expand': float;
         - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
@@ -446,6 +448,20 @@ def _compute_2pt_stats_survey_like(twopt_algofunc,
         logger.info("Lines of sight have been initialised.")
 
     # Set up box alignment.
+    if None in paramset['boxsize'].values():
+        for ax in ['x', 'y', 'z']:
+            paramset['boxsize'][ax] = \
+                catalogue_rand.bounds[ax] * paramset['expand']
+        paramset._validate()
+        if logger:
+            logger.info(
+                "Box size determined from the expanded catalogue bounds: "
+                "(%.3e, %.3e, %.3e).",
+                paramset['boxsize']['x'],
+                paramset['boxsize']['y'],
+                paramset['boxsize']['z']
+            )
+
     if paramset['alignment'] == 'centre':
         catalogue_data.centre(
             [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']],
@@ -829,6 +845,7 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
         Dictionary containing a subset of the following entries
         for sampling parameters---
 
+        - 'expand': float;
         - 'alignment': {'centre', 'pad'};
         - 'boxsize': sequence of [float, float, float];
         - 'ngrid': sequence of [int, int, int];
@@ -916,6 +933,20 @@ def _compute_2pt_stats_sim_like(twopt_algofunc, catalogue_data,
         logger.info("Binning has been initialised.")
 
     # Set up box alignment.
+    if None in paramset['boxsize'].values():
+        for ax in ['x', 'y', 'z']:
+            paramset['boxsize'][ax] = \
+                catalogue_data.bounds[ax] * paramset['expand']
+        paramset._validate()
+        if logger:
+            logger.info(
+                "Box size determined from the expanded catalogue bounds: "
+                "(%.3e, %.3e, %.3e).",
+                paramset['boxsize']['x'],
+                paramset['boxsize']['y'],
+                paramset['boxsize']['z']
+            )
+
     catalogue_data.periodise(
         [paramset['boxsize'][ax] for ax in ['x', 'y', 'z']]
     )

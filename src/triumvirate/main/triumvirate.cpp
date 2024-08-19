@@ -396,6 +396,9 @@ int main(int argc, char* argv[]) {
   }
 
   if (params.catalogue_type == "survey") {
+    if (params.volume == 0.) {
+      trv::set_boxsize_from_expansion(catalogue_data.pos_span, params);
+    }
     if (params.alignment == "pad") {
       if (params.padscale == "grid") {
         double ngrid_pad[3] = {
@@ -424,9 +427,15 @@ int main(int argc, char* argv[]) {
     }
   } else
   if (params.catalogue_type == "sim") {
+    if (params.volume == 0.) {
+      trv::set_boxsize_from_expansion(catalogue_data.pos_span, params);
+    }
     catalogue_data.offset_coords_for_periodicity(params.boxsize);
   } else
   if (params.catalogue_type == "random") {
+    if (params.volume == 0.) {
+      trv::set_boxsize_from_expansion(catalogue_rand.pos_span, params);
+    }
     if (params.alignment == "pad") {
       if (params.padscale == "grid") {
         double ngrid_pad[3] = {

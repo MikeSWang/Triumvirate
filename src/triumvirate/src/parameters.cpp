@@ -46,6 +46,7 @@ ParameterSet::ParameterSet(const ParameterSet& other) {
     this->boxsize[i] = other.boxsize[i];
     this->ngrid[i] = other.ngrid[i];
   }
+  this->expand = other.expand;
   this->alignment = other.alignment;
   this->padscale = other.padscale;
   this->padfactor = other.padfactor;
@@ -200,6 +201,13 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
     if (line_str.find("ngrid_z") != std::string::npos) {
       std::sscanf(
         line_str.data(), "%1023s %1023s %d", dummy_str, dummy_equal, &ngrid_z
+      );
+    }
+
+    if (line_str.find("expand") != std::string::npos) {
+      std::sscanf(
+        line_str.data(), "%1023s %1023s %lg",
+        dummy_str, dummy_equal, &this->expand
       );
     }
 
@@ -402,22 +410,24 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   debug_par_double("boxsize[0]", this->boxsize[0]);
   debug_par_double("boxsize[1]", this->boxsize[1]);
   debug_par_double("boxsize[2]", this->boxsize[2]);
+  debug_par_double("expand", this->expand);
   debug_par_double("volume", this->volume);
   debug_par_double("padfactor", this->padfactor);
   debug_par_double("bin_min", this->bin_min);
   debug_par_double("bin_max", this->bin_max);
 #endif  // DBG_PARS
 
-  return this->validate();
+  return this->validate(true);
 }
 
-int ParameterSet::validate() {
+int ParameterSet::validate(bool init) {
   trvs::logger.reset_level(this->verbose);
 
   // Validate and derive string parameters.
   // Any duplicate '/' has no effect.
   if (
     this->catalogue_dir.find_first_not_of(" \t\n\r\v\f") != std::string::npos
+    && init
   ) {
     this->catalogue_dir += "/";  // transmutation
   }
@@ -425,18 +435,19 @@ int ParameterSet::validate() {
     this->measurement_dir.find_first_not_of(" \t\n\r\v\f") == std::string::npos
   ) {
     this->measurement_dir = "./";  // transmutation
-  } else {
+  } else
+  if (init) {
     this->measurement_dir += "/";  // transmutation
   }
   if (this->catalogue_type == "survey") {
     if (this->data_catalogue_file != "") {
-      if (this->data_catalogue_file.rfind("/", 0) != 0) {
+      if (this->data_catalogue_file.rfind("/", 0) != 0 && init) {
         this->data_catalogue_file = this->catalogue_dir
           + this->data_catalogue_file;
       }  // transmutation
     }
     if (this->rand_catalogue_file != "") {
-      if (this->rand_catalogue_file.rfind("/", 0) != 0) {
+      if (this->rand_catalogue_file.rfind("/", 0) != 0 && init) {
         this->rand_catalogue_file = this->catalogue_dir
           + this->rand_catalogue_file;
       }  // transmutation
@@ -445,7 +456,7 @@ int ParameterSet::validate() {
   if (this->catalogue_type == "random") {
     this->data_catalogue_file = "";  // transmutation
     if (this->rand_catalogue_file != "") {
-      if (this->rand_catalogue_file.rfind("/", 0) != 0) {
+      if (this->rand_catalogue_file.rfind("/", 0) != 0 && init) {
         this->rand_catalogue_file = this->catalogue_dir
           + this->rand_catalogue_file;
       }  // transmutation
@@ -453,7 +464,7 @@ int ParameterSet::validate() {
   } else
   if (this->catalogue_type == "sim") {
     if (this->data_catalogue_file != "") {
-      if (this->data_catalogue_file.rfind("/", 0) != 0) {
+      if (this->data_catalogue_file.rfind("/", 0) != 0 and init) {
         this->data_catalogue_file = this->catalogue_dir
           + this->data_catalogue_file;
       }  // transmutation
@@ -772,7 +783,8 @@ int ParameterSet::validate() {
 
   if (this->use_fftw_wisdom == "false" || this->use_fftw_wisdom == "") {
     this->use_fftw_wisdom = "";  // transmutation
-  } else {
+  } else
+  if (init) {
     this->use_fftw_wisdom += "/";  // transmutation
   }
 
@@ -843,7 +855,7 @@ int ParameterSet::validate() {
   } else
   if (this->save_binned_vectors != "") {
     // Check whether path is absolute.
-    if (this->save_binned_vectors.rfind("/", 0) != 0) {
+    if (this->save_binned_vectors.rfind("/", 0) != 0 && init) {
       this->save_binned_vectors = this->measurement_dir
         + this->save_binned_vectors;
     }  // transmutation
@@ -857,19 +869,36 @@ int ParameterSet::validate() {
 
   if (this->volume <= 0.) {
     if (trvs::currTask == 0) {
-      trvs::logger.error(
-        "Derived total box volume is non-positive: `volume` = '%.6e'. "
+      trvs::logger.warn(
+        "Derived total box volume is non-positive: `volume` = %.6e. "
         "Possible numerical overflow due to large `boxsize`, "
-        "or `boxsize` is unset.",
+        "or `boxsize` is unset. "
+        "In the latter case, the box size will be calculated using "
+        "the particle coordinate spans and the box expansion factor.",
         this->volume
       );
     }
-    throw trvs::InvalidParameterError(
-      "Derived total box volume is non-positive: `volume` = '%.6e'. "
-      "Possible numerical overflow due to large `boxsize`, "
-      "or `boxsize` is unset.\n",
-      this->volume
-    );
+    if (this->expand < 1.) {
+      if (trvs::currTask == 0) {
+        trvs::logger.error(
+          "The box expansion factor must be >= 1: `expand` = %lg.",
+          this->expand
+        );
+      }
+      throw trvs::InvalidParameterError(
+        "The box expansion factor must be >= 1: `expand` = %lg.\n",
+        this->expand
+      );
+    }
+    if (this->expand > 1. and this->catalogue_type == "sim") {
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "The box expansion factor is expected to be unity "
+          "for 'sim' catalogue(s): `expand` = '%lg'.",
+          this->expand
+        );
+      }
+    }
   }
   if (this->nmesh <= 0) {
     if (trvs::currTask == 0) {
@@ -1113,6 +1142,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
   print_par_double("volume = %.6e\n", this->volume);
   print_par_int("nmesh = %lld\n", this->nmesh);
 
+  print_par_double("expand = %.4f\n", this->expand);
   print_par_str("alignment = %s\n", this->alignment);
   print_par_str("padscale = %s\n", this->padscale);
   print_par_double("padfactor = %.4f\n", this->padfactor);
@@ -1203,6 +1233,26 @@ void override_paramset_by_envvars(trv::ParameterSet& params) {
   char* ev_progbar = std::getenv("TRV_OVERRIDE_PROGBAR");
   if (ev_progbar != nullptr) {
     params.progbar = std::string(ev_progbar);
+  }
+
+  params.validate();
+}
+
+void set_boxsize_from_expansion(
+  const double spans[3], trv::ParameterSet& params
+) {
+  for (int iaxis = 0; iaxis < 3; iaxis++) {
+    params.boxsize[iaxis] = spans[iaxis] * params.expand;
+  }
+
+  params.validate();
+
+  if (trvs::currTask == 0) {
+    trvs::logger.info(
+      "Box size has been set from particle coordinate spans and "
+      "expansion factor: (%.3f, %.3f, %.3f).",
+      params.boxsize[0], params.boxsize[1], params.boxsize[2]
+    );
   }
 }
 

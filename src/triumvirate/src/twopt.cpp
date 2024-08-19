@@ -207,7 +207,7 @@ double calc_powspec_normalisation_from_meshes(
 
   params_norm.assignment = assignment;
 
-  params_norm.validate();
+  params_norm.validate(true);
 
   // Reuse existing overloaded method.
   double norm_factor = calc_powspec_normalisation_from_meshes(

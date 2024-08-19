@@ -42,6 +42,11 @@ ngrid:
   y:
   z:
 
+# Box expansion factor: {1. (default), >1.}.
+# The box is expanded by this factor in each dimension when
+# box size is not set.
+expand: 1.
+
 # Box alignment: {'centre' (default), 'pad'}.
 # The catalogues are either centred or padded from the
 # mininum-coordinate corner.
