@@ -426,27 +426,27 @@ void SphericalBesselTransform::biased_transform(
   std::vector< std::complex<double> >& b
 ) {
   // STYLE: Standard naming convention is not followed below.
-  int N = this->nsamp;
+  std::size_t N = static_cast<std::size_t>(this->nsamp);
 
-  if (int(a.size()) != N) {
+  if (a.size() != N) {
     throw trvs::InvalidParameterError(
       "The size of array `a` must be equal to the number of samples."
     );
   }
-  if (int(a.size()) != N) {
+  if (a.size() != N) {
     b.resize(N);
   }
 
   std::complex<double> A[N];
   std::complex<double> B[N];
 
-  for (int j = 0; j < N; j++) {
+  for (std::size_t j = 0; j < N; j++) {
     A[j] = std::pow(this->pre_sampts[j], 3./2) * a[j];
   }
 
   HankelTransform::biased_transform(A, B);
 
-  for (int j = 0; j < N; j++) {
+  for (std::size_t j = 0; j < N; j++) {
     b[j] = std::pow(2*M_PI / this->post_sampts[j], 3./2) * B[j];
   }
 }

@@ -253,12 +253,12 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector) {
 #pragma omp parallel for
 #endif  // __GNUC__ && !__clang__
 #endif  // TRV_USE_OMP
-  for (int i = 0; i < int(sorting_vector.size()); i++) {
+  for (std::size_t i = 0; i < sorting_vector.size(); i++) {
       indices[i] = i;
   }
 
   // Sort the index vector based on the sorting vector.
-  std::sort(indices.begin(), indices.end(), [&](int a, int b) {
+  std::sort(indices.begin(), indices.end(), [&](std::size_t a, std::size_t b) {
       return sorting_vector[a] < sorting_vector[b];;
   });
 
