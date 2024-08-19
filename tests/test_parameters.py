@@ -51,6 +51,10 @@ def make_template_parameters_valid(tmpl_params):
                 "ngrid:\n  x:\n  y:\n  z:\n",
                 "ngrid:\n  x: 64\n  y: 64\n  z: 64\n"
             ),
+            # (
+            #     "cutoff_nyq:",
+            #     "cutoff_nyq: 0.10"
+            # ),
             (
                 "catalogue_type:",
                 "catalogue_type: sim"
