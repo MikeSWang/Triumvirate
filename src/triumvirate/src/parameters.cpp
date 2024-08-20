@@ -870,6 +870,10 @@ int ParameterSet::validate(bool init) {
     }  // transmutation
   }
 
+  if (this->progbar == "") {
+    this->progbar = "false";  // transmutation
+  }
+
   // Validate and derive numerical parameters.
   this->volume =
     this->boxsize[0] * this->boxsize[1] * this->boxsize[2];  // derivation
