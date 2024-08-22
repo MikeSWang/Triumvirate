@@ -553,12 +553,12 @@ void display_help() {
   std::printf(
     "Triumvirate: Three-Point Clustering Measurements in LSS\n"
     "\n"
-    "Usage: triumvirate [-h] [-V] <parameter-ini-file>\n"
+    "\033[1mUsage:\033[0m triumvirate [-h] [-V] <parameter-ini-file>\n"
     "\n"
-    "Positional arguments:\n"
+    "\033[1mPositional arguments:\033[0m\n"
     "  <parameter-ini-file>  path to the parameter INI file\n"
     "\n"
-    "Options:\n"
+    "\033[1mOptions:\033[0m\n"
     "  -h, --help     show help message and exit\n"
     "  -V, --version  show version and licensing information and exit\n"
   );
@@ -571,7 +571,8 @@ void display_prog_logo() {
     "    //  \\        |  |__) | |  | |\\/| \\  / | |__)  /\\   |  |__    \n"
     "   //    \\       |  |  \\ | \\__/ |  |  \\/  | |  \\ /~~\\  |  |___ \n"
     "  //      \\                                                         \n"
-    " //________\\    • Three-Point Clustering Measurements in LSS •      \n"
+    " //________\\    "
+    "• \033[1mThree-Point Clustering Measurements in LSS\033[0m •      \n"
   );
   std::printf("\n");
 }
@@ -580,15 +581,15 @@ void display_prog_licence(bool brief) {
   std::printf("Copyright (C) 2023 Mike S Wang & Naonori S Sugiyama\n");
   std::printf("\n");
   if (brief) {
-    std::printf("LICENCE NOTICE >\n\n");
+    std::printf("\033[1mLICENCE NOTICE\033[0m >\n\n");
     std::printf(
       "This program comes with ABSOLUTELY NO WARRANTY. This is     \n"
       "free software, and you are welcome to redistribute it under \n"
       "certain conditions; run `triumvirate --version` for details.\n"
     );
   } else {
-    std::printf("LICENCE >\n\n");
-    std::printf("GPL-3.0-or-later\n\n");
+    std::printf("\033[1mLICENCE\033[0m >\n\n");
+    std::printf("\033[2mGPL-3.0-or-later\033[0m\n\n");
     std::printf(
       "This program is free software: you can redistribute it and/or modify \n"
       "it under the terms of the GNU General Public License as published by \n"
@@ -609,9 +610,9 @@ void display_prog_licence(bool brief) {
 
 void display_prog_info(bool runtime) {
   if (runtime) {
-    std::printf("RUNTIME INFORMATION >\n\n");
+    std::printf("\033[1mRUNTIME INFORMATION\033[0m >\n\n");
   } else {
-    std::printf("PROGRAM INFORMATION >\n\n");
+    std::printf("\033[1mPROGRAM INFORMATION\033[0m >\n\n");
   }
 
 #ifdef __TRV_VERSION__
@@ -649,11 +650,14 @@ void display_prog_info(bool runtime) {
 void display_prog_logbars(int endpoint) {
   if (endpoint == 0) {
     // std::printf("%s\n", std::string(80, '>').c_str());
-    std::printf("PROGRAM LOG >\n\n");
+    if (is_colourable()) {
+      std::printf("\033[1mPROGRAM LOG\033[0m >\n\n");
+    } else {
+      std::printf("PROGRAM LOG >\n\n");
+    }
   } else
   if (endpoint == 1) {
     // std::printf("%s\n", std::string(80, '<').c_str());
-    // std::printf("\nTRIUMVIRATE LOG <\n");
   } else {
     throw InvalidParameterError(
       "Invalid endpoint for log bars: %d.\n", endpoint
