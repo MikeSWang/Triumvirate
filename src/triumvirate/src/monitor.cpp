@@ -320,8 +320,18 @@ void Logger::error(const char* fmt_string, ...) {
 bool is_colourable() {
   char* ev_term = std::getenv("TERM");
   char* ev_interactive = std::getenv("TRV_INTERACTIVE");
+  if (ev_term == nullptr || ev_interactive == nullptr) {
+    return false;
+  }
+  if (std::strstr(ev_term, "color") == nullptr) {
+    return false;
+  }
+  std::string str_interactive = std::string(ev_interactive);
   return (
-    ev_interactive != nullptr && std::strstr(ev_term, "color") != nullptr
+    str_interactive == "true" ||
+    str_interactive == "yes" ||
+    str_interactive == "1" ||
+    str_interactive == "on"
   );
 }
 

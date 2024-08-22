@@ -300,7 +300,8 @@ class Logger {
  * @brief Check if the program @c stdout is colourable.
  *
  * @return true If the environmental variable @c TRV_INTERACTIVE is set
- *              and @c TERM contains @c "color".
+ *              to @c "true" or @c "yes" or @c "1" or @c "on" and
+ *              @c TERM contains @c "color".
  * @return false Otherwise.
  */
 bool is_colourable();
