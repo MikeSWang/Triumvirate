@@ -37,6 +37,7 @@
 #include <chrono>
 #include <cstdarg>
 #include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -294,6 +295,15 @@ class Logger {
  private:
   void emit(std::string log_type, const char* fmt_string, std::va_list args);
 };
+
+/**
+ * @brief Check if the program @c stdout is colourable.
+ *
+ * @return true If the environmental variable @c TRV_INTERACTIVE is set
+ *              and @c TERM contains @c "color".
+ * @return false Otherwise.
+ */
+bool is_colourable();
 
 extern Logger logger;  ///< default logger (at `NSET` logging level)
 

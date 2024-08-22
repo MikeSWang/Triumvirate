@@ -30,9 +30,9 @@
 
 /// @cond DOXYGEN_DOC_MACROS
 #ifdef TRV_EXTCALL
-#define SHOW_CPPSTATE "C++"
+#define SHOW_CPPSTATE " C++"
 #else  // !TRV_EXTCALL
-#define SHOW_CPPSTATE "\b"
+#define SHOW_CPPSTATE ""
 #endif  // TRV_EXTCALL
 /// @endcond
 
@@ -169,44 +169,23 @@ void Logger::emit(
   char log_mesg_buf[4096];
   std::vsnprintf(log_mesg_buf, sizeof(log_mesg_buf), fmt_string, args);
 
-  std::printf(
-    "[%s %s %s] %s\n",
-    trv::sys::show_timestamp().c_str(), log_type.c_str(), SHOW_CPPSTATE,
-    log_mesg_buf
-  );
+  if (log_type.empty()) {
+    std::printf(
+      "[%s%s] %s\n",
+      trv::sys::show_timestamp().c_str(), SHOW_CPPSTATE,
+      log_mesg_buf
+    );
+  } else {
+    std::printf(
+      "[%s %s%s] %s\n",
+      trv::sys::show_timestamp().c_str(), log_type.c_str(), SHOW_CPPSTATE,
+      log_mesg_buf
+    );
+  }
 }
 
 void Logger::log(LogLevel entry_level, const char* fmt_string, ...) {
-  if (entry_level >= this->level_limit) {
-    std::string log_type;
-    switch (entry_level) {
-      case LogLevel::NSET:
-        log_type = "\b";
-        break;
-      case LogLevel::DBUG:
-        log_type = "DBUG";
-        break;
-      case LogLevel::STAT:
-        log_type = "STAT";
-        break;
-      case LogLevel::INFO:
-        log_type = "INFO";
-        break;
-      case LogLevel::WARN:
-        log_type = "WARN";
-        break;
-      case LogLevel::ERRO:
-        log_type = "ERRO";
-        break;
-      default:
-        throw InvalidParameterError("Unsupported log level.");
-    }
-
-    std::va_list args;
-    va_start(args, fmt_string);
-    Logger::emit(log_type, fmt_string, args);
-    va_end(args);
-  }
+  Logger::log(static_cast<int>(entry_level), fmt_string);
 }
 
 void Logger::log(int level_entry, const char* fmt_string, ...) {
@@ -215,27 +194,55 @@ void Logger::log(int level_entry, const char* fmt_string, ...) {
     level_entry /= 10;
 
     std::string log_type;
-    switch (level_entry) {
-      case LogLevel::NSET:
-        log_type = "\b";
-        break;
-      case LogLevel::DBUG:
-        log_type = "DBUG";
-        break;
-      case LogLevel::STAT:
-        log_type = "STAT";
-        break;
-      case LogLevel::INFO:
-        log_type = "INFO";
-        break;
-      case LogLevel::WARN:
-        log_type = "WARN";
-        break;
-      case LogLevel::ERRO:
-        log_type = "ERRO";
-        break;
-      default:
-        throw InvalidParameterError("Unsupported log level.");
+
+    if (is_colourable()) {
+      // Use colours in interactive mode.
+      switch (level_entry) {
+        case LogLevel::NSET:
+          log_type = "";
+          break;
+        case LogLevel::DBUG:
+          log_type = "\033[0;35mDBUG\033[0m";  // magenta
+          break;
+        case LogLevel::STAT:
+          log_type = "\033[0;34mSTAT\033[0m";  // blue
+          break;
+        case LogLevel::INFO:
+          log_type = "\033[0;32mINFO\033[0m";  // green
+          break;
+        case LogLevel::WARN:
+          log_type = "\033[0;33mWARN\033[0m";  // yellow
+          break;
+        case LogLevel::ERRO:
+          log_type = "\033[0;31mERRO\033[0m";  // red
+          break;
+        default:
+          throw InvalidParameterError("Unsupported log level.");
+      }
+    } else {
+      // No colours otherwise.
+      switch (level_entry) {
+        case LogLevel::NSET:
+          log_type = "";
+          break;
+        case LogLevel::DBUG:
+          log_type = "DBUG";
+          break;
+        case LogLevel::STAT:
+          log_type = "STAT";
+          break;
+        case LogLevel::INFO:
+          log_type = "INFO";
+          break;
+        case LogLevel::WARN:
+          log_type = "WARN";
+          break;
+        case LogLevel::ERRO:
+          log_type = "ERRO";
+          break;
+        default:
+          throw InvalidParameterError("Unsupported log level.");
+      }
     }
 
     std::va_list args;
@@ -249,7 +256,11 @@ void Logger::debug(const char* fmt_string, ...) {
   if (this->level_limit <= LogLevel::DBUG) {
     std::va_list args;
     va_start(args, fmt_string);
-    Logger::emit("DBUG", fmt_string, args);
+    if (is_colourable()) {
+      Logger::emit("\033[0;35mDBUG\033[0m", fmt_string, args);
+    } else {
+      Logger::emit("DBUG", fmt_string, args);
+    }
     va_end(args);
   }
 }
@@ -258,7 +269,11 @@ void Logger::stat(const char* fmt_string, ...) {
   if (this->level_limit <= LogLevel::STAT) {
     std::va_list args;
     va_start(args, fmt_string);
-    Logger::emit("STAT", fmt_string, args);
+    if (is_colourable()) {
+      Logger::emit("\033[0;34mSTAT\033[0m", fmt_string, args);
+    } else {
+      Logger::emit("STAT", fmt_string, args);
+    }
     va_end(args);
   }
 }
@@ -267,7 +282,11 @@ void Logger::info(const char* fmt_string, ...) {
   if (this->level_limit <= LogLevel::INFO) {
     std::va_list args;
     va_start(args, fmt_string);
-    Logger::emit("INFO", fmt_string, args);
+    if (is_colourable()) {
+      Logger::emit("\033[0;32mINFO\033[0m", fmt_string, args);
+    } else {
+      Logger::emit("INFO", fmt_string, args);
+    }
     va_end(args);
   }
 }
@@ -276,7 +295,11 @@ void Logger::warn(const char* fmt_string, ...) {
   if (this->level_limit <= LogLevel::WARN) {
     std::va_list args;
     va_start(args, fmt_string);
-    Logger::emit("WARN", fmt_string, args);
+    if (is_colourable()) {
+      Logger::emit("\033[0;33mWARN\033[0m", fmt_string, args);
+    } else {
+      Logger::emit("WARN", fmt_string, args);
+    }
     va_end(args);
   }
 }
@@ -285,9 +308,21 @@ void Logger::error(const char* fmt_string, ...) {
   if (this->level_limit <= LogLevel::ERRO) {
     std::va_list args;
     va_start(args, fmt_string);
-    Logger::emit("ERRO", fmt_string, args);
+    if (is_colourable()) {
+      Logger::emit("\033[1;31mERRO\033[0m", fmt_string, args);
+    } else {
+      Logger::emit("ERRO", fmt_string, args);
+    }
     va_end(args);
   }
+}
+
+bool is_colourable() {
+  char* ev_term = std::getenv("TERM");
+  char* ev_interactive = std::getenv("TRV_INTERACTIVE");
+  return (
+    ev_interactive != nullptr && std::strstr(ev_term, "color") != nullptr
+  );
 }
 
 ProgressBar::ProgressBar(int task_count, std::string name) {
