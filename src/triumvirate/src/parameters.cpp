@@ -853,7 +853,7 @@ int ParameterSet::validate(bool init) {
   char default_bvec_sfilepath[1024];
   std::snprintf(
     default_bvec_sfilepath, sizeof(default_bvec_sfilepath),
-    "%s/binned_vectors%s",
+    "%sbinned_vectors%s",
     this->measurement_dir.c_str(), this->output_tag.c_str()
   );
   if (this->save_binned_vectors == "false") {
@@ -1221,7 +1221,7 @@ int ParameterSet::print_to_file() {
   // Set output file path to default.
   char ofilepath[1024];
   std::snprintf(
-    ofilepath, sizeof(ofilepath), "%s/parameters_used%s",
+    ofilepath, sizeof(ofilepath), "%sparameters_used%s",
     this->measurement_dir.c_str(), this->output_tag.c_str()
   );
 
