@@ -274,9 +274,9 @@ Licence
 
 .. image:: https://img.shields.io/github/license/MikeSWang/Triumvirate?label=licence&style=flat-square&color=informational
     :target: https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE
-    :alt: GPL-3.0 Licence
+    :alt: GPLv3 Licence
 
-|Triumvirate| is made freely available under the `GPL-3.0 licence
+|Triumvirate| is made freely available under the `GPLv3 licence
 <https://www.gnu.org/licenses/gpl-3.0.en.html>`_ (or any later version).
 Please see |Licence|_ (located at the repository directory root) for full
 terms and conditions.
