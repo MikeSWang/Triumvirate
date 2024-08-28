@@ -699,9 +699,8 @@ class WinConvFormulae:
     delimiters):
 
     >>> print(formulae.get_latex_expr('000'))
-    Q_\\mathrm{000} \\zeta_\\mathrm{000} \
-- Q_\\mathrm{000} \\zeta_\\mathrm{ic} \
-+ \\frac{1}{3} Q_\\mathrm{110} \\zeta_\\mathrm{110}
+    Q_{000} \\zeta_{000} - Q_{000} \\zeta_\\mathrm{ic} \
++ \\frac{1}{3} Q_{110} \\zeta_{110}
 
     """
 
