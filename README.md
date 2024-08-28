@@ -182,8 +182,8 @@ Release notes are included in the [change log](CHANGELOG.md).
 
 [![Licence](https://img.shields.io/github/license/MikeSWang/Triumvirate?label=licence&style=flat-square&color=informational)](https://github.com/MikeSWang/Triumvirate/blob/main/LICENCE)
 
-``Triumvirate`` is made freely available under the [GPLv3 licence](
-https://www.gnu.org/licenses/gpl-3.0.en.html) (or any later version).
+``Triumvirate`` is made freely available under the [GPLv3+ licence](
+https://www.gnu.org/licenses/gpl-3.0.en.html).
 Please see [``LICENCE``](./LICENCE) (located at the repository directory root)
 for full terms and conditions.
 
