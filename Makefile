@@ -12,6 +12,8 @@ PKGNAME := triumvirate
 PROGNAME := triumvirate
 LIBNAME := trv
 
+PKG_VER := $(shell git describe --tag | sed -e 's/^v//')
+
 SCM_VER_SCHEME ?= no-guess-dev
 SCM_LOC_SCHEME ?= node-and-date
 
@@ -128,7 +130,7 @@ DEP_TEST_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPS_TEST
 # -- Options -------------------------------------------------------------
 
 INCLUDES += -I${DIR_PKG_INCLUDE} ${DEP_INCLUDES}
-CPPFLAGS += -MMD -MP
+CPPFLAGS += -MMD -MP -D__TRV_VERSION__=\"${PKG_VER}\"
 CXXFLAGS += -std=c++17 -Wall -O3 ${DEP_CXXFLAGS}
 LDFLAGS += \
 	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \

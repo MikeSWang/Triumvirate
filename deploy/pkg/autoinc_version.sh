@@ -14,10 +14,10 @@ get_latest_release () {
     release_local="$(git describe --tag)"
     # release_local=$(python deploy/pkg/describe_release.py)
 
-    # release_latest=$(printf ${release_tags} | cut -d ' ' -f 1)
-    release_latest=$(printf "${release_local}" | cut -d '-' -f 1)
+    # release_latest=$(echo ${release_tags} | head -n 1 | cut -d ' ' -f 1)
+    release_latest=$(echo "${release_local}" | cut -d '-' -f 1)
 
-    printf $(printf "${release_latest}" | sed -e "s/^v//")
+    echo "${release_latest}" | sed -e "s/^v//"
 }
 
 # @brief Set fallback version number in C++ header file.
