@@ -577,7 +577,16 @@ class WinConvTerm:
         index_Q_str = ''.join(map(str, self.index_Q))
         index_Z_str = ''.join(map(str, self.index_Z))
 
-        term_str = "{} Q_\\mathrm{{{}}} {}_\\mathrm{{{}}}".format(
+        if index_Q_str.isdigit():
+            index_Q_str = f"{{{index_Q_str}}}"
+        else:
+            index_Q_str = f"\\mathrm{{{index_Q_str}}}"
+        if index_Z_str.isdigit():
+            index_Z_str = f"{{{index_Z_str}}}"
+        else:
+            index_Z_str = f"\\mathrm{{{index_Z_str}}}"
+
+        term_str = "{} Q_{} {}_{}".format(
             coeff_str, index_Q_str, symbol, index_Z_str
         ).strip()
 
