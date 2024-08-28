@@ -77,10 +77,18 @@ from triumvirate.transforms import (
 )
 
 
+# TODO: Refactor the following warning class in the future.
+class ExperimentalWarning(FutureWarning):
+    """Warning issued when using experimental features.
+
+    """
+
+
 # TODO: Remove this warning in v0.6+ releases.
 warnings.warn(
     "The `triumvirate.winconv` module is currently experimental. "
     "Its behaviour has not been fully tested and may change in the future.",
+    ExperimentalWarning
 )
 
 
