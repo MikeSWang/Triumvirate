@@ -44,6 +44,7 @@ import random
 import sys
 import warnings
 from collections.abc import Sequence
+from copy import deepcopy
 from dataclasses import dataclass
 from fractions import Fraction
 from typing import Union
@@ -257,6 +258,11 @@ class Multipole:
 
     def __hash__(self):
         return hash(self.index)
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__) and (self.index == other.index)
+        )
 
     def __lt__(self, other):
         self._iscomp(other)
@@ -551,6 +557,14 @@ class WinConvTerm:
     def __str__(self):
         return f"{self.coeff};{self.multipole_Q};{self.multipole_Z}"
 
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__)
+            and self.coeff == other.coeff
+            and self.multipole_Q == other.multipole_Q
+            and self.multipole_Z == other.multipole_Z
+        )
+
     def get_latex_str(self, symbol=r"\zeta"):
         """Get the LaTeX string representing the window convolution
         formula for a specific windowed CF multipole.
@@ -764,15 +778,15 @@ class WinConvFormulae:
         return self._formulae[multipole]
 
     def get_dict(self):
-        """Get the formulae as a dictionary.
+        """Get the formulae as a dictionary copy.
 
         Returns
         -------
         :py:const:`~triumvirate.winconv.FormulaeDictType`
-            Window convolution formulae as a dictionary.
+            Window convolution formulae as a deep-copied dictionary.
 
         """
-        return self._formulae
+        return deepcopy(self._formulae)
 
     def get_latex_expr(self, multipole, symbol=r"\zeta"):
         """Get the LaTeX string representing the window convolution
