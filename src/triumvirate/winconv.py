@@ -662,8 +662,6 @@ class WinConvFormulae:
 
     Attributes
     ----------
-    formulae : |formulae_type|
-        Window convolution formulae.
     multipoles : list of :class:`~triumvirate.winconv.Multipole`
         Windowed CF multipole index/indices.
     multipoles_Q : list of :class:`~triumvirate.winconv.Multipole`
@@ -764,6 +762,17 @@ class WinConvFormulae:
             multipole = Multipole(multipole)
 
         return self._formulae[multipole]
+
+    def get_dict(self):
+        """Get the formulae as a dictionary.
+
+        Returns
+        -------
+        :py:const:`~triumvirate.winconv.FormulaeDictType`
+            Window convolution formulae as a dictionary.
+
+        """
+        return self._formulae
 
     def get_latex_expr(self, multipole, symbol=r"\zeta"):
         """Get the LaTeX string representing the window convolution
