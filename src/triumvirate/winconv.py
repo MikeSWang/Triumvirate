@@ -3016,7 +3016,7 @@ class BispecWinConv(WinConvBase):
                 # Since operations are row-major, transpose the
                 # de-ravelled results.
                 wc_matrices[key] = recvbuf.reshape(
-                    (dim_2d, dim_2d)
+                    (dim_2d, recvbuf.size // dim_2d)
                 ).T
         del wc_basis_vectors_sublist
         if self.comm.rank != self.comm_root:
