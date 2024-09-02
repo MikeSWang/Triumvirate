@@ -17,7 +17,7 @@ get_latest_release () {
     # release_latest=$(echo ${release_tags} | head -n 1 | cut -d ' ' -f 1)
     release_latest=$(echo "${release_local}" | cut -d '-' -f 1)
 
-    echo "${release_latest}" | sed -e "s/^v//"
+    echo "${release_latest#v}"
 }
 
 # @brief Set fallback version number in C++ header file.
