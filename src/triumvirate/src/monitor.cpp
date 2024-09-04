@@ -404,7 +404,24 @@ void ProgressBar::update(float progress_now) {
     if (this->progress >= this->nodes[this->next_node_idx]) {
       int pos = this->bar_width * this->progress;
 
+      // Flush the progress-bar line.
+      std::cout << "\r";
+
+      // Print the timestamped status.
       std::cout << "[";
+      std::cout << trv::sys::show_timestamp();
+      if (is_colourable()) {
+        std::cout << " \033[0;34mSTAT\033[0m";
+      } else {
+        std::cout << " STAT";
+      }
+      std::cout << "] ";
+
+      // Print the progress bar.
+      std::cout << "[";
+      if (is_colourable()) {
+        std::cout << "\033[0;34m";
+      }
       for (int ichar = 0; ichar < this->bar_width; ichar++) {
           if (ichar < pos) {
             std::cout << "=";
@@ -415,13 +432,17 @@ void ProgressBar::update(float progress_now) {
             std::cout << " ";
           }
       }
+      if (is_colourable()) {
+        std::cout << "\033[0m";
+      }
       std::cout << "] " << int(progress * 100.) << "%";
 
+      // Print the progress bar name.
       if (this->name != "") {
         std::cout << " < " << this->name;
       }
 
-      std::cout << "\r";
+      // Flush the progress-bar line.
       std::cout.flush();
 
       this->next_node_idx += 1;
