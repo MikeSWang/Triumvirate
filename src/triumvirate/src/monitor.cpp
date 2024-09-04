@@ -591,8 +591,14 @@ void display_prog_logo() {
     "   //    \\       |  |  \\ | \\__/ |  |  \\/  | |  \\ /~~\\  |  |___ \n"
     "  //      \\                                                         \n"
     " //________\\    "
-    "• \033[1mThree-Point Clustering Measurements in LSS\033[0m •      \n"
   );
+  if (is_colourable()) {
+    std::printf(
+      "• \033[1mThree-Point Clustering Measurements in LSS\033[0m •      \n"
+    );
+  } else {
+    std::printf("• Three-Point Clustering Measurements in LSS •      \n");
+  }
   std::printf("\n");
 }
 
@@ -600,15 +606,24 @@ void display_prog_licence(bool brief) {
   std::printf("Copyright (C) 2023 Mike S Wang & Naonori S Sugiyama\n");
   std::printf("\n");
   if (brief) {
-    std::printf("\033[1mLICENCE NOTICE\033[0m >\n\n");
+    if (is_colourable()) {
+      std::printf("\033[1mLICENCE NOTICE\033[0m >\n\n");
+    } else {
+      std::printf("LICENCE NOTICE >\n\n");
+    }
     std::printf(
       "This program comes with ABSOLUTELY NO WARRANTY. This is     \n"
       "free software, and you are welcome to redistribute it under \n"
       "certain conditions; run `triumvirate --version` for details.\n"
     );
   } else {
-    std::printf("\033[1mLICENCE\033[0m >\n\n");
-    std::printf("\033[2mGPL-3.0-or-later\033[0m\n\n");
+    if (is_colourable()) {
+      std::printf("\033[1mLICENCE\033[0m >\n\n");
+      std::printf("\033[2mGPL-3.0-or-later\033[0m\n\n");
+    } else {
+      std::printf("LICENCE >\n\n");
+      std::printf("GPL-3.0-or-later\n\n");
+    }
     std::printf(
       "This program is free software: you can redistribute it and/or modify \n"
       "it under the terms of the GNU General Public License as published by \n"
@@ -629,9 +644,17 @@ void display_prog_licence(bool brief) {
 
 void display_prog_info(bool runtime) {
   if (runtime) {
-    std::printf("\033[1mRUNTIME INFORMATION\033[0m >\n\n");
+    if (is_colourable()) {
+      std::printf("\033[1mRUNTIME INFORMATION\033[0m >\n\n");
+    } else {
+      std::printf("RUNTIME INFORMATION >\n\n");
+    }
   } else {
-    std::printf("\033[1mPROGRAM INFORMATION\033[0m >\n\n");
+    if (is_colourable()) {
+      std::printf("\033[1mPROGRAM INFORMATION\033[0m >\n\n");
+    } else {
+      std::printf("PROGRAM INFORMATION >\n\n");
+    }
   }
 
 #ifdef __TRV_VERSION__
