@@ -127,13 +127,13 @@ int main(int argc, char* argv[]) {
     }
   }
 
-#ifdef TRV_DISP
+#ifdef TRV_USE_DISP
   if (trv::sys::currTask == 0) {
     trv::sys::display_prog_logo();
     trv::sys::display_prog_licence(true);
     trv::sys::display_prog_info(true);
   }
-#endif  // TRV_DISP
+#endif  // TRV_USE_DISP
 
   if (trv::sys::currTask == 0) {
     trv::sys::display_prog_logbars(0);

@@ -257,7 +257,7 @@ endif  # useomp
 # Visual enhancements: enabled with `usedisp=(true|1)`; disabled otherwise
 ifdef usedisp
 ifeq ($(strip ${usedisp}), $(filter $(strip ${usedisp}), true 1))
-CPPFLAGS += -DTRV_DISP
+CPPFLAGS += -DTRV_USE_DISP
 endif  # usedisp==(true|1)
 endif  # usedisp
 
