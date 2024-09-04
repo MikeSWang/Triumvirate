@@ -404,9 +404,6 @@ void ProgressBar::update(float progress_now) {
     if (this->progress >= this->nodes[this->next_node_idx]) {
       int pos = this->bar_width * this->progress;
 
-      // Flush the progress-bar line.
-      std::cout << "\r";
-
       // Print the timestamped status.
       std::cout << "[";
       std::cout << trv::sys::show_timestamp();
@@ -443,6 +440,7 @@ void ProgressBar::update(float progress_now) {
       }
 
       // Flush the progress-bar line.
+      std::cout << "\r";
       std::cout.flush();
 
       this->next_node_idx += 1;
