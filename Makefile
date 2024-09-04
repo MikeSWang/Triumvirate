@@ -12,7 +12,7 @@ PKGNAME := triumvirate
 PROGNAME := triumvirate
 LIBNAME := trv
 
-PKG_VER := $(shell python deploy/pkg/describe_release.py || git describe --tag | sed -e 's/^v//')
+PKG_VER := $(shell python deploy/pkg/describe_release.py 2>/dev/null || git describe --tag | sed -e 's/^v//')
 
 SCM_VER_SCHEME ?= no-guess-dev
 SCM_LOC_SCHEME ?= node-and-date
