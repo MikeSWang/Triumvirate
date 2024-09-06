@@ -68,6 +68,18 @@ MAKEFLAGS_JOBS = $(shell echo "${MAKEFLAGS} " | grep -Eo ${PATTERN_JOBS})
 # Compilation
 # ------------------------------------------------------------------------
 
+# -- CUDA ----------------------------------------------------------------
+
+# CUDA: enabled with ``usecuda=(true|1)``; disabled otherwise
+ifdef usecuda
+ifeq ($(strip ${usecuda}), $(filter $(strip ${usecuda}), true 1))
+usecuda := true
+else  # usecuda != (true|1)
+unexport usecuda
+endif  # usecuda == (true|1)
+endif  # usecuda
+
+
 # -- OS ------------------------------------------------------------------
 
 OS := $(shell uname -s)
@@ -78,21 +90,35 @@ OS := $(shell uname -s)
 # Assume explicitly GCC compiler by default. [adapt]
 ifeq (${OS}, Linux)
 
-CXX ?= g++
+# If using CUDA, use CUDA compiler.
+	ifndef usecuda
+	CXX ?= g++
+	else  # usecuda
+	CXX ?= nvcc
+	endif  # !usecuda
 
 else ifeq (${OS}, Darwin)
 
 # Use GCC compiler from Homebrew (brew formula 'gcc').
 # The compiler binary may have suffix '-<version>';
 # check the version number with ``brew info gcc``.
-CXX ?= $(shell find $(brew --prefix gcc)/bin -type f -name 'g++*')
+	ifndef usecuda
+	CXX ?= $(shell find $(brew --prefix gcc)/bin -type f -name 'g++*')
+	else  # usecuda
+	$(error "CUDA is not supported on macOS.")
+	endif  # !usecuda
 
 # Use LLVM compiler from Homebrew (brew formula 'llvm').
 # CXX ?= $(shell brew --prefix llvm)/bin/clang++
 
 else  # OS
 
-CXX ?= g++
+# If using CUDA, use CUDA compiler.
+	ifndef usecuda
+	CXX ?= g++
+	else  # usecuda
+	CXX ?= nvcc
+	endif  # !usecuda
 
 endif  # OS
 
@@ -106,7 +132,12 @@ RM ?= rm -f
 
 # -- Dependencies --------------------------------------------------------
 
+# If using CUDA FFT, remove standard FFTW dependency.
+ifndef usecuda
 DEPS := gsl fftw3
+else  # usecuda
+DEPS := gsl
+endif  # !usecuda
 
 # Dependencies are searched for by `pkg-config`.  Ensure the set-up of
 # `pkg-config` matches that of the dependencies (e.g. both are installed
@@ -115,6 +146,11 @@ DEP_INCLUDES := $(shell pkg-config --silence-errors --cflags-only-I ${DEPS})
 DEP_CXXFLAGS := $(shell pkg-config --silence-errors --cflags-only-other ${DEPS})
 DEP_LDFLAGS := $(shell pkg-config --silence-errors --libs-only-other --libs-only-L ${DEPS})
 DEP_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPS})
+
+# If using CUDA FFT, add its dependencies.
+ifdef usecuda
+DEP_LDLIBS += -lcufft -lcufftw
+endif  # usecuda
 
 
 # -- Dependencies (test) -------------------------------------------------
@@ -157,22 +193,22 @@ LDLIBS_TEST = -l${LIBNAME} ${LDLIBS} \
 ifdef NERSC_HOST
 
 # GSL library
-ifdef GSL_ROOT
-INCLUDES += -I${GSL_ROOT}/include
-LDFLAGS += -L${GSL_ROOT}/lib
-endif  # GSL_ROOT
+	ifdef GSL_ROOT
+	INCLUDES += -I${GSL_ROOT}/include
+	LDFLAGS += -L${GSL_ROOT}/lib
+	endif  # GSL_ROOT
 
 # FFTW library
-ifdef FFTW_ROOT
-INCLUDES += -I${FFTW_INC}
-LDFLAGS += -L${FFTW_DIR}
-endif  # FFTW_ROOT
+	ifdef FFTW_ROOT
+	INCLUDES += -I${FFTW_INC}
+	LDFLAGS += -L${FFTW_DIR}
+	endif  # FFTW_ROOT
 
 # GTEST library
-ifdef GTEST_ROOT
-INCLUDES_TEST += -I${GTEST_ROOT}/include
-LDFLAGS_TEST += -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
-endif  # GTEST_ROOT
+	ifdef GTEST_ROOT
+	INCLUDES_TEST += -I${GTEST_ROOT}/include
+	LDFLAGS_TEST += -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
+	endif  # GTEST_ROOT
 
 endif  # NERSC_HOST
 
@@ -180,10 +216,10 @@ endif  # NERSC_HOST
 ifdef DIRAC_HOST
 
 # GTEST library
-ifdef GTEST_ROOT
-INCLUDES_TEST += -I${GTEST_ROOT}/include
-LDFLAGS_TEST += -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
-endif  # GTEST_ROOT
+	ifdef GTEST_ROOT
+	INCLUDES_TEST += -I${GTEST_ROOT}/include
+	LDFLAGS_TEST += -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
+	endif  # GTEST_ROOT
 
 endif  # DIRAC_HOST
 
@@ -194,65 +230,97 @@ endif  # DIRAC_HOST
 ifdef useomp
 
 # Assume GCC implementation by default. [adapt]
-ifeq ($(strip ${useomp}), $(filter $(strip ${useomp}), true 1))
+	ifeq ($(strip ${useomp}), $(filter $(strip ${useomp}), true 1))
 
-ifeq (${OS}, Linux)
+		ifeq (${OS}, Linux)
 
 # Use GCC implementation.
-CXXFLAGS_OMP ?= -fopenmp
-LDFLAGS_OMP ?= -fopenmp
-# LDLIBS_OMP ?= -lgomp
+
+# If using CUDA FFT, add preprocessing flags.
+			ifndef usecuda
+			CXXFLAGS_OMP ?= -fopenmp
+			LDFLAGS_OMP ?= -fopenmp
+			# LDLIBS_OMP ?= -lgomp
+			else  # usecuda
+			CXXFLAGS_OMP ?= -Xcompiler -fopenmp
+			LDFLAGS_OMP ?= -Xcompiler -fopenmp
+			# LDLIBS_OMP ?= -lgomp
+			endif  # !usecuda
 
 # Use Intel implementation.
-# CXXFLAGS_OMP ?= -qopenmp
-# LDFLAGS_OMP ?= -qopenmp
-# # LDLIBS_OMP ?= -liomp5
+			# CXXFLAGS_OMP ?= -qopenmp
+			# LDFLAGS_OMP ?= -qopenmp
+			# # LDLIBS_OMP ?= -liomp5
 
-else ifeq (${OS}, Darwin)
+		else ifeq (${OS}, Darwin)
 
-# Use GCC implementation.
-CXXFLAGS_OMP ?= -fopenmp
-LDFLAGS_OMP ?= -fopenmp
-# LDLIBS_OMP ?= -lgomp
+			CXXFLAGS_OMP ?= -fopenmp
+			LDFLAGS_OMP ?= -fopenmp
+			# LDLIBS_OMP ?= -lgomp
 
 # Use LLVM implementation from Homebrew (brew formula 'libomp').
-# CXXFLAGS_OMP ?= -I$(shell brew --prefix libomp)/include -Xpreprocessor -fopenmp
-# LDFLAGS_OMP ?= -L$(shell brew --prefix libomp)/lib
-# LDLIBS_OMP ?= -lomp
+			# CXXFLAGS_OMP ?= -I$(shell brew --prefix libomp)/include -Xpreprocessor -fopenmp
+			# LDFLAGS_OMP ?= -L$(shell brew --prefix libomp)/lib
+			# LDLIBS_OMP ?= -lomp
 
-else  # OS
+		else  # OS
 
-CXXFLAGS_OMP ?= -fopenmp
-LDFLAGS_OMP ?= -fopenmp
+# If using CUDA FFT, add preprocessing flags.
+			ifndef usecuda
+			CXXFLAGS_OMP ?= -fopenmp
+			LDFLAGS_OMP ?= -fopenmp
+			else  # usecuda
+			CXXFLAGS_OMP ?= -Xcompiler -fopenmp
+			LDFLAGS_OMP ?= -Xcompiler -fopenmp
+			endif  # !usecuda
 
-endif  # OS
+		endif  # OS
 
-CPPFLAGS += -DTRV_USE_OMP -DTRV_USE_FFTWOMP
-CXXFLAGS += ${CXXFLAGS_OMP}
-LDFLAGS += ${LDFLAGS_OMP}
-LDLIBS += -lfftw3_omp ${LDLIBS_OMP}
+# If using CUDA FFT, remove macros for FFTW.
+		ifndef usecuda
+		CPPFLAGS += -DTRV_USE_OMP -DTRV_USE_FFTWOMP
+		else  # usecuda
+		CPPFLAGS += -DTRV_USE_OMP
+		endif  # !usecuda
 
-CPPFLAGS_TEST +=
-CXXFLAGS_TEST += ${CXXFLAGS_OMP}
-LDFLAGS_TEST += ${LDFLAGS_OMP}
-LDLIBS_TEST += ${LDLIBS_OMP}
+		CXXFLAGS += ${CXXFLAGS_OMP}
+		LDFLAGS += ${LDFLAGS_OMP}
 
-WOMP := with
+# If using CUDA FFT, remove OpenMP FFTW dependency.
+		ifndef usecuda
+		LDLIBS += -lfftw3_omp ${LDLIBS_OMP}
+		else  # usecuda
+		LDLIBS += ${LDLIBS_OMP}
+		endif  # !usecuda
 
-else  # useomp!=(true|1)
+		CPPFLAGS_TEST +=
+		CXXFLAGS_TEST += ${CXXFLAGS_OMP}
+		LDFLAGS_TEST += ${LDFLAGS_OMP}
+		LDLIBS_TEST += ${LDLIBS_OMP}
+
+		WOMP := with
+
+	else  # useomp!=(true|1)
 
 # NOTE: Use `undefine` for make>=3.82.
-unexport useomp
+	unexport useomp
 
-WOMP := without
+	WOMP := without
 
-endif  # useomp==(true|1)
+	endif  # useomp==(true|1)
 
 else  # !useomp
 
 WOMP := without
 
 endif  # useomp
+
+# CUDA: enabled with `usecuda=(true|1)`; disabled otherwise
+ifdef usecuda
+ifeq ($(strip ${usecuda}), $(filter $(strip ${usecuda}), true 1))
+CPPFLAGS += -DTRV_USE_CUDA
+endif  # usecuda==(true|1)
+endif  # usecuda
 
 # Visual enhancements: enabled with `usedisp=(true|1)`; disabled otherwise
 ifdef usedisp
@@ -320,14 +388,27 @@ LDLIBS_TEST := $(strip ${LDLIBS_TEST})
 # ------------------------------------------------------------------------
 
 SRCS := $(wildcard ${DIR_PKG_SRC}/*.cpp)
+ifndef usecuda
 OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%.o)
+else  # usecuda
+OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%_cuda.o)
+endif  # !usecuda
 DEPS := $(OBJS:.o=.d)
 
 PROGSRC := ${DIR_PKG_SRCPROG}/${PROGNAME}.cpp
+ifndef usecuda
 PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}.o
+else  # usecuda
+PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}_cuda.o
+endif  # !usecuda
 
+ifndef usecuda
 PROGEXE := ${DIR_BUILDBIN}/${PROGNAME}
 PROGLIB := ${DIR_BUILDLIB}/lib${LIBNAME}.a
+else  # usecuda
+PROGEXE := ${DIR_BUILDBIN}/${PROGNAME}_cuda
+PROGLIB := ${DIR_BUILDLIB}/lib${LIBNAME}_cuda.a
+endif  # !usecuda
 
 
 # -- Installation --------------------------------------------------------

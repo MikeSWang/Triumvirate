@@ -118,10 +118,22 @@ double calc_powspec_normalisation_from_meshes(
   trv::MeshField mesh_rand(params, false, "`mesh_rand`");
 
   fftw_complex* weight_data = nullptr;
+#ifndef TRV_USE_CUDA
   weight_data = fftw_alloc_complex(particles_data.ntotal);
+#else  // TRV_USE_CUDA
+  weight_data = (fftw_complex*)fftw_malloc(
+    sizeof(fftw_complex) * particles_data.ntotal
+  );
+#endif  // !TRV_USE_CUDA
 
   fftw_complex* weight_rand = nullptr;
+#ifndef TRV_USE_CUDA
   weight_rand = fftw_alloc_complex(particles_rand.ntotal);
+#else  // TRV_USE_CUDA
+  weight_rand = (fftw_complex*)fftw_malloc(
+    sizeof(fftw_complex) * particles_rand.ntotal
+  );
+#endif  // !TRV_USE_CUDA
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);

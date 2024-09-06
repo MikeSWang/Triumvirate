@@ -44,7 +44,12 @@
 #include <string>
 #include <vector>
 
+#ifdef TRV_USE_CUDA
+#include <cufftw.h>
+#else  // !TRV_USE_CUDA
 #include <fftw3.h>
+#endif  // TRV_USE_CUDA
+
 #include <gsl/gsl_version.h>
 
 #ifndef __TRV_VERSION__

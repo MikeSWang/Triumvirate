@@ -34,7 +34,11 @@
 
 #include <sys/stat.h>
 
+#ifdef TRV_USE_CUDA
+#include <cufftw.h>
+#else  // !TRV_USE_CUDA
 #include <fftw3.h>
+#endif  // TRV_USE_CUDA
 
 #include <algorithm>
 #include <cmath>

@@ -3192,18 +3192,24 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   }  // likely redundant but safe
 
   // ---->
-  // // Set up FFTW master plans.
-  // fftw_complex* array_holder = fftw_alloc_complex(params.nmesh);
-  // fftw_plan fwd_master_plan = fftw_plan_dft_3d(
-  //   params.ngrid[0], params.ngrid[1], params.ngrid[2],
-  //   array_holder, array_holder,
-  //   FFTW_FORWARD, FFTW_MEASURE
-  // );
-  // fftw_plan bwd_master_plan = fftw_plan_dft_3d(
-  //   params.ngrid[0], params.ngrid[1], params.ngrid[2],
-  //   array_holder, array_holder,
-  //   FFTW_BACKWARD, FFTW_MEASURE
-  // );
+//   // // Set up FFTW master plans.
+// #ifndef TRV_USE_CUDA
+//   fftw_complex* array_holder = fftw_alloc_complex(params.nmesh);
+// #else  // TRV_USE_CUDA
+//   fftw_complex* array_holder = (fftw_complex*)fftw_malloc(
+//     sizeof(fftw_complex) * params.nmesh
+//   );
+// #endif  // TRV_USE_CUDA
+//   fftw_plan fwd_master_plan = fftw_plan_dft_3d(
+//     params.ngrid[0], params.ngrid[1], params.ngrid[2],
+//     array_holder, array_holder,
+//     FFTW_FORWARD, FFTW_MEASURE
+//   );
+//   fftw_plan bwd_master_plan = fftw_plan_dft_3d(
+//     params.ngrid[0], params.ngrid[1], params.ngrid[2],
+//     array_holder, array_holder,
+//     FFTW_BACKWARD, FFTW_MEASURE
+//   );
   // ----<
 
   // ---------------------------------------------------------------------

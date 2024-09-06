@@ -181,13 +181,27 @@ void HankelTransform::initialise(
   // Initialise FFTW plans.
   this->reset();
 
+#ifndef TRV_USE_CUDA
   this->pre_buffer = fftw_alloc_complex(this->nsamp_trans);
+#else  // TRV_USE_CUDA
+  this->pre_buffer = (fftw_complex*)fftw_malloc(
+    sizeof(fftw_complex) * this->nsamp_trans
+  );
+#endif  // !TRV_USE_CUDA
+
   this->pre_plan = fftw_plan_dft_1d(
     this->nsamp_trans, this->pre_buffer, this->pre_buffer,
     FFTW_FORWARD, FFTW_ESTIMATE
   );
 
+#ifndef TRV_USE_CUDA
   this->post_buffer = fftw_alloc_complex(this->nsamp_trans);
+#else  // TRV_USE_CUDA
+  this->post_buffer = (fftw_complex*)fftw_malloc(
+    sizeof(fftw_complex) * this->nsamp_trans
+  );
+#endif  // !TRV_USE_CUDA
+
   this->post_plan = fftw_plan_dft_1d(
     this->nsamp_trans, this->post_buffer, this->post_buffer,
     FFTW_FORWARD, FFTW_ESTIMATE
