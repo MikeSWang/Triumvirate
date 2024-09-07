@@ -713,9 +713,12 @@ def add_options_pkgs(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
     """
     # Adapt `macros`.
     MACROS_PKG = [
+        # ('__TRV_VERSION__', None),  # defined by ``setuptools_scm``
         ('TRV_EXTCALL', None),
+        # ('TRV_USE_DISP', None),
         # ('TRV_USE_LEGACY_CODE', None),
         # ('DBG_MODE', None),
+        # ('DBG_PARS', None),
         # ('DBG_FLAG_NOAC', None),
     ]
     MACROS_EXT = [
