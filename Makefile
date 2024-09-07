@@ -252,6 +252,12 @@ ifdef NERSC_HOST
 	LDFLAGS += -L${FFTW_DIR}
 	endif  # FFTW_ROOT
 
+## cuFFT library
+	ifdef usecuda
+	INCLUDES += -I${NVIDIA_PATH}/math_libs/include
+	LDFLAGS += -L${NVIDIA_PATH}/math_libs/lib64
+	endif  # usecuda
+
 ## GTEST library
 	ifdef GTEST_ROOT
 	INCLUDES_TEST += -I${GTEST_ROOT}/include

@@ -671,7 +671,16 @@ void display_prog_info(bool runtime) {
 #endif  // GSL_VERSION
   std::printf("GSL version: %s\n", _GSL_VERSION);
 
+#ifndef TRV_USE_CUDA
   std::printf("FFTW version: %s\n", fftw_version);
+#else  // TRV_USE_CUDA
+  std::string cufft_version =
+    std::to_string(CUFFT_VER_MAJOR) + "." +
+    std::to_string(CUFFT_VER_MINOR) + "." +
+    std::to_string(CUFFT_VER_PATCH) + "." +
+    std::to_string(CUFFT_VER_BUILD);
+  std::printf("cuFFT version: %s\n", cufft_version.c_str());
+#endif  // TRV_USE_CUDA
 
 #ifdef TRV_USE_OMP
 #define _OMP_VERSION std::to_string(_OPENMP)
