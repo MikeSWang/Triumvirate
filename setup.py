@@ -24,8 +24,14 @@ from extension_helpers._setup_helpers import pkg_config
 PROJECT_NAME = 'Triumvirate'
 
 
-def get_pkg_name():
+def get_pkg_name(cuda=False):
     """Get package name in lower-case format.
+
+    Parameters
+    ----------
+    cuda : bool, optional
+        If `True`, '_cuda' is appended to the package name
+        (default is `False`).
 
     Returns
     -------
@@ -33,7 +39,7 @@ def get_pkg_name():
         Package name.
 
     """
-    return PROJECT_NAME.lower()
+    return f"{PROJECT_NAME.lower()}{'_cuda' if cuda else ''}"
 
 
 def get_pkg_dir(topdir="src"):
@@ -250,6 +256,7 @@ def display_py_environs():
         'PY_LDFLAGS',  # atypically includes 'LDLIBS'
         'PY_NO_OMP',  # disable OpenMP explicitly
         'PY_OMP',  # enable OpenMP explicitly unless overridden by `PY_NO_OMP`
+        'PY_CUDA',  # enable CUDA
         'PY_CXXFLAGS_OMP',
         'PY_LDFLAGS_OMP',
         'PY_BUILD_PARALLEL',
@@ -310,9 +317,18 @@ COMPILERS = {
     'darwin': 'g++',
 }
 
+# List CUDA compiler (NVCC assumed).
+CUDA_COMPILER = 'nvcc'
 
-def get_compiler():
+
+def get_compiler(cuda=False):
     """Get the build compiler.
+
+    Parameters
+    ----------
+    cuda : bool, optional
+        If `True`, return the CUDA compiler as defined by
+        :py:const:`CUDA_COMPILER` (default is `False`).
 
     Returns
     -------
@@ -320,12 +336,13 @@ def get_compiler():
         Build compiler.
 
     """
-    compiler = os.getenv('PY_CXX', COMPILERS[get_platform()])
+    _compiler = CUDA_COMPILER if cuda else COMPILERS[get_platform()]
+    compiler = os.getenv('PY_CXX', _compiler)
 
     return compiler
 
 
-def set_cli_compiler(compiler=None):
+def set_cli_compiler(compiler=None, cuda=False):
     """Set command-line compiler through the ``CC``and ``CXX``
     environmental variables.
 
@@ -334,9 +351,11 @@ def set_cli_compiler(compiler=None):
     compiler : str, optional
         Compiler to use.  If `None` (default), :func:`get_compiler` is
         used to determine the compiler.
+    cuda : bool, optional
+        If `True`, set the CUDA compiler (default is `False`).
 
     """
-    _compiler = compiler or get_compiler()
+    _compiler = compiler or get_compiler(cuda=cuda)
 
     os.environ['CC'] = _compiler
     os.environ['CXX'] = _compiler
@@ -346,15 +365,71 @@ def set_cli_compiler(compiler=None):
 
 PKG_LIB_NAME = 'trv'
 
-LIBS_CORE = ['gsl', 'fftw3',]  # noqa: E231
-LIBS_FULL = ['gsl', 'gslcblas', 'm', 'fftw3',]  # noqa: E231
-
 # Default to GCC OpenMP implementation.
 OPENMP_LIBS = {
     'default': 'gomp',  # or LLVM 'omp'
     'linux': '',  # set by ``-fopenmp`` or environment
     'darwin': '',  # set by ``-fopenmp`` or environment
 }
+
+
+def get_pkg_libname(cuda=False):
+    """Get package library name.
+
+    Parameters
+    ----------
+    cuda : bool, optional
+        If `True`, '_cuda' is appended to the package library name
+        (default is `False`).
+
+    Returns
+    -------
+    str
+        Package library name.
+
+    """
+    return f"{PKG_LIB_NAME}{'_cuda' if cuda else ''}"
+
+
+def get_noncuda_dep_libs(core=False, cuda=False):
+    """Get non-CUDA dependency libraries.
+
+    Parameters
+    ----------
+    core : bool, optional
+        If `True` (default is `False`), return core libraries only.
+    cuda : bool, optional
+        If `True` (default is `False`), use CUDA libraries.
+
+    Returns
+    -------
+    list of str
+        Core libraries.
+
+    """
+    LIBS_NONCUDA = {
+        'core': ['gsl', 'fftw3',],
+        'core,cuda': ['gsl',],
+        'full': ['gsl', 'gslcblas', 'm', 'fftw3',],
+        'full,cuda': ['gsl', 'gslcblas', 'm',],
+    }  # noqa: E231
+
+    key = ('core' if core else 'full') + (',cuda' if cuda else '')
+
+    return LIBS_NONCUDA[key]
+
+
+def get_cuda_dep_libs():
+    """Get CUDA dependency libraries.
+
+    Returns
+    -------
+    list of str
+        CUDA libraries.
+
+    """
+    LIBS_CUDA = ['cufft', 'cufftw',]  # noqa: E231
+    return LIBS_CUDA
 
 
 # -- Options -------------------------------------------------------------
@@ -450,9 +525,15 @@ def parse_cli_includes():
     return parsed_include_dirs
 
 
-def parse_cli_cflags_omp():
+def parse_cli_cflags_omp(cuda=False):
     """Parse command-line ``PY_CXXFLAGS_OMP`` components for extension
     keyword arguments.
+
+    Parameters
+    ----------
+    cuda : bool, optional
+        If `True` (default is `False`), append preprocessor flags
+        for CUDA compilation where necessary.
 
     Returns
     -------
@@ -475,14 +556,20 @@ def parse_cli_cflags_omp():
             else:
                 raise ValueError(f"Invalid macro in CXXFLAG_OMP: {cflag_}.")
         else:
-            parsed_cflags_omp.append(cflag_)
+            parsed_cflags_omp.append('-Xcompiler' + cflag_)
 
     return parsed_macros_omp, parsed_cflags_omp
 
 
-def parse_cli_ldflags_omp():
+def parse_cli_ldflags_omp(cuda=False):
     """Parse command-line ``PY_LDFLAGS_OMP`` components for extension
     keyword arguments.
+
+    Parameters
+    ----------
+    cuda : bool, optional
+        If `True` (default is `False`), append preprocessor flags
+        for CUDA compilation where necessary.
 
     Returns
     -------
@@ -501,12 +588,13 @@ def parse_cli_ldflags_omp():
         elif ldflag_.startswith('-L'):
             parsed_lib_dirs_omp.append(ldflag_.lstrip('-L'))
         else:
-            parsed_ldflags_omp.append(ldflag_)
+            parsed_ldflags_omp.append('-Xcompiler' + ldflag_)
 
     return parsed_ldflags_omp, parsed_libs_omp, parsed_lib_dirs_omp
 
 
-def add_options_nonomp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
+def add_options_nonomp(macros, cflags, ldflags, libs, lib_dirs, include_dirs,
+                       cuda=False):
     """Add non-OpenMP compilation options.
 
     Parameters
@@ -523,6 +611,9 @@ def add_options_nonomp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
         Library directories without the '-L' prefix.
     include_dirs : list of str
         ``INCLUDES`` directories without the '-I' prefix.
+    cuda : bool, optional
+        If `True` (default is `False`), modify compilation options
+        for CUDA.
 
     Returns
     -------
@@ -542,8 +633,8 @@ def add_options_nonomp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
         Extended ``INCLUDES`` directories without the '-I' prefix.
 
     """
-    libs_core = deepcopy(LIBS_CORE)
-    libs_full = deepcopy(LIBS_FULL)
+    libs_core = deepcopy(get_noncuda_dep_libs(core=True, cuda=cuda))
+    libs_full = deepcopy(get_noncuda_dep_libs(cuda=cuda))
 
     for lib_ in libs:
         if lib_ not in libs_full:
@@ -553,6 +644,8 @@ def add_options_nonomp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
     checked_options = pkg_config(libs_core, default_libraries=libs_full)
 
     libs = checked_options['libraries']
+    if cuda:
+        libs += get_cuda_dep_libs()
 
     for macro_ in checked_options['define_macros']:
         if macro_ not in macros:
@@ -570,7 +663,8 @@ def add_options_nonomp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
     return macros, cflags, ldflags, libs, lib_dirs, include_dirs
 
 
-def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
+def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs,
+                    cuda=False):
     """Add OpenMP options, if enabled.
 
     By default, GCC OpenMP is assumed.
@@ -589,6 +683,9 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
         Library directories without the '-L' prefix.
     include_dirs : list of str
         ``INCLUDES`` directories without the '-I' prefix.
+    cuda : bool, optional
+        If `True` (default is `False`), modify OpenMP compilation options
+        for CUDA.
 
     Returns
     -------
@@ -627,17 +724,20 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
     # Adapt `macros` and `cflags`.
     MACROS_OMP_RELATED = [
         ('TRV_USE_OMP', None),
-        ('TRV_USE_FFTWOMP', None),
     ]
+    if not cuda:
+        MACROS_OMP_RELATED.append(('TRV_USE_FFTWOMP', None))
+
     for macro_ in MACROS_OMP_RELATED:
         if macro_ not in macros:
             macros.append(macro_)
 
     try:
-        macros_omp, cflags_omp = parse_cli_cflags_omp()
+        macros_omp, cflags_omp = parse_cli_cflags_omp(cuda=cuda)
     except TypeError:
         macros_omp = []
-        cflags_omp = ['-fopenmp',]  # noqa: E231
+        cflags_omp = ['-Xcompiler -fopenmp',] if cuda  \
+            else ['-fopenmp',]  # noqa: E231
 
     for macro_ in macros_omp:
         macro_ = convert_macro(macro_)
@@ -648,17 +748,20 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
             cflags.append(cflag_)
 
     # Adapt `ldflags`, `libs` and `lib_dirs`.
-    LIBS_OMP_BASED = [
-        'fftw3_omp',
-    ]  # noqa: E231
+    LIBS_OMP_BASED = []
+    if not cuda:
+        LIBS_OMP_BASED += [
+            'fftw3_omp',
+        ]  # noqa: E231
     for lib_ in LIBS_OMP_BASED:
         if lib_ and lib_ not in libs:
             libs.append(lib_)
 
     try:
-        ldflags_omp, libs_omp, lib_dirs_omp = parse_cli_ldflags_omp()
+        ldflags_omp, libs_omp, lib_dirs_omp = parse_cli_ldflags_omp(cuda=cuda)
     except TypeError:
-        ldflags_omp = ['-fopenmp',]  # noqa: E231
+        ldflags_omp = ['-Xcompiler -fopenmp',] if cuda  \
+            else ['-fopenmp',]  # noqa: E231
         libs_omp = [OPENMP_LIBS[get_platform()],]  # noqa: E231
         lib_dirs_omp = []  # noqa: E231
 
@@ -675,7 +778,8 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
     return macros, cflags, ldflags, libs, lib_dirs, include_dirs
 
 
-def add_options_pkgs(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
+def add_options_pkgs(macros, cflags, ldflags, libs, lib_dirs, include_dirs,
+                     cuda=False):
     """Add options required by this package and external packages.
 
     Parameters
@@ -692,6 +796,9 @@ def add_options_pkgs(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
         Library directories without the '-L' prefix.
     include_dirs : list of str
         ``INCLUDES`` directories without the '-I' prefix.
+    cuda : bool, optional
+        If `True` (default is `False`), modify compilation options
+        for CUDA.
 
     Returns
     -------
@@ -725,6 +832,9 @@ def add_options_pkgs(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
         ('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION'),
     ]
 
+    if cuda:
+        MACROS_PKG.append(('TRV_USE_CUDA', None))
+
     for macro_ in MACROS_PKG + MACROS_EXT:
         macros.append(macro_)
 
@@ -733,7 +843,7 @@ def add_options_pkgs(macros, cflags, ldflags, libs, lib_dirs, include_dirs):
         ldflags.append(f'-Wl,-rpath,{lib_dir_}')
 
     # Adapt `libs`. Note the linking order matters.
-    libs = [PKG_LIB_NAME,] + libs  # noqa: E231
+    libs = [get_pkg_libname(cuda=cuda),] + libs  # noqa: E231
 
     # Adapt `include_dirs`.
     include_dirs_pkg = [
@@ -769,6 +879,23 @@ def cleanup_options(*args):
         ret_args.append(list(dict.fromkeys(arg)))
 
     return ret_args
+
+
+def detect_cuda():
+    """Detect CUDA support.
+
+    Returns
+    -------
+    bool
+        `True` if CUDA is detected, `False` otherwise.
+
+    """
+    usecuda = os.getenv('PY_CUDA')
+
+    try:
+        return (usecuda.lower() in ['true', '1', ''])
+    except AttributeError:
+        return False
 
 
 # ========================================================================
@@ -825,6 +952,7 @@ def define_pkg_library(lib_name=PKG_LIB_NAME):
 
 def define_pkg_extension(ext_name,
                          auto_cpp_source=False, extra_cpp_sources=None,
+                         cuda=False,
                          **ext_kwargs):
     """Define package extension from given source files and options.
 
@@ -840,6 +968,9 @@ def define_pkg_extension(ext_name,
     extra_cpp_sources : list of str, optional
         Additional .cpp source files under ``<pkg_src_dir>``
         (default is `None`).
+    cuda : bool, optional
+        If `True`, append '_cuda' to the package name
+        (default is `False`) in extension module name.
     **ext_kwargs
         Options to pass to :class:`Cython.Distutils.Extension`.
 
@@ -857,6 +988,8 @@ def define_pkg_extension(ext_name,
         ('library_dirs', 'lib_dirs'),
         ('libraries', 'libs'),
     ]
+
+    pkg_name = get_pkg_name(cuda=cuda)
 
     # Define Cython sources.
     pkg_dir = get_pkg_dir()
@@ -886,7 +1019,7 @@ def define_pkg_extension(ext_name,
         ext_module_kwargs.update(ext_kwargs)
 
     return Extension(
-        f'{get_pkg_name()}.{ext_name}',
+        f'{pkg_name}.{ext_name}',
         sources=sources, language=EXT_LANG, **ext_module_kwargs
     )
 
@@ -900,8 +1033,10 @@ if __name__ == '__main__':
     # Check build environment.
     display_py_environs()
 
+    usecuda = detect_cuda()
+
     # Parse compilation options.
-    set_cli_compiler()
+    set_cli_compiler(cuda=usecuda)
 
     macros, cflags = parse_cli_cflags()
     ldflags, libs, lib_dirs = parse_cli_ldflags()
@@ -909,13 +1044,13 @@ if __name__ == '__main__':
 
     # Adapt compilation options.
     macros, cflags, ldflags, libs, lib_dirs, include_dirs = add_options_nonomp(
-        macros, cflags, ldflags, libs, lib_dirs, include_dirs
+        macros, cflags, ldflags, libs, lib_dirs, include_dirs, cuda=usecuda
     )
     macros, cflags, ldflags, libs, lib_dirs, include_dirs = add_options_omp(
-        macros, cflags, ldflags, libs, lib_dirs, include_dirs
+        macros, cflags, ldflags, libs, lib_dirs, include_dirs, cuda=usecuda
     )
     macros, cflags, ldflags, libs, lib_dirs, include_dirs = add_options_pkgs(
-        macros, cflags, ldflags, libs, lib_dirs, include_dirs
+        macros, cflags, ldflags, libs, lib_dirs, include_dirs, cuda=usecuda
     )
     macros, cflags, ldflags, libs, lib_dirs, include_dirs = cleanup_options(
         macros, cflags, ldflags, libs, lib_dirs, include_dirs
@@ -928,7 +1063,7 @@ if __name__ == '__main__':
     pkg_libraries = [define_pkg_library(),]  # noqa: E231
 
     pkg_extensions = [
-        define_pkg_extension(ext, **cfg)
+        define_pkg_extension(ext, cuda=usecuda, **cfg)
         for ext, cfg in EXT_CONFIGS.items()
     ]
 
