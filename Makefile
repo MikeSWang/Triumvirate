@@ -398,10 +398,14 @@ export PY_LDFLAGS=${LDFLAGS}
 
 ifndef useomp
 export PY_NO_OMP
-else  # useomp
+else   # useomp
 export PY_CXXFLAGS_OMP=${CXXFLAGS_OMP}
 export PY_LDFLAGS_OMP=${LDFLAGS_OMP}
 endif  # !useomp
+
+ifdef usecuda
+export PY_CUDA
+endif  # usecuda
 
 export PY_BUILD_PARALLEL=${MAKEFLAGS_JOBS}
 
