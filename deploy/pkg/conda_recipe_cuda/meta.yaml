@@ -1,5 +1,6 @@
-{% set name = 'Triumvirate' %}
+{% set name = 'Triumvirate-CUDA' %}
 {% set version = environ.get('GIT_DESCRIBE_TAG', 'v0.5.0') %}
+{% set cuda_vers = environ.get('CUDA_VERSION', '') %}
 
 package:
   name: "{{ name|lower }}"
@@ -12,38 +13,34 @@ source:
 
 build:
   number: 0
+  string: cuda{{ cuda_vers }}_py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
   script:
     # Use Conda-provided compiler.
     - export PY_CXX=$CXX
     - export PY_CXXFLAGS="${PY_CXXFLAGS} -D_LIBCPP_DISABLE_AVAILABILITY"
     # Enforce OpenMP support.
     - export PY_OMP=1
-    # Default to LLVM OpenMP on macOS.
-    - export PY_CXXFLAGS_OMP="-Xpreprocessor -fopenmp"  # [osx]
-    - export PY_LDFLAGS_OMP="-lomp"                     # [osx]
-    - cp .pyproject.toml pyproject.toml
+    - export PY_CUDA=1
+    - cp .pyproject_cuda.toml pyproject.toml
     - {{ PYTHON }} -m pip install . -vvv
   script_env:
     - PY_BUILD_PARALLEL="-j"
 
 requirements:
   build:
-    - {{ compiler('cxx') }}
+    - {{ compiler('cuda') }}
     - python                              # [build_platform != target_platform]
     - cross-python_{{ target_platform }}  # [build_platform != target_platform]
     - numpy >=2.0                         # [build_platform != target_platform]
     # See: https://conda-forge.org/docs/maintainer/knowledge_base/#openmp
     # and https://github.com/conda-forge/openmp-feedstock/issues/126
-    # - libgomp                 # [linux]
-    # - llvm-openmp             # [osx]
+    # - libgomp  # [linux]
   host:
     - python
     - pip >=22.0
     # Use Conda-provided libraries.
     - gsl >=2.7
-    - fftw >=3.3
-    - libgomp                 # [linux]
-    - llvm-openmp             # [osx]
+    - libgomp  # [linux]
     - setuptools >=61.0
     - setuptools_scm >=6.4
     - cython >=3.0
@@ -59,13 +56,14 @@ requirements:
     - mpi4py >=3.1.5
     - tqdm
 
-test:
-  requires:
-    - pytest >=7.0  # [build_platform == target_platform]
-  source_files:
-    - tests/
-  commands:
-    - pytest --full-trace --verbose --capture=no --runslow tests/  # [build_platform == target_platform]
+# Skip tests as no GPU host is available.
+# test:
+#   requires:
+#     - pytest >=7.0  # [build_platform == target_platform]
+#   source_files:
+#     - tests/
+#   commands:
+#     - pytest --full-trace --verbose --capture=no --runslow tests/  # [build_platform == target_platform]
 
 about:
   home: https://mikeswang.github.io/Triumvirate

@@ -151,7 +151,7 @@ jobs:
         with:
           package-dir: .
           output-dir: dist/
-          config-file: pyproject.toml
+          config-file: .pyproject.toml
         env:
           # Specify target architecture.
           CIBW_ARCHS_LINUX: ${{ env.TARGET_ARCH_ALT }}

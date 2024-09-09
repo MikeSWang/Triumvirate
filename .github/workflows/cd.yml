@@ -144,7 +144,7 @@ jobs:
         with:
           package-dir: .
           output-dir: dist/
-          config-file: pyproject.toml
+          config-file: .pyproject.toml
         env:
           # # Default to GCC compiler and OpenMP on macOS.
           # # HACK: Hardcode g++ compiler choice on recent GitHub macOS
