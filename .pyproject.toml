@@ -32,6 +32,8 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Astronomy",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Scientific/Engineering :: Physics",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
 ]
 dynamic = [
   'version',

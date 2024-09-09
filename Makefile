@@ -510,9 +510,17 @@ cpplibinstall: library
 
 cppappbuild: executable
 
+ifndef usecuda
 pyinstall:
 	@echo "Installing Triumvirate Python package ${WOMP} OpenMP (in pip dev mode)..."
+	@cp .pyproject.toml pyproject.toml
 	python -m pip install ${PIPOPTS} --editable . -vvv
+else  # usecuda
+pyinstall:
+	@echo "Installing Triumvirate-CUDA Python package ${WOMP} OpenMP (in pip dev mode)..."
+	@cp .pyproject_cuda.toml pyproject.toml
+	python -m pip install ${PIPOPTS} --editable . -vvv
+endif  # !usecuda
 
 uninstall: cppuninstall pyuninstall
 

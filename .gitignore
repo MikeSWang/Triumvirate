@@ -78,6 +78,9 @@ storage/
 sandbox/
 
 # Exclusions
+## File (special project configuration)
+pyproject.toml
+
 ## Files: src/triumvirate/*.cpp (Cythonised code)
 src/triumvirate/*.cpp
 
