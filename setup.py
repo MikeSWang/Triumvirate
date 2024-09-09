@@ -131,8 +131,8 @@ def get_pkg_version_scheme(default_ver_scheme='no-guess-dev',
 # Build
 # ========================================================================
 
-NA_OPTS = ['-Wstrict-prototypes', '-Wl,-pie',]  # noqa: E231
-CUDA_XCOMPILER_OPTS = ['-f', '-O', '-W',]  # noqa: E231
+NA_OPTS = ('-Wstrict-prototypes', '-Wl,-pie',)  # noqa: E231
+CUDA_XCOMPILER_OPTS = ('-f', '-O', '-W',)  # noqa: E231
 
 
 class BuildExt(build_ext):
