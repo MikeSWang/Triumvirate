@@ -211,14 +211,23 @@ DEP_TEST_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPS_TEST
 
 INCLUDES += -I${DIR_PKG_INCLUDE} ${DEP_INCLUDES}
 CPPFLAGS += -MMD -MP -D__TRV_VERSION__=\"${PKG_VER}\"
+
 ifndef usecuda
 CXXFLAGS += -std=c++17 -Wall -O3 ${DEP_CXXFLAGS}
 else   # usecuda
 CXXFLAGS += -std=c++17 -Xcompiler -Wall,-O3 ${DEP_CXXFLAGS}
 endif  # !usecuda
+
+ifndef usecuda
 LDFLAGS += \
 	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \
 	${DEP_LDFLAGS}
+else   # usecuda
+LDFLAGS += \
+	$(addprefix -Xcompiler -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \
+	${DEP_LDFLAGS}
+endif  # !usecuda
+
 LDLIBS += $(if ${DEP_LDLIBS},${DEP_LDLIBS},-lgsl -lgslcblas -lfftw3 -lm)
 
 PIPOPTS ?= --user
@@ -240,22 +249,22 @@ LDLIBS_TEST = -l${LIBNAME} ${LDLIBS} \
 # NERSC computer cluster: an example environment [adapt]
 ifdef NERSC_HOST
 
-## GSL library
-	ifdef GSL_ROOT
-	INCLUDES += -I${GSL_ROOT}/include
-	LDFLAGS += -L${GSL_ROOT}/lib
-	endif  # GSL_ROOT
+## GSL library [deprecated]
+	# ifdef GSL_ROOT
+	# INCLUDES += -I${GSL_ROOT}/include
+	# LDFLAGS += -Wl,-rpath,${GSL_ROOT}/lib -L${GSL_ROOT}/lib
+	# endif  # GSL_ROOT
 
-## FFTW library
-	ifdef FFTW_ROOT
-	INCLUDES += -I${FFTW_INC}
-	LDFLAGS += -L${FFTW_DIR}
-	endif  # FFTW_ROOT
+## FFTW library [deprecated]
+	# ifdef FFTW_ROOT
+	# INCLUDES += -I${FFTW_INC}
+	# LDFLAGS += -Wl,-rpath,${FFTW_DIR} -L${FFTW_DIR}
+	# endif  # FFTW_ROOT
 
 ## cuFFT library
 	ifdef usecuda
 	INCLUDES += -I${NVIDIA_PATH}/math_libs/include
-	LDFLAGS += -L${NVIDIA_PATH}/math_libs/lib64
+	LDFLAGS += -Wl,-rpath,${NVIDIA_PATH}/math_libs/lib64 -L${NVIDIA_PATH}/math_libs/lib64
 	endif  # usecuda
 
 ## GTEST library
@@ -317,7 +326,7 @@ ifdef useomp
 
 ### Use LLVM implementation from Homebrew (brew formula 'libomp').
 		# CXXFLAGS_OMP ?= -I$(shell brew --prefix libomp)/include -Xpreprocessor -fopenmp
-		# LDFLAGS_OMP ?= -L$(shell brew --prefix libomp)/lib
+		# LDFLAGS_OMP ?= -Wl,-rpath,$(shell brew --prefix libomp)/lib -L$(shell brew --prefix libomp)/lib
 		# LDLIBS_OMP ?= -lomp
 
 	else  # OS
@@ -377,7 +386,11 @@ endif  # usedisp
 # Profiling
 ifdef useprof
 ## Linaro MAP profiler
+ifndef usecuda
 CXXFLAGS += -g1 -O3 -fno-inline -fno-optimize-sibling-calls
+else   # usecuda
+CXXFLAGS += -g -O3 -lineinfo
+endif  # !usecuda
 endif  # useprof
 
 # Parameter debugging

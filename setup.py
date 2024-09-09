@@ -24,14 +24,8 @@ from extension_helpers._setup_helpers import pkg_config
 PROJECT_NAME = 'Triumvirate'
 
 
-def get_pkg_name(cuda=False):
+def get_pkg_name():
     """Get package name in lower-case format.
-
-    Parameters
-    ----------
-    cuda : bool, optional
-        If `True`, '_cuda' is appended to the package name
-        (default is `False`).
 
     Returns
     -------
@@ -39,7 +33,7 @@ def get_pkg_name(cuda=False):
         Package name.
 
     """
-    return f"{PROJECT_NAME.lower()}{'_cuda' if cuda else ''}"
+    return PROJECT_NAME.lower()
 
 
 def get_pkg_dir(topdir="src"):
@@ -556,7 +550,10 @@ def parse_cli_cflags_omp(cuda=False):
             else:
                 raise ValueError(f"Invalid macro in CXXFLAG_OMP: {cflag_}.")
         else:
-            parsed_cflags_omp.append('-Xcompiler' + cflag_)
+            if not cuda:
+                parsed_cflags_omp.append(cflag_)
+            else:
+                parsed_cflags_omp.extend(['-Xcompiler', cflag_])
 
     return parsed_macros_omp, parsed_cflags_omp
 
@@ -588,7 +585,10 @@ def parse_cli_ldflags_omp(cuda=False):
         elif ldflag_.startswith('-L'):
             parsed_lib_dirs_omp.append(ldflag_.lstrip('-L'))
         else:
-            parsed_ldflags_omp.append('-Xcompiler' + ldflag_)
+            if not cuda:
+                parsed_ldflags_omp.append(ldflag_)
+            else:
+                parsed_ldflags_omp.extend(['-Xcompiler', ldflag_])
 
     return parsed_ldflags_omp, parsed_libs_omp, parsed_lib_dirs_omp
 
@@ -736,8 +736,8 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs,
         macros_omp, cflags_omp = parse_cli_cflags_omp(cuda=cuda)
     except TypeError:
         macros_omp = []
-        cflags_omp = ['-Xcompiler -fopenmp',] if cuda  \
-            else ['-fopenmp',]  # noqa: E231
+        cflags_omp = ['-fopenmp',] if not cuda \
+            else ['-Xcompiler', '-fopenmp',]  # noqa: E231
 
     for macro_ in macros_omp:
         macro_ = convert_macro(macro_)
@@ -760,8 +760,8 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs,
     try:
         ldflags_omp, libs_omp, lib_dirs_omp = parse_cli_ldflags_omp(cuda=cuda)
     except TypeError:
-        ldflags_omp = ['-Xcompiler -fopenmp',] if cuda  \
-            else ['-fopenmp',]  # noqa: E231
+        ldflags_omp = ['-fopenmp',] if not cuda  \
+            else ['-Xcompiler', '-fopenmp',]  # noqa: E231
         libs_omp = [OPENMP_LIBS[get_platform()],]  # noqa: E231
         lib_dirs_omp = []  # noqa: E231
 
@@ -989,7 +989,7 @@ def define_pkg_extension(ext_name,
         ('libraries', 'libs'),
     ]
 
-    pkg_name = get_pkg_name(cuda=cuda)
+    pkg_name = get_pkg_name()
 
     # Define Cython sources.
     pkg_dir = get_pkg_dir()
