@@ -165,7 +165,7 @@ class BuildExt(build_ext):
                     pass
 
         if detect_cuda():
-            # Modify compiler options for CUDA for object compilation.
+            # Modify compiler options for CUDA for object compilation/linking.
             for subcompiler in [
                 'compiler_cxx',
                 'compiler_so_cxx',
