@@ -22,6 +22,7 @@ build:
       # RTD modifies these files.
       - git update-index --assume-unchanged docs/environment.yml docs/source/conf.py
     pre_build:
+      - cp .pyproject.toml pyproject.toml
       - pip install --editable . -vvv
       - bash deploy/doc/autogen_docs.sh
     post_build:

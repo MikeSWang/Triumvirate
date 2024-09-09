@@ -8,7 +8,8 @@
 # ========================================================================
 
 REPONAME := Triumvirate
-PKGNAME := triumvirate
+PKGNAME := Triumvirate
+MODNAME := triumvirate
 PROGNAME := triumvirate
 LIBNAME := trv
 
@@ -38,7 +39,7 @@ COMMA := ,
 DIR_ROOT := $(shell pwd)
 
 # Package, build, test and distribution directories
-DIR_PKG := ${DIR_ROOT}/src/${PKGNAME}
+DIR_PKG := ${DIR_ROOT}/src/${MODNAME}
 DIR_BUILD := ${DIR_ROOT}/build
 DIR_TESTS := ${DIR_ROOT}/tests
 DIR_DIST := ${DIR_ROOT}/dist
@@ -78,6 +79,8 @@ MAKEFLAGS_JOBS = $(shell echo "${MAKEFLAGS} " | grep -Eo ${PATTERN_JOBS})
 ifdef usecuda
 ifeq ($(strip ${usecuda}), $(filter $(strip ${usecuda}), true 1))
 usecuda := true
+PKGNAME += -CUDA
+LIBNAME += _cuda
 else   # usecuda != (true|1)
 unexport usecuda
 endif  # usecuda == (true|1)
@@ -504,7 +507,7 @@ install: cppinstall pyinstall
 cppinstall: cppinstall_ cpplibinstall cppappbuild
 
 cppinstall_:
-	@echo "Installing Triumvirate C++ library/program..."
+	@echo "Installing ${PKGNAME} C++ library/program..."
 
 cpplibinstall: library
 
@@ -512,12 +515,12 @@ cppappbuild: executable
 
 ifndef usecuda
 pyinstall:
-	@echo "Installing Triumvirate Python package ${WOMP} OpenMP (in pip dev mode)..."
+	@echo "Installing ${PKGNAME} Python package ${WOMP} OpenMP (in pip dev mode)..."
 	@cp .pyproject.toml pyproject.toml
 	python -m pip install ${PIPOPTS} --editable . -vvv
 else  # usecuda
 pyinstall:
-	@echo "Installing Triumvirate-CUDA Python package ${WOMP} OpenMP (in pip dev mode)..."
+	@echo "Installing ${PKGNAME} Python package ${WOMP} OpenMP (in pip dev mode)..."
 	@cp .pyproject_cuda.toml pyproject.toml
 	python -m pip install ${PIPOPTS} --editable . -vvv
 endif  # !usecuda
@@ -525,12 +528,12 @@ endif  # !usecuda
 uninstall: cppuninstall pyuninstall
 
 cppuninstall:
-	@echo "Uninstalling Triumvirate C++ library/program..."
+	@echo "Uninstalling Triumvirate(-CUDA) C++ library/program..."
 	@echo "  removing builds..."
 	@find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".git*" -exec rm -r {} +
 
 pyuninstall:
-	@echo "Uninstalling Triumvirate Python package (in pip mode)..."
+	@echo "Uninstalling ${PKGNAME} Python package (in pip mode)..."
 	python -m pip uninstall -y ${PKGNAME}
 
 
@@ -541,7 +544,7 @@ pyuninstall:
 executable: ${PROGEXE}
 
 ${PROGEXE}: $(OBJS) ${PROGOBJ}
-	@echo "Compiling Triumvirate C++ program ${WOMP} OpenMP..."
+	@echo "Compiling ${PKGNAME} C++ program ${WOMP} OpenMP..."
 	@if [ ! -d ${DIR_BUILDBIN} ]; then \
 	    echo "  making bin subdirectory in build directory..."; \
 	    mkdir -p ${DIR_BUILDBIN}; \
@@ -551,7 +554,7 @@ ${PROGEXE}: $(OBJS) ${PROGOBJ}
 library: ${PROGLIB}
 
 ${PROGLIB}: $(OBJS)
-	@echo "Creating Triumvirate C++ library ${WOMP} OpenMP..."
+	@echo "Creating ${PKGNAME} C++ library ${WOMP} OpenMP..."
 	@if [ ! -d ${DIR_BUILDLIB} ]; then \
 	    echo "  making lib subdirectory in build directory..."; \
 	    mkdir -p ${DIR_BUILDLIB}; \
@@ -559,7 +562,7 @@ ${PROGLIB}: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $^
 
 objects_:
-	@echo "Creating Triumvirate C++ object files..."
+	@echo "Creating ${PKGNAME} C++ object files..."
 	@if [ ! -d ${DIR_BUILDOBJ} ]; then \
 	    echo "  making obj subdirectory in build directory..."; \
 	    mkdir -p ${DIR_BUILDOBJ}; \
@@ -620,7 +623,7 @@ cpptest: cpptest_ library ${TEST_EXES}
 	@sh -c ${TEST_EXES}
 
 cpptest_:
-	@echo "Performing Triumvirate C++ tests..."
+	@echo "Performing ${PKGNAME} C++ tests..."
 	@if [ ! -d ${DIR_TESTBUILD} ]; then \
 	    echo "  making build subdirectory in test directory..."; \
 	    mkdir -p ${DIR_TESTBUILD}; \
@@ -631,7 +634,7 @@ ${TEST_EXES}: ${TEST_SRCS}
 	$(CXX) $(CPPFLAGS_TEST) $(CXXFLAGS_TEST) $< -o $@ $(LDFLAGS_TEST) $(LDLIBS_TEST)
 
 pytest:
-	@echo "Performing Triumvirate Python tests..."
+	@echo "Performing ${PKGNAME} Python tests..."
 	@if [ ! -d ${DIR_TESTOUT} ]; then \
 	    echo "  making output subdirectory in test directory..."; \
 	    mkdir -p ${DIR_TESTOUT}; \
@@ -651,12 +654,12 @@ clean: buildclean testclean distclean runclean
 buildclean: cppclean pyclean
 
 cppclean:
-	@echo "Cleaning up Triumvirate C++ build..."
+	@echo "Cleaning up Triumvirate(-CUDA) C++ build..."
 	@echo "  removing builds..."
 	@find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".git*" -exec rm -r {} +
 
 pyclean:
-	@echo "Cleaning up Triumvirate Python build..."
+	@echo "Cleaning up Triumvirate(-CUDA) Python build..."
 	@echo "  removing Cythonised C/C++ scripts..."
 	@find ${DIR_PKG} -maxdepth 1 -name "*.cpp" -exec rm {} +
 	@echo "  removing Cythonised extensions..."
@@ -670,7 +673,7 @@ pyclean:
 	@find . -type d -name ".ipynb_checkpoints" -exec rm -r {} +
 
 testclean:
-	@echo "Cleaning up Triumvirate tests..."
+	@echo "Cleaning up Triumvirate(-CUDA) tests..."
 	@echo "  removing test builds and outputs..."
 	@$(RM) -r ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/*
 	@echo "  removing pytest cache..."
@@ -681,7 +684,7 @@ testclean:
 	@$(RM) -r core
 
 distclean:
-	@echo "Cleaning up Triumvirate distributions..."
+	@echo "Cleaning up Triumvirate(-CUDA) distributions..."
 	@echo "  removing distribution outputs..."
 	@$(RM) -r ${DIR_DIST}/
 	@echo "  removing wheels..."
@@ -691,7 +694,7 @@ distclean:
 	@find . -name "*.egg-info" -exec rm -r {} +
 
 runclean:
-	@echo "Cleaning up Triumvirate runs..."
+	@echo "Cleaning up Triumvirate(-CUDA) runs..."
 	@echo "  removing compiled bytecode..."
 	@find . -type d -name "__pycache__" -exec rm -r {} +
 	@echo "  removing core dumps..."
