@@ -154,19 +154,47 @@ class BuildExt(build_ext):
         """
         OPTS_TO_REMOVE = ['-Wstrict-prototypes', '-Wl,-pie',]  # noqa: E231
         for opt in OPTS_TO_REMOVE:
-            try:
-                self.compiler.compiler_so.remove(opt)
-            except ValueError:
-                pass
+            for subcompiler in [
+                'compiler_cxx',
+                'compiler_so_cxx',
+                'linker_so_cxx',
+            ]:
+                try:
+                    getattr(self.compiler, subcompiler).remove(opt)
+                except ValueError:
+                    pass
 
+        if detect_cuda():
+            # Modify compiler options for CUDA for object compilation.
+            for subcompiler in [
+                'compiler_cxx',
+                'compiler_so_cxx',
+                'linker_so_cxx',
+            ]:
+                opts_original = []
+                opts_xcompiler = []
+                for opt in getattr(self.compiler, subcompiler):
+                    if opt.startswith(('-f', '-W', '-O',)):  # noqa: E231
+                        if opt not in opts_xcompiler:
+                            opts_xcompiler.append(opt)
+                    else:
+                        if opt not in opts_original:
+                            opts_original.append(opt)
+                opt_xcompiler = ['-Xcompiler', ','.join(opts_xcompiler)]
+                setattr(
+                    self.compiler, subcompiler, opts_original + opt_xcompiler
+                )
         try:
             _num_procs = max(int(self.parallel), 1)
         except TypeError:
             _num_procs = 1
 
         distutils_logger.info(
-            "running build_ext on %d process(es) with %s compiler",
-            _num_procs, self.compiler.compiler_so[0],
+            "running build_ext on %d process(es) with %s, %s and %s compilers",
+            _num_procs,
+            self.compiler.compiler_cxx[0],
+            self.compiler.compiler_so_cxx[0],
+            self.compiler.linker_so_cxx[0],
         )
 
         super().build_extensions()
@@ -186,16 +214,31 @@ class BuildClib(build_clib):
             For the original method this overrides.
 
         """  # numpydoc ignore=PR01
+        # Remove inapplicable options.
         OPTS_TO_REMOVE = ['-Wstrict-prototypes', '-Wl,-pie',]  # noqa: E231
         for opt in OPTS_TO_REMOVE:
             try:
-                self.compiler.compiler_so.remove(opt)
+                self.compiler.compiler_so_cxx.remove(opt)
             except ValueError:
                 pass
 
+        if detect_cuda():
+            # Modify compiler options for CUDA for object compilation.
+            opts_original = []
+            opts_xcompiler = []
+            for opt in self.compiler.compiler_so_cxx:
+                if opt.startswith(('-f', '-W', '-O')):
+                    if opt not in opts_xcompiler:
+                        opts_xcompiler.append(opt)
+                else:
+                    if opt not in opts_original:
+                        opts_original.append(opt)
+            opt_xcompiler = ['-Xcompiler', ','.join(opts_xcompiler)]
+            self.compiler.compiler_so_cxx = opts_original + opt_xcompiler
+
         distutils_logger.info(
             "running build_clib with %s compiler",
-            self.compiler.compiler_so[0],
+            self.compiler.compiler_so_cxx[0],
         )
 
         super().build_libraries(libraries)
@@ -875,8 +918,19 @@ def cleanup_options(*args):
 
     """
     ret_args = []
-    for arg in args:
-        ret_args.append(list(dict.fromkeys(arg)))
+    for options in args:
+        ret_options = []
+        for idx_opt, opt in enumerate(options):
+            # If an X-flag is found, pair with the next option.
+            if (
+                opt in ['-Xpreprocessor', '-Xcompiler', '-Xlinker',]
+                and idx_opt <= len(options) - 2
+            ):
+                if options[idx_opt + 1] not in ret_options:
+                    ret_options.append(opt)
+            elif opt not in ret_options:
+                ret_options.append(opt)
+        ret_args.append(ret_options)
 
     return ret_args
 

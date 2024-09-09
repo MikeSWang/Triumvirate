@@ -264,13 +264,17 @@ ifdef NERSC_HOST
 ## cuFFT library
 	ifdef usecuda
 	INCLUDES += -I${NVIDIA_PATH}/math_libs/include
-	LDFLAGS += -Wl,-rpath,${NVIDIA_PATH}/math_libs/lib64 -L${NVIDIA_PATH}/math_libs/lib64
+	LDFLAGS += -Xcompiler -Wl,-rpath,${NVIDIA_PATH}/math_libs/lib64 -L${NVIDIA_PATH}/math_libs/lib64
 	endif  # usecuda
 
 ## GTEST library
 	ifdef GTEST_ROOT
 	INCLUDES_TEST += -I${GTEST_ROOT}/include
+	ifndef usecuda
 	LDFLAGS_TEST += -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
+	else   # usecuda
+	LDFLAGS_TEST += -Xcompiler -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
+	endif  # !usecuda
 	endif  # GTEST_ROOT
 
 endif  # NERSC_HOST
@@ -414,10 +418,13 @@ export PY_NO_OMP
 else   # useomp
 export PY_CXXFLAGS_OMP=${CXXFLAGS_OMP}
 export PY_LDFLAGS_OMP=${LDFLAGS_OMP}
+ifdef usecuda
+export PY_OMP=true
+endif  # usecuda
 endif  # !useomp
 
 ifdef usecuda
-export PY_CUDA
+export PY_CUDA=true
 endif  # usecuda
 
 export PY_BUILD_PARALLEL=${MAKEFLAGS_JOBS}
