@@ -133,6 +133,8 @@ def get_pkg_version_scheme(default_ver_scheme='no-guess-dev',
 
 NA_OPTS = ('-Wstrict-prototypes', '-Wl,-pie',)  # noqa: E231
 CUDA_XCOMPILER_OPTS = ('-f', '-O', '-W',)  # noqa: E231
+CUDA_XCOMPILER_OPTS_EXACT = ['-pthread', '-B',]  # noqa: E231
+CUDA_XCOMPILER_OPTS_PARTIAL = ['compiler_compat',]  # noqa: E231
 
 
 class BuildExt(build_ext):
@@ -178,15 +180,38 @@ class BuildExt(build_ext):
                 opts_xcompiler = []
                 for opt in getattr(self.compiler, subcompiler):
                     if opt.startswith(CUDA_XCOMPILER_OPTS):  # noqa: E231
+                        # Avoid composite options being treated as separate
+                        # by ``-Xcompiler``.
+                        if ',' in opt:
+                            opt = '\"' + opt + '\"'
                         if opt not in opts_xcompiler:
                             opts_xcompiler.append(opt)
                     else:
                         if opt not in opts_original:
                             opts_original.append(opt)
-                opt_xcompiler = ['-Xcompiler', ','.join(opts_xcompiler)]
+                if opts_xcompiler:
+                    opt_xcompiler = ['-Xcompiler', ','.join(opts_xcompiler)]
                 setattr(
                     self.compiler, subcompiler, opts_original + opt_xcompiler
                 )
+
+        if detect_cuda():
+            # Modify compiler options for CUDA for object linking.
+            opts_original = []
+            opts_xcompiler = []
+            for opt in self.compiler.linker_so_cxx:
+                if opt in CUDA_XCOMPILER_OPTS_EXACT:  # noqa: E231
+                    if opt not in opts_xcompiler:
+                        opts_xcompiler.append(opt)
+                elif any(map(opt.__contains__, CUDA_XCOMPILER_OPTS_PARTIAL)):
+                    pass
+                else:
+                    if opt not in opts_original:
+                        opts_original.append(opt)
+            if opts_xcompiler:
+                opt_xcompiler = ['-Xcompiler', ','.join(opts_xcompiler)]
+            self.compiler.linker_so_cxx = opts_original + opt_xcompiler
+
         try:
             _num_procs = max(int(self.parallel), 1)
         except TypeError:
@@ -230,12 +255,17 @@ class BuildClib(build_clib):
             opts_xcompiler = []
             for opt in self.compiler.compiler_so_cxx:
                 if opt.startswith(CUDA_XCOMPILER_OPTS):
+                    # Avoid composite options being treated as separate
+                    # by ``-Xcompiler``.
+                    if ',' in opt:
+                        opt = '\"' + opt + '\"'
                     if opt not in opts_xcompiler:
                         opts_xcompiler.append(opt)
                 else:
                     if opt not in opts_original:
                         opts_original.append(opt)
-            opt_xcompiler = ['-Xcompiler', ','.join(opts_xcompiler)]
+            if opts_xcompiler:
+                opt_xcompiler = ['-Xcompiler', ','.join(opts_xcompiler)]
             self.compiler.compiler_so_cxx = opts_original + opt_xcompiler
 
         distutils_logger.info(
@@ -571,7 +601,7 @@ def parse_cli_cflags_omp(cuda=False):
     Parameters
     ----------
     cuda : bool, optional
-        If `True` (default is `False`), append preprocessor flags
+        If `True` (default is `False`), append X-flags
         for CUDA compilation where necessary.
 
     Returns
@@ -610,7 +640,7 @@ def parse_cli_ldflags_omp(cuda=False):
     Parameters
     ----------
     cuda : bool, optional
-        If `True` (default is `False`), append preprocessor flags
+        If `True` (default is `False`), append X-flags
         for CUDA compilation where necessary.
 
     Returns
@@ -885,7 +915,10 @@ def add_options_pkgs(macros, cflags, ldflags, libs, lib_dirs, include_dirs,
 
     # Adapt `ldflags`. Note the `rpath` option is added.
     for lib_dir_ in lib_dirs:
-        ldflags.append(f'-Wl,-rpath,{lib_dir_}')
+        if not cuda:
+            ldflags.append(f'-Wl,-rpath,{lib_dir_}')
+        else:
+            ldflags.extend(['-Xlinker', f'-rpath,{lib_dir_}'])
 
     # Adapt `libs`. Note the linking order matters.
     libs = [get_pkg_libname(cuda=cuda),] + libs  # noqa: E231
@@ -975,13 +1008,14 @@ EXT_CONFIGS = {
 }
 
 
-def define_pkg_library(lib_name=PKG_LIB_NAME):
+def define_pkg_library(cuda=False):
     """Define package library to be built and linked against.
 
     Parameters
     ----------
-    lib_name : str
-        Package libaray name.
+    cuda : bool, optional
+        If `True`, append '_cuda' to the package library name
+        (default is `False`).
 
     Returns
     -------
@@ -989,6 +1023,8 @@ def define_pkg_library(lib_name=PKG_LIB_NAME):
         Package library and corresponding configurations.
 
     """
+    pkg_libname = get_pkg_libname(cuda=cuda)
+
     pkg_src_dir = get_pkg_src_dir()
 
     pkg_sources = [
@@ -1001,14 +1037,13 @@ def define_pkg_library(lib_name=PKG_LIB_NAME):
         for cfg_opt in ['macros', 'cflags', 'include_dirs',]  # noqa: E231
     }
 
-    pkg_library = (lib_name, dict(sources=pkg_sources, **pkg_cfg))
+    pkg_library = (pkg_libname, dict(sources=pkg_sources, **pkg_cfg))
 
     return pkg_library
 
 
 def define_pkg_extension(ext_name,
                          auto_cpp_source=False, extra_cpp_sources=None,
-                         cuda=False,
                          **ext_kwargs):
     """Define package extension from given source files and options.
 
@@ -1024,9 +1059,6 @@ def define_pkg_extension(ext_name,
     extra_cpp_sources : list of str, optional
         Additional .cpp source files under ``<pkg_src_dir>``
         (default is `None`).
-    cuda : bool, optional
-        If `True`, append '_cuda' to the package name
-        (default is `False`) in extension module name.
     **ext_kwargs
         Options to pass to :class:`Cython.Distutils.Extension`.
 
@@ -1116,7 +1148,7 @@ if __name__ == '__main__':
     display_py_options()
 
     # Define build targets.
-    pkg_libraries = [define_pkg_library(),]  # noqa: E231
+    pkg_libraries = [define_pkg_library(cuda=usecuda),]  # noqa: E231
 
     pkg_extensions = [
         define_pkg_extension(ext, cuda=usecuda, **cfg)

@@ -224,7 +224,7 @@ LDFLAGS += \
 	${DEP_LDFLAGS}
 else   # usecuda
 LDFLAGS += \
-	$(addprefix -Xcompiler -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \
+	$(addprefix -Xlinker -rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \
 	${DEP_LDFLAGS}
 endif  # !usecuda
 
@@ -237,9 +237,15 @@ PIPOPTS ?= --user
 
 INCLUDES_TEST = ${INCLUDES} ${DEP_TEST_INCLUDES}
 CXXFLAGS_TEST = ${CXXFLAGS} ${DEP_TEST_CXXFLAGS}
+ifndef usecuda
 LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} \
 	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_TEST_LDFLAGS})) \
 	${DEP_TEST_LDFLAGS}
+else   # usecuda
+LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} \
+	$(addprefix -Xlinker -rpath${COMMA},$(patsubst -L%,%,${DEP_TEST_LDFLAGS})) \
+	${DEP_TEST_LDFLAGS}
+endif  # !usecuda
 LDLIBS_TEST = -l${LIBNAME} ${LDLIBS} \
 	$(if ${DEP_TEST_LDLIBS},${DEP_TEST_LDLIBS},-lgtest -lpthread)
 
@@ -252,19 +258,27 @@ ifdef NERSC_HOST
 ## GSL library [deprecated]
 	# ifdef GSL_ROOT
 	# INCLUDES += -I${GSL_ROOT}/include
+	# ifndef usecuda
 	# LDFLAGS += -Wl,-rpath,${GSL_ROOT}/lib -L${GSL_ROOT}/lib
+	# else   # usecuda
+	# LDFLAGS += -Xlinker -rpath,${GSL_ROOT}/lib -L${GSL_ROOT}/lib
+	# endif  # !usecuda
 	# endif  # GSL_ROOT
 
 ## FFTW library [deprecated]
 	# ifdef FFTW_ROOT
 	# INCLUDES += -I${FFTW_INC}
+	# ifndef usecuda
 	# LDFLAGS += -Wl,-rpath,${FFTW_DIR} -L${FFTW_DIR}
+	# else   # usecuda
+	# LDFLAGS += -Xlinker -rpath,${FFTW_DIR} -L${FFTW_DIR}
+	# endif  # !usecuda
 	# endif  # FFTW_ROOT
 
 ## cuFFT library
 	ifdef usecuda
 	INCLUDES += -I${NVIDIA_PATH}/math_libs/include
-	LDFLAGS += -Xcompiler -Wl,-rpath,${NVIDIA_PATH}/math_libs/lib64 -L${NVIDIA_PATH}/math_libs/lib64
+	LDFLAGS += -Xlinker -rpath,${NVIDIA_PATH}/math_libs/lib64 -L${NVIDIA_PATH}/math_libs/lib64
 	endif  # usecuda
 
 ## GTEST library
@@ -273,7 +287,7 @@ ifdef NERSC_HOST
 	ifndef usecuda
 	LDFLAGS_TEST += -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
 	else   # usecuda
-	LDFLAGS_TEST += -Xcompiler -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
+	LDFLAGS_TEST += -Xlinker -rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
 	endif  # !usecuda
 	endif  # GTEST_ROOT
 
@@ -285,7 +299,11 @@ ifdef DIRAC_HOST
 ## GTEST library
 	ifdef GTEST_ROOT
 	INCLUDES_TEST += -I${GTEST_ROOT}/include
+	ifndef usecuda
 	LDFLAGS_TEST += -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
+	else   # usecuda
+	LDFLAGS_TEST += -Xlinker -rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
+	endif  # !usecuda
 	endif  # GTEST_ROOT
 
 endif  # DIRAC_HOST
