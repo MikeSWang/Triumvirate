@@ -838,7 +838,7 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs,
         ldflags_omp = ['-fopenmp',] if not cuda  \
             else ['-Xcompiler', '-fopenmp',]  # noqa: E231
         libs_omp = [OPENMP_LIBS[get_platform()],] if not cuda \
-            else ['-lgomp',]  # noqa: E231
+            else ['gomp',]  # noqa: E231
         lib_dirs_omp = []  # noqa: E231
 
     for ldflag_ in ldflags_omp:
