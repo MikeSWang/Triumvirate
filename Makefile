@@ -79,8 +79,8 @@ MAKEFLAGS_JOBS = $(shell echo "${MAKEFLAGS} " | grep -Eo ${PATTERN_JOBS})
 ifdef usecuda
 ifeq ($(strip ${usecuda}), $(filter $(strip ${usecuda}), true 1))
 usecuda := true
-PKGNAME += -CUDA
-LIBNAME += _cuda
+PKGNAME := ${PKGNAME}-CUDA
+LIBNAME := ${LIBNAME}_cuda
 else   # usecuda != (true|1)
 unexport usecuda
 endif  # usecuda == (true|1)
