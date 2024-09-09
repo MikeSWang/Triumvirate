@@ -131,6 +131,10 @@ def get_pkg_version_scheme(default_ver_scheme='no-guess-dev',
 # Build
 # ========================================================================
 
+NA_OPTS = ['-Wstrict-prototypes', '-Wl,-pie',]  # noqa: E231
+CUDA_XCOMPILER_OPTS = ['-f', '-O', '-W',]  # noqa: E231
+
+
 class BuildExt(build_ext):
     """Modified :class:`Cython.Distutils.build_ext`.
 
@@ -152,8 +156,7 @@ class BuildExt(build_ext):
         :meth:`Cython.Distutils.build_ext.build_extensions`.
 
         """
-        OPTS_TO_REMOVE = ['-Wstrict-prototypes', '-Wl,-pie',]  # noqa: E231
-        for opt in OPTS_TO_REMOVE:
+        for opt in NA_OPTS:
             for subcompiler in [
                 'compiler_cxx',
                 'compiler_so_cxx',
@@ -174,7 +177,7 @@ class BuildExt(build_ext):
                 opts_original = []
                 opts_xcompiler = []
                 for opt in getattr(self.compiler, subcompiler):
-                    if opt.startswith(('-f', '-W', '-O',)):  # noqa: E231
+                    if opt.startswith(CUDA_XCOMPILER_OPTS):  # noqa: E231
                         if opt not in opts_xcompiler:
                             opts_xcompiler.append(opt)
                     else:
@@ -215,8 +218,7 @@ class BuildClib(build_clib):
 
         """  # numpydoc ignore=PR01
         # Remove inapplicable options.
-        OPTS_TO_REMOVE = ['-Wstrict-prototypes', '-Wl,-pie',]  # noqa: E231
-        for opt in OPTS_TO_REMOVE:
+        for opt in NA_OPTS:
             try:
                 self.compiler.compiler_so_cxx.remove(opt)
             except ValueError:
@@ -227,7 +229,7 @@ class BuildClib(build_clib):
             opts_original = []
             opts_xcompiler = []
             for opt in self.compiler.compiler_so_cxx:
-                if opt.startswith(('-f', '-W', '-O')):
+                if opt.startswith(CUDA_XCOMPILER_OPTS):
                     if opt not in opts_xcompiler:
                         opts_xcompiler.append(opt)
                 else:
