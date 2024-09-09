@@ -335,7 +335,7 @@ ifdef useomp
 #### Use GCC implementation.
 		CXXFLAGS_OMP ?= -Xcompiler -fopenmp
 		LDFLAGS_OMP ?= -Xcompiler -fopenmp
-		# LDLIBS_OMP ?= -lgomp
+		LDLIBS_OMP ?= -lgomp
 
 		endif  # !usecuda
 
@@ -435,7 +435,7 @@ ifndef useomp
 export PY_NO_OMP
 else   # useomp
 export PY_CXXFLAGS_OMP=${CXXFLAGS_OMP}
-export PY_LDFLAGS_OMP=${LDFLAGS_OMP}
+export PY_LDFLAGS_OMP=${LDFLAGS_OMP} ${LDLIBS_OMP}
 ifdef usecuda
 export PY_OMP=true
 endif  # usecuda
