@@ -146,12 +146,15 @@ jobs:
             echo "MACOSX_VERS_MIN=10.15" >> "${GITHUB_ENV}"
           fi
 
+      - name: Copy Python project configuration file
+        run: cp .pyproject.toml pyproject.toml
+
       - name: Build built distribution
         uses: pypa/cibuildwheel@v2.20.0
         with:
           package-dir: .
           output-dir: dist/
-          config-file: .pyproject.toml
+          config-file: pyproject.toml
         env:
           # Specify target architecture.
           CIBW_ARCHS_LINUX: ${{ env.TARGET_ARCH_ALT }}

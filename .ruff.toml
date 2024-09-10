@@ -1,0 +1,33 @@
+target-version = 'py310'
+line-length = 79
+exclude = [
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".ipynb_checkpoints",
+    ".nox",
+    ".pyenv",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+[lint]
+fixable = ['ALL']
+unfixable = []
+
+# [format]
+# quote-style = 'preserve'
+# indent-style = 'space'
+# line-ending = 'auto'
+# skip-magic-trailing-comma = true
+# docstring-code-format = false
+# docstring-code-line-length = 'dynamic'

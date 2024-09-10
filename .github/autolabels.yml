@@ -7,7 +7,8 @@ build:
   - any-glob-to-any-file:
     - setup.py
     - setup.cfg
-    - pyproject.toml
+    - .pyproject.toml
+    - .pyproject_cuda.toml
     - Makefile
     - MANIFEST.in
     - deploy/pkg/**/*
@@ -29,7 +30,8 @@ maintenance:
   - any-glob-to-any-file:
     - setup.py
     - setup.cfg
-    - pyproject.toml
+    - .pyproject.toml
+    - .pyproject_cuda.toml
     - Makefile
     - MANIFEST.in
     - NOTES.md
