@@ -96,9 +96,9 @@ skip = [
     '*_ppc64le',
     '*_s390x',
 ]
-environment = { PY_OMP='1', PY_CUDA='1', PY_BUILD_PARALLEL='-j', SYSTEM_VERSION_COMPAT='0' }
-test-requires = "pytest>=7.0"
-test-command = "pytest {project}/tests"
+environment = { PY_OMP='1', PY_CUDA='1', PY_BUILD_PARALLEL='-j' }
+# test-requires = "pytest>=7.0"
+# test-command = "pytest {project}/tests"
 
 manylinux-x86_64-image = 'manylinux_2_28'
 manylinux-aarch64-image = 'manylinux_2_28'

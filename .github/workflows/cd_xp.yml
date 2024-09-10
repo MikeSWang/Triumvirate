@@ -191,6 +191,7 @@ jobs:
             PY_OMP=1
             PY_CXXFLAGS_OMP="-Xpreprocessor -fopenmp"
             PY_LDFLAGS_OMP="-Xpreprocessor -fopenmp"
+            PY_BUILD_PARALLEL='-j'
             MACOSX_DEPLOYMENT_TARGET=${{ env.MACOSX_VERS_MIN }}
             SYSTEM_VERSION_COMPAT=0
           CIBW_BEFORE_ALL_MACOS:

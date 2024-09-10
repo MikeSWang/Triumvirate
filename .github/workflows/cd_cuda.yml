@@ -81,6 +81,7 @@ jobs:
             PY_CXX=nvcc
             PY_OMP=1
             PY_CUDA=1
+            PY_BUILD_PARALLEL='-j'
 
       - name: Verify built distribution
         run: python -m twine check --strict dist/*
@@ -128,7 +129,8 @@ jobs:
         with:
           log-file-suffix: '${{matrix.os}}_cudatoolkit_log.txt'
           method: 'network'
-          sub-packages: '["nvcc", "cufft"]'
+          sub-packages: '["nvcc"]'
+          non-cuda-sub-packages: '["libcufft"]'
 
       - name: Set up (Mini)conda
         uses: conda-incubator/setup-miniconda@v3
@@ -149,7 +151,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         uses: knicknic/os-specific-run@v1.0.4
         env:
-          recipe_file: deploy/pkg/conda_recipe/meta.yaml
+          recipe_file: deploy/pkg/conda_recipe_cuda/meta.yaml
         with:
           linux: |
             vers_tag=${{ github.event.inputs.version_tag }}
@@ -161,7 +163,7 @@ jobs:
 
       - name: Build Conda package
         env:
-          recipe_dir: deploy/pkg/conda_recipe
+          recipe_dir: deploy/pkg/conda_recipe_cuda
           output_dir: dist/
           variants: "{'python': ['3.10', '3.11', '3.12']}"
         run: |
