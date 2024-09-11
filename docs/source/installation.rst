@@ -118,19 +118,19 @@ Python package
     :target: https://anaconda.org/msw/triumvirate
     :alt: Conda
 
-|br| |Triumvirate| as a Python package is distributed through |PyPI-repo|
-and |conda-repo|. For dependency management, it is recommended that a
+|br| |Triumvirate| as a Python package is distributed through |PyPIRepo|_
+and |CondaRepo|_. For dependency management, it is recommended that a
 virtual environment should be created for installing and using the package
 (e.g. a Conda environment created with ``conda create -n <env>`` and
 activated with ``conda activate <env>``).
 
-To install from |PyPI-repo|, execute in shell:
+To install from |PyPIRepo|_, execute in shell:
 
 .. code-block:: sh
 
     python -m pip install triumvirate
 
-To install using |conda-repo|, execute in shell:
+To install using |CondaRepo|_, execute in shell:
 
 .. code-block:: sh
 
@@ -334,18 +334,18 @@ FFT-related functionalities in |Triumvirate| can be offloaded to a single
 CUDA-capable GPU using equivalent libraries. This requires a CUDA-capable
 GPU and the appropriate driver.
 
-The CUDA-enabled Python package is distributed through |PyPI-CUDA-repo| and
-|conda-CUDA-repo| as ``Triumvirate-CUDA`` and ``triumvirate-cuda``, and OpenMP
+The CUDA-enabled Python package is distributed through |PyPICUDARepo|_ and
+|CondaCUDARepo|_ as ``Triumvirate-CUDA`` and ``triumvirate-cuda``, and OpenMP
 parallelisation is enforced by default (see '`OpenMP library`_' and
 '`OpenMP support`_' above).
 
-To install from |PyPI-CUDA-repo|, execute in shell:
+To install from |PyPICUDARepo|_, execute in shell:
 
 .. code-block:: sh
 
     python -m pip install triumvirate-cuda
 
-To install using |conda-CUDA-repo|, execute in shell:
+To install using |CondaCUDARepo|_, execute in shell:
 
 .. code-block:: sh
 
@@ -374,10 +374,10 @@ the environmental variables as shown in the example below:
     # The variable ``CUDA_PATH`` is a similar alternative.
     export CUDA_HOME=/usr/local/cuda
     # Set the path to the NVCC compiler.
-    export CXX=$(CUDA_HOME)/bin/nvcc
+    export CXX=${CUDA_HOME}/bin/nvcc
     # Set the path to the CUDA Toolkit libraries.
-    export INCLUDES="-I$(CUDA_HOME)/include"
-    export LDFLAGS="-L$(CUDA_HOME)/lib[64]"
+    export INCLUDES="-I${CUDA_HOME}/include"
+    export LDFLAGS="-L${CUDA_HOME}/lib[64]"
 
 
 Parallelised building
@@ -400,17 +400,17 @@ to use all available CPUs or :code:`export PY_BUILD_PARALLEL=-j4` to use four.
     <span style="font-variant: small-caps">Triumvirate</span>
 
 
-.. |PyPI-repo| replace:: PyPI
-.. _PyPI-repo: https://pypi.org/project/Triumvirate
+.. |PyPIRepo| replace:: PyPI
+.. _PyPIRepo: https://pypi.org/project/Triumvirate
 
-.. |conda-repo| replace:: Conda
-.. _conda-repo: https://anaconda.org/msw/triumvirate
+.. |CondaRepo| replace:: Conda
+.. _CondaRepo: https://anaconda.org/msw/triumvirate
 
-.. |PyPI-CUDA-repo| replace:: PyPI
-.. _PyPI-CUDA-repo: https://pypi.org/project/Triumvirate-CUDA
+.. |PyPICUDARepo| replace:: PyPI
+.. _PyPICUDARepo: https://pypi.org/project/Triumvirate-CUDA
 
-.. |conda-CUDA-repo| replace:: Conda
-.. _conda-CUDA-repo: https://anaconda.org/msw/triumvirate-cuda
+.. |CondaCUDARepo| replace:: Conda
+.. _CondaCUDARepo: https://anaconda.org/msw/triumvirate-cuda
 
 .. |main| replace:: ``main``
 .. _main: https://github.com/MikeSWang/Triumvirate/tree/main
