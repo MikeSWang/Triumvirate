@@ -7,10 +7,13 @@
 #
 
 THIS_DIR="$(dirname -- "${BASH_SOURCE[0]}")"
+AUX_DIR="${THIS_DIR}/auxiliary"
+
+mkdir -p "${AUX_DIR}"
 
 make cppclean
 
-bear --output "${THIS_DIR}/compile_commands.json" -- \
+bear --output "${AUX_DIR}/compile_commands.json" -- \
     make -j cppappbuild useomp=true
 
-codee checks --config "${THIS_DIR}/compile_commands.json"
+codee checks --config "${AUX_DIR}/compile_commands.json" 2>&1 | tee "${AUX_DIR}/codee.log"

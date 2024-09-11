@@ -63,7 +63,7 @@ docs/source/Doxyfile.conf.bak
 
 ## CI generated
 deploy/pkg/patches/**
-deploy/dev/*.json
+deploy/dev/auxiliary/**
 
 ## Jupyter Notebook
 .ipynb_checkpoints
