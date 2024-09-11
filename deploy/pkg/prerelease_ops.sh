@@ -11,5 +11,5 @@ ROOT_DIR="${THIS_DIR}/../.."
 export PYTHONPATH="${PYTHONPATH}:${THIS_DIR}"
 
 CONFIG_FILE="${ROOT_DIR}/.pyproject.toml"
-semantic-release -v --config ${CONFIG_FILE} changelog 2> /dev/null
-semantic-release -v --config ${CONFIG_FILE} --noop version # 2> /dev/null
+semantic-release -v --config "${CONFIG_FILE}" changelog 2> /dev/null
+semantic-release -v --config "${CONFIG_FILE}" --noop version # 2> /dev/null
