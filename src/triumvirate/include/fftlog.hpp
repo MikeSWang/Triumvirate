@@ -56,7 +56,7 @@
 #define FFTW_ESTIMATE (1U << 6)
 #define FFTW_PLANNER_FLAG_DEFINED_
 #endif  // !FFTW_PLANNER_FLAG_DEFINED_
-typedef double fft_complex[2];
+typedef double fftw_complex[2];
 using fftw_plan = hipfftHandle;
 #endif  // TRV_USE_HIP
 

@@ -29,7 +29,7 @@
 #include "twopt.hpp"
 
 #ifdef TRV_USE_HIP
-typedef double fft_complex[2];
+typedef double fftw_complex[2];
 #endif  // TRV_USE_HIP
 
 /// @cond DOXYGEN_DOC_CONST
