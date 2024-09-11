@@ -790,21 +790,28 @@ int ParameterSet::validate(bool init) {
     );
   }
 
-#ifndef TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
+  this->use_fftw_wisdom = "";  // transmutation
+  if (!(this->use_fftw_wisdom == "false" || this->use_fftw_wisdom == "")) {
+    if (trvs::currTask == 0) {
+      trvs::logger.warn("FFTW wisdom is disabled for cuFFT.");
+    }
+  }
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  this->use_fftw_wisdom = "";  // transmutation
+  if (!(this->use_fftw_wisdom == "false" || this->use_fftw_wisdom == "")) {
+    if (trvs::currTask == 0) {
+      trvs::logger.warn("FFTW wisdom is disabled for hipFFT.");
+    }
+  }
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
   if (this->use_fftw_wisdom == "false" || this->use_fftw_wisdom == "") {
     this->use_fftw_wisdom = "";  // transmutation
   } else
   if (init) {
     this->use_fftw_wisdom += "/";  // transmutation
   }
-#else  // TRV_USE_CUDA
-  this->use_fftw_wisdom = "";  // transmutation
-  if (!(this->use_fftw_wisdom == "false" || this->use_fftw_wisdom == "")) {
-    if (trvs::currTask == 0) {
-      trvs::logger.warn("FFTW wisdom is disabled for CUDA FFT.");
-    }
-  }
-#endif  // !TRV_USE_CUDA
+#endif  // TRV_USE_CUDA
 
   if (this->use_fftw_wisdom != "") {
     if (this->fftw_scheme != "measure" && this->fftw_scheme != "patient") {

@@ -39,9 +39,12 @@
 #ifndef TRIUMVIRATE_INCLUDE_THREEPT_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_THREEPT_HPP_INCLUDED_
 
-#ifdef TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
 #include <cufftw.h>
-#else  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+#include <hip/hip_runtime.h>
+#include <hipfft/hipfft.h>
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
 #include <fftw3.h>
 #endif  // TRV_USE_CUDA
 
