@@ -131,10 +131,21 @@ def get_pkg_version_scheme(default_ver_scheme='no-guess-dev',
 # Build
 # ========================================================================
 
-NA_OPTS = ('-Wstrict-prototypes', '-Wl,-pie',)  # noqa: E231
-CUDA_XCOMPILER_OPTS = ('-f', '-O', '-W',)  # noqa: E231
-CUDA_XCOMPILER_OPTS_EXACT = ['-pthread', '-B',]  # noqa: E231
-CUDA_XCOMPILER_OPTS_PARTIAL = ['compiler_compat',]  # noqa: E231
+NA_OPTS = (
+    '-Wstrict-prototypes',
+    '-Wl,-pie',
+)
+CUDA_XCOMPILER_OPTS = (
+    '-f', '-O', '-W',
+    '-march', '-mtune', '-pipe',
+)
+CUDA_XCOMPILER_OPTS_EXACT = [
+    '-pthread',
+    '-B',
+]
+CUDA_XCOMPILER_OPTS_PARTIAL = [
+    'compiler_compat',
+]
 
 
 class BuildExt(build_ext):
