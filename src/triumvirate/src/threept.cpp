@@ -445,12 +445,12 @@ trv::BispecMeasurements compute_bispec(
           }
         }
 
-        int count_fftw_init = trvs::count_fft + trvs::count_ifft;
+        int count_fft_init = trvs::count_fft + trvs::count_ifft;
         auto update_progbar = [&]() {
           if (params.progbar != "false") {
             if (trvs::currTask == 0) {
               progbar.update(
-                trvs::count_fft + trvs::count_ifft - count_fftw_init
+                trvs::count_fft + trvs::count_ifft - count_fft_init
               );
             }
           }
@@ -1217,12 +1217,12 @@ trv::ThreePCFMeasurements compute_3pcf(
           }
         }
 
-        int count_fftw_init = trvs::count_fft + trvs::count_ifft;
+        int count_fft_init = trvs::count_fft + trvs::count_ifft;
         auto update_progbar = [&]() {
           if (params.progbar != "false") {
             if (trvs::currTask == 0) {
               progbar.update(
-                trvs::count_fft + trvs::count_ifft - count_fftw_init
+                trvs::count_fft + trvs::count_ifft - count_fft_init
               );
             }
           }
@@ -1675,12 +1675,12 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
         }
       }
 
-      int count_fftw_init = trvs::count_fft + trvs::count_ifft;
+      int count_fft_init = trvs::count_fft + trvs::count_ifft;
       auto update_progbar = [&]() {
         if (params.progbar != "false") {
           if (trvs::currTask == 0) {
             progbar.update(
-              trvs::count_fft + trvs::count_ifft - count_fftw_init
+              trvs::count_fft + trvs::count_ifft - count_fft_init
             );
           }
         }
@@ -2395,12 +2395,12 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
         }
       }
 
-      int count_fftw_init = trvs::count_fft + trvs::count_ifft;
+      int count_fft_init = trvs::count_fft + trvs::count_ifft;
       auto update_progbar = [&]() {
         if (params.progbar != "false") {
           if (trvs::currTask == 0) {
             progbar.update(
-              trvs::count_fft + trvs::count_ifft - count_fftw_init
+              trvs::count_fft + trvs::count_ifft - count_fft_init
             );
           }
         }
@@ -2844,12 +2844,12 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
           }
         }
 
-        int count_fftw_init = trvs::count_fft + trvs::count_ifft;
+        int count_fft_init = trvs::count_fft + trvs::count_ifft;
         auto update_progbar = [&]() {
           if (params.progbar != "false") {
             if (trvs::currTask == 0) {
               progbar.update(
-                trvs::count_fft + trvs::count_ifft - count_fftw_init
+                trvs::count_fft + trvs::count_ifft - count_fft_init
               );
             }
           }
@@ -3340,12 +3340,12 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
           }
         }
 
-        int count_fftw_init = trvs::count_fft + trvs::count_ifft;
+        int count_fft_init = trvs::count_fft + trvs::count_ifft;
         auto update_progbar = [&]() {
           if (params.progbar != "false") {
             if (trvs::currTask == 0) {
               progbar.update(
-                trvs::count_fft + trvs::count_ifft - count_fftw_init
+                trvs::count_fft + trvs::count_ifft - count_fft_init
               );
             }
           }
