@@ -53,6 +53,13 @@
 
 #include "monitor.hpp"
 
+#ifdef TRV_USE_HIP
+#define FFTW_MEASURE (0U)
+#define FFTW_EXHAUSTIVE (1U << 3)
+#define FFTW_PATIENT (1U << 5)
+#define FFTW_ESTIMATE (1U << 6)
+#endif  // TRV_USE_HIP
+
 namespace trv {
 
 /**

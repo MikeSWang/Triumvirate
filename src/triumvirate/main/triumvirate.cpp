@@ -891,7 +891,7 @@ int main(int argc, char* argv[]) {
   // Clear persistent and dynamic memory.
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
   fftw_cleanup_threads();
-#else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+#elif !defined(TRV_USE_HIP)  // !TRV_USE_OMP || !TRV_USE_FFTWOMP && !TRV_USE_HIP
   fftw_cleanup();
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
