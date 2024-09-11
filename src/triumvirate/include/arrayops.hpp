@@ -33,6 +33,10 @@
 #ifndef TRIUMVIRATE_INCLUDE_ARRAYOPS_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_ARRAYOPS_HPP_INCLUDED_
 
+#ifdef TRV_USE_HIP
+#include <hip/hip_runtime.h>
+#endif  // TRV_USE_HIP
+
 #include <algorithm>
 #include <cfenv>
 #include <cmath>
@@ -228,6 +232,21 @@ void extrap2d_pad(
  * @return Sorted indices.
  */
 std::vector<int> get_sorted_indices(std::vector<int> sorting_vector);
+
+
+// ***********************************************************************
+// Memory management
+// ***********************************************************************
+
+#ifdef TRV_USE_HIP
+void copy_array_value_dtoh(
+  const hipDoubleComplex* hiparr, fftw_complex* arr, size_t length
+);
+
+void copy_array_value_htod(
+  fftw_complex* arr, const hipDoubleComplex* hiparr, size_t length
+);
+#endif
 
 }  // namespace trv::array
 

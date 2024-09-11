@@ -265,6 +265,31 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector) {
   return indices;
 }
 
+
+// ***********************************************************************
+// Memory management
+// ***********************************************************************
+
+#ifdef TRV_USE_HIP
+void copy_array_value_dtoh(
+  const hipDoubleComplex* hiparr, fftw_complex* arr, size_t length
+) {
+  for (size_t i = 0; i < length; ++i) {
+    arr[i][0] = hiparr[i].x;
+    arr[i][1] = hiparr[i].y;
+  }
+}
+
+void copy_array_value_htod(
+  fftw_complex* arr, const hipDoubleComplex* hiparr, size_t length
+) {
+  for (size_t i = 0; i < length; ++i) {
+    hiparr[i].x = arr[i][0];
+    hiparr[i].y = arr[i][1];
+  }
+}
+#endif
+
 }  // namespace trv::array
 
 }  // namespace trv
