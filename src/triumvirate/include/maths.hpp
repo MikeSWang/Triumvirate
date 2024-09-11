@@ -50,6 +50,12 @@
 
 #include "monitor.hpp"
 
+#ifdef __GNUC__
+#define PURE __attribute__((pure))
+#else
+#define PURE
+#endif
+
 namespace trv {
 namespace maths {
 
@@ -90,7 +96,7 @@ double get_vec3d_magnitude(std::vector<double> vec);
  *
  * @overload
  */
-double get_vec3d_magnitude(double* vec);
+PURE double get_vec3d_magnitude(double* vec);
 
 
 // ***********************************************************************

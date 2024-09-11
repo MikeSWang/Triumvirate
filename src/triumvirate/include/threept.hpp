@@ -60,6 +60,12 @@
 #include "field.hpp"
 #include "twopt.hpp"
 
+#ifdef __GNUC__
+#define PURE __attribute__((pure))
+#else
+#define PURE
+#endif
+
 namespace trv {
 
 // ***********************************************************************
@@ -83,13 +89,13 @@ struct SphericalOrderTriplet {
    * @brief Check if the spherical orders are all zeros.
    *
    */
-  bool is_zeros();
+  PURE bool is_zeros();
 
   /**
    * @brief Check if another triplet is the additive inverse.
    *
    */
-  bool is_inverse(const SphericalOrderTriplet& other);
+  PURE bool is_inverse(const SphericalOrderTriplet& other);
 };
 
 

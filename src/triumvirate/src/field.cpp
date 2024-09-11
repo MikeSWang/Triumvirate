@@ -3034,7 +3034,8 @@ void FieldStats::get_shotnoise_aliasing_sin2(
   cz2 = (k != 0) ? std::sin(u_z) * std::sin(u_z) : 0.;
 }
 
-double FieldStats::calc_shotnoise_aliasing_ngp(int i, int j, int k) {
+// NOTE: Pure by coincidence.
+PURE double FieldStats::calc_shotnoise_aliasing_ngp(int i, int j, int k) {
   return 1.;
 }
 

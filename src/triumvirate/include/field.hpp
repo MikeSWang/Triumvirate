@@ -77,6 +77,12 @@ typedef double fftw_complex[2];
 using fftw_plan = hipfftHandle;
 #endif  // TRV_USE_HIP
 
+#ifdef __GNUC__
+#define PURE __attribute__((pure))
+#else
+#define PURE
+#endif
+
 namespace trvm = trv::maths;
 
 namespace trv {
@@ -157,7 +163,7 @@ class MeshField {
    * @param gid Grid index.
    * @returns Field value.
    */
-  const fftw_complex& operator[](long long gid);
+  PURE const fftw_complex& operator[](long long gid);
 
   // ---------------------------------------------------------------------
   // Mesh assignment
@@ -463,7 +469,7 @@ class MeshField {
    * @param i, j, k Grid index in each dimension.
    * @returns Grid cell index.
    */
-  long long ret_grid_index(int i, int j, int k);
+  PURE long long ret_grid_index(int i, int j, int k);
 
   /**
    * @brief Shift the grid indices on a discrete Fourier mesh grid.
@@ -795,7 +801,7 @@ class FieldStats {
    * @param field_b Second field.
    * @returns { @c true , @c false }
    */
-  bool if_fields_compatible(MeshField& field_a, MeshField& field_b);
+  PURE bool if_fields_compatible(MeshField& field_a, MeshField& field_b);
 
   /**
    * @brief Resize binned two-point statistics.
@@ -812,7 +818,7 @@ class FieldStats {
    *
    * @see trv::MeshField::ret_grid_index
    */
-  long long ret_grid_index(int i, int j, int k);
+  PURE long long ret_grid_index(int i, int j, int k);
 
   /**
    * @brief Shift the grid indices on a discrete Fourier mesh grid.

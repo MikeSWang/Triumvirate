@@ -46,6 +46,12 @@
 
 #include "monitor.hpp"
 
+#ifdef __GNUC__
+#define PURE __attribute__((pure))
+#else
+#define PURE
+#endif
+
 namespace trv {
 
 /**
@@ -141,7 +147,7 @@ class ParticleCatalogue {
    * @param pid Particle index.
    * @returns Individual particle data.
    */
-  ParticleData& operator[](const int pid);
+  PURE ParticleData& operator[](const int pid);
 
   // ---------------------------------------------------------------------
   // Data I/O
