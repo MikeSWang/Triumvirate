@@ -2220,7 +2220,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
 #ifndef DBG_FLAG_NOAC
     calc_win_sn = calc_shotnoise_aliasing;
     calc_win_pk = calc_win_sn;
-#else   // !DBG_FLAG_NOAC
+#else  // !DBG_FLAG_NOAC
     calc_win_pk = [&field_a, &field_b, &assignment_order](
       int i, int j, int k
     ) {
@@ -2416,7 +2416,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
 #ifndef DBG_FLAG_NOAC
     calc_win_sn = calc_shotnoise_aliasing;
     calc_win_pk = calc_win_sn;
-#else   // !DBG_FLAG_NOAC
+#else  // !DBG_FLAG_NOAC
     calc_win_pk = [&field_a, &field_b, &assignment_order](
       int i, int j, int k
     ) {
@@ -2639,7 +2639,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
 #ifndef DBG_FLAG_NOAC
     calc_win_sn = calc_shotnoise_aliasing;
     calc_win_pk = calc_win_sn;
-#else   // !DBG_FLAG_NOAC
+#else  // !DBG_FLAG_NOAC
     calc_win_pk = [&field_a, &field_b, &assignment_order](
       int i, int j, int k
     ) {
@@ -2868,7 +2868,7 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
 #ifndef DBG_FLAG_NOAC
     calc_win_sn = calc_shotnoise_aliasing;
     calc_win_pk = calc_win_sn;
-#else   // !DBG_FLAG_NOAC
+#else  // !DBG_FLAG_NOAC
     calc_win_pk = [&field_a, &field_b, &assignment_order](
       int i, int j, int k
     ) {
