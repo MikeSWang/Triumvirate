@@ -4,7 +4,7 @@
 # - (natively) built Python wheel distributions (for PyPI);
 # - (natively) built Conda packages (for Anaconda).
 #
-name: continuous-delivery-cuda
+name: continuous-delivery-cuda-xplatform
 
 on:
   push:
@@ -14,17 +14,17 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+.dev[0-9]+'
       - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
     paths:
-      - deploy/pkg/conda_recipe_cuda/**
-      - .github/workflows/cd_cuda.yml
+      - deploy/pkg/conda_recipe_cuda_xp/**
+      - .github/workflows/cd_cuda_xp.yml
   workflow_dispatch:
     inputs:
-      run_build_bdist_cuda:
-        description: 'Run job build_bdist_cuda'
+      run_build_bdist_cuda_xplat:
+        description: 'Run job build_bdist_cuda_xplat'
         type: boolean
         default: false
         required: false
-      run_build_conda_cuda:
-        description: 'Run job build_conda_cuda'
+      run_build_conda_cuda_xplat:
+        description: 'Run job build_conda_cuda_xplat'
         type: boolean
         default: false
         required: false
@@ -38,8 +38,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_bdist_cuda:
-    name: Build bdist wheel (CUDA)
+  build_bdist_cuda_xplat:
+    name: Build bdist wheel (CUDA, cross-platform)
 
     strategy:
       fail-fast: false
@@ -53,11 +53,47 @@ jobs:
     # Allow manual trigger from inputs.
     if: >
       github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.run_build_bdist_cuda == 'true'
+      github.event.inputs.run_build_bdist_cuda_xplat == 'true'
 
     steps:
-      - name: Checkout
+      - name: Extract platform architecture
+        run: |
+          if [[ $(uname -m) == 'aarch64' ]]; then
+            echo "TARGET_ARCH=x86_64" >> "${GITHUB_ENV}"
+          elif [[ $(uname -m) == 'x86_64' ]]; then
+            echo "TARGET_ARCH=aarch64" >> "${GITHUB_ENV}"
+            echo "TARGET_ARCH_ALT=arm64" >> "${GITHUB_ENV}"
+          fi
+
+      - name: Checkout (automatic trigger)
+        if: github.event_name != 'workflow_dispatch'
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout (manual trigger)
+        if: >
+          github.event.inputs.run_build_bdist_cuda_xplat == 'true' &&
+          github.event.inputs.version_tag == ''
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+
+      - name: Checkout (manual trigger with tag)
+        if: >
+          github.event.inputs.run_build_bdist_cuda_xplat == 'true' &&
+          github.event.inputs.version_tag != ''
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ github.event.inputs.version_tag }}
+
+      # Use QEMU for non-native Linux runner.
+      - name: Set up QEMU (Linux)
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v3
+        with:
+          # Specify target architecture.
+          platforms: linux/${{ env.TARGET_ARCH_ALT }}
 
       - name: Set up Python 3
         uses: actions/setup-python@v5
@@ -76,6 +112,14 @@ jobs:
           package-dir: .
           output-dir: dist/
           config-file: pyproject.toml
+        env:
+          # Specify target architecture, which is actually fixed to aarch64.
+          CIBW_ARCHS_LINUX: ${{ env.TARGET_ARCH }}
+          CIBW_BEFORE_ALL_LINUX: >
+            yum install -y gsl-devel &&
+            yum install -y yum-utils &&
+            yum-config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/aarch64/cuda-rhel9.repo &&
+            yum install -y nvidia-container-toolkit
 
       - name: Verify built distribution
         run: python -m twine check --strict dist/*
@@ -83,17 +127,17 @@ jobs:
       - name: Save wheel to bdist
         uses: actions/upload-artifact@v4
         with:
-          name: bdist_whl_${{ matrix.os }}_${{ github.ref_name }}_cuda
+          name: bdist_whl_${{ matrix.os }}_${{ env.TARGET_ARCH }}_${{ github.ref_name }}_cuda
           path: dist/*.whl
 
       - name: Save wheel to pypi_dist
         uses: actions/upload-artifact@v4
         with:
-          name: pypi_dist_${{ runner.os }}_${{ runner.arch }}_${{ github.ref_name }}_cuda
+          name: pypi_dist_${{ runner.os }}_${{ env.TARGET_ARCH }}_${{ github.ref_name }}_cuda
           path: dist/*.whl
 
   build_conda_cuda:
-    name: Build Conda package (CUDA)
+    name: Build Conda package (CUDA, cross-platform)
 
     strategy:
       fail-fast: false
@@ -106,13 +150,21 @@ jobs:
 
     if: >
       github.event_name != 'workflow_dispatch' ||
-      github.event.inputs.run_build_conda_cuda == 'true'
+      github.event.inputs.run_build_conda_cuda_xplat == 'true'
 
     defaults:
       run:
         shell: bash -el {0}
 
     steps:
+      - name: Extract platform architecture
+        run: |
+          if [[ $(uname -m) == 'aarch64' ]]; then
+            echo "TARGET_ARCH=x86_64" >> "${GITHUB_ENV}"
+          elif [[ $(uname -m) == 'x86_64' ]]; then
+            echo "TARGET_ARCH=aarch64" >> "${GITHUB_ENV}"
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -137,7 +189,7 @@ jobs:
       - name: Override version
         if: github.event_name == 'workflow_dispatch'
         env:
-          recipe_file: deploy/pkg/conda_recipe_cuda/meta.yaml
+          recipe_file: deploy/pkg/conda_recipe_cuda_xp/meta.yaml
         run: |
           vers_tag=${{ github.event.inputs.version_tag }}
           if [[ ! -z ${vers_tag} ]]; then
@@ -146,7 +198,7 @@ jobs:
 
       - name: Build Conda package
         env:
-          recipe_dir: deploy/pkg/conda_recipe_cuda
+          recipe_dir: deploy/pkg/conda_recipe_cuda_xp
           output_dir: dist/
           variants: "{'python': ['3.10', '3.11', '3.12']}"
         run: |

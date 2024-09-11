@@ -1,3 +1,6 @@
 target_platform:
   - linux-64       # [linux]
-  - linux-aarch64  # [linux]
+  # - linux-aarch64  # [linux]
+
+cuda_version:
+  - 12.0

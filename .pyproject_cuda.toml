@@ -105,8 +105,16 @@ manylinux-aarch64-image = 'manylinux_2_28'
 
 [tool.cibuildwheel.linux]
 before-all = [
-    "yum install -y gsl-devel cuda-toolkit",
+    "yum install -y gsl-devel",
+# Install CUDA Toolkit inside Docker container using package manager,
+# matching repository with image OS, and optionally matching CUDA version
+# for Pip/Conda consistency.
+    "yum install -y yum-utils",
+    "yum-config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo",
+    "yum install -y cuda-toolkit",
+    # "yum install -y cuda-toolkit-12-6",
 ]
+environment = { PY_CXX="/usr/local/cuda/bin/nvcc", PY_CXXFLAGS="-I/usr/local/cuda/include", PY_LDFLAGS="-L/usr/local/cuda/lib64", PY_OMP='1', PY_CUDA='1', PY_BUILD_PARALLEL='-j' }
 
 [tool.autopep8]
 in-place = true
