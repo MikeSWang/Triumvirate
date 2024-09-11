@@ -49,7 +49,15 @@
 #include "arrayops.hpp"
 
 #ifdef TRV_USE_HIP
+#ifndef FFTW_PLANNER_FLAG_DEFINED_
+#define FFTW_MEASURE (0U)
+#define FFTW_EXHAUSTIVE (1U << 3)
+#define FFTW_PATIENT (1U << 5)
+#define FFTW_ESTIMATE (1U << 6)
+#define FFTW_PLANNER_FLAG_DEFINED_
+#endif  // !FFTW_PLANNER_FLAG_DEFINED_
 typedef double fft_complex[2];
+using fftw_plan = hipfftHandle;
 #endif  // TRV_USE_HIP
 
 namespace trva = trv::array;
