@@ -43,6 +43,15 @@ can be found on the [Installation](
 https://triumvirate.readthedocs.io/en/latest/installation.html#python-package)
 page in the documentation.
 
+<!-- [![PyPI](https://img.shields.io/pypi/v/Triumvirate-CUDA?logo=PyPI&color=informational)](https://pypi.org/project/Triumvirate-CUDA)
+[![Conda](https://img.shields.io/conda/v/msw/triumvirate-cuda?logo=Anaconda&color=informational)](https://anaconda.org/msw/triumvirate-cuda) -->
+
+> [!TIP]
+> CUDA variants of the Python package are/will be made available as
+> ``Triumvirate-CUDA`` on [PyPI](https://pypi.org/project/Triumvirate-CUDA)
+> and ``triumvirate-cuda`` through
+> [Conda](https://anaconda.org/msw/triumvirate-cuda).
+
 ### C++ library & program
 
 ``Triumvirate`` as either a static library or a binary executable can be
@@ -70,14 +79,16 @@ Then, execute in shell:
 
 ```sh
 make clean
-make ([py|cpp]install)|(cpp[libinstall|appbuild]) [useomp=(true|1)]
+make ([py|cpp]install)|(cpp[libinstall|appbuild]) [useomp=(true|1)] [usecuda=(true|1)]
 ```
 
 where ``cpplibinstall`` or ``cppappbuild`` respectively builds the C++
 static library or binary executable only, ``cppinstall`` builds both,
 ``pyinstall`` builds the Python package only, and ``install`` builds
 all of the above. To enable OpenMP parallelisation, append ``useomp=true``
-or ``useomp=1`` to the end of the second line as shown above.
+or ``useomp=1`` to the end of the second line as shown above. To enable
+CUDA support, append ``usecuda=true`` or ``usecuda=1`` to the end of the
+second line as shown above.
 
 > [!NOTE]
 > The latest release is on the [``main``](
@@ -95,6 +106,15 @@ or ``useomp=1`` to the end of the second line as shown above.
 > configured accordingly. The default [``Makefile``](Makefile) (located at the
 > repository directory root) assumes the GCC compiler and OpenMP library. See
 > the [Installation](
+> https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
+> page in the documentation for more details.
+
+> [!IMPORTANT]
+> If enabling CUDA capability, ensure there is a CUDA-capable GPU with the
+> appropriate driver installed. For atypical CUDA Toolkit paths, you may
+> need to append the header and library paths to ``DEP_INCLUDES`` and
+> ``DEP_LDFLAGS`` in the default [``Makefile``](Makefile) (located at the
+> repository directory root). See the [Installation](
 > https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
 > page in the documentation for more details.
 

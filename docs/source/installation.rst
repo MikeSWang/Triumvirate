@@ -319,6 +319,67 @@ as shown in the following examples (for macOS with Homebrew package manager):
             export PY_LDFLAGS_OMP="-L$(brew --prefix libomp)/lib -lomp"
 
 
+CUDA support
+============
+
+.. .. image:: https://img.shields.io/pypi/v/Triumvirate-CUDA?logo=PyPI&color=informational
+..     :target: https://pypi.org/project/Triumvirate-CUDA
+..     :alt: PyPI
+
+.. .. image:: https://img.shields.io/conda/v/msw/triumvirate-cuda?logo=Anaconda&color=informational
+..     :target: https://anaconda.org/msw/triumvirate-cuda
+..     :alt: Conda
+
+FFT-related functionalities in |Triumvirate| can be offloaded to a single
+CUDA-capable GPU using equivalent libraries. This requires a CUDA-capable
+GPU and the appropriate driver.
+
+The CUDA-enabled Python package is distributed through |PyPI-CUDA-repo| and
+|conda-CUDA-repo| as ``Triumvirate-CUDA`` and ``triumvirate-cuda``, and OpenMP
+parallelisation is enforced by default (see '`OpenMP library`_' and
+'`OpenMP support`_' above).
+
+To install from |PyPI-CUDA-repo|, execute in shell:
+
+.. code-block:: sh
+
+    python -m pip install triumvirate-cuda
+
+To install using |conda-CUDA-repo|, execute in shell:
+
+.. code-block:: sh
+
+    conda install -c msw triumvirate-cuda
+
+For dependency management, it is recommended that a virtual environment
+should be created for installing and using the CUDA variant package
+(e.g. a Conda environment created with ``conda create -n <cuda-env>`` and
+activated with ``conda activate <cuda-env>``).
+
+
+Build from source
+-----------------
+
+If building from the source distribution with ``Makefile``, OpenMP support
+is optional (see '`OpenMP support`_') and to enable CUDA support, pass
+``usecuda=true`` or ``usecuda=1`` to `make`.
+
+The compiler defaults to ``nvcc`` mandatorily. If the CUDA Toolkit
+installation path is not in the system's ``PATH``, you may need to set
+the environmental variables as shown in the example below:
+
+.. code-block:: sh
+
+    # If ``CUDA_HOME`` is not set in the system's environment.
+    # The variable ``CUDA_PATH`` is a similar alternative.
+    export CUDA_HOME=/usr/local/cuda
+    # Set the path to the NVCC compiler.
+    export CXX=$(CUDA_HOME)/bin/nvcc
+    # Set the path to the CUDA Toolkit libraries.
+    export INCLUDES="-I$(CUDA_HOME)/include"
+    export LDFLAGS="-L$(CUDA_HOME)/lib[64]"
+
+
 Parallelised building
 =====================
 
@@ -344,6 +405,12 @@ to use all available CPUs or :code:`export PY_BUILD_PARALLEL=-j4` to use four.
 
 .. |conda-repo| replace:: Conda
 .. _conda-repo: https://anaconda.org/msw/triumvirate
+
+.. |PyPI-CUDA-repo| replace:: PyPI
+.. _PyPI-CUDA-repo: https://pypi.org/project/Triumvirate-CUDA
+
+.. |conda-CUDA-repo| replace:: Conda
+.. _conda-CUDA-repo: https://anaconda.org/msw/triumvirate-cuda
 
 .. |main| replace:: ``main``
 .. _main: https://github.com/MikeSWang/Triumvirate/tree/main
