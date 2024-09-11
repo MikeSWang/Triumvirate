@@ -28,6 +28,10 @@
 
 #include "twopt.hpp"
 
+#ifdef TRV_USE_HIP
+typedef double fft_complex[2];
+#endif  // TRV_USE_HIP
+
 /// @cond DOXYGEN_DOC_CONST
 /// CAVEAT: Discretionary choice such that the eps_norm/norm is of order 0.01%.
 const double eps_norm = 1.e-5;

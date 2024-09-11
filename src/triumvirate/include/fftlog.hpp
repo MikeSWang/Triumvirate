@@ -48,6 +48,10 @@
 #include "maths.hpp"
 #include "arrayops.hpp"
 
+#ifdef TRV_USE_HIP
+typedef double fft_complex[2];
+#endif  // TRV_USE_HIP
+
 namespace trva = trv::array;
 
 namespace trv {

@@ -62,6 +62,10 @@
 #include "io.hpp"
 #include "particles.hpp"
 
+#ifdef TRV_USE_HIP
+typedef double fft_complex[2];
+#endif  // TRV_USE_HIP
+
 namespace trvm = trv::maths;
 
 namespace trv {
