@@ -122,22 +122,30 @@ double calc_powspec_normalisation_from_meshes(
   trv::MeshField mesh_rand(params, false, "`mesh_rand`");
 
   fftw_complex* weight_data = nullptr;
-#ifndef TRV_USE_CUDA
-  weight_data = fftw_alloc_complex(particles_data.ntotal);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   weight_data = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * particles_data.ntotal
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  weight_data = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * particles_data.ntotal
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  weight_data = fftw_alloc_complex(particles_data.ntotal);
+#endif  // TRV_USE_CUDA
 
   fftw_complex* weight_rand = nullptr;
-#ifndef TRV_USE_CUDA
-  weight_rand = fftw_alloc_complex(particles_rand.ntotal);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   weight_rand = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * particles_rand.ntotal
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  weight_rand = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * particles_rand.ntotal
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  weight_rand = fftw_alloc_complex(particles_rand.ntotal);
+#endif  // TRV_USE_CUDA
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
@@ -170,8 +178,13 @@ double calc_powspec_normalisation_from_meshes(
   mesh_data.assign_weighted_field_to_mesh(particles_data, weight_data);
   mesh_rand.assign_weighted_field_to_mesh(particles_rand, weight_rand);
 
+#ifndef TRV_USE_HIP
   fftw_free(weight_data); weight_data = nullptr;
   fftw_free(weight_rand); weight_rand = nullptr;
+#else  // TRV_USE_HIP
+  free(weight_data); weight_data = nullptr;
+  free(weight_rand); weight_rand = nullptr;
+#endif  // !TRV_USE_HIP
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);

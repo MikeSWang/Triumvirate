@@ -3197,13 +3197,19 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 
   // ---->
 //   // // Set up FFTW master plans.
-// #ifndef TRV_USE_CUDA
-//   fftw_complex* array_holder = fftw_alloc_complex(params.nmesh);
-// #else  // TRV_USE_CUDA
+// #if defined(TRV_USE_CUDA)
 //   fftw_complex* array_holder = (fftw_complex*)fftw_malloc(
 //     sizeof(fftw_complex) * params.nmesh
 //   );
+// #elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+//   hipFFTComplex* array_holder = (hipFFTComplex*)hip​Malloc​Managed(
+//     sizeof(hipFFTComplex) * params.nmesh
+//   );
+// #else  // !TRV_USE_CUDA && !TRV_USE_HIP
+//   fftw_complex* array_holder = fftw_alloc_complex(params.nmesh);
 // #endif  // TRV_USE_CUDA
+
+// #ifndef TRV_USE_HIP
 //   fftw_plan fwd_master_plan = fftw_plan_dft_3d(
 //     params.ngrid[0], params.ngrid[1], params.ngrid[2],
 //     array_holder, array_holder,
@@ -3214,6 +3220,23 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 //     array_holder, array_holder,
 //     FFTW_BACKWARD, FFTW_MEASURE
 //   );
+// #else  // TRV_USE_HIP
+//   hipfftHandle fwd_master_plan;
+//   hipfftHandle bwd_master_plan;
+//   hipfftPlan3d(
+//     &fwd_master_plan,
+//     params.ngrid[0], params.ngrid[1], params.ngrid[2],
+//     HIPFFT_C2C
+//   );
+//   hipfftPlan3d(
+//     &bwd_master_plan,
+//     params.ngrid[0], params.ngrid[1], params.ngrid[2],
+//     HIPFFT_C2C
+//   );
+//   // ...
+//   // hipDeviceSynchronize();
+//   // ...
+// #endif  // TRV_USE_HIP
   // ----<
 
   // ---------------------------------------------------------------------
@@ -4001,10 +4024,19 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   }
 
   // ---->
-  // // Clean up FFTW master plans.
-  // fftw_destroy_plan(fwd_master_plan);
-  // fftw_destroy_plan(bwd_master_plan);
-  // fftw_free(array_holder);
+// #ifndef TRV_USE_HIP
+//   fftw_destroy_plan(fwd_master_plan);
+//   fftw_destroy_plan(bwd_master_plan);
+//   fftw_free(array_holder);
+// #else  // TRV_USE_HIP
+//   // ...
+//   // hipDeviceSynchronize();
+//   // ...
+//   // Clean up FFTW master plans.
+//   hipfftDestroy(fwd_master_plan);
+//   hipfftDestroy(bwd_master_plan);
+//   hipFree(array_holder);
+// #endif  // !TRV_USE_HIP
   // ----<
 
   // ---------------------------------------------------------------------
