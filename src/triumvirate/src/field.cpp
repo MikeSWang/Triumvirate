@@ -2254,6 +2254,9 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
   double* sn_sample_imag = new double[n_sample];
   std::complex<double>* pk_sample = new std::complex<double>[n_sample];
   std::complex<double>* sn_sample = new std::complex<double>[n_sample];
+#ifdef TRV_USE_OMP
+#pragma omp simd
+#endif  // TRV_USE_OMP
   for (int i = 0; i < n_sample; i++) {
     nmodes_sample[i] = 0;
     k_sample[i] = 0.;
@@ -2495,6 +2498,9 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   double* xi_sample_real = new double[n_sample];
   double* xi_sample_imag = new double[n_sample];
   std::complex<double>* xi_sample = new std::complex<double>[n_sample];
+#ifdef TRV_USE_OMP
+#pragma omp simd
+#endif  // TRV_USE_OMP
   for (int i = 0; i < n_sample; i++) {
     npairs_sample[i] = 0;
     r_sample[i] = 0.;
@@ -2713,6 +2719,9 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   double* xi_sample_real = new double[n_sample];
   double* xi_sample_imag = new double[n_sample];
   std::complex<double>* xi_sample = new std::complex<double>[n_sample];
+#ifdef TRV_USE_OMP
+#pragma omp simd
+#endif  // TRV_USE_OMP
   for (int i = 0; i < n_sample; i++) {
     npairs_sample[i] = 0;
     r_sample[i] = 0.;
