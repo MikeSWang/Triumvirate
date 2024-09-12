@@ -73,22 +73,37 @@ HankelTransform::~HankelTransform() {
 //   } else {
 //     fftw_cleanup();
 //   }
-// #else  // !TRV_USE_OMP || !TRV_USE_FFTWOMP
+// #elif !defined(TRV_USE_HIP)  // !TRV_USE_OMP || !TRV_USE_FFTWOMP && !TRV_USE_HIP
 //   fftw_cleanup();
 // #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 }
 
 void HankelTransform::reset() {
   if (this->plan_init) {
+#ifndef TRV_USE_HIP
     fftw_destroy_plan(this->pre_plan);
     fftw_destroy_plan(this->post_plan);
+#else  // TRV_USE_HIP
+    hipfftDestroy(this->pre_plan);
+    hipfftDestroy(this->post_plan);
+#endif  // !TRV_USE_HIP
     this->plan_init = false;
   }
   if (this->pre_buffer != nullptr) {
-    fftw_free(this->pre_buffer); this->pre_buffer = nullptr;
+#ifndef TRV_USE_HIP
+    fftw_free(this->pre_buffer);
+#else  // TRV_USE_HIP
+    hipFree(this->pre_buffer);
+#endif  // !TRV_USE_HIP
+    this->pre_buffer = nullptr;
   }
   if (this->post_buffer != nullptr) {
-    fftw_free(this->post_buffer); this->post_buffer = nullptr;
+#ifndef TRV_USE_HIP
+    fftw_free(this->post_buffer);
+#else  // TRV_USE_HIP
+    hipFree(this->post_buffer);
+#endif  // !TRV_USE_HIP
+    this->post_buffer = nullptr;
   }
 }
 
@@ -181,31 +196,51 @@ void HankelTransform::initialise(
   // Initialise FFTW plans.
   this->reset();
 
-#ifndef TRV_USE_CUDA
-  this->pre_buffer = fftw_alloc_complex(this->nsamp_trans);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   this->pre_buffer = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * this->nsamp_trans
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  this->pre_buffer = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * this->nsamp_trans
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  this->pre_buffer = fftw_alloc_complex(this->nsamp_trans);
+#endif  // TRV_USE_CUDA
 
+#ifndef TRV_USE_HIP
   this->pre_plan = fftw_plan_dft_1d(
     this->nsamp_trans, this->pre_buffer, this->pre_buffer,
     FFTW_FORWARD, FFTW_ESTIMATE
   );
+#else  // TRV_USE_HIP
+  hipfftPlan1d(
+    &this->post_plan, this->nsamp_trans, HIPFFT_C2C, 1
+  );
+#endif  // !TRV_USE_HIP
 
-#ifndef TRV_USE_CUDA
-  this->post_buffer = fftw_alloc_complex(this->nsamp_trans);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   this->post_buffer = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * this->nsamp_trans
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  this->post_buffer = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * this->nsamp_trans
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  this->post_buffer = fftw_alloc_complex(this->nsamp_trans);
+#endif  // TRV_USE_CUDA
 
+#ifndef TRV_USE_HIP
   this->post_plan = fftw_plan_dft_1d(
     this->nsamp_trans, this->post_buffer, this->post_buffer,
     FFTW_FORWARD, FFTW_ESTIMATE
   );
+#else  // TRV_USE_HIP
+  hipfftPlan1d(
+    &this->post_plan, this->nsamp_trans, HIPFFT_C2C, 1
+  );
+#endif  // !TRV_USE_HIP
 
   this->plan_init = true;
 }
@@ -372,7 +407,23 @@ void HankelTransform::biased_transform(
   }
 
   // Compute the convolution b = a * u using FFT.
+#ifndef TRV_USE_HIP
   fftw_execute(this->pre_plan);
+#else  // TRV_USE_HIP
+  hipDoubleComplex* d_pre_buffer;
+  hipMallocManaged(
+    &d_pre_buffer, sizeof(hipDoubleComplex) * this->nsamp_trans
+  );
+  trv:array::copy_array_value_htod(
+    this->pre_buffer, d_pre_buffer, this->nsamp_trans
+  );
+  hipfftExecC2C(this->pre_plan, d_pre_buffer, d_pre_buffer, HIPFFT_FORWARD);
+  hipDeviceSynchronize();
+  trv:array::copy_array_value_dtoh(
+    d_pre_buffer, this->pre_buffer, this->nsamp_trans
+  );
+  hipFree(d_pre_buffer);
+#endif  // !TRV_USE_HIP
 
   for (int m = 0; m < N_trans; m++) {
     // Divide by `N` to normalise the inverse DFT.
@@ -382,7 +433,23 @@ void HankelTransform::biased_transform(
     this->post_buffer[m][1] = b_.imag();
   }
 
+#ifndef TRV_USE_HIP
   fftw_execute(this->post_plan);
+#else  // TRV_USE_HIP
+  hipDoubleComplex* d_post_buffer;
+  hipMallocManaged(
+    &d_post_buffer, sizeof(hipDoubleComplex) * this->nsamp_trans
+  );
+  trv:array::copy_array_value_htod(
+    this->post_buffer, d_post_buffer, this->nsamp_trans
+  );
+  hipfftExecC2C(this->post_plan, d_post_buffer, d_post_buffer, HIPFFT_FORWARD);
+  hipDeviceSynchronize();
+  trv:array::copy_array_value_dtoh(
+    d_post_buffer, this->post_buffer, this->nsamp_transs
+  );
+  hipFree(d_post_buffer);
+#endif  // !TRV_USE_HIP
 
   // Trim any extrapolation.
   for (int j = 0; j < N; j++) {
