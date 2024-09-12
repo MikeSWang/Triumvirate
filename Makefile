@@ -86,6 +86,10 @@ endif  # usecuda
 
 # HIP: enabled with ``usehip=(true|1)``; disabled otherwise
 ifdef usehip
+$(error \
+	"Unimplemented: HIP is not yet supported " \
+	"owing to a lack of accessible development environment." \
+)
 ifeq ($(strip ${usehip}), $(filter $(strip ${usehip}), true 1))
 usehip := true
 else   # usehip != (true|1)
@@ -241,7 +245,15 @@ DEP_TEST_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPS_TEST
 # -- Options -------------------------------------------------------------
 
 INCLUDES += -I${DIR_PKG_INCLUDE} ${DEP_INCLUDES}
+
 CPPFLAGS += -MMD -MP -D__TRV_VERSION__=\"${PKG_VER}\"
+ifdef usehip
+ifdef usecuda
+CPPFLAGS += -D__HIP_PLATFORM_NVIDIA__
+else   # usehip && !usecuda
+CPPFLAGS += -D__HIP_PLATFORM_AMD__
+endif  # usehip && usecuda
+endif  # usehip
 
 ifdef usehip
 CXXFLAGS += -std=c++17 -Wall -O3 ${DEP_CXXFLAGS}
