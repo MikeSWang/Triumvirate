@@ -612,7 +612,21 @@ endif  # usehip
 # ------------------------------------------------------------------------
 
 SRCS := $(wildcard ${DIR_PKG_SRC}/*.cpp)
-OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%${LIBSUFFIX}.o)
+
+ifdef usehip
+ifdef usecuda
+OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%_hipcuda.o)
+else   # usehip && !usecuda
+OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%_hip.o)
+endif  # usehip && usecuda
+else   # !usehip
+ifdef usecuda
+OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%_cuda.o)
+else   # !usehip && !usecuda
+OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%.o)
+endif  # !usehip && usecuda
+endif  # usehip
+
 DEPS := $(OBJS:.o=.d)
 
 PROGSRC := ${DIR_PKG_SRCPROG}/${PROGNAME}.cpp
@@ -710,8 +724,23 @@ objects_:
 ${PROGOBJ}: ${PROGSRC}
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
-$(OBJS): ${DIR_BUILDOBJ}/%${LIBSUFFIX}.o: ${DIR_PKG_SRC}/%.cpp | objects_
+ifdef usehip
+ifdef usecuda
+$(OBJS): ${DIR_BUILDOBJ}/%_hipcuda.o: ${DIR_PKG_SRC}/%.cpp | objects_
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+else   # usehip && !usecuda
+$(OBJS): ${DIR_BUILDOBJ}/%_hip.o: ${DIR_PKG_SRC}/%.cpp | objects_
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+endif  # usehip && usecuda
+else   # !usehip
+ifdef usecuda
+$(OBJS): ${DIR_BUILDOBJ}/%_cuda.o: ${DIR_PKG_SRC}/%.cpp | objects_
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+else   # !usehip && !usecuda
+$(OBJS): ${DIR_BUILDOBJ}/%.o: ${DIR_PKG_SRC}/%.cpp | objects_
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+endif  # !usehip && usecuda
+endif  # usehip
 
 -include $(DEPS)
 
