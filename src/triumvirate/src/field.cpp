@@ -1588,8 +1588,8 @@ void MeshField::fourier_transform() {
     fftw_execute(this->transform);
   }
 #else  // TRV_USE_HIP
-  hipDoubleComplex* d_field;
-  hip_ret = hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipfftDoubleComplex* d_field;
+  hip_ret = hipMalloc(&d_field, sizeof(hipfftDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->field, d_field, this->params.nmesh
   );
@@ -1619,8 +1619,8 @@ void MeshField::fourier_transform() {
       fftw_execute(this->transform_s);
     }
 #else  // TRV_USE_HIP
-    hipDoubleComplex* d_field_s;
-    hip_ret = hipMalloc(&d_field_s, sizeof(hipDoubleComplex) * this->params.nmesh);
+    hipfftDoubleComplex* d_field_s;
+    hip_ret = hipMalloc(&d_field_s, sizeof(hipfftDoubleComplex) * this->params.nmesh);
     trva::copy_complex_array_htod(
       this->field_s, d_field_s, this->params.nmesh
     );
@@ -1704,8 +1704,8 @@ void MeshField::inv_fourier_transform() {
     fftw_execute(this->inv_transform);
   }
 #else  // TRV_USE_HIP
-  hipDoubleComplex* d_field;
-  hip_ret = hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipfftDoubleComplex* d_field;
+  hip_ret = hipMalloc(&d_field, sizeof(hipfftDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->field, d_field, this->params.nmesh
   );
@@ -1864,8 +1864,8 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
     fftw_execute(this->inv_transform);
   }
 #else  // TRV_USE_HIP
-  hipDoubleComplex* d_field;
-  hip_ret = hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipfftDoubleComplex* d_field;
+  hip_ret = hipMalloc(&d_field, sizeof(hipfftDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->field, d_field, this->params.nmesh
   );
@@ -1963,8 +1963,8 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
     fftw_execute(this->inv_transform);
   }
 #else  // TRV_USE_HIP
-  hipDoubleComplex* d_field;
-  hip_ret = hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipfftDoubleComplex* d_field;
+  hip_ret = hipMalloc(&d_field, sizeof(hipfftDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->field, d_field, this->params.nmesh
   );
@@ -2721,8 +2721,8 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
     fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
   }
 #else  // TRV_USE_HIP
-  hipDoubleComplex* d_twopt_3d;
-  hip_ret = hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipfftDoubleComplex* d_twopt_3d;
+  hip_ret = hipMalloc(&d_twopt_3d, sizeof(hipfftDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->twopt_3d, d_twopt_3d, this->params.nmesh
   );
@@ -2968,8 +2968,8 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
     fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
   }
 #else  // TRV_USE_HIP
-  hipDoubleComplex* d_twopt_3d;
-  hip_ret = hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipfftDoubleComplex* d_twopt_3d;
+  hip_ret = hipMalloc(&d_twopt_3d, sizeof(hipfftDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->twopt_3d, d_twopt_3d, this->params.nmesh
   );
@@ -3218,8 +3218,8 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
     fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
   }
 #else  // TRV_USE_HIP
-  hipDoubleComplex* d_twopt_3d;
-  hip_ret = hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipfftDoubleComplex* d_twopt_3d;
+  hip_ret = hipMalloc(&d_twopt_3d, sizeof(hipfftDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->twopt_3d, d_twopt_3d, this->params.nmesh
   );

@@ -418,9 +418,9 @@ void HankelTransform::biased_transform(
 #ifndef TRV_USE_HIP
   fftw_execute(this->pre_plan);
 #else  // TRV_USE_HIP
-  hipDoubleComplex* d_pre_buffer;
+  hipfftDoubleComplex* d_pre_buffer;
   hip_ret = hipMalloc(
-    &d_pre_buffer, sizeof(hipDoubleComplex) * this->nsamp_trans
+    &d_pre_buffer, sizeof(hipfftDoubleComplex) * this->nsamp_trans
   );
   trva::copy_complex_array_htod(
     this->pre_buffer, d_pre_buffer, this->nsamp_trans
@@ -444,9 +444,9 @@ void HankelTransform::biased_transform(
 #ifndef TRV_USE_HIP
   fftw_execute(this->post_plan);
 #else  // TRV_USE_HIP
-  hipDoubleComplex* d_post_buffer;
+  hipfftDoubleComplex* d_post_buffer;
   hip_ret = hipMalloc(
-    &d_post_buffer, sizeof(hipDoubleComplex) * this->nsamp_trans
+    &d_post_buffer, sizeof(hipfftDoubleComplex) * this->nsamp_trans
   );
   trva::copy_complex_array_htod(
     this->post_buffer, d_post_buffer, this->nsamp_trans

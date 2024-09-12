@@ -272,12 +272,12 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector) {
 
 #ifdef TRV_USE_HIP
 void copy_complex_array_dtoh(
-  const hipDoubleComplex* d_arr, fftw_complex* arr, size_t length
+  const hipfftDoubleComplex* d_arr, fftw_complex* arr, size_t length
 ) {
-  hipDoubleComplex* h_arr = new hipDoubleComplex[length];
+  hipfftDoubleComplex* h_arr = new hipfftDoubleComplex[length];
   hipError_t hip_ret;
   hip_ret = hipMemcpy(
-    h_arr, d_arr, sizeof(hipDoubleComplex) * length, hipMemcpyDeviceToHost
+    h_arr, d_arr, sizeof(hipfftDoubleComplex) * length, hipMemcpyDeviceToHost
   );
   for (size_t i = 0; i < length; ++i) {
     arr[i][0] = h_arr[i].x;
@@ -286,16 +286,16 @@ void copy_complex_array_dtoh(
 }
 
 void copy_complex_array_htod(
-  const fftw_complex* arr, hipDoubleComplex* d_arr, size_t length
+  const fftw_complex* arr, hipfftDoubleComplex* d_arr, size_t length
 ) {
-  hipDoubleComplex* h_arr = new hipDoubleComplex[length];
+  hipfftDoubleComplex* h_arr = new hipfftDoubleComplex[length];
   for (size_t i = 0; i < length; ++i) {
     h_arr[i].x = arr[i][0];
     h_arr[i].y = arr[i][1];
   }
   hipError_t hip_ret;
   hip_ret = hipMemcpy(
-    d_arr, h_arr, sizeof(hipDoubleComplex) * length, hipMemcpyHostToDevice
+    d_arr, h_arr, sizeof(hipfftDoubleComplex) * length, hipMemcpyHostToDevice
   );
 }
 #endif

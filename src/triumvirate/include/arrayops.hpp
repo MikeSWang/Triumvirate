@@ -255,7 +255,7 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector);
  * @param length Array size.
  */
 void copy_complex_array_dtoh(
-  const hipDoubleComplex* d_arr, fftw_complex* arr, size_t length
+  const hipfftDoubleComplex* d_arr, fftw_complex* arr, size_t length
 );
 
 /**
@@ -267,7 +267,7 @@ void copy_complex_array_dtoh(
  * @param length Array size.
  */
 void copy_complex_array_htod(
-  const fftw_complex* arr, hipDoubleComplex* d_arr, size_t length
+  const fftw_complex* arr, hipfftDoubleComplex* d_arr, size_t length
 );
 #endif
 
