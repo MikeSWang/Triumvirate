@@ -425,7 +425,7 @@ void HankelTransform::biased_transform(
   trva::copy_complex_array_htod(
     this->pre_buffer, d_pre_buffer, this->nsamp_trans
   );
-  hipfftExecC2C(this->pre_plan, d_pre_buffer, d_pre_buffer, HIPFFT_FORWARD);
+  hipfftExecZ2Z(this->pre_plan, d_pre_buffer, d_pre_buffer, HIPFFT_FORWARD);
   hip_ret = hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_pre_buffer, this->pre_buffer, this->nsamp_trans
@@ -451,7 +451,7 @@ void HankelTransform::biased_transform(
   trva::copy_complex_array_htod(
     this->post_buffer, d_post_buffer, this->nsamp_trans
   );
-  hipfftExecC2C(this->post_plan, d_post_buffer, d_post_buffer, HIPFFT_FORWARD);
+  hipfftExecZ2Z(this->post_plan, d_post_buffer, d_post_buffer, HIPFFT_FORWARD);
   hip_ret = hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_post_buffer, this->post_buffer, this->nsamp_transs

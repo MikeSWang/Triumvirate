@@ -3131,6 +3131,10 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   trv::ParameterSet& params, trv::Binning& kbinning,
   double norm_factor
 ) {
+#ifdef TRV_USE_HIP
+  hipError_t hip_ret;
+#endif  // TRV_USE_HIP
+
   trvs::logger.reset_level(params.verbose);
 
   if (trvs::currTask == 0) {
@@ -3237,7 +3241,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 //     HIPFFT_C2C
 //   );
 //   // ...
-//   // hipError_t hipDeviceSynchronize();
+//   // hip_ret = hipDeviceSynchronize();
 //   // ...
 // #endif  // TRV_USE_HIP
   // ----<
@@ -4033,12 +4037,12 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 //   fftw_free(array_holder);
 // #else  // TRV_USE_HIP
 //   // ...
-//   // hipError_t hipDeviceSynchronize();
+//   // hip_ret = hipDeviceSynchronize();
 //   // ...
 //   // Clean up FFTW master plans.
 //   hipfftDestroy(fwd_master_plan);
 //   hipfftDestroy(bwd_master_plan);
-//   hipError_t hipFree(array_holder);
+//   hip_ret = hipFree(array_holder);
 // #endif  // !TRV_USE_HIP
   // ----<
 

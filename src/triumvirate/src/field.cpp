@@ -1561,6 +1561,10 @@ void MeshField::compute_ylm_wgtd_quad_field(
 // -----------------------------------------------------------------------
 
 void MeshField::fourier_transform() {
+#ifdef TRV_USE_HIP
+  hipError_t hip_ret;
+#endif  // TRV_USE_HIP
+
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Performing Fourier transform of '%s'.", this->name.c_str()
@@ -1585,16 +1589,16 @@ void MeshField::fourier_transform() {
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_field;
-  hipError_t hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hip_ret = hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->field, d_field, this->params.nmesh
   );
-  hipfftExecC2C(this->transform, d_field, d_field, HIPFFT_FORWARD);
-  hipError_t hipDeviceSynchronize();
+  hipfftExecZ2Z(this->transform, d_field, d_field, HIPFFT_FORWARD);
+  hip_ret = hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_field, this->field, this->params.nmesh
   );
-  hipError_t hipFree(d_field);
+  hip_ret = hipFree(d_field);
 #endif  // !TRV_USE_HIP
   trvs::count_fft += 1;
 
@@ -1616,16 +1620,16 @@ void MeshField::fourier_transform() {
     }
 #else  // TRV_USE_HIP
     hipDoubleComplex* d_field_s;
-    hipError_t hipMalloc(&d_field_s, sizeof(hipDoubleComplex) * this->params.nmesh);
+    hip_ret = hipMalloc(&d_field_s, sizeof(hipDoubleComplex) * this->params.nmesh);
     trva::copy_complex_array_htod(
       this->field_s, d_field_s, this->params.nmesh
     );
-    hipfftExecC2C(this->transform_s, d_field_s, d_field_s, HIPFFT_FORWARD);
-    hipError_t hipDeviceSynchronize();
+    hipfftExecZ2Z(this->transform_s, d_field_s, d_field_s, HIPFFT_FORWARD);
+    hip_ret = hipDeviceSynchronize();
     trva::copy_complex_array_dtoh(
       d_field_s, this->field_s, this->params.nmesh
     );
-    hipError_t hipFree(d_field_s);
+    hip_ret = hipFree(d_field_s);
 #endif  // !TRV_USE_HIP
     trvs::count_fft += 1;
 
@@ -1672,6 +1676,10 @@ void MeshField::fourier_transform() {
 }
 
 void MeshField::inv_fourier_transform() {
+#ifdef TRV_USE_HIP
+  hipError_t hip_ret;
+#endif  // TRV_USE_HIP
+
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Performing inverse Fourier transform of '%s'.", this->name.c_str()
@@ -1697,16 +1705,16 @@ void MeshField::inv_fourier_transform() {
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_field;
-  hipError_t hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hip_ret = hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->field, d_field, this->params.nmesh
   );
-  hipfftExecC2C(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
-  hipError_t hipDeviceSynchronize();
+  hipfftExecZ2Z(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
+  hip_ret = hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_field, this->field, this->params.nmesh
   );
-  hipError_t hipFree(d_field);
+  hip_ret = hipFree(d_field);
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 }
@@ -1786,6 +1794,10 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   double k_lower, double k_upper,
   double& k_eff, int& nmodes
 ) {
+#ifdef TRV_USE_HIP
+  hipError_t hip_ret;
+#endif  // TRV_USE_HIP
+
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Performing inverse Fourier transform to spherical harmonic weighted "
@@ -1853,16 +1865,16 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_field;
-  hipError_t hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hip_ret = hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->field, d_field, this->params.nmesh
   );
-  hipfftExecC2C(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
-  hipError_t hipDeviceSynchronize();
+  hipfftExecZ2Z(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
+  hip_ret = hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_field, this->field, this->params.nmesh
   );
-  hipError_t hipFree(d_field);
+  hip_ret = hipFree(d_field);
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
@@ -1884,6 +1896,10 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
     trvm::SphericalBesselCalculator& sjl,
     double r
 ) {
+#ifdef TRV_USE_HIP
+  hipError_t hip_ret;
+#endif  // TRV_USE_HIP
+
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Performing inverse Fourier transform to spherical Bessel weighted "
@@ -1948,16 +1964,16 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_field;
-  hipError_t hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hip_ret = hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->field, d_field, this->params.nmesh
   );
-  hipfftExecC2C(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
-  hipError_t hipDeviceSynchronize();
+  hipfftExecZ2Z(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
+  hip_ret = hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_field, this->field, this->params.nmesh
   );
-  hipError_t hipFree(d_field);
+  hip_ret = hipFree(d_field);
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 }
@@ -2593,6 +2609,10 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   MeshField& field_a, MeshField& field_b, std::complex<double> shotnoise_amp,
   int ell, int m, trv::Binning& rbinning
 ) {
+#ifdef TRV_USE_HIP
+  hipError_t hip_ret;
+#endif  // TRV_USE_HIP
+
   this->resize_stats(rbinning.num_bins);
 
   // Check mesh fields compatibility and reuse properties and methods of
@@ -2702,16 +2722,16 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_twopt_3d;
-  hipError_t hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hip_ret = hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->twopt_3d, d_twopt_3d, this->params.nmesh
   );
-  hipfftExecC2C(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
-  hipError_t hipDeviceSynchronize();
+  hipfftExecZ2Z(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
+  hip_ret = hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_twopt_3d, this->twopt_3d, this->params.nmesh
   );
-  hipError_t hipFree(d_twopt_3d);
+  hip_ret = hipFree(d_twopt_3d);
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
@@ -2829,6 +2849,10 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   std::complex<double> shotnoise_amp,
   trv::Binning& rbinning
 ) {
+#ifdef TRV_USE_HIP
+  hipError_t hip_ret;
+#endif  // TRV_USE_HIP
+
   if (trvs::currTask == 0) {
     trvs::logger.debug("Computing uncoupled shot noise for 3PCF.");
   }
@@ -2945,16 +2969,16 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_twopt_3d;
-  hipError_t hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hip_ret = hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->twopt_3d, d_twopt_3d, this->params.nmesh
   );
-  hipfftExecC2C(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
-  hipError_t hipDeviceSynchronize();
+  hipfftExecZ2Z(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
+  hip_ret = hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_twopt_3d, this->twopt_3d, this->params.nmesh
   );
-  hipError_t hipFree(d_twopt_3d);
+  hip_ret = hipFree(d_twopt_3d);
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
@@ -3073,6 +3097,10 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   std::complex<double> shotnoise_amp,
   double k_a, double k_b
 ) {
+#ifdef TRV_USE_HIP
+  hipError_t hip_ret;
+#endif  // TRV_USE_HIP
+
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Computing uncoupled shot noise for bispectrum "
@@ -3191,16 +3219,16 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_twopt_3d;
-  hipError_t hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hip_ret = hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->twopt_3d, d_twopt_3d, this->params.nmesh
   );
-  hipfftExecC2C(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
-  hipError_t hipDeviceSynchronize();
+  hipfftExecZ2Z(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
+  hip_ret = hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_twopt_3d, this->twopt_3d, this->params.nmesh
   );
-  hipError_t hipFree(d_twopt_3d);
+  hip_ret = hipFree(d_twopt_3d);
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
