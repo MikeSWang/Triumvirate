@@ -52,13 +52,17 @@ MeshField::MeshField(
 
   // Initialise the field (and its shadow field if interlacing is used)
   // and increase allocated memory.
-#ifndef TRV_USE_CUDA
-  this->field = fftw_alloc_complex(this->params.nmesh);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   this->field = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * this->params.nmesh
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  this->field = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * this->params.nmesh
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  this->field = fftw_alloc_complex(this->params.nmesh);
+#endif  // TRV_USE_CUDA
 
   trvs::count_cgrid += 1;
   trvs::count_grid += 1;
@@ -67,13 +71,17 @@ MeshField::MeshField(
   trvs::update_maxmem();
 
   if (this->params.interlace == "true") {
-#ifndef TRV_USE_CUDA
-    this->field_s = fftw_alloc_complex(this->params.nmesh);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
     this->field_s = (fftw_complex*)fftw_malloc(
       sizeof(fftw_complex) * this->params.nmesh
     );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+    this->field_s = (fftw_complex*)malloc(
+      sizeof(fftw_complex) * this->params.nmesh
+    );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+    this->field_s = fftw_alloc_complex(this->params.nmesh);
+#endif  // TRV_USE_CUDA
 
     trvs::count_cgrid += 1;
     trvs::count_grid += 1;
@@ -305,13 +313,17 @@ MeshField::MeshField(
 
   // Initialise the field (and its shadow field if interlacing is used)
   // and increase allocated memory.
-#ifndef TRV_USE_CUDA
-  this->field = fftw_alloc_complex(this->params.nmesh);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   this->field = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * this->params.nmesh
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  this->field = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * this->params.nmesh
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  this->field = fftw_alloc_complex(this->params.nmesh);
+#endif  // TRV_USE_CUDA
 
   trvs::count_cgrid += 1;
   trvs::count_grid += 1;
@@ -320,13 +332,17 @@ MeshField::MeshField(
   trvs::update_maxmem();
 
   if (this->params.interlace == "true") {
-#ifndef TRV_USE_CUDA
-    this->field_s = fftw_alloc_complex(this->params.nmesh);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
     this->field_s = (fftw_complex*)fftw_malloc(
       sizeof(fftw_complex) * this->params.nmesh
     );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+    this->field_s = (fftw_complex*)malloc(
+      sizeof(fftw_complex) * this->params.nmesh
+    );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+    this->field_s = fftw_alloc_complex(this->params.nmesh);
+#endif  // TRV_USE_CUDA
 
     trvs::count_cgrid += 1;
     trvs::count_grid += 1;
@@ -1100,13 +1116,17 @@ void MeshField::compute_assignment_window_in_fourier(int order) {
 void MeshField::compute_unweighted_field(ParticleCatalogue& particles) {
   fftw_complex* unit_weight = nullptr;
 
-#ifndef TRV_USE_CUDA
-  unit_weight = fftw_alloc_complex(particles.ntotal);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   unit_weight = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * particles.ntotal
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  unit_weight = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * particles.ntotal
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  unit_weight = fftw_alloc_complex(particles.ntotal);
+#endif  // TRV_USE_CUDA
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
   trvs::update_maxmem();
@@ -1151,13 +1171,17 @@ void MeshField::compute_ylm_wgtd_field(
   fftw_complex* weight_kern = nullptr;
 
   // Compute the weighted data-source field.
-#ifndef TRV_USE_CUDA
-  weight_kern = fftw_alloc_complex(particles_data.ntotal);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   weight_kern = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * particles_data.ntotal
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  weight_kern = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * particles_data.ntotal
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  weight_kern = fftw_alloc_complex(particles_data.ntotal);
+#endif  // TRV_USE_CUDA
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
   trvs::update_maxmem();
@@ -1184,13 +1208,17 @@ void MeshField::compute_ylm_wgtd_field(
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
 
   // Compute the weighted random-source field.
-#ifndef TRV_USE_CUDA
-  weight_kern = fftw_alloc_complex(particles_rand.ntotal);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   weight_kern = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * particles_rand.ntotal
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  weight_kern = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * particles_rand.ntotal
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  weight_kern = fftw_alloc_complex(particles_rand.ntotal);
+#endif  // TRV_USE_CUDA
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
   trvs::update_maxmem();
@@ -1244,13 +1272,17 @@ void MeshField::compute_ylm_wgtd_field(
   fftw_complex* weight_kern = nullptr;
 
   // Compute the weighted field.
-#ifndef TRV_USE_CUDA
-  weight_kern = fftw_alloc_complex(particles.ntotal);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   weight_kern = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * particles.ntotal
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  weight_kern = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * particles.ntotal
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  weight_kern = fftw_alloc_complex(particles.ntotal);
+#endif  // TRV_USE_CUDA
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
   trvs::update_maxmem();
@@ -1293,13 +1325,17 @@ void MeshField::compute_ylm_wgtd_quad_field(
   fftw_complex* weight_kern = nullptr;
 
   // Compute the quadratic weighted data-source field.
-#ifndef TRV_USE_CUDA
-  weight_kern = fftw_alloc_complex(particles_data.ntotal);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   weight_kern = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * particles_data.ntotal
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  weight_kern = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * particles_data.ntotal
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  weight_kern = fftw_alloc_complex(particles_data.ntotal);
+#endif  // TRV_USE_CUDA
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
   trvs::update_maxmem();
@@ -1328,13 +1364,17 @@ void MeshField::compute_ylm_wgtd_quad_field(
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
 
   // Compute the quadratic weighted random-source field.
-#ifndef TRV_USE_CUDA
-  weight_kern = fftw_alloc_complex(particles_rand.ntotal);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   weight_kern = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * particles_rand.ntotal
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  weight_kern = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * particles_rand.ntotal
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  weight_kern = fftw_alloc_complex(particles_rand.ntotal);
+#endif  // TRV_USE_CUDA
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
   trvs::update_maxmem();
@@ -1390,13 +1430,17 @@ void MeshField::compute_ylm_wgtd_quad_field(
   fftw_complex* weight_kern = nullptr;
 
   // Compute the quadratic weighted field.
-#ifndef TRV_USE_CUDA
-  weight_kern = fftw_alloc_complex(particles.ntotal);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   weight_kern = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * particles.ntotal
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  weight_kern = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * particles.ntotal
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  weight_kern = fftw_alloc_complex(particles.ntotal);
+#endif  // TRV_USE_CUDA
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
   trvs::update_maxmem();
@@ -1781,13 +1825,17 @@ double MeshField::calc_grid_based_powlaw_norm(
   // Initialise the weight field.
   fftw_complex* weight = nullptr;
 
-#ifndef TRV_USE_CUDA
-  weight = fftw_alloc_complex(particles.ntotal);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
   weight = (fftw_complex*)fftw_malloc(
     sizeof(fftw_complex) * particles.ntotal
   );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+  weight = (fftw_complex*)malloc(
+    sizeof(fftw_complex) * particles.ntotal
+  );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+  weight = fftw_alloc_complex(particles.ntotal);
+#endif  // TRV_USE_CUDA
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
   trvs::update_maxmem();
@@ -1863,13 +1911,17 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
 
   // Set up FFTW plans.
   if (plan_ini) {
-#ifndef TRV_USE_CUDA
-    this->twopt_3d = fftw_alloc_complex(this->params.nmesh);
-#else  // TRV_USE_CUDA
+#if defined(TRV_USE_CUDA)
     this->twopt_3d = (fftw_complex*)fftw_malloc(
       sizeof(fftw_complex) * this->params.nmesh
     );
-#endif  // !TRV_USE_CUDA
+#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
+    this->twopt_3d = (fftw_complex*)malloc(
+      sizeof(fftw_complex) * this->params.nmesh
+    );
+#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+    this->twopt_3d = fftw_alloc_complex(this->params.nmesh);
+#endif  // TRV_USE_CUDA
 
     trvs::count_cgrid += 1;
     trvs::count_grid += 1;
