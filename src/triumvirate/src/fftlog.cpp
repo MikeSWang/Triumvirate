@@ -79,6 +79,10 @@ HankelTransform::~HankelTransform() {
 }
 
 void HankelTransform::reset() {
+#ifdef TRV_USE_HIP
+  hipError_t hip_ret;
+#endif  // TRV_USE_HIP
+
   if (this->plan_init) {
 #ifndef TRV_USE_HIP
     fftw_destroy_plan(this->pre_plan);
@@ -93,7 +97,7 @@ void HankelTransform::reset() {
 #ifndef TRV_USE_HIP
     fftw_free(this->pre_buffer);
 #else  // TRV_USE_HIP
-    hipError_t hipFree(this->pre_buffer);
+    hip_ret = hipFree(this->pre_buffer);
 #endif  // !TRV_USE_HIP
     this->pre_buffer = nullptr;
   }
@@ -101,7 +105,7 @@ void HankelTransform::reset() {
 #ifndef TRV_USE_HIP
     fftw_free(this->post_buffer);
 #else  // TRV_USE_HIP
-    hipError_t hipFree(this->post_buffer);
+    hip_ret = hipFree(this->post_buffer);
 #endif  // !TRV_USE_HIP
     this->post_buffer = nullptr;
   }
@@ -348,6 +352,10 @@ std::vector< std::complex<double> > HankelTransform::compute_kernel_coeff() {
 void HankelTransform::biased_transform(
   std::complex<double>* a, std::complex<double>* b
 ) {
+#ifdef TRV_USE_HIP
+  hipError_t hip_ret;
+#endif  // TRV_USE_HIP
+
   // STYLE: Standard naming convention is not followed below.
   int N = this->nsamp;
   int N_trans = this->nsamp_trans;
@@ -411,18 +419,18 @@ void HankelTransform::biased_transform(
   fftw_execute(this->pre_plan);
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_pre_buffer;
-  hipError_t hipMalloc(
+  hip_ret = hipMalloc(
     &d_pre_buffer, sizeof(hipDoubleComplex) * this->nsamp_trans
   );
   trva::copy_complex_array_htod(
     this->pre_buffer, d_pre_buffer, this->nsamp_trans
   );
   hipfftExecC2C(this->pre_plan, d_pre_buffer, d_pre_buffer, HIPFFT_FORWARD);
-  hipError_t hipDeviceSynchronize();
+  hip_ret = hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_pre_buffer, this->pre_buffer, this->nsamp_trans
   );
-  hipError_t hipFree(d_pre_buffer);
+  hip_ret = hipFree(d_pre_buffer);
 #endif  // !TRV_USE_HIP
 
   for (int m = 0; m < N_trans; m++) {
@@ -437,18 +445,18 @@ void HankelTransform::biased_transform(
   fftw_execute(this->post_plan);
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_post_buffer;
-  hipError_t hipMalloc(
+  hip_ret = hipMalloc(
     &d_post_buffer, sizeof(hipDoubleComplex) * this->nsamp_trans
   );
   trva::copy_complex_array_htod(
     this->post_buffer, d_post_buffer, this->nsamp_trans
   );
   hipfftExecC2C(this->post_plan, d_post_buffer, d_post_buffer, HIPFFT_FORWARD);
-  hipError_t hipDeviceSynchronize();
+  hip_ret = hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_post_buffer, this->post_buffer, this->nsamp_transs
   );
-  hipError_t hipFree(d_post_buffer);
+  hip_ret = hipFree(d_post_buffer);
 #endif  // !TRV_USE_HIP
 
   // Trim any extrapolation.
