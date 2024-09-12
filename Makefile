@@ -246,7 +246,6 @@ DEP_TEST_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPS_TEST
 
 INCLUDES += -I${DIR_PKG_INCLUDE} ${DEP_INCLUDES}
 
-CPPFLAGS += -MMD -MP -D__TRV_VERSION__=\"${PKG_VER}\"
 ifdef usehip
 ifdef usecuda
 CPPFLAGS += -D__HIP_PLATFORM_NVIDIA__
@@ -255,8 +254,14 @@ CPPFLAGS += -D__HIP_PLATFORM_AMD__
 endif  # usehip && usecuda
 endif  # usehip
 
+CPPFLAGS += -MMD -MP -D__TRV_VERSION__=\"${PKG_VER}\"
+
 ifdef usehip
+ifdef usecuda
+CXXFLAGS += -std=c++17 -Xcompiler -Wall,-O3 ${DEP_CXXFLAGS}
+else   # !usehip && !usecuda
 CXXFLAGS += -std=c++17 -Wall -O3 ${DEP_CXXFLAGS}
+endif  # !usehip && usecuda
 else   # !usehip
 ifdef usecuda
 CXXFLAGS += -std=c++17 -Xcompiler -Wall,-O3 ${DEP_CXXFLAGS}
@@ -352,7 +357,8 @@ ifdef NERSC_HOST
 
 ## cuFFT/hipFFT library
 	ifdef usehip
-	INCLUDES += -I${HIP_PATH}/include
+	# NOTE: hipFFT is managed by Conda.
+	INCLUDES += -I${HIP_PATH}/include -I${CONDA_PREFIX}/include
 	LDFLAGS += -Wl,-rpath,${HIP_PATH}/lib -L${HIP_PATH}/lib
 	else   # !usehip
 	ifdef usecuda
@@ -414,31 +420,39 @@ ifdef useomp
 
 ### If using CUDA, add preprocessing flags.
 	    ifdef usehip
+			ifdef usecuda
 
-		CXXFLAGS_OMP ?= -fopenmp
-		LDFLAGS_OMP ?= -fopenmp
-		# LDLIBS_OMP ?= -lgomp
+			CXXFLAGS_OMP ?= -Xcompiler -fopenmp
+			LDFLAGS_OMP ?= -Xcompiler -fopenmp
+			LDLIBS_OMP ?= -lgomp
 
-		else   # !usehip
-		ifdef usecuda
+			else   # !usecuda
 
-		CXXFLAGS_OMP ?= -Xcompiler -fopenmp
-		LDFLAGS_OMP ?= -Xcompiler -fopenmp
-		LDLIBS_OMP ?= -lgomp
+			CXXFLAGS_OMP ?= -fopenmp
+			LDFLAGS_OMP ?= -fopenmp
+			# LDLIBS_OMP ?= -lgomp
 
-		else   # !usehip && !usecuda
+			endif  # usecuda
+		else  # !usehip
+			ifdef usecuda
+
+			CXXFLAGS_OMP ?= -Xcompiler -fopenmp
+			LDFLAGS_OMP ?= -Xcompiler -fopenmp
+			LDLIBS_OMP ?= -lgomp
+
+			else   # !usecuda
 
 #### Use GCC implementation.
-		CXXFLAGS_OMP ?= -fopenmp
-		LDFLAGS_OMP ?= -fopenmp
-		# LDLIBS_OMP ?= -lgomp
+			CXXFLAGS_OMP ?= -fopenmp
+			LDFLAGS_OMP ?= -fopenmp
+			# LDLIBS_OMP ?= -lgomp
 
 #### Use Intel implementation.
-		# CXXFLAGS_OMP ?= -qopenmp
-		# LDFLAGS_OMP ?= -qopenmp
-		# # LDLIBS_OMP ?= -liomp5
+			# CXXFLAGS_OMP ?= -qopenmp
+			# LDFLAGS_OMP ?= -qopenmp
+			# # LDLIBS_OMP ?= -liomp5
 
-		endif  # !usehip && usecuda
+			endif  # usecuda
 		endif  # usehip
 
 	else  # OS != Linux

@@ -3205,8 +3205,8 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 //     sizeof(fftw_complex) * params.nmesh
 //   );
 // #elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-//   hipFFTComplex* array_holder = (hipFFTComplex*)hip​Malloc​Managed(
-//     sizeof(hipFFTComplex) * params.nmesh
+//   hipDoubleComplex* array_holder = (hipDoubleComplex*)hip​Malloc​Managed(
+//     sizeof(hipDoubleComplex) * params.nmesh
 //   );
 // #else  // !TRV_USE_CUDA && !TRV_USE_HIP
 //   fftw_complex* array_holder = fftw_alloc_complex(params.nmesh);
