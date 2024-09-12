@@ -414,12 +414,12 @@ void HankelTransform::biased_transform(
   hipMallocManaged(
     &d_pre_buffer, sizeof(hipDoubleComplex) * this->nsamp_trans
   );
-  trv:array::copy_array_value_htod(
+  trva::copy_array_value_htod(
     this->pre_buffer, d_pre_buffer, this->nsamp_trans
   );
   hipfftExecC2C(this->pre_plan, d_pre_buffer, d_pre_buffer, HIPFFT_FORWARD);
   hipDeviceSynchronize();
-  trv:array::copy_array_value_dtoh(
+  trva::copy_array_value_dtoh(
     d_pre_buffer, this->pre_buffer, this->nsamp_trans
   );
   hipFree(d_pre_buffer);
@@ -440,12 +440,12 @@ void HankelTransform::biased_transform(
   hipMallocManaged(
     &d_post_buffer, sizeof(hipDoubleComplex) * this->nsamp_trans
   );
-  trv:array::copy_array_value_htod(
+  trva::copy_array_value_htod(
     this->post_buffer, d_post_buffer, this->nsamp_trans
   );
   hipfftExecC2C(this->post_plan, d_post_buffer, d_post_buffer, HIPFFT_FORWARD);
   hipDeviceSynchronize();
-  trv:array::copy_array_value_dtoh(
+  trva::copy_array_value_dtoh(
     d_post_buffer, this->post_buffer, this->nsamp_transs
   );
   hipFree(d_post_buffer);
