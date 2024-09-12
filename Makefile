@@ -79,12 +79,31 @@ MAKEFLAGS_JOBS = $(shell echo "${MAKEFLAGS} " | grep -Eo ${PATTERN_JOBS})
 ifdef usecuda
 ifeq ($(strip ${usecuda}), $(filter $(strip ${usecuda}), true 1))
 usecuda := true
-PKGNAME := ${PKGNAME}-CUDA
-LIBNAME := ${LIBNAME}_cuda
+	PKGNAME := ${PKGNAME}-CUDA
+	PROGNAME := ${PROGNAME}_cuda
+	LIBNAME := ${LIBNAME}_cuda
 else   # usecuda != (true|1)
 unexport usecuda
 endif  # usecuda == (true|1)
 endif  # usecuda
+
+# HIP: enabled with ``usehip=(true|1)``; disabled otherwise
+ifdef usehip
+ifeq ($(strip ${usehip}), $(filter $(strip ${usehip}), true 1))
+usehip := true
+	ifndef usecuda
+	PKGNAME := ${PKGNAME}-HIP
+	PROGNAME := ${PROGNAME}_hip
+	LIBNAME := ${LIBNAME}_hip
+	else   # usecuda
+	PKGNAME := ${PKGNAME}-HIPCUDA
+	PROGNAME := ${PROGNAME}_hipcuda
+	LIBNAME := ${LIBNAME}_hipcuda
+	endif  # !usecuda
+else   # usehip != (true|1)
+unexport usehip
+endif  # usehip == (true|1)
+endif  # usehip
 
 # OpenMP: enabled with ``useomp=(true|1)``; disabled otherwise
 ifdef useomp
@@ -137,18 +156,23 @@ OS := $(shell uname -s)
 # Assume explicitly GCC compiler by default. [adapt]
 ifeq (${OS}, Linux)
 
-## If using CUDA, use CUDA compiler.
-	ifndef usecuda
+## If using CUDA/HIP, use CUDA/HIP compiler.
+	ifdef usehip
+	CXX ?= hipcc
+	else ifdef usecuda  # !usehip && usecuda
+	CXX ?= nvcc
+	else                # !usehip && !usecuda
 	CXX ?= g++
-	else   # usecuda
-	CXX := nvcc
-	endif  # !usecuda
+	endif               # usehip
 
 else ifeq (${OS}, Darwin)
 
 	ifdef usecuda
 	$(error "CUDA is not supported on macOS.")
 	endif  # usecuda
+	ifdef usehip
+	$(error "HIP is not supported on macOS.")
+	endif  # usehip
 
 ## Use GCC compiler from Homebrew (brew formula 'gcc').
 ## The compiler binary may have suffix '-<version>';
@@ -160,12 +184,14 @@ else ifeq (${OS}, Darwin)
 
 else  # OS
 
-# If using CUDA, use CUDA compiler.
-	ifndef usecuda
+## If using CUDA/HIP, use CUDA/HIP compiler.
+	ifdef usehip
+	CXX ?= hipcc
+	else ifdef usecuda  # !usehip && usecuda
+	CXX ?= nvcc
+	else                # !usehip && !usecuda
 	CXX ?= g++
-	else   # usecuda
-	CXX := nvcc
-	endif  # !usecuda
+	endif               # usehip
 
 endif  # OS
 
@@ -179,12 +205,14 @@ RM ?= rm -f
 
 # -- Dependencies --------------------------------------------------------
 
-# If using CUDA FFT, remove standard FFTW dependency.
-ifndef usecuda
-DEPS := gsl fftw3
-else   # usecuda
+# If using cuFFT/hipFFT, remove standard FFTW dependency.
+ifdef usehip
 DEPS := gsl
-endif  # !usecuda
+else ifdef usecuda  # !usehip && usecuda
+DEPS := gsl
+else                # !usehip && !usecuda
+DEPS := gsl fftw3
+endif               # usehip
 
 # Dependencies are searched for by `pkg-config`.  Ensure the set-up of
 # `pkg-config` matches that of the dependencies (e.g. both are installed
@@ -194,10 +222,12 @@ DEP_CXXFLAGS := $(shell pkg-config --silence-errors --cflags-only-other ${DEPS})
 DEP_LDFLAGS := $(shell pkg-config --silence-errors --libs-only-other --libs-only-L ${DEPS})
 DEP_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPS})
 
-# If using CUDA FFT, add its dependencies.
-ifdef usecuda
+# If using cuFFT/hipFFT, add its dependencies.
+ifdef usehip
+DEP_LDLIBS += -lhipfft
+else ifdef usecuda  # !usehip && usecuda
 DEP_LDLIBS += -lcufft -lcufftw
-endif  # usecuda
+endif               # usehip
 
 
 # -- Dependencies (test) -------------------------------------------------
@@ -215,21 +245,27 @@ DEP_TEST_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPS_TEST
 INCLUDES += -I${DIR_PKG_INCLUDE} ${DEP_INCLUDES}
 CPPFLAGS += -MMD -MP -D__TRV_VERSION__=\"${PKG_VER}\"
 
-ifndef usecuda
+ifdef usehip
 CXXFLAGS += -std=c++17 -Wall -O3 ${DEP_CXXFLAGS}
-else   # usecuda
+else ifdef usecuda  # !usehip && usecuda
 CXXFLAGS += -std=c++17 -Xcompiler -Wall,-O3 ${DEP_CXXFLAGS}
-endif  # !usecuda
+else                # !usehip && !usecuda
+CXXFLAGS += -std=c++17 -Wall -O3 ${DEP_CXXFLAGS}
+endif               # usehip
 
-ifndef usecuda
+ifdef usehip
 LDFLAGS += \
 	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \
 	${DEP_LDFLAGS}
-else   # usecuda
+else ifdef usecuda  # !usehip && usecuda
 LDFLAGS += \
 	$(addprefix -Xlinker -rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \
 	${DEP_LDFLAGS}
-endif  # !usecuda
+else                # !usehip && !usecuda
+LDFLAGS += \
+	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \
+	${DEP_LDFLAGS}
+endif               # usehip
 
 LDLIBS += $(if ${DEP_LDLIBS},${DEP_LDLIBS},-lgsl -lgslcblas -lfftw3 -lm)
 
@@ -240,15 +276,21 @@ PIPOPTS ?= --user
 
 INCLUDES_TEST = ${INCLUDES} ${DEP_TEST_INCLUDES}
 CXXFLAGS_TEST = ${CXXFLAGS} ${DEP_TEST_CXXFLAGS}
-ifndef usecuda
+
+ifdef usehip
 LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} \
 	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_TEST_LDFLAGS})) \
 	${DEP_TEST_LDFLAGS}
-else   # usecuda
+else ifdef usecuda  # !usehip && usecuda
 LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} \
 	$(addprefix -Xlinker -rpath${COMMA},$(patsubst -L%,%,${DEP_TEST_LDFLAGS})) \
 	${DEP_TEST_LDFLAGS}
-endif  # !usecuda
+else                # !usehip && !usecuda
+LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} \
+	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_TEST_LDFLAGS})) \
+	${DEP_TEST_LDFLAGS}
+endif               # usehip
+
 LDLIBS_TEST = -l${LIBNAME} ${LDLIBS} \
 	$(if ${DEP_TEST_LDLIBS},${DEP_TEST_LDLIBS},-lgtest -lpthread)
 
@@ -260,38 +302,48 @@ ifdef NERSC_HOST
 
 ## GSL library [deprecated]
 	# ifdef GSL_ROOT
-	# INCLUDES += -I${GSL_ROOT}/include
-	# ifndef usecuda
-	# LDFLAGS += -Wl,-rpath,${GSL_ROOT}/lib -L${GSL_ROOT}/lib
-	# else   # usecuda
-	# LDFLAGS += -Xlinker -rpath,${GSL_ROOT}/lib -L${GSL_ROOT}/lib
-	# endif  # !usecuda
+
+	# 	INCLUDES += -I${GSL_ROOT}/include
+
+	# 	ifdef usehip
+	# 	LDFLAGS += -Wl,-rpath,${GSL_ROOT}/lib -L${GSL_ROOT}/lib
+	# 	else ifdef usecuda  # !usehip && usecuda
+	# 	LDFLAGS += -Xlinker -rpath,${GSL_ROOT}/lib -L${GSL_ROOT}/lib
+	# 	else                # !usehip && !usecuda
+	# 	LDFLAGS += -Wl,-rpath,${GSL_ROOT}/lib -L${GSL_ROOT}/lib
+	# 	endif               # usehip
+
 	# endif  # GSL_ROOT
 
 ## FFTW library [deprecated]
 	# ifdef FFTW_ROOT
-	# INCLUDES += -I${FFTW_INC}
+	# ifndef usehip
 	# ifndef usecuda
-	# LDFLAGS += -Wl,-rpath,${FFTW_DIR} -L${FFTW_DIR}
-	# else   # usecuda
-	# LDFLAGS += -Xlinker -rpath,${FFTW_DIR} -L${FFTW_DIR}
+	# INCLUDES += -I${FFTW_INC}
+	# LDFLAGS += -Wl,-rpath,${GSL_ROOT}/lib -L${GSL_ROOT}/lib
 	# endif  # !usecuda
+	# endif  # usehip
 	# endif  # FFTW_ROOT
 
-## cuFFT library
-	ifdef usecuda
+## cuFFT/hipFFT library
+	ifdef usehip
+	INCLUDES += -I${HIP_PATH}/include
+	LDFLAGS += -Wl,-rpath,${HIP_PATH}/lib -L${HIP_PATH}/lib
+	else ifdef usecuda  # !usehip && usecuda
 	INCLUDES += -I${NVIDIA_PATH}/math_libs/include
 	LDFLAGS += -Xlinker -rpath,${NVIDIA_PATH}/math_libs/lib64 -L${NVIDIA_PATH}/math_libs/lib64
-	endif  # usecuda
+	endif               # usehip
 
 ## GTEST library
 	ifdef GTEST_ROOT
 	INCLUDES_TEST += -I${GTEST_ROOT}/include
-	ifndef usecuda
+	ifdef usehip
 	LDFLAGS_TEST += -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
-	else   # usecuda
+	else ifdef usecuda  # !usehip && usecuda
 	LDFLAGS_TEST += -Xlinker -rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
-	endif  # !usecuda
+	else                # !usehip && !usecuda
+	LDFLAGS_TEST += -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
+	endif               # usehip
 	endif  # GTEST_ROOT
 
 endif  # NERSC_HOST
@@ -302,11 +354,13 @@ ifdef DIRAC_HOST
 ## GTEST library
 	ifdef GTEST_ROOT
 	INCLUDES_TEST += -I${GTEST_ROOT}/include
-	ifndef usecuda
+	ifdef usehip
 	LDFLAGS_TEST += -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
-	else   # usecuda
+	else ifdef usecuda  # !usehip && usecuda
 	LDFLAGS_TEST += -Xlinker -rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
-	endif  # !usecuda
+	else                # !usehip && !usecuda
+	LDFLAGS_TEST += -Wl,-rpath,${GTEST_ROOT}/lib -L${GTEST_ROOT}/lib
+	endif               # usehip
 	endif  # GTEST_ROOT
 
 endif  # DIRAC_HOST
@@ -320,8 +374,22 @@ ifdef useomp
 ## Assume GCC implementation by default. [adapt]
 	ifeq (${OS}, Linux)
 
-### If using CUDA FFT, add preprocessing flags.
-		ifndef usecuda
+### If using CUDA, add preprocessing flags.
+	    ifdef usehip
+
+#### Use GCC implementation.
+		CXXFLAGS_OMP ?= -fopenmp
+		LDFLAGS_OMP ?= -fopenmp
+		# LDLIBS_OMP ?= -lgomp
+
+		else ifdef usecuda  # !usehip && usecuda
+
+#### Use GCC implementation.
+		CXXFLAGS_OMP ?= -Xcompiler -fopenmp
+		LDFLAGS_OMP ?= -Xcompiler -fopenmp
+		LDLIBS_OMP ?= -lgomp
+
+		else                # !usehip && !usecuda
 
 #### Use GCC implementation.
 		CXXFLAGS_OMP ?= -fopenmp
@@ -333,14 +401,7 @@ ifdef useomp
 		# LDFLAGS_OMP ?= -qopenmp
 		# # LDLIBS_OMP ?= -liomp5
 
-		else   # usecuda
-
-#### Use GCC implementation.
-		CXXFLAGS_OMP ?= -Xcompiler -fopenmp
-		LDFLAGS_OMP ?= -Xcompiler -fopenmp
-		LDLIBS_OMP ?= -lgomp
-
-		endif  # !usecuda
+		endif               # !usehip
 
 	else ifeq (${OS}, Darwin)
 
@@ -357,33 +418,40 @@ ifdef useomp
 	else  # OS
 
 ### Use GCC implementation.
-### If using CUDA FFT, add preprocessing flags.
-		ifndef usecuda
+### If using CUDA, add preprocessing flags.
+		ifdef usehip
 		CXXFLAGS_OMP ?= -fopenmp
 		LDFLAGS_OMP ?= -fopenmp
-		else  # usecuda
+		else ifdef usecuda  # !usehip && usecuda
 		CXXFLAGS_OMP ?= -Xcompiler -fopenmp
 		LDFLAGS_OMP ?= -Xcompiler -fopenmp
-		endif  # !usecuda
+		else                # !usehip && !usecuda
+		CXXFLAGS_OMP ?= -fopenmp
+		LDFLAGS_OMP ?= -fopenmp
+		endif               # usehip
 
 	endif  # OS
 
-## If using CUDA FFT, remove macros for FFTW.
-	ifndef usecuda
-	CPPFLAGS += -DTRV_USE_OMP -DTRV_USE_FFTWOMP
-	else  # usecuda
+## If using cuFFT/hipFFT, remove macros for FFTW.
+	ifdef usehip
 	CPPFLAGS += -DTRV_USE_OMP
-	endif  # !usecuda
+	else ifdef usecuda  # !usehip && usecuda
+	CPPFLAGS += -DTRV_USE_OMP
+	else                # !usehip && !usecuda
+	CPPFLAGS += -DTRV_USE_OMP -DTRV_USE_FFTWOMP
+	endif               # usehip
 
 	CXXFLAGS += ${CXXFLAGS_OMP}
 	LDFLAGS += ${LDFLAGS_OMP}
 
 ## If using CUDA FFT, do not include OpenMP FFTW dependency.
-	ifndef usecuda
-	LDLIBS += -lfftw3_omp ${LDLIBS_OMP}
-	else  # usecuda
+	ifdef usehip
 	LDLIBS += ${LDLIBS_OMP}
-	endif  # !usecuda
+	else ifdef usecuda  # !usehip && usecuda
+	LDLIBS += ${LDLIBS_OMP}
+	else                # !usehip && !usecuda
+	LDLIBS += -lfftw3_omp ${LDLIBS_OMP}
+	endif               # usehip
 
 	CPPFLAGS_TEST +=
 	CXXFLAGS_TEST += ${CXXFLAGS_OMP}
@@ -398,10 +466,12 @@ WOMP := without
 
 endif  # useomp
 
-# CUDA
-ifdef usecuda
+# CUDA/HIP
+ifdef usehip
+CPPFLAGS += -DTRV_USE_HIP
+else ifdef usecuda  # !usehip && usecuda
 CPPFLAGS += -DTRV_USE_CUDA
-endif  # usecuda
+endif               # usehip
 
 # Visual display
 ifdef usedisp
@@ -411,11 +481,13 @@ endif  # usedisp
 # Profiling
 ifdef useprof
 ## Linaro MAP profiler
-ifndef usecuda
+ifdef usehip
 CXXFLAGS += -g1 -O3 -fno-inline -fno-optimize-sibling-calls
-else   # usecuda
+else ifdef usecuda  # !usehip && usecuda
 CXXFLAGS += -g -O3 -lineinfo
-endif  # !usecuda
+else                # !usehip && !usecuda
+CXXFLAGS += -g1 -O3 -fno-inline -fno-optimize-sibling-calls
+endif               # usehip
 endif  # useprof
 
 # Parameter debugging
@@ -439,14 +511,19 @@ export PY_NO_OMP
 else   # useomp
 export PY_CXXFLAGS_OMP=${CXXFLAGS_OMP}
 export PY_LDFLAGS_OMP=${LDFLAGS_OMP} ${LDLIBS_OMP}
+ifdef usehip
+export PY_OMP=true
+endif  # usehip
 ifdef usecuda
 export PY_OMP=true
 endif  # usecuda
 endif  # !useomp
 
-ifdef usecuda
+ifdef usehip
+export PY_HIP=true
+else ifdef usecuda  # !usehip && usecuda
 export PY_CUDA=true
-endif  # usecuda
+endif               # usehip
 
 export PY_BUILD_PARALLEL=${MAKEFLAGS_JOBS}
 
@@ -474,27 +551,33 @@ LDLIBS_TEST := $(strip ${LDLIBS_TEST})
 # ------------------------------------------------------------------------
 
 SRCS := $(wildcard ${DIR_PKG_SRC}/*.cpp)
+ifdef usehip
 ifndef usecuda
-OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%.o)
-else  # usecuda
+OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%_hip.o)
+else                # usehip && usecuda
+OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%_hipcuda.o)
+endif               # usehip && !usecuda
+else ifdef usecuda  # !usehip && usecuda
 OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%_cuda.o)
-endif  # !usecuda
-DEPS := $(OBJS:.o=.d)
+else                # !usehip && !usecuda
+OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%.o)
+endif               # usehip
 
 PROGSRC := ${DIR_PKG_SRCPROG}/${PROGNAME}.cpp
+ifdef usehip
 ifndef usecuda
-PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}.o
-else  # usecuda
+PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}_hip.o
+else                # usehip && usecuda
+PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}_hipcuda.o
+endif               # usehip && !usecuda
+else ifdef usecuda  # !usehip && usecuda
 PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}_cuda.o
-endif  # !usecuda
+else                # !usehip && !usecuda
+PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}.o
+endif               # usehip
 
-ifndef usecuda
 PROGEXE := ${DIR_BUILDBIN}/${PROGNAME}
 PROGLIB := ${DIR_BUILDLIB}/lib${LIBNAME}.a
-else  # usecuda
-PROGEXE := ${DIR_BUILDBIN}/${PROGNAME}_cuda
-PROGLIB := ${DIR_BUILDLIB}/lib${LIBNAME}_cuda.a
-endif  # !usecuda
 
 
 # -- Installation --------------------------------------------------------
@@ -513,22 +596,34 @@ cpplibinstall: library
 
 cppappbuild: executable
 
-ifndef usecuda
+ifdef usehip
+ifdef usecuda
 pyinstall:
 	@echo "Installing ${PKGNAME} Python package ${WOMP} OpenMP (in pip dev mode)..."
-	@cp .pyproject.toml pyproject.toml
+	@cp .pyproject_hipcuda.toml pyproject.toml
 	python -m pip install ${PIPOPTS} --editable . -vvv
-else  # usecuda
+else   # usehip && !usecuda
+pyinstall:
+	@echo "Installing ${PKGNAME} Python package ${WOMP} OpenMP (in pip dev mode)..."
+	@cp .pyproject_hip.toml pyproject.toml
+	python -m pip install ${PIPOPTS} --editable . -vvv
+endif  # usehip && usecuda
+else ifdef usecuda
 pyinstall:
 	@echo "Installing ${PKGNAME} Python package ${WOMP} OpenMP (in pip dev mode)..."
 	@cp .pyproject_cuda.toml pyproject.toml
 	python -m pip install ${PIPOPTS} --editable . -vvv
-endif  # !usecuda
+else  # !usehip && usecuda
+pyinstall:
+	@echo "Installing ${PKGNAME} Python package ${WOMP} OpenMP (in pip dev mode)..."
+	@cp .pyproject.toml pyproject.toml
+	python -m pip install ${PIPOPTS} --editable . -vvv
+endif  # !usehip && !usecuda
 
 uninstall: cppuninstall pyuninstall
 
 cppuninstall:
-	@echo "Uninstalling Triumvirate(-CUDA) C++ library/program..."
+	@echo "Uninstalling Triumvirate(-CUDA/HIP/HIPCUDA) C++ library/program..."
 	@echo "  removing builds..."
 	@find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".git*" -exec rm -r {} +
 
@@ -571,13 +666,21 @@ objects_:
 ${PROGOBJ}: ${PROGSRC}
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
-ifndef usecuda
-$(OBJS): ${DIR_BUILDOBJ}/%.o: ${DIR_PKG_SRC}/%.cpp | objects_
+ifdef usehip
+ifdef usecuda
+$(OBJS): ${DIR_BUILDOBJ}/%_hipcuda.o: ${DIR_PKG_SRC}/%.cpp | objects_
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
-else  # usecuda
+else                # usehip && !usecuda
+$(OBJS): ${DIR_BUILDOBJ}/%_hip.o: ${DIR_PKG_SRC}/%.cpp | objects_
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+endif               # usehip && usecuda
+else ifdef usecuda
 $(OBJS): ${DIR_BUILDOBJ}/%_cuda.o: ${DIR_PKG_SRC}/%.cpp | objects_
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
-endif  # !usecuda
+else                # !usehip && usecuda
+$(OBJS): ${DIR_BUILDOBJ}/%.o: ${DIR_PKG_SRC}/%.cpp | objects_
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+endif               # !usehip && !usecuda
 
 -include $(DEPS)
 
@@ -654,12 +757,12 @@ clean: buildclean testclean distclean runclean
 buildclean: cppclean pyclean
 
 cppclean:
-	@echo "Cleaning up Triumvirate(-CUDA) C++ build..."
+	@echo "Cleaning up Triumvirate(-CUDA/HIP/HIPCUDA) C++ build..."
 	@echo "  removing builds..."
 	@find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".git*" -exec rm -r {} +
 
 pyclean:
-	@echo "Cleaning up Triumvirate(-CUDA) Python build..."
+	@echo "Cleaning up Triumvirate(-CUDA/HIP/HIPCUDA) Python build..."
 	@echo "  removing Cythonised C/C++ scripts..."
 	@find ${DIR_PKG} -maxdepth 1 -name "*.cpp" -exec rm {} +
 	@echo "  removing Cythonised extensions..."
@@ -673,7 +776,7 @@ pyclean:
 	@find . -type d -name ".ipynb_checkpoints" -exec rm -r {} +
 
 testclean:
-	@echo "Cleaning up Triumvirate(-CUDA) tests..."
+	@echo "Cleaning up Triumvirate(-CUDA/HIP/HIPCUDA) tests..."
 	@echo "  removing test builds and outputs..."
 	@$(RM) -r ${DIR_TESTBUILD}/* ${DIR_TESTOUT}/*
 	@echo "  removing pytest cache..."
@@ -684,7 +787,7 @@ testclean:
 	@$(RM) -r core
 
 distclean:
-	@echo "Cleaning up Triumvirate(-CUDA) distributions..."
+	@echo "Cleaning up Triumvirate(-CUDA/HIP/HIPCUDA) distributions..."
 	@echo "  removing distribution outputs..."
 	@$(RM) -r ${DIR_DIST}/
 	@echo "  removing wheels..."
@@ -694,7 +797,7 @@ distclean:
 	@find . -name "*.egg-info" -exec rm -r {} +
 
 runclean:
-	@echo "Cleaning up Triumvirate(-CUDA) runs..."
+	@echo "Cleaning up Triumvirate(-CUDA/HIP/HIPCUDA) runs..."
 	@echo "  removing compiled bytecode..."
 	@find . -type d -name "__pycache__" -exec rm -r {} +
 	@echo "  removing core dumps..."
