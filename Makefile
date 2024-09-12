@@ -79,9 +79,6 @@ MAKEFLAGS_JOBS = $(shell echo "${MAKEFLAGS} " | grep -Eo ${PATTERN_JOBS})
 ifdef usecuda
 ifeq ($(strip ${usecuda}), $(filter $(strip ${usecuda}), true 1))
 usecuda := true
-	PKGNAME := ${PKGNAME}-CUDA
-	PROGNAME := ${PROGNAME}_cuda
-	LIBNAME := ${LIBNAME}_cuda
 else   # usecuda != (true|1)
 unexport usecuda
 endif  # usecuda == (true|1)
@@ -91,15 +88,6 @@ endif  # usecuda
 ifdef usehip
 ifeq ($(strip ${usehip}), $(filter $(strip ${usehip}), true 1))
 usehip := true
-	ifndef usecuda
-	PKGNAME := ${PKGNAME}-HIP
-	PROGNAME := ${PROGNAME}_hip
-	LIBNAME := ${LIBNAME}_hip
-	else   # usecuda
-	PKGNAME := ${PKGNAME}-HIPCUDA
-	PROGNAME := ${PROGNAME}_hipcuda
-	LIBNAME := ${LIBNAME}_hipcuda
-	endif  # !usecuda
 else   # usehip != (true|1)
 unexport usehip
 endif  # usehip == (true|1)
@@ -351,6 +339,11 @@ endif  # NERSC_HOST
 # DiRAC computer cluster [adapt]
 ifdef DIRAC_HOST
 
+## NVIDIA HPC SDK
+	ifdef usecuda
+	CXX := nvcc
+	endif  # usecuda
+
 ## GTEST library
 	ifdef GTEST_ROOT
 	INCLUDES_TEST += -I${GTEST_ROOT}/include
@@ -547,38 +540,40 @@ LDLIBS_TEST := $(strip ${LDLIBS_TEST})
 # ========================================================================
 
 # ------------------------------------------------------------------------
+# Targets
+# ------------------------------------------------------------------------
+
+ifdef usehip
+PKGSUFFIX := -HIP
+PROGSUFFIX := _hip
+LIBSUFFIX := _hip
+ifdef usecuda
+PKGSUFFIX += CUDA
+PROGSUFFIX += cuda
+LIBSUFFIX += cuda
+endif  # usecuda
+else   # !usehip
+ifdef usecuda
+PKGSUFFIX := -CUDA
+PROGSUFFIX := _cuda
+LIBSUFFIX := _cuda
+endif  # usecuda
+endif  # usehip
+
+
+# ------------------------------------------------------------------------
 # Building
 # ------------------------------------------------------------------------
 
 SRCS := $(wildcard ${DIR_PKG_SRC}/*.cpp)
-ifdef usehip
-ifndef usecuda
-OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%_hip.o)
-else                # usehip && usecuda
-OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%_hipcuda.o)
-endif               # usehip && !usecuda
-else ifdef usecuda  # !usehip && usecuda
-OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%_cuda.o)
-else                # !usehip && !usecuda
-OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%.o)
-endif               # usehip
+OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%${LIBSUFFIX}.o)
 DEPS := $(OBJS:.o=.d)
 
 PROGSRC := ${DIR_PKG_SRCPROG}/${PROGNAME}.cpp
-ifdef usehip
-ifndef usecuda
-PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}_hip.o
-else                # usehip && usecuda
-PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}_hipcuda.o
-endif               # usehip && !usecuda
-else ifdef usecuda  # !usehip && usecuda
-PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}_cuda.o
-else                # !usehip && !usecuda
-PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}.o
-endif               # usehip
+PROGOBJ := ${DIR_BUILDOBJ}/${PROGNAME}${PROGSUFFIX}.o
 
-PROGEXE := ${DIR_BUILDBIN}/${PROGNAME}
-PROGLIB := ${DIR_BUILDLIB}/lib${LIBNAME}.a
+PROGEXE := ${DIR_BUILDBIN}/${PROGNAME}${PROGSUFFIX}
+PROGLIB := ${DIR_BUILDLIB}/lib${LIBNAME}${LIBSUFFIX}.a
 
 
 # -- Installation --------------------------------------------------------
@@ -591,7 +586,7 @@ install: cppinstall pyinstall
 cppinstall: cppinstall_ cpplibinstall cppappbuild
 
 cppinstall_:
-	@echo "Installing ${PKGNAME} C++ library/program..."
+	@echo "Installing ${PKGNAME}${PKGSUFFIX} C++ library/program..."
 
 cpplibinstall: library
 
@@ -600,23 +595,23 @@ cppappbuild: executable
 ifdef usehip
 ifdef usecuda
 pyinstall:
-	@echo "Installing ${PKGNAME} Python package ${WOMP} OpenMP (in pip dev mode)..."
+	@echo "Installing ${PKGNAME}${PKGSUFFIX} Python package ${WOMP} OpenMP (in pip dev mode)..."
 	@cp .pyproject_hipcuda.toml pyproject.toml
 	python -m pip install ${PIPOPTS} --editable . -vvv
 else   # usehip && !usecuda
 pyinstall:
-	@echo "Installing ${PKGNAME} Python package ${WOMP} OpenMP (in pip dev mode)..."
+	@echo "Installing ${PKGNAME}${PKGSUFFIX} Python package ${WOMP} OpenMP (in pip dev mode)..."
 	@cp .pyproject_hip.toml pyproject.toml
 	python -m pip install ${PIPOPTS} --editable . -vvv
 endif  # usehip && usecuda
 else ifdef usecuda
 pyinstall:
-	@echo "Installing ${PKGNAME} Python package ${WOMP} OpenMP (in pip dev mode)..."
+	@echo "Installing ${PKGNAME}${PKGSUFFIX} Python package ${WOMP} OpenMP (in pip dev mode)..."
 	@cp .pyproject_cuda.toml pyproject.toml
 	python -m pip install ${PIPOPTS} --editable . -vvv
 else  # !usehip && usecuda
 pyinstall:
-	@echo "Installing ${PKGNAME} Python package ${WOMP} OpenMP (in pip dev mode)..."
+	@echo "Installing ${PKGNAME}${PKGSUFFIX} Python package ${WOMP} OpenMP (in pip dev mode)..."
 	@cp .pyproject.toml pyproject.toml
 	python -m pip install ${PIPOPTS} --editable . -vvv
 endif  # !usehip && !usecuda
@@ -629,8 +624,8 @@ cppuninstall:
 	@find ${DIR_BUILD} -mindepth 1 -maxdepth 1 ! -name ".git*" -exec rm -r {} +
 
 pyuninstall:
-	@echo "Uninstalling ${PKGNAME} Python package (in pip mode)..."
-	python -m pip uninstall -y ${PKGNAME}
+	@echo "Uninstalling ${PKGNAME}${PKGSUFFIX} Python package (in pip mode)..."
+	python -m pip uninstall -y ${PKGNAME}${PKGSUFFIX}
 
 
 # -- Components ----------------------------------------------------------
@@ -640,7 +635,7 @@ pyuninstall:
 executable: ${PROGEXE}
 
 ${PROGEXE}: $(OBJS) ${PROGOBJ}
-	@echo "Compiling ${PKGNAME} C++ program ${WOMP} OpenMP..."
+	@echo "Compiling ${PKGNAME}${PKGSUFFIX} C++ program ${WOMP} OpenMP..."
 	@if [ ! -d ${DIR_BUILDBIN} ]; then \
 	    echo "  making bin subdirectory in build directory..."; \
 	    mkdir -p ${DIR_BUILDBIN}; \
@@ -650,7 +645,7 @@ ${PROGEXE}: $(OBJS) ${PROGOBJ}
 library: ${PROGLIB}
 
 ${PROGLIB}: $(OBJS)
-	@echo "Creating ${PKGNAME} C++ library ${WOMP} OpenMP..."
+	@echo "Creating ${PKGNAME}${PKGSUFFIX} C++ library ${WOMP} OpenMP..."
 	@if [ ! -d ${DIR_BUILDLIB} ]; then \
 	    echo "  making lib subdirectory in build directory..."; \
 	    mkdir -p ${DIR_BUILDLIB}; \
@@ -658,7 +653,7 @@ ${PROGLIB}: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $^
 
 objects_:
-	@echo "Creating ${PKGNAME} C++ object files..."
+	@echo "Creating ${PKGNAME}${PKGSUFFIX} C++ object files..."
 	@if [ ! -d ${DIR_BUILDOBJ} ]; then \
 	    echo "  making obj subdirectory in build directory..."; \
 	    mkdir -p ${DIR_BUILDOBJ}; \
@@ -667,21 +662,8 @@ objects_:
 ${PROGOBJ}: ${PROGSRC}
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
-ifdef usehip
-ifdef usecuda
-$(OBJS): ${DIR_BUILDOBJ}/%_hipcuda.o: ${DIR_PKG_SRC}/%.cpp | objects_
+$(OBJS): ${DIR_BUILDOBJ}/%${LIBSUFFIX}.o: ${DIR_PKG_SRC}/%.cpp | objects_
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
-else                # usehip && !usecuda
-$(OBJS): ${DIR_BUILDOBJ}/%_hip.o: ${DIR_PKG_SRC}/%.cpp | objects_
-	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
-endif               # usehip && usecuda
-else ifdef usecuda
-$(OBJS): ${DIR_BUILDOBJ}/%_cuda.o: ${DIR_PKG_SRC}/%.cpp | objects_
-	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
-else                # !usehip && usecuda
-$(OBJS): ${DIR_BUILDOBJ}/%.o: ${DIR_PKG_SRC}/%.cpp | objects_
-	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
-endif               # !usehip && !usecuda
 
 -include $(DEPS)
 
@@ -689,6 +671,14 @@ endif               # !usehip && !usecuda
 # -- Configuration -------------------------------------------------------
 
 .PHONY: checkopts
+
+checknames:
+	@echo "Checking names parsed by Makefile..."
+	@echo "  REPONAME=${REPONAME}"
+	@echo "  PKGNAME=${PKGNAME}${PKGSUFFIX}"
+	@echo "  MODNAME=${MODNAME}"
+	@echo "  PROGNAME=${PROGNAME}${PROGSUFFIX}"
+	@echo "  LIBNAME=${LIBNAME}${LIBSUFFIX}"
 
 checkopts:
 	@echo "Checking options parsed by Makefile..."
