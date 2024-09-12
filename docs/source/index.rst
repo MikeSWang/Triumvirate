@@ -84,7 +84,7 @@ Contributing
 .. image:: https://img.shields.io/conda/pn/msw/triumvirate
     :alt: Platforms
 
-.. image:: https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fgithub.com%2FMikeSWang%2FTriumvirate%2Fraw%2Fmain%2Fpyproject.toml&logo=python
+.. image:: https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fgithub.com%2FMikeSWang%2FTriumvirate%2Fraw%2Fmain%2F.pyproject.toml&logo=python
    :alt: Python-Version
 
 .. image:: https://img.shields.io/badge/std-c%2B%2B17-informational?logo=cplusplus
