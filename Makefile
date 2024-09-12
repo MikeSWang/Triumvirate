@@ -562,6 +562,7 @@ OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%_cuda.o)
 else                # !usehip && !usecuda
 OBJS := $(SRCS:${DIR_PKG_SRC}/%.cpp=${DIR_BUILDOBJ}/%.o)
 endif               # usehip
+DEPS := $(OBJS:.o=.d)
 
 PROGSRC := ${DIR_PKG_SRCPROG}/${PROGNAME}.cpp
 ifdef usehip
