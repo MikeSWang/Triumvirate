@@ -378,11 +378,19 @@ MeshField::MeshField(
 
 MeshField::~MeshField() {
   if (this->plan_ini) {
+#ifndef TRV_USE_HIP
     fftw_destroy_plan(this->transform);
     fftw_destroy_plan(this->inv_transform);
     if (this->params.interlace == "true") {
       fftw_destroy_plan(this->transform_s);
     }
+#else  // TRV_USE_HIP
+    hipfftDestroy(this->transform);
+    hipfftDestroy(this->inv_transform);
+    if (this->params.interlace == "true") {
+      hipfftDestroy(this->transform_s);
+    }
+#endif  // !TRV_USE_HIP
   }
 
   if (this->window_assign_order != -1) {
@@ -392,13 +400,23 @@ MeshField::~MeshField() {
   }
 
   if (this->field != nullptr) {
-    fftw_free(this->field); this->field = nullptr;
+#ifndef TRV_USE_HIP
+    fftw_free(this->field);
+#else  // TRV_USE_HIP
+    free(this->field);
+#endif  // !TRV_USE_HIP
+    this->field = nullptr;
     trvs::count_cgrid -= 1;
     trvs::count_grid -= 1;
     trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   }
   if (this->field_s != nullptr) {
-    fftw_free(this->field_s); this->field_s = nullptr;
+#ifndef TRV_USE_HIP
+    fftw_free(this->field_s);
+#else  // TRV_USE_HIP
+    free(this->field_s);
+#endif  // !TRV_USE_HIP
+    this->field_s = nullptr;
     trvs::count_cgrid -= 1;
     trvs::count_grid -= 1;
     trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
@@ -1141,7 +1159,12 @@ void MeshField::compute_unweighted_field(ParticleCatalogue& particles) {
 
   this->assign_weighted_field_to_mesh(particles, unit_weight);
 
-  fftw_free(unit_weight); unit_weight = nullptr;
+#ifndef TRV_USE_HIP
+  fftw_free(unit_weight);
+#else  // TRV_USE_HIP
+  free(unit_weight);
+#endif  // !TRV_USE_HIP
+  unit_weight = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 }
@@ -1203,7 +1226,12 @@ void MeshField::compute_ylm_wgtd_field(
 
   this->assign_weighted_field_to_mesh(particles_data, weight_kern);
 
-  fftw_free(weight_kern); weight_kern = nullptr;
+#ifndef TRV_USE_HIP
+  fftw_free(weight_kern);
+#else  // TRV_USE_HIP
+  free(weight_kern);
+#endif  // !TRV_USE_HIP
+  weight_kern = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
 
@@ -1241,7 +1269,12 @@ void MeshField::compute_ylm_wgtd_field(
   MeshField field_rand(this->params, false, "`field_rand`");
   field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
-  fftw_free(weight_kern); weight_kern = nullptr;
+#ifndef TRV_USE_HIP
+  fftw_free(weight_kern);
+#else  // TRV_USE_HIP
+  free(weight_kern);
+#endif  // !TRV_USE_HIP
+  weight_kern = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
 
@@ -1302,7 +1335,12 @@ void MeshField::compute_ylm_wgtd_field(
 
   this->assign_weighted_field_to_mesh(particles, weight_kern);
 
-  fftw_free(weight_kern); weight_kern = nullptr;
+#ifndef TRV_USE_HIP
+  fftw_free(weight_kern);
+#else  // TRV_USE_HIP
+  free(weight_kern);
+#endif  // !TRV_USE_HIP
+  weight_kern = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 
@@ -1359,7 +1397,12 @@ void MeshField::compute_ylm_wgtd_quad_field(
 
   this->assign_weighted_field_to_mesh(particles_data, weight_kern);
 
-  fftw_free(weight_kern); weight_kern = nullptr;
+#ifndef TRV_USE_HIP
+  fftw_free(weight_kern);
+#else  // TRV_USE_HIP
+  free(weight_kern);
+#endif  // !TRV_USE_HIP
+  weight_kern = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
 
@@ -1399,7 +1442,12 @@ void MeshField::compute_ylm_wgtd_quad_field(
   MeshField field_rand(this->params, false, "`field_rand`");
   field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
-  fftw_free(weight_kern); weight_kern = nullptr;
+#ifndef TRV_USE_HIP
+  fftw_free(weight_kern);
+#else  // TRV_USE_HIP
+  free(weight_kern);
+#endif  // !TRV_USE_HIP
+  weight_kern = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
 
@@ -1462,7 +1510,12 @@ void MeshField::compute_ylm_wgtd_quad_field(
 
   this->assign_weighted_field_to_mesh(particles, weight_kern);
 
-  fftw_free(weight_kern); weight_kern = nullptr;
+#ifndef TRV_USE_HIP
+  fftw_free(weight_kern);
+#else  // TRV_USE_HIP
+  free(weight_kern);
+#endif  // !TRV_USE_HIP
+  weight_kern = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 
@@ -1855,7 +1908,12 @@ double MeshField::calc_grid_based_powlaw_norm(
   // Compute the weighted field.
   this->assign_weighted_field_to_mesh(particles, weight);
 
-  fftw_free(weight); weight = nullptr;
+#ifndef TRV_USE_HIP
+  fftw_free(weight);
+#else  // TRV_USE_HIP
+  free(weight);
+#endif  // !TRV_USE_HIP
+  weight = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 
@@ -1950,8 +2008,17 @@ FieldStats::~FieldStats() {
   }
 
   if (this->plan_ini) {
+#ifndef TRV_USE_HIP
     fftw_destroy_plan(this->inv_transform);
-    fftw_free(this->twopt_3d); this->twopt_3d = nullptr;
+#else  // TRV_USE_HIP
+    hipfftDestroy(this->inv_transform);
+#endif  // !TRV_USE_HIP
+#ifndef TRV_USE_HIP
+    fftw_free(this->twopt_3d);
+#else  // TRV_USE_HIP
+    free(this->twopt_3d);
+#endif  // !TRV_USE_HIP
+    this->twopt_3d = nullptr;
     trvs::count_cgrid -= 1;
     trvs::count_grid -= 1;
     trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
