@@ -275,8 +275,8 @@ void copy_complex_array_dtoh(
   const hipDoubleComplex* d_arr, fftw_complex* arr, size_t length
 ) {
   hipDoubleComplex* h_arr = new hipDoubleComplex[length];
-  hipError_t hipmemcpy_ret;
-  hipmemcpy_ret = hipMemcpy(
+  hipError_t hip_ret;
+  hip_ret = hipMemcpy(
     h_arr, d_arr, sizeof(hipDoubleComplex) * length, hipMemcpyDeviceToHost
   );
   for (size_t i = 0; i < length; ++i) {
@@ -293,8 +293,8 @@ void copy_complex_array_htod(
     h_arr[i].x = arr[i][0];
     h_arr[i].y = arr[i][1];
   }
-  hipError_t hipmemcpy_ret;
-  hipmemcpy_ret = hipMemcpy(
+  hipError_t hip_ret;
+  hip_ret = hipMemcpy(
     d_arr, h_arr, sizeof(hipDoubleComplex) * length, hipMemcpyHostToDevice
   );
 }

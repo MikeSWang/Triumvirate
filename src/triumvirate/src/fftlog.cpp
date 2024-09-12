@@ -454,7 +454,7 @@ void HankelTransform::biased_transform(
   hipfftExecZ2Z(this->post_plan, d_post_buffer, d_post_buffer, HIPFFT_FORWARD);
   hip_ret = hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
-    d_post_buffer, this->post_buffer, this->nsamp_transs
+    d_post_buffer, this->post_buffer, this->nsamp_trans
   );
   hip_ret = hipFree(d_post_buffer);
 #endif  // !TRV_USE_HIP
