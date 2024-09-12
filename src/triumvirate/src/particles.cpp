@@ -143,7 +143,7 @@ int ParticleCatalogue::load_catalogue_file(
       colnames.begin(),
       std::find(colnames.begin(), colnames.end(), names_ordered[iname])
     ));
-    if (0 <= col_idx && col_idx < colnames.size()) {
+    if (col_idx < colnames.size()) {
       name_indices[iname] = col_idx;
     }
   }

@@ -1585,16 +1585,16 @@ void MeshField::fourier_transform() {
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_field;
-  hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipError_t hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->field, d_field, this->params.nmesh
   );
   hipfftExecC2C(this->transform, d_field, d_field, HIPFFT_FORWARD);
-  hipDeviceSynchronize();
+  hipError_t hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_field, this->field, this->params.nmesh
   );
-  hipFree(d_field);
+  hipError_t hipFree(d_field);
 #endif  // !TRV_USE_HIP
   trvs::count_fft += 1;
 
@@ -1616,16 +1616,16 @@ void MeshField::fourier_transform() {
     }
 #else  // TRV_USE_HIP
     hipDoubleComplex* d_field_s;
-    hipMalloc(&d_field_s, sizeof(hipDoubleComplex) * this->params.nmesh);
+    hipError_t hipMalloc(&d_field_s, sizeof(hipDoubleComplex) * this->params.nmesh);
     trva::copy_complex_array_htod(
       this->field_s, d_field_s, this->params.nmesh
     );
     hipfftExecC2C(this->transform_s, d_field_s, d_field_s, HIPFFT_FORWARD);
-    hipDeviceSynchronize();
+    hipError_t hipDeviceSynchronize();
     trva::copy_complex_array_dtoh(
       d_field_s, this->field_s, this->params.nmesh
     );
-    hipFree(d_field_s);
+    hipError_t hipFree(d_field_s);
 #endif  // !TRV_USE_HIP
     trvs::count_fft += 1;
 
@@ -1697,16 +1697,16 @@ void MeshField::inv_fourier_transform() {
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_field;
-  hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipError_t hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->field, d_field, this->params.nmesh
   );
   hipfftExecC2C(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
-  hipDeviceSynchronize();
+  hipError_t hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_field, this->field, this->params.nmesh
   );
-  hipFree(d_field);
+  hipError_t hipFree(d_field);
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 }
@@ -1853,16 +1853,16 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_field;
-  hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipError_t hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->field, d_field, this->params.nmesh
   );
   hipfftExecC2C(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
-  hipDeviceSynchronize();
+  hipError_t hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_field, this->field, this->params.nmesh
   );
-  hipFree(d_field);
+  hipError_t hipFree(d_field);
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
@@ -1948,16 +1948,16 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_field;
-  hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipError_t hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->field, d_field, this->params.nmesh
   );
   hipfftExecC2C(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
-  hipDeviceSynchronize();
+  hipError_t hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_field, this->field, this->params.nmesh
   );
-  hipFree(d_field);
+  hipError_t hipFree(d_field);
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 }
@@ -2702,16 +2702,16 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_twopt_3d;
-  hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipError_t hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->twopt_3d, d_twopt_3d, this->params.nmesh
   );
   hipfftExecC2C(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
-  hipDeviceSynchronize();
+  hipError_t hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_twopt_3d, this->twopt_3d, this->params.nmesh
   );
-  hipFree(d_twopt_3d);
+  hipError_t hipFree(d_twopt_3d);
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
@@ -2945,16 +2945,16 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_twopt_3d;
-  hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipError_t hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->twopt_3d, d_twopt_3d, this->params.nmesh
   );
   hipfftExecC2C(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
-  hipDeviceSynchronize();
+  hipError_t hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_twopt_3d, this->twopt_3d, this->params.nmesh
   );
-  hipFree(d_twopt_3d);
+  hipError_t hipFree(d_twopt_3d);
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
@@ -3191,16 +3191,16 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   }
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_twopt_3d;
-  hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
+  hipError_t hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
   trva::copy_complex_array_htod(
     this->twopt_3d, d_twopt_3d, this->params.nmesh
   );
   hipfftExecC2C(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
-  hipDeviceSynchronize();
+  hipError_t hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_twopt_3d, this->twopt_3d, this->params.nmesh
   );
-  hipFree(d_twopt_3d);
+  hipError_t hipFree(d_twopt_3d);
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 

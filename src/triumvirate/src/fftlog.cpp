@@ -93,7 +93,7 @@ void HankelTransform::reset() {
 #ifndef TRV_USE_HIP
     fftw_free(this->pre_buffer);
 #else  // TRV_USE_HIP
-    hipFree(this->pre_buffer);
+    hipError_t hipFree(this->pre_buffer);
 #endif  // !TRV_USE_HIP
     this->pre_buffer = nullptr;
   }
@@ -101,7 +101,7 @@ void HankelTransform::reset() {
 #ifndef TRV_USE_HIP
     fftw_free(this->post_buffer);
 #else  // TRV_USE_HIP
-    hipFree(this->post_buffer);
+    hipError_t hipFree(this->post_buffer);
 #endif  // !TRV_USE_HIP
     this->post_buffer = nullptr;
   }
@@ -411,18 +411,18 @@ void HankelTransform::biased_transform(
   fftw_execute(this->pre_plan);
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_pre_buffer;
-  hipMalloc(
+  hipError_t hipMalloc(
     &d_pre_buffer, sizeof(hipDoubleComplex) * this->nsamp_trans
   );
   trva::copy_complex_array_htod(
     this->pre_buffer, d_pre_buffer, this->nsamp_trans
   );
   hipfftExecC2C(this->pre_plan, d_pre_buffer, d_pre_buffer, HIPFFT_FORWARD);
-  hipDeviceSynchronize();
+  hipError_t hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_pre_buffer, this->pre_buffer, this->nsamp_trans
   );
-  hipFree(d_pre_buffer);
+  hipError_t hipFree(d_pre_buffer);
 #endif  // !TRV_USE_HIP
 
   for (int m = 0; m < N_trans; m++) {
@@ -437,18 +437,18 @@ void HankelTransform::biased_transform(
   fftw_execute(this->post_plan);
 #else  // TRV_USE_HIP
   hipDoubleComplex* d_post_buffer;
-  hipMalloc(
+  hipError_t hipMalloc(
     &d_post_buffer, sizeof(hipDoubleComplex) * this->nsamp_trans
   );
   trva::copy_complex_array_htod(
     this->post_buffer, d_post_buffer, this->nsamp_trans
   );
   hipfftExecC2C(this->post_plan, d_post_buffer, d_post_buffer, HIPFFT_FORWARD);
-  hipDeviceSynchronize();
+  hipError_t hipDeviceSynchronize();
   trva::copy_complex_array_dtoh(
     d_post_buffer, this->post_buffer, this->nsamp_transs
   );
-  hipFree(d_post_buffer);
+  hipError_t hipFree(d_post_buffer);
 #endif  // !TRV_USE_HIP
 
   // Trim any extrapolation.
