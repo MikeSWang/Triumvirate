@@ -28,6 +28,7 @@
 
 #include "field.hpp"
 
+namespace trva = trv::array;
 namespace trvs = trv::sys;
 namespace trvm = trv::maths;
 
@@ -180,11 +181,19 @@ MeshField::MeshField(
     }
 
     auto pre_plan_f_timept = std::chrono::system_clock::now();
+#ifndef TRV_USE_HIP
     this->transform = fftw_plan_dft_3d(
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
       this->field, this->field,
       FFTW_FORWARD, this->params.fftw_planner_flag
     );
+#else  // TRV_USE_HIP
+    hipfftPlan3d(
+      &this->transform,
+      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+      HIPFFT_C2C
+    );
+#endif  // !TRV_USE_HIP
     auto post_plan_f_timept = std::chrono::system_clock::now();
 
     double plan_f_time = std::chrono::duration<double>(
@@ -234,11 +243,19 @@ MeshField::MeshField(
     }
 
     auto pre_plan_b_timept = std::chrono::system_clock::now();
+#ifndef TRV_USE_HIP
     this->inv_transform = fftw_plan_dft_3d(
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
       this->field, this->field,
       FFTW_BACKWARD, this->params.fftw_planner_flag
     );
+#else  // TRV_USE_HIP
+    hipfftPlan3d(
+      &this->inv_transform,
+      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+      HIPFFT_C2C
+    );
+#endif  // !TRV_USE_HIP
     auto post_plan_b_timept = std::chrono::system_clock::now();
 
     double plan_b_time = std::chrono::duration<double>(
@@ -273,11 +290,19 @@ MeshField::MeshField(
     }
 
     if (this->params.interlace == "true") {
+#ifndef TRV_USE_HIP
       this->transform_s = fftw_plan_dft_3d(
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
         this->field_s, this->field_s,
         FFTW_FORWARD, this->params.fftw_planner_flag
       );
+#else  // TRV_USE_HIP
+      hipfftPlan3d(
+        &this->transform_s,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        HIPFFT_C2C
+      );
+#endif  // !TRV_USE_HIP
     }
     this->plan_ini = true;
 
@@ -1552,11 +1577,25 @@ void MeshField::fourier_transform() {
   }
 
   // Perform FFT.
+#ifndef TRV_USE_HIP
   if (this->plan_ext) {
     fftw_execute_dft(this->transform, this->field, this->field);
   } else {
     fftw_execute(this->transform);
   }
+#else  // TRV_USE_HIP
+  hipDoubleComplex* d_field;
+  hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  trva::copy_array_value_htod(
+    this->field, d_field, this->params.nmesh
+  );
+  hipfftExecC2C(this->transform, d_field, d_field, HIPFFT_FORWARD);
+  hipDeviceSynchronize();
+  trva::copy_array_value_dtoh(
+    d_field, this->field, this->params.nmesh
+  );
+  hipFree(d_field);
+#endif  // !TRV_USE_HIP
   trvs::count_fft += 1;
 
   // Interlace with the shadow field.
@@ -1569,11 +1608,25 @@ void MeshField::fourier_transform() {
       this->field_s[gid][1] *= this->vol_cell;
     }
 
+#ifndef TRV_USE_HIP
     if (this->plan_ext) {
       fftw_execute_dft(this->transform_s, this->field_s, this->field_s);
     } else {
       fftw_execute(this->transform_s);
     }
+#else  // TRV_USE_HIP
+    hipDoubleComplex* d_field_s;
+    hipMalloc(&d_field_s, sizeof(hipDoubleComplex) * this->params.nmesh);
+    trva::copy_array_value_htod(
+      this->field_s, d_field_s, this->params.nmesh
+    );
+    hipfftExecC2C(this->transform_s, d_field_s, d_field_s, HIPFFT_FORWARD);
+    hipDeviceSynchronize();
+    trva::copy_array_value_dtoh(
+      d_field_s, this->field_s, this->params.nmesh
+    );
+    hipFree(d_field_s);
+#endif  // !TRV_USE_HIP
     trvs::count_fft += 1;
 
 #ifdef TRV_USE_OMP
@@ -1636,11 +1689,25 @@ void MeshField::inv_fourier_transform() {
   }
 
   // Perform inverse FFT.
+#ifndef TRV_USE_HIP
   if (this->plan_ext) {
     fftw_execute_dft(this->inv_transform, this->field, this->field);
   } else {
     fftw_execute(this->inv_transform);
   }
+#else  // TRV_USE_HIP
+  hipDoubleComplex* d_field;
+  hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  trva::copy_array_value_htod(
+    this->field, d_field, this->params.nmesh
+  );
+  hipfftExecC2C(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
+  hipDeviceSynchronize();
+  trva::copy_array_value_dtoh(
+    d_field, this->field, this->params.nmesh
+  );
+  hipFree(d_field);
+#endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 }
 
@@ -1778,11 +1845,25 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   }
 
   // Perform inverse FFT.
+#ifndef TRV_USE_HIP
   if (this->plan_ext) {
     fftw_execute_dft(this->inv_transform, this->field, this->field);
   } else {
     fftw_execute(this->inv_transform);
   }
+#else  // TRV_USE_HIP
+  hipDoubleComplex* d_field;
+  hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  trva::copy_array_value_htod(
+    this->field, d_field, this->params.nmesh
+  );
+  hipfftExecC2C(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
+  hipDeviceSynchronize();
+  trva::copy_array_value_dtoh(
+    d_field, this->field, this->params.nmesh
+  );
+  hipFree(d_field);
+#endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
   // Average over wavevector modes in the band.
@@ -1859,11 +1940,25 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
 }
 
   // Perform inverse FFT.
+#ifndef TRV_USE_HIP
   if (this->plan_ext) {
     fftw_execute_dft(this->inv_transform, this->field, this->field);
   } else {
     fftw_execute(this->inv_transform);
   }
+#else  // TRV_USE_HIP
+  hipDoubleComplex* d_field;
+  hipMalloc(&d_field, sizeof(hipDoubleComplex) * this->params.nmesh);
+  trva::copy_array_value_htod(
+    this->field, d_field, this->params.nmesh
+  );
+  hipfftExecC2C(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
+  hipDeviceSynchronize();
+  trva::copy_array_value_dtoh(
+    d_field, this->field, this->params.nmesh
+  );
+  hipFree(d_field);
+#endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 }
 
@@ -1990,11 +2085,19 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
     fftw_plan_with_nthreads(omp_get_max_threads());
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+#ifndef TRV_USE_HIP
     this->inv_transform = fftw_plan_dft_3d(
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
       this->twopt_3d, this->twopt_3d,
       FFTW_BACKWARD, this->params.fftw_planner_flag
     );
+#else  // TRV_USE_HIP
+    hipfftPlan3d(
+      &this->inv_transform,
+      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+      HIPFFT_C2C
+    );
+#endif  // !TRV_USE_HIP
 
     this->plan_ini = true;
   }
@@ -2591,11 +2694,25 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   }
 
   // Inverse Fourier transform.
+#ifndef TRV_USE_HIP
   if (this->plan_ini) {
     fftw_execute(this->inv_transform);
   } else {
     fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
   }
+#else  // TRV_USE_HIP
+  hipDoubleComplex* d_twopt_3d;
+  hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
+  trva::copy_array_value_htod(
+    this->twopt_3d, d_twopt_3d, this->params.nmesh
+  );
+  hipfftExecC2C(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
+  hipDeviceSynchronize();
+  trva::copy_array_value_dtoh(
+    d_twopt_3d, this->twopt_3d, this->params.nmesh
+  );
+  hipFree(d_twopt_3d);
+#endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
   // Perform fine binning.
@@ -2820,11 +2937,25 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   }
 
   // Inverse Fourier transform.
+#ifndef TRV_USE_HIP
   if (this->plan_ini) {
     fftw_execute(this->inv_transform);
   } else {
     fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
   }
+#else  // TRV_USE_HIP
+  hipDoubleComplex* d_twopt_3d;
+  hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
+  trva::copy_array_value_htod(
+    this->twopt_3d, d_twopt_3d, this->params.nmesh
+  );
+  hipfftExecC2C(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
+  hipDeviceSynchronize();
+  trva::copy_array_value_dtoh(
+    d_twopt_3d, this->twopt_3d, this->params.nmesh
+  );
+  hipFree(d_twopt_3d);
+#endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
   // Perform fine binning.
@@ -3052,11 +3183,25 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   }
 
   // Inverse Fourier transform.
+#ifndef TRV_USE_HIP
   if (this->plan_ini) {
     fftw_execute(this->inv_transform);
   } else {
     fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
   }
+#else  // TRV_USE_HIP
+  hipDoubleComplex* d_twopt_3d;
+  hipMalloc(&d_twopt_3d, sizeof(hipDoubleComplex) * this->params.nmesh);
+  trva::copy_array_value_htod(
+    this->twopt_3d, d_twopt_3d, this->params.nmesh
+  );
+  hipfftExecC2C(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
+  hipDeviceSynchronize();
+  trva::copy_array_value_dtoh(
+    d_twopt_3d, this->twopt_3d, this->params.nmesh
+  );
+  hipFree(d_twopt_3d);
+#endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
   // Weight by spherical Bessel functions and harmonics before summing
