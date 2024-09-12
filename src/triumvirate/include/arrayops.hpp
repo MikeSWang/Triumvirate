@@ -239,12 +239,28 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector);
 // ***********************************************************************
 
 #ifdef TRV_USE_HIP
-void copy_array_value_dtoh(
-  const hipDoubleComplex* hiparr, fftw_complex* arr, size_t length
+/**
+ * @brief Copy complex array values from device to host with different
+ *        type definitions.
+ *
+ * @param d_arr Device array.
+ * @param arr Default-type array on host.
+ * @param length Array size.
+ */
+void copy_complex_array_dtoh(
+  const hipDoubleComplex* d_arr, fftw_complex* arr, size_t length
 );
 
-void copy_array_value_htod(
-  fftw_complex* arr, const hipDoubleComplex* hiparr, size_t length
+/**
+ * @brief Copy complex array values from host to device with different
+ *        type definitions.
+ *
+ * @param arr Default-type array on host.
+ * @param d_arr Device array.
+ * @param length Array size.
+ */
+void copy_complex_array_htod(
+  const fftw_complex* arr, hipDoubleComplex* d_arr, size_t length
 );
 #endif
 
