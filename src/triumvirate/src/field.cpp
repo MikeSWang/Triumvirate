@@ -165,11 +165,11 @@ MeshField::MeshField(
     }
 
     if (import_fftw_wisdom_f) {
-#ifndef TRV_USE_CUDA
+#if !defined(TRV_USE_CUDA) && !defined(TRV_USE_HIP)
       fftw_import_wisdom_from_filename(
         this->params.fftw_wisdom_file_f.c_str()
       );
-#endif  // !TRV_USE_CUDA
+#endif  // !TRV_USE_CUDA && !TRV_USE_HIP
       trv::sys::fftw_wisdom_f_imported = true;
       if (trvs::currTask == 0) {
         trvs::logger.info(
@@ -204,11 +204,11 @@ MeshField::MeshField(
     }
 
     if (export_fftw_wisdom_f) {
-#ifndef TRV_USE_CUDA
+#if !defined(TRV_USE_CUDA) && !defined(TRV_USE_HIP)
       fftw_export_wisdom_to_filename(
         this->params.fftw_wisdom_file_f.c_str()
       );
-#endif  // !TRV_USE_CUDA
+#endif  // !TRV_USE_CUDA && !TRV_USE_HIP
       if (trvs::currTask == 0) {
         trvs::logger.info(
           "FFTW wisdom file for forward transforms has been exported: %s",
@@ -219,11 +219,11 @@ MeshField::MeshField(
     }
 
     if (import_fftw_wisdom_b) {
-#ifndef TRV_USE_CUDA
+#if !defined(TRV_USE_CUDA) && !defined(TRV_USE_HIP)
       fftw_import_wisdom_from_filename(
         this->params.fftw_wisdom_file_b.c_str()
       );
-#endif  // !TRV_USE_CUDA
+#endif  // !TRV_USE_CUDA && !TRV_USE_HIP
       trv::sys::fftw_wisdom_b_imported = true;
       if (trvs::currTask == 0) {
         trvs::logger.info(
@@ -258,11 +258,11 @@ MeshField::MeshField(
     }
 
     if (export_fftw_wisdom_b) {
-#ifndef TRV_USE_CUDA
+#if !defined(TRV_USE_CUDA) && !defined(TRV_USE_HIP)
       fftw_export_wisdom_to_filename(
         this->params.fftw_wisdom_file_b.c_str()
       );
-#endif  // !TRV_USE_CUDA
+#endif  // !TRV_USE_CUDA && !TRV_USE_HIP
       if (trvs::currTask == 0) {
         trvs::logger.info(
           "FFTW wisdom file for backward transforms has been exported: %s",
