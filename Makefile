@@ -288,6 +288,13 @@ LDLIBS_TEST = -l${LIBNAME} ${LDLIBS} \
 # NERSC computer cluster: an example environment [adapt]
 ifdef NERSC_HOST
 
+## NVIDIA HPC SDK
+	ifndef usehip
+	ifdef usecuda
+	CXX := nvcc
+	endif  # usecuda
+	endif  # !usehip
+
 ## GSL library [deprecated]
 	# ifdef GSL_ROOT
 
@@ -340,9 +347,11 @@ endif  # NERSC_HOST
 ifdef DIRAC_HOST
 
 ## NVIDIA HPC SDK
+	ifndef usehip
 	ifdef usecuda
 	CXX := nvcc
 	endif  # usecuda
+	endif  # !usehip
 
 ## GTEST library
 	ifdef GTEST_ROOT
