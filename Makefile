@@ -86,10 +86,6 @@ endif  # usecuda
 
 # HIP: enabled with ``usehip=(true|1)``; disabled otherwise
 ifdef usehip
-$(error \
-	"Unimplemented: HIP is not yet supported " \
-	"owing to a lack of accessible development environment." \
-)
 ifeq ($(strip ${usehip}), $(filter $(strip ${usehip}), true 1))
 usehip := true
 else   # usehip != (true|1)
@@ -359,7 +355,7 @@ ifdef NERSC_HOST
 	ifdef usehip
 	# NOTE: hipFFT is managed by Conda.
 	INCLUDES += -I${HIP_PATH}/include -I${CONDA_PREFIX}/include
-	LDFLAGS += -Wl,-rpath,${HIP_PATH}/lib -L${HIP_PATH}/lib
+	LDFLAGS += -Wl,-rpath,${HIP_PATH}/lib -L${HIP_PATH}/lib -Wl,-rpath,${CONDA_PREFIX}/lib -L${CONDA_PREFIX}/lib
 	else   # !usehip
 	ifdef usecuda
 	INCLUDES += -I${NVIDIA_PATH}/math_libs/include
@@ -620,9 +616,9 @@ PKGSUFFIX := -HIP
 PROGSUFFIX := _hip
 LIBSUFFIX := _hip
 ifdef usecuda
-PKGSUFFIX += CUDA
-PROGSUFFIX += cuda
-LIBSUFFIX += cuda
+PKGSUFFIX := -HIPCUDA
+PROGSUFFIX := _hipcuda
+LIBSUFFIX := _hipcuda
 endif  # usecuda
 else   # !usehip
 ifdef usecuda
