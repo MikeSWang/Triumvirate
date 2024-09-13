@@ -389,6 +389,13 @@ ifdef DIRAC_HOST
 	endif  # usecuda
 	endif  # !usehip
 
+## ROCm/HIP
+	# ROCm is managed by Conda.
+	ifdef usehip
+	INCLUDES += -I${CONDA_PREFIX}/include
+	CXXFLAGS += --rocm-device-lib-path=${CONDA_PREFIX}/lib/amdgcn/bitcode
+	endif  # usehip
+
 ## GTEST library
 	ifdef GTEST_ROOT
 	INCLUDES_TEST += -I${GTEST_ROOT}/include
