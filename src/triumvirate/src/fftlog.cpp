@@ -219,7 +219,7 @@ void HankelTransform::initialise(
   );
 #else  // TRV_USE_HIP
   hipfftPlan1d(
-    &this->post_plan, this->nsamp_trans, HIPFFT_C2C, 1
+    &this->pre_plan, this->nsamp_trans, HIPFFT_Z2Z, 1
   );
 #endif  // !TRV_USE_HIP
 
@@ -242,7 +242,7 @@ void HankelTransform::initialise(
   );
 #else  // TRV_USE_HIP
   hipfftPlan1d(
-    &this->post_plan, this->nsamp_trans, HIPFFT_C2C, 1
+    &this->post_plan, this->nsamp_trans, HIPFFT_Z2Z, 1
   );
 #endif  // !TRV_USE_HIP
 

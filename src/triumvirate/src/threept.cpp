@@ -3233,12 +3233,12 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
 //   hipfftPlan3d(
 //     &fwd_master_plan,
 //     params.ngrid[0], params.ngrid[1], params.ngrid[2],
-//     HIPFFT_C2C
+//     HIPFFT_Z2Z
 //   );
 //   hipfftPlan3d(
 //     &bwd_master_plan,
 //     params.ngrid[0], params.ngrid[1], params.ngrid[2],
-//     HIPFFT_C2C
+//     HIPFFT_Z2Z
 //   );
 //   // ...
 //   // hip_ret = hipDeviceSynchronize();

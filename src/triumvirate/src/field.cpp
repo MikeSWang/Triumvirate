@@ -191,7 +191,7 @@ MeshField::MeshField(
     hipfftPlan3d(
       &this->transform,
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      HIPFFT_C2C
+      HIPFFT_Z2Z
     );
 #endif  // !TRV_USE_HIP
     auto post_plan_f_timept = std::chrono::system_clock::now();
@@ -253,7 +253,7 @@ MeshField::MeshField(
     hipfftPlan3d(
       &this->inv_transform,
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      HIPFFT_C2C
+      HIPFFT_Z2Z
     );
 #endif  // !TRV_USE_HIP
     auto post_plan_b_timept = std::chrono::system_clock::now();
@@ -300,7 +300,7 @@ MeshField::MeshField(
       hipfftPlan3d(
         &this->transform_s,
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-        HIPFFT_C2C
+        HIPFFT_Z2Z
       );
 #endif  // !TRV_USE_HIP
     }
@@ -2111,7 +2111,7 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
     hipfftPlan3d(
       &this->inv_transform,
       this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      HIPFFT_C2C
+      HIPFFT_Z2Z
     );
 #endif  // !TRV_USE_HIP
 
