@@ -279,6 +279,11 @@ void copy_complex_array_dtoh(
   hip_ret = hipMemcpy(
     h_arr, d_arr, sizeof(hipfftDoubleComplex) * length, hipMemcpyDeviceToHost
   );
+  if (hip_ret != hipSuccess) {
+    throw std::runtime_error(
+      "Failed to copy complex array from device to host."
+    );
+  }
   for (size_t i = 0; i < length; ++i) {
     arr[i][0] = h_arr[i].x;
     arr[i][1] = h_arr[i].y;
@@ -297,6 +302,11 @@ void copy_complex_array_htod(
   hip_ret = hipMemcpy(
     d_arr, h_arr, sizeof(hipfftDoubleComplex) * length, hipMemcpyHostToDevice
   );
+  if (hip_ret != hipSuccess) {
+    throw std::runtime_error(
+      "Failed to copy complex array from host to device."
+    );
+  }
 }
 #endif
 

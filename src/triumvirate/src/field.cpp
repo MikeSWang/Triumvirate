@@ -1599,6 +1599,11 @@ void MeshField::fourier_transform() {
     d_field, this->field, this->params.nmesh
   );
   hip_ret = hipFree(d_field);
+  if (hip_ret != hipSuccess) {
+    throw std::runtime_error(
+      "Failed to perform the forward Fourier transform."
+    );
+  }
 #endif  // !TRV_USE_HIP
   trvs::count_fft += 1;
 
@@ -1630,6 +1635,11 @@ void MeshField::fourier_transform() {
       d_field_s, this->field_s, this->params.nmesh
     );
     hip_ret = hipFree(d_field_s);
+  if (hip_ret != hipSuccess) {
+    throw std::runtime_error(
+      "Failed to perform the forward Fourier transform."
+    );
+  }
 #endif  // !TRV_USE_HIP
     trvs::count_fft += 1;
 
@@ -1715,6 +1725,11 @@ void MeshField::inv_fourier_transform() {
     d_field, this->field, this->params.nmesh
   );
   hip_ret = hipFree(d_field);
+  if (hip_ret != hipSuccess) {
+    throw std::runtime_error(
+      "Failed to perform the inverse Fourier transform."
+    );
+  }
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 }
@@ -1875,6 +1890,11 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
     d_field, this->field, this->params.nmesh
   );
   hip_ret = hipFree(d_field);
+  if (hip_ret != hipSuccess) {
+    throw std::runtime_error(
+      "Failed to perform the inverse Fourier transform."
+    );
+  }
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
@@ -1974,6 +1994,11 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
     d_field, this->field, this->params.nmesh
   );
   hip_ret = hipFree(d_field);
+  if (hip_ret != hipSuccess) {
+    throw std::runtime_error(
+      "Failed to perform the inverse Fourier transform."
+    );
+  }
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 }
@@ -2732,6 +2757,11 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
     d_twopt_3d, this->twopt_3d, this->params.nmesh
   );
   hip_ret = hipFree(d_twopt_3d);
+  if (hip_ret != hipSuccess) {
+    throw std::runtime_error(
+      "Failed to perform the inverse Fourier transform."
+    );
+  }
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
@@ -2979,6 +3009,11 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
     d_twopt_3d, this->twopt_3d, this->params.nmesh
   );
   hip_ret = hipFree(d_twopt_3d);
+  if (hip_ret != hipSuccess) {
+    throw std::runtime_error(
+      "Failed to perform the inverse Fourier transform."
+    );
+  }
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
@@ -3229,6 +3264,11 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
     d_twopt_3d, this->twopt_3d, this->params.nmesh
   );
   hip_ret = hipFree(d_twopt_3d);
+  if (hip_ret != hipSuccess) {
+    throw std::runtime_error(
+      "Failed to perform the inverse Fourier transform."
+    );
+  }
 #endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 

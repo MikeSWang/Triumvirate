@@ -98,6 +98,11 @@ void HankelTransform::reset() {
     fftw_free(this->pre_buffer);
 #else  // TRV_USE_HIP
     hip_ret = hipFree(this->pre_buffer);
+    if (hip_ret != hipSuccess) {
+      throw std::runtime_error(
+        "Failed to free the pre-transform buffer."
+      );
+    }
 #endif  // !TRV_USE_HIP
     this->pre_buffer = nullptr;
   }
@@ -106,6 +111,11 @@ void HankelTransform::reset() {
     fftw_free(this->post_buffer);
 #else  // TRV_USE_HIP
     hip_ret = hipFree(this->post_buffer);
+    if (hip_ret != hipSuccess) {
+      throw std::runtime_error(
+        "Failed to free the post-transform buffer."
+      );
+    }
 #endif  // !TRV_USE_HIP
     this->post_buffer = nullptr;
   }
@@ -431,6 +441,11 @@ void HankelTransform::biased_transform(
     d_pre_buffer, this->pre_buffer, this->nsamp_trans
   );
   hip_ret = hipFree(d_pre_buffer);
+  if (hip_ret != hipSuccess) {
+    throw std::runtime_error(
+      "Failed to perform the forward FFT on the pre-transform buffer."
+    );
+  }
 #endif  // !TRV_USE_HIP
 
   for (int m = 0; m < N_trans; m++) {
@@ -457,6 +472,11 @@ void HankelTransform::biased_transform(
     d_post_buffer, this->post_buffer, this->nsamp_trans
   );
   hip_ret = hipFree(d_post_buffer);
+  if (hip_ret != hipSuccess) {
+    throw std::runtime_error(
+      "Failed to perform the forward FFT on the post-transform buffer."
+    );
+  }
 #endif  // !TRV_USE_HIP
 
   // Trim any extrapolation.

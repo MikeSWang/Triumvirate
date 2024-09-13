@@ -3131,9 +3131,9 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
   trv::ParameterSet& params, trv::Binning& kbinning,
   double norm_factor
 ) {
-#ifdef TRV_USE_HIP
-  hipError_t hip_ret;
-#endif  // TRV_USE_HIP
+// #ifdef TRV_USE_HIP
+//   hipError_t hip_ret;
+// #endif  // TRV_USE_HIP
 
   trvs::logger.reset_level(params.verbose);
 
