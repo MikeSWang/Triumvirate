@@ -34,6 +34,21 @@
 #ifndef TRIUMVIRATE_INCLUDE_MONITOR_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_MONITOR_HPP_INCLUDED_
 
+#include <gsl/gsl_version.h>
+
+#if defined(TRV_USE_HIP)
+#include <hip/hip_runtime.h>
+#include <hipfft/hipfft.h>
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+#include <cuda_runtime_api.h>
+#include <cufft.h>
+#endif                       // TRV_USE_HIP
+#include <fftw3.h>
+
+#ifdef TRV_USE_OMP
+#include <omp.h>
+#endif  // TRV_USE_OMP
+
 #include <chrono>
 #include <cstdarg>
 #include <cstdio>
@@ -45,37 +60,127 @@
 #include <string>
 #include <vector>
 
-#if defined(TRV_USE_CUDA)
-#include <cufftw.h>
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-#include <hip/hip_runtime.h>
-#include <hipfft/hipfft.h>
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
-#include <fftw3.h>
-#endif  // TRV_USE_CUDA
-
-#include <gsl/gsl_version.h>
-
-#ifndef __TRV_VERSION__
-#define __TRV_VERSION__ "0.5.0"  // (fallback) version number
-#endif  // !__TRV_VERSION__
-
-/// @cond DOXYGEN_DOC_MACROS
-// Declares OMP macros.
-#ifdef TRV_USE_OMP
-#include <omp.h>
-#define OMP_ATOMIC _Pragma("omp atomic")
-#define OMP_CRITICAL _Pragma("omp critical")
-#else  // !TRV_USE_OMP
-#define OMP_ATOMIC
-#define OMP_CRITICAL
-#endif  // TRV_USE_OMP
-/// @endcond
-
 // Enter debugging mode.
 #ifdef DBG_MODE
 #include <iostream>
 #endif  // DBG_MODE
+
+/// @cond DOXYGEN_DOC_MACROS
+// Declares OMP macros.
+#ifdef TRV_USE_OMP
+#define OMP_ATOMIC _Pragma("omp atomic")
+#define OMP_CRITICAL _Pragma("omp critical")
+#define _OMP_VERSION std::to_string(_OPENMP)
+#define _OMP_NTHREADS omp_get_max_threads()
+#else   // !TRV_USE_OMP
+#define OMP_ATOMIC
+#define OMP_CRITICAL
+#define _OMP_VERSION std::string("unknown")
+#define _OMP_NTHREADS 1
+#endif  // TRV_USE_OMP
+
+#ifndef GSL_VERSION
+#define GSL_VERSION "unknown"
+#endif  // !GSL_VERSION
+
+// Record (fallback) version number.
+#ifndef __TRV_VERSION__
+#define __TRV_VERSION__ "0.6+"
+#endif  // !__TRV_VERSION__
+
+// Indicate external interface call.
+#ifdef TRV_EXTCALL
+#define SHOW_CPPSTATE " C++"
+#else   // !TRV_EXTCALL
+#define SHOW_CPPSTATE ""
+#endif  // TRV_EXTCALL
+
+#if defined(TRV_USE_HIP)
+#ifndef HIP_EXEC
+/**
+ * @brief Check if a HIP function call succeeded.
+ *
+ * @param hip_call A HIP function call.
+ */
+#define HIP_EXEC(hip_call) {
+  auto ret_status = static_cast<hipError_t>(hip_call);
+  if (ret_status != hipSuccess) {
+    std::fprintf(
+      stderr,
+      "HIP error: %s. "
+      "Function <%s> returned error code %d in file \"%s\", line %d.\n",
+      hipGetErrorString(ret_status),
+      #hip_call, ret_status,
+      __FILE__, __LINE__,
+    );
+  }
+}
+#endif  // !HIP_EXEC
+
+#ifndef HIPFFT_EXEC
+/**
+ * @brief Check if a hipFFT function call succeeded.
+ *
+ * @param hipfft_call A hipFFT function call.
+ */
+#define HIPFFT_EXEC(hipfft_call) {
+  auto ret_status = static_cast<hipfftResult>(hipfft_call);
+  if (ret_status != HIPFFT_SUCCESS) {
+    std::fprintf(
+      stderr,
+      "hipFFT error: function <%s> returned error code %d "
+      "in file \"%s\", line %d.\n",
+      #hipfft_call, ret_status,
+      __FILE__, __LINE__,
+    );
+  }
+}
+#endif  // !HIPFFT_EXEC
+
+#elif defined(TRV_USE_CUDA)
+#ifndef CUDA_EXEC
+/**
+ * @brief Check if a CUDA function call succeeded.
+ *
+ * @param cuda_call A CUDA function call.
+ */
+#define CUDA_EXEC(cuda_call) {
+  auto ret_status = static_cast<cudaError_t>(cuda_call);
+  if (ret_status != cudaSuccess) {
+    std::fprintf(
+      stderr,
+      "CUDA error: %s. "
+      "Function <%s> returned error code %d in file \"%s\", line %d.\n",
+      cudaGetErrorString(ret_status),
+      #cuda_call, ret_status,
+      __FILE__, __LINE__,
+    );
+  }
+}
+#endif  // !CUDA_EXEC
+
+#ifndef CUFFT_EXEC
+/**
+ * @brief Check if a cuFFT function call succeeded.
+ *
+ * @param cufft_call A cuFFT function call.
+ */
+#define CUFFT_EXEC(cufft_call) {
+  auto ret_status = static_cast<cufftResult>(cufft_call);
+  if (ret_status != CUFFT_SUCCESS) {
+    std::fprintf(
+      stderr,
+      "cuFFT error: function <%s> returned error code %d "
+      "in file \"%s\", line %d.\n",
+      #cufft_call, ret_status,
+      __FILE__, __LINE__,
+    );
+  }
+}
+#endif // !CUFFT_EXEC
+
+#endif  // TRV_USE_HIP
+/// @endcond
 
 namespace trv {
 namespace sys {
@@ -169,6 +274,27 @@ std::string show_elapsed_time(double duration_in_seconds);
  * @returns Timestamp string.
  */
 std::string show_timestamp();
+
+/**
+ * @brief Get the number of GPUs available.
+ *
+ * @return int Number of GPUs.
+ */
+int get_gpu_count();
+
+/**
+ * @brief Check if GPUs are available.
+ *
+ * @return {true, false}
+ */
+bool is_gpu_available();
+
+/**
+ * @brief Check if GPU mode is enabled.
+ *
+ * @return {true, false}
+ */
+bool is_gpu_enabled();
 
 /**
  * @brief Terminate the program with exit status `EXIT_FAILURE`.
