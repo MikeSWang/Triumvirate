@@ -229,8 +229,8 @@ class HankelTransform {
 
   /// pre- and post-kernel FFT(W) plans and arrays
 #if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
-  fftHandle pre_plan_sgpu;
-  fftHandle post_plan_sgpu;
+  fftHandle pre_plan_gpu;
+  fftHandle post_plan_gpu;
 #endif  // TRV_USE_HIP || TRV_USE_CUDA
   fftw_plan pre_plan;
   fftw_plan post_plan;
@@ -238,7 +238,7 @@ class HankelTransform {
   fftw_complex* pre_buffer = nullptr;
   fftw_complex* post_buffer = nullptr;
 
-  /// FFTW plan initialisation flag
+  /// FFT(W) plan initialisation flag
   bool plan_init = false;
 
   /// FFTW multi-threading flag
