@@ -34,14 +34,7 @@
 
 #include <sys/stat.h>
 
-#if defined(TRV_USE_CUDA)
-#include <cufftw.h>
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-#include <hip/hip_runtime.h>
-#include <hipfft/hipfft.h>
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
 #include <fftw3.h>
-#endif  // TRV_USE_CUDA
 
 #include <algorithm>
 #include <cmath>
@@ -52,16 +45,6 @@
 #include <string>
 
 #include "monitor.hpp"
-
-#ifdef TRV_USE_HIP
-#ifndef FFTW_PLANNER_FLAG_DEFINED_
-#define FFTW_MEASURE (0U)
-#define FFTW_EXHAUSTIVE (1U << 3)
-#define FFTW_PATIENT (1U << 5)
-#define FFTW_ESTIMATE (1U << 6)
-#define FFTW_PLANNER_FLAG_DEFINED_
-#endif  // !FFTW_PLANNER_FLAG_DEFINED_
-#endif  // TRV_USE_HIP
 
 namespace trv {
 
