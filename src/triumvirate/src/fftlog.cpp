@@ -54,12 +54,14 @@ HankelTransform::HankelTransform(double mu, double q, bool threaded) {
   this->threaded = threaded;
 
   // Initialise FFTW plans.
+  if (!trvs::is_gpu_enabled()) {
+    if (this->threaded) {
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  if (this->threaded) {
-    fftw_init_threads();
-    fftw_plan_with_nthreads(omp_get_max_threads());
-  }
+      fftw_init_threads();
+      fftw_plan_with_nthreads(omp_get_max_threads());
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+    }
+  }
 }
 
 HankelTransform::~HankelTransform() {
@@ -67,56 +69,42 @@ HankelTransform::~HankelTransform() {
 
   // Do NOT call `fftw_cleanup` in reusable code here
   // as it may cause memory leaks.
+//   if (!trvs::is_gpu_enabled()) {
+//     if (this->threaded) {
 // #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-//   if (this->threaded) {
-//     fftw_cleanup_threads();
-//   } else {
-//     fftw_cleanup();
-//   }
-// #elif !defined(TRV_USE_HIP)  // !TRV_USE_OMP || !TRV_USE_FFTWOMP && !TRV_USE_HIP
-//   fftw_cleanup();
+//       fftw_cleanup_threads();
 // #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+//     } else {
+//       fftw_cleanup();
+//     }
+//   }
 }
 
 void HankelTransform::reset() {
-#ifdef TRV_USE_HIP
-  hipError_t hip_ret;
-#endif  // TRV_USE_HIP
-
   if (this->plan_init) {
-#ifndef TRV_USE_HIP
-    fftw_destroy_plan(this->pre_plan);
-    fftw_destroy_plan(this->post_plan);
-#else  // TRV_USE_HIP
-    hipfftDestroy(this->pre_plan);
-    hipfftDestroy(this->post_plan);
-#endif  // !TRV_USE_HIP
+    if (trvs::is_gpu_enabled()) {
+      // Destroy GPU plans.
+#if defined(TRV_USE_HIP)
+      HIPFFT_EXEC(hipfftDestroy(this->pre_plan_gpu));
+      HIPFFT_EXEC(hipfftDestroy(this->post_plan_gpu));
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+      CUFFT_EXEC(cufftDestroy(this->pre_plan_gpu));
+      CUFFT_EXEC(cufftDestroy(this->post_plan_gpu));
+#endif                       // TRV_USE_HIP
+    } else {
+      // Destroy CPU plans.
+      fftw_destroy_plan(this->pre_plan);
+      fftw_destroy_plan(this->post_plan);
+    }
     this->plan_init = false;
   }
+
   if (this->pre_buffer != nullptr) {
-#ifndef TRV_USE_HIP
     fftw_free(this->pre_buffer);
-#else  // TRV_USE_HIP
-    hip_ret = hipFree(this->pre_buffer);
-    if (hip_ret != hipSuccess) {
-      throw std::runtime_error(
-        "Failed to free the pre-transform buffer."
-      );
-    }
-#endif  // !TRV_USE_HIP
     this->pre_buffer = nullptr;
   }
   if (this->post_buffer != nullptr) {
-#ifndef TRV_USE_HIP
     fftw_free(this->post_buffer);
-#else  // TRV_USE_HIP
-    hip_ret = hipFree(this->post_buffer);
-    if (hip_ret != hipSuccess) {
-      throw std::runtime_error(
-        "Failed to free the post-transform buffer."
-      );
-    }
-#endif  // !TRV_USE_HIP
     this->post_buffer = nullptr;
   }
 }
@@ -207,54 +195,46 @@ void HankelTransform::initialise(
   // ...
   // ----<
 
-  // Initialise FFTW plans.
+  // Initialise FFT(W) plans.
   this->reset();
 
-#if defined(TRV_USE_CUDA)
-  this->pre_buffer = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * this->nsamp_trans
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  this->pre_buffer = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * this->nsamp_trans
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
   this->pre_buffer = fftw_alloc_complex(this->nsamp_trans);
-#endif  // TRV_USE_CUDA
 
-#ifndef TRV_USE_HIP
-  this->pre_plan = fftw_plan_dft_1d(
-    this->nsamp_trans, this->pre_buffer, this->pre_buffer,
-    FFTW_FORWARD, FFTW_ESTIMATE
-  );
-#else  // TRV_USE_HIP
-  hipfftPlan1d(
-    &this->pre_plan, this->nsamp_trans, HIPFFT_Z2Z, 1
-  );
+  if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+    HIPFFT_EXEC(hipfftPlan1d(
+      &this->pre_plan_gpu, this->nsamp_trans, HIPFFT_Z2Z, 1
+    ));
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+    CUFFT_EXEC(cufftPlan1d(
+      &this->pre_plan_gpu, this->nsamp_trans, CUFFT_Z2Z, 1
+    ));
 #endif  // !TRV_USE_HIP
+  } else {
+    this->pre_plan = fftw_plan_dft_1d(
+      this->nsamp_trans, this->pre_buffer, this->pre_buffer,
+      FFTW_FORWARD, FFTW_ESTIMATE
+    );
+  }
 
-#if defined(TRV_USE_CUDA)
-  this->post_buffer = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * this->nsamp_trans
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  this->post_buffer = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * this->nsamp_trans
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
   this->post_buffer = fftw_alloc_complex(this->nsamp_trans);
-#endif  // TRV_USE_CUDA
 
-#ifndef TRV_USE_HIP
-  this->post_plan = fftw_plan_dft_1d(
-    this->nsamp_trans, this->post_buffer, this->post_buffer,
-    FFTW_FORWARD, FFTW_ESTIMATE
-  );
-#else  // TRV_USE_HIP
-  hipfftPlan1d(
-    &this->post_plan, this->nsamp_trans, HIPFFT_Z2Z, 1
-  );
+  if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+    HIPFFT_EXEC(hipfftPlan1d(
+      &this->post_plan_gpu, this->nsamp_trans, HIPFFT_Z2Z, 1
+    ));
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+    CUFFT_EXEC(cufftPlan1d(
+      &this->post_plan_gpu, this->nsamp_trans, CUFFT_Z2Z, 1
+    ));
 #endif  // !TRV_USE_HIP
+  } else {
+    this->post_plan = fftw_plan_dft_1d(
+      this->nsamp_trans, this->post_buffer, this->post_buffer,
+      FFTW_FORWARD, FFTW_ESTIMATE
+    );
+  }
 
   this->plan_init = true;
 }
@@ -362,10 +342,6 @@ std::vector< std::complex<double> > HankelTransform::compute_kernel_coeff() {
 void HankelTransform::biased_transform(
   std::complex<double>* a, std::complex<double>* b
 ) {
-#ifdef TRV_USE_HIP
-  hipError_t hip_ret;
-#endif  // TRV_USE_HIP
-
   // STYLE: Standard naming convention is not followed below.
   int N = this->nsamp;
   int N_trans = this->nsamp_trans;
@@ -425,28 +401,43 @@ void HankelTransform::biased_transform(
   }
 
   // Compute the convolution b = a * u using FFT.
-#ifndef TRV_USE_HIP
-  fftw_execute(this->pre_plan);
-#else  // TRV_USE_HIP
-  hipfftDoubleComplex* d_pre_buffer;
-  hip_ret = hipMalloc(
-    &d_pre_buffer, sizeof(hipfftDoubleComplex) * this->nsamp_trans
-  );
-  trva::copy_complex_array_htod(
-    this->pre_buffer, d_pre_buffer, this->nsamp_trans
-  );
-  hipfftExecZ2Z(this->pre_plan, d_pre_buffer, d_pre_buffer, HIPFFT_FORWARD);
-  hip_ret = hipDeviceSynchronize();
-  trva::copy_complex_array_dtoh(
-    d_pre_buffer, this->pre_buffer, this->nsamp_trans
-  );
-  hip_ret = hipFree(d_pre_buffer);
-  if (hip_ret != hipSuccess) {
-    throw std::runtime_error(
-      "Failed to perform the forward FFT on the pre-transform buffer."
+  if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+    fft_double_complex* d_pre_buffer;
+    HIP_EXEC(hipMalloc(
+      &d_pre_buffer, sizeof(fft_double_complex) * this->nsamp_trans
+    ));
+    trva::copy_complex_array_htod(
+      this->pre_buffer, d_pre_buffer, this->nsamp_trans
     );
+    HIPFFT_EXEC(hipfftExecZ2Z(
+      this->pre_plan, d_pre_buffer, d_pre_buffer, HIPFFT_FORWARD
+    ));
+    HIP_EXEC(hipDeviceSynchronize());
+    trva::copy_complex_array_dtoh(
+      d_pre_buffer, this->pre_buffer, this->nsamp_trans
+    );
+    HIP_EXEC(hipFree(d_pre_buffer));
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+    fft_double_complex* d_pre_buffer;
+    CUDA_EXEC(cudaMalloc(
+      &d_pre_buffer, sizeof(fft_double_complex) * this->nsamp_trans
+    ));
+    trva::copy_complex_array_htod(
+      this->pre_buffer, d_pre_buffer, this->nsamp_trans
+    );
+    CUFFT_EXEC(cufftExecZ2Z(
+      this->pre_plan_gpu, d_pre_buffer, d_pre_buffer, CUFFT_FORWARD
+    ));
+    CUDA_EXEC(cudaDeviceSynchronize());
+    trva::copy_complex_array_dtoh(
+      d_pre_buffer, this->pre_buffer, this->nsamp_trans
+    );
+    CUDA_EXEC(cudaFree(d_pre_buffer));
+#endif // !TRV_USE_HIP
+  } else {
+    fftw_execute(this->pre_plan);
   }
-#endif  // !TRV_USE_HIP
 
   for (int m = 0; m < N_trans; m++) {
     // Divide by `N` to normalise the inverse DFT.
@@ -456,28 +447,43 @@ void HankelTransform::biased_transform(
     this->post_buffer[m][1] = b_.imag();
   }
 
-#ifndef TRV_USE_HIP
-  fftw_execute(this->post_plan);
-#else  // TRV_USE_HIP
-  hipfftDoubleComplex* d_post_buffer;
-  hip_ret = hipMalloc(
-    &d_post_buffer, sizeof(hipfftDoubleComplex) * this->nsamp_trans
-  );
-  trva::copy_complex_array_htod(
-    this->post_buffer, d_post_buffer, this->nsamp_trans
-  );
-  hipfftExecZ2Z(this->post_plan, d_post_buffer, d_post_buffer, HIPFFT_FORWARD);
-  hip_ret = hipDeviceSynchronize();
-  trva::copy_complex_array_dtoh(
-    d_post_buffer, this->post_buffer, this->nsamp_trans
-  );
-  hip_ret = hipFree(d_post_buffer);
-  if (hip_ret != hipSuccess) {
-    throw std::runtime_error(
-      "Failed to perform the forward FFT on the post-transform buffer."
+  if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+    fft_double_complex* d_post_buffer;
+    HIP_EXEC(hipMalloc(
+      &d_post_buffer, sizeof(fft_double_complex) * this->nsamp_trans
+    ));
+    trva::copy_complex_array_htod(
+      this->post_buffer, d_post_buffer, this->nsamp_trans
     );
+    HIPFFT_EXEC(hipfftExecZ2Z(
+      this->post_plan, d_post_buffer, d_post_buffer, HIPFFT_FORWARD
+    ));
+    HIP_EXEC(hipDeviceSynchronize());
+    trva::copy_complex_array_dtoh(
+      d_post_buffer, this->post_buffer, this->nsamp_trans
+    );
+    HIP_EXEC(hipFree(d_post_buffer));
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+    fft_double_complex* d_post_buffer;
+    CUDA_EXEC(cudaMalloc(
+      &d_post_buffer, sizeof(fft_double_complex) * this->nsamp_trans
+    ));
+    trva::copy_complex_array_htod(
+      this->post_buffer, d_post_buffer, this->nsamp_trans
+    );
+    CUFFT_EXEC(cufftExecZ2Z(
+      this->post_plan_gpu, d_post_buffer, d_post_buffer, CUFFT_FORWARD
+    ));
+    CUDA_EXEC(cudaDeviceSynchronize());
+    trva::copy_complex_array_dtoh(
+      d_post_buffer, this->post_buffer, this->nsamp_trans
+    );
+    CUDA_EXEC(cudaFree(d_post_buffer));
+#endif  // TRV_USE_HIP
+  } else {
+    fftw_execute(this->post_plan);
   }
-#endif  // !TRV_USE_HIP
 
   // Trim any extrapolation.
   for (int j = 0; j < N; j++) {
