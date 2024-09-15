@@ -53,15 +53,15 @@ HankelTransform::HankelTransform(double mu, double q, bool threaded) {
 
   this->threaded = threaded;
 
-  // Initialise FFTW plans.
+#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+  // Initialise FFTW multithreading.
   if (!trvs::is_gpu_enabled()) {
     if (this->threaded) {
-#if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
       fftw_init_threads();
       fftw_plan_with_nthreads(omp_get_max_threads());
-#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
     }
   }
+#endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 }
 
 HankelTransform::~HankelTransform() {
@@ -83,7 +83,7 @@ HankelTransform::~HankelTransform() {
 void HankelTransform::reset() {
   if (this->plan_init) {
     if (trvs::is_gpu_enabled()) {
-      // Destroy GPU plans.
+      // Destroy GPU FFT plans.
 #if defined(TRV_USE_HIP)
       HIPFFT_EXEC(hipfftDestroy(this->pre_plan_gpu));
       HIPFFT_EXEC(hipfftDestroy(this->post_plan_gpu));
@@ -92,7 +92,7 @@ void HankelTransform::reset() {
       CUFFT_EXEC(cufftDestroy(this->post_plan_gpu));
 #endif                       // TRV_USE_HIP
     } else {
-      // Destroy CPU plans.
+      // Destroy CPU FFT plans.
       fftw_destroy_plan(this->pre_plan);
       fftw_destroy_plan(this->post_plan);
     }
