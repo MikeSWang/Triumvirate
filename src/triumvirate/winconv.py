@@ -547,7 +547,8 @@ class WinConvTerm:
         if coeff == 0:
             warnings.warn(
                 "Coefficient of window convolution term is zero.",
-                RuntimeWarning
+                RuntimeWarning,
+                stacklevel=4,
             )
         self.coeff = coeff
 
@@ -1739,7 +1740,8 @@ class WinConvBase:
                             "fully covered by the window function "
                             "separation sample points. "
                             "Inaccurate extrapolation may occur. " + msg,
-                            category=ConvolutionRangeWarning
+                            category=ConvolutionRangeWarning,
+                            stacklevel=2,
                         )
                 if (
                     term.multipole_Z not in WinConvTerm._SPEC_INDICES
@@ -1764,7 +1766,8 @@ class WinConvBase:
                             "fully covered by the input CF "
                             "separation sample points. "
                             "Inaccurate extrapolation may occur. " + msg,
-                            category=ConvolutionRangeWarning
+                            category=ConvolutionRangeWarning,
+                            stacklevel=2,
                         )
 
 

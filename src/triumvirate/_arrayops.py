@@ -350,7 +350,8 @@ def extrap_loglin_oscil(a, n_ext):
     if len(a) < 8:
         warnings.warn(
             "Array length is less than 8. Extrapolation may not be accurate.",
-            UserWarning
+            UserWarning,
+            stacklevel=3,
         )
 
     # Check for sign changes and restrict extrapolation to a range
@@ -407,7 +408,8 @@ def extrap_loglin_oscil(a, n_ext):
             warnings.warn(
                 "Divergent behaviour detected at the left tail. "
                 "Constant padding is used instead.",
-                DivergenceWarning
+                DivergenceWarning,
+                stacklevel=3,
             )
             # print("Left tail extrap: trend -> const")
     # No oscillations
@@ -435,7 +437,8 @@ def extrap_loglin_oscil(a, n_ext):
                 warnings.warn(
                     "Divergent behaviour detected at the left endpoints. "
                     "Constant padding is used instead.",
-                    DivergenceWarning
+                    DivergenceWarning,
+                    stacklevel=3,
                 )
                 # print("Left tail extrap: endpoint -> const")
 
@@ -449,7 +452,8 @@ def extrap_loglin_oscil(a, n_ext):
             warnings.warn(
                 "Divergent behaviour detected at the right tail. "
                 "Constant padding is used instead.",
-                DivergenceWarning
+                DivergenceWarning,
+                stacklevel=3,
             )
             # print("Right tail extrap: trend -> const")
     else:
@@ -472,7 +476,8 @@ def extrap_loglin_oscil(a, n_ext):
                 warnings.warn(
                     "Divergent behaviour detected at the right endpoints. "
                     "Constant padding is used instead.",
-                    DivergenceWarning
+                    DivergenceWarning,
+                    stacklevel=3,
                 )
                 # print("Right tail extrap: endpoint -> const")
 

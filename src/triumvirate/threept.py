@@ -186,7 +186,8 @@ def _amalgamate_parameters(paramset=None, params_sampling=None,
         warnings.warn(
             "The following parameter default values "
             f"are unchanged: {defaults}. "
-            "Not all parameters are necessarily used."
+            "Not all parameters are necessarily used.",
+            stacklevel=3,
         )
 
     return paramset
