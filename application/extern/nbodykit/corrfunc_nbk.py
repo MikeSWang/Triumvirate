@@ -1,8 +1,8 @@
 """Measure correlation function using `nbodykit`.
 
 """
-from argparse import ArgumentParser
 import os.path as osp
+from argparse import ArgumentParser
 from pathlib import Path
 
 import numpy as np
