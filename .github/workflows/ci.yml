@@ -17,8 +17,7 @@ on:
       - tests/**
       - setup.py
       - setup.cfg
-      - .pyproject.toml
-      - .pyproject_cuda.toml
+      - deploy/pkg/pyproject/.pyproject.toml
       - MANIFEST.in
       - Makefile
       - .gitignore
@@ -30,8 +29,7 @@ on:
       - tests/**
       - setup.py
       - setup.cfg
-      - .pyproject.toml
-      - .pyproject_cuda.toml
+      - deploy/pkg/pyproject/.pyproject.toml
       - MANIFEST.in
       - Makefile
       - .gitignore

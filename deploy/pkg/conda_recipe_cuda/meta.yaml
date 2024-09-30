@@ -19,7 +19,7 @@ build:
   number: 0
   string: cuda{{ cuda_version|replace(".", "") }}py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
   script:
-    - cp .pyproject_cuda.toml pyproject.toml
+    - cp deploy/pkg/pyproject/.pyproject_cuda.toml pyproject.toml
     - {{ PYTHON }} -m pip install . -vvv
   script_env:
     # Enforce OpenMP and CUDA support.

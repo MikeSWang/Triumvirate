@@ -82,7 +82,7 @@ repos:
   #   hooks:
   #     - id: docformatter
   #       additional_dependencies: ['tomli']
-  #       args: ['--in-place', '--config', './.pyproject.toml']
+  #       args: ['--in-place', '--config', 'deploy/pkg/pyproject/.pyproject.toml']
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
@@ -99,7 +99,7 @@ repos:
     rev: v2.3.0
     hooks:
       - id: codespell
-        args: ['--write-changes', '--toml', './.pyproject.toml']
+        args: ['--write-changes', '--toml', 'deploy/pkg/pyproject/.pyproject.toml']
         additional_dependencies:
           - tomli
 

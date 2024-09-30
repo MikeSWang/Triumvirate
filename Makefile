@@ -685,24 +685,24 @@ ifdef usehip
 ifdef usecuda
 pyinstall:
 	@echo "Installing ${PKGNAME}${PKGSUFFIX} Python package ${WOMP} OpenMP (in pip dev mode)..."
-	@cp .pyproject_hipcuda.toml pyproject.toml
+	@cp deploy/pkg/pyproject/.pyproject_hipcuda.toml pyproject.toml
 	python -m pip install ${PIPOPTS} --editable . -vvv
 else   # usehip && !usecuda
 pyinstall:
 	@echo "Installing ${PKGNAME}${PKGSUFFIX} Python package ${WOMP} OpenMP (in pip dev mode)..."
-	@cp .pyproject_hip.toml pyproject.toml
+	@cp deploy/pkg/pyproject/.pyproject_hip.toml pyproject.toml
 	python -m pip install ${PIPOPTS} --editable . -vvv
 endif  # usehip && usecuda
 else
 ifdef usecuda
 pyinstall:
 	@echo "Installing ${PKGNAME}${PKGSUFFIX} Python package ${WOMP} OpenMP (in pip dev mode)..."
-	@cp .pyproject_cuda.toml pyproject.toml
+	@cp deploy/pkg/pyproject/.pyproject_cuda.toml pyproject.toml
 	python -m pip install ${PIPOPTS} --editable . -vvv
 else  # !usehip && usecuda
 pyinstall:
 	@echo "Installing ${PKGNAME}${PKGSUFFIX} Python package ${WOMP} OpenMP (in pip dev mode)..."
-	@cp .pyproject.toml pyproject.toml
+	@cp deploy/pkg/pyproject/.pyproject.toml pyproject.toml
 	python -m pip install ${PIPOPTS} --editable . -vvv
 endif  # !usehip && !usecuda
 endif

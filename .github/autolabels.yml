@@ -7,11 +7,12 @@ build:
   - any-glob-to-any-file:
     - setup.py
     - setup.cfg
-    - .pyproject.toml
-    - .pyproject_cuda.toml
     - Makefile
     - MANIFEST.in
-    - deploy/pkg/**/*
+    - deploy/pkg/pyproject/*
+    - deploy/pkg/conda_*/*
+    - deploy/pkg/*.sh
+    - deploy/pkg/*.py
     - .github/workflows/ci*.yml
     - .github/workflows/cd*.yml
 
@@ -30,11 +31,10 @@ maintenance:
   - any-glob-to-any-file:
     - setup.py
     - setup.cfg
-    - .pyproject.toml
-    - .pyproject_cuda.toml
     - Makefile
     - MANIFEST.in
     - NOTES.md
+    - deploy/pkg/pyproject/*
     - deploy/test/**/*
     - .github/**/*.md
 
