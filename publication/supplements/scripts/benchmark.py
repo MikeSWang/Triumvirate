@@ -62,7 +62,6 @@ def configure():
         Parsed command-line arguments.
 
     """
-
     cfg = ArgumentParser(
         description="Benchmark performance of `Triumvirate`."
     )
