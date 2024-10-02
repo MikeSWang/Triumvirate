@@ -329,21 +329,43 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   this->catalogue_columns = catalogue_columns_;
   this->output_tag = output_tag_;
 
-  this->alignment = alignment_;
-  this->padscale = padscale_;
-  this->assignment = assignment_;
-  this->interlace = interlace_;
+  if (strlen(alignment_) > 0) {
+    this->alignment = alignment_;
+  }
+  if (strlen(padscale_) > 0) {
+    this->padscale = padscale_;
+  }
+  if (strlen(assignment_) > 0) {
+    this->assignment = assignment_;
+  }
+  if (strlen(interlace_) > 0) {
+    this->interlace = interlace_;
+  }
 
   this->catalogue_type = catalogue_type_;
   this->statistic_type = statistic_type_;
-  this->form = form_;
-  this->norm_convention = norm_convention_;
-  this->binning = binning_;
+  if (strlen(form_) > 0) {
+    this->form = form_;
+  }
+  if (strlen(norm_convention_) > 0) {
+    this->norm_convention = norm_convention_;
+  }
+  if (strlen(binning_) > 0) {
+    this->binning = binning_;
+  }
 
-  this->fftw_scheme = fftw_scheme_;
-  this->use_fftw_wisdom = use_fftw_wisdom_;
-  this->save_binned_vectors = save_binned_vectors_;
-  this->progbar = progbar_;
+  if (strlen(fftw_scheme_) > 0) {
+    this->fftw_scheme = fftw_scheme_;
+  }
+  if (strlen(use_fftw_wisdom_) > 0) {
+    this->use_fftw_wisdom = use_fftw_wisdom_;
+  }
+  if (strlen(save_binned_vectors_) > 0) {
+    this->save_binned_vectors = save_binned_vectors_;
+  }
+  if (strlen(progbar_) > 0) {
+    this->progbar = progbar_;
+  }
 
   // Attribute derived parameters.
   this->boxsize[0] = boxsize_x;
