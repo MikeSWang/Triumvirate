@@ -793,7 +793,7 @@ int ParameterSet::validate(bool init) {
   if (this->fftw_scheme == "estimate") {
     this->fftw_planner_flag = FFTW_ESTIMATE;  // derivation
   } else
-  if (this->fftw_scheme == "measure" || this->fftw_scheme == "") {
+  if (this->fftw_scheme == "measure") {
     this->fftw_scheme = "measure";  // transmutation
     this->fftw_planner_flag = FFTW_MEASURE;  // derivation
   } else
@@ -814,20 +814,20 @@ int ParameterSet::validate(bool init) {
 
 #if defined(TRV_USE_CUDA)
   this->use_fftw_wisdom = "";  // transmutation
-  if (!(this->use_fftw_wisdom == "false" || this->use_fftw_wisdom == "")) {
+  if (!(this->use_fftw_wisdom == "false")) {
     if (trvs::currTask == 0) {
       trvs::logger.warn("FFTW wisdom is disabled for cuFFT.");
     }
   }
 #elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
   this->use_fftw_wisdom = "";  // transmutation
-  if (!(this->use_fftw_wisdom == "false" || this->use_fftw_wisdom == "")) {
+  if (!(this->use_fftw_wisdom == "false")) {
     if (trvs::currTask == 0) {
       trvs::logger.warn("FFTW wisdom is disabled for hipFFT.");
     }
   }
 #else  // !TRV_USE_CUDA && !TRV_USE_HIP
-  if (this->use_fftw_wisdom == "false" || this->use_fftw_wisdom == "") {
+  if (this->use_fftw_wisdom == "false") {
     this->use_fftw_wisdom = "";  // transmutation
   } else
   if (init) {
@@ -906,10 +906,6 @@ int ParameterSet::validate(bool init) {
       this->save_binned_vectors = this->measurement_dir
         + this->save_binned_vectors;
     }  // transmutation
-  }
-
-  if (this->progbar == "") {
-    this->progbar = "false";  // transmutation
   }
 
   // Validate and derive numerical parameters.
