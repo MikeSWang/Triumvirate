@@ -80,7 +80,7 @@ void make_write_dir(std::string dirstr) {
         );
       }
       throw trv::sys::IOError(
-        "Failed to create directory: %s\n", dirstr.c_str()
+        "Failed to create directory: %s", dirstr.c_str()
       );
     }
   }

@@ -560,7 +560,7 @@ void MeshField::assign_weighted_field_to_mesh(
       );
     };
     throw trvs::InvalidParameterError(
-      "Unsupported mesh assignment scheme: '%s'.\n",
+      "Unsupported mesh assignment scheme: '%s'.",
       this->params.assignment.c_str()
     );
   }
@@ -1073,7 +1073,7 @@ double MeshField::calc_assignment_window_in_fourier(
       );
     }
     throw trvs::InvalidParameterError(
-      "Invalid window assignment order: %d. Must be non-negative.\n",
+      "Invalid window assignment order: %d. Must be non-negative.",
       order
     );
   }
@@ -1109,7 +1109,7 @@ void MeshField::compute_assignment_window_in_fourier(int order) {
       );
     }
     throw trvs::InvalidParameterError(
-      "Invalid window assignment order: %d. Must be non-negative.\n",
+      "Invalid window assignment order: %d. Must be non-negative.",
       order
     );
   }
@@ -2258,7 +2258,7 @@ trv::BinnedVectors FieldStats::record_binned_vectors(
       );
     }
     throw trvs::InvalidDataError(
-      "Invalid binning space: '%s'.\n", binning.space.c_str()
+      "Invalid binning space: '%s'.", binning.space.c_str()
     );
   }
 
@@ -2446,7 +2446,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
       );
     }
     throw trvs::InvalidDataError(
-      "Input mesh fields have incompatible physical properties.\n"
+      "Input mesh fields have incompatible physical properties."
     );
   }
 
@@ -2649,7 +2649,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
       );
     }
     throw trvs::InvalidDataError(
-      "Input mesh fields have incompatible physical properties.\n"
+      "Input mesh fields have incompatible physical properties."
     );
   }
 
@@ -2898,7 +2898,7 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
       );
     }
     throw trvs::InvalidDataError(
-      "Input mesh fields have incompatible physical properties.\n"
+      "Input mesh fields have incompatible physical properties."
     );
   }
 
@@ -3153,7 +3153,7 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
       );
     }
     throw trvs::InvalidDataError(
-      "Input mesh fields have incompatible physical properties.\n"
+      "Input mesh fields have incompatible physical properties."
     );
   }
 
@@ -3357,7 +3357,7 @@ std::function<double(int, int, int)> FieldStats::ret_calc_shotnoise_aliasing()
     );
   }
   throw trvs::InvalidParameterError(
-    "Invalid assignment scheme: '%s'.\n", this->params.assignment.c_str()
+    "Invalid assignment scheme: '%s'.", this->params.assignment.c_str()
   );
 }
 

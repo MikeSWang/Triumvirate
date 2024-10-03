@@ -90,7 +90,7 @@ void validate_multipole_coupling(trv::ParameterSet& params) {
     }
     throw trvs::InvalidParameterError(
       "Specified three-point correlator multipole "
-      "vanishes identically owing to zero-valued Wigner 3-j symbol.\n"
+      "vanishes identically owing to zero-valued Wigner 3-j symbol."
     );
   }
 }
@@ -107,7 +107,7 @@ double calc_bispec_normalisation_from_particles(
     if (trvs::currTask == 0) {
       trvs::logger.error("Particle data are uninitialised.");
     }
-    throw trvs::InvalidDataError("Particle data are uninitialised.\n");
+    throw trvs::InvalidDataError("Particle data are uninitialised.");
   }
 
   double norm = 0.;  // I₃
@@ -133,7 +133,7 @@ double calc_bispec_normalisation_from_particles(
     }
     throw trvs::InvalidDataError(
       "Particle 'nz' values appear to be all zeros. "
-      "Check the input catalogue contains valid 'nz' field.\n"
+      "Check the input catalogue contains valid 'nz' field."
     );
   }
 
@@ -299,7 +299,7 @@ trv::BispecMeasurements compute_bispec(
       );
     }
     throw trvs::InvalidParameterError(
-      "Three-point statistic form is not recognised: `form` = '%s'.\n",
+      "Three-point statistic form is not recognised: `form` = '%s'.",
       params.form.c_str()
     );
   }
@@ -1075,7 +1075,7 @@ trv::ThreePCFMeasurements compute_3pcf(
       );
     }
     throw trvs::InvalidParameterError(
-      "Three-point statistic form is not recognised: `form` = '%s'.\n",
+      "Three-point statistic form is not recognised: `form` = '%s'.",
       params.form.c_str()
     );
   }
@@ -1538,7 +1538,7 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
       );
     }
     throw trvs::InvalidParameterError(
-      "Three-point statistic form is not recognised: `form` = '%s'.\n",
+      "Three-point statistic form is not recognised: `form` = '%s'.",
       params.form.c_str()
     );
   }
@@ -2265,7 +2265,7 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
       );
     }
     throw trvs::InvalidParameterError(
-      "Three-point statistic form is not recognised: `form` = '%s'.\n",
+      "Three-point statistic form is not recognised: `form` = '%s'.",
       params.form.c_str()
     );
   }
@@ -2706,7 +2706,7 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
       );
     }
     throw trvs::InvalidParameterError(
-      "Three-point statistic form is not recognised: `form` = '%s'.\n",
+      "Three-point statistic form is not recognised: `form` = '%s'.",
       params.form.c_str()
     );
   }
@@ -3178,7 +3178,7 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
       );
     }
     throw trvs::InvalidParameterError(
-      "Three-point statistic form is not recognised: `form` = '%s'.\n",
+      "Three-point statistic form is not recognised: `form` = '%s'.",
       params.form.c_str()
     );
   }

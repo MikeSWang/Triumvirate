@@ -340,7 +340,7 @@ ProgressBar::ProgressBar(int task_count, std::string name) {
 
   if (task_count < 1) {
     throw InvalidParameterError(
-      "Progress bar must count at least one task in total.\n"
+      "Progress bar must count at least one task in total."
     );
   }
   this->task_count = task_count;
@@ -350,7 +350,7 @@ ProgressBar::ProgressBar(int task_count, std::string name) {
 
 void ProgressBar::set_bar_width(int width) {
   if (width < 1) {
-    throw InvalidParameterError("Progress bar width must be at least 1.\n");
+    throw InvalidParameterError("Progress bar width must be at least 1.");
   }
   this->bar_width = width;
 }
@@ -358,7 +358,7 @@ void ProgressBar::set_bar_width(int width) {
 void ProgressBar::set_nodes(std::vector<float> nodes) {
   if (nodes.size() < 1) {
     throw InvalidParameterError(
-      "Progress bar nodes must have at least one element.\n"
+      "Progress bar nodes must have at least one element."
     );
   }
   this->nodes = nodes;
@@ -368,7 +368,7 @@ void ProgressBar::set_task_idx(int task_idx) {
   if (task_idx < 0 or task_idx > this->task_count) {
     throw InvalidParameterError(
       "Progress bar task index must be non-negative and "
-      "within the total task count.\n"
+      "within the total task count."
     );
   }
   this->task_idx = task_idx;
@@ -380,7 +380,7 @@ void ProgressBar::set_task_idx(int task_idx) {
 void ProgressBar::set_progress(float progress) {
   if (progress < 0. or progress > 1.) {
     throw InvalidParameterError(
-      "Progress bar progress must be within the range [0, 1].\n"
+      "Progress bar progress must be within the range [0, 1]."
     );
   }
   this->progress = progress;
@@ -447,7 +447,7 @@ void ProgressBar::update(float progress_now) {
     }
   } else {
     throw InvalidDataError(
-      "Progress bar has already completed: progress %f > 1.\n", this->progress
+      "Progress bar has already completed: progress %f > 1.", this->progress
     );
   }
   if (this->progress == 1.) {std::cout << std::endl;}
@@ -465,14 +465,14 @@ std::vector<float> set_nodes_by_str(std::string interval_str) {
     std::stof(interval_str);
   } catch (const std::invalid_argument& e) {
     throw InvalidParameterError(
-      "Progress bar interval must be a float number.\n"
+      "Progress bar interval must be a float number."
     );
   }
 
   float interval = std::stof(interval_str);
   if (!(0. < interval && interval < 100.)) {
     throw InvalidParameterError(
-      "Progress bar interval must be in (0, 100) interval.\n"
+      "Progress bar interval must be in (0, 100) interval."
     );
   }
   interval /= 100.;
@@ -717,7 +717,7 @@ void display_prog_logbars(int endpoint) {
     // std::printf("%s\n", std::string(80, '<').c_str());
   } else {
     throw InvalidParameterError(
-      "Invalid endpoint for log bars: %d.\n", endpoint
+      "Invalid endpoint for log bars: %d.", endpoint
     );
   }
 }

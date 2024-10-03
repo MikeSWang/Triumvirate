@@ -515,7 +515,7 @@ int ParameterSet::validate(bool init) {
     }
     throw trvs::InvalidParameterError(
       "Catalogue type must be 'survey', 'random', 'sim' or 'none': "
-      "`catalogue_type` = '%s'.\n",
+      "`catalogue_type` = '%s'.",
       this->catalogue_type.c_str()
     );
 #endif  // !TRV_EXTCALL
@@ -529,7 +529,7 @@ int ParameterSet::validate(bool init) {
       );
     }
     throw trvs::InvalidParameterError(
-      "Box alignment must be 'centre' or 'pad': `alignment` = '%s'.\n",
+      "Box alignment must be 'centre' or 'pad': `alignment` = '%s'.",
       this->alignment.c_str()
     );
   }
@@ -541,7 +541,7 @@ int ParameterSet::validate(bool init) {
       );
     }
     throw trvs::InvalidParameterError(
-      "Pad scale must be 'box' or 'grid': `padscale` = '%s'.\n",
+      "Pad scale must be 'box' or 'grid': `padscale` = '%s'.",
       this->padscale.c_str()
     );
   }
@@ -567,7 +567,7 @@ int ParameterSet::validate(bool init) {
     }
     throw trvs::InvalidParameterError(
       "Mesh assignment scheme must be "
-      "'ngp', 'cic', 'tsc' or 'pcs': `assignment` = '%s'.\n",
+      "'ngp', 'cic', 'tsc' or 'pcs': `assignment` = '%s'.",
       this->assignment.c_str()
     );
   }
@@ -586,7 +586,7 @@ int ParameterSet::validate(bool init) {
     }
     throw trvs::InvalidParameterError(
       "Interlacing must be 'true'/'on' or 'false'/'off': "
-      "`interlace` = '%s'.\n",
+      "`interlace` = '%s'.",
       this->interlace.c_str()
     );
   }
@@ -603,7 +603,7 @@ int ParameterSet::validate(bool init) {
       }
       throw trvs::InvalidParameterError(
         "Power spectrum requires 'sim' or 'survey' catalogue(s): "
-        "`catalogue_type` = '%s'.\n",
+        "`catalogue_type` = '%s'.",
         this->catalogue_type.c_str()
       );
     }
@@ -620,7 +620,7 @@ int ParameterSet::validate(bool init) {
       }
       throw trvs::InvalidParameterError(
         "Two-point correlation function requires 'sim' or 'survey' "
-        "catalogue(s): `catalogue_type` = '%s'.\n",
+        "catalogue(s): `catalogue_type` = '%s'.",
         this->catalogue_type.c_str()
       );
     }
@@ -637,7 +637,7 @@ int ParameterSet::validate(bool init) {
       }
       throw trvs::InvalidParameterError(
         "Two-point correlation function window requires 'random' catalogue: "
-        "`catalogue_type` = '%s'.\n",
+        "`catalogue_type` = '%s'.",
         this->catalogue_type.c_str()
       );
     }
@@ -654,7 +654,7 @@ int ParameterSet::validate(bool init) {
       }
       throw trvs::InvalidParameterError(
         "Bispectrum requires 'sim' or 'survey' catalogue(s): "
-        "`catalogue_type` = '%s'.\n",
+        "`catalogue_type` = '%s'.",
         this->catalogue_type.c_str()
       );
     }
@@ -671,7 +671,7 @@ int ParameterSet::validate(bool init) {
       }
       throw trvs::InvalidParameterError(
         "Three-point correlation function requires 'sim' or 'survey' "
-        "catalogue(s): `catalogue_type` = '%s'.\n",
+        "catalogue(s): `catalogue_type` = '%s'.",
         this->catalogue_type.c_str()
       );
     }
@@ -691,7 +691,7 @@ int ParameterSet::validate(bool init) {
       }
       throw trvs::InvalidParameterError(
         "Three-point correlation function window requires 'random' "
-        "catalogue: `catalogue_type` = '%s'.\n",
+        "catalogue: `catalogue_type` = '%s'.",
         this->catalogue_type.c_str()
       );
     }
@@ -710,7 +710,7 @@ int ParameterSet::validate(bool init) {
       );
     }
     throw trvs::InvalidParameterError(
-      "Statistic type is not recognised: `statistic_type` = '%s'.\n",
+      "Statistic type is not recognised: `statistic_type` = '%s'.",
       this->statistic_type.c_str()
     );
 #endif  // !TRV_EXTCALL
@@ -728,7 +728,7 @@ int ParameterSet::validate(bool init) {
       );
     }
     throw trvs::InvalidParameterError(
-      "Three-point statistic form is not recognised: `form` = '%s'.\n",
+      "Three-point statistic form is not recognised: `form` = '%s'.",
       this->form.c_str()
     );
   } else {
@@ -753,7 +753,7 @@ int ParameterSet::validate(bool init) {
     }
     throw trvs::InvalidParameterError(
       "Normalisation convention must be 'mesh', 'particle', "
-      "'mesh' or 'mesh-mixed': `norm_convention` = '%s'.\n",
+      "'mesh' or 'mesh-mixed': `norm_convention` = '%s'.",
       this->norm_convention.c_str()
     );
   }
@@ -767,7 +767,7 @@ int ParameterSet::validate(bool init) {
     }
     throw trvs::InvalidParameterError(
       "Normalisation convention 'mesh-mixed' only applies to "
-      "two-point statistics: `npoint` = '%s'.\n",
+      "two-point statistics: `npoint` = '%s'.",
       this->npoint.c_str()
     );
   }
@@ -785,7 +785,7 @@ int ParameterSet::validate(bool init) {
       );
     }
     throw trvs::InvalidParameterError(
-      "Binning scheme is unrecognised: `binning` = '%s'.\n",
+      "Binning scheme is unrecognised: `binning` = '%s'.",
       this->binning.c_str()
     );
   }
@@ -807,7 +807,7 @@ int ParameterSet::validate(bool init) {
       );
     }
     throw trvs::InvalidParameterError(
-      "FFTW planner scheme is not supported: `fftw_scheme` = '%s'.\n",
+      "FFTW planner scheme is not supported: `fftw_scheme` = '%s'.",
       this->fftw_scheme.c_str()
     );
   }
@@ -848,7 +848,7 @@ int ParameterSet::validate(bool init) {
       throw trvs::InvalidParameterError(
         "FFTW wisdom is enabled but the planner scheme "
         "is not 'measure' or 'patient': "
-        "`fftw_scheme` = '%s'.\n",
+        "`fftw_scheme` = '%s'.",
         this->fftw_scheme.c_str()
       );
     }
@@ -933,7 +933,7 @@ int ParameterSet::validate(bool init) {
         );
       }
       throw trvs::InvalidParameterError(
-        "The box expansion factor must be >= 1: `expand` = %lg\n",
+        "The box expansion factor must be >= 1: `expand` = %lg",
         this->expand
       );
     }
@@ -966,7 +966,7 @@ int ParameterSet::validate(bool init) {
         );
       }
       throw trvs::InvalidParameterError(
-        "The Nyquist cutoff must be non-negative: `cutoff_nyq` = %lg\n",
+        "The Nyquist cutoff must be non-negative: `cutoff_nyq` = %lg",
         this->cutoff_nyq
       );
     }
@@ -986,7 +986,7 @@ int ParameterSet::validate(bool init) {
       }
       throw trvs::InvalidParameterError(
         "Padding is enabled but the padding factor is negative: "
-        "`padfactor` = %lg\n",
+        "`padfactor` = %lg",
         this->padfactor
       );
     }
@@ -1000,7 +1000,7 @@ int ParameterSet::validate(bool init) {
       }
       throw trvs::InvalidParameterError(
         "Padding is enabled but the %s padding factor is too large "
-        "for the box size: `padfactor` = %lg\n",
+        "for the box size: `padfactor` = %lg",
         this->padscale.c_str(), this->padfactor
       );
     }
@@ -1018,7 +1018,7 @@ int ParameterSet::validate(bool init) {
       }
       throw trvs::InvalidParameterError(
         "Padding is enabled but the %s padding factor is too large "
-        "for the mesh grid numbers: `padfactor` = %lg\n",
+        "for the mesh grid numbers: `padfactor` = %lg",
         this->padscale.c_str(), this->padfactor
       );
     }
@@ -1104,7 +1104,7 @@ int ParameterSet::validate(bool init) {
         );
       }
       throw trvs::InvalidParameterError(
-        "Binning scheme '%s' requires `num_bins` >= %d.\n",
+        "Binning scheme '%s' requires `num_bins` >= %d.",
         this->binning.c_str(), nbin_pad + 2
       );
     }
@@ -1164,7 +1164,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
       );
     }
     throw trvs::IOError(
-      "Non-existent or unwritable output directory: %s\n",
+      "Non-existent or unwritable output directory: %s",
       this->measurement_dir.c_str()
     );
   }
@@ -1328,7 +1328,7 @@ void set_ngrid_from_cutoff(trv::ParameterSet& params) {
       ));
     } else {
       throw trvs::InvalidParameterError(
-        "Space must be 'fourier' or 'config': `space` = '%s'.\n",
+        "Space must be 'fourier' or 'config': `space` = '%s'.",
         params.space.c_str()
       );
     }
