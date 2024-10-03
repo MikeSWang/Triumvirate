@@ -71,7 +71,7 @@ jobs:
         run: cp deploy/pkg/pyproject/.pyproject_cuda.toml pyproject.toml
 
       - name: Build built distribution
-        uses: pypa/cibuildwheel@v2.21.1
+        uses: pypa/cibuildwheel@v2.21.2
         with:
           package-dir: .
           output-dir: dist/
