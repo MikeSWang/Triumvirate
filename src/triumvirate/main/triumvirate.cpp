@@ -162,20 +162,23 @@ int main(int argc, char* argv[]) {
       trv::sys::logger.error(
         "Failed to initialise program: missing parameter file."
       );
-      throw trv::sys::IOError(
-        "Failed to initialise program: missing parameter file.\n"
+      trv::sys::exit_fatal(
+        "Failed to initialise program: missing parameter file."
       );
     }
   }
 
   trv::ParameterSet params;  // program parameters
-  if (params.read_from_file(argv[1])) {
+  int exit_code = 0;
+  try {
+    exit_code = params.read_from_file(argv[1]);
+  } catch (const trv::sys::InvalidParameterError& err) {
+    exit_code = 1;
+  }
+  if (exit_code != 0) {
     if (trv::sys::currTask == 0) {
-      trv::sys::logger.error(
+      trv::sys::exit_fatal(
         "Failed to initialise program: invalidated parameters."
-      );
-      throw trv::sys::IOError(
-        "Failed to initialise program: invalidated parameters.\n"
       );
     }
   }
@@ -217,23 +220,25 @@ int main(int argc, char* argv[]) {
           "Failed to initialise program: "
           "unspecified data-source catalogue file."
         );
-        throw trv::sys::IOError(
+        trv::sys::exit_fatal(
           "Failed to initialise program: "
-          "unspecified data-source catalogue file.\n"
+          "unspecified data-source catalogue file."
         );
       }
     }
-    if (catalogue_data.load_catalogue_file(
-      params.data_catalogue_file, params.catalogue_columns, params.volume
-    )) {
+    int exit_code = 0;
+    try {
+      exit_code = catalogue_data.load_catalogue_file(
+        params.data_catalogue_file, params.catalogue_columns, params.volume
+      );
+    } catch (const trv::sys::IOError& err) {
+      exit_code = 1;
+    }
+    if (exit_code != 0) {
       if (trv::sys::currTask == 0) {
-        trv::sys::logger.error(
+        trv::sys::exit_fatal(
           "Failed to initialise program: "
           "unloadable data-source catalogue file."
-        );
-        throw trv::sys::IOError(
-          "Failed to initialise program: "
-          "unloadable data-source catalogue file.\n"
         );
       }
     }
@@ -249,23 +254,25 @@ int main(int argc, char* argv[]) {
           "Failed to initialise program: "
           "unspecified random-source catalogue file."
         );
-        throw trv::sys::IOError(
+        trv::sys::exit_fatal(
           "Failed to initialise program: "
-          "unspecified random-source catalogue file.\n"
+          "unspecified random-source catalogue file."
         );
       }
     }
-    if (catalogue_rand.load_catalogue_file(
-      params.rand_catalogue_file, params.catalogue_columns, params.volume
-    )) {
+    int exit_code = 0;
+    try {
+      exit_code = catalogue_rand.load_catalogue_file(
+        params.rand_catalogue_file, params.catalogue_columns, params.volume
+      );
+    } catch (const trv::sys::IOError& err) {
+      exit_code = 1;
+    }
+    if (exit_code != 0) {
       if (trv::sys::currTask == 0) {
-        trv::sys::logger.error(
+        trv::sys::exit_fatal(
           "Failed to initialise program: "
           "unloadable random-source catalogue file."
-        );
-        throw trv::sys::IOError(
-          "Failed to initialise program: "
-          "unloadable random-source catalogue file.\n"
         );
       }
     }

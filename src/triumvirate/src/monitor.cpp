@@ -147,6 +147,16 @@ std::string show_timestamp() {
   return timestamp;
 }
 
+void exit_fatal(const std::string& msg) {
+  if (is_colourable()) {
+    std::cout << "\n\033[1;31mFATAL:\033[0m " << msg << std::endl;
+  } else {
+    std::cout << "\nFATAL: " << msg << std::endl;
+  }
+
+  std::exit(EXIT_FAILURE);
+}
+
 Logger::Logger(LogLevel level) {
   Logger::reset_level(level);
 }

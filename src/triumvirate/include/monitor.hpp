@@ -170,6 +170,12 @@ std::string show_elapsed_time(double duration_in_seconds);
 std::string show_timestamp();
 
 /**
+ * @brief Terminate the program with exit status `EXIT_FAILURE`.
+ *
+ */
+void exit_fatal(const std::string& msg);
+
+/**
  * @brief Logging levels.
  *
  */
