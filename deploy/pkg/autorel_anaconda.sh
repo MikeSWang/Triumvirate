@@ -39,7 +39,7 @@ if [[ ! -d "${DIST_DIR}" ]]; then mkdir -p "${DIST_DIR}"; fi
 conda build purge
 conda build --strict-verify --no-anaconda-upload "${RECIPE_DIR}" \
   --output-folder "${DIST_DIR}" \
-  --variants "{'python': ['3.10', '3.11', '3.12']}"
+  --variants "{'python': ['3.10', '3.11', '3.12', '3.13']}"
 
 # Transmute compression formats.
 find "${DIST_DIR}" -name '*.tar.bz2' \

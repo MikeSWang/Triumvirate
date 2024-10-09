@@ -88,7 +88,6 @@ testpaths = [
 [tool.cibuildwheel]
 build-frontend = 'build'
 skip = [
-    'cp313-*',
     'pp*',
     '*-win32',
     '*-manylinux_i686',
