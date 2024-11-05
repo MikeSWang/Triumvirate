@@ -2460,6 +2460,7 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_fourier(
 
   this->compute_shotnoise_aliasing();
 
+  // FUTURE: For interlacing, replace this with eq. (2.16) in arXiv:2403.13561.
   std::function<double(int, int, int)> calc_shotnoise_aliasing = [this](
     int i, int j, int k
   ) {
