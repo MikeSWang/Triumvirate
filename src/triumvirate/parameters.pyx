@@ -550,7 +550,7 @@ cdef class ParameterSet:
 
         """
         try:
-            self._logger.info("Validating parameters...", cpp_state='start')
+            self._logger.stat("Validating parameters...", cpp_state='start')
         except (AttributeError, TypeError):
             pass
 
@@ -603,7 +603,7 @@ cdef class ParameterSet:
         self._validity = True
 
         try:
-            self._logger.info("... validated parameters.", cpp_state='end')
+            self._logger.stat("... validated parameters.", cpp_state='end')
         except (AttributeError, TypeError):
             pass
 

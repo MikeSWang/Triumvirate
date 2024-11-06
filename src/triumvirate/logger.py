@@ -14,6 +14,7 @@ import sys
 import time
 import warnings
 from copy import copy
+from functools import partialmethod
 
 
 class _ElapsedColourLogFormatter(logging.Formatter):
@@ -25,7 +26,8 @@ class _ElapsedColourLogFormatter(logging.Formatter):
     _COLOURS = {
         'NOTSET': "\033[0m",                    # reset
         'DEBUG': f"\033[{_IN_BOLD};36m",        # cyan
-        'INFO': f"\033[{_IN_BOLD};32m",         # green (blue)
+        'STAT': f"\033[{_IN_BOLD};34m",         # blue
+        'INFO': f"\033[{_IN_BOLD};32m",         # green
         'WARNING': f"\033[{_IN_BOLD};33m",      # yellow
         'ERROR': f"\033[{_IN_BOLD};31m",        # red
         'CRITICAL': f"\033[{_IN_BOLD};37;41m",  # white on red
@@ -141,14 +143,14 @@ def _format_warning(message, category, filename, lineno, line=None):
     return msg_txt
 
 
-def setup_logger(log_level=logging.INFO):
+def setup_logger(log_level=15):
     """Set up and return a customised logger with elapsed time,
     C++ runtime indication and formatted warning messages.
 
     Parameters
     ----------
     log_level : int, optional
-        Logging devel (default is `logging.INFO`).
+        Logging devel (default is 15, i.e. ``STAT`` for status).
 
     Returns
     -------
@@ -161,6 +163,10 @@ def setup_logger(log_level=logging.INFO):
         For more details of the Python logging facility.
 
     """
+    # Add custom log levels.
+    logging.STAT = 15
+    logging.addLevelName(logging.STAT, 'STAT')
+
     # Set formatter.
     formatter = _ElapsedColourLogFormatter(
         fmt='[%(asctime)s %(elapsed)s %(levelname)s] %(message)s',
@@ -180,11 +186,16 @@ def setup_logger(log_level=logging.INFO):
 
     logger_.setLevel(log_level)
 
-    # Adapt logger for C++ code indication.
-    logger = _CppLogAdapter(logger_, {'cpp_state': False})
-
     # Adapt logger to capture warnings.
     warnings.formatwarning = _format_warning
     logging.captureWarnings(True)
+
+    # Adapt logger for custom log levels.
+    logging.LoggerAdapter.stat = partialmethod(
+        logging.LoggerAdapter.log, logging.STAT
+    )
+
+    # Adapt logger for C++ code indication.
+    logger = _CppLogAdapter(logger_, {'cpp_state': False})
 
     return logger

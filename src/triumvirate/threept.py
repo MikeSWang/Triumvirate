@@ -486,7 +486,10 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         paramset = ParameterSet(param_dict=paramset, logger=logger)
 
     if logger:
-        logger.info("Parameter set have been initialised.")
+        try:
+            logger.stat("Parameter set have been initialised.")
+        except AttributeError:
+            logger.info("Parameter set have been initialised.")
 
     if paramset['catalogue_type'] != 'survey':
         raise ValueError(
@@ -513,7 +516,10 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         binning = Binning.from_parameter_set(paramset)
 
     if logger:
-        logger.info("Binning has been initialised.")
+        try:
+            logger.stat("Binning has been initialised.")
+        except AttributeError:
+            logger.info("Binning has been initialised.")
 
     # Set up lines of sight.
     if los_data is None:
@@ -525,7 +531,10 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
     los_rand = np.ascontiguousarray(los_rand)
 
     if logger:
-        logger.info("Lines of sight have been initialised.")
+        try:
+            logger.stat("Lines of sight have been initialised.")
+        except AttributeError:
+            logger.info("Lines of sight have been initialised.")
 
     # Set up box alignment.
     if None in paramset['boxsize'].values():
@@ -573,7 +582,10 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         )
 
     if logger:
-        logger.info("Catalogues have been aligned.")
+        try:
+            logger.stat("Catalogues have been aligned.")
+        except AttributeError:
+            logger.info("Catalogues have been aligned.")
 
     # --------------------------------------------------------------------
     # Measurements
@@ -581,10 +593,16 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
 
     # Prepare catalogues.
     if logger:
-        logger.info(
-            "Preparing catalogue for clustering algorithm...",
-            cpp_state='start'
-        )
+        try:
+            logger.stat(
+                "Preparing catalogue for clustering algorithm...",
+                cpp_state='start'
+            )
+        except AttributeError:
+            logger.info(
+                "Preparing catalogue for clustering algorithm...",
+                cpp_state='start'
+            )
 
     particles_data = \
         catalogue_data._convert_to_cpp_catalogue(verbose=paramset['verbose'])
@@ -592,10 +610,16 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
         catalogue_rand._convert_to_cpp_catalogue(verbose=paramset['verbose'])
 
     if logger:
-        logger.info(
-            "... prepared catalogue for clustering algorithm.",
-            cpp_state='end'
-        )
+        try:
+            logger.stat(
+                "... prepared catalogue for clustering algorithm.",
+                cpp_state='end'
+            )
+        except AttributeError:
+            logger.info(
+                "... prepared catalogue for clustering algorithm.",
+                cpp_state='end'
+            )
 
     # Set up constants.
     alpha = catalogue_data.wstotal / catalogue_rand.wstotal
@@ -644,12 +668,20 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
 
     # Perform measurement.
     if logger:
-        logger.info(
-            "Measuring %s from paired survey-type catalogues "
-            "in the local plane-parallel approximation...",
-            statistic_name,
-            cpp_state='start'
-        )
+        try:
+            logger.stat(
+                "Measuring %s from paired survey-type catalogues "
+                "in the local plane-parallel approximation...",
+                statistic_name,
+                cpp_state='start'
+            )
+        except AttributeError:
+            logger.info(
+                "Measuring %s from paired survey-type catalogues "
+                "in the local plane-parallel approximation...",
+                statistic_name,
+                cpp_state='start'
+            )
 
     results = threept_algofunc(
         particles_data, particles_rand, los_data, los_rand,
@@ -657,12 +689,20 @@ def _compute_3pt_stats_survey_like(threept_algofunc,
     )
 
     if logger:
-        logger.info(
-            "... measured %s from paired survey-type catalogues "
-            "in the local plane-parallel approximation.",
-            statistic_name,
-            cpp_state='end'
-        )
+        try:
+            logger.stat(
+                "... measured %s from paired survey-type catalogues "
+                "in the local plane-parallel approximation.",
+                statistic_name,
+                cpp_state='end'
+            )
+        except AttributeError:
+            logger.info(
+                "... measured %s from paired survey-type catalogues "
+                "in the local plane-parallel approximation.",
+                statistic_name,
+                cpp_state='end'
+            )
 
     if save:
         odirpath = paramset['directories']['measurements'] or ""
@@ -1049,7 +1089,10 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         paramset = ParameterSet(param_dict=paramset, logger=logger)
 
 #     if logger:
-#         logger.info("Parameter set have been initialised.")
+#         try:
+#             logger.stat("Parameter set have been initialised.")
+#         except AttributeError:
+#             logger.info("Parameter set have been initialised.")
 
 #     # -- Data ------------------------------------------------------------
 
@@ -1058,7 +1101,10 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         binning = Binning.from_parameter_set(paramset)
 
 #     if logger:
-#         logger.info("Binning has been initialised.")
+#         try:
+#             logger.stat("Binning has been initialised.")
+#         except AttributeError:
+#             logger.info("Binning has been initialised.")
 
 #     # Set up lines of sight.
 #     if los_data is None:
@@ -1070,7 +1116,10 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #     los_rand = np.ascontiguousarray(los_rand)
 
 #     if logger:
-#         logger.info("Lines of sight have been initialised.")
+#         try:
+#             logger.stat("Lines of sight have been initialised.")
+#         except AttributeError:
+#             logger.info("Lines of sight have been initialised.")
 
 #     # Set up box alignment.
 #     if paramset['alignment'] == 'centre':
@@ -1092,7 +1141,10 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         )
 
 #     if logger:
-#         logger.info("Catalogues have been aligned.")
+#         try:
+#             logger.stat("Catalogues have been aligned.")
+#         except AttributeError:
+#             logger.info("Catalogues have been aligned.")
 
 #     # --------------------------------------------------------------------
 #     # Measurements
@@ -1100,10 +1152,16 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 
 #     # Prepare catalogues.
 #     if logger:
-#         logger.info(
-#             "Preparing catalogue for clustering algorithm...",
-#             cpp_state='start'
-#         )
+#         try:
+#             logger.stat(
+#                 "Preparing catalogue for clustering algorithm...",
+#                 cpp_state='start'
+#             )
+#         except AttributeError:
+#             logger.info(
+#                 "Preparing catalogue for clustering algorithm...",
+#                 cpp_state='start'
+#             )
 
 #     particles_data = \
 #         catalogue_data._convert_to_cpp_catalogue(verbose=paramset['verbose'])
@@ -1111,10 +1169,16 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #         catalogue_rand._convert_to_cpp_catalogue(verbose=paramset['verbose'])
 
 #     if logger:
-#         logger.info(
-#             "... prepared catalogue for clustering algorithm.",
-#             cpp_state='end'
-#         )
+#         try:
+#             logger.stat(
+#                 "... prepared catalogue for clustering algorithm.",
+#                 cpp_state='end'
+#             )
+#         except AttributeError:
+#             logger.info(
+#                 "... prepared catalogue for clustering algorithm.",
+#                 cpp_state='end'
+#             )
 
 #     # Set up constants.
 #     alpha = catalogue_data.wstotal / catalogue_rand.wstotal
@@ -1163,13 +1227,23 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 
 #     # Perform measurement.
 #     if logger:
-#         logger.info(
-#             "Measuring bispectrum from paired survey-type catalogues "
-#             "with line-of-sight end-point choice %d "
-#             "in the local plane-parallel approximation...",
-#             los_choice,
-#             cpp_state='start'
-#         )
+#         try:
+#             logger.stat(
+#                 "Measuring bispectrum from paired survey-type catalogues "
+#                 "with line-of-sight end-point choice %d "
+#                 "in the local plane-parallel approximation...",
+#                 los_choice,
+#                 cpp_state='start'
+#             )
+#         except AttributeError:
+#             logger.info(
+#                 "Measuring bispectrum from paired survey-type catalogues "
+#                 "with line-of-sight end-point choice %d "
+#                 "in the local plane-parallel approximation...",
+#                 los_choice,
+#                 cpp_state='start'
+#             )
+
 
 #     results = _compute_bispec_for_los_choice(
 #         particles_data, particles_rand, los_data, los_rand, los_choice,
@@ -1177,13 +1251,22 @@ def compute_3pcf(catalogue_data, catalogue_rand,
 #     )
 
 #     if logger:
-#         logger.info(
-#             "... measured bispctrum from paired survey-type catalogues "
-#             "with line-of-sight end-point choice %d "
-#             "in the local plane-parallel approximation.",
-#             los_choice,
-#             cpp_state='end'
-#         )
+#         try:
+#             logger.stat(
+#                 "... measured bispctrum from paired survey-type catalogues "
+#                 "with line-of-sight end-point choice %d "
+#                 "in the local plane-parallel approximation.",
+#                 los_choice,
+#                 cpp_state='end'
+#             )
+#         except AttributeError:
+#             logger.info(
+#                 "... measured bispctrum from paired survey-type catalogues "
+#                 "with line-of-sight end-point choice %d "
+#                 "in the local plane-parallel approximation.",
+#                 los_choice,
+#                 cpp_state='end'
+#             )
 
 #     if save:
 #         odirpath = paramset['directories']['measurements'] or ""
@@ -1319,7 +1402,10 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         paramset = ParameterSet(param_dict=paramset, logger=logger)
 
     if logger:
-        logger.info("Parameter set have been initialised.")
+        try:
+            logger.stat("Parameter set have been initialised.")
+        except AttributeError:
+            logger.info("Parameter set have been initialised.")
 
     if paramset['catalogue_type'] != 'sim':
         raise ValueError(
@@ -1346,7 +1432,10 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
         binning = Binning.from_parameter_set(paramset)
 
     if logger:
-        logger.info("Binning has been initialised.")
+        try:
+            logger.stat("Binning has been initialised.")
+        except AttributeError:
+            logger.info("Binning has been initialised.")
 
     # Set up box alignment.
     if None in paramset['boxsize'].values():
@@ -1380,7 +1469,10 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
     )
 
     if logger:
-        logger.info("Catalogue box has been periodised.")
+        try:
+            logger.stat("Catalogue box has been periodised.")
+        except AttributeError:
+            logger.info("Catalogue box has been periodised.")
 
     # --------------------------------------------------------------------
     # Measurements
@@ -1398,19 +1490,31 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
             )
 
     if logger:
-        logger.info(
-            "Preparing catalogue for clustering algorithm...",
-            cpp_state='start'
-        )
+        try:
+            logger.stat(
+                "Preparing catalogue for clustering algorithm...",
+                cpp_state='start'
+            )
+        except AttributeError:
+            logger.info(
+                "Preparing catalogue for clustering algorithm...",
+                cpp_state='start'
+            )
 
     particles_data = \
         catalogue_data._convert_to_cpp_catalogue(verbose=paramset['verbose'])
 
     if logger:
-        logger.info(
-            "... prepared catalogue for clustering algorithm.",
-            cpp_state='end'
-        )
+        try:
+            logger.stat(
+                "... prepared catalogue for clustering algorithm.",
+                cpp_state='end'
+            )
+        except AttributeError:
+            logger.info(
+                "... prepared catalogue for clustering algorithm.",
+                cpp_state='end'
+            )
 
     # Set up constants.
     norm_factor_part = _calc_bispec_normalisation_from_particles(
@@ -1448,22 +1552,38 @@ def _compute_3pt_stats_sim_like(threept_algofunc, catalogue_data,
 
     # Perform measurement.
     if logger:
-        logger.info(
-            "Measuring %s from a simulation-box catalogue "
-            "in the global plane-parallel approximation...",
-            statistic_name,
-            cpp_state='start'
-        )
+        try:
+            logger.stat(
+                "Measuring %s from a simulation-box catalogue "
+                "in the global plane-parallel approximation...",
+                statistic_name,
+                cpp_state='start'
+            )
+        except AttributeError:
+            logger.info(
+                "Measuring %s from a simulation-box catalogue "
+                "in the global plane-parallel approximation...",
+                statistic_name,
+                cpp_state='start'
+            )
 
     results = threept_algofunc(particles_data, paramset, binning, norm_factor)
 
     if logger:
-        logger.info(
-            "... measured %s from a simulation-box catalogue "
-            "in the global plane-parallel approximation.",
-            statistic_name,
-            cpp_state='end'
-        )
+        try:
+            logger.stat(
+                "... measured %s from a simulation-box catalogue "
+                "in the global plane-parallel approximation.",
+                statistic_name,
+                cpp_state='end'
+            )
+        except AttributeError:
+            logger.info(
+                "... measured %s from a simulation-box catalogue "
+                "in the global plane-parallel approximation.",
+                statistic_name,
+                cpp_state='end'
+            )
 
     if save:
         odirpath = paramset['directories']['measurements'] or ""
@@ -1829,7 +1949,10 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         paramset = ParameterSet(param_dict=paramset, logger=logger)
 
     if logger:
-        logger.info("Parameter set have been initialised.")
+        try:
+            logger.stat("Parameter set have been initialised.")
+        except AttributeError:
+            logger.info("Parameter set have been initialised.")
 
     # -- Data ------------------------------------------------------------
 
@@ -1838,7 +1961,10 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
         binning = Binning.from_parameter_set(paramset)
 
     if logger:
-        logger.info("Binning has been initialised.")
+        try:
+            logger.stat("Binning has been initialised.")
+        except AttributeError:
+            logger.info("Binning has been initialised.")
 
     # Set up lines of sight.
     if los_rand is None:
@@ -1846,7 +1972,10 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
     los_rand = np.ascontiguousarray(los_rand)
 
     if logger:
-        logger.info("Lines of sight have been initialised.")
+        try:
+            logger.stat("Lines of sight have been initialised.")
+        except AttributeError:
+            logger.info("Lines of sight have been initialised.")
 
     # Set up box alignment.
     catalogue_rand.centre(
@@ -1858,7 +1987,10 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
     )
 
     if logger:
-        logger.info("Catalogues have been aligned.")
+        try:
+            logger.stat("Catalogues have been aligned.")
+        except AttributeError:
+            logger.info("Catalogues have been aligned.")
 
     # --------------------------------------------------------------------
     # Measurements
@@ -1904,11 +2036,18 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
 
     # Perform measurement.
     if logger:
-        logger.info(
-            "Measuring three-point correlation function window "
-            "from a random catalogue...",
-            cpp_state='start'
-        )
+        try:
+            logger.stat(
+                "Measuring three-point correlation function window "
+                "from a random catalogue...",
+                cpp_state='start'
+            )
+        except AttributeError:
+            logger.info(
+                "Measuring three-point correlation function window "
+                "from a random catalogue...",
+                cpp_state='start'
+            )
 
     results = _compute_3pcf_window(
         particles_rand, los_rand,
@@ -1917,11 +2056,18 @@ def compute_3pcf_window(catalogue_rand, los_rand=None,
     )
 
     if logger:
-        logger.info(
-            "... measured three-point correlation function window "
-            "from a random catalogue.",
-            cpp_state='end'
-        )
+        try:
+            logger.stat(
+                "... measured three-point correlation function window "
+                "from a random catalogue.",
+                cpp_state='end'
+            )
+        except AttributeError:
+            logger.info(
+                "... measured three-point correlation function window "
+                "from a random catalogue.",
+                cpp_state='end'
+            )
 
     if save:
         odirpath = paramset['directories']['measurements'] or ""
