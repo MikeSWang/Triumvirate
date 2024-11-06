@@ -851,10 +851,21 @@ class FieldStats {
    *        function.
    *
    * @param i, j, k Grid index in each dimension.
-   * @param cx2, cy2, cz2 Square-sine arguments.
+   * @param sx2, sy2, sz2 Square-sine arguments.
    */
   void get_shotnoise_aliasing_sin2(
-    int i, int j, int k, double& cx2, double& cy2, double& cz2
+    int i, int j, int k, double& sx2, double& sy2, double& sz2
+  );
+
+  /**
+   * @brief Get the square-sine and square-cosine arguments for the
+   *        shot-noise aliasing function in the isotropic approximation.
+   *
+   * @param i, j, k Grid index in each dimension.
+   * @param s2h, c2h Square-sine and square-cosine arguments.
+   */
+  void get_shotnoise_aliasing_sin2_cos2_isoapprox(
+    int i, int j, int k, double& s2h, double& c2h
   );
 
   /**
@@ -892,6 +903,18 @@ class FieldStats {
    * @returns Function value.
    */
   double calc_shotnoise_aliasing_pcs(int i, int j, int k);
+
+  /**
+   * Calculate the interlaced shot-noise aliasing function for an
+   * assignment scheme of a given order in the isotropic approximation.
+   *
+   * @param i, j, k Grid indices.
+   * @param order Order of the assignment scheme.
+   * @returns Function value.
+   */
+  double calc_shotnoise_aliasing_interlaced_isoapprox(
+    int i, int j, int k, int order
+  );
 
   /**
    * Compute the shot-noise aliasing function.

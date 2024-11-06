@@ -973,7 +973,7 @@ void MeshField::assign_weighted_field_to_mesh_pcs(
       ijk[3][iaxis] = (ijk[2][iaxis] == this->params.ngrid[iaxis] - 1)
         ? 0 : ijk[2][iaxis] + 1;
 
-      // Set sampling window value (up to the 2nd element as `order == 3`).
+      // Set sampling window value (up to the 2nd element as `order == 4`).
       double s = loc_grid - idx_grid;
 
       win[0][iaxis] = 1./6 * (1. - s) * (1. - s) * (1. - s);
@@ -3331,6 +3331,15 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
 
 std::function<double(int, int, int)> FieldStats::ret_calc_shotnoise_aliasing()
 {
+  // If interlacing is enabled, use the isotropic approximation.
+  if (this->params.interlace == "true") {
+    return [this](int i, int j, int k) {
+      return calc_shotnoise_aliasing_interlaced_isoapprox(
+        i, j, k, this->params.assignment_order
+      );
+    };
+  }
+
   if (this->params.assignment == "ngp") {
     return [this](int i, int j, int k) {
       return calc_shotnoise_aliasing_ngp(i, j, k);
@@ -3363,7 +3372,7 @@ std::function<double(int, int, int)> FieldStats::ret_calc_shotnoise_aliasing()
 }
 
 void FieldStats::get_shotnoise_aliasing_sin2(
-  int i, int j, int k, double& cx2, double& cy2, double& cz2
+  int i, int j, int k, double& sx2, double& sy2, double& sz2
 ) {
   this->shift_grid_indices_fourier(i, j, k);
 
@@ -3371,9 +3380,24 @@ void FieldStats::get_shotnoise_aliasing_sin2(
   double u_y = M_PI * j / double(this->params.ngrid[1]);
   double u_z = M_PI * k / double(this->params.ngrid[2]);
 
-  cx2 = (i != 0) ? std::sin(u_x) * std::sin(u_x) : 0.;
-  cy2 = (j != 0) ? std::sin(u_y) * std::sin(u_y) : 0.;
-  cz2 = (k != 0) ? std::sin(u_z) * std::sin(u_z) : 0.;
+  sx2 = (i != 0) ? std::sin(u_x) * std::sin(u_x) : 0.;
+  sy2 = (j != 0) ? std::sin(u_y) * std::sin(u_y) : 0.;
+  sz2 = (k != 0) ? std::sin(u_z) * std::sin(u_z) : 0.;
+}
+
+void FieldStats::get_shotnoise_aliasing_sin2_cos2_isoapprox(
+  int i, int j, int k, double& s2h, double& c2h
+) {
+  this->shift_grid_indices_fourier(i, j, k);
+
+  double u_x = M_PI * i / double(this->params.ngrid[0]);
+  double u_y = M_PI * j / double(this->params.ngrid[1]);
+  double u_z = M_PI * k / double(this->params.ngrid[2]);
+
+  double uhalf = std::sqrt(u_x * u_x + u_y * u_y + u_z * u_z) / 2.;
+
+  s2h = std::sin(uhalf) * std::sin(uhalf);
+  c2h = std::cos(uhalf) * std::cos(uhalf);
 }
 
 // NOTE: Pure by coincidence.
@@ -3382,28 +3406,53 @@ PURE double FieldStats::calc_shotnoise_aliasing_ngp(int i, int j, int k) {
 }
 
 double FieldStats::calc_shotnoise_aliasing_cic(int i, int j, int k) {
-  double cx2, cy2, cz2;
-  this->get_shotnoise_aliasing_sin2(i, j, k, cx2, cy2, cz2);
+  double sx2, sy2, sz2;
+  this->get_shotnoise_aliasing_sin2(i, j, k, sx2, sy2, sz2);
 
-  return (1. - 2./3. * cx2) * (1. - 2./3. * cy2) * (1. - 2./3. * cz2);
+  return (1. - 2./3. * sx2) * (1. - 2./3. * sy2) * (1. - 2./3. * sz2);
 }
 
 double FieldStats::calc_shotnoise_aliasing_tsc(int i, int j, int k) {
-  double cx2, cy2, cz2;
-  this->get_shotnoise_aliasing_sin2(i, j, k, cx2, cy2, cz2);
+  double sx2, sy2, sz2;
+  this->get_shotnoise_aliasing_sin2(i, j, k, sx2, sy2, sz2);
 
-  return (1. - cx2 + 2./15. * cx2 * cx2)
-    * (1. - cy2 + 2./15. * cy2 * cy2)
-    * (1. - cz2 + 2./15. * cz2 * cz2);
+  return (1. - sx2 + 2./15. * sx2 * sx2)
+    * (1. - sy2 + 2./15. * sy2 * sy2)
+    * (1. - sz2 + 2./15. * sz2 * sz2);
 }
 
 double FieldStats::calc_shotnoise_aliasing_pcs(int i, int j, int k) {
-  double cx2, cy2, cz2;
-  this->get_shotnoise_aliasing_sin2(i, j, k, cx2, cy2, cz2);
+  double sx2, sy2, sz2;
+  this->get_shotnoise_aliasing_sin2(i, j, k, sx2, sy2, sz2);
 
-  return (1. - 4./3. * cx2 + 2./5. * cx2 * cx2 - 4./315. * cx2 * cx2 * cx2)
-    * (1. - 4./3. * cy2 + 2./5. * cy2 * cy2 - 4./315. * cy2 * cy2 * cy2)
-    * (1. - 4./3. * cz2 + 2./5. * cz2 * cz2 - 4./315. * cz2 * cz2 * cz2);
+  return (1. - 4./3. * sx2 + 2./5. * sx2 * sx2 - 4./315. * sx2 * sx2 * sx2)
+    * (1. - 4./3. * sy2 + 2./5. * sy2 * sy2 - 4./315. * sy2 * sy2 * sy2)
+    * (1. - 4./3. * sz2 + 2./5. * sz2 * sz2 - 4./315. * sz2 * sz2 * sz2);
+}
+
+double FieldStats::calc_shotnoise_aliasing_interlaced_isoapprox(
+  int i, int j, int k, int order
+) {
+  double s2h, c2h;
+  this->get_shotnoise_aliasing_sin2_cos2_isoapprox(i, j, k, s2h, c2h);
+
+  double cc = std::pow(c2h, order);
+
+  double cs = 1.;
+  // if (order == 1) {
+  //   cs = 1.;
+  // } else
+  if (order == 2) {
+    cs = 1. - 2./3. * s2h;
+  } else
+  if (order == 3) {
+    cs = 1. - s2h + 2./15. * s2h * s2h;
+  } else
+  if (order == 4) {
+    cs = 1. - 4./3. * s2h + 2./5. * s2h * s2h - 4./315. * s2h * s2h * s2h;
+  }
+
+  return cc * cs;
 }
 
 void FieldStats::compute_shotnoise_aliasing() {
