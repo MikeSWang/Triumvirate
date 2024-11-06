@@ -149,7 +149,7 @@ std::string show_timestamp() {
 
 void exit_fatal(const std::string& msg) {
   if (is_colourable()) {
-    std::cout << "\n\033[1;31mFATAL:\033[0m " << msg << std::endl;
+    std::cout << "\n\033[1;37;41mFATAL:\033[0m " << msg << std::endl;
   } else {
     std::cout << "\nFATAL: " << msg << std::endl;
   }
@@ -212,7 +212,7 @@ void Logger::log(int level_entry, const char* fmt_string, ...) {
           log_type = "";
           break;
         case LogLevel::DBUG:
-          log_type = "\033[0;35mDBUG\033[0m";  // magenta
+          log_type = "\033[0;36mDBUG\033[0m";  // cyan
           break;
         case LogLevel::STAT:
           log_type = "\033[0;34mSTAT\033[0m";  // blue
@@ -267,7 +267,7 @@ void Logger::debug(const char* fmt_string, ...) {
     std::va_list args;
     va_start(args, fmt_string);
     if (is_colourable()) {
-      Logger::emit("\033[0;35mDBUG\033[0m", fmt_string, args);
+      Logger::emit("\033[0;36mDBUG\033[0m", fmt_string, args);
     } else {
       Logger::emit("DBUG", fmt_string, args);
     }

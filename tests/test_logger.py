@@ -9,8 +9,14 @@ from triumvirate.logger import setup_logger
 
 # Define the RegEx expression for logging format.
 _LOG_FORMAT = (
-    r"\[\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\s\(\+\d+:\d{2}:\d{2}\)\s\w{4}\]"
-    r"\s.*\(in C\+\+\)"
+    r"\["                                                     # [
+    r"\d{4}-\d{2}-\d{2}\s"                                    # date
+    r"\d{2}:\d{2}:\d{2}\s"                                    # timestamp
+    r"\(\+\d+:\d{2}:\d{2}\)\s"                                # elapsed time
+    r"(?:\033\[\d+(?:;\d+)*m)?\w{4}(?:\033\[\d+(?:;\d+)*m)?"  # log level
+    r"\]\s"                                                   # ]
+    r".*"                                                     # log message
+    r"\(in C\+\+\)"                                           # C++ indication
 )
 
 

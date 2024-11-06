@@ -9,15 +9,27 @@ Configure the program logger.
 
 """  # numpydoc ignore=SS01
 import logging
+import os
 import sys
 import time
 import warnings
+from copy import copy
 
 
-class _ElapsedLogFormatter(logging.Formatter):
-    """Elapsed-time logging formatter.
+class _ElapsedColourLogFormatter(logging.Formatter):
+    """Elapsed-time colourised logging formatter.
 
     """
+    # Log level colours
+    _IN_BOLD = 1  # default to: 0 for non-bold, 1 for bold
+    _COLOURS = {
+        'NOTSET': "\033[0m",                    # reset
+        'DEBUG': f"\033[{_IN_BOLD};36m",        # cyan
+        'INFO': f"\033[{_IN_BOLD};32m",         # green (blue)
+        'WARNING': f"\033[{_IN_BOLD};33m",      # yellow
+        'ERROR': f"\033[{_IN_BOLD};31m",        # red
+        'CRITICAL': f"\033[{_IN_BOLD};37;41m",  # white on red
+    }
 
     _start_time = time.time()
 
@@ -36,13 +48,25 @@ class _ElapsedLogFormatter(logging.Formatter):
             Modified log record with elapsed time.
 
         """
+        fmt_record = copy(record)
+
         elapsed_time = record.created - self._start_time
         h, remainder_time = divmod(elapsed_time, 3600)
         m, s = divmod(remainder_time, 60)
 
-        record.elapsed = f"(+{int(h):02d}:{int(m):02d}:{int(s):02d})"
+        fmt_record.elapsed = f"(+{int(h):02d}:{int(m):02d}:{int(s):02d})"
 
-        return logging.Formatter.format(self, record)
+        reset = self._COLOURS.get('NOTSET', "\033[0m")
+        colour = self._COLOURS.get(record.levelname, reset)
+
+        fmt_record.levelname = f"{record.levelname:.4s}"\
+            .replace('DEBU', 'DBUG')\
+            .replace('CRIT', 'FATAL')
+        if 'color' in os.getenv('TERM', '') \
+                and os.getenv('TRV_INTERACTIVE') is not None:
+            fmt_record.levelname = colour + fmt_record.levelname + reset
+
+        return logging.Formatter.format(self, fmt_record)
 
 
 class _CppLogAdapter(logging.LoggerAdapter):
@@ -138,8 +162,8 @@ def setup_logger(log_level=logging.INFO):
 
     """
     # Set formatter.
-    formatter = _ElapsedLogFormatter(
-        fmt='[%(asctime)s %(elapsed)s %(levelname).4s] %(message)s',
+    formatter = _ElapsedColourLogFormatter(
+        fmt='[%(asctime)s %(elapsed)s %(levelname)s] %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
