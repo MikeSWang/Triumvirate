@@ -732,5 +732,26 @@ void display_prog_logbars(int endpoint) {
   }
 }
 
+void expand_envar_in_path(std::string& path_str) {
+  std::regex envar_pattern(R"(\$\{([^}]+)\})");
+  std::smatch matches;
+
+  auto search_start = path_str.cbegin();
+  while (
+    std::regex_search(search_start, path_str.cend(), matches, envar_pattern)
+  ) {
+    std::string var_name = matches[1].str();
+    const char* var_value = std::getenv(var_name.c_str());
+
+    if (var_value != nullptr) {
+      path_str.replace(
+        matches.prefix().second, matches.suffix().first, var_value
+      );
+    }
+
+    search_start = path_str.begin() + matches.position() + matches.length();
+  }
+}
+
 }  // namespace trv::sys
 }  // namespace trv

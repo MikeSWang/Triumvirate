@@ -40,6 +40,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <regex>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -556,6 +557,18 @@ void display_prog_info(bool runtime = false);
  * @param endpoint Progress bar endpoint, either 0 (start) or 1 (finish).
  */
 void display_prog_logbars(int endpoint);
+
+
+// ***********************************************************************
+// Program utilities
+// ***********************************************************************
+
+/**
+ * @brief Expand environment variables in a path string.
+ *
+ * @param[in,out] path_str Path string.
+ */
+void expand_envar_in_path(std::string& path_str);
 
 }  // namespace trv::sys
 }  // namespace trv

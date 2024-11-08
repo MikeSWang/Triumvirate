@@ -470,6 +470,8 @@ int ParameterSet::validate(bool init) {
   if (init) {
     this->measurement_dir += "/";  // transmutation
   }
+  trvs::expand_envar_in_path(this->catalogue_dir);
+  trvs::expand_envar_in_path(this->measurement_dir);
   if (this->catalogue_type == "survey") {
     if (this->data_catalogue_file != "") {
       if (this->data_catalogue_file.rfind("/", 0) != 0 && init) {
@@ -520,6 +522,8 @@ int ParameterSet::validate(bool init) {
     );
 #endif  // !TRV_EXTCALL
   }
+  trvs::expand_envar_in_path(this->data_catalogue_file);
+  trvs::expand_envar_in_path(this->rand_catalogue_file);
 
   if (!(this->alignment == "centre" || this->alignment == "pad")) {
     if (trvs::currTask == 0) {
@@ -834,6 +838,7 @@ int ParameterSet::validate(bool init) {
     this->use_fftw_wisdom += "/";  // transmutation
   }
 #endif  // TRV_USE_CUDA
+  trvs::expand_envar_in_path(this->use_fftw_wisdom);
 
   if (this->use_fftw_wisdom != "") {
     if (this->fftw_scheme != "measure" && this->fftw_scheme != "patient") {
@@ -907,6 +912,7 @@ int ParameterSet::validate(bool init) {
         + this->save_binned_vectors;
     }  // transmutation
   }
+  trvs::expand_envar_in_path(this->save_binned_vectors);
 
   // Validate and derive numerical parameters.
   this->volume =
