@@ -150,7 +150,7 @@ jobs:
         run: cp deploy/pkg/pyproject/.pyproject.toml pyproject.toml
 
       - name: Build built distribution
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v2.22.0
         with:
           package-dir: .
           output-dir: dist/
