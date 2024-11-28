@@ -120,6 +120,48 @@ double calc_powspec_normalisation_from_meshes(
   trv::ParticleCatalogue& particles_rand,
   trv::ParameterSet& params, double alpha
 ) {
+  // (Re-)align particles in box but record original positions for restoration.
+  double pos_min_data[3] = {0., 0., 0.};
+  double pos_min_rand[3] = {0., 0., 0.};
+  for (int iaxis = 0; iaxis < 3; iaxis++) {
+    pos_min_data[iaxis] = particles_data.pos_min[iaxis];
+    pos_min_rand[iaxis] = particles_rand.pos_min[iaxis];
+  }
+
+  if (params.alignment == "pad") {
+    if (params.padscale == "grid") {
+      double ngrid_pad[3] = {
+        params.padfactor, params.padfactor, params.padfactor
+      };
+      trv::ParticleCatalogue::pad_grids(
+        particles_data, particles_rand,
+        params.boxsize, params.ngrid,
+        ngrid_pad
+      );
+    } else
+    if (params.padscale == "box") {
+      double boxsize_pad[3] = {
+        params.padfactor, params.padfactor, params.padfactor
+      };
+      trv::ParticleCatalogue::pad_in_box(
+        particles_data, particles_rand,
+        params.boxsize, boxsize_pad
+      );
+    }
+  } else
+  if (params.alignment == "centre") {
+    trv::ParticleCatalogue::centre_in_box(
+      particles_data, particles_rand, params.boxsize
+    );
+  }
+
+  double pos_offset_data[3] = {0., 0., 0.};
+  double pos_offset_rand[3] = {0., 0., 0.};
+  for (int iaxis = 0; iaxis < 3; iaxis++) {
+    pos_offset_data[iaxis] = particles_data.pos_min[iaxis] - pos_min_data[iaxis];
+    pos_offset_rand[iaxis] = particles_rand.pos_min[iaxis] - pos_min_rand[iaxis];
+  }
+
   // Assign particles to mesh.
   trv::MeshField mesh_data(params, false, "`mesh_data`");
   trv::MeshField mesh_rand(params, false, "`mesh_rand`");
@@ -209,6 +251,10 @@ double calc_powspec_normalisation_from_meshes(
   double vol_cell = params.volume / double(params.nmesh);
 
   double norm_factor = 1. / (alpha * vol_cell * norm);  // 1/I₂
+
+  // Restore original particle positions.
+  particles_data.offset_coords(pos_offset_data);
+  particles_rand.offset_coords(pos_offset_rand);
 
   return norm_factor;
 }
