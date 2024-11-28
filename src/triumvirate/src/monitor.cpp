@@ -149,7 +149,7 @@ std::string show_timestamp() {
 
 void exit_fatal(const std::string& msg) {
   if (is_colourable()) {
-    std::cout << "\n\033[1;37;41mFATAL:\033[0m " << msg << std::endl;
+    std::cout << "\n\033[1;37;41mFATAL\033[0m: " << msg << std::endl;
   } else {
     std::cout << "\nFATAL: " << msg << std::endl;
   }
