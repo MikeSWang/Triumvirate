@@ -744,12 +744,18 @@ void expand_envar_in_path(std::string& path_str) {
     const char* var_value = std::getenv(var_name.c_str());
 
     if (var_value != nullptr) {
+      // Calculate offset before replacing.
+      auto start_pos = matches.prefix().second - path_str.cbegin();
       path_str.replace(
         matches.prefix().second, matches.suffix().first, var_value
       );
-    }
 
-    search_start = path_str.begin() + matches.position() + matches.length();
+      // Update `search_start` using offset.
+      search_start = path_str.cbegin() + start_pos + std::strlen(var_value);
+    } else {
+      // If the variable isn't found, skip past this match.
+      search_start = matches.suffix().first;
+    }
   }
 }
 
