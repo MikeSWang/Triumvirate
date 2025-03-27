@@ -28,13 +28,6 @@
 
 #include "threept.hpp"
 
-#ifdef TRV_USE_HIP
-#ifndef FFTW_COMPLEX_DEFINED_
-typedef double fftw_complex[2];
-#define FFTW_COMPLEX_DEFINED_
-#endif  // !FFTW_COMPLEX_DEFINED_
-#endif  // TRV_USE_HIP
-
 namespace trvs = trv::sys;
 namespace trvm = trv::maths;
 
@@ -328,7 +321,9 @@ trv::BispecMeasurements compute_bispec(
   // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_init_threads();
+  if (!trvs::is_gpu_enabled()) {
+    fftw_init_threads();
+  }
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute common field quantities.
@@ -1104,7 +1099,9 @@ trv::ThreePCFMeasurements compute_3pcf(
   // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_init_threads();
+  if (!trvs::is_gpu_enabled()) {
+    fftw_init_threads();
+  }
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute common field quantities.
@@ -1567,7 +1564,9 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
   // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_init_threads();
+  if (!trvs::is_gpu_enabled()) {
+    fftw_init_threads();
+  }
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute common field quantities.
@@ -2294,7 +2293,9 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
   // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_init_threads();
+  if (!trvs::is_gpu_enabled()) {
+    fftw_init_threads();
+  }
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute common field quantities.
@@ -2735,7 +2736,9 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
   // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_init_threads();
+  if (!trvs::is_gpu_enabled()) {
+    fftw_init_threads();
+  }
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute common field quantities.
@@ -3202,56 +3205,14 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
     sn_dv[idx_dv] = 0.;
   }  // likely redundant but safe
 
-  // ---->
-//   // // Set up FFTW master plans.
-// #if defined(TRV_USE_CUDA)
-//   fftw_complex* array_holder = (fftw_complex*)fftw_malloc(
-//     sizeof(fftw_complex) * params.nmesh
-//   );
-// #elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-//   hipfftDoubleComplex* array_holder = (hipfftDoubleComplex*)hip​Malloc​Managed(
-//     sizeof(hipfftDoubleComplex) * params.nmesh
-//   );
-// #else  // !TRV_USE_CUDA && !TRV_USE_HIP
-//   fftw_complex* array_holder = fftw_alloc_complex(params.nmesh);
-// #endif  // TRV_USE_CUDA
-
-// #ifndef TRV_USE_HIP
-//   fftw_plan fwd_master_plan = fftw_plan_dft_3d(
-//     params.ngrid[0], params.ngrid[1], params.ngrid[2],
-//     array_holder, array_holder,
-//     FFTW_FORWARD, FFTW_MEASURE
-//   );
-//   fftw_plan bwd_master_plan = fftw_plan_dft_3d(
-//     params.ngrid[0], params.ngrid[1], params.ngrid[2],
-//     array_holder, array_holder,
-//     FFTW_BACKWARD, FFTW_MEASURE
-//   );
-// #else  // TRV_USE_HIP
-//   hipfftHandle fwd_master_plan;
-//   hipfftHandle bwd_master_plan;
-//   hipfftPlan3d(
-//     &fwd_master_plan,
-//     params.ngrid[0], params.ngrid[1], params.ngrid[2],
-//     HIPFFT_Z2Z
-//   );
-//   hipfftPlan3d(
-//     &bwd_master_plan,
-//     params.ngrid[0], params.ngrid[1], params.ngrid[2],
-//     HIPFFT_Z2Z
-//   );
-//   // ...
-//   // hip_ret = hipDeviceSynchronize();
-//   // ...
-// #endif  // TRV_USE_HIP
-  // ----<
-
   // ---------------------------------------------------------------------
   // Measurement
   // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_init_threads();
+  if (!trvs::is_gpu_enabled()) {
+    fftw_init_threads();
+  }
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // RFE: Not adopted until copy-assignment constructor is checked.
@@ -4029,22 +3990,6 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
       }
     }
   }
-
-  // ---->
-// #ifndef TRV_USE_HIP
-//   fftw_destroy_plan(fwd_master_plan);
-//   fftw_destroy_plan(bwd_master_plan);
-//   fftw_free(array_holder);
-// #else  // TRV_USE_HIP
-//   // ...
-//   // hip_ret = hipDeviceSynchronize();
-//   // ...
-//   // Clean up FFTW master plans.
-//   hipfftDestroy(fwd_master_plan);
-//   hipfftDestroy(bwd_master_plan);
-//   hip_ret = hipFree(array_holder);
-// #endif  // !TRV_USE_HIP
-  // ----<
 
   // ---------------------------------------------------------------------
   // Results

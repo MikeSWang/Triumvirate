@@ -33,9 +33,12 @@
 #ifndef TRIUMVIRATE_INCLUDE_ARRAYOPS_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_ARRAYOPS_HPP_INCLUDED_
 
-#ifdef TRV_USE_HIP
-#include <hip/hip_runtime.h>
-#endif  // TRV_USE_HIP
+#if defined(TRV_USE_HIP)
+#include <hipfft/hipfftXt.h>
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+#include <cufftXt.h>
+#endif                       // TRV_USE_HIP
+#include <fftw3.h>
 
 #include <algorithm>
 #include <cfenv>
@@ -46,12 +49,13 @@
 
 #include "monitor.hpp"
 
-#ifdef TRV_USE_HIP
-#ifndef FFTW_COMPLEX_DEFINED_
-typedef double fftw_complex[2];
-#define FFTW_COMPLEX_DEFINED_
-#endif  // !FFTW_COMPLEX_DEFINED_
-#endif  // TRV_USE_HIP
+#if defined(TRV_USE_HIP)
+using fft_double_complex = hipfftDoubleComplex;
+using fftHandle = hipfftHandle;
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+using fft_double_complex = cufftDoubleComplex;
+using fftHandle = cufftHandle;
+#endif                       // TRV_USE_HIP
 
 namespace trv {
 
@@ -245,7 +249,7 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector);
 // Memory management
 // ***********************************************************************
 
-#ifdef TRV_USE_HIP
+#if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
 /**
  * @brief Copy complex array values from device to host with different
  *        type definitions.
@@ -255,7 +259,7 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector);
  * @param length Array size.
  */
 void copy_complex_array_dtoh(
-  const hipfftDoubleComplex* d_arr, fftw_complex* arr, size_t length
+  const fft_double_complex* d_arr, fftw_complex* arr, size_t length
 );
 
 /**
@@ -267,9 +271,10 @@ void copy_complex_array_dtoh(
  * @param length Array size.
  */
 void copy_complex_array_htod(
-  const fftw_complex* arr, hipfftDoubleComplex* d_arr, size_t length
+  const fftw_complex* arr, fft_double_complex* d_arr, size_t length
 );
-#endif
+#endif  // TRV_USE_HIP || TRV_USE_CUDA
+
 
 }  // namespace trv::array
 

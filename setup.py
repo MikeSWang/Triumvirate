@@ -508,7 +508,10 @@ def get_cuda_dep_libs():
         CUDA libraries.
 
     """
-    LIBS_CUDA = ['cufft', 'cufftw',]  # noqa: E231
+    LIBS_CUDA = [
+        'cufft',
+        # 'cufftw',
+    ]
     return LIBS_CUDA
 
 

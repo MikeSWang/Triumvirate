@@ -53,9 +53,9 @@ HankelTransform::HankelTransform(double mu, double q, bool threaded) {
 
   this->threaded = threaded;
 
-  // Initialise FFTW plans.
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  if (this->threaded) {
+  // Initialise FFTW multithreading.
+  if ((!trvs::is_gpu_enabled()) && this->threaded) {
     fftw_init_threads();
     fftw_plan_with_nthreads(omp_get_max_threads());
   }
@@ -67,15 +67,15 @@ HankelTransform::~HankelTransform() {
 
   // Do NOT call `fftw_cleanup` in reusable code here
   // as it may cause memory leaks.
+//   if (!trvs::is_gpu_enabled()) {
+//     if (this->threaded) {
 // #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-//   if (this->threaded) {
-//     fftw_cleanup_threads();
-//   } else {
-//     fftw_cleanup();
-//   }
-// #elif !defined(TRV_USE_HIP)  // !TRV_USE_OMP || !TRV_USE_FFTWOMP && !TRV_USE_HIP
-//   fftw_cleanup();
+//       fftw_cleanup_threads();
 // #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+//     } else {
+//       fftw_cleanup();
+//     }
+//   }
 }
 
 void HankelTransform::reset() {

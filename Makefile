@@ -223,7 +223,7 @@ ifdef usehip
 DEP_LDLIBS += -lhipfft
 else   # !usehip
 ifdef usecuda
-DEP_LDLIBS += -lcufft -lcufftw
+DEP_LDLIBS += -lcufft # -lcufftw
 endif  # !usehip && usecuda
 endif  # usehip
 

@@ -37,13 +37,11 @@
 #include <gsl/gsl_version.h>
 
 #if defined(TRV_USE_HIP)
-#include <hip/hip_runtime.h>
-#include <hipfft/hipfft.h>
+#include <hipfft/hipfftXt.h>
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
-#include <cufftw.h>
-#else                        // !TRV_USE_HIP && !TRV_USE_CUDA
-#include <fftw3.h>
+#include <cufftXt.h>
 #endif                       // TRV_USE_HIP
+#include <fftw3.h>
 
 #ifdef TRV_USE_OMP
 #include <omp.h>
@@ -94,6 +92,94 @@
 #else   // !TRV_EXTCALL
 #define SHOW_CPPSTATE ""
 #endif  // TRV_EXTCALL
+
+#if defined(TRV_USE_HIP)
+#ifndef HIP_EXEC
+/**
+ * @brief Check if a HIP function call succeeded.
+ *
+ * @param hip_call A HIP function call.
+ */
+#define HIP_EXEC(hip_call) {
+  auto ret_status = static_cast<hipError_t>(hip_call);
+  if (ret_status != hipSuccess) {
+    std::fprintf(
+      stderr,
+      "HIP error: %s. "
+      "Function <%s> returned error code %d "
+      "in file \"%s\", line %d.\n",
+      hipGetErrorString(ret_status),
+      #hip_call, ret_status,
+      __FILE__, __LINE__,
+    );
+  }
+}
+#endif  // !HIP_EXEC
+
+#ifndef HIPFFT_EXEC
+/**
+ * @brief Check if a hipFFT function call succeeded.
+ *
+ * @param hipfft_call A hipFFT function call.
+ */
+#define HIPFFT_EXEC(hipfft_call) {
+  auto ret_status = static_cast<hipfftResult>(hipfft_call);
+  if (ret_status != HIPFFT_SUCCESS) {
+    std::fprintf(
+      stderr,
+      "hipFFT error: function <%s> returned error code %d "
+      "in file \"%s\", line %d.\n",
+      #hipfft_call, ret_status,
+      __FILE__, __LINE__,
+    );
+  }
+}
+#endif  // !HIPFFT_EXEC
+
+#elif defined(TRV_USE_CUDA)
+#ifndef CUDA_EXEC
+/**
+ * @brief Check if a CUDA function call succeeded.
+ *
+ * @param cuda_call A CUDA function call.
+ */
+#define CUDA_EXEC(cuda_call) {
+  auto ret_status = static_cast<cudaError_t>(cuda_call);
+  if (ret_status != cudaSuccess) {
+    std::fprintf(
+      stderr,
+      "CUDA error: %s. "
+      "Function <%s> returned error code %d "
+      "in file \"%s\", line %d.\n",
+      cudaGetErrorString(ret_status),
+      #cuda_call, ret_status,
+      __FILE__, __LINE__,
+    );
+  }
+}
+#endif  // !CUDA_EXEC
+
+#ifndef CUFFT_EXEC
+/**
+ * @brief Check if a cuFFT function call succeeded.
+ *
+ * @param cufft_call A cuFFT function call.
+ */
+#define CUFFT_EXEC(cufft_call) {
+  auto ret_status = static_cast<cufftResult>(cufft_call);
+  if (ret_status != CUFFT_SUCCESS) {
+    std::fprintf(
+      stderr,
+      "cuFFT error: function <%s> returned error code %d "
+      "in file \"%s\", line %d.\n",
+      #cufft_call, ret_status,
+      __FILE__, __LINE__,
+    );
+  }
+}
+#endif // !CUFFT_EXEC
+
+#endif  // TRV_USE_HIP
 /// @endcond
 
 namespace trv {
@@ -188,6 +274,27 @@ std::string show_elapsed_time(double duration_in_seconds);
  * @returns Timestamp string.
  */
 std::string show_timestamp();
+
+/**
+ * @brief Get the number of GPUs available.
+ *
+ * @return int Number of GPUs.
+ */
+int get_gpu_count();
+
+/**
+ * @brief Check if GPUs are available.
+ *
+ * @return {true, false}
+ */
+bool is_gpu_available();
+
+/**
+ * @brief Check if GPU mode is enabled.
+ *
+ * @return {true, false}
+ */
+bool is_gpu_enabled();
 
 /**
  * @brief Terminate the program with exit status `EXIT_FAILURE`.
