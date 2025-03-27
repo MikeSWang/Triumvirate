@@ -28,14 +28,6 @@
 
 #include "monitor.hpp"
 
-/// @cond DOXYGEN_DOC_MACROS
-#ifdef TRV_EXTCALL
-#define SHOW_CPPSTATE " C++"
-#else  // !TRV_EXTCALL
-#define SHOW_CPPSTATE ""
-#endif  // TRV_EXTCALL
-/// @endcond
-
 namespace trv {
 namespace sys {
 
@@ -667,48 +659,31 @@ void display_prog_info(bool runtime) {
     }
   }
 
-#ifdef __TRV_VERSION__
-#define _TRV_VERSION std::string(__TRV_VERSION__)
-#else  // !__TRV_VERSION__
-#define _TRV_VERSION "unknown"
-#endif  // __TRV_VERSION__
-  std::printf("Triumvirate version: %s\n", _TRV_VERSION.c_str());
+  std::printf("Triumvirate version: %s\n", __TRV_VERSION__);
 
-#ifdef GSL_VERSION
-#define _GSL_VERSION GSL_VERSION
-#else  // !GSL_VERSION
-#define _GSL_VERSION "unknown"
-#endif  // GSL_VERSION
-  std::printf("GSL version: %s\n", _GSL_VERSION);
+  std::printf("GSL version: %s\n", GSL_VERSION);
 
-#if defined(TRV_USE_CUDA)
+#if defined(TRV_USE_HIP)
+  std::string hipfft_version =
+    std::to_string(HIPFFT_MAJOR_VERSION) + "." +
+    std::to_string(HIPFFT_MINOR_VERSION) + "." +
+    std::to_string(HIPFFT_PATCH_LEVEL);
+  std::printf("hipFFT version: %s\n", hipfft_version.c_str());
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
   std::string cufft_version =
     std::to_string(CUFFT_VER_MAJOR) + "." +
     std::to_string(CUFFT_VER_MINOR) + "." +
     std::to_string(CUFFT_VER_PATCH) + "." +
     std::to_string(CUFFT_VER_BUILD);
   std::printf("cuFFT version: %s\n", cufft_version.c_str());
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  std::string hipfft_version =
-    std::to_string(HIPFFT_MAJOR_VERSION) + "." +
-    std::to_string(HIPFFT_MINOR_VERSION) + "." +
-    std::to_string(HIPFFT_PATCH_LEVEL);
-  std::printf("hipFFT version: %s\n", hipfft_version.c_str());
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+#else   // !TRV_USE_HIP && !TRV_USE_CUDA
   std::printf("FFTW version: %s\n", fftw_version);
-#endif  // TRV_USE_CUDA
+#endif  // TRV_USE_HIP
 
-#ifdef TRV_USE_OMP
-#define _OMP_VERSION std::to_string(_OPENMP)
-#define _OMP_NTHREADS omp_get_max_threads()
-#else  // !TRV_USE_OMP
-#define _OMP_VERSION std::string("unknown")
-#define _OMP_NTHREADS 1
-#endif  // TRV_USE_OMP
   std::printf("OpenMP version: %s\n", _OMP_VERSION.c_str());
 
   if (runtime) {
-    std::printf("Thread number: %d\n", _OMP_NTHREADS);
+    std::printf("CPU thread count: %d\n", _OMP_NTHREADS);
   }
 
   std::printf("\n");

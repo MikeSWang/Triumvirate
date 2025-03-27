@@ -34,6 +34,21 @@
 #ifndef TRIUMVIRATE_INCLUDE_MONITOR_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_MONITOR_HPP_INCLUDED_
 
+#include <gsl/gsl_version.h>
+
+#if defined(TRV_USE_HIP)
+#include <hip/hip_runtime.h>
+#include <hipfft/hipfft.h>
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+#include <cufftw.h>
+#else                        // !TRV_USE_HIP && !TRV_USE_CUDA
+#include <fftw3.h>
+#endif                       // TRV_USE_HIP
+
+#ifdef TRV_USE_OMP
+#include <omp.h>
+#endif  // TRV_USE_OMP
+
 #include <chrono>
 #include <cstdarg>
 #include <cstdio>
@@ -45,37 +60,41 @@
 #include <string>
 #include <vector>
 
-#if defined(TRV_USE_CUDA)
-#include <cufftw.h>
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-#include <hip/hip_runtime.h>
-#include <hipfft/hipfft.h>
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
-#include <fftw3.h>
-#endif  // TRV_USE_CUDA
-
-#include <gsl/gsl_version.h>
-
-#ifndef __TRV_VERSION__
-#define __TRV_VERSION__ "0.5.0"  // (fallback) version number
-#endif  // !__TRV_VERSION__
-
-/// @cond DOXYGEN_DOC_MACROS
-// Declares OMP macros.
-#ifdef TRV_USE_OMP
-#include <omp.h>
-#define OMP_ATOMIC _Pragma("omp atomic")
-#define OMP_CRITICAL _Pragma("omp critical")
-#else  // !TRV_USE_OMP
-#define OMP_ATOMIC
-#define OMP_CRITICAL
-#endif  // TRV_USE_OMP
-/// @endcond
-
 // Enter debugging mode.
 #ifdef DBG_MODE
 #include <iostream>
 #endif  // DBG_MODE
+
+/// @cond DOXYGEN_DOC_MACROS
+// Declares OMP macros.
+#ifdef TRV_USE_OMP
+#define OMP_ATOMIC _Pragma("omp atomic")
+#define OMP_CRITICAL _Pragma("omp critical")
+#define _OMP_VERSION std::to_string(_OPENMP)
+#define _OMP_NTHREADS omp_get_max_threads()
+#else   // !TRV_USE_OMP
+#define OMP_ATOMIC
+#define OMP_CRITICAL
+#define _OMP_VERSION std::string("unknown")
+#define _OMP_NTHREADS 1
+#endif  // TRV_USE_OMP
+
+#ifndef GSL_VERSION
+#define GSL_VERSION "unknown"
+#endif  // !GSL_VERSION
+
+// Record (fallback) version number.
+#ifndef __TRV_VERSION__
+#define __TRV_VERSION__ "0.6+"
+#endif  // !__TRV_VERSION__
+
+// Indicate external interface call.
+#ifdef TRV_EXTCALL
+#define SHOW_CPPSTATE " C++"
+#else   // !TRV_EXTCALL
+#define SHOW_CPPSTATE ""
+#endif  // TRV_EXTCALL
+/// @endcond
 
 namespace trv {
 namespace sys {
