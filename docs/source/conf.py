@@ -152,7 +152,7 @@ html_sidebars = {
 html_theme = 'pydata_sphinx_theme'  # 'sphinx_book_theme'  #
 html_theme_options = {
     'announcement': (
-        "&#128064; Version 0.6 release expected in late 2024 with "
+        "&#128064; Version 0.6 release expected in 2025 with "
         f"<a href=\"{WINCONV_MOD_URL}\">window convolution</a> "
         "functionality! (Preview from Anaconda: "
         f"<a href=\"{ANACONDA_CHANNEL_URL}/files?channel=dev\">"
