@@ -75,7 +75,7 @@ MAKEFLAGS_JOBS = $(shell echo "${MAKEFLAGS} " | grep -Eo ${PATTERN_JOBS})
 
 # NOTE: Use `undefine` for make>=3.82.
 
-# CUDA: enabled with ``useomp=(true|1)``; disabled otherwise
+# CUDA: enabled with ``usecuda=(true|1)``; disabled otherwise
 ifdef usecuda
 ifeq ($(strip ${usecuda}), $(filter $(strip ${usecuda}), true 1))
 usecuda := true
