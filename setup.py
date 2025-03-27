@@ -489,9 +489,9 @@ def get_noncuda_dep_libs(core=False, cuda=False):
     """
     LIBS_NONCUDA = {
         'core': ['gsl', 'fftw3',],
-        'core,cuda': ['gsl',],
+        'core,cuda': ['gsl', 'fftw3',],
         'full': ['gsl', 'gslcblas', 'm', 'fftw3',],
-        'full,cuda': ['gsl', 'gslcblas', 'm',],
+        'full,cuda': ['gsl', 'gslcblas', 'm', 'fftw3',],
     }  # noqa: E231
 
     key = ('core' if core else 'full') + (',cuda' if cuda else '')
@@ -508,7 +508,10 @@ def get_cuda_dep_libs():
         CUDA libraries.
 
     """
-    LIBS_CUDA = ['cufft', 'cufftw',]  # noqa: E231
+    LIBS_CUDA = [
+        'cufft',
+        # 'cufftw',
+    ]
     return LIBS_CUDA
 
 

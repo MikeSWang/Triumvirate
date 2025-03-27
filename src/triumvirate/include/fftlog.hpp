@@ -31,14 +31,12 @@
 #ifndef TRIUMVIRATE_INCLUDE_FFTLOG_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_FFTLOG_HPP_INCLUDED_
 
-#if defined(TRV_USE_CUDA)
-#include <cufftw.h>
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-#include <hip/hip_runtime.h>
-#include <hipfft/hipfft.h>
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
+#if defined(TRV_USE_HIP)
+#include <hipfft/hipfftXt.h>
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+#include <cufftXt.h>
+#endif                       // TRV_USE_HIP
 #include <fftw3.h>
-#endif  // TRV_USE_CUDA
 
 #include <cmath>
 #include <complex>
@@ -48,20 +46,13 @@
 #include "maths.hpp"
 #include "arrayops.hpp"
 
-#ifdef TRV_USE_HIP
-#ifndef FFTW_PLANNER_FLAG_DEFINED_
-#define FFTW_MEASURE (0U)
-#define FFTW_EXHAUSTIVE (1U << 3)
-#define FFTW_PATIENT (1U << 5)
-#define FFTW_ESTIMATE (1U << 6)
-#define FFTW_PLANNER_FLAG_DEFINED_
-#endif  // !FFTW_PLANNER_FLAG_DEFINED_
-#ifndef FFTW_COMPLEX_DEFINED_
-typedef double fftw_complex[2];
-#define FFTW_COMPLEX_DEFINED_
-#endif  // !FFTW_COMPLEX_DEFINED_
-using fftw_plan = hipfftHandle;
-#endif  // TRV_USE_HIP
+#if defined(TRV_USE_HIP)
+using fft_double_complex = hipfftDoubleComplex;
+using fftHandle = hipfftHandle;
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+using fft_double_complex = cufftDoubleComplex;
+using fftHandle = cufftHandle;
+#endif                       // TRV_USE_HIP
 
 namespace trva = trv::array;
 
@@ -233,15 +224,28 @@ class HankelTransform {
   /// FFTLog transform kernel coefficients
   std::vector< std::complex<double> > kernel;
 
-  /// pre-kernel FFTW plan and array
+  /// pre- and post-kernel FFT(W) plans and arrays
+#if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
+  fftHandle pre_plan_gpu;
+  fftHandle post_plan_gpu;
+#endif  // TRV_USE_HIP || TRV_USE_CUDA
   fftw_plan pre_plan;
-  fftw_complex* pre_buffer = nullptr;
-
-  /// post-kernel FFTW plan and array
   fftw_plan post_plan;
+
+  fftw_complex* pre_buffer = nullptr;
   fftw_complex* post_buffer = nullptr;
 
-  /// FFTW plan initialisation flag
+#ifdef TRV_USE_CUDA
+  /// Cuda extension library descriptor
+  cudaLibXtDesc* pre_desc;
+  cudaLibXtDesc* post_desc;
+#endif  // TRV_USE_CUDA
+#ifdef _CUDA_STREAM
+  /// Cuda streams for pre- and post-transform
+  cudaStream_t custream;
+#endif  // _CUDA_STREAM
+
+  /// FFT(W) plan initialisation flag
   bool plan_init = false;
 
   /// FFTW multi-threading flag

@@ -88,6 +88,7 @@ endif  # usecuda
 ifdef usehip
 ifeq ($(strip ${usehip}), $(filter $(strip ${usehip}), true 1))
 usehip := true
+$(warning "HIP support is developmental and highly experimental.")
 else   # usehip != (true|1)
 unexport usehip
 endif  # usehip == (true|1)
@@ -199,16 +200,7 @@ RM ?= rm -f
 
 # -- Dependencies --------------------------------------------------------
 
-# If using cuFFT/hipFFT, remove standard FFTW dependency.
-ifdef usehip
-DEPS := gsl
-else   # !usehip
-ifdef usecuda
-DEPS := gsl
-else   # !usehip && !usecuda
 DEPS := gsl fftw3
-endif  # !usehip && usecuda
-endif  # usehip
 
 # Dependencies are searched for by `pkg-config`.  Ensure the set-up of
 # `pkg-config` matches that of the dependencies (e.g. both are installed
@@ -223,7 +215,7 @@ ifdef usehip
 DEP_LDLIBS += -lhipfft
 else   # !usehip
 ifdef usecuda
-DEP_LDLIBS += -lcufft -lcufftw
+DEP_LDLIBS += -lcufft # -lcufftw
 endif  # !usehip && usecuda
 endif  # usehip
 

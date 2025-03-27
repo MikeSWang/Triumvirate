@@ -145,6 +145,70 @@ std::string show_timestamp() {
   return timestamp;
 }
 
+int get_gpu_count(bool sys) {
+  int num_gpus = 0;
+#if defined(TRV_USE_HIP)
+  HIP_EXEC(hipGetDeviceCount(&num_gpus));
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+  CUDA_EXEC(cudaGetDeviceCount(&num_gpus));
+#endif  // TRV_USE_HIP
+
+  if (sys) {
+    return num_gpus;
+  }
+
+  int max_gpus = num_gpus;
+
+  char* env_gpu_maxnum = std::getenv("TRV_GPU_MAXNUM");
+  if (env_gpu_maxnum != nullptr) {
+    std::string gpu_maxnum(env_gpu_maxnum);
+    std::regex re_int("^[0-9]+$");
+    if (std::regex_match(gpu_maxnum, re_int)) {
+      max_gpus = std::stoi(gpu_maxnum);
+    }
+  }
+
+  return num_gpus > max_gpus ? max_gpus : num_gpus;
+}
+
+std::vector<int> get_gpu_ids() {
+  std::vector<int> gpu_ids;
+  for (int i = 0; i < get_gpu_count(); ++i) {
+    gpu_ids.push_back(i);
+  }
+  return gpu_ids;
+}
+
+bool is_gpu_available() {
+  bool sys = true;
+  return (get_gpu_count(sys) > 0);
+}
+
+bool is_gpu_enabled() {
+  if (!(get_gpu_count() > 0)) {
+    return false;
+  }
+
+  // Check for environmental variable override.
+  char* env_gpu_mode = std::getenv("TRV_GPU_MODE");
+  if (env_gpu_mode != nullptr) {
+    std::string gpu_mode(env_gpu_mode);
+    // If ``TRV_GPU_MODE`` is set to "false", "no", "off" or "0",
+    // then GPU mode is disabled.
+    if (
+      gpu_mode == "false"
+      || gpu_mode == "no"
+      || gpu_mode == "off"
+      || gpu_mode == "0"
+    ) {
+      return false;
+    }
+  }
+
+  // By default, GPU mode is enabled.
+  return true;
+}
+
 void exit_fatal(const std::string& msg) {
   if (is_colourable()) {
     std::cout << "\n\033[1;37;41mFATAL\033[0m: " << msg << std::endl;
@@ -740,6 +804,15 @@ void display_prog_info(bool runtime) {
 
   if (runtime) {
     std::printf("CPU thread count: %d\n", _OMP_NTHREADS);
+
+    std::string gpu_mode = " (unavailable)";
+    if (is_gpu_available()) {
+      gpu_mode = is_gpu_enabled() ? "" : " (disabled)";
+    }
+    std::printf(
+      "GPU device count: %d%s\n",
+      trv::sys::get_gpu_count(), gpu_mode.c_str()
+    );
   }
 
   std::printf("\n");

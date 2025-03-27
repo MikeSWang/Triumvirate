@@ -39,6 +39,8 @@
 #ifndef TRIUMVIRATE_INCLUDE_TWOPT_HPP_INCLUDED_
 #define TRIUMVIRATE_INCLUDE_TWOPT_HPP_INCLUDED_
 
+#include <fftw3.h>
+
 #include <algorithm>
 #include <cmath>
 #include <complex>

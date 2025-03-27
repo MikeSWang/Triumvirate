@@ -28,13 +28,6 @@
 
 #include "twopt.hpp"
 
-#ifdef TRV_USE_HIP
-#ifndef FFTW_COMPLEX_DEFINED_
-typedef double fftw_complex[2];
-#define FFTW_COMPLEX_DEFINED_
-#endif  // !FFTW_COMPLEX_DEFINED_
-#endif  // TRV_USE_HIP
-
 /// @cond DOXYGEN_DOC_CONST
 /// CAVEAT: Discretionary choice such that the eps_norm/norm is of order 0.01%.
 const double eps_norm = 1.e-5;
@@ -167,30 +160,10 @@ double calc_powspec_normalisation_from_meshes(
   trv::MeshField mesh_rand(params, false, "`mesh_rand`");
 
   fftw_complex* weight_data = nullptr;
-#if defined(TRV_USE_CUDA)
-  weight_data = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * particles_data.ntotal
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  weight_data = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * particles_data.ntotal
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
   weight_data = fftw_alloc_complex(particles_data.ntotal);
-#endif  // TRV_USE_CUDA
 
   fftw_complex* weight_rand = nullptr;
-#if defined(TRV_USE_CUDA)
-  weight_rand = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * particles_rand.ntotal
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  weight_rand = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * particles_rand.ntotal
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
   weight_rand = fftw_alloc_complex(particles_rand.ntotal);
-#endif  // TRV_USE_CUDA
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
@@ -223,13 +196,8 @@ double calc_powspec_normalisation_from_meshes(
   mesh_data.assign_weighted_field_to_mesh(particles_data, weight_data);
   mesh_rand.assign_weighted_field_to_mesh(particles_rand, weight_rand);
 
-#ifndef TRV_USE_HIP
   fftw_free(weight_data); weight_data = nullptr;
   fftw_free(weight_rand); weight_rand = nullptr;
-#else  // TRV_USE_HIP
-  free(weight_data); weight_data = nullptr;
-  free(weight_rand); weight_rand = nullptr;
-#endif  // !TRV_USE_HIP
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
@@ -456,7 +424,9 @@ trv::PowspecMeasurements compute_powspec(
   // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_init_threads();
+  if (!trvs::is_gpu_enabled()) {
+    fftw_init_threads();
+  }
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   MeshField dn_00(params, true, "`dn_00`");  // δn_00(k)
@@ -569,7 +539,9 @@ trv::TwoPCFMeasurements compute_corrfunc(
   // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_init_threads();
+  if (!trvs::is_gpu_enabled()) {
+    fftw_init_threads();
+  }
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   MeshField dn_00(params, true, "`dn_00`");  // δn_00(k)
@@ -691,7 +663,9 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
   // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_init_threads();
+  if (!trvs::is_gpu_enabled()) {
+    fftw_init_threads();
+  }
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute power spectrum.
@@ -788,7 +762,9 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
   // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_init_threads();
+  if (!trvs::is_gpu_enabled()) {
+    fftw_init_threads();
+  }
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   // Compute 2PCF.
@@ -874,7 +850,9 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
   // ---------------------------------------------------------------------
 
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
-  fftw_init_threads();
+  if (!trvs::is_gpu_enabled()) {
+    fftw_init_threads();
+  }
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
   MeshField dn_00(params, true, "`dn_00`");

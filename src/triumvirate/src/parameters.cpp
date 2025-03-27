@@ -794,49 +794,54 @@ int ParameterSet::validate(bool init) {
     );
   }
 
-  if (this->fftw_scheme == "estimate") {
-    this->fftw_planner_flag = FFTW_ESTIMATE;  // derivation
-  } else
-  if (this->fftw_scheme == "measure") {
-    this->fftw_planner_flag = FFTW_MEASURE;  // derivation
-  } else
-  if (this->fftw_scheme == "patient") {
-    this->fftw_planner_flag = FFTW_PATIENT;  // derivation
-  } else {
-    if (trvs::currTask == 0) {
-      trvs::logger.error(
+  if (!trvs::is_gpu_enabled()) {
+    if (this->fftw_scheme == "estimate") {
+      this->fftw_planner_flag = FFTW_ESTIMATE;  // derivation
+    } else
+    if (this->fftw_scheme == "measure") {
+        this->fftw_planner_flag = FFTW_MEASURE;  // derivation
+    } else
+    if (this->fftw_scheme == "patient") {
+      this->fftw_planner_flag = FFTW_PATIENT;  // derivation
+    } else {
+      if (trvs::currTask == 0) {
+        trvs::logger.error(
+          "FFTW planner scheme is not supported: `fftw_scheme` = '%s'.",
+          this->fftw_scheme.c_str()
+        );
+      }
+      throw trvs::InvalidParameterError(
         "FFTW planner scheme is not supported: `fftw_scheme` = '%s'.",
         this->fftw_scheme.c_str()
       );
     }
-    throw trvs::InvalidParameterError(
-      "FFTW planner scheme is not supported: `fftw_scheme` = '%s'.",
-      this->fftw_scheme.c_str()
-    );
+  } else {
+    if (!(this->fftw_scheme == "measure" || this->fftw_scheme == "")) {
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "FFTW planner scheme is ignored in GPU mode: `fftw_scheme` = '%s'.",
+          this->fftw_scheme.c_str()
+        );
+      }
+    }
+    this->fftw_scheme = "";  // transmutation
   }
 
-#if defined(TRV_USE_CUDA)
-  this->use_fftw_wisdom = "";  // transmutation
-  if (!(this->use_fftw_wisdom == "false")) {
-    if (trvs::currTask == 0) {
-      trvs::logger.warn("FFTW wisdom is disabled for cuFFT.");
+  if (trvs::is_gpu_enabled()) {
+    if (!(this->use_fftw_wisdom == "false")) {
+      if (trvs::currTask == 0) {
+        trvs::logger.warn("FFTW wisdom is disabled in GPU mode.");
+      }
     }
-  }
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  this->use_fftw_wisdom = "";  // transmutation
-  if (!(this->use_fftw_wisdom == "false")) {
-    if (trvs::currTask == 0) {
-      trvs::logger.warn("FFTW wisdom is disabled for hipFFT.");
-    }
-  }
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
-  if (this->use_fftw_wisdom == "false") {
     this->use_fftw_wisdom = "";  // transmutation
-  } else
-  if (init) {
-    this->use_fftw_wisdom += "/";  // transmutation
+  } else {
+    if (this->use_fftw_wisdom == "false") {
+      this->use_fftw_wisdom = "";  // transmutation
+    } else
+    if (init) {
+      this->use_fftw_wisdom += "/";  // transmutation
+    }
   }
-#endif  // TRV_USE_CUDA
   trvs::expand_envar_in_path(this->use_fftw_wisdom);
 
   if (this->use_fftw_wisdom != "") {
@@ -1276,13 +1281,13 @@ void override_paramset_by_envvars(trv::ParameterSet& params) {
 
   // Override the FFTW scheme.
   char* ev_fftw_scheme = std::getenv("TRV_OVERRIDE_FFTW_SCHEME");
-  if (ev_fftw_scheme != nullptr) {
+  if (ev_fftw_scheme != nullptr && !trvs::is_gpu_enabled()) {
     params.fftw_scheme = std::string(ev_fftw_scheme);
   }
 
   // Override the FFTW wisdom option.
   char* ev_use_fftw_wisdom = std::getenv("TRV_OVERRIDE_USE_FFTW_WISDOM");
-  if (ev_use_fftw_wisdom != nullptr) {
+  if (ev_use_fftw_wisdom != nullptr && !trvs::is_gpu_enabled()) {
     params.use_fftw_wisdom = std::string(ev_use_fftw_wisdom);
   }
 
