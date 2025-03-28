@@ -798,7 +798,6 @@ int ParameterSet::validate(bool init) {
     this->fftw_planner_flag = FFTW_ESTIMATE;  // derivation
   } else
   if (this->fftw_scheme == "measure") {
-    this->fftw_scheme = "measure";  // transmutation
     this->fftw_planner_flag = FFTW_MEASURE;  // derivation
   } else
   if (this->fftw_scheme == "patient") {
