@@ -53,17 +53,12 @@ MeshField::MeshField(
 
   // Initialise the field (and its shadow field if interlacing is used)
   // and increase allocated memory.
-#if defined(TRV_USE_CUDA)
-  this->field = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * this->params.nmesh
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  this->field = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * this->params.nmesh
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
   this->field = fftw_alloc_complex(this->params.nmesh);
-#endif  // TRV_USE_CUDA
+#ifdef TRV_USE_HIP
+  HIP_EXEC(hipMalloc(
+    &this->d_field, sizeof(fft_double_complex) * this->params.nmesh
+  ));
+#endif  // TRV_USE_HIP
 
   trvs::count_cgrid += 1;
   trvs::count_grid += 1;
@@ -72,17 +67,12 @@ MeshField::MeshField(
   trvs::update_maxmem();
 
   if (this->params.interlace == "true") {
-#if defined(TRV_USE_CUDA)
-    this->field_s = (fftw_complex*)fftw_malloc(
-      sizeof(fftw_complex) * this->params.nmesh
-    );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-    this->field_s = (fftw_complex*)malloc(
-      sizeof(fftw_complex) * this->params.nmesh
-    );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
     this->field_s = fftw_alloc_complex(this->params.nmesh);
-#endif  // TRV_USE_CUDA
+#ifdef TRV_USE_HIP
+    HIP_EXEC(hipMalloc(
+      &this->d_field_s, sizeof(fft_double_complex) * this->params.nmesh
+    ));
+#endif  // TRV_USE_HIP
 
     trvs::count_cgrid += 1;
     trvs::count_grid += 1;
@@ -93,11 +83,14 @@ MeshField::MeshField(
 
   this->reset_density_field();  // initialise; likely redundant but safe
 
-  // Initialise FFTW plans.
+  // Initialise FFT(W) plans.
   if (plan_ini) {
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
+    // Initialise FFTW multithreading.
     fftw_plan_with_nthreads(omp_get_max_threads());
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
+
+    // Initialse FFTW wisdom (effective when not in GPU mode).
     bool import_fftw_wisdom_f = false;
     bool import_fftw_wisdom_b = false;
     bool export_fftw_wisdom_f = false;
@@ -166,11 +159,9 @@ MeshField::MeshField(
     }
 
     if (import_fftw_wisdom_f) {
-#if !defined(TRV_USE_CUDA) && !defined(TRV_USE_HIP)
       fftw_import_wisdom_from_filename(
         this->params.fftw_wisdom_file_f.c_str()
       );
-#endif  // !TRV_USE_CUDA && !TRV_USE_HIP
       trv::sys::fftw_wisdom_f_imported = true;
       if (trvs::currTask == 0) {
         trvs::logger.info(
@@ -180,20 +171,48 @@ MeshField::MeshField(
       }
     }
 
+    // Initialise GPU context (effective when in GPU mode).
+    std::vector<int> gpus = trvs::get_gpu_ids();
+    if (trvs::is_gpu_enabled()) {
+#ifdef _CUDA_STREAM
+      CUDA_EXEC(cudaStreamCreate(&this->custream));
+#endif  // _CUDA_STREAM
+    }
+
     auto pre_plan_f_timept = std::chrono::system_clock::now();
-#ifndef TRV_USE_HIP
-    this->transform = fftw_plan_dft_3d(
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      this->field, this->field,
-      FFTW_FORWARD, this->params.fftw_planner_flag
-    );
-#else  // TRV_USE_HIP
-    hipfftPlan3d(
-      &this->transform,
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      HIPFFT_Z2Z
-    );
-#endif  // !TRV_USE_HIP
+    if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+      HIPFFT_EXEC(hipfftPlan3d(
+        &this->transform_gpu,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        HIPFFT_Z2Z
+      ));
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+      size_t workspace_sizes[gpus.size()];
+      CUFFT_EXEC(cufftCreate(&this->transform_gpu));;
+  #ifdef _CUDA_STREAM
+      CUFFT_EXEC(cufftSetStream(this->transform_gpu, this->custream));
+  #endif  // _CUDA_STREAM
+      CUFFT_EXEC(cufftXtSetGPUs(
+        this->transform_gpu, gpus.size(), gpus.data()
+      ));
+      CUFFT_EXEC(cufftMakePlan3d(
+        this->transform_gpu,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        CUFFT_Z2Z,
+        workspace_sizes
+      ));
+      CUFFT_EXEC(cufftXtMalloc(
+        this->transform_gpu, &this->field_desc, CUFFT_XT_FORMAT_INPLACE
+      ));
+#endif                       // TRV_USE_HIP
+    } else {
+      this->transform = fftw_plan_dft_3d(
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        this->field, this->field,
+        FFTW_FORWARD, this->params.fftw_planner_flag
+      );
+    }
     auto post_plan_f_timept = std::chrono::system_clock::now();
 
     double plan_f_time = std::chrono::duration<double>(
@@ -213,11 +232,9 @@ MeshField::MeshField(
     }
 
     if (export_fftw_wisdom_f) {
-#if !defined(TRV_USE_CUDA) && !defined(TRV_USE_HIP)
       fftw_export_wisdom_to_filename(
         this->params.fftw_wisdom_file_f.c_str()
       );
-#endif  // !TRV_USE_CUDA && !TRV_USE_HIP
       if (trvs::currTask == 0) {
         trvs::logger.info(
           "FFTW wisdom file for forward transforms has been exported: %s",
@@ -228,11 +245,9 @@ MeshField::MeshField(
     }
 
     if (import_fftw_wisdom_b) {
-#if !defined(TRV_USE_CUDA) && !defined(TRV_USE_HIP)
       fftw_import_wisdom_from_filename(
         this->params.fftw_wisdom_file_b.c_str()
       );
-#endif  // !TRV_USE_CUDA && !TRV_USE_HIP
       trv::sys::fftw_wisdom_b_imported = true;
       if (trvs::currTask == 0) {
         trvs::logger.info(
@@ -243,19 +258,39 @@ MeshField::MeshField(
     }
 
     auto pre_plan_b_timept = std::chrono::system_clock::now();
-#ifndef TRV_USE_HIP
-    this->inv_transform = fftw_plan_dft_3d(
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      this->field, this->field,
-      FFTW_BACKWARD, this->params.fftw_planner_flag
-    );
-#else  // TRV_USE_HIP
-    hipfftPlan3d(
-      &this->inv_transform,
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      HIPFFT_Z2Z
-    );
-#endif  // !TRV_USE_HIP
+    if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+      HIPFFT_EXEC(hipfftPlan3d(
+        &this->inv_transform_gpu,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        HIPFFT_Z2Z
+      ));
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+      size_t workspace_sizes[gpus.size()];
+      CUFFT_EXEC(cufftCreate(&this->inv_transform_gpu));;
+  #ifdef _CUDA_STREAM
+      CUFFT_EXEC(cufftSetStream(this->inv_transform_gpu, this->custream));
+  #endif  // _CUDA_STREAM
+      CUFFT_EXEC(cufftXtSetGPUs(
+        this->inv_transform_gpu, gpus.size(), gpus.data()
+     ));
+      CUFFT_EXEC(cufftMakePlan3d(
+        this->inv_transform_gpu,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        CUFFT_Z2Z,
+        workspace_sizes
+      ));
+      CUFFT_EXEC(cufftXtMalloc(
+        this->inv_transform_gpu, &this->inv_field_desc, CUFFT_XT_FORMAT_INPLACE
+      ));
+#endif                       // TRV_USE_HIP
+    } else {
+      this->inv_transform = fftw_plan_dft_3d(
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        this->field, this->field,
+        FFTW_BACKWARD, this->params.fftw_planner_flag
+      );
+    }
     auto post_plan_b_timept = std::chrono::system_clock::now();
 
     double plan_b_time = std::chrono::duration<double>(
@@ -275,11 +310,9 @@ MeshField::MeshField(
     }
 
     if (export_fftw_wisdom_b) {
-#if !defined(TRV_USE_CUDA) && !defined(TRV_USE_HIP)
       fftw_export_wisdom_to_filename(
         this->params.fftw_wisdom_file_b.c_str()
       );
-#endif  // !TRV_USE_CUDA && !TRV_USE_HIP
       if (trvs::currTask == 0) {
         trvs::logger.info(
           "FFTW wisdom file for backward transforms has been exported: %s",
@@ -290,19 +323,39 @@ MeshField::MeshField(
     }
 
     if (this->params.interlace == "true") {
-#ifndef TRV_USE_HIP
-      this->transform_s = fftw_plan_dft_3d(
-        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-        this->field_s, this->field_s,
-        FFTW_FORWARD, this->params.fftw_planner_flag
-      );
-#else  // TRV_USE_HIP
-      hipfftPlan3d(
-        &this->transform_s,
-        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-        HIPFFT_Z2Z
-      );
-#endif  // !TRV_USE_HIP
+      if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+        HIPFFT_EXEC(hipfftPlan3d(
+          &this->transform_s_gpu,
+          this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+          HIPFFT_Z2Z
+        ));
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+        size_t workspace_sizes[gpus.size()];
+        CUFFT_EXEC(cufftCreate(&this->transform_s_gpu));;
+  #ifdef _CUDA_STREAM
+        CUFFT_EXEC(cufftSetStream(this->transform_s_gpu, this->custream));
+  #endif  // _CUDA_STREAM
+        CUFFT_EXEC(cufftXtSetGPUs(
+          this->transform_s_gpu, gpus.size(), gpus.data()
+        ));
+        CUFFT_EXEC(cufftMakePlan3d(
+          this->transform_s_gpu,
+          this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+          CUFFT_Z2Z,
+          workspace_sizes
+        ));
+        CUFFT_EXEC(cufftXtMalloc(
+          this->transform_s_gpu, &this->field_s_desc, CUFFT_XT_FORMAT_INPLACE
+        ));
+#endif                       // TRV_USE_HIP
+      } else {
+        this->transform_s = fftw_plan_dft_3d(
+          this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+          this->field_s, this->field_s,
+          FFTW_FORWARD, this->params.fftw_planner_flag
+        );
+      }
     }
     this->plan_ini = true;
 
@@ -330,6 +383,17 @@ MeshField::MeshField(
   fftw_plan& transform, fftw_plan& inv_transform,
   const std::string& name
 ) {
+  if (!trvs::is_gpu_enabled()) {
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "MeshField constructor called with external FFTW plans in GPU mode."
+      );
+    }
+    throw std::runtime_error(
+      "MeshField constructor called with external FFTW plans in GPU mode."
+    );
+  }
+
   // Attach the full parameter set to @ref trv::MeshField.
   this->params = params;
   this->name = name;
@@ -338,17 +402,7 @@ MeshField::MeshField(
 
   // Initialise the field (and its shadow field if interlacing is used)
   // and increase allocated memory.
-#if defined(TRV_USE_CUDA)
-  this->field = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * this->params.nmesh
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  this->field = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * this->params.nmesh
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
   this->field = fftw_alloc_complex(this->params.nmesh);
-#endif  // TRV_USE_CUDA
 
   trvs::count_cgrid += 1;
   trvs::count_grid += 1;
@@ -357,17 +411,7 @@ MeshField::MeshField(
   trvs::update_maxmem();
 
   if (this->params.interlace == "true") {
-#if defined(TRV_USE_CUDA)
-    this->field_s = (fftw_complex*)fftw_malloc(
-      sizeof(fftw_complex) * this->params.nmesh
-    );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-    this->field_s = (fftw_complex*)malloc(
-      sizeof(fftw_complex) * this->params.nmesh
-    );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
     this->field_s = fftw_alloc_complex(this->params.nmesh);
-#endif  // TRV_USE_CUDA
 
     trvs::count_cgrid += 1;
     trvs::count_grid += 1;
@@ -403,19 +447,36 @@ MeshField::MeshField(
 
 MeshField::~MeshField() {
   if (this->plan_ini) {
-#ifndef TRV_USE_HIP
-    fftw_destroy_plan(this->transform);
-    fftw_destroy_plan(this->inv_transform);
-    if (this->params.interlace == "true") {
-      fftw_destroy_plan(this->transform_s);
+    if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+      HIP_EXEC(hipFree(this->d_field));
+      HIPFFT_EXEC(hipfftDestroy(this->transform_gpu));
+      HIPFFT_EXEC(hipfftDestroy(this->inv_transform_gpu));
+      if (this->params.interlace == "true") {
+        HIP_EXEC(hipFree(this->d_field_s));
+        HIPFFT_EXEC(hipfftDestroy(this->transform_s_gpu));
+      }
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+      CUFFT_EXEC(cufftXtFree(this->field_desc));
+      CUFFT_EXEC(cufftXtFree(this->inv_field_desc));
+      CUFFT_EXEC(cufftDestroy(this->transform_gpu));
+      CUFFT_EXEC(cufftDestroy(this->inv_transform_gpu));
+      if (this->params.interlace == "true") {
+        CUFFT_EXEC(cufftXtFree(this->field_s_desc));
+        CUFFT_EXEC(cufftDestroy(this->transform_s_gpu));
+      }
+  #ifdef _CUDA_STREAM
+      // Destroy CUDA streams.
+      CUDA_EXEC(cudaStreamDestroy(this->custream));
+  #endif  // _CUDA_STREAM
+#endif
+    } else {
+      fftw_destroy_plan(this->transform);
+      fftw_destroy_plan(this->inv_transform);
+      if (this->params.interlace == "true") {
+        fftw_destroy_plan(this->transform_s);
+      }
     }
-#else  // TRV_USE_HIP
-    hipfftDestroy(this->transform);
-    hipfftDestroy(this->inv_transform);
-    if (this->params.interlace == "true") {
-      hipfftDestroy(this->transform_s);
-    }
-#endif  // !TRV_USE_HIP
   }
 
   if (this->window_assign_order != -1) {
@@ -425,22 +486,14 @@ MeshField::~MeshField() {
   }
 
   if (this->field != nullptr) {
-#ifndef TRV_USE_HIP
     fftw_free(this->field);
-#else  // TRV_USE_HIP
-    free(this->field);
-#endif  // !TRV_USE_HIP
     this->field = nullptr;
     trvs::count_cgrid -= 1;
     trvs::count_grid -= 1;
     trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
   }
   if (this->field_s != nullptr) {
-#ifndef TRV_USE_HIP
     fftw_free(this->field_s);
-#else  // TRV_USE_HIP
-    free(this->field_s);
-#endif  // !TRV_USE_HIP
     this->field_s = nullptr;
     trvs::count_cgrid -= 1;
     trvs::count_grid -= 1;
@@ -1157,19 +1210,7 @@ void MeshField::compute_assignment_window_in_fourier(int order) {
 // -----------------------------------------------------------------------
 
 void MeshField::compute_unweighted_field(ParticleCatalogue& particles) {
-  fftw_complex* unit_weight = nullptr;
-
-#if defined(TRV_USE_CUDA)
-  unit_weight = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * particles.ntotal
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  unit_weight = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * particles.ntotal
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
-  unit_weight = fftw_alloc_complex(particles.ntotal);
-#endif  // TRV_USE_CUDA
+  fftw_complex* unit_weight = fftw_alloc_complex(particles.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
   trvs::update_maxmem();
@@ -1184,12 +1225,7 @@ void MeshField::compute_unweighted_field(ParticleCatalogue& particles) {
 
   this->assign_weighted_field_to_mesh(particles, unit_weight);
 
-#ifndef TRV_USE_HIP
   fftw_free(unit_weight);
-#else  // TRV_USE_HIP
-  free(unit_weight);
-#endif  // !TRV_USE_HIP
-  unit_weight = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 }
@@ -1216,20 +1252,7 @@ void MeshField::compute_ylm_wgtd_field(
   LineOfSight* los_data, LineOfSight* los_rand,
   double alpha, int ell, int m
 ) {
-  fftw_complex* weight_kern = nullptr;
-
-  // Compute the weighted data-source field.
-#if defined(TRV_USE_CUDA)
-  weight_kern = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * particles_data.ntotal
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  weight_kern = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * particles_data.ntotal
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
-  weight_kern = fftw_alloc_complex(particles_data.ntotal);
-#endif  // TRV_USE_CUDA
+  fftw_complex* weight_kern = fftw_alloc_complex(particles_data.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
   trvs::update_maxmem();
@@ -1251,27 +1274,12 @@ void MeshField::compute_ylm_wgtd_field(
 
   this->assign_weighted_field_to_mesh(particles_data, weight_kern);
 
-#ifndef TRV_USE_HIP
   fftw_free(weight_kern);
-#else  // TRV_USE_HIP
-  free(weight_kern);
-#endif  // !TRV_USE_HIP
-  weight_kern = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
 
   // Compute the weighted random-source field.
-#if defined(TRV_USE_CUDA)
-  weight_kern = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * particles_rand.ntotal
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  weight_kern = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * particles_rand.ntotal
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
   weight_kern = fftw_alloc_complex(particles_rand.ntotal);
-#endif  // TRV_USE_CUDA
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
   trvs::update_maxmem();
@@ -1294,12 +1302,7 @@ void MeshField::compute_ylm_wgtd_field(
   MeshField field_rand(this->params, false, "`field_rand`");
   field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
-#ifndef TRV_USE_HIP
   fftw_free(weight_kern);
-#else  // TRV_USE_HIP
-  free(weight_kern);
-#endif  // !TRV_USE_HIP
-  weight_kern = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
 
@@ -1327,20 +1330,8 @@ void MeshField::compute_ylm_wgtd_field(
   ParticleCatalogue& particles, LineOfSight* los,
   double alpha, int ell, int m
 ) {
-  fftw_complex* weight_kern = nullptr;
-
   // Compute the weighted field.
-#if defined(TRV_USE_CUDA)
-  weight_kern = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * particles.ntotal
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  weight_kern = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * particles.ntotal
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
-  weight_kern = fftw_alloc_complex(particles.ntotal);
-#endif  // TRV_USE_CUDA
+  fftw_complex* weight_kern = fftw_alloc_complex(particles.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
   trvs::update_maxmem();
@@ -1360,12 +1351,7 @@ void MeshField::compute_ylm_wgtd_field(
 
   this->assign_weighted_field_to_mesh(particles, weight_kern);
 
-#ifndef TRV_USE_HIP
   fftw_free(weight_kern);
-#else  // TRV_USE_HIP
-  free(weight_kern);
-#endif  // !TRV_USE_HIP
-  weight_kern = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 
@@ -1385,20 +1371,8 @@ void MeshField::compute_ylm_wgtd_quad_field(
   double alpha,
   int ell, int m
 ) {
-  fftw_complex* weight_kern = nullptr;
-
   // Compute the quadratic weighted data-source field.
-#if defined(TRV_USE_CUDA)
-  weight_kern = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * particles_data.ntotal
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  weight_kern = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * particles_data.ntotal
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
-  weight_kern = fftw_alloc_complex(particles_data.ntotal);
-#endif  // TRV_USE_CUDA
+  fftw_complex* weight_kern = fftw_alloc_complex(particles_data.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
   trvs::update_maxmem();
@@ -1422,27 +1396,12 @@ void MeshField::compute_ylm_wgtd_quad_field(
 
   this->assign_weighted_field_to_mesh(particles_data, weight_kern);
 
-#ifndef TRV_USE_HIP
   fftw_free(weight_kern);
-#else  // TRV_USE_HIP
-  free(weight_kern);
-#endif  // !TRV_USE_HIP
-  weight_kern = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_data.ntotal);
 
   // Compute the quadratic weighted random-source field.
-#if defined(TRV_USE_CUDA)
-  weight_kern = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * particles_rand.ntotal
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  weight_kern = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * particles_rand.ntotal
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
   weight_kern = fftw_alloc_complex(particles_rand.ntotal);
-#endif  // TRV_USE_CUDA
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
   trvs::update_maxmem();
@@ -1467,12 +1426,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
   MeshField field_rand(this->params, false, "`field_rand`");
   field_rand.assign_weighted_field_to_mesh(particles_rand, weight_kern);
 
-#ifndef TRV_USE_HIP
   fftw_free(weight_kern);
-#else  // TRV_USE_HIP
-  free(weight_kern);
-#endif  // !TRV_USE_HIP
-  weight_kern = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles_rand.ntotal);
 
@@ -1500,20 +1454,8 @@ void MeshField::compute_ylm_wgtd_quad_field(
   ParticleCatalogue& particles, LineOfSight* los,
   double alpha, int ell, int m
 ) {
-  fftw_complex* weight_kern = nullptr;
-
   // Compute the quadratic weighted field.
-#if defined(TRV_USE_CUDA)
-  weight_kern = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * particles.ntotal
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  weight_kern = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * particles.ntotal
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
-  weight_kern = fftw_alloc_complex(particles.ntotal);
-#endif  // TRV_USE_CUDA
+  fftw_complex* weight_kern = fftw_alloc_complex(particles.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
   trvs::update_maxmem();
@@ -1535,12 +1477,7 @@ void MeshField::compute_ylm_wgtd_quad_field(
 
   this->assign_weighted_field_to_mesh(particles, weight_kern);
 
-#ifndef TRV_USE_HIP
   fftw_free(weight_kern);
-#else  // TRV_USE_HIP
-  free(weight_kern);
-#endif  // !TRV_USE_HIP
-  weight_kern = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 
@@ -1561,10 +1498,6 @@ void MeshField::compute_ylm_wgtd_quad_field(
 // -----------------------------------------------------------------------
 
 void MeshField::fourier_transform() {
-#ifdef TRV_USE_HIP
-  hipError_t hip_ret;
-#endif  // TRV_USE_HIP
-
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Performing Fourier transform of '%s'.", this->name.c_str()
@@ -1581,30 +1514,35 @@ void MeshField::fourier_transform() {
   }
 
   // Perform FFT.
-#ifndef TRV_USE_HIP
-  if (this->plan_ext) {
-    fftw_execute_dft(this->transform, this->field, this->field);
-  } else {
-    fftw_execute(this->transform);
-  }
-#else  // TRV_USE_HIP
-  hipfftDoubleComplex* d_field;
-  hip_ret = hipMalloc(&d_field, sizeof(hipfftDoubleComplex) * this->params.nmesh);
-  trva::copy_complex_array_htod(
-    this->field, d_field, this->params.nmesh
-  );
-  hipfftExecZ2Z(this->transform, d_field, d_field, HIPFFT_FORWARD);
-  hip_ret = hipDeviceSynchronize();
-  trva::copy_complex_array_dtoh(
-    d_field, this->field, this->params.nmesh
-  );
-  hip_ret = hipFree(d_field);
-  if (hip_ret != hipSuccess) {
-    throw std::runtime_error(
-      "Failed to perform the forward Fourier transform."
+  if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+    trva::copy_complex_array_htod(
+      this->field, this->d_field, this->params.nmesh
     );
+    HIPFFT_EXEC(hipfftExecZ2Z(
+      this->transform_gpu, this->d_field, this->d_field, HIPFFT_FORWARD
+    ));
+    trva::copy_complex_array_dtoh(
+      this->d_field, this->field, this->params.nmesh
+    );
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+    trva::copy_complex_array_htod_mgpu(
+      this->transform_gpu, this->field_desc, this->field
+    );
+    CUFFT_EXEC(cufftXtExecDescriptor(
+      this->transform_gpu, this->field_desc, this->field_desc, CUFFT_FORWARD
+    ));
+    trva::copy_complex_array_dtoh_mgpu(
+      this->transform_gpu, this->field_desc, this->field
+    );
+#endif                       // TRV_USE_HIP
+  } else {
+    if (this->plan_ext) {
+      fftw_execute_dft(this->transform, this->field, this->field);
+    } else {
+      fftw_execute(this->transform);
+    }
   }
-#endif  // !TRV_USE_HIP
   trvs::count_fft += 1;
 
   // Interlace with the shadow field.
@@ -1617,30 +1555,36 @@ void MeshField::fourier_transform() {
       this->field_s[gid][1] *= this->vol_cell;
     }
 
-#ifndef TRV_USE_HIP
-    if (this->plan_ext) {
-      fftw_execute_dft(this->transform_s, this->field_s, this->field_s);
+    if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+      trva::copy_complex_array_htod(
+        this->field_s, this->d_field_s, this->params.nmesh
+      );
+      HIPFFT_EXEC(hipfftExecZ2Z(
+        this->transform_s_gpu, this->d_field_s, this->d_field_s, HIPFFT_FORWARD
+      ));
+      trva::copy_complex_array_dtoh(
+        this->d_field_s, this->field_s, this->params.nmesh
+      );
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+      trva::copy_complex_array_htod_mgpu(
+        this->transform_s_gpu, this->field_s_desc, this->field_s
+      );
+      CUFFT_EXEC(cufftXtExecDescriptor(
+        this->transform_s_gpu, this->field_s_desc, this->field_s_desc,
+        CUFFT_FORWARD
+      ));
+      trva::copy_complex_array_dtoh_mgpu(
+        this->transform_s_gpu, this->field_s_desc, this->field_s
+      );
+#endif                       // TRV_USE_HIP
     } else {
-      fftw_execute(this->transform_s);
+      if (this->plan_ext) {
+        fftw_execute_dft(this->transform_s, this->field_s, this->field_s);
+      } else {
+        fftw_execute(this->transform_s);
+      }
     }
-#else  // TRV_USE_HIP
-    hipfftDoubleComplex* d_field_s;
-    hip_ret = hipMalloc(&d_field_s, sizeof(hipfftDoubleComplex) * this->params.nmesh);
-    trva::copy_complex_array_htod(
-      this->field_s, d_field_s, this->params.nmesh
-    );
-    hipfftExecZ2Z(this->transform_s, d_field_s, d_field_s, HIPFFT_FORWARD);
-    hip_ret = hipDeviceSynchronize();
-    trva::copy_complex_array_dtoh(
-      d_field_s, this->field_s, this->params.nmesh
-    );
-    hip_ret = hipFree(d_field_s);
-  if (hip_ret != hipSuccess) {
-    throw std::runtime_error(
-      "Failed to perform the forward Fourier transform."
-    );
-  }
-#endif  // !TRV_USE_HIP
     trvs::count_fft += 1;
 
 #ifdef TRV_USE_OMP
@@ -1686,10 +1630,6 @@ void MeshField::fourier_transform() {
 }
 
 void MeshField::inv_fourier_transform() {
-#ifdef TRV_USE_HIP
-  hipError_t hip_ret;
-#endif  // TRV_USE_HIP
-
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Performing inverse Fourier transform of '%s'.", this->name.c_str()
@@ -1707,30 +1647,36 @@ void MeshField::inv_fourier_transform() {
   }
 
   // Perform inverse FFT.
-#ifndef TRV_USE_HIP
-  if (this->plan_ext) {
-    fftw_execute_dft(this->inv_transform, this->field, this->field);
-  } else {
-    fftw_execute(this->inv_transform);
-  }
-#else  // TRV_USE_HIP
-  hipfftDoubleComplex* d_field;
-  hip_ret = hipMalloc(&d_field, sizeof(hipfftDoubleComplex) * this->params.nmesh);
-  trva::copy_complex_array_htod(
-    this->field, d_field, this->params.nmesh
-  );
-  hipfftExecZ2Z(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
-  hip_ret = hipDeviceSynchronize();
-  trva::copy_complex_array_dtoh(
-    d_field, this->field, this->params.nmesh
-  );
-  hip_ret = hipFree(d_field);
-  if (hip_ret != hipSuccess) {
-    throw std::runtime_error(
-      "Failed to perform the inverse Fourier transform."
+  if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+    trva::copy_complex_array_htod(
+      this->field, this->d_field, this->params.nmesh
     );
+    HIPFFT_EXEC(hipfftExecZ2Z(
+      this->inv_transform_gpu, this->d_field, this->d_field, HIPFFT_INVERSE
+    ));
+    trva::copy_complex_array_dtoh(
+      this->d_field, this->field, this->params.nmesh
+    );
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+    trva::copy_complex_array_htod_mgpu(
+      this->inv_transform_gpu, this->inv_field_desc, this->field
+    );
+    CUFFT_EXEC(cufftXtExecDescriptor(
+      this->inv_transform_gpu, this->inv_field_desc, this->inv_field_desc,
+      CUFFT_INVERSE
+    ));
+    trva::copy_complex_array_dtoh_mgpu(
+      this->inv_transform_gpu, this->inv_field_desc, this->field
+    );
+#endif                       // TRV_USE_HIP
+  } else {
+    if (this->plan_ext) {
+      fftw_execute_dft(this->inv_transform, this->field, this->field);
+    } else {
+      fftw_execute(this->inv_transform);
+    }
   }
-#endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 }
 
@@ -1809,10 +1755,6 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   double k_lower, double k_upper,
   double& k_eff, int& nmodes
 ) {
-#ifdef TRV_USE_HIP
-  hipError_t hip_ret;
-#endif  // TRV_USE_HIP
-
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Performing inverse Fourier transform to spherical harmonic weighted "
@@ -1872,30 +1814,36 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   }
 
   // Perform inverse FFT.
-#ifndef TRV_USE_HIP
-  if (this->plan_ext) {
-    fftw_execute_dft(this->inv_transform, this->field, this->field);
-  } else {
-    fftw_execute(this->inv_transform);
-  }
-#else  // TRV_USE_HIP
-  hipfftDoubleComplex* d_field;
-  hip_ret = hipMalloc(&d_field, sizeof(hipfftDoubleComplex) * this->params.nmesh);
-  trva::copy_complex_array_htod(
-    this->field, d_field, this->params.nmesh
-  );
-  hipfftExecZ2Z(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
-  hip_ret = hipDeviceSynchronize();
-  trva::copy_complex_array_dtoh(
-    d_field, this->field, this->params.nmesh
-  );
-  hip_ret = hipFree(d_field);
-  if (hip_ret != hipSuccess) {
-    throw std::runtime_error(
-      "Failed to perform the inverse Fourier transform."
+  if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+    trva::copy_complex_array_htod(
+      this->field, this->d_field, this->params.nmesh
     );
+    HIPFFT_EXEC(hipfftExecZ2Z(
+      this->inv_transform_gpu, this->d_field, this->d_field, HIPFFT_INVERSE
+    ));
+    trva::copy_complex_array_dtoh(
+      this->d_field, this->field, this->params.nmesh
+    );
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+    trva::copy_complex_array_htod_mgpu(
+      this->inv_transform_gpu, this->inv_field_desc, this->field
+    );
+    CUFFT_EXEC(cufftXtExecDescriptor(
+      this->inv_transform_gpu, this->inv_field_desc, this->inv_field_desc,
+      CUFFT_INVERSE
+    ));
+    trva::copy_complex_array_dtoh_mgpu(
+      this->inv_transform_gpu, this->inv_field_desc, this->field
+    );
+#endif                       // TRV_USE_HIP
+  } else {
+    if (this->plan_ext) {
+      fftw_execute_dft(this->inv_transform, this->field, this->field);
+    } else {
+      fftw_execute(this->inv_transform);
+    }
   }
-#endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
   // Average over wavevector modes in the band.
@@ -1916,10 +1864,6 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
     trvm::SphericalBesselCalculator& sjl,
     double r
 ) {
-#ifdef TRV_USE_HIP
-  hipError_t hip_ret;
-#endif  // TRV_USE_HIP
-
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Performing inverse Fourier transform to spherical Bessel weighted "
@@ -1976,30 +1920,36 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
 }
 
   // Perform inverse FFT.
-#ifndef TRV_USE_HIP
-  if (this->plan_ext) {
-    fftw_execute_dft(this->inv_transform, this->field, this->field);
-  } else {
-    fftw_execute(this->inv_transform);
-  }
-#else  // TRV_USE_HIP
-  hipfftDoubleComplex* d_field;
-  hip_ret = hipMalloc(&d_field, sizeof(hipfftDoubleComplex) * this->params.nmesh);
-  trva::copy_complex_array_htod(
-    this->field, d_field, this->params.nmesh
-  );
-  hipfftExecZ2Z(this->inv_transform, d_field, d_field, HIPFFT_BACKWARD);
-  hip_ret = hipDeviceSynchronize();
-  trva::copy_complex_array_dtoh(
-    d_field, this->field, this->params.nmesh
-  );
-  hip_ret = hipFree(d_field);
-  if (hip_ret != hipSuccess) {
-    throw std::runtime_error(
-      "Failed to perform the inverse Fourier transform."
+  if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+    trva::copy_complex_array_htod(
+      this->field, this->d_field, this->params.nmesh
     );
+    HIPFFT_EXEC(hipfftExecZ2Z(
+      this->inv_transform_gpu, this->d_field, this->d_field, HIPFFT_INVERSE
+    ));
+    trva::copy_complex_array_dtoh(
+      this->d_field, this->field, this->params.nmesh
+    );
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+    trva::copy_complex_array_htod_mgpu(
+      this->inv_transform_gpu, this->inv_field_desc, this->field
+    );
+    CUFFT_EXEC(cufftXtExecDescriptor(
+      this->inv_transform_gpu, this->inv_field_desc, this->inv_field_desc,
+      CUFFT_INVERSE
+    ));
+    trva::copy_complex_array_dtoh_mgpu(
+      this->inv_transform_gpu, this->inv_field_desc, this->field
+    );
+#endif                       // TRV_USE_HIP
+  } else {
+    if (this->plan_ext) {
+      fftw_execute_dft(this->inv_transform, this->field, this->field);
+    } else {
+      fftw_execute(this->inv_transform);
+    }
   }
-#endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 }
 
@@ -2012,19 +1962,7 @@ double MeshField::calc_grid_based_powlaw_norm(
   ParticleCatalogue& particles, int order
 ) {
   // Initialise the weight field.
-  fftw_complex* weight = nullptr;
-
-#if defined(TRV_USE_CUDA)
-  weight = (fftw_complex*)fftw_malloc(
-    sizeof(fftw_complex) * particles.ntotal
-  );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-  weight = (fftw_complex*)malloc(
-    sizeof(fftw_complex) * particles.ntotal
-  );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
-  weight = fftw_alloc_complex(particles.ntotal);
-#endif  // TRV_USE_CUDA
+  fftw_complex* weight = fftw_alloc_complex(particles.ntotal);
 
   trvs::gbytesMem += trvs::size_in_gb<fftw_complex>(particles.ntotal);
   trvs::update_maxmem();
@@ -2044,12 +1982,7 @@ double MeshField::calc_grid_based_powlaw_norm(
   // Compute the weighted field.
   this->assign_weighted_field_to_mesh(particles, weight);
 
-#ifndef TRV_USE_HIP
   fftw_free(weight);
-#else  // TRV_USE_HIP
-  free(weight);
-#endif  // !TRV_USE_HIP
-  weight = nullptr;
 
   trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(particles.ntotal);
 
@@ -2105,17 +2038,12 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
 
   // Set up FFTW plans.
   if (plan_ini) {
-#if defined(TRV_USE_CUDA)
-    this->twopt_3d = (fftw_complex*)fftw_malloc(
-      sizeof(fftw_complex) * this->params.nmesh
-    );
-#elif defined(TRV_USE_HIP) // !TRV_USE_CUDA && TRV_USE_HIP
-    this->twopt_3d = (fftw_complex*)malloc(
-      sizeof(fftw_complex) * this->params.nmesh
-    );
-#else  // !TRV_USE_CUDA && !TRV_USE_HIP
     this->twopt_3d = fftw_alloc_complex(this->params.nmesh);
-#endif  // TRV_USE_CUDA
+#ifdef TRV_USE_HIP
+    HIP_EXEC(hipMalloc(
+      &this->d_twopt_3d, sizeof(fft_double_complex) * this->params.nmesh
+    ));
+#endif  // TRV_USE_HIP
 
     trvs::count_cgrid += 1;
     trvs::count_grid += 1;
@@ -2126,19 +2054,48 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
 #if defined(TRV_USE_OMP) && defined(TRV_USE_FFTWOMP)
     fftw_plan_with_nthreads(omp_get_max_threads());
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
-#ifndef TRV_USE_HIP
-    this->inv_transform = fftw_plan_dft_3d(
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      this->twopt_3d, this->twopt_3d,
-      FFTW_BACKWARD, this->params.fftw_planner_flag
-    );
-#else  // TRV_USE_HIP
-    hipfftPlan3d(
-      &this->inv_transform,
-      this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      HIPFFT_Z2Z
-    );
-#endif  // !TRV_USE_HIP
+
+    // Initialise GPU context (effective when in GPU mode).
+    std::vector<int> gpus = trvs::get_gpu_ids();
+    if (trvs::is_gpu_enabled()) {
+#ifdef _CUDA_STREAM
+      CUDA_EXEC(cudaStreamCreate(&this->custream));
+#endif  // _CUDA_STREAM
+    }
+
+    if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+      HIPFFT_EXEC(hipfftPlan3d(
+        &this->inv_transform_gpu,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        HIPFFT_Z2Z
+      ));
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+      size_t workspace_sizes[gpus.size()];
+      CUFFT_EXEC(cufftCreate(&this->inv_transform_gpu));;
+  #ifdef _CUDA_STREAM
+      CUFFT_EXEC(cufftSetStream(this->inv_transform_gpu, this->custream));
+  #endif  // _CUDA_STREAM
+      CUFFT_EXEC(cufftXtSetGPUs(
+        this->inv_transform_gpu, gpus.size(), gpus.data()
+      ));
+      CUFFT_EXEC(cufftMakePlan3d(
+        this->inv_transform_gpu,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        CUFFT_Z2Z,
+        workspace_sizes
+      ));
+      CUFFT_EXEC(cufftXtMalloc(
+        this->inv_transform_gpu, &this->twopt_3d_desc, CUFFT_XT_FORMAT_INPLACE
+      ));
+#endif                       // TRV_USE_HIP
+    } else {
+      this->inv_transform = fftw_plan_dft_3d(
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        this->twopt_3d, this->twopt_3d,
+        FFTW_BACKWARD, this->params.fftw_planner_flag
+      );
+    }
 
     this->plan_ini = true;
   }
@@ -2152,20 +2109,29 @@ FieldStats::~FieldStats() {
   }
 
   if (this->plan_ini) {
-#ifndef TRV_USE_HIP
-    fftw_destroy_plan(this->inv_transform);
-#else  // TRV_USE_HIP
-    hipfftDestroy(this->inv_transform);
-#endif  // !TRV_USE_HIP
-#ifndef TRV_USE_HIP
-    fftw_free(this->twopt_3d);
-#else  // TRV_USE_HIP
-    free(this->twopt_3d);
-#endif  // !TRV_USE_HIP
-    this->twopt_3d = nullptr;
-    trvs::count_cgrid -= 1;
-    trvs::count_grid -= 1;
-    trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+    if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+      HIP_EXEC(hipFree(this->d_twopt_3d));
+      HIPFFT_EXEC(hipfftDestroy(this->inv_transform_gpu));
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+      CUFFT_EXEC(cufftXtFree(this->twopt_3d_desc));
+      CUFFT_EXEC(cufftDestroy(this->inv_transform_gpu));
+  #ifdef _CUDA_STREAM
+      // Destroy CUDA streams.
+      CUDA_EXEC(cudaStreamDestroy(this->custream));
+  #endif  // _CUDA_STREAM
+#endif                       // TRV_USE_HIP
+    } else {
+      fftw_destroy_plan(this->inv_transform);
+    }
+
+    if (this->twopt_3d != nullptr) {
+      fftw_free(this->twopt_3d);
+      this->twopt_3d = nullptr;
+      trvs::count_cgrid -= 1;
+      trvs::count_grid -= 1;
+      trvs::gbytesMem -= trvs::size_in_gb<fftw_complex>(this->params.nmesh);
+    }
   }
 }
 
@@ -2634,10 +2600,6 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   MeshField& field_a, MeshField& field_b, std::complex<double> shotnoise_amp,
   int ell, int m, trv::Binning& rbinning
 ) {
-#ifdef TRV_USE_HIP
-  hipError_t hip_ret;
-#endif  // TRV_USE_HIP
-
   this->resize_stats(rbinning.num_bins);
 
   // Check mesh fields compatibility and reuse properties and methods of
@@ -2739,30 +2701,37 @@ void FieldStats::compute_ylm_wgtd_2pt_stats_in_config(
   }
 
   // Inverse Fourier transform.
-#ifndef TRV_USE_HIP
-  if (this->plan_ini) {
-    fftw_execute(this->inv_transform);
-  } else {
-    fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
-  }
-#else  // TRV_USE_HIP
-  hipfftDoubleComplex* d_twopt_3d;
-  hip_ret = hipMalloc(&d_twopt_3d, sizeof(hipfftDoubleComplex) * this->params.nmesh);
-  trva::copy_complex_array_htod(
-    this->twopt_3d, d_twopt_3d, this->params.nmesh
-  );
-  hipfftExecZ2Z(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
-  hip_ret = hipDeviceSynchronize();
-  trva::copy_complex_array_dtoh(
-    d_twopt_3d, this->twopt_3d, this->params.nmesh
-  );
-  hip_ret = hipFree(d_twopt_3d);
-  if (hip_ret != hipSuccess) {
-    throw std::runtime_error(
-      "Failed to perform the inverse Fourier transform."
+  if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+    trva::copy_complex_array_htod(
+      this->twopt_3d, this->d_twopt_3d, this->params.nmesh
     );
+    HIPFFT_EXEC(hipfftExecZ2Z(
+      this->inv_transform_gpu, this->d_twopt_3d, this->d_twopt_3d,
+      HIPFFT_INVERSE
+    ));
+    trva::copy_complex_array_dtoh(
+      this->d_twopt_3d, this->twopt_3d, this->params.nmesh
+    );
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+    trva::copy_complex_array_htod_mgpu(
+      this->inv_transform_gpu, this->twopt_3d_desc, this->twopt_3d
+    );
+    CUFFT_EXEC(cufftXtExecDescriptor(
+      this->inv_transform_gpu, this->twopt_3d_desc, this->twopt_3d_desc,
+      CUFFT_INVERSE
+    ));
+    trva::copy_complex_array_dtoh_mgpu(
+      this->inv_transform_gpu, this->twopt_3d_desc, this->twopt_3d
+    );
+#endif                       // TRV_USE_HIP
+  } else {
+    if (this->plan_ini) {
+      fftw_execute(this->inv_transform);
+    } else {
+      fftw_execute_dft(field_a.inv_transform, this->twopt_3d, this->twopt_3d);
+    }
   }
-#endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
   // Perform fine binning.
@@ -2879,10 +2848,6 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   std::complex<double> shotnoise_amp,
   trv::Binning& rbinning
 ) {
-#ifdef TRV_USE_HIP
-  hipError_t hip_ret;
-#endif  // TRV_USE_HIP
-
   if (trvs::currTask == 0) {
     trvs::logger.debug("Computing uncoupled shot noise for 3PCF.");
   }
@@ -2991,30 +2956,37 @@ void FieldStats::compute_uncoupled_shotnoise_for_3pcf(
   }
 
   // Inverse Fourier transform.
-#ifndef TRV_USE_HIP
-  if (this->plan_ini) {
-    fftw_execute(this->inv_transform);
-  } else {
-    fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
-  }
-#else  // TRV_USE_HIP
-  hipfftDoubleComplex* d_twopt_3d;
-  hip_ret = hipMalloc(&d_twopt_3d, sizeof(hipfftDoubleComplex) * this->params.nmesh);
-  trva::copy_complex_array_htod(
-    this->twopt_3d, d_twopt_3d, this->params.nmesh
-  );
-  hipfftExecZ2Z(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
-  hip_ret = hipDeviceSynchronize();
-  trva::copy_complex_array_dtoh(
-    d_twopt_3d, this->twopt_3d, this->params.nmesh
-  );
-  hip_ret = hipFree(d_twopt_3d);
-  if (hip_ret != hipSuccess) {
-    throw std::runtime_error(
-      "Failed to perform the inverse Fourier transform."
+  if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+    trva::copy_complex_array_htod(
+      this->twopt_3d, this->d_twopt_3d, this->params.nmesh
     );
+    HIPFFT_EXEC(hipfftExecZ2Z(
+      this->inv_transform_gpu, this->d_twopt_3d, this->d_twopt_3d,
+      HIPFFT_INVERSE
+    ));
+    trva::copy_complex_array_dtoh(
+      this->d_twopt_3d, this->twopt_3d, this->params.nmesh
+    );
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+    trva::copy_complex_array_htod_mgpu(
+      this->inv_transform_gpu, this->twopt_3d_desc, this->twopt_3d
+    );
+    CUFFT_EXEC(cufftXtExecDescriptor(
+      this->inv_transform_gpu, this->twopt_3d_desc, this->twopt_3d_desc,
+      CUFFT_INVERSE
+    ));
+    trva::copy_complex_array_dtoh_mgpu(
+      this->inv_transform_gpu, this->twopt_3d_desc, this->twopt_3d
+    );
+#endif                       // TRV_USE_HIP
+  } else {
+    if (this->plan_ini) {
+      fftw_execute(this->inv_transform);
+    } else {
+      fftw_execute_dft(field_a.inv_transform, this->twopt_3d, this->twopt_3d);
+    }
   }
-#endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
   // Perform fine binning.
@@ -3132,10 +3104,6 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   std::complex<double> shotnoise_amp,
   double k_a, double k_b
 ) {
-#ifdef TRV_USE_HIP
-  hipError_t hip_ret;
-#endif  // TRV_USE_HIP
-
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Computing uncoupled shot noise for bispectrum "
@@ -3246,30 +3214,37 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   }
 
   // Inverse Fourier transform.
-#ifndef TRV_USE_HIP
-  if (this->plan_ini) {
-    fftw_execute(this->inv_transform);
-  } else {
-    fftw_execute_dft(field_a.inv_transform, twopt_3d, twopt_3d);
-  }
-#else  // TRV_USE_HIP
-  hipfftDoubleComplex* d_twopt_3d;
-  hip_ret = hipMalloc(&d_twopt_3d, sizeof(hipfftDoubleComplex) * this->params.nmesh);
-  trva::copy_complex_array_htod(
-    this->twopt_3d, d_twopt_3d, this->params.nmesh
-  );
-  hipfftExecZ2Z(this->inv_transform, d_twopt_3d, d_twopt_3d, HIPFFT_BACKWARD);
-  hip_ret = hipDeviceSynchronize();
-  trva::copy_complex_array_dtoh(
-    d_twopt_3d, this->twopt_3d, this->params.nmesh
-  );
-  hip_ret = hipFree(d_twopt_3d);
-  if (hip_ret != hipSuccess) {
-    throw std::runtime_error(
-      "Failed to perform the inverse Fourier transform."
+  if (trvs::is_gpu_enabled()) {
+#if defined(TRV_USE_HIP)
+    trva::copy_complex_array_htod(
+      this->twopt_3d, this->d_twopt_3d, this->params.nmesh
     );
+    HIPFFT_EXEC(hipfftExecZ2Z(
+      this->inv_transform_gpu, this->d_twopt_3d, this->d_twopt_3d,
+      HIPFFT_INVERSE
+    ));
+    trva::copy_complex_array_dtoh(
+      this->d_twopt_3d, this->twopt_3d, this->params.nmesh
+    );
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+    trva::copy_complex_array_htod_mgpu(
+      this->inv_transform_gpu, this->twopt_3d_desc, this->twopt_3d
+    );
+    CUFFT_EXEC(cufftXtExecDescriptor(
+      this->inv_transform_gpu, this->twopt_3d_desc, this->twopt_3d_desc,
+      CUFFT_INVERSE
+    ));
+    trva::copy_complex_array_dtoh_mgpu(
+      this->inv_transform_gpu, this->twopt_3d_desc, this->twopt_3d
+    );
+#endif                       // TRV_USE_HIP
+  } else {
+    if (this->plan_ini) {
+      fftw_execute(this->inv_transform);
+    } else {
+      fftw_execute_dft(field_a.inv_transform, this->twopt_3d, this->twopt_3d);
+    }
   }
-#endif  // !TRV_USE_HIP
   trvs::count_ifft += 1;
 
   // Weight by spherical Bessel functions and harmonics before summing

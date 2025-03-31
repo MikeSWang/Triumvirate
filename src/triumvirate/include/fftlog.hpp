@@ -224,25 +224,29 @@ class HankelTransform {
   /// FFTLog transform kernel coefficients
   std::vector< std::complex<double> > kernel;
 
-  /// pre- and post-kernel FFT(W) plans and arrays
+  /// pre- and post-kernel FFT(W) plans
+  fftw_plan pre_plan{};
+  fftw_plan post_plan{};
 #if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
-  fftHandle pre_plan_gpu;
-  fftHandle post_plan_gpu;
+  fftHandle pre_plan_gpu{};
+  fftHandle post_plan_gpu{};
 #endif  // TRV_USE_HIP || TRV_USE_CUDA
-  fftw_plan pre_plan;
-  fftw_plan post_plan;
 
+  /// pre- and post-kernel FFT(W) arrays
   fftw_complex* pre_buffer = nullptr;
   fftw_complex* post_buffer = nullptr;
-
-#ifdef TRV_USE_CUDA
+#if defined(TRV_USE_HIP)
+  fft_double_complex* d_pre_buffer = nullptr;
+  fft_double_complex* d_post_buffer = nullptr;
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
   /// Cuda extension library descriptor
-  cudaLibXtDesc* pre_desc;
-  cudaLibXtDesc* post_desc;
-#endif  // TRV_USE_CUDA
+  cudaLibXtDesc* pre_buffer_desc = nullptr;
+  cudaLibXtDesc* post_buffer_desc = nullptr;
+#endif                       // TRV_USE_HIP
+
 #ifdef _CUDA_STREAM
   /// Cuda streams for pre- and post-transform
-  cudaStream_t custream;
+  cudaStream_t custream{};
 #endif  // _CUDA_STREAM
 
   /// FFT(W) plan initialisation flag

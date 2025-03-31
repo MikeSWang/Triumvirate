@@ -109,6 +109,8 @@ class MeshField {
   /**
    * @brief Construct the mesh field with external FFTW plans.
    *
+   * @note Non-GPU mode use only.
+   *
    * @param params Parameter set.
    * @param transform External FFTW plan for Fourier transform.
    * @param inv_transform External FFTW plan for inverse
@@ -430,12 +432,31 @@ class MeshField {
   /// half-grid shifted complex field on mesh
   fftw_complex* field_s = nullptr;
 
-  /// FFTW plan for Fourier transform of the field
-  fftw_plan transform;
-  /// FFTW plan for Fourier transform of the shadow field
-  fftw_plan transform_s;
-  /// FFTW plan for inverse Fourier transform of the field
-  fftw_plan inv_transform;
+  /// FFT(W) plans for (inverse) Fourier transform of the (shadow) field
+  fftw_plan transform{};
+  fftw_plan transform_s{};
+  fftw_plan inv_transform{};
+#if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
+  fftHandle transform_gpu{};
+  fftHandle transform_s_gpu{};
+  fftHandle inv_transform_gpu{};
+#endif  // TRV_USE_HIP || TRV_USE_CUDA
+
+  /// FFT field arrays
+#if defined(TRV_USE_HIP)
+  fft_double_complex* d_field = nullptr;
+  fft_double_complex* d_field_s = nullptr;
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+  /// Cuda extension library descriptor
+  cudaLibXtDesc* field_desc = nullptr;
+  cudaLibXtDesc* inv_field_desc = nullptr;
+  cudaLibXtDesc* field_s_desc = nullptr;
+#endif                       // TRV_USE_HIP
+
+#ifdef _CUDA_STREAM
+  /// Cuda streams for pre- and post-transform
+  cudaStream_t custream{};
+#endif  // _CUDA_STREAM
 
   bool plan_ini = false;  ///< FFTW plan initialisation flag
   bool plan_ext = false;  ///< FFTW plan externality flag
@@ -761,15 +782,32 @@ class FieldStats {
   double vol;                ///< mesh volume
   double vol_cell;           ///< mesh grid cell volume
 
-  /// FFTW buffer array for pseudo-two-point statistics
+  /// FFT(W) plan for inverse Fourier transform
+  fftw_plan inv_transform{};
+#if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
+  fftHandle inv_transform_gpu{};
+#endif  // TRV_USE_HIP || TRV_USE_CUDA
+
+  /// FFT(W) buffer array for pseudo-two-point statistics
   fftw_complex* twopt_3d = nullptr;
-  /// FFTW plan for inverse Fourier transform
-  fftw_plan inv_transform;
+#if defined(TRV_USE_HIP)
+  fft_double_complex* d_twopt_3d = nullptr;
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+  /// Cuda extension library descriptor
+  cudaLibXtDesc* twopt_3d_desc = nullptr;
+#endif                       // TRV_USE_HIP
+
+#ifdef _CUDA_STREAM
+  /// Cuda streams for pre- and post-transform
+  cudaStream_t custream{};
+#endif  // _CUDA_STREAM
+
   /// FFTW plan initialisation flag
   bool plan_ini = false;
 
   /// shot-noise aliasing scale-dependence function
   std::vector<double> alias_sn;
+
   /// shot-noise aliasing function initialisation flag
   bool alias_ini = false;
 
