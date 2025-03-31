@@ -236,7 +236,7 @@ void extrap2d_pad(
  * @brief Get the sorted indices.
  *
  * @param sorting_vector Sorting vector.
- * @return Sorted indices.
+ * @returns Sorted indices.
  */
 std::vector<int> get_sorted_indices(std::vector<int> sorting_vector);
 
