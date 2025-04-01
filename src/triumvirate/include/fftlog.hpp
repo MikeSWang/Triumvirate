@@ -235,14 +235,15 @@ class HankelTransform {
   /// pre- and post-kernel FFT(W) arrays
   fftw_complex* pre_buffer = nullptr;
   fftw_complex* post_buffer = nullptr;
-#if defined(TRV_USE_HIP)
+#if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
   fft_double_complex* d_pre_buffer = nullptr;
   fft_double_complex* d_post_buffer = nullptr;
-#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+#endif  // TRV_USE_HIP || TRV_USE_CUDA
+#ifdef TRV_USE_CUDA
   /// Cuda extension library descriptor
   cudaLibXtDesc* pre_buffer_desc = nullptr;
   cudaLibXtDesc* post_buffer_desc = nullptr;
-#endif                       // TRV_USE_HIP
+#endif  // TRV_USE_CUDA
 
 #ifdef _CUDA_STREAM
   /// Cuda streams for pre- and post-transform

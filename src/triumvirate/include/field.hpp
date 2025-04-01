@@ -443,15 +443,16 @@ class MeshField {
 #endif  // TRV_USE_HIP || TRV_USE_CUDA
 
   /// FFT field arrays
-#if defined(TRV_USE_HIP)
+#if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
   fft_double_complex* d_field = nullptr;
   fft_double_complex* d_field_s = nullptr;
-#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+#endif  // TRV_USE_HIP || TRV_USE_CUDA
+#ifdef TRV_USE_CUDA
   /// Cuda extension library descriptor
   cudaLibXtDesc* field_desc = nullptr;
   cudaLibXtDesc* inv_field_desc = nullptr;
   cudaLibXtDesc* field_s_desc = nullptr;
-#endif                       // TRV_USE_HIP
+#endif  // TRV_USE_CUDA
 
 #ifdef _CUDA_STREAM
   /// Cuda streams for pre- and post-transform
@@ -790,12 +791,13 @@ class FieldStats {
 
   /// FFT(W) buffer array for pseudo-two-point statistics
   fftw_complex* twopt_3d = nullptr;
-#if defined(TRV_USE_HIP)
+#if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
   fft_double_complex* d_twopt_3d = nullptr;
-#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+#endif  // TRV_USE_HIP || TRV_USE_CUDA
+#ifdef TRV_USE_CUDA
   /// Cuda extension library descriptor
   cudaLibXtDesc* twopt_3d_desc = nullptr;
-#endif                       // TRV_USE_HIP
+#endif  // TRV_USE_CUDA
 
 #ifdef _CUDA_STREAM
   /// Cuda streams for pre- and post-transform

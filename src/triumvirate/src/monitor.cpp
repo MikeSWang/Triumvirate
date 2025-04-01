@@ -209,6 +209,10 @@ bool is_gpu_enabled() {
   return true;
 }
 
+bool is_gpu_single() {
+  return (get_gpu_count() == 1);
+}
+
 void exit_fatal(const std::string& msg) {
   if (is_colourable()) {
     std::cout << "\n\033[1;37;41mFATAL\033[0m: " << msg << std::endl;
