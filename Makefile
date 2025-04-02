@@ -88,10 +88,15 @@ endif  # usecuda
 ifdef usehip
 ifeq ($(strip ${usehip}), $(filter $(strip ${usehip}), true 1))
 usehip := true
-$(warning "HIP support is developmental and highly experimental.")
 else   # usehip != (true|1)
 unexport usehip
 endif  # usehip == (true|1)
+endif  # usehip
+
+ifdef usehip
+ifdef usecuda
+$(error "HIP-ported CUDA is not supported.")
+endif  # usecuda
 endif  # usehip
 
 # OpenMP: enabled with ``useomp=(true|1)``; disabled otherwise
@@ -247,9 +252,9 @@ CPPFLAGS += -MMD -MP -D__TRV_VERSION__=\"${PKG_VER}\"
 ifdef usehip
 ifdef usecuda
 CXXFLAGS += -std=c++17 -Xcompiler -Wall,-O3 ${DEP_CXXFLAGS}
-else   # !usehip && !usecuda
-CXXFLAGS += -std=c++17 -Wall -O3 ${DEP_CXXFLAGS}
-endif  # !usehip && usecuda
+else   # usehip && !usecuda
+CXXFLAGS += -std=c++17 -Wall -Wno-vla-cxx-extension -O3 ${DEP_CXXFLAGS}
+endif  # usehip && usecuda
 else   # !usehip
 ifdef usecuda
 CXXFLAGS += -std=c++17 -Xcompiler -Wall,-O3 ${DEP_CXXFLAGS}
@@ -309,12 +314,13 @@ LDLIBS_TEST = -l${LIBNAME} ${LDLIBS} \
 # NERSC computer cluster: an example environment [adapt]
 ifdef NERSC_HOST
 
-## NVIDIA HPC SDK
-	ifndef usehip
+	ifdef usehip
+	CXX := hipcc
+	else   # !usehip
 	ifdef usecuda
 	CXX := nvcc
 	endif  # usecuda
-	endif  # !usehip
+	endif  # usehip
 
 ## GSL library [deprecated]
 	# ifdef GSL_ROOT
@@ -345,9 +351,8 @@ ifdef NERSC_HOST
 
 ## cuFFT/hipFFT library
 	ifdef usehip
-	# NOTE: hipFFT is managed by Conda.
-	INCLUDES += -I${HIP_PATH}/include -I${CONDA_PREFIX}/include
-	LDFLAGS += -Wl,-rpath,${HIP_PATH}/lib -L${HIP_PATH}/lib -Wl,-rpath,${CONDA_PREFIX}/lib -L${CONDA_PREFIX}/lib
+	INCLUDES += -I${HIP_PATH}/include
+	LDFLAGS += -Wl,-rpath,${HIP_PATH}/lib -L${HIP_PATH}/lib
 	else   # !usehip
 	ifdef usecuda
 	INCLUDES += -I${NVIDIA_PATH}/math_libs/include
@@ -374,19 +379,26 @@ endif  # NERSC_HOST
 # DiRAC computer cluster [adapt]
 ifdef DIRAC_HOST
 
-## NVIDIA HPC SDK
-	ifndef usehip
+	ifdef usehip
+	CXX := hipcc
+	else   # !usehip
 	ifdef usecuda
 	CXX := nvcc
 	endif  # usecuda
-	endif  # !usehip
-
-## ROCm/HIP
-	# ROCm is managed by Conda.
-	ifdef usehip
-	INCLUDES += -I${CONDA_PREFIX}/include
-	CXXFLAGS += --rocm-device-lib-path=${CONDA_PREFIX}/lib/amdgcn/bitcode
 	endif  # usehip
+
+	ifdef usehip
+	HIPCLANG_PATH := /opt/rocm-6.3.2/lib/llvm/
+	INCLUDES += -I${HIPCLANG_PATH}/include
+	LDFLAGS += -Wl,-rpath,${HIPCLANG_PATH}/lib -L${HIPCLANG_PATH}/lib
+	endif  # usehip
+
+## cuFFT/hipFFT library
+	# ifdef usehip
+	# else   # !usehip
+	# ifdef usecuda
+	# endif  # !usehip && usecuda
+	# endif  # usehip
 
 ## GTEST library
 	ifdef GTEST_ROOT
@@ -483,12 +495,11 @@ ifdef useomp
 	endif  # OS != Linux && OS == Darwin
 	endif  # OS == Linux
 
-## If using cuFFT/hipFFT, remove macros for FFTW.
 	ifdef usehip
-	CPPFLAGS += -DTRV_USE_OMP
+	CPPFLAGS += -DTRV_USE_OMP -DTRV_USE_FFTWOMP
 	else   # !usehip
 	ifdef usecuda
-	CPPFLAGS += -DTRV_USE_OMP
+	CPPFLAGS += -DTRV_USE_OMP -DTRV_USE_FFTWOMP
 	else   # !usehip && !usecuda
 	CPPFLAGS += -DTRV_USE_OMP -DTRV_USE_FFTWOMP
 	endif  # !usehip && usecuda
@@ -497,12 +508,11 @@ ifdef useomp
 	CXXFLAGS += ${CXXFLAGS_OMP}
 	LDFLAGS += ${LDFLAGS_OMP}
 
-## If using CUDA FFT, do not include OpenMP FFTW dependency.
 	ifdef usehip
-	LDLIBS += ${LDLIBS_OMP}
+	LDLIBS += -lfftw3_omp ${LDLIBS_OMP}
 	else   # !usehip
 	ifdef usecuda
-	LDLIBS += ${LDLIBS_OMP}
+	LDLIBS += -lfftw3_omp ${LDLIBS_OMP}
 	else   # !usehip && !usecuda
 	LDLIBS += -lfftw3_omp ${LDLIBS_OMP}
 	endif  # !usehip && usecuda

@@ -272,22 +272,22 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector) {
 
 #if defined(TRV_USE_HIP)
 void copy_complex_array_dtoh(
-  const fft_double_complex* d_arr, fftw_complex* arr, size_t length
+  fft_double_complex* d_arr, fftw_complex* arr, size_t length
 ) {
   HIP_EXEC(hipMemcpy(
-    reinterpret_cast<void*>(arr),
-    reinterpret_cast<void*>(d_arr),
+    arr,
+    d_arr,
     sizeof(fft_double_complex) * length,
     hipMemcpyDeviceToHost
   ));
 }
 
 void copy_complex_array_htod(
-  const fftw_complex* arr, fft_double_complex* d_arr, size_t length
+  fftw_complex* arr, fft_double_complex* d_arr, size_t length
 ) {
   HIP_EXEC(hipMemcpy(
-    reinterpret_cast<void*>(d_arr),
-    reinterpret_cast<void*>(arr),
+    d_arr,
+    arr,
     sizeof(fftw_complex) * length,
     hipMemcpyHostToDevice
   ));

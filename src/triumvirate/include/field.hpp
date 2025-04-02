@@ -438,8 +438,8 @@ class MeshField {
   fftw_plan inv_transform{};
 #if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
   fftHandle transform_gpu{};
-  fftHandle transform_s_gpu{};
-  fftHandle inv_transform_gpu{};
+  // fftHandle transform_s_gpu{};
+  // fftHandle inv_transform_gpu{};
 #endif  // TRV_USE_HIP || TRV_USE_CUDA
 
   /// FFT field arrays

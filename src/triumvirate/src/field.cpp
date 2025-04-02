@@ -63,11 +63,13 @@ MeshField::MeshField(
 
   if (this->params.interlace == "true") {
     this->field_s = fftw_alloc_complex(this->params.nmesh);
-#ifdef TRV_USE_HIP
-    HIP_EXEC(hipMalloc(
-      &this->d_field_s, sizeof(fft_double_complex) * this->params.nmesh
-    ));
-#endif  // TRV_USE_HIP
+// #ifdef TRV_USE_HIP
+//     if (trvs::is_gpu_enabled()) {
+//       HIP_EXEC(hipMalloc(
+//         &this->d_field_s, sizeof(fft_double_complex) * this->params.nmesh
+//       ));
+//     }
+// #endif  // TRV_USE_HIP
 
     trvs::count_cgrid += 1;
     trvs::count_grid += 1;

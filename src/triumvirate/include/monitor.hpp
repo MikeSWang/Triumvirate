@@ -68,7 +68,12 @@
 #ifdef TRV_USE_OMP
 #define OMP_ATOMIC _Pragma("omp atomic")
 #define OMP_CRITICAL _Pragma("omp critical")
+// NOTE: OpenMP is unavailabled in separate GPU compilation pass.
+#ifndef __HIP_DEVICE_COMPILE__
 #define _OMP_VERSION std::to_string(_OPENMP)
+#else   // !__HIP_DEVICE_COMPILE__
+#define _OMP_VERSION std::string("unknown")
+#endif  // __HIP_DEVICE_COMPILE__
 #define _OMP_NTHREADS omp_get_max_threads()
 #else   // !TRV_USE_OMP
 #define OMP_ATOMIC
