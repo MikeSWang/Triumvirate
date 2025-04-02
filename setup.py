@@ -142,10 +142,14 @@ CUDA_XCOMPILER_OPTS = (
 CUDA_XCOMPILER_OPTS_EXACT = [
     '-pthread',
     '-B',
+    '-fopenmp',
 ]
 CUDA_XCOMPILER_OPTS_PARTIAL = [
     'compiler_compat',
 ]
+CUDA_XLINKER_OPTS_PREFIX = (
+    '-rpath',
+)
 
 
 class BuildExt(build_ext):
@@ -210,18 +214,23 @@ class BuildExt(build_ext):
             # Modify compiler options for CUDA for object linking.
             opts_original = []
             opts_xcompiler = []
+            opts_xlinker = []
             for opt in self.compiler.linker_so_cxx:
                 if opt in CUDA_XCOMPILER_OPTS_EXACT:  # noqa: E231
                     if opt not in opts_xcompiler:
                         opts_xcompiler.append(opt)
                 elif any(map(opt.__contains__, CUDA_XCOMPILER_OPTS_PARTIAL)):
                     pass
+                elif opt.startswith(CUDA_XLINKER_OPTS_PREFIX):
+                    if opt not in opts_xlinker:
+                        opts_xlinker.extend(['-Xlinker', opt])
                 else:
                     if opt not in opts_original:
                         opts_original.append(opt)
             if opts_xcompiler:
                 opt_xcompiler = ['-Xcompiler', ','.join(opts_xcompiler)]
-            self.compiler.linker_so_cxx = opts_original + opt_xcompiler
+            self.compiler.linker_so_cxx = \
+                opts_original + opt_xcompiler + opts_xlinker
 
         try:
             _num_procs = max(int(self.parallel), 1)
@@ -1119,6 +1128,7 @@ def define_pkg_extension(ext_name,
     }
 
     if ext_kwargs:
+        ext_kwargs.pop('cuda')
         ext_module_kwargs.update(ext_kwargs)
 
     return Extension(

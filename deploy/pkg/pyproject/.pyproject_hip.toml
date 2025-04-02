@@ -18,10 +18,8 @@ authors = [
 maintainers = [
     {name = 'Mike S Wang', email = "32841762+MikeSWang@users.noreply.github.com"},
 ]
-license = {file = "LICENCE"}
+license-files = ["LICEN[CS]E*",]
 classifiers = [
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Operating System :: POSIX :: Linux",
     "Environment :: GPU",
     "Programming Language :: C++",
