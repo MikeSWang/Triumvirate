@@ -85,7 +85,7 @@ MeshField::MeshField(
     fftw_plan_with_nthreads(omp_get_max_threads());
 #endif  // TRV_USE_OMP && TRV_USE_FFTWOMP
 
-    // Initialse FFTW wisdom (effective when not in GPU mode).
+    // Initialise FFTW wisdom (effective when not in GPU mode).
     bool import_fftw_wisdom_f = false;
     bool import_fftw_wisdom_b = false;
     bool export_fftw_wisdom_f = false;
