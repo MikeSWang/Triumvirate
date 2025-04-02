@@ -275,44 +275,44 @@ MeshField::MeshField(
 
     auto pre_plan_b_timept = std::chrono::system_clock::now();
     if (trvs::is_gpu_enabled()) {
-#if defined(TRV_USE_HIP)
-      HIPFFT_EXEC(hipfftPlan3d(
-        &this->inv_transform_gpu,
-        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-        HIPFFT_Z2Z
-      ));
-#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
-      CUFFT_EXEC(cufftCreate(&this->inv_transform_gpu));
+// #if defined(TRV_USE_HIP)
+//       HIPFFT_EXEC(hipfftPlan3d(
+//         &this->inv_transform_gpu,
+//         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+//         HIPFFT_Z2Z
+//       ));
+// #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+//       CUFFT_EXEC(cufftCreate(&this->inv_transform_gpu));
 
-  #ifdef _CUDA_STREAM
-      CUFFT_EXEC(cufftSetStream(this->inv_transform_gpu, this->custream));
-  #endif  // _CUDA_STREAM
+//   #ifdef _CUDA_STREAM
+//       CUFFT_EXEC(cufftSetStream(this->inv_transform_gpu, this->custream));
+//   #endif  // _CUDA_STREAM
 
-      if (!trvs::is_gpu_single()) {
-        CUFFT_EXEC(cufftXtSetGPUs(
-          this->inv_transform_gpu, gpus.size(), gpus.data()
-        ));
-      }
+//       if (!trvs::is_gpu_single()) {
+//         CUFFT_EXEC(cufftXtSetGPUs(
+//           this->inv_transform_gpu, gpus.size(), gpus.data()
+//         ));
+//       }
 
-      size_t workspace_sizes[gpus.size()];
-      CUFFT_EXEC(cufftMakePlan3d(
-        this->inv_transform_gpu,
-        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-        CUFFT_Z2Z,
-        workspace_sizes
-      ));
+//       size_t workspace_sizes[gpus.size()];
+//       CUFFT_EXEC(cufftMakePlan3d(
+//         this->inv_transform_gpu,
+//         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+//         CUFFT_Z2Z,
+//         workspace_sizes
+//       ));
 
-      if (trvs::is_gpu_single()) {
-        CUDA_EXEC(cudaMalloc(
-          &this->d_field, sizeof(fft_double_complex) * this->params.nmesh
-        ));
-      } else {
-        CUFFT_EXEC(cufftXtMalloc(
-          this->inv_transform_gpu, &this->inv_field_desc,
-          CUFFT_XT_FORMAT_INPLACE_SHUFFLED
-        ));
-      }
-#endif                       // TRV_USE_HIP
+//       if (trvs::is_gpu_single()) {
+//         CUDA_EXEC(cudaMalloc(
+//           &this->d_field, sizeof(fft_double_complex) * this->params.nmesh
+//         ));
+//       } else {
+//         CUFFT_EXEC(cufftXtMalloc(
+//           this->inv_transform_gpu, &this->inv_field_desc,
+//           CUFFT_XT_FORMAT_INPLACE_SHUFFLED
+//         ));
+//       }
+// #endif                       // TRV_USE_HIP
     } else {
       this->inv_transform = fftw_plan_dft_3d(
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
@@ -353,44 +353,44 @@ MeshField::MeshField(
 
     if (this->params.interlace == "true") {
       if (trvs::is_gpu_enabled()) {
-#if defined(TRV_USE_HIP)
-        HIPFFT_EXEC(hipfftPlan3d(
-          &this->transform_s_gpu,
-          this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-          HIPFFT_Z2Z
-        ));
-#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
-        CUFFT_EXEC(cufftCreate(&this->transform_s_gpu));
+// #if defined(TRV_USE_HIP)
+//         HIPFFT_EXEC(hipfftPlan3d(
+//           &this->transform_s_gpu,
+//           this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+//           HIPFFT_Z2Z
+//         ));
+// #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+//         CUFFT_EXEC(cufftCreate(&this->transform_s_gpu));
 
-  #ifdef _CUDA_STREAM
-        CUFFT_EXEC(cufftSetStream(this->transform_s_gpu, this->custream));
-  #endif  // _CUDA_STREAM
+//   #ifdef _CUDA_STREAM
+//         CUFFT_EXEC(cufftSetStream(this->transform_s_gpu, this->custream));
+//   #endif  // _CUDA_STREAM
 
-        if (!trvs::is_gpu_single()) {
-          CUFFT_EXEC(cufftXtSetGPUs(
-            this->transform_s_gpu, gpus.size(), gpus.data()
-          ));
-        }
+//         if (!trvs::is_gpu_single()) {
+//           CUFFT_EXEC(cufftXtSetGPUs(
+//             this->transform_s_gpu, gpus.size(), gpus.data()
+//           ));
+//         }
 
-        size_t workspace_sizes[gpus.size()];
-        CUFFT_EXEC(cufftMakePlan3d(
-          this->transform_s_gpu,
-          this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-          CUFFT_Z2Z,
-          workspace_sizes
-        ));
+//         size_t workspace_sizes[gpus.size()];
+//         CUFFT_EXEC(cufftMakePlan3d(
+//           this->transform_s_gpu,
+//           this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+//           CUFFT_Z2Z,
+//           workspace_sizes
+//         ));
 
-        if (trvs::is_gpu_single()) {
-          CUDA_EXEC(cudaMalloc(
-            &this->d_field_s, sizeof(fft_double_complex) * this->params.nmesh
-          ));
-        } else {
-          CUFFT_EXEC(cufftXtMalloc(
-            this->transform_s_gpu, &this->field_s_desc,
-            CUFFT_XT_FORMAT_INPLACE_SHUFFLED
-          ));
-        }
-#endif                       // TRV_USE_HIP
+//         if (trvs::is_gpu_single()) {
+//           CUDA_EXEC(cudaMalloc(
+//             &this->d_field_s, sizeof(fft_double_complex) * this->params.nmesh
+//           ));
+//         } else {
+//           CUFFT_EXEC(cufftXtMalloc(
+//             this->transform_s_gpu, &this->field_s_desc,
+//             CUFFT_XT_FORMAT_INPLACE_SHUFFLED
+//           ));
+//         }
+// #endif                       // TRV_USE_HIP
       } else {
         this->transform_s = fftw_plan_dft_3d(
           this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
@@ -493,28 +493,28 @@ MeshField::~MeshField() {
 #if defined(TRV_USE_HIP)
       HIP_EXEC(hipFree(this->d_field));
       HIPFFT_EXEC(hipfftDestroy(this->transform_gpu));
-      HIPFFT_EXEC(hipfftDestroy(this->inv_transform_gpu));
-      if (this->params.interlace == "true") {
-        HIP_EXEC(hipFree(this->d_field_s));
-        HIPFFT_EXEC(hipfftDestroy(this->transform_s_gpu));
-      }
+      // HIPFFT_EXEC(hipfftDestroy(this->inv_transform_gpu));
+      // if (this->params.interlace == "true") {
+      //   HIP_EXEC(hipFree(this->d_field_s));
+      //   HIPFFT_EXEC(hipfftDestroy(this->transform_s_gpu));
+      // }
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
       if (trvs::is_gpu_single()) {
         CUDA_EXEC(cudaFree(this->d_field));
       } else {
         CUFFT_EXEC(cufftXtFree(this->field_desc));
-        CUFFT_EXEC(cufftXtFree(this->inv_field_desc));
+        // CUFFT_EXEC(cufftXtFree(this->inv_field_desc));
       }
       CUFFT_EXEC(cufftDestroy(this->transform_gpu));
-      CUFFT_EXEC(cufftDestroy(this->inv_transform_gpu));
-      if (this->params.interlace == "true") {
-        if (trvs::is_gpu_single()) {
-          CUDA_EXEC(cudaFree(this->d_field_s));
-        } else {
-          CUFFT_EXEC(cufftXtFree(this->field_s_desc));
-        }
-        CUFFT_EXEC(cufftDestroy(this->transform_s_gpu));
-      }
+      // CUFFT_EXEC(cufftDestroy(this->inv_transform_gpu));
+      // if (this->params.interlace == "true") {
+      //   if (trvs::is_gpu_single()) {
+      //     CUDA_EXEC(cudaFree(this->d_field_s));
+      //   } else {
+      //     CUFFT_EXEC(cufftXtFree(this->field_s_desc));
+      //   }
+      //   CUFFT_EXEC(cufftDestroy(this->transform_s_gpu));
+      // }
   #ifdef _CUDA_STREAM
       // Destroy CUDA streams.
       CUDA_EXEC(cudaStreamDestroy(this->custream));
@@ -1622,38 +1622,71 @@ void MeshField::fourier_transform() {
 
     if (trvs::is_gpu_enabled()) {
 #if defined(TRV_USE_HIP)
+      // trva::copy_complex_array_htod(
+      //   this->field_s, this->d_field_s, this->params.nmesh
+      // );
+      // HIPFFT_EXEC(hipfftExecZ2Z(
+      //   this->transform_s_gpu, this->d_field_s, this->d_field_s,
+      //   HIPFFT_FORWARD
+      // ));
+      // trva::copy_complex_array_dtoh(
+      //   this->d_field_s, this->field_s, this->params.nmesh
+      // );
       trva::copy_complex_array_htod(
-        this->field_s, this->d_field_s, this->params.nmesh
+        this->field_s, this->d_field, this->params.nmesh
       );
       HIPFFT_EXEC(hipfftExecZ2Z(
-        this->transform_s_gpu, this->d_field_s, this->d_field_s,
+        this->transform_gpu, this->d_field, this->d_field,
         HIPFFT_FORWARD
       ));
       trva::copy_complex_array_dtoh(
-        this->d_field_s, this->field_s, this->params.nmesh
+        this->d_field, this->field_s, this->params.nmesh
       );
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+      // if (trvs::is_gpu_single()) {
+      //   trva::copy_complex_array_htod(
+      //     this->field_s, this->d_field_s, this->params.nmesh
+      //   );
+      //   CUFFT_EXEC(cufftXtExec(
+      //     this->transform_s_gpu, this->d_field_s, this->d_field_s,
+      //     CUFFT_FORWARD
+      //   ));
+      //   trva::copy_complex_array_dtoh(
+      //     this->d_field_s, this->field_s, this->params.nmesh
+      //   );
+      // } else {
+      //   trva::copy_complex_array_htod_mgpu(
+      //     this->transform_s_gpu, this->field_s_desc, this->field_s
+      //   );
+      //   CUFFT_EXEC(cufftXtExecDescriptor(
+      //     this->transform_s_gpu, this->field_s_desc, this->field_s_desc,
+      //     CUFFT_FORWARD
+      //   ));
+      //   trva::copy_complex_array_dtoh_mgpu(
+      //     this->transform_s_gpu, this->field_s_desc, this->field_s
+      //   );
+      // }
       if (trvs::is_gpu_single()) {
         trva::copy_complex_array_htod(
-          this->field_s, this->d_field_s, this->params.nmesh
+          this->field_s, this->d_field, this->params.nmesh
         );
         CUFFT_EXEC(cufftXtExec(
-          this->transform_s_gpu, this->d_field_s, this->d_field_s,
+          this->transform_gpu, this->d_field, this->d_field,
           CUFFT_FORWARD
         ));
         trva::copy_complex_array_dtoh(
-          this->d_field_s, this->field_s, this->params.nmesh
+          this->d_field, this->field_s, this->params.nmesh
         );
       } else {
         trva::copy_complex_array_htod_mgpu(
-          this->transform_s_gpu, this->field_s_desc, this->field_s
+          this->transform_gpu, this->field_desc, this->field_s
         );
         CUFFT_EXEC(cufftXtExecDescriptor(
-          this->transform_s_gpu, this->field_s_desc, this->field_s_desc,
+          this->transform_gpu, this->field_desc, this->field_desc,
           CUFFT_FORWARD
         ));
         trva::copy_complex_array_dtoh_mgpu(
-          this->transform_s_gpu, this->field_s_desc, this->field_s
+          this->transform_gpu, this->field_desc, this->field_s
         );
       }
 #endif                       // TRV_USE_HIP
@@ -1731,8 +1764,12 @@ void MeshField::inv_fourier_transform() {
     trva::copy_complex_array_htod(
       this->field, this->d_field, this->params.nmesh
     );
+    // HIPFFT_EXEC(hipfftExecZ2Z(
+    //   this->inv_transform_gpu, this->d_field, this->d_field,
+    //   HIPFFT_BACKWARD
+    // ));
     HIPFFT_EXEC(hipfftExecZ2Z(
-      this->inv_transform_gpu, this->d_field, this->d_field,
+      this->transform_gpu, this->d_field, this->d_field,
       HIPFFT_BACKWARD
     ));
     trva::copy_complex_array_dtoh(
@@ -1743,23 +1780,37 @@ void MeshField::inv_fourier_transform() {
       trva::copy_complex_array_htod(
         this->field, this->d_field, this->params.nmesh
       );
+      // CUFFT_EXEC(cufftXtExec(
+      //   this->inv_transform_gpu, this->d_field, this->d_field,
+      //   CUFFT_INVERSE
+      // ));
       CUFFT_EXEC(cufftXtExec(
-        this->inv_transform_gpu, this->d_field, this->d_field,
+        this->transform_gpu, this->d_field, this->d_field,
         CUFFT_INVERSE
       ));
       trva::copy_complex_array_dtoh(
         this->d_field, this->field, this->params.nmesh
       );
     } else {
+      // trva::copy_complex_array_htod_mgpu(
+      //   this->inv_transform_gpu, this->inv_field_desc, this->field
+      // );
+      // CUFFT_EXEC(cufftXtExecDescriptor(
+      //   this->inv_transform_gpu, this->inv_field_desc, this->inv_field_desc,
+      //   CUFFT_INVERSE
+      // ));
+      // trva::copy_complex_array_dtoh_mgpu(
+      //   this->inv_transform_gpu, this->inv_field_desc, this->field
+      // );
       trva::copy_complex_array_htod_mgpu(
-        this->inv_transform_gpu, this->inv_field_desc, this->field
+        this->transform_gpu, this->field_desc, this->field
       );
       CUFFT_EXEC(cufftXtExecDescriptor(
-        this->inv_transform_gpu, this->inv_field_desc, this->inv_field_desc,
+        this->transform_gpu, this->field_desc, this->field_desc,
         CUFFT_INVERSE
       ));
       trva::copy_complex_array_dtoh_mgpu(
-        this->inv_transform_gpu, this->inv_field_desc, this->field
+        this->transform_gpu, this->field_desc, this->field
       );
     }
 #endif                       // TRV_USE_HIP
@@ -1912,8 +1963,12 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
     trva::copy_complex_array_htod(
       this->field, this->d_field, this->params.nmesh
     );
+    // HIPFFT_EXEC(hipfftExecZ2Z(
+    //   this->inv_transform_gpu, this->d_field, this->d_field,
+    //   HIPFFT_BACKWARD
+    // ));
     HIPFFT_EXEC(hipfftExecZ2Z(
-      this->inv_transform_gpu, this->d_field, this->d_field,
+      this->transform_gpu, this->d_field, this->d_field,
       HIPFFT_BACKWARD
     ));
     trva::copy_complex_array_dtoh(
@@ -1924,23 +1979,37 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
       trva::copy_complex_array_htod(
         this->field, this->d_field, this->params.nmesh
       );
+      // CUFFT_EXEC(cufftXtExec(
+      //   this->inv_transform_gpu, this->d_field, this->d_field,
+      //   CUFFT_INVERSE
+      // ));
       CUFFT_EXEC(cufftXtExec(
-        this->inv_transform_gpu, this->d_field, this->d_field,
+        this->transform_gpu, this->d_field, this->d_field,
         CUFFT_INVERSE
       ));
       trva::copy_complex_array_dtoh(
         this->d_field, this->field, this->params.nmesh
       );
     } else {
+      // trva::copy_complex_array_htod_mgpu(
+      //   this->inv_transform_gpu, this->inv_field_desc, this->field
+      // );
+      // CUFFT_EXEC(cufftXtExecDescriptor(
+      //   this->inv_transform_gpu, this->inv_field_desc, this->inv_field_desc,
+      //   CUFFT_INVERSE
+      // ));
+      // trva::copy_complex_array_dtoh_mgpu(
+      //   this->inv_transform_gpu, this->inv_field_desc, this->field
+      // );
       trva::copy_complex_array_htod_mgpu(
-        this->inv_transform_gpu, this->inv_field_desc, this->field
+        this->transform_gpu, this->field_desc, this->field
       );
       CUFFT_EXEC(cufftXtExecDescriptor(
-        this->inv_transform_gpu, this->inv_field_desc, this->inv_field_desc,
+        this->transform_gpu, this->field_desc, this->field_desc,
         CUFFT_INVERSE
       ));
       trva::copy_complex_array_dtoh_mgpu(
-        this->inv_transform_gpu, this->inv_field_desc, this->field
+        this->transform_gpu, this->field_desc, this->field
       );
     }
 #endif                       // TRV_USE_HIP
@@ -2032,8 +2101,12 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
     trva::copy_complex_array_htod(
       this->field, this->d_field, this->params.nmesh
     );
+    // HIPFFT_EXEC(hipfftExecZ2Z(
+    //   this->inv_transform_gpu, this->d_field, this->d_field,
+    //   HIPFFT_BACKWARD
+    // ));
     HIPFFT_EXEC(hipfftExecZ2Z(
-      this->inv_transform_gpu, this->d_field, this->d_field,
+      this->transform_gpu, this->d_field, this->d_field,
       HIPFFT_BACKWARD
     ));
     trva::copy_complex_array_dtoh(
@@ -2044,23 +2117,37 @@ void MeshField::inv_fourier_transform_sjl_ylm_wgtd_field(
       trva::copy_complex_array_htod(
         this->field, this->d_field, this->params.nmesh
       );
+      // CUFFT_EXEC(cufftXtExec(
+      //   this->inv_transform_gpu, this->d_field, this->d_field,
+      //   CUFFT_INVERSE
+      // ));
       CUFFT_EXEC(cufftXtExec(
-        this->inv_transform_gpu, this->d_field, this->d_field,
+        this->transform_gpu, this->d_field, this->d_field,
         CUFFT_INVERSE
       ));
       trva::copy_complex_array_dtoh(
         this->d_field, this->field, this->params.nmesh
       );
     } else {
+      // trva::copy_complex_array_htod_mgpu(
+      //   this->inv_transform_gpu, this->inv_field_desc, this->field
+      // );
+      // CUFFT_EXEC(cufftXtExecDescriptor(
+      //   this->inv_transform_gpu, this->inv_field_desc, this->inv_field_desc,
+      //   CUFFT_INVERSE
+      // ));
+      // trva::copy_complex_array_dtoh_mgpu(
+      //   this->inv_transform_gpu, this->inv_field_desc, this->field
+      // );
       trva::copy_complex_array_htod_mgpu(
-        this->inv_transform_gpu, this->inv_field_desc, this->field
+        this->transform_gpu, this->field_desc, this->field
       );
       CUFFT_EXEC(cufftXtExecDescriptor(
-        this->inv_transform_gpu, this->inv_field_desc, this->inv_field_desc,
+        this->transform_gpu, this->field_desc, this->field_desc,
         CUFFT_INVERSE
       ));
       trva::copy_complex_array_dtoh_mgpu(
-        this->inv_transform_gpu, this->inv_field_desc, this->field
+        this->transform_gpu, this->field_desc, this->field
       );
     }
 #endif                       // TRV_USE_HIP

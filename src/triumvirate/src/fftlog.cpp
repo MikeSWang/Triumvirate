@@ -83,10 +83,12 @@ void HankelTransform::reset() {
     if (trvs::is_gpu_enabled()) {
       // Destroy GPU FFT buffers/descriptors and plans.
 #if defined(TRV_USE_HIP)
-      HIP_EXEC(hipFree(this->d_pre_buffer));
-      HIP_EXEC(hipFree(this->d_post_buffer));
-      HIPFFT_EXEC(hipfftDestroy(this->pre_plan_gpu));
-      HIPFFT_EXEC(hipfftDestroy(this->post_plan_gpu));
+      // HIP_EXEC(hipFree(this->d_pre_buffer));
+      // HIP_EXEC(hipFree(this->d_post_buffer));
+      // HIPFFT_EXEC(hipfftDestroy(this->pre_plan_gpu));
+      // HIPFFT_EXEC(hipfftDestroy(this->post_plan_gpu));
+      HIP_EXEC(hipFree(this->d_buffer));
+      HIPFFT_EXEC(hipfftDestroy(this->plan_gpu));
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
       // if (trvs::is_gpu_single()) {
       //   CUDA_EXEC(cudaFree(this->d_pre_buffer));
@@ -95,10 +97,12 @@ void HankelTransform::reset() {
       //   CUFFT_EXEC(cufftXtFree(this->pre_buffer_desc));
       //   CUFFT_EXEC(cufftXtFree(this->post_buffer_desc));
       // }
-      CUDA_EXEC(cudaFree(this->d_pre_buffer));
-      CUDA_EXEC(cudaFree(this->d_post_buffer));
-      CUFFT_EXEC(cufftDestroy(this->pre_plan_gpu));
-      CUFFT_EXEC(cufftDestroy(this->post_plan_gpu));
+      // CUDA_EXEC(cudaFree(this->d_pre_buffer));
+      // CUDA_EXEC(cudaFree(this->d_post_buffer));
+      // CUFFT_EXEC(cufftDestroy(this->pre_plan_gpu));
+      // CUFFT_EXEC(cufftDestroy(this->post_plan_gpu));
+      CUDA_EXEC(cudaFree(this->d_buffer));
+      CUFFT_EXEC(cufftDestroy(this->plan_gpu));
   #ifdef _CUDA_STREAM
       // Destroy CUDA streams.
       CUDA_EXEC(cudaStreamDestroy(this->custream));
@@ -222,18 +226,27 @@ void HankelTransform::initialise(
 
   if (trvs::is_gpu_enabled()) {
 #if defined(TRV_USE_HIP)
+    // HIPFFT_EXEC(hipfftPlan1d(
+    //   &this->pre_plan_gpu, this->nsamp_trans,
+    //   HIPFFT_Z2Z, 1
+    // ));
+    // HIP_EXEC(hipMalloc(
+    //   &this->d_pre_buffer, sizeof(fft_double_complex) * this->nsamp_trans
+    // ));
     HIPFFT_EXEC(hipfftPlan1d(
-      &this->pre_plan_gpu, this->nsamp_trans,
+      &this->plan_gpu, this->nsamp_trans,
       HIPFFT_Z2Z, 1
     ));
     HIP_EXEC(hipMalloc(
-      &this->d_pre_buffer, sizeof(fft_double_complex) * this->nsamp_trans
+      &this->d_buffer, sizeof(fft_double_complex) * this->nsamp_trans
     ));
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
-    CUFFT_EXEC(cufftCreate(&this->pre_plan_gpu));;
+    // CUFFT_EXEC(cufftCreate(&this->pre_plan_gpu));
+    CUFFT_EXEC(cufftCreate(&this->plan_gpu));
 
   #ifdef _CUDA_STREAM
-    CUFFT_EXEC(cufftSetStream(this->pre_plan_gpu, this->custream));
+    // CUFFT_EXEC(cufftSetStream(this->pre_plan_gpu, this->custream));
+    CUFFT_EXEC(cufftSetStream(this->plan_gpu, this->custream));
   #endif  // _CUDA_STREAM
 
     // if (!trvs::is_gpu_single()) {
@@ -243,8 +256,12 @@ void HankelTransform::initialise(
     // }
 
     size_t workspace_sizes[gpus.size()];
+    // CUFFT_EXEC(cufftMakePlan1d(
+    //   this->pre_plan_gpu, this->nsamp_trans,
+    //   CUFFT_Z2Z, 1, workspace_sizes
+    // ));
     CUFFT_EXEC(cufftMakePlan1d(
-      this->pre_plan_gpu, this->nsamp_trans,
+      this->plan_gpu, this->nsamp_trans,
       CUFFT_Z2Z, 1, workspace_sizes
     ));
 
@@ -258,8 +275,11 @@ void HankelTransform::initialise(
     //     CUFFT_XT_FORMAT_INPLACE_SHUFFLED
     //   ));
     // }
+    // CUDA_EXEC(cudaMalloc(
+    //   &this->d_pre_buffer, sizeof(fft_double_complex) * this->nsamp_trans
+    // ));
     CUDA_EXEC(cudaMalloc(
-      &this->d_pre_buffer, sizeof(fft_double_complex) * this->nsamp_trans
+      &this->d_buffer, sizeof(fft_double_complex) * this->nsamp_trans
     ));
 #endif                       // TRV_USE_HIP
   } else {
@@ -273,18 +293,27 @@ void HankelTransform::initialise(
 
   if (trvs::is_gpu_enabled()) {
 #if defined(TRV_USE_HIP)
+    // HIPFFT_EXEC(hipfftPlan1d(
+    //   &this->post_plan_gpu, this->nsamp_trans,
+    //   HIPFFT_Z2Z, 1
+    // ));
+    // HIP_EXEC(hipMalloc(
+    //   &this->d_post_buffer, sizeof(fft_double_complex) * this->nsamp_trans
+    // ));
     HIPFFT_EXEC(hipfftPlan1d(
-      &this->post_plan_gpu, this->nsamp_trans,
+      &this->plan_gpu, this->nsamp_trans,
       HIPFFT_Z2Z, 1
     ));
     HIP_EXEC(hipMalloc(
-      &this->d_post_buffer, sizeof(fft_double_complex) * this->nsamp_trans
+      &this->d_buffer, sizeof(fft_double_complex) * this->nsamp_trans
     ));
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
-    CUFFT_EXEC(cufftCreate(&this->post_plan_gpu));;
+    // CUFFT_EXEC(cufftCreate(&this->post_plan_gpu));
+    CUFFT_EXEC(cufftCreate(&this->plan_gpu));
 
   #ifdef _CUDA_STREAM
-    CUFFT_EXEC(cufftSetStream(this->post_plan_gpu, this->custream));
+    // CUFFT_EXEC(cufftSetStream(this->post_plan_gpu, this->custream));
+    CUFFT_EXEC(cufftSetStream(this->plan_gpu, this->custream));
   #endif  // _CUDA_STREAM
 
     // if (!trvs::is_gpu_single()) {
@@ -294,8 +323,12 @@ void HankelTransform::initialise(
     // }
 
     size_t workspace_sizes[gpus.size()];
+    // CUFFT_EXEC(cufftMakePlan1d(
+    //   this->post_plan_gpu, this->nsamp_trans,
+    //   CUFFT_Z2Z, 1, workspace_sizes
+    // ));
     CUFFT_EXEC(cufftMakePlan1d(
-      this->post_plan_gpu, this->nsamp_trans,
+      this->plan_gpu, this->nsamp_trans,
       CUFFT_Z2Z, 1, workspace_sizes
     ));
 
@@ -309,8 +342,11 @@ void HankelTransform::initialise(
     //     CUFFT_XT_FORMAT_INPLACE_SHUFFLED
     //   ));
     // }
+    // CUDA_EXEC(cudaMalloc(
+    //   &this->d_post_buffer, sizeof(fft_double_complex) * this->nsamp_trans
+    // ));
     CUDA_EXEC(cudaMalloc(
-      &this->d_post_buffer, sizeof(fft_double_complex) * this->nsamp_trans
+      &this->d_buffer, sizeof(fft_double_complex) * this->nsamp_trans
     ));
 #endif                       // TRV_USE_HIP
   } else {
@@ -487,15 +523,25 @@ void HankelTransform::biased_transform(
   // Compute the convolution b = a * u using FFT.
   if (trvs::is_gpu_enabled()) {
 #if defined(TRV_USE_HIP)
+    // trva::copy_complex_array_htod(
+    //   this->pre_buffer, this->d_pre_buffer, this->nsamp_trans
+    // );
+    // HIPFFT_EXEC(hipfftExecZ2Z(
+    //   this->pre_plan_gpu, this->d_pre_buffer, this->d_pre_buffer,
+    //   HIPFFT_FORWARD
+    // ));
+    // trva::copy_complex_array_dtoh(
+    //   this->d_pre_buffer, this->pre_buffer, this->nsamp_trans
+    // );
     trva::copy_complex_array_htod(
-      this->pre_buffer, this->d_pre_buffer, this->nsamp_trans
+      this->pre_buffer, this->d_buffer, this->nsamp_trans
     );
     HIPFFT_EXEC(hipfftExecZ2Z(
-      this->pre_plan_gpu, this->d_pre_buffer, this->d_pre_buffer,
+      this->plan_gpu, this->d_buffer, this->d_buffer,
       HIPFFT_FORWARD
     ));
     trva::copy_complex_array_dtoh(
-      this->d_pre_buffer, this->pre_buffer, this->nsamp_trans
+      this->d_buffer, this->pre_buffer, this->nsamp_trans
     );
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
     // if (trvs::is_gpu_single()) {
@@ -521,15 +567,25 @@ void HankelTransform::biased_transform(
     //     this->pre_plan_gpu, this->pre_buffer_desc, this->pre_buffer
     //   );
     // }
+    // trva::copy_complex_array_htod(
+    //   this->pre_buffer, this->d_pre_buffer, this->nsamp_trans
+    // );
+    // CUFFT_EXEC(cufftXtExec(
+    //   this->pre_plan_gpu, this->d_pre_buffer, this->d_pre_buffer,
+    //   CUFFT_FORWARD
+    // ));
+    // trva::copy_complex_array_dtoh(
+    //   this->d_pre_buffer, this->pre_buffer, this->nsamp_trans
+    // );
     trva::copy_complex_array_htod(
-      this->pre_buffer, this->d_pre_buffer, this->nsamp_trans
+      this->pre_buffer, this->d_buffer, this->nsamp_trans
     );
     CUFFT_EXEC(cufftXtExec(
-      this->pre_plan_gpu, this->d_pre_buffer, this->d_pre_buffer,
+      this->plan_gpu, this->d_buffer, this->d_buffer,
       CUFFT_FORWARD
     ));
     trva::copy_complex_array_dtoh(
-      this->d_pre_buffer, this->pre_buffer, this->nsamp_trans
+      this->d_buffer, this->pre_buffer, this->nsamp_trans
     );
 #endif                       // TRV_USE_HIP
   } else {
@@ -546,15 +602,25 @@ void HankelTransform::biased_transform(
 
   if (trvs::is_gpu_enabled()) {
 #if defined(TRV_USE_HIP)
+    // trva::copy_complex_array_htod(
+    //   this->post_buffer, this->d_post_buffer, this->nsamp_trans
+    // );
+    // HIPFFT_EXEC(hipfftExecZ2Z(
+    //   this->post_plan_gpu, this->d_post_buffer, this->d_post_buffer,
+    //   HIPFFT_FORWARD
+    // ));
+    // trva::copy_complex_array_dtoh(
+    //   this->d_post_buffer, this->post_buffer, this->nsamp_trans
+    // );
     trva::copy_complex_array_htod(
-      this->post_buffer, this->d_post_buffer, this->nsamp_trans
+      this->post_buffer, this->d_buffer, this->nsamp_trans
     );
     HIPFFT_EXEC(hipfftExecZ2Z(
-      this->post_plan_gpu, this->d_post_buffer, this->d_post_buffer,
+      this->plan_gpu, this->d_buffer, this->d_buffer,
       HIPFFT_FORWARD
     ));
     trva::copy_complex_array_dtoh(
-      this->d_post_buffer, this->post_buffer, this->nsamp_trans
+      this->d_buffer, this->post_buffer, this->nsamp_trans
     );
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
     // if (trvs::is_gpu_single()) {
@@ -580,15 +646,25 @@ void HankelTransform::biased_transform(
     //     this->post_plan_gpu, this->post_buffer_desc, this->post_buffer
     //   );
     // }
+    // trva::copy_complex_array_htod(
+    //   this->post_buffer, this->d_post_buffer, this->nsamp_trans
+    // );
+    // CUFFT_EXEC(cufftXtExec(
+    //   this->post_plan_gpu, this->d_post_buffer, this->d_post_buffer,
+    //   CUFFT_FORWARD
+    // ));
+    // trva::copy_complex_array_dtoh(
+    //   this->d_post_buffer, this->post_buffer, this->nsamp_trans
+    // );
     trva::copy_complex_array_htod(
-      this->post_buffer, this->d_post_buffer, this->nsamp_trans
+      this->post_buffer, this->d_buffer, this->nsamp_trans
     );
     CUFFT_EXEC(cufftXtExec(
-      this->post_plan_gpu, this->d_post_buffer, this->d_post_buffer,
+      this->plan_gpu, this->d_buffer, this->d_buffer,
       CUFFT_FORWARD
     ));
     trva::copy_complex_array_dtoh(
-      this->d_post_buffer, this->post_buffer, this->nsamp_trans
+      this->d_buffer, this->post_buffer, this->nsamp_trans
     );
 #endif                       // TRV_USE_HIP
   } else {
