@@ -76,16 +76,22 @@ void update_maxcntgrid() {
     trv::sys::count_grid : trv::sys::max_count_grid;
 }
 
-std::string show_current_datetime() {
+std::string show_current_datetime(bool utc) {
   // Get current time.
   auto now = std::chrono::system_clock::now();
   auto timenow = std::chrono::system_clock::to_time_t(now);
 
   // Format timestamp.
-  char buffer[64];
-  std::strftime(
-    buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", std::localtime(&timenow)
-  );
+  char buffer[21];
+  if (utc) {
+    std::strftime(
+      buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%SZ", std::gmtime(&timenow)
+    );
+  } else {
+    std::strftime(
+      buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", std::localtime(&timenow)
+    );
+  };
 
   // Print timestamp to string.
   std::string timestamp = std::string(buffer);
@@ -570,6 +576,54 @@ const char* InvalidDataError::what() const noexcept {
 // Program notices
 // ***********************************************************************
 
+std::string get_build_datetime() {
+  // Parse macros.
+  std::string month_str = std::string(__DATE__).substr(0, 3);
+  int day = std::stoi(std::string(__DATE__).substr(4, 2));
+  int year = std::stoi(std::string(__DATE__).substr(7, 4));
+
+  int hour = std::stoi(std::string(__TIME__).substr(0, 2));
+  int minute = std::stoi(std::string(__TIME__).substr(3, 2));
+  int second = std::stoi(std::string(__TIME__).substr(6, 2));
+
+  // Convert to timestamp.
+  auto convert_month_from_name_to_num = [](const std::string& month) -> int {
+    if (month == "Jan") return 1;
+    if (month == "Feb") return 2;
+    if (month == "Mar") return 3;
+    if (month == "Apr") return 4;
+    if (month == "May") return 5;
+    if (month == "Jun") return 6;
+    if (month == "Jul") return 7;
+    if (month == "Aug") return 8;
+    if (month == "Sep") return 9;
+    if (month == "Oct") return 10;
+    if (month == "Nov") return 11;
+    if (month == "Dec") return 12;
+    return 0;
+  };
+
+  std::tm dt = {};
+  dt.tm_year = year - 1900;
+  dt.tm_mon = convert_month_from_name_to_num(month_str) - 1;
+  dt.tm_mday = day;
+  dt.tm_hour = hour;
+  dt.tm_min = minute;
+  dt.tm_sec = second;
+
+  std::time_t dtime = std::mktime(&dt);
+  std::tm *build_dt = std::gmtime(&dtime);
+
+  // Format string.
+  char build_datetime[21];
+  std::strftime(
+    build_datetime, sizeof(build_datetime),
+    "%Y-%m-%dT%H:%M:%SZ", build_dt
+  );
+
+  return std::string(build_datetime);
+}
+
 void display_help() {
   std::printf(
     "Triumvirate: Three-Point Clustering Measurements in LSS\n"
@@ -681,6 +735,8 @@ void display_prog_info(bool runtime) {
 #endif  // TRV_USE_HIP
 
   std::printf("OpenMP version: %s\n", _OMP_VERSION.c_str());
+
+  std::printf("Build timestamp: %s\n", get_build_datetime().c_str());
 
   if (runtime) {
     std::printf("CPU thread count: %d\n", _OMP_NTHREADS);

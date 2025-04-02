@@ -167,12 +167,13 @@ void update_maxmem();
 void update_maxcntgrid();
 
 /**
- * @brief Return the current date-time string in
- *        'YYYY-MM-DD HH:MM:SS' format.
+ * @brief Return the current datetime string.
  *
+ * @param utc If @c true, return UTC time in ISO 8601--like format, else
+ *            return local time in 'YYYY-MM-DD HH:MM:SS' format.
  * @returns Timestamp string.
  */
-std::string show_current_datetime();
+std::string show_current_datetime(bool utc = false);
 
 /**
  * @brief Return the elapsed-time string in 'HH:MM:SS' format.
@@ -543,6 +544,13 @@ class InvalidDataError: public std::runtime_error {
 // ***********************************************************************
 // Program notices
 // ***********************************************************************
+
+/**
+ * @brief Return the build datetime string in ISO 8601--like format.
+ *
+ * @returns Build datetime string.
+ */
+std::string get_build_datetime();
 
 /**
  * @brief Display help message in @c stdout.
