@@ -671,25 +671,22 @@ std::string get_build_datetime() {
     return 0;
   };
 
-  std::tm dt = {};
-  dt.tm_year = year - 1900;
-  dt.tm_mon = convert_month_from_name_to_num(month_str) - 1;
-  dt.tm_mday = day;
-  dt.tm_hour = hour;
-  dt.tm_min = minute;
-  dt.tm_sec = second;
-
-  std::time_t dtime = std::mktime(&dt);
-  std::tm *build_dt = std::gmtime(&dtime);
+  std::tm bdtm = {};
+  bdtm.tm_year = year - 1900;
+  bdtm.tm_mon = convert_month_from_name_to_num(month_str) - 1;
+  bdtm.tm_mday = day;
+  bdtm.tm_hour = hour;
+  bdtm.tm_min = minute;
+  bdtm.tm_sec = second;
 
   // Format string.
-  char build_datetime[21];
+  char bdt[20];
   std::strftime(
-    build_datetime, sizeof(build_datetime),
-    "%Y-%m-%dT%H:%M:%SZ", build_dt
+    bdt, sizeof(bdt),
+    "%Y-%m-%dT%H:%M:%S", &bdtm
   );
 
-  return std::string(build_datetime);
+  return std::string(bdt);
 }
 
 void display_help() {
