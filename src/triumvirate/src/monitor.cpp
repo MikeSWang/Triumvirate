@@ -645,16 +645,7 @@ const char* InvalidDataError::what() const noexcept {
 // ***********************************************************************
 
 std::string get_build_datetime() {
-  // Parse macros.
-  std::string month_str = std::string(__DATE__).substr(0, 3);
-  int day = std::stoi(std::string(__DATE__).substr(4, 2));
-  int year = std::stoi(std::string(__DATE__).substr(7, 4));
-
-  int hour = std::stoi(std::string(__TIME__).substr(0, 2));
-  int minute = std::stoi(std::string(__TIME__).substr(3, 2));
-  int second = std::stoi(std::string(__TIME__).substr(6, 2));
-
-  // Convert to timestamp.
+  // Define helper functions.
   auto convert_month_from_name_to_num = [](const std::string& month) -> int {
     if (month == "Jan") return 1;
     if (month == "Feb") return 2;
@@ -671,20 +662,83 @@ std::string get_build_datetime() {
     return 0;
   };
 
+  // Parse macros.
+  std::string month_str = std::string(__DATE__).substr(0, 3);
+  int month = convert_month_from_name_to_num(month_str);
+
+  int day = std::stoi(std::string(__DATE__).substr(4, 2));
+  int year = std::stoi(std::string(__DATE__).substr(7, 4));
+
+  int hour = std::stoi(std::string(__TIME__).substr(0, 2));
+  int minute = std::stoi(std::string(__TIME__).substr(3, 2));
+  int second = std::stoi(std::string(__TIME__).substr(6, 2));
+
+  int hour_tzoffset = 0;
+  int minute_tzoffset = 0;
+  int status_tzoffset = 0;
+  try {
+    if (
+      std::strlen(__TZOFFSET__) == 5
+      && (__TZOFFSET__[0] == '+' || __TZOFFSET__[0] == '-')
+    ) {
+      int _tzos_sign = (__TZOFFSET__[0] == '-') ? -1 : 1;
+      int _hr_tzoffset = std::stoi(std::string(__TZOFFSET__).substr(1, 2));
+      int _min_tzoffset = std::stoi(std::string(__TZOFFSET__).substr(3, 2));
+      if (
+        0 <= hour_tzoffset && hour_tzoffset < 24
+        && 0 <= minute_tzoffset && minute_tzoffset < 60
+      ) {
+        hour_tzoffset = _tzos_sign * _hr_tzoffset;
+        minute_tzoffset = _tzos_sign * _min_tzoffset;
+      } else {
+        status_tzoffset = 1;
+      }
+    } else {
+      status_tzoffset = 1;
+    }
+  } catch (const std::invalid_argument& e) {
+    status_tzoffset = 1;
+  } catch (const std::out_of_range& e) {
+    status_tzoffset = 1;
+  }
+
+  if (status_tzoffset == 0) {
+    hour -= hour_tzoffset;
+    minute -= minute_tzoffset;
+    if (minute < 0) {
+      minute += 60;
+      hour -= 1;
+    } else
+    if (minute >= 60) {
+      minute -= 60;
+      hour += 1;
+    }
+    if (hour < 0) {
+      hour += 24;
+      day -= 1;
+    } else
+    if (hour >= 24) {
+      hour -= 24;
+      day += 1;
+    }
+  }
+
+  // Convert to timestamp.
   std::tm bdtm = {};
   bdtm.tm_year = year - 1900;
-  bdtm.tm_mon = convert_month_from_name_to_num(month_str) - 1;
+  bdtm.tm_mon = month - 1;
   bdtm.tm_mday = day;
   bdtm.tm_hour = hour;
   bdtm.tm_min = minute;
   bdtm.tm_sec = second;
 
   // Format string.
-  char bdt[20];
-  std::strftime(
-    bdt, sizeof(bdt),
-    "%Y-%m-%dT%H:%M:%S", &bdtm
-  );
+  char bdt[21];
+  if (status_tzoffset == 0) {
+    std::strftime(bdt, sizeof(bdt), "%Y-%m-%dT%H:%M:%SZ", &bdtm);
+  } else {
+    std::strftime(bdt, sizeof(bdt), "%Y-%m-%dT%H:%M:%S", &bdtm);
+  }
 
   return std::string(bdt);
 }

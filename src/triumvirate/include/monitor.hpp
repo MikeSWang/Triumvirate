@@ -98,6 +98,11 @@
 #define SHOW_CPPSTATE ""
 #endif  // TRV_EXTCALL
 
+// Record (fallback) build timezone offset.
+#ifndef __TZOFFSET__
+#define __TZOFFSET__ "+0000"
+#endif  // !__TZOFFSET__
+
 #if defined(TRV_USE_HIP)
 #ifndef HIP_EXEC
 /**

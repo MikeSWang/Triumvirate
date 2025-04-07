@@ -247,7 +247,7 @@ CPPFLAGS += -D__HIP_PLATFORM_AMD__
 endif  # usehip && usecuda
 endif  # usehip
 
-CPPFLAGS += -MMD -MP -D__TRV_VERSION__=\"${PKG_VER}\"
+CPPFLAGS += -MMD -MP -D__TRV_VERSION__=\"${PKG_VER}\" -D__TZOFFSET__=\"$(shell date +%z)\"
 
 ifdef usehip
 ifdef usecuda
