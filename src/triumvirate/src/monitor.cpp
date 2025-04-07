@@ -40,6 +40,9 @@ int currTask = 0;
 double gbytesMem = 0.;
 double gbytesMaxMem = 0.;
 
+double gbytesMemGPU = 0.;
+double gbytesMaxMemGPU = 0.;
+
 int count_rgrid = 0;
 int count_cgrid = 0;
 float count_grid = 0.;
@@ -59,9 +62,16 @@ auto clockStart = std::chrono::steady_clock::now();  ///< program starting time
 Logger logger(LogLevel::NSET);  ///< default logger at `NSET` logging level
 /// @endcond
 
-void update_maxmem() {
-  trv::sys::gbytesMaxMem = (trv::sys::gbytesMem > trv::sys::gbytesMaxMem) ?
-    trv::sys::gbytesMem : trv::sys::gbytesMaxMem;
+void update_maxmem(bool gpu) {
+  if (gpu) {
+    trv::sys::gbytesMaxMemGPU =
+      (trv::sys::gbytesMemGPU > trv::sys::gbytesMaxMemGPU) ?
+      trv::sys::gbytesMemGPU : trv::sys::gbytesMaxMemGPU;
+  } else {
+    trv::sys::gbytesMaxMem =
+      (trv::sys::gbytesMem > trv::sys::gbytesMaxMem) ?
+      trv::sys::gbytesMem : trv::sys::gbytesMaxMem;
+  }
 }
 
 void update_maxcntgrid() {

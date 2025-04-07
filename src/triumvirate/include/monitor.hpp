@@ -207,6 +207,9 @@ extern int currTask;  ///< current task
 extern double gbytesMem;     ///< current memory usage in gibibytes
 extern double gbytesMaxMem;  ///< maximum memory usage in gibibytes
 
+extern double gbytesMemGPU;     ///< current (GPU) memory usage in gibibytes
+extern double gbytesMaxMemGPU;  ///< maximum (GPU) memory usage in gibibytes
+
 extern int count_rgrid;       ///< number of 3-d real grids
 extern int count_cgrid;       ///< number of 3-d complex grids
 extern float count_grid;      ///< number of grids
@@ -253,8 +256,9 @@ double size_in_gb(int num) {
 /**
  * @brief Update the maximum memory usage estimate.
  *
+ * @param gpu If @c true, update the GPU memory usage estimate.
  */
-void update_maxmem();
+void update_maxmem(bool gpu = false);
 
 /**
  * @brief Update the maximum 3-d grid counts.

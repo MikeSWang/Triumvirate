@@ -946,12 +946,26 @@ int main(int argc, char* argv[]) {
       "Minimal estimate of peak memory usage: %.1f gibibytes.",
       trv::sys::gbytesMaxMem
     );
+    if (trv::sys::is_gpu_enabled()) {
+      trv::sys::logger.info(
+        "Minimal estimate of peak GPU memory usage: %.1f gibibytes.",
+        trv::sys::gbytesMaxMemGPU
+      );
+    }
   }
   if (trv::sys::gbytesMem > 0.) {
     if (trv::sys::currTask == 0) {
       trv::sys::logger.warn(
         "Uncleared dynamically allocated memory: %.1f gibibytes.",
         trv::sys::gbytesMem
+      );
+    }
+  }
+  if (trv::sys::gbytesMemGPU > 0.) {
+    if (trv::sys::currTask == 0) {
+      trv::sys::logger.warn(
+        "Uncleared dynamically allocated GPU memory: %.1f gibibytes.",
+        trv::sys::gbytesMemGPU
       );
     }
   }
