@@ -215,7 +215,7 @@ MeshField::MeshField(
         ));
       }
 
-      size_t workspace_sizes[gpus.size()];
+      std::size_t workspace_sizes[gpus.size()];
       CUFFT_EXEC(cufftMakePlan3d(
         this->transform_gpu,
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
@@ -237,6 +237,7 @@ MeshField::MeshField(
         this->transform_gpu,
         CUFFT_Z2Z,
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        workspace_sizes,
         gpus
       );
       trvs::update_maxmem(trvs::is_gpu_enabled());
@@ -320,7 +321,7 @@ MeshField::MeshField(
 //         ));
 //       }
 
-//       size_t workspace_sizes[gpus.size()];
+//       std::size_t workspace_sizes[gpus.size()];
 //       CUFFT_EXEC(cufftMakePlan3d(
 //         this->inv_transform_gpu,
 //         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
@@ -342,6 +343,7 @@ MeshField::MeshField(
 //         this->inv_transform_gpu,
 //         CUFFT_Z2Z,
 //         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+//         workspace_sizes,
 //         gpus
 //       );
 //       trvs::update_maxmem(trvs::is_gpu_enabled());
@@ -412,7 +414,7 @@ MeshField::MeshField(
 //           ));
 //         }
 
-//         size_t workspace_sizes[gpus.size()];
+//         std::size_t workspace_sizes[gpus.size()];
 //         CUFFT_EXEC(cufftMakePlan3d(
 //           this->transform_s_gpu,
 //           this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
@@ -434,6 +436,7 @@ MeshField::MeshField(
 //           this->transform_s_gpu,
 //           CUFFT_Z2Z,
 //           this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+//           workspace_sizes,
 //           gpus
 //         );
 //         trvs::update_maxmem(trvs::is_gpu_enabled());
@@ -537,6 +540,8 @@ MeshField::MeshField(
 MeshField::~MeshField() {
   if (this->plan_ini) {
     if (trvs::is_gpu_enabled()) {
+      std::vector<int> gpus = trvs::get_gpu_ids();
+      std::vector<std::size_t> workspace_sizes(gpus.size());
 #if defined(TRV_USE_HIP)
       HIP_EXEC(hipFree(this->d_field));
       // trvs::gbytesMemGPU -=
@@ -545,14 +550,14 @@ MeshField::~MeshField() {
         this->transform_gpu,
         HIPFFT_Z2Z,
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-        trvs::get_gpu_ids()
+        gpus
       );
       HIPFFT_EXEC(hipfftDestroy(this->transform_gpu));
       // trvs::gbytesMemGPU -= trvs::worksize_in_gb(
       //   this->inv_transform_gpu,
       //   HIPFFT_Z2Z,
       //   this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      //   trvs::get_gpu_ids()
+      //   gpus
       // );
       // HIPFFT_EXEC(hipfftDestroy(this->inv_transform_gpu));
       // if (this->params.interlace == "true") {
@@ -561,7 +566,7 @@ MeshField::~MeshField() {
       //     this->transform_s_gpu,
       //     HIPFFT_Z2Z,
       //     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      //     trvs::get_gpu_ids()
+      //     gpus
       //   );
       //   HIPFFT_EXEC(hipfftDestroy(this->transform_s_gpu));
       // }
@@ -576,14 +581,16 @@ MeshField::~MeshField() {
         this->transform_gpu,
         CUFFT_Z2Z,
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-        trvs::get_gpu_ids()
+        workspace_sizes.data(),
+        gpus
       );
       CUFFT_EXEC(cufftDestroy(this->transform_gpu));
       // trvs::gbytesMemGPU -= trvs::worksize_in_gb(
       //   this->inv_transform_gpu,
       //   CUFFT_Z2Z,
       //   this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      //   trvs::get_gpu_ids()
+      //   workspace_sizes.data(),
+      //   gpus
       // );
       // CUFFT_EXEC(cufftDestroy(this->inv_transform_gpu));
       // if (this->params.interlace == "true") {
@@ -596,7 +603,8 @@ MeshField::~MeshField() {
       //     this->transform_s_gpu,
       //     CUFFT_Z2Z,
       //     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-      //     trvs::get_gpu_ids()
+      //     workspace_sizes.data(),
+      //     gpus
       //   );
       //   CUFFT_EXEC(cufftDestroy(this->transform_s_gpu));
       // }
@@ -2388,7 +2396,7 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
         ));
       }
 
-      size_t workspace_sizes[gpus.size()];
+      std::size_t workspace_sizes[gpus.size()];
       CUFFT_EXEC(cufftMakePlan3d(
         this->inv_transform_gpu,
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
@@ -2410,6 +2418,7 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
         this->inv_transform_gpu,
         CUFFT_Z2Z,
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        workspace_sizes,
         gpus
       );
       trvs::update_maxmem(trvs::is_gpu_enabled());
@@ -2435,6 +2444,8 @@ FieldStats::~FieldStats() {
 
   if (this->plan_ini) {
     if (trvs::is_gpu_enabled()) {
+      std::vector<int> gpus = trvs::get_gpu_ids();
+      std::vector<std::size_t> workspace_sizes(gpus.size());
 #if defined(TRV_USE_HIP)
       HIP_EXEC(hipFree(this->d_twopt_3d));
       // trvs::gbytesMemGPU -=
@@ -2443,7 +2454,7 @@ FieldStats::~FieldStats() {
         this->inv_transform_gpu,
         HIPFFT_Z2Z,
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-        trvs::get_gpu_ids()
+        gpus
       );
       HIPFFT_EXEC(hipfftDestroy(this->inv_transform_gpu));
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
@@ -2456,7 +2467,8 @@ FieldStats::~FieldStats() {
         this->inv_transform_gpu,
         CUFFT_Z2Z,
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
-        trvs::get_gpu_ids()
+        workspace_sizes.data(),
+        gpus
       );
       CUFFT_EXEC(cufftDestroy(this->inv_transform_gpu));
   #ifdef _CUDA_STREAM

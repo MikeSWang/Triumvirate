@@ -272,7 +272,7 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector) {
 
 #if defined(TRV_USE_HIP)
 void copy_complex_array_dtoh(
-  fft_double_complex* d_arr, fftw_complex* arr, size_t length
+  fft_double_complex* d_arr, fftw_complex* arr, std::size_t length
 ) {
   HIP_EXEC(hipMemcpy(
     arr,
@@ -283,7 +283,7 @@ void copy_complex_array_dtoh(
 }
 
 void copy_complex_array_htod(
-  fftw_complex* arr, fft_double_complex* d_arr, size_t length
+  fftw_complex* arr, fft_double_complex* d_arr, std::size_t length
 ) {
   HIP_EXEC(hipMemcpy(
     d_arr,
@@ -295,7 +295,7 @@ void copy_complex_array_htod(
 
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
 void copy_complex_array_dtoh(
-  fft_double_complex* d_arr, fftw_complex* arr, size_t length
+  fft_double_complex* d_arr, fftw_complex* arr, std::size_t length
 ) {
   CUDA_EXEC(cudaMemcpy(
     reinterpret_cast<void*>(arr),
@@ -306,7 +306,7 @@ void copy_complex_array_dtoh(
 }
 
 void copy_complex_array_htod(
-  fftw_complex* arr, fft_double_complex* d_arr, size_t length
+  fftw_complex* arr, fft_double_complex* d_arr, std::size_t length
 ) {
   CUDA_EXEC(cudaMemcpy(
     reinterpret_cast<void*>(d_arr),

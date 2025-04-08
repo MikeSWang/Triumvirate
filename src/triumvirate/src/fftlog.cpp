@@ -255,7 +255,7 @@ void HankelTransform::initialise(
     // ));
     // }
 
-    size_t workspace_sizes[gpus.size()];
+    std::size_t workspace_sizes[gpus.size()];
     // CUFFT_EXEC(cufftMakePlan1d(
     //   this->pre_plan_gpu, this->nsamp_trans,
     //   CUFFT_Z2Z, 1, workspace_sizes
@@ -322,7 +322,7 @@ void HankelTransform::initialise(
     //   ));
     // }
 
-    size_t workspace_sizes[gpus.size()];
+    std::size_t workspace_sizes[gpus.size()];
     // CUFFT_EXEC(cufftMakePlan1d(
     //   this->post_plan_gpu, this->nsamp_trans,
     //   CUFFT_Z2Z, 1, workspace_sizes

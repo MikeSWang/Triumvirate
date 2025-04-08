@@ -276,6 +276,7 @@ double worksize_in_gb(
  * @param plan 3D FFT plan handle.
  * @param ffttype FFT type.
  * @param nx, ny, nz Transform dimensions.
+ * @param worksizes FFT plan work sizes.
  * @param gpus GPU device indices.
  * @returns double Work area size in gibibytes.
  */
@@ -283,6 +284,7 @@ double worksize_in_gb(
   cufftHandle plan,
   cufftType ffttype,
   int nx, int ny, int nz,
+  std::size_t* worksizes,
   std::vector<int> gpus
 );
 #endif                       // TRV_USE_HIP

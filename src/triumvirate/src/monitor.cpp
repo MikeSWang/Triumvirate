@@ -69,11 +69,11 @@ double worksize_in_gb(
   int nx, int ny, int nz,
   std::vector<int> gpus
 ) {
-  std::vector<size_t> worksizes(gpus.size());
+  std::vector<std::size_t> worksizes(gpus.size());
   HIPFFT_EXEC(hipfftGetSize3d(plan, nx, ny, nz, ffttype, worksizes.data()));
 
-  size_t totsize = 0;
-  for (size_t id = 0; id < gpus.size(); ++id) {
+  std::size_t totsize = 0;
+  for (std::size_t id = 0; id < gpus.size(); ++id) {
     totsize += worksizes[id];
   }
 
@@ -87,16 +87,17 @@ double worksize_in_gb(
   cufftHandle plan,
   cufftType ffttype,
   int nx, int ny, int nz,
+  std::size_t* worksizes,
   std::vector<int> gpus
 ) {
-  size_t totsize = 0;
+  std::size_t totsize = 0;
   if (gpus.size() == 1) {
-    CUFFT_EXEC(cufftGetSize3d(plan, nx, ny, nz, ffttype, &totsize));
+    // HACK: cufftGetSize*() returns wrong value (16 bytes) for single GPU.
+    totsize = double(nx * ny * nz) * sizeof(cufftDoubleComplex);
   } else {
-    std::vector<size_t> worksizes(gpus.size());
-    CUFFT_EXEC(cufftGetSize3d(plan, nx, ny, nz, ffttype, worksizes.data()));
+    CUFFT_EXEC(cufftGetSize3d(plan, nx, ny, nz, ffttype, worksizes));
 
-    for (size_t id = 0; id < gpus.size(); ++id) {
+    for (std::size_t id = 0; id < gpus.size(); ++id) {
       totsize += worksizes[id];
     }
   }
