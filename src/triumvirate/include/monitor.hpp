@@ -253,6 +253,40 @@ double size_in_gb(int num) {
   return double(num) * sizeof(T) / BYTES_PER_GBYTES;
 }
 
+#if defined(TRV_USE_HIP)
+/**
+ * @brief Return the work area size in gibibytes for a 3D FFT plan.
+ *
+ * @param plan 3D FFT plan handle.
+ * @param ffttype FFT type.
+ * @param nx, ny, nz Transform dimensions.
+ * @param gpus GPU device indices.
+ * @returns double Work area size in gibibytes.
+ */
+double worksize_in_gb(
+  hipfftHandle plan,
+  hipfftType ffttype,
+  int nx, int ny, int nz,
+  std::vector<int> gpus
+);
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+/**
+ * @brief Return the work area size in gibibytes for a 3D FFT plan.
+ *
+ * @param plan 3D FFT plan handle.
+ * @param ffttype FFT type.
+ * @param nx, ny, nz Transform dimensions.
+ * @param gpus GPU device indices.
+ * @returns double Work area size in gibibytes.
+ */
+double worksize_in_gb(
+  cufftHandle plan,
+  cufftType ffttype,
+  int nx, int ny, int nz,
+  std::vector<int> gpus
+);
+#endif                       // TRV_USE_HIP
+
 /**
  * @brief Update the maximum memory usage estimate.
  *

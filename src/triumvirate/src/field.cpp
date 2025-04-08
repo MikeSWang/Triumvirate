@@ -181,9 +181,9 @@ MeshField::MeshField(
       HIP_EXEC(hipMalloc(
         &this->d_field, sizeof(fft_double_complex) * this->params.nmesh
       ));
-      trvs::gbytesMemGPU +=
-        trvs::size_in_gb<fft_double_complex>(this->params.nmesh);
-      trvs::update_maxmem(trvs::is_gpu_enabled());
+      // trvs::gbytesMemGPU +=
+      //   trvs::size_in_gb<fft_double_complex>(this->params.nmesh);
+      // trvs::update_maxmem(trvs::is_gpu_enabled());
     }
 #endif  // TRV_USE_HIP
 
@@ -195,6 +195,13 @@ MeshField::MeshField(
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
         HIPFFT_Z2Z
       ));
+      trvs::gbytesMemGPU += trvs::worksize_in_gb(
+        this->transform_gpu,
+        HIPFFT_Z2Z,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        gpus
+      );
+      trvs::update_maxmem(trvs::is_gpu_enabled());
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
       CUFFT_EXEC(cufftCreate(&this->transform_gpu));
 
@@ -226,8 +233,12 @@ MeshField::MeshField(
           CUFFT_XT_FORMAT_INPLACE_SHUFFLED
         ));
       }
-      trvs::gbytesMemGPU +=
-        trvs::size_in_gb<fft_double_complex>(this->params.nmesh);
+      trvs::gbytesMemGPU += trvs::worksize_in_gb(
+        this->transform_gpu,
+        CUFFT_Z2Z,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        gpus
+      );
       trvs::update_maxmem(trvs::is_gpu_enabled());
 #endif                       // TRV_USE_HIP
     } else {
@@ -289,6 +300,13 @@ MeshField::MeshField(
 //         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
 //         HIPFFT_Z2Z
 //       ));
+//       trvs::gbytesMemGPU += trvs::worksize_in_gb(
+//         this->inv_transform_gpu,
+//         HIPFFT_Z2Z,
+//         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+//         gpus
+//       );
+//       trvs::update_maxmem(trvs::is_gpu_enabled());
 // #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
 //       CUFFT_EXEC(cufftCreate(&this->inv_transform_gpu));
 
@@ -320,6 +338,13 @@ MeshField::MeshField(
 //           CUFFT_XT_FORMAT_INPLACE_SHUFFLED
 //         ));
 //       }
+//       trvs::gbytesMemGPU += trvs::worksize_in_gb(
+//         this->inv_transform_gpu,
+//         CUFFT_Z2Z,
+//         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+//         gpus
+//       );
+//       trvs::update_maxmem(trvs::is_gpu_enabled());
 // #endif                       // TRV_USE_HIP
     } else {
       this->inv_transform = fftw_plan_dft_3d(
@@ -367,6 +392,13 @@ MeshField::MeshField(
 //           this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
 //           HIPFFT_Z2Z
 //         ));
+//         trvs::gbytesMemGPU += trvs::worksize_in_gb(
+//           this->transform_s_gpu,
+//           HIPFFT_Z2Z,
+//           this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+//           gpus
+//         );
+//         trvs::update_maxmem(trvs::is_gpu_enabled());
 // #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
 //         CUFFT_EXEC(cufftCreate(&this->transform_s_gpu));
 
@@ -398,6 +430,13 @@ MeshField::MeshField(
 //             CUFFT_XT_FORMAT_INPLACE_SHUFFLED
 //           ));
 //         }
+//         trvs::gbytesMemGPU += trvs::worksize_in_gb(
+//           this->transform_s_gpu,
+//           CUFFT_Z2Z,
+//           this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+//           gpus
+//         );
+//         trvs::update_maxmem(trvs::is_gpu_enabled());
 // #endif                       // TRV_USE_HIP
       } else {
         this->transform_s = fftw_plan_dft_3d(
@@ -500,14 +539,32 @@ MeshField::~MeshField() {
     if (trvs::is_gpu_enabled()) {
 #if defined(TRV_USE_HIP)
       HIP_EXEC(hipFree(this->d_field));
+      // trvs::gbytesMemGPU -=
+      //   trvs::size_in_gb<fft_double_complex>(this->params.nmesh);
+      trvs::gbytesMemGPU -= trvs::worksize_in_gb(
+        this->transform_gpu,
+        HIPFFT_Z2Z,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        trvs::get_gpu_ids()
+      );
       HIPFFT_EXEC(hipfftDestroy(this->transform_gpu));
+      // trvs::gbytesMemGPU -= trvs::worksize_in_gb(
+      //   this->inv_transform_gpu,
+      //   HIPFFT_Z2Z,
+      //   this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+      //   trvs::get_gpu_ids()
+      // );
       // HIPFFT_EXEC(hipfftDestroy(this->inv_transform_gpu));
       // if (this->params.interlace == "true") {
       //   HIP_EXEC(hipFree(this->d_field_s));
+      //   trvs::gbytesMemGPU -= trvs::worksize_in_gb(
+      //     this->transform_s_gpu,
+      //     HIPFFT_Z2Z,
+      //     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+      //     trvs::get_gpu_ids()
+      //   );
       //   HIPFFT_EXEC(hipfftDestroy(this->transform_s_gpu));
       // }
-      trvs::gbytesMemGPU -=
-        trvs::size_in_gb<fft_double_complex>(this->params.nmesh);
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
       if (trvs::is_gpu_single()) {
         CUDA_EXEC(cudaFree(this->d_field));
@@ -515,7 +572,19 @@ MeshField::~MeshField() {
         CUFFT_EXEC(cufftXtFree(this->field_desc));
         // CUFFT_EXEC(cufftXtFree(this->inv_field_desc));
       }
+      trvs::gbytesMemGPU -= trvs::worksize_in_gb(
+        this->transform_gpu,
+        CUFFT_Z2Z,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        trvs::get_gpu_ids()
+      );
       CUFFT_EXEC(cufftDestroy(this->transform_gpu));
+      // trvs::gbytesMemGPU -= trvs::worksize_in_gb(
+      //   this->inv_transform_gpu,
+      //   CUFFT_Z2Z,
+      //   this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+      //   trvs::get_gpu_ids()
+      // );
       // CUFFT_EXEC(cufftDestroy(this->inv_transform_gpu));
       // if (this->params.interlace == "true") {
       //   if (trvs::is_gpu_single()) {
@@ -523,10 +592,14 @@ MeshField::~MeshField() {
       //   } else {
       //     CUFFT_EXEC(cufftXtFree(this->field_s_desc));
       //   }
+      //   trvs::gbytesMemGPU -= trvs::worksize_in_gb(
+      //     this->transform_s_gpu,
+      //     CUFFT_Z2Z,
+      //     this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+      //     trvs::get_gpu_ids()
+      //   );
       //   CUFFT_EXEC(cufftDestroy(this->transform_s_gpu));
       // }
-      trvs::gbytesMemGPU -=
-        trvs::size_in_gb<fft_double_complex>(this->params.nmesh);
   #ifdef _CUDA_STREAM
       // Destroy CUDA streams.
       CUDA_EXEC(cudaStreamDestroy(this->custream));
@@ -2264,9 +2337,9 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
       HIP_EXEC(hipMalloc(
         &this->d_twopt_3d, sizeof(fft_double_complex) * this->params.nmesh
       ));
-      trvs::gbytesMemGPU +=
-        trvs::size_in_gb<fft_double_complex>(this->params.nmesh);
-      trvs::update_maxmem(trvs::is_gpu_enabled());
+      // trvs::gbytesMemGPU +=
+      //   trvs::size_in_gb<fft_double_complex>(this->params.nmesh);
+      // trvs::update_maxmem(trvs::is_gpu_enabled());
     }
 #endif  // TRV_USE_HIP
 
@@ -2295,6 +2368,13 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
         this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
         HIPFFT_Z2Z
       ));
+      trvs::gbytesMemGPU += trvs::worksize_in_gb(
+        this->inv_transform_gpu,
+        HIPFFT_Z2Z,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        gpus
+      );
+      trvs::update_maxmem(trvs::is_gpu_enabled());
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
       CUFFT_EXEC(cufftCreate(&this->inv_transform_gpu));
 
@@ -2326,8 +2406,12 @@ FieldStats::FieldStats(trv::ParameterSet& params, bool plan_ini){
           CUFFT_XT_FORMAT_INPLACE_SHUFFLED
         ));
       }
-      trvs::gbytesMemGPU +=
-        trvs::size_in_gb<fft_double_complex>(this->params.nmesh);
+      trvs::gbytesMemGPU += trvs::worksize_in_gb(
+        this->inv_transform_gpu,
+        CUFFT_Z2Z,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        gpus
+      );
       trvs::update_maxmem(trvs::is_gpu_enabled());
 #endif                       // TRV_USE_HIP
     } else {
@@ -2353,18 +2437,28 @@ FieldStats::~FieldStats() {
     if (trvs::is_gpu_enabled()) {
 #if defined(TRV_USE_HIP)
       HIP_EXEC(hipFree(this->d_twopt_3d));
+      // trvs::gbytesMemGPU -=
+      //   trvs::size_in_gb<fft_double_complex>(this->params.nmesh);
+      trvs::gbytesMemGPU -= trvs::worksize_in_gb(
+        this->inv_transform_gpu,
+        HIPFFT_Z2Z,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        trvs::get_gpu_ids()
+      );
       HIPFFT_EXEC(hipfftDestroy(this->inv_transform_gpu));
-      trvs::gbytesMemGPU -=
-        trvs::size_in_gb<fft_double_complex>(this->params.nmesh);
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
       if (trvs::is_gpu_single()) {
         CUDA_EXEC(cudaFree(this->d_twopt_3d));
       } else {
         CUFFT_EXEC(cufftXtFree(this->twopt_3d_desc));
       }
+      trvs::gbytesMemGPU -= trvs::worksize_in_gb(
+        this->inv_transform_gpu,
+        CUFFT_Z2Z,
+        this->params.ngrid[0], this->params.ngrid[1], this->params.ngrid[2],
+        trvs::get_gpu_ids()
+      );
       CUFFT_EXEC(cufftDestroy(this->inv_transform_gpu));
-      trvs::gbytesMemGPU -=
-        trvs::size_in_gb<fft_double_complex>(this->params.nmesh);
   #ifdef _CUDA_STREAM
       // Destroy CUDA streams.
       CUDA_EXEC(cudaStreamDestroy(this->custream));

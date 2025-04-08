@@ -62,6 +62,52 @@ auto clockStart = std::chrono::steady_clock::now();  ///< program starting time
 Logger logger(LogLevel::NSET);  ///< default logger at `NSET` logging level
 /// @endcond
 
+#if defined(TRV_USE_HIP)
+double worksize_in_gb(
+  hipfftHandle plan,
+  hipfftType ffttype,
+  int nx, int ny, int nz,
+  std::vector<int> gpus
+) {
+  std::vector<size_t> worksizes(gpus.size());
+  HIPFFT_EXEC(hipfftGetSize3d(plan, nx, ny, nz, ffttype, worksizes.data()));
+
+  size_t totsize = 0;
+  for (size_t id = 0; id < gpus.size(); ++id) {
+    totsize += worksizes[id];
+  }
+
+  const double BYTES_PER_GBYTES = 1073741824.;  // 1024³ bytes per gibibyte
+  double worksize_gb = double(totsize) / BYTES_PER_GBYTES;
+
+  return worksize_gb;
+}
+#elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
+double worksize_in_gb(
+  cufftHandle plan,
+  cufftType ffttype,
+  int nx, int ny, int nz,
+  std::vector<int> gpus
+) {
+  size_t totsize = 0;
+  if (gpus.size() == 1) {
+    CUFFT_EXEC(cufftGetSize3d(plan, nx, ny, nz, ffttype, &totsize));
+  } else {
+    std::vector<size_t> worksizes(gpus.size());
+    CUFFT_EXEC(cufftGetSize3d(plan, nx, ny, nz, ffttype, worksizes.data()));
+
+    for (size_t id = 0; id < gpus.size(); ++id) {
+      totsize += worksizes[id];
+    }
+  }
+
+  const double BYTES_PER_GBYTES = 1073741824.;  // 1024³ bytes per gibibyte
+  double worksize_gb = double(totsize) / BYTES_PER_GBYTES;
+
+  return worksize_gb;
+}
+#endif                       // TRV_USE_HIP
+
 void update_maxmem(bool gpu) {
   if (gpu) {
     trv::sys::gbytesMaxMemGPU =
