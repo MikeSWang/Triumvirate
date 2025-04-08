@@ -92,8 +92,7 @@ double worksize_in_gb(
 ) {
   std::size_t totsize = 0;
   if (gpus.size() == 1) {
-    // HACK: cufftGetSize*() returns wrong value (16 bytes) for single GPU.
-    totsize = double(nx * ny * nz) * sizeof(cufftDoubleComplex);
+    CUFFT_EXEC(cufftGetSize3d(plan, nx, ny, nz, ffttype, &totsize));
   } else {
     CUFFT_EXEC(cufftGetSize3d(plan, nx, ny, nz, ffttype, worksizes));
 
