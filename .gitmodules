@@ -1,0 +1,3 @@
+[submodule "highfive"]
+	path = depds/highfive
+	url = git@github.com:highfive-devs/highfive.git
