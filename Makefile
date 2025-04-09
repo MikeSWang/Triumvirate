@@ -38,8 +38,9 @@ COMMA := ,
 # Repository root
 DIR_ROOT := $(shell pwd)
 
-# Package, build, test and distribution directories
+# Package, dependency submodule, build, test and distribution directories
 DIR_PKG := ${DIR_ROOT}/src/${MODNAME}
+DIR_DEPDSMOD := ${DIR_ROOT}/depds
 DIR_BUILD := ${DIR_ROOT}/build
 DIR_TESTS := ${DIR_ROOT}/tests
 DIR_DIST := ${DIR_ROOT}/dist
