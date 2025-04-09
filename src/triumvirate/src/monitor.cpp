@@ -32,6 +32,18 @@ namespace trv {
 namespace sys {
 
 // ***********************************************************************
+// Program helpers
+// ***********************************************************************
+
+bool has_extension(const std::string& fname, const std::string& fext) {
+  if (fname.length() >= fext.length()) {
+    return (fname.rfind(fext) == (fname.length() - fext.length()));
+  }
+  return false;
+}
+
+
+// ***********************************************************************
 // Program tracking
 // ***********************************************************************
 
@@ -910,6 +922,14 @@ void display_prog_info(bool runtime) {
 #endif  // TRV_USE_HIP
 
   std::printf("OpenMP version: %s\n", _OMP_VERSION.c_str());
+
+#ifdef TRV_USE_H5
+  unsigned hdf5_major, hdf5_minor, hdf5_release;
+  H5get_libversion(&hdf5_major, &hdf5_minor, &hdf5_release);
+  std::printf(
+    "HDF5 version: %d.%d.%d\n", hdf5_major, hdf5_minor, hdf5_release
+  );
+#endif  // TRV_USE_H5
 
   std::printf("Build timestamp: %s\n", get_build_datetime().c_str());
 

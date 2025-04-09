@@ -58,6 +58,10 @@
 #include <string>
 #include <vector>
 
+#ifdef TRV_USE_H5
+#include "highfive/H5File.hpp"
+#endif  // TRV_USE_H5
+
 // Enter debugging mode.
 #ifdef DBG_MODE
 #include <iostream>
@@ -194,6 +198,20 @@
 
 namespace trv {
 namespace sys {
+
+// ***********************************************************************
+// Program helpers
+// ***********************************************************************
+
+/**
+ * @brief Check if a file has a given extension.
+ *
+ * @param fname File name.
+ * @param fext File extension (with the dot).
+ * @returns { @c true , @c false }
+ */
+bool has_extension(const std::string& fname, const std::string& fext);
+
 
 // ***********************************************************************
 // Program tracking

@@ -120,6 +120,26 @@ int ParticleCatalogue::load_catalogue_file(
   }
   this->source = "extfile:" + catalogue_filepath;
 
+  // Check for HDF5 file extension.
+  bool is_hdf5 = (
+    trvs::has_extension(catalogue_filepath, ".h5")
+    || trvs::has_extension(catalogue_filepath, ".hdf5")
+  );
+#ifndef TRV_USE_H5
+  if (is_hdf5) {
+    if (trvs::currTask == 0) {
+      trvs::logger.error(
+        "HDF5 file format is not supported in this build: %s",
+        catalogue_filepath.c_str()
+      );
+    }
+    throw trvs::InvalidDataError(
+      "HDF5 file format is not supported in this build: %s",
+      catalogue_filepath.c_str()
+    );
+  }
+#endif  // !TRV_USE_H5
+
   // ---------------------------------------------------------------------
   // Columns & fields
   // ---------------------------------------------------------------------
@@ -163,94 +183,97 @@ int ParticleCatalogue::load_catalogue_file(
   // Data reading
   // ---------------------------------------------------------------------
 
-  std::ifstream fin;
+  if (is_hdf5) {
+  } else {
+    std::ifstream fin;
 
-  fin.open(catalogue_filepath.c_str(), std::ios::in);
+    fin.open(catalogue_filepath.c_str(), std::ios::in);
 
-  if (fin.fail()) {
+    if (fin.fail()) {
+      fin.close();
+      if (trvs::currTask == 0) {
+        trvs::logger.error("Failed to open file: %s", this->source.c_str());
+      }
+      throw trvs::IOError("Failed to open file: %s", this->source.c_str());
+    }
+
+    // Initialise particle data.
+    int num_lines = 0;
+    std::string line_str;
+    while (std::getline(fin, line_str)) {
+      // Terminate at the end of file.
+      if (!fin) {break;}
+
+      // Skip empty lines or comment lines.
+      if (line_str.empty() || line_str[0] == '#') {continue;}
+
+      // Count the line as valid otherwise.
+      num_lines++;
+    }
+
     fin.close();
-    if (trvs::currTask == 0) {
-      trvs::logger.error("Failed to open file: %s", this->source.c_str());
-    }
-    throw trvs::IOError("Failed to open file: %s", this->source.c_str());
-  }
 
-  // Initialise particle data.
-  int num_lines = 0;
-  std::string line_str;
-  while (std::getline(fin, line_str)) {
-    // Terminate at the end of file.
-    if (!fin) {break;}
+    this->initialise_particles(num_lines);
 
-    // Skip empty lines or comment lines.
-    if (line_str.empty() || line_str[0] == '#') {continue;}
-
-    // Count the line as valid otherwise.
-    num_lines++;
-  }
-
-  fin.close();
-
-  this->initialise_particles(num_lines);
-
-  // Set particle data.
-  double nz_box_default = 0.;
-  if (volume > 0.) {
-    nz_box_default = this->ntotal / volume;
-  }
-
-  fin.open(catalogue_filepath.c_str(), std::ios::in);
-
-  int idx_line = 0;   // current line number
-  double nz, ws, wc;  // placeholder variables
-  double entry;       // data entry (per column per row)
-  while (std::getline(fin, line_str)) {  // std::string line_str;
-    // Terminate at the end of file.
-    if (!fin) {break;}
-
-    // Skip empty lines or comment lines.
-    if (line_str.empty() || line_str[0] == '#') {continue;}
-
-    // Extract row entries.
-    std::vector<double> row;
-
-    std::stringstream ss(
-      line_str, std::ios_base::out | std::ios_base::in | std::ios_base::binary
-    );
-    while (ss >> entry) {row.push_back(entry);}
-
-    // Add the current line as a particle.
-    this->pdata[idx_line].pos[0] = row[name_indices[0]];  // x
-    this->pdata[idx_line].pos[1] = row[name_indices[1]];  // y
-    this->pdata[idx_line].pos[2] = row[name_indices[2]];  // z
-
-    if (name_indices[3] != -1) {
-      nz = row[name_indices[3]];
-    } else {
-      nz = nz_box_default;  // default value
+    // Set particle data.
+    double nz_box_default = 0.;
+    if (volume > 0.) {
+      nz_box_default = this->ntotal / volume;
     }
 
-    if (name_indices[4] != -1) {
-      ws = row[name_indices[4]];
-    } else {
-      ws = 1.;  // default value
+    fin.open(catalogue_filepath.c_str(), std::ios::in);
+
+    int idx_line = 0;   // current line number
+    double nz, ws, wc;  // placeholder variables
+    double entry;       // data entry (per column per row)
+    while (std::getline(fin, line_str)) {  // std::string line_str;
+      // Terminate at the end of file.
+      if (!fin) {break;}
+
+      // Skip empty lines or comment lines.
+      if (line_str.empty() || line_str[0] == '#') {continue;}
+
+      // Extract row entries.
+      std::vector<double> row;
+
+      std::stringstream ss(
+        line_str, std::ios_base::out | std::ios_base::in | std::ios_base::binary
+      );
+      while (ss >> entry) {row.push_back(entry);}
+
+      // Add the current line as a particle.
+      this->pdata[idx_line].pos[0] = row[name_indices[0]];  // x
+      this->pdata[idx_line].pos[1] = row[name_indices[1]];  // y
+      this->pdata[idx_line].pos[2] = row[name_indices[2]];  // z
+
+      if (name_indices[3] != -1) {
+        nz = row[name_indices[3]];
+      } else {
+        nz = nz_box_default;  // default value
+      }
+
+      if (name_indices[4] != -1) {
+        ws = row[name_indices[4]];
+      } else {
+        ws = 1.;  // default value
+      }
+
+      if (name_indices[5] != -1) {
+        wc = row[name_indices[5]];
+      } else {
+        wc = 1.;  // default value
+      }
+
+      this->pdata[idx_line].nz = nz;
+      this->pdata[idx_line].ws = ws;
+      this->pdata[idx_line].wc = wc;
+      this->pdata[idx_line].w = ws * wc;
+
+      idx_line++;
     }
 
-    if (name_indices[5] != -1) {
-      wc = row[name_indices[5]];
-    } else {
-      wc = 1.;  // default value
-    }
-
-    this->pdata[idx_line].nz = nz;
-    this->pdata[idx_line].ws = ws;
-    this->pdata[idx_line].wc = wc;
-    this->pdata[idx_line].w = ws * wc;
-
-    idx_line++;
+    fin.close();
   }
-
-  fin.close();
 
   // ---------------------------------------------------------------------
   // Catalogue properties

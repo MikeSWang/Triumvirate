@@ -109,6 +109,15 @@ unexport useomp
 endif  # useomp == (true|1)
 endif  # useomp
 
+# HDF5: enabled with ``usehdf5=(true|1)``; disabled otherwise
+ifdef usehdf5
+ifeq ($(strip ${usehdf5}), $(filter $(strip ${usehdf5}), true 1))
+usehdf5 := true
+else   # usehdf5 != (true|1)
+unexport usehdf5
+endif  # usehdf5 == (true|1)
+endif  # usehdf5
+
 # Visual display: enabled with ``usedisp=(true|1)``; disabled otherwise
 ifdef usedisp
 ifeq ($(strip ${usedisp}), $(filter $(strip ${usedisp}), true 1))
@@ -207,6 +216,11 @@ RM ?= rm -f
 # -- Dependencies --------------------------------------------------------
 
 DEPDS := gsl fftw3
+
+# If using HDF5, add its dependencies.
+ifdef usehdf5
+DEPDS += hdf5
+endif  # usehdf5
 
 # Dependencies are searched for by `pkg-config`.  Ensure the set-up of
 # `pkg-config` matches that of the dependencies (e.g. both are installed
@@ -545,6 +559,12 @@ ifdef usecuda
 CPPFLAGS += -DTRV_USE_CUDA
 endif  # !usehip && usecuda
 endif  # usehip
+
+# HDF5
+ifdef usehdf5
+CPPFLAGS += -DTRV_USE_H5
+INCLUDES += -I${DIR_DEPDSMOD}/highfive/include
+endif  # usehdf5
 
 # Visual display
 ifdef usedisp
