@@ -115,7 +115,7 @@ second line as shown above.
 > need to append the header and library paths to ``DEP_INCLUDES`` and
 > ``DEP_LDFLAGS`` in the default [``Makefile``](Makefile) (located at the
 > repository directory root). See the [Installation](
-> https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
+> https://triumvirate.readthedocs.io/en/latest/installation.html#cuda-support)
 > page in the documentation for more details.
 
 > [!TIP]
