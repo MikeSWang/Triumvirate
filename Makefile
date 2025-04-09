@@ -264,6 +264,11 @@ CXXFLAGS += -std=c++17 -Wall -O3 ${DEPD_CXXFLAGS}
 endif  # !usehip && usecuda
 endif  # usehip
 
+ifeq ('$(findstring clang++,$(CXX))', '')
+else
+CXXFLAGS += -Wno-vla-cxx-extension
+endif
+
 ifdef usehip
 LDFLAGS += \
 	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEPD_LDFLAGS})) \
