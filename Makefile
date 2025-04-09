@@ -205,39 +205,39 @@ RM ?= rm -f
 
 # -- Dependencies --------------------------------------------------------
 
-DEPS := gsl fftw3
+DEPDS := gsl fftw3
 
 # Dependencies are searched for by `pkg-config`.  Ensure the set-up of
 # `pkg-config` matches that of the dependencies (e.g. both are installed
 # by Conda in the same Conda environment).
-DEP_INCLUDES := $(shell pkg-config --silence-errors --cflags-only-I ${DEPS})
-DEP_CXXFLAGS := $(shell pkg-config --silence-errors --cflags-only-other ${DEPS})
-DEP_LDFLAGS := $(shell pkg-config --silence-errors --libs-only-other --libs-only-L ${DEPS})
-DEP_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPS})
+DEPD_INCLUDES := $(shell pkg-config --silence-errors --cflags-only-I ${DEPDS})
+DEPD_CXXFLAGS := $(shell pkg-config --silence-errors --cflags-only-other ${DEPDS})
+DEPD_LDFLAGS := $(shell pkg-config --silence-errors --libs-only-other --libs-only-L ${DEPDS})
+DEPD_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPDS})
 
 # If using cuFFT/hipFFT, add its dependencies.
 ifdef usehip
-DEP_LDLIBS += -lhipfft
+DEPD_LDLIBS += -lhipfft
 else   # !usehip
 ifdef usecuda
-DEP_LDLIBS += -lcufft # -lcufftw
+DEPD_LDLIBS += -lcufft # -lcufftw
 endif  # !usehip && usecuda
 endif  # usehip
 
 
 # -- Dependencies (test) -------------------------------------------------
 
-DEPS_TEST := gtest
+DEPDS_TEST := gtest
 
-DEP_TEST_INCLUDES := $(shell pkg-config --silence-errors --cflags-only-I ${DEPS_TEST})
-DEP_TEST_CXXFLAGS := $(shell pkg-config --silence-errors --cflags-only-other ${DEPS_TEST})
-DEP_TEST_LDFLAGS := $(shell pkg-config --silence-errors --libs-only-other --libs-only-L ${DEPS_TEST})
-DEP_TEST_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPS_TEST})
+DEPD_TEST_INCLUDES := $(shell pkg-config --silence-errors --cflags-only-I ${DEPDS_TEST})
+DEPD_TEST_CXXFLAGS := $(shell pkg-config --silence-errors --cflags-only-other ${DEPDS_TEST})
+DEPD_TEST_LDFLAGS := $(shell pkg-config --silence-errors --libs-only-other --libs-only-L ${DEPDS_TEST})
+DEPD_TEST_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPDS_TEST})
 
 
 # -- Options -------------------------------------------------------------
 
-INCLUDES += -I${DIR_PKG_INCLUDE} ${DEP_INCLUDES}
+INCLUDES += -I${DIR_PKG_INCLUDE} ${DEPD_INCLUDES}
 
 ifdef usehip
 ifdef usecuda
@@ -251,62 +251,62 @@ CPPFLAGS += -MMD -MP -D__TRV_VERSION__=\"${PKG_VER}\" -D__TZOFFSET__=\"$(shell d
 
 ifdef usehip
 ifdef usecuda
-CXXFLAGS += -std=c++17 -Xcompiler -Wall,-O3 ${DEP_CXXFLAGS}
+CXXFLAGS += -std=c++17 -Xcompiler -Wall,-O3 ${DEPD_CXXFLAGS}
 else   # usehip && !usecuda
-CXXFLAGS += -std=c++17 -Wall -Wno-vla-cxx-extension -O3 ${DEP_CXXFLAGS}
+CXXFLAGS += -std=c++17 -Wall -Wno-vla-cxx-extension -O3 ${DEPD_CXXFLAGS}
 endif  # usehip && usecuda
 else   # !usehip
 ifdef usecuda
-CXXFLAGS += -std=c++17 -Xcompiler -Wall,-O3 ${DEP_CXXFLAGS}
+CXXFLAGS += -std=c++17 -Xcompiler -Wall,-O3 ${DEPD_CXXFLAGS}
 else   # !usehip && !usecuda
-CXXFLAGS += -std=c++17 -Wall -O3 ${DEP_CXXFLAGS}
+CXXFLAGS += -std=c++17 -Wall -O3 ${DEPD_CXXFLAGS}
 endif  # !usehip && usecuda
 endif  # usehip
 
 ifdef usehip
 LDFLAGS += \
-	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \
-	${DEP_LDFLAGS}
+	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEPD_LDFLAGS})) \
+	${DEPD_LDFLAGS}
 else   # !usehip
 ifdef usecuda
 LDFLAGS += \
-	$(addprefix -Xlinker -rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \
-	${DEP_LDFLAGS}
+	$(addprefix -Xlinker -rpath${COMMA},$(patsubst -L%,%,${DEPD_LDFLAGS})) \
+	${DEPD_LDFLAGS}
 else   # !usehip && !usecuda
 LDFLAGS += \
-	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_LDFLAGS})) \
-	${DEP_LDFLAGS}
+	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEPD_LDFLAGS})) \
+	${DEPD_LDFLAGS}
 endif  # !usehip && usecuda
 endif  # usehip
 
-LDLIBS += $(if ${DEP_LDLIBS},${DEP_LDLIBS},-lgsl -lgslcblas -lfftw3 -lm)
+LDLIBS += $(if ${DEPD_LDLIBS},${DEPD_LDLIBS},-lgsl -lgslcblas -lfftw3 -lm)
 
 PIPOPTS ?= --user
 
 
 # -- Options (test) ------------------------------------------------------
 
-INCLUDES_TEST = ${INCLUDES} ${DEP_TEST_INCLUDES}
-CXXFLAGS_TEST = ${CXXFLAGS} ${DEP_TEST_CXXFLAGS}
+INCLUDES_TEST = ${INCLUDES} ${DEPD_TEST_INCLUDES}
+CXXFLAGS_TEST = ${CXXFLAGS} ${DEPD_TEST_CXXFLAGS}
 
 ifdef usehip
 LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} \
-	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_TEST_LDFLAGS})) \
-	${DEP_TEST_LDFLAGS}
+	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEPD_TEST_LDFLAGS})) \
+	${DEPD_TEST_LDFLAGS}
 else   # !usehip
 ifdef usecuda
 LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} \
-	$(addprefix -Xlinker -rpath${COMMA},$(patsubst -L%,%,${DEP_TEST_LDFLAGS})) \
-	${DEP_TEST_LDFLAGS}
+	$(addprefix -Xlinker -rpath${COMMA},$(patsubst -L%,%,${DEPD_TEST_LDFLAGS})) \
+	${DEPD_TEST_LDFLAGS}
 else   # !usehip && !usecuda
 LDFLAGS_TEST = -L${DIR_BUILDLIB} ${LDFLAGS} \
-	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEP_TEST_LDFLAGS})) \
-	${DEP_TEST_LDFLAGS}
+	$(addprefix -Wl${COMMA}-rpath${COMMA},$(patsubst -L%,%,${DEPD_TEST_LDFLAGS})) \
+	${DEPD_TEST_LDFLAGS}
 endif  # !usehip && usecuda
 endif  # usehip
 
 LDLIBS_TEST = -l${LIBNAME} ${LDLIBS} \
-	$(if ${DEP_TEST_LDLIBS},${DEP_TEST_LDLIBS},-lgtest -lpthread)
+	$(if ${DEPD_TEST_LDLIBS},${DEPD_TEST_LDLIBS},-lgtest -lpthread)
 
 
 # -- Environment ---------------------------------------------------------
