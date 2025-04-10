@@ -84,6 +84,10 @@ ParameterSet::ParameterSet(const ParameterSet& other) {
   this->save_binned_vectors = other.save_binned_vectors;
   this->verbose = other.verbose;
   this->progbar = other.progbar;
+
+  // Copy private parameters.
+  this->data_catalogue_files = other.data_catalogue_files;
+  this->rand_catalogue_files = other.rand_catalogue_files;
 }
 
 int ParameterSet::read_from_file(char* parameter_filepath) {
@@ -472,35 +476,128 @@ int ParameterSet::validate(bool init) {
   }
   trvs::expand_envar_in_path(this->catalogue_dir);
   trvs::expand_envar_in_path(this->measurement_dir);
+
+  // Parse catalogue filenames by delimiter.
+  if (
+    this->data_catalogue_file.find_first_not_of(" \t\n\r\v\f")
+    != std::string::npos
+  ) {
+    if (!trvs::has_extension(this->data_catalogue_file, this->fn_delimiter)) {
+      this->data_catalogue_file += this->fn_delimiter;  // transmutation
+    }
+  }
+  if (
+    this->rand_catalogue_file.find_first_not_of(" \t\n\r\v\f")
+    != std::string::npos
+  ) {
+    if (!trvs::has_extension(this->rand_catalogue_file, this->fn_delimiter)) {
+      this->rand_catalogue_file += this->fn_delimiter;  // transmutation
+    }
+  }
+  std::printf(
+    "data_catalogue_file = '%s'\n", this->data_catalogue_file.c_str()
+  );
+
+  this->data_catalogue_files.clear();
+  this->rand_catalogue_files.clear();
+
+  std::string data_ctlg_files, rand_ctlg_files;
+  std::string data_ctlg_file_, rand_ctlg_file_;
+  size_t dlpos = 0;
+
   if (this->catalogue_type == "survey") {
     if (this->data_catalogue_file != "") {
-      if (this->data_catalogue_file.rfind("/", 0) != 0 && init) {
-        this->data_catalogue_file = this->catalogue_dir
-          + this->data_catalogue_file;
-      }  // transmutation
+      data_ctlg_files = this->data_catalogue_file;
+      dlpos = 0;
+      while (
+        (dlpos = data_ctlg_files.find(this->fn_delimiter)) != std::string::npos
+      ) {
+        data_ctlg_file_ = data_ctlg_files.substr(0, dlpos);
+        data_ctlg_files.erase(0, dlpos + this->fn_delimiter.length());
+        if (data_ctlg_file_.rfind("/", 0) != 0 && init) {
+          data_ctlg_file_ = this->catalogue_dir + data_ctlg_file_;
+        }  // transmutation
+        trvs::expand_envar_in_path(data_ctlg_file_);
+        this->data_catalogue_files.push_back(data_ctlg_file_);
+      }
+      // if (this->data_catalogue_files.empty()) {
+      //   if (this->data_catalogue_file.rfind("/", 0) != 0 && init) {
+      //     this->data_catalogue_file =
+      //       this->catalogue_dir + this->data_catalogue_file;
+      //   }  // transmutation
+      //   this->data_catalogue_files.push_back(this->data_catalogue_file);
+      // }
     }
     if (this->rand_catalogue_file != "") {
-      if (this->rand_catalogue_file.rfind("/", 0) != 0 && init) {
-        this->rand_catalogue_file = this->catalogue_dir
-          + this->rand_catalogue_file;
-      }  // transmutation
+      rand_ctlg_files = this->rand_catalogue_file;
+      dlpos = 0;
+      while (
+        (dlpos = rand_ctlg_files.find(this->fn_delimiter)) != std::string::npos
+      ) {
+        rand_ctlg_file_ = rand_ctlg_files.substr(0, dlpos);
+        rand_ctlg_files.erase(0, dlpos + this->fn_delimiter.length());
+        if (rand_ctlg_file_.rfind("/", 0) != 0 && init) {
+          rand_ctlg_file_ = this->catalogue_dir + rand_ctlg_file_;
+        }  // transmutation
+        trvs::expand_envar_in_path(rand_ctlg_file_);
+        this->rand_catalogue_files.push_back(rand_ctlg_file_);
+      }
+      // if (this->rand_catalogue_files.empty()) {
+      //   if (this->rand_catalogue_file.rfind("/", 0) != 0 && init) {
+      //     this->rand_catalogue_file =
+      //       this->catalogue_dir + this->rand_catalogue_file;
+      //   }  // transmutation
+      //   this->rand_catalogue_files.push_back(this->rand_catalogue_file);
+      // }
     }
   } else
   if (this->catalogue_type == "random") {
     this->data_catalogue_file = "";  // transmutation
     if (this->rand_catalogue_file != "") {
-      if (this->rand_catalogue_file.rfind("/", 0) != 0 && init) {
-        this->rand_catalogue_file = this->catalogue_dir
-          + this->rand_catalogue_file;
-      }  // transmutation
+      rand_ctlg_files = this->rand_catalogue_file;
+      dlpos = 0;
+      while (
+        (dlpos = rand_ctlg_files.find(this->fn_delimiter)) != std::string::npos
+      ) {
+        rand_ctlg_file_ = rand_ctlg_files.substr(0, dlpos);
+        rand_ctlg_files.erase(0, dlpos + this->fn_delimiter.length());
+        if (rand_ctlg_file_.rfind("/", 0) != 0 && init) {
+          rand_ctlg_file_ = this->catalogue_dir + rand_ctlg_file_;
+        }  // transmutation
+        trvs::expand_envar_in_path(rand_ctlg_file_);
+        this->rand_catalogue_files.push_back(rand_ctlg_file_);
+      }
+      // if (this->rand_catalogue_files.empty()) {
+      //   if (this->rand_catalogue_file.rfind("/", 0) != 0 && init) {
+      //     this->rand_catalogue_file =
+      //       this->catalogue_dir + this->rand_catalogue_file;
+      //   }  // transmutation
+      //   this->rand_catalogue_files.push_back(this->rand_catalogue_file);
+      // }
     }
   } else
   if (this->catalogue_type == "sim") {
     if (this->data_catalogue_file != "") {
-      if (this->data_catalogue_file.rfind("/", 0) != 0 and init) {
-        this->data_catalogue_file = this->catalogue_dir
-          + this->data_catalogue_file;
-      }  // transmutation
+      data_ctlg_files = this->data_catalogue_file;
+      dlpos = 0;
+      while (
+        (dlpos = data_ctlg_files.find(this->fn_delimiter)) != std::string::npos
+      ) {
+        data_ctlg_file_ = data_ctlg_files.substr(0, dlpos);
+        data_ctlg_files.erase(0, dlpos + this->fn_delimiter.length());
+        if (data_ctlg_file_.rfind("/", 0) != 0 && init) {
+          data_ctlg_file_ = this->catalogue_dir + data_ctlg_file_;
+        }  // transmutation
+        trvs::expand_envar_in_path(data_ctlg_file_);
+        this->data_catalogue_files.push_back(data_ctlg_file_);
+      }
+      // if (this->data_catalogue_files.empty()) {
+      //   if (this->data_catalogue_file.rfind("/", 0) != 0 && init) {
+      //     this->data_catalogue_file =
+      //       this->catalogue_dir + this->data_catalogue_file;
+      //   }  // transmutation
+      //   this->data_catalogue_files.push_back(this->data_catalogue_file);
+      // }
     }
     this->rand_catalogue_file = "";  // transmutation
   } else
@@ -522,8 +619,12 @@ int ParameterSet::validate(bool init) {
     );
 #endif  // !TRV_EXTCALL
   }
-  trvs::expand_envar_in_path(this->data_catalogue_file);
-  trvs::expand_envar_in_path(this->rand_catalogue_file);
+  this->data_catalogue_file = trvs::join_strings(
+    this->data_catalogue_files, this->fn_delimiter
+  );
+  this->rand_catalogue_file = trvs::join_strings(
+    this->rand_catalogue_files, this->fn_delimiter
+  );
 
   if (!(this->alignment == "centre" || this->alignment == "pad")) {
     if (trvs::currTask == 0) {
