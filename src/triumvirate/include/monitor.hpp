@@ -208,7 +208,7 @@ namespace sys {
  *
  * @param fname File name.
  * @param fext File extension (with the dot).
- * @returns { @c true , @c false }
+ * @returns {`true`, `false`}
  */
 bool has_extension(const std::string& fname, const std::string& fext);
 
@@ -360,21 +360,21 @@ int get_gpu_count(bool sys = false);
 /**
  * @brief Get the indices of GPUs available for use.
  *
- * @returns std::vector<int> GPU indices.
+ * @returns GPU indices.
  */
 std::vector<int> get_gpu_ids();
 
 /**
  * @brief Check if GPUs are available in the system.
  *
- * @returns {true, false}
+ * @returns {`true`, `false`}
  */
 bool is_gpu_available();
 
 /**
  * @brief Check if GPU mode is enabled.
  *
- * @returns {true, false}
+ * @returns {`true`, `false`}
  *
  * @note This function checks if at least one GPU is available for use.
  *       It also checks for any override by the environmental
@@ -386,7 +386,7 @@ bool is_gpu_enabled();
 /**
  * @brief Check if in single-GPU mode.
  *
- * @returns {true, false}
+ * @returns {`true`, `false`}
  */
 bool is_gpu_single();
 
@@ -540,10 +540,10 @@ class Logger {
 /**
  * @brief Check if the program @c stdout is colourable.
  *
- * @returns true If the environmental variable @c TRV_INTERACTIVE is set
- *               to @c "true" or @c "yes" or @c "1" or @c "on" and
- *               @c TERM contains @c "color".
- * @returns false Otherwise.
+ * @returns {`true`, `false`}
+ * @note `true` if the environmental variable @c TRV_INTERACTIVE is set
+ *       to @c "true" or @c "yes" or @c "1" or @c "on" and @c TERM
+ *       contains @c "color", or `false` otherwise.
  */
 bool is_colourable();
 

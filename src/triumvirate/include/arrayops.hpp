@@ -115,8 +115,7 @@ enum ExtrapOption {
  * @param val Value to check against.
  * @param atol Absolute tolerance (default is 1.e-8).
  * @param rtol Relative tolerance (default is 1.e-5).
- * @returns @c true if all elements are close to @p val,
- *          @c false otherwise.
+ * @returns {`true`, `false`}
  */
 template <typename T>
 bool check_isclose(

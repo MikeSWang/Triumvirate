@@ -51,7 +51,7 @@ namespace sys {
  * @brief Check if a file path is set.
  *
  * @param pathstr File path string.
- * @returns { @c true , @c false }
+ * @returns {`true`, `false`}
  */
 bool if_filepath_is_set(const std::string& pathstr);
 

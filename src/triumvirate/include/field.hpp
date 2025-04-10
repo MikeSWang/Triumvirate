@@ -822,7 +822,7 @@ class FieldStats {
    *
    * @param field_a First field.
    * @param field_b Second field.
-   * @returns { @c true , @c false }
+   * @returns {`true`, `false`}
    */
   PURE bool if_fields_compatible(MeshField& field_a, MeshField& field_b);
 
