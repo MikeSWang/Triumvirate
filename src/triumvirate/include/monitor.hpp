@@ -54,6 +54,7 @@
 #include <cstring>
 #include <iostream>
 #include <regex>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -211,6 +212,18 @@ namespace sys {
  * @returns {`true`, `false`}
  */
 bool has_extension(const std::string& fname, const std::string& fext);
+
+/**
+ * @brief Join a vector of strings with a delimiter.
+ *
+ * @param strings A vector of strings.
+ * @param delimiter Delimiter string.
+ * @return std::string Joined string.
+ */
+std::string join_strings(
+  const std::vector<std::string>& strings,
+  const std::string& delimiter
+);
 
 
 // ***********************************************************************

@@ -42,6 +42,20 @@ bool has_extension(const std::string& fname, const std::string& fext) {
   return false;
 }
 
+std::string join_strings(
+  const std::vector<std::string>& strings,
+  const std::string& delimiter
+) {
+  std::ostringstream oss;
+  for (auto it = strings.begin(); it != strings.end(); ++it) {
+      oss << *it;
+      if (std::next(it) != strings.end()) {
+          oss << delimiter;
+      }
+  }
+  return oss.str();
+}
+
 
 // ***********************************************************************
 // Program tracking
