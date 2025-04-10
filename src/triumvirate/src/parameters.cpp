@@ -497,9 +497,6 @@ int ParameterSet::validate(bool init) {
       this->rand_catalogue_file += trvs::fn_delimiter;  // transmutation
     }
   }
-  std::printf(
-    "data_catalogue_file = '%s'\n", this->data_catalogue_file.c_str()
-  );
 
   this->data_catalogue_files.clear();
   this->rand_catalogue_files.clear();
