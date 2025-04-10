@@ -107,6 +107,7 @@
 #ifndef __TZOFFSET__
 #define __TZOFFSET__ "+0000"
 #endif  // !__TZOFFSET__
+/// @endcond
 
 #if defined(TRV_USE_HIP)
 #ifndef HIP_EXEC
@@ -195,7 +196,6 @@
 #endif // !CUFFT_EXEC
 
 #endif  // TRV_USE_HIP
-/// @endcond
 
 namespace trv {
 namespace sys {

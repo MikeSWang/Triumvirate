@@ -60,11 +60,13 @@
 #include "io.hpp"
 #include "particles.hpp"
 
+/// @cond DOXYGEN_DOC_MACROS
 #ifdef __GNUC__
 #define PURE __attribute__((pure))
 #else
 #define PURE
 #endif
+/// @endcond
 
 namespace trvm = trv::maths;
 

@@ -53,11 +53,13 @@
 #include "field.hpp"
 #include "twopt.hpp"
 
+/// @cond DOXYGEN_DOC_MACROS
 #ifdef __GNUC__
 #define PURE __attribute__((pure))
 #else
 #define PURE
 #endif
+/// @endcond
 
 namespace trv {
 
