@@ -172,80 +172,99 @@ int ParticleCatalogue::load_catalogue_file(
   // Data reading
   // ---------------------------------------------------------------------
 
+  std::vector<std::string> catalogue_subfilepaths = trvs::split_string(
+    catalogue_filepath, trvs::fn_delimiter
+  );
+
   if (is_hdf5) {
 #ifdef TRV_USE_H5
     try {
-      HighFive::File ctlg_file(catalogue_filepath, HighFive::File::ReadOnly);
+      int nentry = 0;
+      std::vector<std::vector<double>> ctlg_data;
+      for (const auto& ctlg_subfilepath : catalogue_subfilepaths) {
+        HighFive::File ctlg_subfile(
+          ctlg_subfilepath, HighFive::File::ReadOnly
+        );
 
-      // Get dataset (assumed to be the first) from the file.
-      std::string ctlg_dset_name;
-      if (ctlg_file.listObjectNames().empty()) {
-        if (trvs::currTask == 0) {
-          trvs::logger.error(
+        // Get dataset (assumed to be the first) from the file.
+        std::string ctlg_dset_name;
+        if (ctlg_subfile.listObjectNames().empty()) {
+          if (trvs::currTask == 0) {
+            trvs::logger.error(
+              "No datasets found in HDF5 file: %s",
+              catalogue_filepath.c_str()
+            );
+          }
+          throw trvs::InvalidDataError(
             "No datasets found in HDF5 file: %s",
             catalogue_filepath.c_str()
           );
+        } else {
+          ctlg_dset_name = ctlg_subfile.listObjectNames()[0];
         }
-        throw trvs::InvalidDataError(
-          "No datasets found in HDF5 file: %s",
-          catalogue_filepath.c_str()
-        );
-      } else {
-        ctlg_dset_name = ctlg_file.listObjectNames()[0];
-      }
 
-      HighFive::DataSet ctlg_dset = ctlg_file.getDataSet(ctlg_dset_name);
+        HighFive::DataSet ctlg_dset = ctlg_subfile.getDataSet(ctlg_dset_name);
 
-      // Get dataset data type, which must be float or double and the same
-      // for all columns.
-      HighFive::DataType ctlg_dtype = ctlg_dset.getDataType();
-      if (
-        ctlg_dtype != HighFive::create_datatype<float>()
-        && ctlg_dtype != HighFive::create_datatype<double>()
-      ) {
-        if (trvs::currTask == 0) {
-          trvs::logger.error(
+        // Get dataset data type, which must be float or double and the same
+        // for all columns.
+        HighFive::DataType ctlg_dtype = ctlg_dset.getDataType();
+        if (
+          ctlg_dtype != HighFive::create_datatype<float>()
+          && ctlg_dtype != HighFive::create_datatype<double>()
+        ) {
+          if (trvs::currTask == 0) {
+            trvs::logger.error(
+              "Unsupported or mixed data type in HDF5 file: %s",
+              catalogue_filepath.c_str()
+            );
+          }
+          throw trvs::InvalidDataError(
             "Unsupported or mixed data type in HDF5 file: %s",
             catalogue_filepath.c_str()
           );
         }
-        throw trvs::InvalidDataError(
-          "Unsupported or mixed data type in HDF5 file: %s",
-          catalogue_filepath.c_str()
-        );
-      }
 
-      // Get dataset column names and indices.
-      std::vector<std::string> ctlg_colnames;
-      if (ctlg_dset.hasAttribute("catalogue_columns")) {
-        ctlg_dset.getAttribute("catalogue_columns").read(ctlg_colnames);
-        if (trvs::currTask == 0) {
-          trvs::logger.info(
-            "Catalogue column names read from HDF5 file: %s",
-            catalogue_filepath.c_str()
-          );
-        }
-        for (std::size_t iname = 0; iname < names_ordered.size(); iname++) {
-          std::size_t col_idx = static_cast<std::size_t>(std::distance(
-            ctlg_colnames.begin(),
-            std::find(
-              ctlg_colnames.begin(), ctlg_colnames.end(), names_ordered[iname]
-            )
-          ));
-          if (col_idx < ctlg_colnames.size()) {
-            name_indices[iname] = col_idx;
-          } else {
-            name_indices[iname] = -1;
+        // Get dataset column names and indices.
+        std::vector<std::string> ctlg_colnames;
+        if (ctlg_dset.hasAttribute("catalogue_columns")) {
+          ctlg_dset.getAttribute("catalogue_columns").read(ctlg_colnames);
+          if (trvs::currTask == 0) {
+            trvs::logger.info(
+              "Catalogue column names read from HDF5 file: %s",
+              catalogue_filepath.c_str()
+            );
+          }
+          for (std::size_t iname = 0; iname < names_ordered.size(); iname++) {
+            std::size_t col_idx = static_cast<std::size_t>(std::distance(
+              ctlg_colnames.begin(),
+              std::find(
+                ctlg_colnames.begin(), ctlg_colnames.end(), names_ordered[iname]
+              )
+            ));
+            if (col_idx < ctlg_colnames.size()) {
+              name_indices[iname] = col_idx;
+            } else {
+              name_indices[iname] = -1;
+            }
           }
         }
+
+        // Get dataset dimensions.
+        std::vector<std::size_t> ctlg_dims = ctlg_dset.getDimensions();
+        int num_rows = static_cast<int>(ctlg_dims[0]);
+
+        // Get dataset data.
+        std::vector<std::vector<double>> ctlg_subdata(num_rows);
+        ctlg_dset.read(ctlg_subdata);
+
+        ctlg_data.insert(
+          ctlg_data.end(), ctlg_subdata.begin(), ctlg_subdata.end()
+        );
+        nentry += num_rows;
       }
 
-      // Get dataset dimensions.
-      std::vector<std::size_t> ctlg_dims = ctlg_dset.getDimensions();
-      int num_rows = static_cast<int>(ctlg_dims[0]);
-
       // Initialise particle data.
-      this->initialise_particles(num_rows);
+      this->initialise_particles(nentry);
 
       // Set particle data.
       // Check for the 'nz' column.
@@ -263,9 +282,6 @@ int ParticleCatalogue::load_catalogue_file(
       if (volume > 0.) {
         nz_box_default = this->ntotal / volume;
       }
-
-      std::vector<std::vector<double>> ctlg_data;
-      ctlg_dset.read(ctlg_data);
 
       int idx_row = 0;    // current row number
       double nz, ws, wc;  // placeholder variables
