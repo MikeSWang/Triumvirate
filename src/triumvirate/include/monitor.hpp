@@ -218,11 +218,21 @@ bool has_extension(const std::string& fname, const std::string& fext);
  *
  * @param strings A vector of strings.
  * @param delimiter Delimiter string.
- * @return std::string Joined string.
+ * @returns Joined string.
  */
 std::string join_strings(
-  const std::vector<std::string>& strings,
-  const std::string& delimiter
+  const std::vector<std::string>& strings, const std::string& delimiter
+);
+
+/**
+ * @brief Split a string into a vector of strings.
+ *
+ * @param str String to be split.
+ * @param delimiter Delimiter string.
+ * @returns Vector of strings.
+ */
+std::vector<std::string> split_string(
+  const std::string& str, const std::string& delimiter
 );
 
 

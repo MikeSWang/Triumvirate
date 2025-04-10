@@ -56,6 +56,34 @@ std::string join_strings(
   return oss.str();
 }
 
+std::vector<std::string> split_string(
+  const std::string& str,
+  const std::string& delimiter
+) {
+  if (str.empty()) {
+    return {};
+  }
+  if (delimiter.empty()) {
+    return {str};
+  }
+
+  std::string fullstr = {str};
+  std::string substr;
+  std::size_t dlpos = 0;
+
+  std::vector<std::string> strings;
+  while ((dlpos = fullstr.find(delimiter)) != std::string::npos) {
+    substr = fullstr.substr(0, dlpos);
+    fullstr.erase(0, dlpos + delimiter.length());
+    strings.push_back(substr);
+  }
+  if (!fullstr.empty()) {
+    strings.push_back(fullstr);
+  }
+
+  return strings;
+}
+
 
 // ***********************************************************************
 // Program tracking
