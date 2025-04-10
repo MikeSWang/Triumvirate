@@ -416,7 +416,7 @@ ifdef DIRAC_HOST
 	endif  # usehip
 
 	ifdef usehip
-	HIPCLANG_PATH := /opt/rocm-6.3.2/lib/llvm/
+	HIPCLANG_PATH := /opt/rocm-6.3.2/lib/llvm
 	INCLUDES += -I${HIPCLANG_PATH}/include
 	LDFLAGS += -Wl,-rpath,${HIPCLANG_PATH}/lib -L${HIPCLANG_PATH}/lib
 	endif  # usehip
