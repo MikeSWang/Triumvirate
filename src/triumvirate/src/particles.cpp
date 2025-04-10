@@ -323,39 +323,44 @@ int ParticleCatalogue::load_catalogue_file(
     }
 #endif  // TRV_USE_H5
   } else {
-    std::ifstream fin;
+    int nentry = 0;
+    for (const auto& ctlg_subfilepath : catalogue_subfilepaths) {
+      std::ifstream fin;
 
-    fin.open(catalogue_filepath.c_str(), std::ios::in);
+      fin.open(ctlg_subfilepath.c_str(), std::ios::in);
 
-    if (fin.fail()) {
-      fin.close();
-      if (trvs::currTask == 0) {
-        trvs::logger.error(
-          "Failed to open file: %s", catalogue_filepath.c_str()
+      if (fin.fail()) {
+        fin.close();
+        if (trvs::currTask == 0) {
+          trvs::logger.error(
+            "Failed to open file: %s", ctlg_subfilepath.c_str()
+          );
+        }
+        throw trvs::IOError(
+          "Failed to open file: %s", ctlg_subfilepath.c_str()
         );
       }
-      throw trvs::IOError(
-        "Failed to open file: %s", catalogue_filepath.c_str()
-      );
+
+      // Initialise particle data.
+      int num_lines = 0;
+      std::string line_str;
+      while (std::getline(fin, line_str)) {
+        // Terminate at the end of file.
+        if (!fin) {break;}
+
+        // Skip empty lines or comment lines.
+        if (line_str.empty() || line_str[0] == '#') {continue;}
+
+        // Count the line as valid otherwise.
+        num_lines++;
+      }
+
+      fin.close();
+
+      nentry += num_lines;
     }
 
-    // Initialise particle data.
-    int num_lines = 0;
-    std::string line_str;
-    while (std::getline(fin, line_str)) {
-      // Terminate at the end of file.
-      if (!fin) {break;}
-
-      // Skip empty lines or comment lines.
-      if (line_str.empty() || line_str[0] == '#') {continue;}
-
-      // Count the line as valid otherwise.
-      num_lines++;
-    }
-
-    fin.close();
-
-    this->initialise_particles(num_lines);
+    this->initialise_particles(nentry);
 
     // Set particle data.
     // Check for the 'nz' column.
@@ -374,58 +379,63 @@ int ParticleCatalogue::load_catalogue_file(
       nz_box_default = this->ntotal / volume;
     }
 
-    fin.open(catalogue_filepath.c_str(), std::ios::in);
+    int idx_entry = 0;     // current entry number
+    std::string entry_str;  // current line string
+    for (const auto& ctlg_subfilepath : catalogue_subfilepaths) {
+      std::ifstream fin;
+      fin.open(ctlg_subfilepath.c_str(), std::ios::in);
 
-    int idx_line = 0;   // current line number
-    double nz, ws, wc;  // placeholder variables
-    double entry;       // data entry (per column per row)
-    while (std::getline(fin, line_str)) {  // std::string line_str;
-      // Terminate at the end of file.
-      if (!fin) {break;}
+      double nz, ws, wc;  // placeholder variables
+      double entry;       // data entry (per column per row)
+      while (std::getline(fin, entry_str)) {
+        // Terminate at the end of file.
+        if (!fin) {break;}
 
-      // Skip empty lines or comment lines.
-      if (line_str.empty() || line_str[0] == '#') {continue;}
+        // Skip empty lines or comment lines.
+        if (entry_str.empty() || entry_str[0] == '#') {continue;}
 
-      // Extract row entries.
-      std::vector<double> row;
+        // Extract row entries.
+        std::vector<double> row;
 
-      std::stringstream ss(
-        line_str, std::ios_base::out | std::ios_base::in | std::ios_base::binary
-      );
-      while (ss >> entry) {row.push_back(entry);}
+        std::stringstream ss(
+          entry_str,
+          std::ios_base::out | std::ios_base::in | std::ios_base::binary
+        );
+        while (ss >> entry) {row.push_back(entry);}
 
-      // Add the current line as a particle.
-      this->pdata[idx_line].pos[0] = row[name_indices[0]];  // x
-      this->pdata[idx_line].pos[1] = row[name_indices[1]];  // y
-      this->pdata[idx_line].pos[2] = row[name_indices[2]];  // z
+        // Add the current line as a particle.
+        this->pdata[idx_entry].pos[0] = row[name_indices[0]];  // x
+        this->pdata[idx_entry].pos[1] = row[name_indices[1]];  // y
+        this->pdata[idx_entry].pos[2] = row[name_indices[2]];  // z
 
-      if (name_indices[3] != -1) {
-        nz = row[name_indices[3]];
-      } else {
-        nz = nz_box_default;  // default value
+        if (name_indices[3] != -1) {
+          nz = row[name_indices[3]];
+        } else {
+          nz = nz_box_default;  // default value
+        }
+
+        if (name_indices[4] != -1) {
+          ws = row[name_indices[4]];
+        } else {
+          ws = 1.;  // default value
+        }
+
+        if (name_indices[5] != -1) {
+          wc = row[name_indices[5]];
+        } else {
+          wc = 1.;  // default value
+        }
+
+        this->pdata[idx_entry].nz = nz;
+        this->pdata[idx_entry].ws = ws;
+        this->pdata[idx_entry].wc = wc;
+        this->pdata[idx_entry].w = ws * wc;
+
+        idx_entry++;
       }
 
-      if (name_indices[4] != -1) {
-        ws = row[name_indices[4]];
-      } else {
-        ws = 1.;  // default value
-      }
-
-      if (name_indices[5] != -1) {
-        wc = row[name_indices[5]];
-      } else {
-        wc = 1.;  // default value
-      }
-
-      this->pdata[idx_line].nz = nz;
-      this->pdata[idx_line].ws = ws;
-      this->pdata[idx_line].wc = wc;
-      this->pdata[idx_line].w = ws * wc;
-
-      idx_line++;
+      fin.close();
     }
-
-    fin.close();
   }
 
   // ---------------------------------------------------------------------
