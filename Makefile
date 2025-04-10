@@ -299,7 +299,15 @@ LDFLAGS += \
 endif  # !usehip && usecuda
 endif  # usehip
 
-LDLIBS += $(if ${DEPD_LDLIBS},${DEPD_LDLIBS},-lgsl -lgslcblas -lfftw3 -lm)
+LDLIBS_CORE := -lgsl -lgslcblas -lfftw3 -lm
+ifdef useomp
+LDLIBS_CORE += -lfftw3_omp
+endif  # useomp
+ifdef usehdf5
+LDLIBS_CORE += -lhdf5
+endif  # usehdf5
+
+LDLIBS += $(if ${DEPD_LDLIBS},${DEPD_LDLIBS},${LDLIBS_CORE})
 
 PIPOPTS ?= --user
 
