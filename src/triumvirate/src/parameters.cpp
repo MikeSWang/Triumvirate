@@ -101,10 +101,13 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   std::ifstream fin(param_filepath.c_str());
 
   // Initialise temporary variables to hold the extracted parameters.
+  // NOTE: Assume file systems allow path character lengths up to 4096,
+  // and up to 64 files of this maximum lengths are stored in the
+  // char arrays.
   char catalogue_dir_[1024] = "";
   char measurement_dir_[1024] = "";
-  char data_catalogue_file_[1024] = "";
-  char rand_catalogue_file_[1024] = "";
+  char data_catalogue_file_[262144] = "";
+  char rand_catalogue_file_[262144] = "";
   char catalogue_columns_[1024] = "";
   char output_tag_[1024] = "";
 
