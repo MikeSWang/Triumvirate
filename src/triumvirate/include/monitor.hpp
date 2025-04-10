@@ -204,6 +204,10 @@ namespace sys {
 // Program helpers
 // ***********************************************************************
 
+/// @cond DOXYGEN_DOC_MISC
+const std::string fn_delimiter = "::";
+/// @endcond
+
 /**
  * @brief Check if a file has a given extension.
  *

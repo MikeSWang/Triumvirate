@@ -252,9 +252,6 @@ class ParameterSet {
    /// multiple split catalogue files
    std::vector<std::string> data_catalogue_files;
    std::vector<std::string> rand_catalogue_files;
-
-   /// filename delimiter
-   std::string fn_delimiter = "::";
 };
 
 /**

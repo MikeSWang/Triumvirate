@@ -482,16 +482,16 @@ int ParameterSet::validate(bool init) {
     this->data_catalogue_file.find_first_not_of(" \t\n\r\v\f")
     != std::string::npos
   ) {
-    if (!trvs::has_extension(this->data_catalogue_file, this->fn_delimiter)) {
-      this->data_catalogue_file += this->fn_delimiter;  // transmutation
+    if (!trvs::has_extension(this->data_catalogue_file, trvs::fn_delimiter)) {
+      this->data_catalogue_file += trvs::fn_delimiter;  // transmutation
     }
   }
   if (
     this->rand_catalogue_file.find_first_not_of(" \t\n\r\v\f")
     != std::string::npos
   ) {
-    if (!trvs::has_extension(this->rand_catalogue_file, this->fn_delimiter)) {
-      this->rand_catalogue_file += this->fn_delimiter;  // transmutation
+    if (!trvs::has_extension(this->rand_catalogue_file, trvs::fn_delimiter)) {
+      this->rand_catalogue_file += trvs::fn_delimiter;  // transmutation
     }
   }
   std::printf(
@@ -510,10 +510,10 @@ int ParameterSet::validate(bool init) {
       data_ctlg_files = this->data_catalogue_file;
       dlpos = 0;
       while (
-        (dlpos = data_ctlg_files.find(this->fn_delimiter)) != std::string::npos
+        (dlpos = data_ctlg_files.find(trvs::fn_delimiter)) != std::string::npos
       ) {
         data_ctlg_file_ = data_ctlg_files.substr(0, dlpos);
-        data_ctlg_files.erase(0, dlpos + this->fn_delimiter.length());
+        data_ctlg_files.erase(0, dlpos + trvs::fn_delimiter.length());
         if (data_ctlg_file_.rfind("/", 0) != 0 && init) {
           data_ctlg_file_ = this->catalogue_dir + data_ctlg_file_;
         }  // transmutation
@@ -532,10 +532,10 @@ int ParameterSet::validate(bool init) {
       rand_ctlg_files = this->rand_catalogue_file;
       dlpos = 0;
       while (
-        (dlpos = rand_ctlg_files.find(this->fn_delimiter)) != std::string::npos
+        (dlpos = rand_ctlg_files.find(trvs::fn_delimiter)) != std::string::npos
       ) {
         rand_ctlg_file_ = rand_ctlg_files.substr(0, dlpos);
-        rand_ctlg_files.erase(0, dlpos + this->fn_delimiter.length());
+        rand_ctlg_files.erase(0, dlpos + trvs::fn_delimiter.length());
         if (rand_ctlg_file_.rfind("/", 0) != 0 && init) {
           rand_ctlg_file_ = this->catalogue_dir + rand_ctlg_file_;
         }  // transmutation
@@ -557,10 +557,10 @@ int ParameterSet::validate(bool init) {
       rand_ctlg_files = this->rand_catalogue_file;
       dlpos = 0;
       while (
-        (dlpos = rand_ctlg_files.find(this->fn_delimiter)) != std::string::npos
+        (dlpos = rand_ctlg_files.find(trvs::fn_delimiter)) != std::string::npos
       ) {
         rand_ctlg_file_ = rand_ctlg_files.substr(0, dlpos);
-        rand_ctlg_files.erase(0, dlpos + this->fn_delimiter.length());
+        rand_ctlg_files.erase(0, dlpos + trvs::fn_delimiter.length());
         if (rand_ctlg_file_.rfind("/", 0) != 0 && init) {
           rand_ctlg_file_ = this->catalogue_dir + rand_ctlg_file_;
         }  // transmutation
@@ -581,10 +581,10 @@ int ParameterSet::validate(bool init) {
       data_ctlg_files = this->data_catalogue_file;
       dlpos = 0;
       while (
-        (dlpos = data_ctlg_files.find(this->fn_delimiter)) != std::string::npos
+        (dlpos = data_ctlg_files.find(trvs::fn_delimiter)) != std::string::npos
       ) {
         data_ctlg_file_ = data_ctlg_files.substr(0, dlpos);
-        data_ctlg_files.erase(0, dlpos + this->fn_delimiter.length());
+        data_ctlg_files.erase(0, dlpos + trvs::fn_delimiter.length());
         if (data_ctlg_file_.rfind("/", 0) != 0 && init) {
           data_ctlg_file_ = this->catalogue_dir + data_ctlg_file_;
         }  // transmutation
@@ -620,10 +620,10 @@ int ParameterSet::validate(bool init) {
 #endif  // !TRV_EXTCALL
   }
   this->data_catalogue_file = trvs::join_strings(
-    this->data_catalogue_files, this->fn_delimiter
+    this->data_catalogue_files, trvs::fn_delimiter
   );
   this->rand_catalogue_file = trvs::join_strings(
-    this->rand_catalogue_files, this->fn_delimiter
+    this->rand_catalogue_files, trvs::fn_delimiter
   );
 
   if (!(this->alignment == "centre" || this->alignment == "pad")) {
