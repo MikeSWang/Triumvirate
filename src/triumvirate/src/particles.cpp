@@ -168,22 +168,144 @@ int ParticleCatalogue::load_catalogue_file(
     }
   }
 
-  // Check for the 'nz' column.
-  if (name_indices[3] == -1) {
-    if (trvs::currTask == 0) {
-      trvs::logger.warn(
-        "Catalogue 'nz' field is unavailable and "
-        "will be set to the mean density in the bounding box (source=%s).",
-        this->source.c_str()
-      );
-    }
-  }
-
   // ---------------------------------------------------------------------
   // Data reading
   // ---------------------------------------------------------------------
 
   if (is_hdf5) {
+#ifdef TRV_USE_H5
+    try {
+      HighFive::File ctlg_file(catalogue_filepath, HighFive::File::ReadOnly);
+
+      // Get dataset (assumed to be the first) from the file.
+      std::string ctlg_dset_name;
+      if (ctlg_file.listObjectNames().empty()) {
+        if (trvs::currTask == 0) {
+          trvs::logger.error(
+            "No datasets found in HDF5 file: %s",
+            catalogue_filepath.c_str()
+          );
+        }
+        throw trvs::InvalidDataError(
+          "No datasets found in HDF5 file: %s",
+          catalogue_filepath.c_str()
+        );
+      } else {
+        ctlg_dset_name = ctlg_file.listObjectNames()[0];
+      }
+
+      HighFive::DataSet ctlg_dset = ctlg_file.getDataSet(ctlg_dset_name);
+
+      // Get dataset data type, which must be float or double and the same
+      // for all columns.
+      HighFive::DataType ctlg_dtype = ctlg_dset.getDataType();
+      if (
+        ctlg_dtype != HighFive::create_datatype<float>()
+        && ctlg_dtype != HighFive::create_datatype<double>()
+      ) {
+        if (trvs::currTask == 0) {
+          trvs::logger.error(
+            "Unsupported or mixed data type in HDF5 file: %s",
+            catalogue_filepath.c_str()
+          );
+        }
+        throw trvs::InvalidDataError(
+          "Unsupported or mixed data type in HDF5 file: %s",
+          catalogue_filepath.c_str()
+        );
+      }
+
+      // Get dataset column names and indices.
+      std::vector<std::string> ctlg_colnames;
+      if (ctlg_dset.hasAttribute("catalogue_columns")) {
+        ctlg_dset.getAttribute("catalogue_columns").read(ctlg_colnames);
+        if (trvs::currTask == 0) {
+          trvs::logger.info(
+            "Catalogue column names read from HDF5 file: %s",
+            catalogue_filepath.c_str()
+          );
+        }
+        for (std::size_t iname = 0; iname < names_ordered.size(); iname++) {
+          std::size_t col_idx = static_cast<std::size_t>(std::distance(
+            ctlg_colnames.begin(),
+            std::find(
+              ctlg_colnames.begin(), ctlg_colnames.end(), names_ordered[iname]
+            )
+          ));
+          if (col_idx < ctlg_colnames.size()) {
+            name_indices[iname] = col_idx;
+          } else {
+            name_indices[iname] = -1;
+          }
+        }
+      }
+
+      // Get dataset dimensions.
+      std::vector<std::size_t> ctlg_dims = ctlg_dset.getDimensions();
+      int num_rows = static_cast<int>(ctlg_dims[0]);
+
+      // Initialise particle data.
+      this->initialise_particles(num_rows);
+
+      // Set particle data.
+      // Check for the 'nz' column.
+      if (name_indices[3] == -1) {
+        if (trvs::currTask == 0) {
+          trvs::logger.warn(
+            "Catalogue 'nz' field is unavailable and "
+            "will be set to the mean density in the bounding box (source=%s).",
+            this->source.c_str()
+          );
+        }
+      }
+
+      double nz_box_default = 0.;
+      if (volume > 0.) {
+        nz_box_default = this->ntotal / volume;
+      }
+
+      std::vector<std::vector<double>> ctlg_data;
+      ctlg_dset.read(ctlg_data);
+
+      int idx_row = 0;    // current row number
+      double nz, ws, wc;  // placeholder variables
+      for (const auto& row : ctlg_data) {
+        this->pdata[idx_row].pos[0] = row[name_indices[0]];  // x
+        this->pdata[idx_row].pos[1] = row[name_indices[1]];  // y
+        this->pdata[idx_row].pos[2] = row[name_indices[2]];  // z
+
+        if (name_indices[3] != -1) {
+          nz = row[name_indices[3]];
+        } else {
+          nz = nz_box_default;  // default value
+        }
+
+        if (name_indices[4] != -1) {
+          ws = row[name_indices[4]];
+        } else {
+          ws = 1.;  // default value
+        }
+
+        if (name_indices[5] != -1) {
+          wc = row[name_indices[5]];
+        } else {
+          wc = 1.;  // default value
+        }
+
+        this->pdata[idx_row].nz = nz;
+        this->pdata[idx_row].ws = ws;
+        this->pdata[idx_row].wc = wc;
+        this->pdata[idx_row].w = ws * wc;
+
+        idx_row++;
+      }
+    } catch (const HighFive::Exception& e) {
+      if (trvs::currTask == 0) {
+        trvs::logger.error("[HighFive] %s", e.what());
+      }
+      throw trvs::IOError("[HighFive] %s", e.what());
+    }
+#endif  // TRV_USE_H5
   } else {
     std::ifstream fin;
 
@@ -192,9 +314,13 @@ int ParticleCatalogue::load_catalogue_file(
     if (fin.fail()) {
       fin.close();
       if (trvs::currTask == 0) {
-        trvs::logger.error("Failed to open file: %s", this->source.c_str());
+        trvs::logger.error(
+          "Failed to open file: %s", catalogue_filepath.c_str()
+        );
       }
-      throw trvs::IOError("Failed to open file: %s", this->source.c_str());
+      throw trvs::IOError(
+        "Failed to open file: %s", catalogue_filepath.c_str()
+      );
     }
 
     // Initialise particle data.
@@ -216,6 +342,17 @@ int ParticleCatalogue::load_catalogue_file(
     this->initialise_particles(num_lines);
 
     // Set particle data.
+    // Check for the 'nz' column.
+    if (name_indices[3] == -1) {
+      if (trvs::currTask == 0) {
+        trvs::logger.warn(
+          "Catalogue 'nz' field is unavailable and "
+          "will be set to the mean density in the bounding box (source=%s).",
+          this->source.c_str()
+        );
+      }
+    }
+
     double nz_box_default = 0.;
     if (volume > 0.) {
       nz_box_default = this->ntotal / volume;
