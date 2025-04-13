@@ -229,7 +229,10 @@ int main(int argc, char* argv[]) {
     int exit_code = 0;
     try {
       exit_code = catalogue_data.load_catalogue_file(
-        params.data_catalogue_file, params.catalogue_columns, params.volume
+        params.data_catalogue_file,
+        params.catalogue_columns,
+        params.catalogue_dataset,
+        params.volume
       );
     } catch (const trv::sys::IOError& err) {
       exit_code = 1;
@@ -263,7 +266,10 @@ int main(int argc, char* argv[]) {
     int exit_code = 0;
     try {
       exit_code = catalogue_rand.load_catalogue_file(
-        params.rand_catalogue_file, params.catalogue_columns, params.volume
+        params.rand_catalogue_file,
+        params.catalogue_columns,
+        params.catalogue_dataset,
+        params.volume
       );
     } catch (const trv::sys::IOError& err) {
       exit_code = 1;

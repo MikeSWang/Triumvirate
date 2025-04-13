@@ -159,15 +159,24 @@ class ParticleCatalogue {
    * @brief Read in a catalogue file.
    *
    * @param catalogue_filepath Catalogue file path.
-   * @param catalogue_columns Catalogue data column names
-   *                          (comma-separated without space).
+   * @param catalogue_columns Catalogue data column names (as a
+   *                          comma-separated list without space or an
+   *                          attribute name prefixed by "attr:").
+   * @param catalogue_dataset Catalogue dataset name/path (default is
+   *                          empty; for HDF5 files only).
    * @param volume Catalogue volume (default is 0.) used for computing
    *               the default 'nz' value when the field is missing.
    * @returns Exit status.
+   * @note If `catalogue_dataset` is empty for HDF5 files, the first
+   *       dataset found is used (which may not be the intended one).
+   * @note If `catalogue_columns` is empty for HDF5 files, the first
+   *       dataset attribute found is used (which may not be the
+   *       intended one).
    */
   int load_catalogue_file(
     const std::string& catalogue_filepath,
     const std::string& catalogue_columns,
+    const std::string& catalogue_dataset = "",
     double volume = 0.
   );
 

@@ -39,6 +39,7 @@ ParameterSet::ParameterSet(const ParameterSet& other) {
   this->data_catalogue_file = other.data_catalogue_file;
   this->rand_catalogue_file = other.rand_catalogue_file;
   this->catalogue_columns = other.catalogue_columns;
+  this->catalogue_dataset = other.catalogue_dataset;
   this->output_tag = other.output_tag;
 
   // Copy mesh sampling parameters.
@@ -109,6 +110,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   char data_catalogue_file_[262144] = "";
   char rand_catalogue_file_[262144] = "";
   char catalogue_columns_[1024] = "";
+  char catalogue_dataset_[1024] = "";
   char output_tag_[1024] = "";
 
   double boxsize_x, boxsize_y, boxsize_z;
@@ -171,6 +173,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
     scan_par_str("data_catalogue_file", "%s %s %s", data_catalogue_file_);
     scan_par_str("rand_catalogue_file", "%s %s %s", rand_catalogue_file_);
     scan_par_str("catalogue_columns", "%s %s %s", catalogue_columns_);
+    scan_par_str("catalogue_dataset", "%s %s %s", catalogue_dataset_);
     scan_par_str("output_tag", "%s %s %s", output_tag_);
 
     // -- Mesh sampling --------------------------------------------------
@@ -334,6 +337,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   this->data_catalogue_file = data_catalogue_file_;
   this->rand_catalogue_file = rand_catalogue_file_;
   this->catalogue_columns = catalogue_columns_;
+  this->catalogue_dataset = catalogue_dataset_;
   this->output_tag = output_tag_;
 
   if (strlen(alignment_) > 0) {
@@ -411,6 +415,7 @@ int ParameterSet::read_from_file(char* parameter_filepath) {
   debug_par_str("data_catalogue_file", this->data_catalogue_file);
   debug_par_str("rand_catalogue_file", this->rand_catalogue_file);
   debug_par_str("catalogue_columns", this->catalogue_columns);
+  debug_par_str("catalogue_dataset", this->catalogue_dataset);
   debug_par_str("output_tag", this->output_tag);
 
   debug_par_str("alignment", this->alignment);
@@ -1299,6 +1304,7 @@ int ParameterSet::print_to_file(char* out_parameter_filepath) {
   print_par_str("data_catalogue_file = %s\n", this->data_catalogue_file);
   print_par_str("rand_catalogue_file = %s\n", this->rand_catalogue_file);
   print_par_str("catalogue_columns = %s\n", this->catalogue_columns);
+  print_par_str("catalogue_dataset = %s\n", this->catalogue_dataset);
   print_par_str("output_tag = %s\n", this->output_tag);
 
   print_par_double("boxsize_x = %.3f\n", this->boxsize[0]);

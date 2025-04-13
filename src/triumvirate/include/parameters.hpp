@@ -69,8 +69,11 @@ class ParameterSet {
   std::string data_catalogue_file;
   /// random catalogue file
   std::string rand_catalogue_file;
-  /// catalogue data columns (comma-separated without space)
+  /// catalogue data column names
+  /// (comma-separated list without space or attribute name string)
   std::string catalogue_columns;
+  /// catalogue dataset name/path (HDF5 catalogue files only)
+  std::string catalogue_dataset;
   /// output tag
   std::string output_tag;
 
