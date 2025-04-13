@@ -428,6 +428,17 @@ ifdef DIRAC_HOST
 	# endif  # !usehip && usecuda
 	# endif  # usehip
 
+## HDF5 library
+	ifdef usehdf5
+	# On DIaL3, HDF5 is MPI-enabled but thread safety is unclear.
+	# Instead, a no-MPI HDF5 library managed by a Conda environment is
+	# automatically used by modifying PKG_CONFIG_PATH, as sourced by
+	# a shell RC file, to include a customised .pc file.
+	# ifeq (DIRAC_HOST,dial3)
+	# INCLUDES += -I$(shell pkg-config --silence-errors --cflags-only-I ompi)
+	# endif
+	endif
+
 ## GTEST library
 	ifdef GTEST_ROOT
 	INCLUDES_TEST += -I${GTEST_ROOT}/include
