@@ -96,7 +96,7 @@ endif  # usehip
 
 ifdef usehip
 ifdef usecuda
-$(error "HIP-ported CUDA is not supported.")
+$(error ERROR: HIP-ported CUDA is not supported yet.)
 endif  # usecuda
 endif  # usehip
 
@@ -113,6 +113,10 @@ endif  # useomp
 ifdef usehdf5
 ifeq ($(strip ${usehdf5}), $(filter $(strip ${usehdf5}), true 1))
 usehdf5 := true
+$(warning CAUTION: HDF5 support is enabled. \
+	If your HDF5 library is MPI-parallelised, check whether it is threadsafe, \
+	and whether your compiler is MPI-compatible. \
+	If in doubt, use a non-parallel HDF5 library.)
 else   # usehdf5 != (true|1)
 unexport usehdf5
 endif  # usehdf5 == (true|1)
@@ -175,10 +179,10 @@ else  # OS != Linux
 ifeq (${OS}, Darwin)
 
 	ifdef usecuda
-	$(error "CUDA is not supported on macOS.")
+	$(error ERROR: CUDA is not supported on macOS.)
 	endif  # usecuda
 	ifdef usehip
-	$(error "HIP is not supported on macOS.")
+	$(error ERROR: HIP is not supported on macOS.)
 	endif  # usehip
 
 ## Use GCC compiler from Homebrew (brew formula 'gcc').
@@ -225,10 +229,10 @@ endif  # usehdf5
 # Dependencies are searched for by `pkg-config`.  Ensure the set-up of
 # `pkg-config` matches that of the dependencies (e.g. both are installed
 # by Conda in the same Conda environment).
-DEPD_INCLUDES := $(shell pkg-config --silence-errors --cflags-only-I ${DEPDS})
-DEPD_CXXFLAGS := $(shell pkg-config --silence-errors --cflags-only-other ${DEPDS})
-DEPD_LDFLAGS := $(shell pkg-config --silence-errors --libs-only-other --libs-only-L ${DEPDS})
-DEPD_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPDS})
+DEPD_INCLUDES := $(foreach dep,${DEPDS},$(shell pkg-config --silence-errors --cflags-only-I $(dep)))
+DEPD_CXXFLAGS := $(foreach dep,${DEPDS},$(shell pkg-config --silence-errors --cflags-only-other $(dep)))
+DEPD_LDFLAGS := $(foreach dep,${DEPDS},$(shell pkg-config --silence-errors --libs-only-other --libs-only-L $(dep)))
+DEPD_LDLIBS := $(foreach dep,${DEPDS},$(shell pkg-config --silence-errors --libs-only-l $(dep)))
 
 # If using cuFFT/hipFFT, add its dependencies.
 ifdef usehip
@@ -244,10 +248,10 @@ endif  # usehip
 
 DEPDS_TEST := gtest
 
-DEPD_TEST_INCLUDES := $(shell pkg-config --silence-errors --cflags-only-I ${DEPDS_TEST})
-DEPD_TEST_CXXFLAGS := $(shell pkg-config --silence-errors --cflags-only-other ${DEPDS_TEST})
-DEPD_TEST_LDFLAGS := $(shell pkg-config --silence-errors --libs-only-other --libs-only-L ${DEPDS_TEST})
-DEPD_TEST_LDLIBS := $(shell pkg-config --silence-errors --libs-only-l ${DEPDS_TEST})
+DEPD_TEST_INCLUDES := $(foreach deptest,${DEPDS_TEST},$(shell pkg-config --silence-errors --cflags-only-I $(deptest)))
+DEPD_TEST_CXXFLAGS := $(foreach deptest,${DEPDS_TEST},$(shell pkg-config --silence-errors --cflags-only-other $(deptest)))
+DEPD_TEST_LDFLAGS := $(foreach deptest,${DEPDS_TEST},$(shell pkg-config --silence-errors --libs-only-other --libs-only-L $(deptest)))
+DEPD_TEST_LDLIBS := $(foreach deptest,${DEPDS_TEST},$(shell pkg-config --silence-errors --libs-only-l $(deptest)))
 
 
 # -- Options -------------------------------------------------------------
@@ -262,7 +266,9 @@ CPPFLAGS += -D__HIP_PLATFORM_AMD__
 endif  # usehip && usecuda
 endif  # usehip
 
-CPPFLAGS += -MMD -MP -D__TRV_VERSION__=\"${PKG_VER}\" -D__TZOFFSET__=\"$(shell date +%z)\"
+CPPFLAGS += -MMD -MP \
+    -D__TRV_VERSION__=\"${PKG_VER}\" \
+	-D__TZOFFSET__=\"$(shell date +%z)\"
 
 ifdef usehip
 ifdef usecuda
@@ -427,17 +433,6 @@ ifdef DIRAC_HOST
 	# ifdef usecuda
 	# endif  # !usehip && usecuda
 	# endif  # usehip
-
-## HDF5 library
-	ifdef usehdf5
-	# On DIaL3, HDF5 is MPI-enabled but thread safety is unclear.
-	# Instead, a no-MPI HDF5 library managed by a Conda environment is
-	# automatically used by modifying PKG_CONFIG_PATH, as sourced by
-	# a shell RC file, to include a customised .pc file.
-	# ifeq (DIRAC_HOST,dial3)
-	# INCLUDES += -I$(shell pkg-config --silence-errors --cflags-only-I ompi)
-	# endif
-	endif
 
 ## GTEST library
 	ifdef GTEST_ROOT
