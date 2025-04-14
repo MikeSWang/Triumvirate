@@ -33,6 +33,7 @@ _TMPL_PARAM_DICT = {
         'rand_catalogue': None,
     },
     'catalogue_columns': [],
+    'catalogue_dataset': None,
     'tags': {
         'output': None,
     },
