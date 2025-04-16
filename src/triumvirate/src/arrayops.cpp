@@ -272,10 +272,10 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector) {
 
 #if defined(TRV_USE_HIP)
 void copy_complex_array_dtoh(
-  fft_double_complex* d_arr, fftw_complex* arr, std::size_t length
+  fft_double_complex* d_arr, fft_double_complex* h_arr, std::size_t length
 ) {
   HIP_EXEC(hipMemcpy(
-    arr,
+    h_arr,
     d_arr,
     sizeof(fft_double_complex) * length,
     hipMemcpyDeviceToHost
@@ -283,22 +283,22 @@ void copy_complex_array_dtoh(
 }
 
 void copy_complex_array_htod(
-  fftw_complex* arr, fft_double_complex* d_arr, std::size_t length
+  fft_double_complex* h_arr, fft_double_complex* d_arr, std::size_t length
 ) {
   HIP_EXEC(hipMemcpy(
     d_arr,
-    arr,
-    sizeof(fftw_complex) * length,
+    h_arr,
+    sizeof(fft_double_complex) * length,
     hipMemcpyHostToDevice
   ));
 }
 
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
 void copy_complex_array_dtoh(
-  fft_double_complex* d_arr, fftw_complex* arr, std::size_t length
+  fft_double_complex* d_arr, fft_double_complex* h_arr, std::size_t length
 ) {
   CUDA_EXEC(cudaMemcpy(
-    reinterpret_cast<void*>(arr),
+    reinterpret_cast<void*>(h_arr),
     reinterpret_cast<void*>(d_arr),
     sizeof(fft_double_complex) * length,
     cudaMemcpyDeviceToHost
@@ -306,11 +306,11 @@ void copy_complex_array_dtoh(
 }
 
 void copy_complex_array_htod(
-  fftw_complex* arr, fft_double_complex* d_arr, std::size_t length
+  fft_double_complex* h_arr, fft_double_complex* d_arr, std::size_t length
 ) {
   CUDA_EXEC(cudaMemcpy(
     reinterpret_cast<void*>(d_arr),
-    reinterpret_cast<void*>(arr),
+    reinterpret_cast<void*>(h_arr),
     sizeof(fftw_complex) * length,
     cudaMemcpyHostToDevice
   ));
@@ -320,27 +320,47 @@ void copy_complex_array_htod(
 #if defined(TRV_USE_HIP)
 #elif defined(TRV_USE_CUDA)  // !TRV_USE_HIP && TRV_USE_CUDA
 void copy_complex_array_dtoh_mgpu(
-  fftHandle plan, libXtDesc* libxt_desc, fftw_complex* arr
+  fftHandle plan, libXtDesc* libxt_desc, fft_double_complex* h_arr
 ) {
   CUFFT_EXEC(cufftXtMemcpy(
     plan,
-    reinterpret_cast<void*>(arr),
+    reinterpret_cast<void*>(h_arr),
     reinterpret_cast<void*>(libxt_desc),
     CUFFT_COPY_DEVICE_TO_HOST
   ));
 }
 
 void copy_complex_array_htod_mgpu(
-  fftHandle plan, libXtDesc* libxt_desc, fftw_complex* arr
+  fftHandle plan, libXtDesc* libxt_desc, fft_double_complex* h_arr
 ) {
   CUFFT_EXEC(cufftXtMemcpy(
     plan,
     reinterpret_cast<void*>(libxt_desc),
-    reinterpret_cast<void*>(arr),
+    reinterpret_cast<void*>(h_arr),
     CUFFT_COPY_HOST_TO_DEVICE
   ));
 }
 #endif                       // TRV_USE_HIP
+
+#if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
+void convert_complex_array_toh(
+  fftw_complex* arr, fft_double_complex* h_arr, std::size_t length
+) {
+  for (std::size_t i = 0; i < length; i++) {
+    h_arr[i].x = arr[i][0];
+    h_arr[i].y = arr[i][1];
+  }
+}
+
+void convert_complex_array_fromh(
+  fft_double_complex* h_arr, fftw_complex* arr, std::size_t length
+) {
+  for (std::size_t i = 0; i < length; i++) {
+    arr[i][0] = h_arr[i].x;
+    arr[i][1] = h_arr[i].y;
+  }
+}
+#endif  // TRV_USE_HIP || TRV_USE_CUDA
 }  // namespace trv::array
 
 }  // namespace trv

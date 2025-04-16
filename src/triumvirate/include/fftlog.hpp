@@ -239,6 +239,7 @@ class HankelTransform {
 #if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
   // fft_double_complex* d_pre_buffer = nullptr;
   // fft_double_complex* d_post_buffer = nullptr;
+  fft_double_complex* h_buffer = nullptr;
   fft_double_complex* d_buffer = nullptr;
 #endif  // TRV_USE_HIP || TRV_USE_CUDA
 // #ifdef TRV_USE_CUDA

@@ -256,23 +256,23 @@ std::vector<int> get_sorted_indices(std::vector<int> sorting_vector);
  *        type definitions.
  *
  * @param d_arr Device array.
- * @param arr Default-type array on host.
+ * @param h_arr Host array.
  * @param length Array size.
  */
 void copy_complex_array_dtoh(
-  fft_double_complex* d_arr, fftw_complex* arr, std::size_t length
+  fft_double_complex* d_arr, fft_double_complex* h_arr, std::size_t length
 );
 
 /**
  * @brief Copy complex array values from host to device with different
  *        type definitions.
  *
- * @param arr Default-type array on host.
+ * @param h_arr Host array.
  * @param d_arr Device array.
  * @param length Array size.
  */
 void copy_complex_array_htod(
-  fftw_complex* arr, fft_double_complex* d_arr, std::size_t length
+  fft_double_complex* h_arr, fft_double_complex* d_arr, std::size_t length
 );
 
 /**
@@ -281,10 +281,10 @@ void copy_complex_array_htod(
  *
  * @param plan FFT plan.
  * @param libxt_desc Library extension descriptor.
- * @param arr Default-type array on host.
+ * @param h_arr Host array.
  */
 void copy_complex_array_dtoh_mgpu(
-  fftHandle plan, libXtDesc* libxt_desc, fftw_complex* arr
+  fftHandle plan, libXtDesc* libxt_desc, fft_double_complex* h_arr
 );
 
 /**
@@ -293,10 +293,32 @@ void copy_complex_array_dtoh_mgpu(
  *
  * @param plan FFT plan.
  * @param libxt_desc Library extension descriptor.
- * @param arr Default-type array on host.
+ * @param h_arr Host array.
  */
 void copy_complex_array_htod_mgpu(
-  fftHandle plan, libXtDesc* libxt_desc, fftw_complex* arr
+  fftHandle plan, libXtDesc* libxt_desc, fft_double_complex* h_arr
+);
+
+/**
+ * @brief Convert complex arrays from standard to host-managed.
+ *
+ * @param arr Standard array.
+ * @param h_arr Host-managed array.
+ * @param length Array size.
+ */
+void convert_complex_array_toh(
+  fftw_complex* arr, fft_double_complex* h_arr, std::size_t length
+);
+
+/**
+ * @brief Convert complex arrays from host-managed to standard.
+ *
+ * @param h_arr Host-managed array.
+ * @param arr Standard array.
+ * @param length Array size.
+ */
+void convert_complex_array_fromh(
+  fft_double_complex* h_arr, fftw_complex* arr, std::size_t length
 );
 #endif  // TRV_USE_HIP || TRV_USE_CUDA
 }  // namespace trv::array
