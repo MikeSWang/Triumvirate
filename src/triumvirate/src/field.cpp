@@ -104,7 +104,7 @@ MeshField::MeshField(
           export_fftw_wisdom_f = false;
           if (this->params.fftw_scheme == "patient") {
             if (trvs::currTask == 0) {
-              trvs::logger.warn(
+              trvs::logger.info(
                 "FFTW planner flag is set to `FFTW_PATIENT`. "
                 "Ensure that the FFTW wisdom file '%s' imported has been "
                 "generated with an equivalent or higher planner flag.",
@@ -133,7 +133,7 @@ MeshField::MeshField(
           export_fftw_wisdom_b = false;
           if (this->params.fftw_scheme == "patient") {
             if (trvs::currTask == 0) {
-              trvs::logger.warn(
+              trvs::logger.info(
                 "FFTW planner flag is set to `FFTW_PATIENT`. "
                 "Ensure that the FFTW wisdom file '%s' imported has been "
                 "generated with an equivalent or higher planner flag.",
@@ -256,7 +256,7 @@ MeshField::MeshField(
     ).count();
     if (import_fftw_wisdom_f && plan_f_time > 1.) {
       if (trvs::currTask == 0) {
-        trvs::logger.warn(
+        trvs::logger.info(
           "FFTW plan for forward transforms took %.3f (> 1.) seconds "
           "despite importing wisdom file, which may have been created "
           "under different runtime conditions. "
@@ -309,7 +309,7 @@ MeshField::MeshField(
     ).count();
     if (import_fftw_wisdom_b && plan_b_time > 1.) {
       if (trvs::currTask == 0) {
-        trvs::logger.warn(
+        trvs::logger.info(
           "FFTW plan for backward transforms took %.3f (> 1.) seconds "
           "despite importing wisdom file, which may have been created "
           "under different runtime conditions. "

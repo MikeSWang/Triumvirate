@@ -924,7 +924,7 @@ int ParameterSet::validate(bool init) {
   } else {
     if (!(this->fftw_scheme == "measure" || this->fftw_scheme == "")) {
       if (trvs::currTask == 0) {
-        trvs::logger.warn(
+        trvs::logger.info(
           "FFTW planner scheme is ignored in GPU mode: `fftw_scheme` = '%s'.",
           this->fftw_scheme.c_str()
         );
@@ -936,7 +936,7 @@ int ParameterSet::validate(bool init) {
   if (trvs::is_gpu_enabled()) {
     if (!(this->use_fftw_wisdom == "false")) {
       if (trvs::currTask == 0) {
-        trvs::logger.warn("FFTW wisdom is disabled in GPU mode.");
+        trvs::logger.info("FFTW wisdom is disabled in GPU mode.");
       }
     }
     this->use_fftw_wisdom = "";  // transmutation
@@ -1055,7 +1055,7 @@ int ParameterSet::validate(bool init) {
     }
     if (this->expand > 1. and this->catalogue_type == "sim") {
       if (trvs::currTask == 0) {
-        trvs::logger.warn(
+        trvs::logger.info(
           "The box expansion factor is expected to be unity "
           "for 'sim' catalogue(s): `expand` = %lg",
           this->expand
@@ -1241,7 +1241,7 @@ int ParameterSet::validate(bool init) {
     this->interlace = "false";  // transmutation
 
     if (trvs::currTask == 0) {
-      trvs::logger.warn(
+      trvs::logger.info(
         "Interlacing is unsupported for three-point measurements. "
         "`interlace` is set to 'false'."
       );
@@ -1254,7 +1254,7 @@ int ParameterSet::validate(bool init) {
   ) {
     this->save_binned_vectors = default_bvec_sfilepath;  // transmutation
     if (trvs::currTask == 0) {
-      trvs::logger.warn(
+      trvs::logger.info(
         "`save_binned_vectors` is overridden, as `statistic_type` is '%s' "
         "so binned vectors are saved as the output to the default path.",
         this->statistic_type.c_str()

@@ -328,7 +328,7 @@ int ParticleCatalogue::load_catalogue_file(
       // Check for the 'nz' column.
       if (name_indices[3] == -1) {
         if (trvs::currTask == 0) {
-          trvs::logger.warn(
+          trvs::logger.info(
             "Catalogue 'nz' field is unavailable and "
             "will be set to the mean density in the bounding box (source=%s).",
             this->source.c_str()
@@ -424,7 +424,7 @@ int ParticleCatalogue::load_catalogue_file(
     // Check for the 'nz' column.
     if (name_indices[3] == -1) {
       if (trvs::currTask == 0) {
-        trvs::logger.warn(
+        trvs::logger.info(
           "Catalogue 'nz' field is unavailable and "
           "will be set to the mean density in the bounding box (source=%s).",
           this->source.c_str()
