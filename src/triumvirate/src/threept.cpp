@@ -297,24 +297,14 @@ trv::BispecMeasurements compute_bispec(
     );
   }
 
-  int* nmodes1_dv = new int[dv_dim];
-  int* nmodes2_dv = new int[dv_dim];
-  double* k1bin_dv = new double[dv_dim];
-  double* k2bin_dv = new double[dv_dim];
-  double* k1eff_dv = new double[dv_dim];
-  double* k2eff_dv = new double[dv_dim];
+  int* nmodes1_dv = new int[dv_dim]();
+  int* nmodes2_dv = new int[dv_dim]();
+  double* k1bin_dv = new double[dv_dim]();
+  double* k2bin_dv = new double[dv_dim]();
+  double* k1eff_dv = new double[dv_dim]();
+  double* k2eff_dv = new double[dv_dim]();
   std::complex<double>* bk_dv = new std::complex<double>[dv_dim];
   std::complex<double>* sn_dv = new std::complex<double>[dv_dim];
-  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-    nmodes1_dv[idx_dv] = 0;
-    nmodes2_dv[idx_dv] = 0;
-    k1bin_dv[idx_dv] = 0.;
-    k2bin_dv[idx_dv] = 0.;
-    k1eff_dv[idx_dv] = 0.;
-    k2eff_dv[idx_dv] = 0.;
-    bk_dv[idx_dv] = 0.;
-    sn_dv[idx_dv] = 0.;
-  }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
   // Measurement
@@ -1075,24 +1065,14 @@ trv::ThreePCFMeasurements compute_3pcf(
     );
   }
 
-  int* npairs1_dv = new int[dv_dim];
-  int* npairs2_dv = new int[dv_dim];
-  double* r1bin_dv = new double[dv_dim];
-  double* r2bin_dv = new double[dv_dim];
-  double* r1eff_dv = new double[dv_dim];
-  double* r2eff_dv = new double[dv_dim];
+  int* npairs1_dv = new int[dv_dim]();
+  int* npairs2_dv = new int[dv_dim]();
+  double* r1bin_dv = new double[dv_dim]();
+  double* r2bin_dv = new double[dv_dim]();
+  double* r1eff_dv = new double[dv_dim]();
+  double* r2eff_dv = new double[dv_dim]();
   std::complex<double>* zeta_dv = new std::complex<double>[dv_dim];
   std::complex<double>* sn_dv = new std::complex<double>[dv_dim];
-  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-    npairs1_dv[idx_dv] = 0;
-    npairs2_dv[idx_dv] = 0;
-    r1bin_dv[idx_dv] = 0.;
-    r2bin_dv[idx_dv] = 0.;
-    r1eff_dv[idx_dv] = 0.;
-    r2eff_dv[idx_dv] = 0.;
-    zeta_dv[idx_dv] = 0.;
-    sn_dv[idx_dv] = 0.;
-  }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
   // Measurement
@@ -1540,24 +1520,14 @@ trv::BispecMeasurements compute_bispec_in_gpp_box(
     );
   }
 
-  int* nmodes1_dv = new int[dv_dim];
-  int* nmodes2_dv = new int[dv_dim];
-  double* k1bin_dv = new double[dv_dim];
-  double* k2bin_dv = new double[dv_dim];
-  double* k1eff_dv = new double[dv_dim];
-  double* k2eff_dv = new double[dv_dim];
+  int* nmodes1_dv = new int[dv_dim]();
+  int* nmodes2_dv = new int[dv_dim]();
+  double* k1bin_dv = new double[dv_dim]();
+  double* k2bin_dv = new double[dv_dim]();
+  double* k1eff_dv = new double[dv_dim]();
+  double* k2eff_dv = new double[dv_dim]();
   std::complex<double>* bk_dv = new std::complex<double>[dv_dim];
   std::complex<double>* sn_dv = new std::complex<double>[dv_dim];
-  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-    nmodes1_dv[idx_dv] = 0;
-    nmodes2_dv[idx_dv] = 0;
-    k1bin_dv[idx_dv] = 0.;
-    k2bin_dv[idx_dv] = 0.;
-    k1eff_dv[idx_dv] = 0.;
-    k2eff_dv[idx_dv] = 0.;
-    bk_dv[idx_dv] = 0.;
-    sn_dv[idx_dv] = 0.;
-  }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
   // Measurement
@@ -2269,24 +2239,14 @@ trv::ThreePCFMeasurements compute_3pcf_in_gpp_box(
     );
   }
 
-  int* npairs1_dv = new int[dv_dim];
-  int* npairs2_dv = new int[dv_dim];
-  double* r1bin_dv = new double[dv_dim];
-  double* r2bin_dv = new double[dv_dim];
-  double* r1eff_dv = new double[dv_dim];
-  double* r2eff_dv = new double[dv_dim];
+  int* npairs1_dv = new int[dv_dim]();
+  int* npairs2_dv = new int[dv_dim]();
+  double* r1bin_dv = new double[dv_dim]();
+  double* r2bin_dv = new double[dv_dim]();
+  double* r1eff_dv = new double[dv_dim]();
+  double* r2eff_dv = new double[dv_dim]();
   std::complex<double>* zeta_dv = new std::complex<double>[dv_dim];
   std::complex<double>* sn_dv = new std::complex<double>[dv_dim];
-  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-    npairs1_dv[idx_dv] = 0;
-    npairs2_dv[idx_dv] = 0;
-    r1bin_dv[idx_dv] = 0.;
-    r2bin_dv[idx_dv] = 0.;
-    r1eff_dv[idx_dv] = 0.;
-    r2eff_dv[idx_dv] = 0.;
-    zeta_dv[idx_dv] = 0.;
-    sn_dv[idx_dv] = 0.;
-  }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
   // Measurement
@@ -2712,24 +2672,14 @@ trv::ThreePCFWindowMeasurements compute_3pcf_window(
     );
   }
 
-  int* npairs1_dv = new int[dv_dim];
-  int* npairs2_dv = new int[dv_dim];
-  double* r1bin_dv = new double[dv_dim];
-  double* r2bin_dv = new double[dv_dim];
-  double* r1eff_dv = new double[dv_dim];
-  double* r2eff_dv = new double[dv_dim];
+  int* npairs1_dv = new int[dv_dim]();
+  int* npairs2_dv = new int[dv_dim]();
+  double* r1bin_dv = new double[dv_dim]();
+  double* r2bin_dv = new double[dv_dim]();
+  double* r1eff_dv = new double[dv_dim]();
+  double* r2eff_dv = new double[dv_dim]();
   std::complex<double>* zeta_dv = new std::complex<double>[dv_dim];
   std::complex<double>* sn_dv = new std::complex<double>[dv_dim];
-  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-    npairs1_dv[idx_dv] = 0;
-    npairs2_dv[idx_dv] = 0;
-    r1bin_dv[idx_dv] = 0.;
-    r2bin_dv[idx_dv] = 0.;
-    r1eff_dv[idx_dv] = 0.;
-    r2eff_dv[idx_dv] = 0.;
-    zeta_dv[idx_dv] = 0.;
-    sn_dv[idx_dv] = 0.;
-  }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
   // Measurement
@@ -3182,24 +3132,14 @@ trv::BispecMeasurements compute_bispec_for_los_choice(
     );
   }
 
-  int* nmodes1_dv = new int[dv_dim];
-  int* nmodes2_dv = new int[dv_dim];
-  double* k1bin_dv = new double[dv_dim];
-  double* k2bin_dv = new double[dv_dim];
-  double* k1eff_dv = new double[dv_dim];
-  double* k2eff_dv = new double[dv_dim];
+  int* nmodes1_dv = new int[dv_dim]();
+  int* nmodes2_dv = new int[dv_dim]();
+  double* k1bin_dv = new double[dv_dim]();
+  double* k2bin_dv = new double[dv_dim]();
+  double* k1eff_dv = new double[dv_dim]();
+  double* k2eff_dv = new double[dv_dim]();
   std::complex<double>* bk_dv = new std::complex<double>[dv_dim];
   std::complex<double>* sn_dv = new std::complex<double>[dv_dim];
-  for (int idx_dv = 0; idx_dv < dv_dim; idx_dv++) {
-    nmodes1_dv[idx_dv] = 0;
-    nmodes2_dv[idx_dv] = 0;
-    k1bin_dv[idx_dv] = 0.;
-    k2bin_dv[idx_dv] = 0.;
-    k1eff_dv[idx_dv] = 0.;
-    k2eff_dv[idx_dv] = 0.;
-    bk_dv[idx_dv] = 0.;
-    sn_dv[idx_dv] = 0.;
-  }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
   // Measurement

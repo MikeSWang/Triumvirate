@@ -440,20 +440,15 @@ class MeshField {
   fftw_plan inv_transform{};
 #if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
   fftHandle transform_gpu{};
-  // fftHandle transform_s_gpu{};
-  // fftHandle inv_transform_gpu{};
 #endif  // TRV_USE_HIP || TRV_USE_CUDA
 
   /// FFT field arrays
 #if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
   fft_double_complex* d_field = nullptr;
-  // fft_double_complex* d_field_s = nullptr;
 #endif  // TRV_USE_HIP || TRV_USE_CUDA
 #ifdef TRV_USE_CUDA
   /// Cuda extension library descriptor
   cudaLibXtDesc* field_desc = nullptr;
-  // cudaLibXtDesc* inv_field_desc = nullptr;
-  // cudaLibXtDesc* field_s_desc = nullptr;
 #endif  // TRV_USE_CUDA
 
 #ifdef _CUDA_STREAM

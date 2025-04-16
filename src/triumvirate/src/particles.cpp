@@ -40,17 +40,6 @@ ParticleCatalogue::ParticleCatalogue(int verbose) {
   if (verbose >= 0) {
     trvs::logger.reset_level(verbose);
   }
-
-  // Set default values (likely redundant but safe).
-  this->pdata = nullptr;
-  this->ntotal = 0;
-  this->wtotal = 0.;
-  this->wstotal = 0.;
-  for (int iaxis = 0; iaxis < 3; iaxis++) {
-    this->pos_min[iaxis] = 0.;
-    this->pos_max[iaxis] = 0.;
-    this->pos_span[iaxis] = 0.;
-  }
 }
 
 ParticleCatalogue::~ParticleCatalogue() {this->finalise_particles();}

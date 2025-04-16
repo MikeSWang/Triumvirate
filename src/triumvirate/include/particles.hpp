@@ -79,15 +79,15 @@ class ParticleCatalogue {
  public:
   std::string source;  ///< catalogue source
 
-  ParticleData* pdata;  ///< particle data
+  ParticleData* pdata = nullptr;  ///< particle data
 
-  int ntotal;      ///< total number of particles
-  double wtotal;   ///< total overall weight of particles
-  double wstotal;  ///< total sample weight of particles
+  int ntotal = 0;       ///< total number of particles
+  double wtotal = 0.;   ///< total overall weight of particles
+  double wstotal = 0.;  ///< total sample weight of particles
 
-  double pos_min[3];   ///< minimum values of particle coordinates
-  double pos_max[3];   ///< maximum values of particle coordinates
-  double pos_span[3];  ///< span of particle coordinates
+  double pos_min[3] = {0., 0., 0.};   ///< minimum particle coordinates
+  double pos_max[3] = {0., 0., 0.};   ///< maximum particle coordinates
+  double pos_span[3] = {0., 0., 0.};  ///< span of particle coordinates
 
   // ---------------------------------------------------------------------
   // Life cycle

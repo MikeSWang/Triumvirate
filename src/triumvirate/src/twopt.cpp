@@ -408,16 +408,10 @@ trv::PowspecMeasurements compute_powspec(
   int ell1 = params.ELL;
 
   // Set up output.
-  int* nmodes_save = new int[kbinning.num_bins];
-  double* k_save = new double[kbinning.num_bins];
+  int* nmodes_save = new int[kbinning.num_bins]();
+  double* k_save = new double[kbinning.num_bins]();
   std::complex<double>* pk_save = new std::complex<double>[kbinning.num_bins];
   std::complex<double>* sn_save = new std::complex<double>[kbinning.num_bins];
-  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-    nmodes_save[ibin] = 0;
-    k_save[ibin] = 0.;
-    pk_save[ibin] = 0.;
-    sn_save[ibin] = 0.;
-  }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
   // Measurement
@@ -525,14 +519,9 @@ trv::TwoPCFMeasurements compute_corrfunc(
   int ell1 = params.ELL;
 
   // Set up output.
-  int* npairs_save = new int[rbinning.num_bins];
-  double* r_save = new double[rbinning.num_bins];
+  int* npairs_save = new int[rbinning.num_bins]();
+  double* r_save = new double[rbinning.num_bins]();
   std::complex<double>* xi_save = new std::complex<double>[rbinning.num_bins];
-  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-    npairs_save[ibin] = 0;
-    r_save[ibin] = 0.;
-    xi_save[ibin] = 0.;
-  }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
   // Measurement
@@ -635,16 +624,10 @@ trv::PowspecMeasurements compute_powspec_in_gpp_box(
   // Set-up
   // ---------------------------------------------------------------------
 
-  int* nmodes_save = new int[kbinning.num_bins];
-  double* k_save = new double[kbinning.num_bins];
+  int* nmodes_save = new int[kbinning.num_bins]();
+  double* k_save = new double[kbinning.num_bins]();
   std::complex<double>* pk_save = new std::complex<double>[kbinning.num_bins];
   std::complex<double>* sn_save = new std::complex<double>[kbinning.num_bins];
-  for (int ibin = 0; ibin < kbinning.num_bins; ibin++) {
-    nmodes_save[ibin] = 0;
-    k_save[ibin] = 0.;
-    pk_save[ibin] = 0.;
-    sn_save[ibin] = 0.;
-  }  // likely redundant but safe
 
   // Check input normalisation matches expectation.
   double norm = double(catalogue_data.ntotal) * double(catalogue_data.ntotal)
@@ -736,14 +719,9 @@ trv::TwoPCFMeasurements compute_corrfunc_in_gpp_box(
   // Set-up
   // ---------------------------------------------------------------------
 
-  int* npairs_save = new int[rbinning.num_bins];
-  double* r_save = new double[rbinning.num_bins];
+  int* npairs_save = new int[rbinning.num_bins]();
+  double* r_save = new double[rbinning.num_bins]();
   std::complex<double>* xi_save = new std::complex<double>[rbinning.num_bins];
-  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-    npairs_save[ibin] = 0;
-    r_save[ibin] = 0.;
-    xi_save[ibin] = 0.;
-  }  // likely redundant but safe
 
   // Check input normalisation matches expectation.
   double norm = double(catalogue_data.ntotal) * double(catalogue_data.ntotal)
@@ -836,14 +814,9 @@ trv::TwoPCFWindowMeasurements compute_corrfunc_window(
   int ell1 = params.ELL;
 
   // Set up output.
-  int* npairs_save = new int[rbinning.num_bins];
-  double* r_save = new double[rbinning.num_bins];
+  int* npairs_save = new int[rbinning.num_bins]();
+  double* r_save = new double[rbinning.num_bins]();
   std::complex<double>* xi_save = new std::complex<double>[rbinning.num_bins];
-  for (int ibin = 0; ibin < rbinning.num_bins; ibin++) {
-    npairs_save[ibin] = 0;
-    r_save[ibin] = 0.;
-    xi_save[ibin] = 0.;
-  }  // likely redundant but safe
 
   // ---------------------------------------------------------------------
   // Measurement

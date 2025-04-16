@@ -228,8 +228,6 @@ class HankelTransform {
   fftw_plan pre_plan{};
   fftw_plan post_plan{};
 #if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
-  // fftHandle pre_plan_gpu{};
-  // fftHandle post_plan_gpu{};
   fftHandle plan_gpu{};
 #endif  // TRV_USE_HIP || TRV_USE_CUDA
 
@@ -237,16 +235,8 @@ class HankelTransform {
   fftw_complex* pre_buffer = nullptr;
   fftw_complex* post_buffer = nullptr;
 #if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
-  // fft_double_complex* d_pre_buffer = nullptr;
-  // fft_double_complex* d_post_buffer = nullptr;
   fft_double_complex* d_buffer = nullptr;
 #endif  // TRV_USE_HIP || TRV_USE_CUDA
-// #ifdef TRV_USE_CUDA
-//   /// Cuda extension library descriptor
-//   // cudaLibXtDesc* pre_buffer_desc = nullptr;
-//   // cudaLibXtDesc* post_buffer_desc = nullptr;
-//   cudaLibXtDesc* buffer_desc = nullptr;
-// #endif  // TRV_USE_CUDA
 
 #ifdef _CUDA_STREAM
   /// Cuda streams for pre- and post-transform
