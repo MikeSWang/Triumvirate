@@ -846,11 +846,7 @@ def add_options_omp(macros, cflags, ldflags, libs, lib_dirs, include_dirs,
             cflags.append(cflag_)
 
     # Adapt `ldflags`, `libs` and `lib_dirs`.
-    LIBS_OMP_BASED = []
-    if not cuda:
-        LIBS_OMP_BASED += [
-            'fftw3_omp',
-        ]  # noqa: E231
+    LIBS_OMP_BASED = ['fftw3_omp',]  # noqa: E231
     for lib_ in LIBS_OMP_BASED:
         if lib_ and lib_ not in libs:
             libs.append(lib_)
