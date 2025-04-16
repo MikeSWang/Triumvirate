@@ -46,6 +46,7 @@ requirements:
     # Use conda-forge channel libraries.
     - cuda-version {{ cuda_version }}
     - gsl >=2.7
+    - fftw >=3.3
     - libcufft
     - libgomp  # [linux]
     - setuptools >=61.0
