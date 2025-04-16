@@ -446,7 +446,6 @@ class MeshField {
 
   /// FFT field arrays
 #if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
-  fft_double_complex* h_field = nullptr;
   fft_double_complex* d_field = nullptr;
   // fft_double_complex* d_field_s = nullptr;
 #endif  // TRV_USE_HIP || TRV_USE_CUDA
@@ -795,7 +794,6 @@ class FieldStats {
   /// FFT(W) buffer array for pseudo-two-point statistics
   fftw_complex* twopt_3d = nullptr;
 #if defined(TRV_USE_HIP) || defined(TRV_USE_CUDA)
-  fft_double_complex* h_twopt_3d = nullptr;
   fft_double_complex* d_twopt_3d = nullptr;
 #endif  // TRV_USE_HIP || TRV_USE_CUDA
 #ifdef TRV_USE_CUDA
