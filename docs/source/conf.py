@@ -40,6 +40,9 @@ pkg = sys.modules[pkg_name]
 
 pkg_date = pkg.__date__.split('-').pop(0)
 if os.getenv('READTHEDOCS') == 'True':
+    if 'html_context' not in globals():
+        html_context = {}
+    html_context["READTHEDOCS"] = True
     with open(docs_dir/"RTD_VERSION.tmp") as vers_file:
         pkg_version = vers_file.readline().strip()
 else:
@@ -75,6 +78,7 @@ extensions = [
     'breathe',
     'exhale',
     'myst_nb',
+    # FUTURE: This extension is deprecated and absorbed into RTD Addons.
     'hoverxref.extension',
     'notfound.extension',
     'sphinx.ext.autodoc',
@@ -90,7 +94,6 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_design',
     # 'sphinx_inline_tabs',
-    'sphinx_search.extension',
     # 'sphinx_tabs.tabs',
     'sphinx_togglebutton',
     'sphinxcontrib.bibtex',
@@ -283,6 +286,7 @@ exhale_args = {
     """),
 }
 
+# FUTURE: This extension is deprecated and absorbed into RTD Addons.
 hoverxref_auto_ref = False
 hoverxref_mathjax = True
 hoverxref_sphinxtabs = True
