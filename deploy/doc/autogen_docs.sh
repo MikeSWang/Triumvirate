@@ -123,9 +123,9 @@ replace_in_doxyfile "PROJECT_NUMBER         = ${vers}"
 
 # HACK: Ensure RTD Doxygen backward compatibility.
 if [[ "${READTHEDOCS}" == 'True' ]]; then
-    MATHJAX_RELPATH="https:\/\/cdn.jsdelivr.net\/npm\/mathjax@2"
+    # MATHJAX_RELPATH="https:\/\/cdn.jsdelivr.net\/npm\/mathjax@2"
+    # replace_in_doxyfile "MATHJAX_RELPATH        = ${MATHJAX_RELPATH}"
     replace_in_file ${THMS_DIR}/doxygen-header.html "\$darkmode"
-    replace_in_doxyfile "MATHJAX_RELPATH        = ${MATHJAX_RELPATH}"
 fi
 
 # Prepare static assets.
