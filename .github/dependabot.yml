@@ -16,8 +16,6 @@ updates:
       - 'maintenance'
     assignees:
       - MikeSWang
-    reviewers:
-      - MikeSWang
 
   - package-ecosystem: github-actions
     directory: "/"
