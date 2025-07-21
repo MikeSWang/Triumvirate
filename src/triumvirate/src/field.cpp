@@ -1797,7 +1797,7 @@ void MeshField::inv_fourier_transform_ylm_wgtd_field_band_limited(
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Performing inverse Fourier transform to spherical harmonic weighted "
-      "'%s' in wavenumber bands [%f, %f).",
+      "'%s' in wavenumber interval [%f, %f).",
       this->name.c_str(), k_lower, k_upper
     );
   }
@@ -3207,7 +3207,7 @@ FieldStats::compute_uncoupled_shotnoise_for_bispec_per_bin(
   if (trvs::currTask == 0) {
     trvs::logger.debug(
       "Computing uncoupled shot noise for bispectrum "
-      "in wavenumber bin [%f, %f).",
+      "at wavenumbers (%f, %f).",
       k_a, k_b
     );
   }

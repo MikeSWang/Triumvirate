@@ -133,8 +133,8 @@ NAMED_FORMULAE = {
             (8, 4, Fraction(490, 2431)),
         ]
     },
-    # Sugiyama et al. (2018) [arXiv:1803.02132]
-    'sugiyama+18': {
+    # Sugiyama et al. (2019) [arXiv:1803.02132]
+    'sugiyama+19': {
         '000': [
             ('000', '000', 1),
             ('000', 'ic', -1),
