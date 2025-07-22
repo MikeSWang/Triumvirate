@@ -2746,7 +2746,7 @@ class BispecWinConv(WinConvBase):
     #         return B_diag_conv_out, zeta_diag_conv
     #     return B_diag_conv_out
 
-    def gen_winconv_mat(self, ic=False, concat=False):
+    def gen_winconv_mat(self, ic=False, concat=False, diag=False):
         """Generate the window convolution matrix/matrices.
 
         For each of the required windowed bispectrum multipoles,
@@ -2762,6 +2762,10 @@ class BispecWinConv(WinConvBase):
         concat : bool, optional
             If `True` (default is `False`), concatenate the convolution
             matrices for each required multipole into a single matrix.
+        diag : bool, optional
+            If `True` (default is `False`, generate the window convolution
+            matrix for the diagonal of the windowed bispectrum multipoles
+            only.
 
         Returns
         -------
@@ -2834,8 +2838,17 @@ class BispecWinConv(WinConvBase):
             multipole: [] for multipole in self._formulae.multipoles
         }
 
-        def _return_wcmat(wcmat, concat):  # numpydoc ignore=GL08
+        def _return_wcmat(wcmat, concat, diag):  # numpydoc ignore=GL08
             self._winconv._catch_warnings = _winconv_catch_warnings
+
+            if wcmat is not None:
+                select_rows = [
+                    idx * (len(self.k_out) + 1)
+                    for idx in range(len(self.k_out))
+                ] if diag else slice(None)
+                for multipole, wcmat_ in wcmat.items():
+                    wcmat[multipole] = wcmat_[select_rows]
+
             return wcmat if (not concat or wcmat is None) \
                 else np.row_stack([
                     wcmat[multipole] for multipole in self._formulae.multipoles
@@ -3056,4 +3069,4 @@ class BispecWinConv(WinConvBase):
             else:
                 os.environ['OMP_NUM_THREADS'] = nthreads_env
 
-        return _return_wcmat(wc_matrices, concat)
+        return _return_wcmat(wc_matrices, concat, diag)
