@@ -2398,8 +2398,10 @@ class BispecWinConv(WinConvBase):
            |farr1d_type|}
         Wavenumber sample points for the input bispectrum multipoles,
         either the same for all multipoles or a dictionary of
-        sample points (value) for each multipole (key).  Must be
-        logarithmically spaced.
+        sample points (value) for each multipole (key).  If not
+        logarithmically spaced, resampling will be performed with the same
+        number of points and range as `window_sampts` but with logarithmic
+        spacing.
     k_out : 1-d array of float, optional
         Wavenumber sample points for the output bispectrum multipoles.
         If `None` (default), it is automatically derived.
@@ -2508,13 +2510,23 @@ class BispecWinConv(WinConvBase):
                 for multipole_Z in self._formulae.multipoles_Z
             }
 
+        self._k_in_orig = None
         try:
             for k in self.k_in.values():
                 _check_1d_array(k, check_loglin=True)
         except SpacingError:
-            raise SpacingError(
+            self._k_in_orig = self.k_in.copy()
+            self.k_in = {
+                multipole_Z: np.logspace(
+                    np.log10(_k_in_[0]), np.log10(_k_in_[-1]), len(k), base=10
+                )
+                for multipole_Z, _k_in_ in self._k_in_orig.items()
+            }
+            warnings.warn(
                 "Input bispectrum wavenumber sample points are not "
-                "logarithmically spaced."
+                "logarithmically spaced and will be resampled in the "
+                "same range at the same number of points. "
+                "Interpolation performed may lead to inaccurate results.",
             )
 
         # Instantiate forward transforms for each unwindowed
@@ -2617,6 +2629,18 @@ class BispecWinConv(WinConvBase):
             (only returned if `ret_zeta` is `True`).
 
         """
+        # Reinterpolate input bispectrum multipoles if necessary.
+        if self._k_in_orig is not None:
+            B_in = {
+                multipole_Z: RectBivariateSpline(
+                    self._k_in_orig[multipole_Z],
+                    self._k_in_orig[multipole_Z],
+                    B_in[multipole_Z],
+                    kx=self.spline[-1], ky=self.spline[-1]
+                )(self.k_in[multipole_Z], self.k_in[multipole_Z])
+                for multipole_Z in B_in
+            }
+
         # Backward transform bispectrum multipoles to 3PCF multipoles.
         zeta_in = {}
         for multipole_Z in self._formulae._multipoles_Z_true:
