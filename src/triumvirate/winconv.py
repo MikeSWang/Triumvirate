@@ -172,7 +172,7 @@ below---
   Wilson et al., 2016.
   `MNRAS 464(3), 3121 <https://doi.org/10.1093/mnras/stw2576>`_
   [`arXiv:1511.07799 <https://arxiv.org/abs/1511.07799>`_];
-- ``'sugiyama+18'`` (for plane-parallel three-point statistics):
+- ``'sugiyama+19'`` (for plane-parallel three-point statistics):
   Sugiyama et al., 2018.
   `MNRAS 484(1), 364 <https://doi.org/10.1093/mnras/sty3249>`_
   [`arXiv:1803.02132 <https://arxiv.org/abs/1803.02132>`_].

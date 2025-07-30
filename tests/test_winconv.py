@@ -74,7 +74,7 @@ def test_calc_threept_winconv_coeff(multipole, multipole_Q, multipole_Z,
             does_not_raise(),
         ),
         (
-            "sugiyama+18",
+            "sugiyama+19",
             np.array([0.1, 0.2, 0.3]),
             {
                 '000': np.array(
@@ -96,7 +96,7 @@ def test_calc_threept_winconv_coeff(multipole, multipole_Q, multipole_Z,
             does_not_raise(),
         ),
         (
-            "sugiyama+18",
+            "sugiyama+19",
             np.array([0.1, 0.2, 0.3]),
             {
                 '000': np.array(
