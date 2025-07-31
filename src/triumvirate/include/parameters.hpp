@@ -274,7 +274,7 @@ void override_paramset_by_envvars(trv::ParameterSet& params);
  * @param[in,out] params Parameter set.
  */
 void set_boxsize_from_expand(
-  const double spans[3], trv::ParameterSet& params
+  const double* spans, trv::ParameterSet& params
 );
 
 /**

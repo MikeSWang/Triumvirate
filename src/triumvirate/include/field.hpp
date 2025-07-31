@@ -558,7 +558,7 @@ class MeshField {
   /**
    * @brief Compute the interpolation window at each mesh grid
    *        in Fourier space for different assignment schemes and store
-   *        the values in @ref trv::MeshField.window.
+   *        the values.
    *
    * @param order Order of the assignment scheme
    *              (default is 0 as placeholder).

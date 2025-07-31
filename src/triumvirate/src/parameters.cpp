@@ -1414,7 +1414,7 @@ void override_paramset_by_envvars(trv::ParameterSet& params) {
 }
 
 void set_boxsize_from_expand(
-  const double spans[3], trv::ParameterSet& params
+  const double* spans, trv::ParameterSet& params
 ) {
   for (int iaxis = 0; iaxis < 3; iaxis++) {
     params.boxsize[iaxis] = spans[iaxis] * params.expand;
