@@ -22,14 +22,25 @@ see `Parameter Configuration <tutorials/Configuration.html>`_.
 Usage guides
 ============
 
-For advanced usage of the Python package, consult the following tutorials
+For advanced usage of the Python package, consult the following sections
 for various functionalities:
 
 - `Customised Logger <tutorials/Logger.html>`_
 - `Parameter Set <tutorials/Parameters.html>`_
-- `Binning Scheme <tutorials/Binning.html>`_
 - `Particle Catalogue <tutorials/Catalogue.html>`_
-- `Clustering Measurements <tutorials/Measurements.html>`_
+- Clustering Measurements
+
+  - `Binning Scheme <tutorials/measurement/Binning.html>`_
+  - `Clustering Measurements <tutorials/measurement/Statistics.html>`_
+
+- Window Convolution
+
+  - `Window Function Multipoles <tutorials/window/WindowFunctionMultipoles.html>`_
+  - `Window Convolution Series <tutorials/window/WindowConvolutionSeries.html>`_
+  - `Window Convolution Matrix <tutorials/window/WindowConvolutionMatrix.html>`_
+  - `Window Convolution Example 1 <tutorials/window/WindowConvolution-QSO_complete.html>`_
+  - `Window Convolution Example 2 <tutorials/window/WindowConvolution-LRG_FA.html>`_
+
 
 .. toctree::
     :hidden:
@@ -37,9 +48,9 @@ for various functionalities:
 
     tutorials/Logger.ipynb
     tutorials/Parameters.ipynb
-    tutorials/Binning.ipynb
     tutorials/Catalogue.ipynb
-    tutorials/Measurements.ipynb
+    tutorials_measurement
+    tutorials_window
 
 
 Although the C++ library is intended as the backend for the Python package,
