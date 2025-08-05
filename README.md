@@ -2,7 +2,7 @@
 <img src="docs/source/_static/image/Triumvirate.png" alt=Triumvirate-Logo width=67%>
 </p>
 
-# Three-Point Clustering Measurements in LSS
+# Three-Point Clustering Statistics in LSS
 
 [![Release](https://img.shields.io/github/v/release/MikeSWang/Triumvirate?display_name=tag&sort=semver&logo=Git)](https://github.com/MikeSWang/Triumvirate/releases/latest)
 [![CI](https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/ci.yml?label=ci&logo=GitHubActions)](https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml)
@@ -11,8 +11,8 @@
 [![Codacy-Badge](https://app.codacy.com/project/badge/Grade/009fa0a74d5c400bbe383bd8b3249a5b)](https://app.codacy.com/gh/MikeSWang/Triumvirate/dashboard?utm_campaign=Badge_grade)
 
 ``Triumvirate`` is a Python/C++ software package for measuring three-point (and
-two-point) clustering statistics in large-scale structure (LSS) cosmological
-analyses.
+two-point) clustering statistics and performing survey window convolution in
+large-scale structure (LSS) cosmological analyses.
 
 
 ## Documentation
@@ -43,14 +43,14 @@ can be found on the [Installation](
 https://triumvirate.readthedocs.io/en/latest/installation.html#python-package)
 page in the documentation.
 
+### GPU variants
+
 <!-- [![PyPI](https://img.shields.io/pypi/v/Triumvirate-CUDA?logo=PyPI&color=informational)](https://pypi.org/project/Triumvirate-CUDA)
 [![Conda](https://img.shields.io/conda/v/msw/triumvirate-cuda?logo=Anaconda&color=informational)](https://anaconda.org/msw/triumvirate-cuda) -->
 
-> [!TIP]
-> CUDA variants of the Python package are/will be made available as
-> ``Triumvirate-CUDA`` on [PyPI](https://pypi.org/project/Triumvirate-CUDA)
-> and ``triumvirate-cuda`` through
-> [Conda](https://anaconda.org/msw/triumvirate-cuda).
+CUDA variants of the Python package are/will be made available as
+``Triumvirate-CUDA`` on [PyPI](https://pypi.org/project/Triumvirate-CUDA)
+and ``triumvirate-cuda`` through [Conda](https://anaconda.org/msw/triumvirate-cuda).
 
 ### C++ library & program
 
@@ -79,7 +79,7 @@ Then, execute in shell:
 
 ```sh
 make clean
-make ([py|cpp]install)|(cpp[libinstall|appbuild]) [useomp=(true|1)] [usecuda=(true|1)]
+make ([py|cpp]install)|(cpp[libinstall|appbuild]) [useomp=(true|1)] [usecuda=(true|1)] [usehdf5=(true|1)]
 ```
 
 where ``cpplibinstall`` or ``cppappbuild`` respectively builds the C++
@@ -88,7 +88,8 @@ static library or binary executable only, ``cppinstall`` builds both,
 all of the above. To enable OpenMP parallelisation, append ``useomp=true``
 or ``useomp=1`` to the end of the second line as shown above. To enable
 CUDA support, append ``usecuda=true`` or ``usecuda=1`` to the end of the
-second line as shown above.
+second line as shown above. To enable HDF5 file format support, append
+``usehdf5=true`` or ``usehdf5=1`` to the end of the second line as shown above.
 
 > [!NOTE]
 > The latest release is on the [``main``](
@@ -118,6 +119,11 @@ second line as shown above.
 > https://triumvirate.readthedocs.io/en/latest/installation.html#cuda-support)
 > page in the documentation for more details.
 
+> [!IMPORTANT]
+> If enabling HDF5 format support, ensure the HDF5 library is available for
+> linking. If your HDF5 library is MPI-enabled, ensure your compiler is
+> compatible, or switch to a non-parallel HDF5 library.
+
 > [!TIP]
 > Pass option ``-j[N] -O`` to `make` to run multiple concurrent jobs
 > for parallel building (optional parameter ``N`` is the number of
@@ -128,14 +134,17 @@ second line as shown above.
 ## Attribution
 
 [![JOSS](https://joss.theoj.org/papers/10.21105/joss.05571/status.svg)](https://doi.org/10.21105/joss.05571)
-[![Zenodo](https://img.shields.io/badge/zenodo-10.5281%2Fzenodo.10072128-1682D4)](https://doi.org/10.5281/zenodo.10072128)
-[![arXiv](https://img.shields.io/badge/arXiv-2304.03643-b31b1b)](https://arxiv.org/abs/2304.03643)
+[![JCAP](https://img.shields.io/badge/10.1088%2F1475--7516%2F2025%2F06%2F031-grey?logo=doi)](https://doi.org/10.1088/1475-7516/2025/06/031)
 [![MNRAS](https://img.shields.io/badge/10.1093%2Fmnras%2Fsty3249-grey?logo=doi)](https://doi.org/10.1093/mnras/sty3249)
 [![MNRAS](https://img.shields.io/badge/10.1093%2Fmnras%2Fstx2333-grey?logo=doi)](https://doi.org/10.1093/mnras/stx2333)
 
+[![arXiv](https://img.shields.io/badge/arXiv-2304.03643-b31b1b)](https://arxiv.org/abs/2304.03643)
+[![arXiv](https://img.shields.io/badge/arXiv-2411.14947-b31b1b)](https://arxiv.org/abs/2411.14947)
+[![Zenodo](https://img.shields.io/badge/zenodo-10.5281%2Fzenodo.10072128-1682D4)](https://doi.org/10.5281/zenodo.10072128)
+
 To acknowledge the use of ``Triumvirate`` in your published research, please
-cite the publications linked above; for convenience, you can refer to the
-files [``CITATION.cff``](CITATION.cff) and [``CITATION.md``](CITATION.md)
+cite the relevant publications linked above; for convenience, you can refer to
+the files [``CITATION.cff``](CITATION.cff) and [``CITATION.md``](CITATION.md)
 for the relevant information in different formats.
 
 

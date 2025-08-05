@@ -61,3 +61,21 @@ In addition, please consider citing the following MNRAS articles (in BibTeX):
     primaryClass = {astro-ph.CO},
 }
 ```
+
+If the window convolution functionality is used, please cite also
+```tex
+@article{Wang:2025,
+    author = {Wang, Mike~Shengbo and Beutler, Florian and others},
+    year = {2025},
+    title = {{Window convolution of the galaxy clustering bispectrum}},
+    journal = {J.~Cosmol.~Astropart.~Phys.},
+    volume = {2025},
+    number = {06},
+    pages = {031},
+    doi = {10.1088/1475-7516/2025/06/031},
+    eid = {arXiv:2411.14947},
+    archivePrefix = {arXiv},
+    eprint = {2411.14947},
+    primaryClass = {astro-ph.CO},
+}
+```

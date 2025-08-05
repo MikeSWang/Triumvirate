@@ -8,52 +8,32 @@
     :align: center
     :width: 67 %
 
-==========================================
-Three-Point Clustering Measurements in LSS
-==========================================
-
-.. image:: https://img.shields.io/github/v/release/MikeSWang/Triumvirate?display_name=tag&sort=semver&logo=Git
-    :target: https://github.com/MikeSWang/Triumvirate/releases/latest
-    :alt: Release
-
-.. .. image:: https://img.shields.io/github/actions/workflow/status/MikeSWang/Triumvirate/ci.yml?label=ci&logo=GitHubActions
-..     :target: https://github.com/MikeSWang/Triumvirate/actions/workflows/ci.yml
-..     :alt: CI
-
-.. .. image:: https://img.shields.io/readthedocs/triumvirate/latest?logo=ReadtheDocs
-..     :target: https://readthedocs.org/projects/triumvirate/builds/
-..     :alt: Docs
-
-.. .. image:: https://results.pre-commit.ci/badge/github/MikeSWang/Triumvirate/main.svg
-..     :target: https://results.pre-commit.ci/latest/github/MikeSWang/Triumvirate/main
-..     :alt: pre-commit.ci-Status
-
-.. .. image:: https://app.codacy.com/project/badge/Grade/009fa0a74d5c400bbe383bd8b3249a5b
-..     :target: https://app.codacy.com/gh/MikeSWang/Triumvirate/dashboard?utm_campaign=Badge_grade
-..     :alt: Codacy-Badge
+========================================
+Three-Point Clustering Statistics in LSS
+========================================
 
 |Triumvirate| is a Python/C++ software package for measuring three-point (and
-two-point) clustering statistics in large-scale structure (LSS) cosmological
-analyses.
+two-point) clustering statistics and performing survey window convolution in
+large-scale structure (LSS) cosmological analyses.
 
 
 Documentation
 =============
 
-.. image:: https://img.shields.io/badge/Read%20the%20Docs-latest-informational?logo=ReadtheDocs
-    :target: https://triumvirate.readthedocs.io/en/latest/
+.. image:: https://img.shields.io/badge/Read%20the%20Docs-stable-informational?logo=ReadtheDocs
+    :target: https://triumvirate.readthedocs.io/en/stable/
     :alt: Documentation
 
 Comprehensive documentation including the `scientific background
-<https://triumvirate.readthedocs.io/en/latest/background.html>`_,
+<https://triumvirate.readthedocs.io/en/stable/background.html>`_,
 `installation instructions
-<https://triumvirate.readthedocs.io/en/latest/installation.html>`_,
+<https://triumvirate.readthedocs.io/en/stable/installation.html>`_,
 `tutorials
-<https://triumvirate.readthedocs.io/en/latest/tutorials.html>`_ and
+<https://triumvirate.readthedocs.io/en/stable/tutorials.html>`_ and
 `API reference
-<https://triumvirate.readthedocs.io/en/latest/apiref.html>`_
+<https://triumvirate.readthedocs.io/en/stable/apiref.html>`_
 can be found at `triumvirate.readthedocs.io
-<https://triumvirate.readthedocs.io/en/latest/>`_.
+<https://triumvirate.readthedocs.io/en/stable/>`_.
 
 
 Installation
@@ -78,72 +58,21 @@ can be found on the `Installation
 page in the documentation.
 
 
-C++ library & program
----------------------
+GPU variants
+------------
 
-|Triumvirate| as either a static library or a binary executable can be
-built using `make`. Instructions for compilation can be found on the
-`Installation
-<https://triumvirate.readthedocs.io/en/latest/installation.html#c-program>`__
-page in the documentation.
+.. .. image:: https://img.shields.io/pypi/v/Triumvirate-CUDA?logo=PyPI&color=informational
+..     :target: https://pypi.org/project/Triumvirate-CUDA
+..     :alt: PyPI
 
+.. .. image:: https://img.shields.io/conda/v/msw/triumvirate-cuda?logo=Anaconda&color=informational
+..     :target: https://anaconda.org/msw/triumvirate-cuda
+..     :alt: Conda
 
-Development mode
-----------------
-
-Both the Python package and the C++ library/program can be set up in
-development mode with `make`, provided that dependency requirements are
-satisfied (GSL and FFTW3 libraries are mandatory while an OpenMP library
-is optional).
-
-First `git clone` the desired branch/release from the GitHub repository and
-change into the repository directory path:
-
-.. code-block:: sh
-
-    git clone git@github.com:MikeSWang/Triumvirate.git --branch <branch-or-release>
-    cd Triumvirate
-
-Then, execute in shell:
-
-.. code-block:: sh
-
-    make clean
-    make [py|cpp]install [useomp=(true|1)]
-
-where ``cpplibinstall`` or ``cppappbuild`` respectively builds the C++
-static library or binary executable only, ``cppinstall`` builds both,
-``pyinstall`` builds the Python package only, and ``install`` builds
-all of the above. To enable OpenMP parallelisation, append ``useomp=true``
-or ``useomp=1`` to the end of the second line as shown above.
-
-.. note::
-
-    The latest release is on the |main|_ branch. The default |Makefile|_
-    (located at the repository directory root) should work in most
-    build environments, but may need to be modified as appropriate.
-
-.. note::
-
-    See the `Installation
-    <https://triumvirate.readthedocs.io/en/latest/installation.html#dependencies>`__
-    page in the documentation for more details about dependency requirements.
-
-.. note::
-
-    If enabling OpenMP, ensure the C++ compiler used supports it and is
-    configured accordingly. The default |Makefile|_ (located at the repository
-    directory root) assumes the GCC compiler and OpenMP library. See the
-    `Installation
-    <https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support>`__
-    page in the documentation for more details.
-
-.. note::
-
-    Pass option ``-j[N] -O`` to `make` to run multiple concurrent jobs
-    for parallel building (optional parameter ``N`` is the number of
-    parallel jobs; see `GNU Make Manual
-    <https://www.gnu.org/software/make/manual/html_node/Options-Summary.html>`_).
+CUDA variants of the Python package are/will be made available as
+``Triumvirate-CUDA`` on `PyPI <https://pypi.org/project/Triumvirate-CUDA>`_
+and ``triumvirate-cuda`` through `Conda
+<https://anaconda.org/msw/triumvirate-cuda>`_.
 
 
 Attribution
@@ -153,13 +82,9 @@ Attribution
     :target: https://doi.org/10.21105/joss.05571
     :alt: JOSS
 
-.. image:: https://img.shields.io/badge/zenodo-10.5281%2Fzenodo.10072128-1682D4
-    :target: https://doi.org/10.5281/zenodo.10072128
-    :alt: Zenodo
-
-.. image:: https://img.shields.io/badge/arXiv-2304.03643-b31b1b
-    :target: https://arxiv.org/abs/2304.03643
-    :alt: arXiv
+.. image:: https://img.shields.io/badge/10.1088%2F1475-7516%2F2025%2F06%2F031-grey?logo=doi
+    :target: https://doi.org/10.1088/1475-7516/2025/06/031
+    :alt: JCAP
 
 .. image:: https://img.shields.io/badge/10.1093%2Fmnras%2Fsty3249-grey?logo=doi
     :target: https://doi.org/10.1093/mnras/sty3249
@@ -169,9 +94,21 @@ Attribution
     :target: https://doi.org/10.1093/mnras/stx2333
     :alt: MNRAS
 
+.. image:: https://img.shields.io/badge/arXiv-2304.03643-b31b1b
+    :target: https://arxiv.org/abs/2304.03643
+    :alt: arXiv
+
+.. image:: https://img.shields.io/badge/arXiv-2411.14947-b31b1b
+    :target: https://arxiv.org/abs/2411.14947
+    :alt: arXiv
+
+.. image:: https://img.shields.io/badge/zenodo-10.5281%2Fzenodo.10072128-1682D4
+    :target: https://doi.org/10.5281/zenodo.10072128
+    :alt: Zenodo
+
 To acknowledge the use of |Triumvirate| in your published research, please
-cite the publications linked above; for convenience, you can refer to the
-files |CitationCFF|_ and |CitationMD|_ for the relevant information in
+cite the relevant publications linked above; for convenience, you can refer to
+the files |CitationCFF|_ and |CitationMD|_ for the relevant information in
 different formats.
 
 

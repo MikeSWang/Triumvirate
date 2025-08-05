@@ -5,11 +5,11 @@
     :align: center
     :width: 67 %
 
-.. rubric:: **Three-Point Clustering Measurements in LSS**
+.. rubric:: **Three-Point Clustering Statistics in LSS**
 
 |Triumvirate| is a Python/C++ package for measuring three-point (and
-two-point) clustering statistics in large-scale structure (LSS)
-cosmological analyses.
+two-point) clustering statistics and performing survey window convolution
+in large-scale structure (LSS) cosmological analyses.
 
 .. tip::
 
@@ -27,13 +27,9 @@ Attribution
     :target: https://doi.org/10.21105/joss.05571
     :alt: JOSS
 
-.. image:: https://img.shields.io/badge/zenodo-10.5281%2Fzenodo.10072128-1682D4
-    :target: https://doi.org/10.5281/zenodo.10072128
-    :alt: Zenodo
-
-.. image:: https://img.shields.io/badge/arXiv-2304.03643-b31b1b
-    :target: https://arxiv.org/abs/2304.03643
-    :alt: arXiv
+.. image:: https://img.shields.io/badge/10.1088%2F1475-7516%2F2025%2F06%2F031-grey?logo=doi
+    :target: https://doi.org/10.1088/1475-7516/2025/06/031
+    :alt: JCAP
 
 .. image:: https://img.shields.io/badge/10.1093%2Fmnras%2Fsty3249-grey?logo=doi
     :target: https://doi.org/10.1093/mnras/sty3249
@@ -42,6 +38,18 @@ Attribution
 .. image:: https://img.shields.io/badge/10.1093%2Fmnras%2Fstx2333-grey?logo=doi
     :target: https://doi.org/10.1093/mnras/stx2333
     :alt: MNRAS
+
+.. image:: https://img.shields.io/badge/zenodo-10.5281%2Fzenodo.10072128-1682D4
+    :target: https://doi.org/10.5281/zenodo.10072128
+    :alt: Zenodo
+
+.. image:: https://img.shields.io/badge/arXiv-2304.03643-b31b1b
+    :target: https://arxiv.org/abs/2304.03643
+    :alt: arXiv
+
+.. image:: https://img.shields.io/badge/arXiv-2411.14947-b31b1b
+    :target: https://arxiv.org/abs/2411.14947
+    :alt: arXiv
 
 |br| To acknowledge the use of |Triumvirate| in your published research, please
 cite the companion journal article :cite:p:`Wang:2023` and related publications

@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "To acknowledge the use of Triumvirate in your work, please cite the following publication(s)."
+message: "To acknowledge the use of Triumvirate in your work, please cite the relevant publication(s) below."
 authors:
 - family-names: "Wang"
   given-names: "Mike Shengbo"
@@ -54,6 +54,24 @@ preferred-citation:
       value: "arXiv:2304.03643"
       description: "arXiv eprint [astro-ph.IM]"
 references:
+  - type: article
+    authors:
+      - family-names: "Wang"
+        given-names: "Mike Shengbo"
+      - family-names: "Beutler"
+        given-names: "Florian"
+      ...
+    title: "Window convolution of the galaxy clustering bispectrum"
+    journal: "J. Cosmol. Astropart. Phys."
+    year: 2025
+    volume: 2025
+    issue: 06
+    start: 031
+    doi: 10.1088/1475-7516/2025/06/031
+    identifiers:
+      - type: other
+        value: "arXiv:2411.14947"
+        description: "arXiv eprint [astro-ph.CO]"
   - type: article
     authors:
       - family-names: "Sugiyama"
