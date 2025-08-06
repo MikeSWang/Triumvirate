@@ -52,9 +52,9 @@ repos:
         args: ['--py310-plus']
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.5
+    rev: v0.12.7
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: ['--fix']
 
   - repo: https://github.com/hhatto/autopep8
@@ -99,7 +99,7 @@ repos:
     rev: v2.4.1
     hooks:
       - id: codespell
-        args: ['--write-changes', '--toml', 'deploy/pkg/pyproject/.pyproject.toml']
+        args: ['--write-changes', '--toml', 'deploy/pkg/pyproject/.pyproject.toml', '--skip', '*.ipynb']
         additional_dependencies:
           - tomli
 

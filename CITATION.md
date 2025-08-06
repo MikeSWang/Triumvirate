@@ -1,7 +1,7 @@
 Please cite the following JOSS article (in BibTeX),
 ```tex
 @article{Wang:2023a,
-    author = {Wang, Mike Shengbo and Beutler, Florian and Sugiyama, Naonori S.},
+    author = {Wang, Mike~Shengbo and Beutler, Florian and Sugiyama, Naonori~S.},
     year = {2023},
     title = {{Triumvirate: A Python/C++ package for three-point clustering measurements}},
     journal = {J.~Open~Source~Softw.},
@@ -18,7 +18,7 @@ Please cite the following JOSS article (in BibTeX),
 and the following Zenodo archive (in BibTeX),
 ```tex
 @software{Wang:2023b,
-    author = {Wang, Mike Shengbo and Beutler, Florian and Sugiyama, Naonori S.},
+    author = {Wang, Mike~Shengbo and Beutler, Florian and Sugiyama, Naonori~S.},
     year = {2023},
     title = {{Triumvirate: A Python/C++ package for three-point clustering measurements}},
     publisher = {Zenodo},
@@ -32,7 +32,7 @@ and the following Zenodo archive (in BibTeX),
 In addition, please consider citing the following MNRAS articles (in BibTeX):
 ```tex
 @article{Sugiyama:2019,
-    author = {Sugiyama, Naonori S. and Saito, Shun and Beutler, Florian and Seo, Hee-Jong},
+    author = {Sugiyama, Naonori~S. and Saito, Shun and Beutler, Florian and Seo, Hee-Jong},
     year = {2019},
     title = {{A complete FFT-based decomposition formalism for the redshift-space bispectrum}},
     journal = {Mon.~Not.~R.~Astron.~Soc.},
@@ -47,7 +47,7 @@ In addition, please consider citing the following MNRAS articles (in BibTeX):
 }
 
 @article{Sugiyama:2018,
-    author = {Sugiyama, Naonori S. and Shiraishi, Maresuke and Okumura, Teppei},
+    author = {Sugiyama, Naonori~S. and Shiraishi, Maresuke and Okumura, Teppei},
     year = {2018},
     title = {{Limits on statistical anisotropy from BOSS DR12 galaxies using bipolar spherical harmonics}},
     journal = {Mon.~Not.~R.~Astron.~Soc.},

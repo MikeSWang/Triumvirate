@@ -185,8 +185,12 @@ exclude = [
 ]
 
 [tool.ruff.lint]
+ignore = ['RUF100']
 fixable = ['ALL']
 unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"*.ipynb" = ['E703']
 
 # [tool.ruff.format]
 # quote-style = 'preserve'

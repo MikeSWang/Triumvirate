@@ -12,7 +12,7 @@ authors:
 contact:
 - family-names: "Wang"
   given-names: "Mike Shengbo"
-  orcid: "https://orcid.org/0000-0002-2652-4043"
+  orcid: https://orcid.org/0000-0002-2652-4043
 title: "Triumvirate"
 version: 0.3.0
 date-released: 2023-10-04
@@ -45,7 +45,7 @@ preferred-citation:
   start: 5571
   doi: 10.21105/joss.05571
   publisher:
-    name: Open Journals
+    name: "Open Journals"
   issn: 2475-9066
   date-published: 2023-11-07
   url: https://joss.theoj.org/papers/10.21105/joss.05571
@@ -60,7 +60,58 @@ references:
         given-names: "Mike Shengbo"
       - family-names: "Beutler"
         given-names: "Florian"
-      ...
+      - given-names: "Jessica Nicole"
+        family-names: "Aguilar"
+      - given-names: "Steven"
+        family-names: "Ahlen"
+      - given-names: "Davide"
+        family-names: "Bianchi"
+      - given-names: "David"
+        family-names: "Brooks"
+      - given-names: "Todd"
+        family-names: "Claybaugh"
+      - given-names: "Axel"
+        family-names: "de la Macorra"
+      - given-names: "Peter"
+        family-names: "Doel"
+      - given-names: "Andreu"
+        family-names: "Font-Ribera"
+      - given-names: "Enrique"
+        family-names: "Gaztañaga"
+      - given-names: "Gaston"
+        family-names: "Gutierrez"
+      - given-names: "Klaus"
+        family-names: "Honscheid"
+      - given-names: "Cullan"
+        family-names: "Howlett"
+      - given-names: "David"
+        family-names: "Kirkby"
+      - given-names: "Andrew"
+        family-names: "Lambert"
+      - given-names: "Martin"
+        family-names: "Landriau"
+      - given-names: "Ramon"
+        family-names: "Miquel"
+      - given-names: "Gustavo"
+        family-names: "Niz"
+      - given-names: "Francisco"
+        family-names: "Prada"
+      - given-names: "Ignasi"
+        family-names: "Pérez-Ràfols"
+      - given-names: "Graziano"
+        family-names: "Rossi"
+      - given-names: "Eusebio"
+        family-names: "Sanchez"
+      - given-names: "David"
+        family-names: "Schlegel"
+      - given-names: "Michael"
+        family-names: "Schubnell"
+      - given-names: "David"
+        family-names: "Sprayberry"
+      - given-names: "Gregory"
+        family-names: "Tarlé"
+      - given-names: "Benjamin Alan"
+        family-names: "Weaver"
     title: "Window convolution of the galaxy clustering bispectrum"
     journal: "J. Cosmol. Astropart. Phys."
     year: 2025
