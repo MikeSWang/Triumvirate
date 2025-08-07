@@ -31,7 +31,7 @@ for various functionalities:
 - Clustering Measurements
 
   - `Binning Scheme <tutorials/measurement/Binning.html>`_
-  - `Clustering Measurements <tutorials/measurement/Statistics.html>`_
+  - `Clustering Statistics <tutorials/measurement/Statistics.html>`_
 
 - Window Convolution
 

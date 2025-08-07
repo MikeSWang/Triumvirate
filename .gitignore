@@ -54,6 +54,7 @@ wheels/
 docs/build/**
 docs/source/api*/
 docs/source/tutorials/data/
+docs/source/tutorials/tmp/
 docs/source/Doxyfile
 docs/source/Doxyfile.conf.bak
 
