@@ -45,12 +45,13 @@ page in the documentation.
 
 ### GPU variants
 
-<!-- [![PyPI](https://img.shields.io/pypi/v/Triumvirate-CUDA?logo=PyPI&color=informational)](https://pypi.org/project/Triumvirate-CUDA)
-[![Conda](https://img.shields.io/conda/v/msw/triumvirate-cuda?logo=Anaconda&color=informational)](https://anaconda.org/msw/triumvirate-cuda) -->
+[![PyPI](https://img.shields.io/pypi/v/Triumvirate-CUDA?logo=PyPI&color=informational)](https://pypi.org/project/Triumvirate-CUDA)
+[![Conda](https://img.shields.io/conda/v/msw/triumvirate-cuda?logo=Anaconda&color=informational)](https://anaconda.org/msw/triumvirate-cuda)
 
 CUDA variants of the Python package are/will be made available as
 ``Triumvirate-CUDA`` on [PyPI](https://pypi.org/project/Triumvirate-CUDA)
-and ``triumvirate-cuda`` through [Conda](https://anaconda.org/msw/triumvirate-cuda).
+and ``triumvirate-cuda`` through [Conda](
+https://anaconda.org/msw/triumvirate-cuda).
 
 ### C++ library & program
 
@@ -94,7 +95,7 @@ second line as shown above. To enable HDF5 file format support, append
 > [!NOTE]
 > The latest release is on the [``main``](
 > https://github.com/MikeSWang/Triumvirate/tree/main) branch. The default
-> [``Makefile``](Makefile) (located at the repository directory root) should
+> [``Makefile``](./Makefile) (located at the repository directory root) should
 > work in most build environments, but may need to be modified as appropriate.
 
 > [!NOTE]
@@ -104,9 +105,9 @@ second line as shown above. To enable HDF5 file format support, append
 
 > [!IMPORTANT]
 > If enabling OpenMP, ensure the C++ compiler used supports it and is
-> configured accordingly. The default [``Makefile``](Makefile) (located at the
-> repository directory root) assumes the GCC compiler and OpenMP library. See
-> the [Installation](
+> configured accordingly. The default [``Makefile``](./Makefile) (located at
+> the repository directory root) assumes the GCC compiler and OpenMP library.
+> See the [Installation](
 > https://triumvirate.readthedocs.io/en/latest/installation.html#openmp-support)
 > page in the documentation for more details.
 
@@ -114,7 +115,7 @@ second line as shown above. To enable HDF5 file format support, append
 > If enabling CUDA capability, ensure there is a CUDA-capable GPU with the
 > appropriate driver installed. For atypical CUDA Toolkit paths, you may
 > need to append the header and library paths to ``DEP_INCLUDES`` and
-> ``DEP_LDFLAGS`` in the default [``Makefile``](Makefile) (located at the
+> ``DEP_LDFLAGS`` in the default [``Makefile``](./Makefile) (located at the
 > repository directory root). See the [Installation](
 > https://triumvirate.readthedocs.io/en/latest/installation.html#cuda-support)
 > page in the documentation for more details.
@@ -144,8 +145,8 @@ second line as shown above. To enable HDF5 file format support, append
 
 To acknowledge the use of ``Triumvirate`` in your published research, please
 cite the relevant publications linked above; for convenience, you can refer to
-the files [``CITATION.cff``](CITATION.cff) and [``CITATION.md``](CITATION.md)
-for the relevant information in different formats.
+the files [``CITATION.cff``](./CITATION.cff) and [``CITATION.md``](
+./CITATION.md) for the relevant information in different formats.
 
 
 ## Acknowledgement
@@ -187,7 +188,7 @@ which have improved the functionality and documentation of the code.
 [![Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/MikeSWang/Triumvirate?hide_repo_select=true&ref=main)
 
 User feedback and contributions are very welcome. Please refer to the
-[contribution guidelines](.github/CONTRIBUTING.md).
+[contribution guidelines](./.github/CONTRIBUTING.md).
 
 
 ## Discussions & Wiki
@@ -204,7 +205,7 @@ for specific use cases and user environments.
 
 ## Releases
 
-Release notes are included in the [change log](CHANGELOG.md).
+Release notes are included in the [change log](./CHANGELOG.md).
 
 
 ## Licence

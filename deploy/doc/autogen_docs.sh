@@ -103,6 +103,18 @@ recycle_readme () {
     sed -i "s|.*${str_line}.*|${str_line_new}|g" "${README_FILE}"
 }
 
+# @brief Modify README.md file temporarily.
+#
+# @arg Replacement strings.
+# @globals README_FILE
+# @locals str, str_new
+#
+recycle_readme_substr () {
+    str="$1"
+    str_new="$2"
+    sed -i "s|${str}|${str_new}|g" "${README_FILE}"
+}
+
 # Change to working directory.
 cd "${DOCS_DIR}"
 
@@ -114,6 +126,9 @@ vers="$(get_version_release)"
 if [[ "${READTHEDOCS}" == 'True' ]]; then
     echo "${vers}" > RTD_VERSION.tmp
 fi
+
+# Extract Git branch name.
+branch="$(git branch --show-current)"
 
 # Backup Doxyfile.
 cp "${DOXYFILE}" "${DOXYFILE}.bak"
@@ -151,6 +166,7 @@ if [[ ${excl} != 'doxy' ]]; then
     recycle_readme "\[Feature-Issues\]"
     recycle_readme "\[Pull-Requests\]"
     recycle_readme "\[pre-commit\]"
+    recycle_readme_substr "\./" "https://github.com/MikeSWang/Triumvirate/blob/${branch}/"
 
     # Build docs.
     doxygen "${DOXYFILE}"
