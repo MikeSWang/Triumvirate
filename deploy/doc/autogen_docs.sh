@@ -128,7 +128,7 @@ if [[ "${READTHEDOCS}" == 'True' ]]; then
 fi
 
 # Extract Git branch name.
-branch="$(git branch --show-current)"
+branch="$(git rev-parse --abbrev-ref HEAD)"
 
 # Backup Doxyfile.
 cp "${DOXYFILE}" "${DOXYFILE}.bak"
