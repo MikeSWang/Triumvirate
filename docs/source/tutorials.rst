@@ -45,12 +45,30 @@ for various functionalities:
 .. toctree::
     :hidden:
     :maxdepth: 1
+    :caption: Set-up & Data Objects
 
     tutorials/Logger.ipynb
     tutorials/Parameters.ipynb
     tutorials/Catalogue.ipynb
-    tutorials_measurement
-    tutorials_window
+
+.. toctree::
+    :hidden:
+    :maxdepth: 1
+    :caption: Clustering Measurements
+
+    tutorials/measurement/Binning.ipynb
+    tutorials/measurement/Statistics.ipynb
+
+.. toctree::
+    :hidden:
+    :maxdepth: 1
+    :caption: Window Convolution
+
+    tutorials/window/WindowFunctionMultipoles.ipynb
+    tutorials/window/WindowConvolutionSeries.ipynb
+    tutorials/window/WindowConvolutionMatrix.ipynb
+    tutorials/window/WindowConvolution-QSO_complete.ipynb
+    tutorials/window/WindowConvolution-LRG_FA.ipynb
 
 
 Although the C++ library is intended as the backend for the Python package,
