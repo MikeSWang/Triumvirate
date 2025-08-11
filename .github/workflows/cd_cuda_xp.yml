@@ -67,7 +67,7 @@ jobs:
 
       - name: Checkout (automatic trigger)
         if: github.event_name != 'workflow_dispatch'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -75,7 +75,7 @@ jobs:
         if: >
           github.event.inputs.run_build_bdist_cuda_xplat == 'true' &&
           github.event.inputs.version_tag == ''
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-tags: true
 
@@ -83,7 +83,7 @@ jobs:
         if: >
           github.event.inputs.run_build_bdist_cuda_xplat == 'true' &&
           github.event.inputs.version_tag != ''
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: refs/tags/${{ github.event.inputs.version_tag }}
 
@@ -166,7 +166,7 @@ jobs:
           fi
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
