@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # By default, the source .md and product .pdf are both named 'paper'
       # and reside in the same directory.
