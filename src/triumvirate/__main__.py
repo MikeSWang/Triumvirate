@@ -27,12 +27,13 @@ except ImportError:
 try:
     from .logger import setup_logger
 except ImportError:
-    def setup_logger(log_level=20):
+    def setup_logger(log_level=15):  # Use STAT level as default
         """Fallback logger setup."""
         logging.basicConfig(
             level=log_level,
             format='[%(asctime)s %(levelname)s] %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
+            datefmt='%Y-%m-%d %H:%M:%S',
+            stream=sys.stdout  # Output to stdout like C++ version
         )
         logger = logging.getLogger()
         # Add stat level
@@ -48,11 +49,16 @@ def display_prog_logo():
      //\        ___  __                      __       ___  ___      
     //  \        |  |__) | |  | |\/| \  / | |__)  /\   |  |__    
    //    \       |  |  \ | \__/ |  |  \/  | |  \ /~~\  |  |___ 
-  //      \                                                      
- //________\                                                     
-//          \    Three-Point Clustering Measurements in LSS     
-"""
-    print(logo)
+  //      \                                                         
+ //________\    """
+    
+    if is_colourable():
+        tagline = "• \033[1mThree-Point Clustering Measurements in LSS\033[0m •      "
+    else:
+        tagline = "• Three-Point Clustering Measurements in LSS •      "
+    
+    print(logo + tagline)
+    print()
 
 
 def display_prog_licence(brief=False):
