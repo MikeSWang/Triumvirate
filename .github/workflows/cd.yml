@@ -77,13 +77,13 @@ jobs:
         run: python -m twine check --strict dist/*
 
       - name: Save tarball to sdist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: sdist_tar_gz_${{ github.ref_name }}
           path: dist/*.tar.gz
 
       - name: Save tarball to pypi_dist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: pypi_dist_${{ github.ref_name }}
           path: dist/*.tar.gz
@@ -193,13 +193,13 @@ jobs:
         run: python -m twine check --strict dist/*
 
       - name: Save wheel to bdist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: bdist_whl_${{ matrix.os }}_${{ github.ref_name }}
           path: dist/*.whl
 
       - name: Save wheel to pypi_dist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: pypi_dist_${{ runner.os }}_${{ runner.arch }}_${{ github.ref_name }}
           path: dist/*.whl
@@ -286,13 +286,13 @@ jobs:
             -exec cph transmute {} .conda --out-folder ${output_dir} \;
 
       - name: Save build to conda_bld
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: conda_bld_${{ matrix.os }}_${{ github.ref_name }}
           path: dist/*
 
       - name: Save build to conda_dist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: conda_dist_${{ runner.os }}_${{ runner.arch }}_${{ github.ref_name }}
           path: |
