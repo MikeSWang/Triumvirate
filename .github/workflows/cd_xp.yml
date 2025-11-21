@@ -85,7 +85,7 @@ jobs:
 
       - name: Checkout (automatic trigger)
         if: github.event_name != 'workflow_dispatch'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -93,7 +93,7 @@ jobs:
         if: >
           github.event.inputs.run_build_bdist_xplat == 'true' &&
           github.event.inputs.version_tag == ''
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-tags: true
 
@@ -101,7 +101,7 @@ jobs:
         if: >
           github.event.inputs.run_build_bdist_xplat == 'true' &&
           github.event.inputs.version_tag != ''
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: refs/tags/${{ github.event.inputs.version_tag }}
 
@@ -253,7 +253,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
