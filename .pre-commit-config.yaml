@@ -52,7 +52,7 @@ repos:
         args: ['--py310-plus']
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.7
+    rev: v0.14.8
     hooks:
       - id: ruff-check
         args: ['--fix']
@@ -68,7 +68,7 @@ repos:
       - id: flake8
 
   - repo: https://github.com/numpy/numpydoc
-    rev: v1.9.0
+    rev: v1.10.0
     hooks:
       - id: numpydoc-validation
         exclude: "^(\
@@ -104,7 +104,7 @@ repos:
           - tomli
 
   - repo: https://github.com/espressif/conventional-precommit-linter
-    rev: v1.10.0
+    rev: v1.11.0
     hooks:
       - id: conventional-precommit-linter
         stages: [commit-msg]
