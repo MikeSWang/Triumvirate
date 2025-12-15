@@ -200,13 +200,13 @@ jobs:
         run: python -m twine check --strict dist/*
 
       - name: Save wheel to bdist
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: bdist_whl_${{ matrix.os }}_${{ github.ref_name }}
           path: dist/*.whl
 
       - name: Save wheel to pypi_dist
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: pypi_dist_${{ runner.os }}_${{ env.TARGET_ARCH }}_${{ github.ref_name }}
           path: dist/*.whl
@@ -307,13 +307,13 @@ jobs:
             -exec cph transmute {} .conda --out-folder ${output_dir} \;
 
       - name: Save build to conda_bld
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: conda_bld_${{ matrix.os }}_${{ github.ref_name }}
           path: dist/*
 
       - name: Save build to conda_dist
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: conda_dist_${{ runner.os }}_${{ env.TARGET_ARCH }}_${{ github.ref_name }}
           path: |
