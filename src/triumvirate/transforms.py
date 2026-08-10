@@ -20,14 +20,14 @@ import numpy as np
 from scipy.interpolate import InterpolatedUnivariateSpline, RectBivariateSpline
 
 from ._arrayops import (
-    extrap_lin,
-    extrap_loglin,
-    extrap_loglin_oscil,
-    extrap_pad,
     extrap2d_lin,
     extrap2d_loglin,
     extrap2d_loglin_oscil,
     extrap2d_pad,
+    extrap_lin,
+    extrap_loglin,
+    extrap_loglin_oscil,
+    extrap_pad,
 )
 from ._fftlog import HankelTransform
 

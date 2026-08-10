@@ -24,7 +24,6 @@ from triumvirate.twopt import (
     compute_powspec_in_gpp_box,
 )
 
-
 ALGOS = {
     'bispec': {
         'lpp': {
@@ -188,8 +187,8 @@ def setup_benchmarker(algo, case, space, multipole):
 
     # Create parameter set.
     from triumvirate.parameters import (
-        fetch_paramset_template,
         _modify_sampling_parameters,
+        fetch_paramset_template,
     )
 
     paramset = _modify_sampling_parameters(

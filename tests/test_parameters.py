@@ -8,12 +8,11 @@ from copy import deepcopy
 from pprint import pformat
 
 import pytest
-
 from triumvirate.parameters import (
+    _TMPL_PARAM_DICT,
     InvalidParameterError,
     ParameterSet,
     fetch_paramset_template,
-    _TMPL_PARAM_DICT,
 )
 
 
@@ -308,8 +307,7 @@ def test_ParameterSet___getitem__(valid_paramset, default_parameters):
         if valid_paramset[key] != val:
             warnings.warn(
                 "`valid_paramset` fixture does not match default parameters "
-                "for key '{}': {} != {}."
-                .format(key, valid_paramset[key], val),
+                f"for key '{key}': {valid_paramset[key]} != {val}.",
                 category=RuntimeWarning
             )
 
@@ -349,8 +347,7 @@ def test_ParameterSet__getattr__(valid_paramset, default_parameters):
         if getattr(valid_paramset, attr) != val:
             warnings.warn(
                 "`valid_paramset` fixture does not match default parameters "
-                "for attribute '{}': {} != {}."
-                .format(attr, getattr(valid_paramset, attr), val),
+                f"for attribute '{attr}': {getattr(valid_paramset, attr)} != {val}.",
                 category=RuntimeWarning
             )
 
