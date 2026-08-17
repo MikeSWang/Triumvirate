@@ -323,13 +323,10 @@ def test_ParticleCatalogue_write_attrs_as_header(ref_catalogue,
             f"Catalogue source: {minimal_catalogue._source}"
         ) in header
         assert (
-            "Catalogue size: ntotal = {:d}, wtotal = {:.3f}, wstotal = {:.3f}"
-            .format(
-                minimal_catalogue.ntotal,
-                minimal_catalogue.wtotal,
-                minimal_catalogue.wstotal,
-            )
-        ) in header
+            f"Catalogue size: ntotal = {
+                minimal_catalogue.ntotal:d}, wtotal = {
+                minimal_catalogue.wtotal:.3f}, wstotal = {
+                minimal_catalogue.wstotal:.3f}") in header
         assert (
             "Catalogue particle extents: "
             "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"
@@ -344,17 +341,14 @@ def test_ParticleCatalogue_write_attrs_as_header(ref_catalogue,
             ['Data', 'Random'], [minimal_catalogue, ref_catalogue]
         ):
             assert (
-                "{} catalogue source: {}"
-                .format(_source_type, _catalogue._source)
+                f"{_source_type} catalogue source: {_catalogue._source}"
+
             ) in header
             assert (
-                "{} catalogue size: "
-                "ntotal = {:d}, wtotal = {:.3f}, wstotal = {:.3f}"
-                .format(
-                    _source_type,
-                    _catalogue.ntotal, _catalogue.wtotal, _catalogue.wstotal,
-                )
-            ) in header
+                f"{_source_type} catalogue size: " f"ntotal = {
+                    _catalogue.ntotal:d}, wtotal = {
+                    _catalogue.wtotal:.3f}, wstotal = {
+                    _catalogue.wstotal:.3f}") in header
             assert (
                 "{}-source particle extents: "
                 "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"
