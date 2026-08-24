@@ -9,7 +9,7 @@ from triumvirate.threept import (
     compute_3pcf_in_gpp_box,
     compute_3pcf_window,
     compute_bispec,
-    compute_bispec_in_gpp_box
+    compute_bispec_in_gpp_box,
 )
 
 
@@ -31,9 +31,9 @@ def test_compute_bispec(degrees, form, idx_bin,
 
     degree_tag = ''.join(map(str, degrees))
     if form == 'off-diag':
-        form_tag = 'offdiag{:d}'.format(idx_bin)
+        form_tag = f'offdiag{idx_bin:d}'
     elif form == 'row':
-        form_tag = 'row{:d}'.format(idx_bin)
+        form_tag = f'row{idx_bin:d}'
     else:
         form_tag = form
 
@@ -92,9 +92,9 @@ def test_compute_3pcf(degrees, form, idx_bin,
 
     degree_tag = ''.join(map(str, degrees))
     if form == 'off-diag':
-        form_tag = 'offdiag{:d}'.format(idx_bin)
+        form_tag = f'offdiag{idx_bin:d}'
     elif form == 'row':
-        form_tag = 'row{:d}'.format(idx_bin)
+        form_tag = f'row{idx_bin:d}'
     else:
         form_tag = form
 
@@ -158,9 +158,9 @@ def test_compute_bispec_in_gpp_box(degrees, form, idx_bin,
 
     degree_tag = ''.join(map(str, degrees))
     if form == 'off-diag':
-        form_tag = 'offdiag{:d}'.format(idx_bin)
+        form_tag = f'offdiag{idx_bin:d}'
     elif form == 'row':
-        form_tag = 'row{:d}'.format(idx_bin)
+        form_tag = f'row{idx_bin:d}'
     else:
         form_tag = form
 
@@ -218,9 +218,9 @@ def test_compute_3pcf_in_gpp_box(degrees, form, idx_bin,
 
     degree_tag = ''.join(map(str, degrees))
     if form == 'off-diag':
-        form_tag = 'offdiag{:d}'.format(idx_bin)
+        form_tag = f'offdiag{idx_bin:d}'
     elif form == 'row':
-        form_tag = 'row{:d}'.format(idx_bin)
+        form_tag = f'row{idx_bin:d}'
     else:
         form_tag = form
 
@@ -284,9 +284,9 @@ def test_compute_3pcf_window(degrees, form, idx_bin,
 
     degree_tag = ''.join(map(str, degrees))
     if form == 'off-diag':
-        form_tag = 'offdiag{:d}'.format(idx_bin)
+        form_tag = f'offdiag{idx_bin:d}'
     elif form == 'row':
-        form_tag = 'row{:d}'.format(idx_bin)
+        form_tag = f'row{idx_bin:d}'
     else:
         form_tag = form
 

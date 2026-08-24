@@ -157,9 +157,8 @@ def gen_cpp_params(params_template, params_to_modify):
 
     if params_to_modify:  # check for unmodified parameters
         warnings.warn(
-            "The following parameters are added: {}. "
-            "Check for possible typos as they are missing in the template."
-            .format(params_to_modify),
+            f"The following parameters are added: {params_to_modify}. "
+            "Check for possible typos as they are missing in the template.",
             category=RuntimeWarning
         )
         params.append('\n')
