@@ -42,13 +42,12 @@ from ._twopt import (
 )
 from .dataobjs import Binning
 from .parameters import (
+    ParameterSet,
     _modify_measurement_parameters,
     _modify_sampling_parameters,
     _set_ngrid_from_cutoff,
     fetch_paramset_template,
-    ParameterSet,
 )
-
 
 # Use default parameters for mixed-mesh normalisation in `pypower`.
 PADDING = .10
@@ -180,11 +179,11 @@ def _get_measurement_filename(paramset):
     output_tag = paramset['tags']['output'] or ""
 
     if paramset['statistic_type'] == 'powspec':
-        return "pk{:d}{}".format(multipole, output_tag)
+        return f"pk{multipole:d}{output_tag}"
     if paramset['statistic_type'] == '2pcf':
-        return "xi{:d}{}".format(multipole, output_tag)
+        return f"xi{multipole:d}{output_tag}"
     if paramset['statistic_type'] == '2pcf-win':
-        return "xiw{:d}{}".format(multipole, output_tag)
+        return f"xiw{multipole:d}{output_tag}"
 
     raise ValueError(
         "`paramset` 'statistic_type' does not correspond to a "
@@ -260,11 +259,9 @@ def _print_measurement_header(paramset, norm_factor_part, norm_factor_mesh,
             norm_factor, paramset['norm_convention']
         ),
         "Normalisation factor alternatives: "
-        "{:.9e} (particle), {:.9e} (mesh), {:.9e} (mesh-mixed)".format(
-            norm_factor_part, norm_factor_mesh, norm_factor_meshes
-        ),
+        f"{norm_factor_part:.9e} (particle), {norm_factor_mesh:.9e} (mesh), {norm_factor_meshes:.9e} (mesh-mixed)",
         ", ".join([
-            "[{:d}] {}".format(colidx, colname)
+            f"[{colidx:d}] {colname}"
             for colidx, colname in enumerate(datatab_colnames)
         ])
     ]

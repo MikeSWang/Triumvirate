@@ -124,10 +124,7 @@ def run_pypower(config):
         rand_ctlgpath = osp.join(config.input_dir, config.rand_ctlgfile)
 
     print(
-        "Loading data and random catalogues: {}; {}.".format(
-            data_ctlgpath, rand_ctlgpath
-        )
-    )
+        f"Loading data and random catalogues: {data_ctlgpath}; {rand_ctlgpath}.")
 
     gcat = np.loadtxt(data_ctlgpath, dtype=_get_dtype())
     if rand_ctlgpath is None:
@@ -156,21 +153,23 @@ def run_pypower(config):
             rcat['nz'], weights=randoms_weights1, data_weights=data_weights1
         )
         print(
-            "Normalisation from particles: {} (data), {} (rand)"
-            .format(1./data_norm, 1./rand_norm)
-        )
+            f"Normalisation from particles: {
+                1. /
+                data_norm} (data), {
+                1. /
+                rand_norm} (rand)")
         exit(0)
 
     # Make measurements.
     print(
-        "Measuring power spectrum: "
-        "multipole={}, range={}, num_bins={}, "
-        "ngrid={}, boxsize={}, scheme={}, interlace={}"
-        .format(
-            config.multipole, config.range, config.num_bins,
-            config.ngrid, config.boxsize, config.scheme, config.interlace
-        )
-    )
+        "Measuring power spectrum: " f"multipole={
+            config.multipole}, range={
+            config.range}, num_bins={
+                config.num_bins}, " f"ngrid={
+                    config.ngrid}, boxsize={
+                        config.boxsize}, scheme={
+                            config.scheme}, interlace={
+                                config.interlace}")
 
     bin_edges = np.linspace(*config.range, num=config.num_bins+1)
 
@@ -238,13 +237,13 @@ def save_results(results, config):
         "'shotnoise_nonorm': {}".format(results['poles']['shotnoise_nonorm']),
         "'wnorm': {}".format(results['poles']['wnorm']),
         ", ".join([
-            "[{:d}] {}".format(colidx, colname)
+            f"[{colidx:d}] {colname}"
             for colidx, colname in enumerate([
                 "k_cen", "k_eff", "nmodes",
-                "Re{{pk{:d}_raw}}".format(config.multipole),
-                "Im{{pk{:d}_raw}}".format(config.multipole),
-                "Re{{pk{:d}_shot}}".format(config.multipole),
-                "Im{{pk{:d}_shot}}".format(config.multipole)
+                f"Re{{pk{config.multipole:d}_raw}}",
+                f"Im{{pk{config.multipole:d}_raw}}",
+                f"Re{{pk{config.multipole:d}_shot}}",
+                f"Im{{pk{config.multipole:d}_shot}}"
             ])
         ])
     ])
