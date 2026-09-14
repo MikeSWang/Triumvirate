@@ -7,8 +7,7 @@ from pathlib import Path
 
 import numpy as np
 from nbodykit import setup_logging
-from nbodykit.lab import CSVCatalog, FKPCatalog
-from nbodykit.lab import ConvolvedFFTPower, FFTPower
+from nbodykit.lab import ConvolvedFFTPower, CSVCatalog, FFTPower, FKPCatalog
 
 
 def configure():
@@ -129,10 +128,7 @@ def run_nbodykit(config):
         rand_ctlgpath = osp.join(config.input_dir, config.rand_ctlgfile)
 
     print(
-        "Loading data and random catalogues: {}; {}.".format(
-            data_ctlgpath, rand_ctlgpath
-        )
-    )
+        f"Loading data and random catalogues: {data_ctlgpath}; {rand_ctlgpath}.")
 
     ctlg_data = CSVCatalog(data_ctlgpath, config.ctlg_fields)
     if rand_ctlgpath is None:
@@ -147,14 +143,14 @@ def run_nbodykit(config):
 
     # Make measurements.
     print(
-        "Measuring power spectrum: "
-        "multipole={}, range={}, num_bins={}, "
-        "ngrid={}, boxsize={}, scheme={}, interlace={}"
-        .format(
-            config.multipole, config.range, config.num_bins,
-            config.ngrid, config.boxsize, config.scheme, config.interlace
-        )
-    )
+        "Measuring power spectrum: " f"multipole={
+            config.multipole}, range={
+            config.range}, num_bins={
+                config.num_bins}, " f"ngrid={
+                    config.ngrid}, boxsize={
+                        config.boxsize}, scheme={
+                            config.scheme}, interlace={
+                                config.interlace}")
 
     if ctlg_rand:
         mesh = FKPCatalog(ctlg_data, ctlg_rand).to_mesh(
@@ -201,13 +197,13 @@ def save_results(results, config):
 
     """
     header = ", ".join([
-        "[{:d}] {}".format(colidx, colname)
+        f"[{colidx:d}] {colname}"
         for colidx, colname in enumerate([
             "k_cen", "k_eff", "nmodes",
-            "Re{{pk{:d}_raw}}".format(config.multipole),
-            "Im{{pk{:d}_raw}}".format(config.multipole),
-            "Re{{pk{:d}_shot}}".format(config.multipole),
-            "Im{{pk{:d}_shot}}".format(config.multipole)
+            f"Re{{pk{config.multipole:d}_raw}}",
+            f"Im{{pk{config.multipole:d}_raw}}",
+            f"Re{{pk{config.multipole:d}_shot}}",
+            f"Im{{pk{config.multipole:d}_shot}}"
         ])
     ])
     fmt = '\t'.join(['%.9e'] * 2 + ['%10d'] + ['% .9e'] * 4)

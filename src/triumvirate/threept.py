@@ -33,20 +33,20 @@ import numpy as np
 from ._threept import (
     _calc_bispec_normalisation_from_mesh,
     _calc_bispec_normalisation_from_particles,
-    _compute_bispec,
-    # _compute_bispec_for_los_choice,
-    _compute_bispec_in_gpp_box,
     _compute_3pcf,
     _compute_3pcf_in_gpp_box,
     _compute_3pcf_window,
+    _compute_bispec,
+    # _compute_bispec_for_los_choice,
+    _compute_bispec_in_gpp_box,
 )
 from .dataobjs import Binning
 from .parameters import (
+    ParameterSet,
     _modify_measurement_parameters,
     _modify_sampling_parameters,
     _set_ngrid_from_cutoff,
     fetch_paramset_template,
-    ParameterSet,
 )
 
 
@@ -227,14 +227,14 @@ def _get_measurement_filename(paramset):
     output_tag = paramset['tags']['output'] or ""
 
     if paramset['statistic_type'] == 'bispec':
-        return "bk{}{}{}".format(multipole, binform, output_tag)
+        return f"bk{multipole}{binform}{output_tag}"
     if paramset['statistic_type'] == '3pcf':
-        return "zeta{}{}{}".format(multipole, binform, output_tag)
+        return f"zeta{multipole}{binform}{output_tag}"
     if paramset['statistic_type'] == '3pcf-win':
-        return "zetaw{}{}{}".format(multipole, binform, output_tag)
+        return f"zetaw{multipole}{binform}{output_tag}"
     if paramset['statistic_type'] == '3pcf-win-wa':
         wa_tag = "_wa{i}{j}".format(**paramset['wa_orders'])
-        return "zetaw{}{}{}{}".format(multipole, binform, wa_tag, output_tag)
+        return f"zetaw{multipole}{binform}{wa_tag}{output_tag}"
 
     raise ValueError(
         "`paramset` 'statistic_type' does not correspond to a "
@@ -285,18 +285,18 @@ def _print_measurement_header(paramset, norm_factor_part, norm_factor_mesh,
     if paramset['space'] == 'fourier':
         datatab_colnames = [
             "k1_cen", "k1_eff", "nmodes_1", "k2_cen", "k2_eff", "nmodes_2",
-            "Re{{bk{}_raw}}".format(multipole),
-            "Im{{bk{}_raw}}".format(multipole),
-            "Re{{bk{}_shot}}".format(multipole),
-            "Im{{bk{}_shot}}".format(multipole)
+            f"Re{{bk{multipole}_raw}}",
+            f"Im{{bk{multipole}_raw}}",
+            f"Re{{bk{multipole}_shot}}",
+            f"Im{{bk{multipole}_shot}}"
         ]
     if paramset['space'] == 'config':
         datatab_colnames = [
             "r1_cen", "r1_eff", "npairs_1", "r2_cen", "r2_eff", "npairs_2",
-            "Re{{zeta{}_raw}}".format(multipole),
-            "Im{{zeta{}_raw}}".format(multipole),
-            "Re{{zeta{}_shot}}".format(multipole),
-            "Im{{zeta{}_shot}}".format(multipole)
+            f"Re{{zeta{multipole}_raw}}",
+            f"Im{{zeta{multipole}_raw}}",
+            f"Re{{zeta{multipole}_shot}}",
+            f"Im{{zeta{multipole}_shot}}"
         ]
 
     text_lines = [
@@ -314,11 +314,9 @@ def _print_measurement_header(paramset, norm_factor_part, norm_factor_mesh,
             norm_factor, paramset['norm_convention']
         ),
         "Normalisation factor alternatives: "
-        "{:.9e} (particle), {:.9e} (mesh), {:.9e} (mesh-mixed; n/a)".format(
-            norm_factor_part, norm_factor_mesh, norm_factor_meshes
-        ),
+        f"{norm_factor_part:.9e} (particle), {norm_factor_mesh:.9e} (mesh), {norm_factor_meshes:.9e} (mesh-mixed; n/a)",
         ", ".join([
-            "[{:d}] {}".format(colidx, colname)
+            f"[{colidx:d}] {colname}"
             for colidx, colname in enumerate(datatab_colnames)
         ])
     ]
