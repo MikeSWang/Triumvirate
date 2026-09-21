@@ -201,9 +201,7 @@ def read_measurements(stat, directory, fnpattern, sn_range=None):
     ):
         if not np.allclose(np.diff(array, axis=0), 0.):
             warnings.warn(
-                "Data bin {} do not match for measurements from '{}'."
-                .format(name, fnpattern)
-            )
+                f"Data bin {name} do not match for measurements from '{fnpattern}'.")
 
     # Organise data arrays.
     bins, coords, counts = bins_list[-1], coords_list[-1], counts_list[-1]

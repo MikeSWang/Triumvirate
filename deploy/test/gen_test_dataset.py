@@ -4,9 +4,10 @@
 import os.path
 from argparse import ArgumentParser
 
+from triumvirate.parameters import ParameterSet, fetch_paramset_template
+
 from triumvirate.catalogue import ParticleCatalogue
 from triumvirate.logger import setup_logger
-from triumvirate.parameters import ParameterSet, fetch_paramset_template
 from triumvirate.threept import (
     compute_3pcf,
     compute_3pcf_in_gpp_box,

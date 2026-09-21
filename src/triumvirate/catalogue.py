@@ -316,9 +316,7 @@ class ParticleCatalogue:
                 self._pdata = HDFCatalog(filepath, **file_kwargs)
             else:
                 raise ValueError(
-                    "Unsupported `format` for ``reader='nbodykit'``: {}."
-                    .format(filepath)
-                )
+                    f"Unsupported `format` for ``reader='nbodykit'``: {filepath}.")
 
             if name_mapping:
                 for name_, name_alt_ in name_mapping.items():
@@ -521,18 +519,18 @@ class ParticleCatalogue:
         _axes_overflow = self._check_bounds_in_boxsize(boxsize)
         if _axes_overflow:
             warnings.warn(
-                "Catalogue extent exceeds the box size along axis {} ({})."
+                f"Catalogue extent exceeds the box size along axis {set(_axes_overflow)} ({self})."
                 "Some particles may lie outside the box after centring."
-                .format(set(_axes_overflow), self)
+
             )
         if catalogue_ref is not None:
             _axes_overflow_ref = \
                 catalogue_ref_._check_bounds_in_boxsize(boxsize)
             if _axes_overflow_ref:
                 warnings.warn(
-                    "Catalogue extent exceeds the box size along axis {} ({})."
+                    f"Catalogue extent exceeds the box size along axis {set(_axes_overflow_ref)} ({catalogue_ref_})."
                     "Some particles may lie outside the box after centring."
-                    .format(set(_axes_overflow_ref), catalogue_ref_)
+
                 )
 
         origin = np.array([
@@ -609,18 +607,18 @@ class ParticleCatalogue:
         _axes_overflow = self._check_bounds_in_boxsize(boxsize)
         if _axes_overflow:
             warnings.warn(
-                "Catalogue extent exceeds the box size along axis {} ({})."
+                f"Catalogue extent exceeds the box size along axis {set(_axes_overflow)} ({self})."
                 "Some particles may lie outside the box after padding."
-                .format(set(_axes_overflow), self)
+
             )
         if catalogue_ref is not None:
             _axes_overflow_ref = \
                 catalogue_ref_._check_bounds_in_boxsize(boxsize)
             if _axes_overflow_ref:
                 warnings.warn(
-                    "Catalogue extent exceeds the box size along axis {} ({})."
+                    f"Catalogue extent exceeds the box size along axis {set(_axes_overflow_ref)} ({catalogue_ref_})."
                     "Some particles may lie outside the box after padding."
-                    .format(set(_axes_overflow_ref), catalogue_ref_)
+
                 )
 
         origin = np.array([
@@ -661,8 +659,8 @@ class ParticleCatalogue:
         if _axes_overflow:
             warnings.warn(
                 "Box size is smaller than particle coordinate extents "
-                "along axis: {}."
-                .format(_axes_overflow)
+                f"along axis: {_axes_overflow}."
+
             )
 
         for iaxis, axis in enumerate(['x', 'y', 'z']):
@@ -819,11 +817,12 @@ class ParticleCatalogue:
         """
         if catalogue_ref is None:
             text_lines = [
-                "Catalogue source: {}"
-                    .format(self._source),  # noqa: E131
+                f"Catalogue source: {self._source}",  # noqa: E131
                 "Catalogue size: "
-                "ntotal = {:d}, wtotal = {:.3f}, wstotal = {:.3f}"
-                    .format(self.ntotal, self.wtotal, self.wstotal),
+                f"ntotal = {
+    self.ntotal:d}, wtotal = {
+        self.wtotal:.3f}, wstotal = {
+            self.wstotal:.3f}",
                 "Catalogue particle extents: "
                 "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"
                     .format(
@@ -832,18 +831,18 @@ class ParticleCatalogue:
             ]
         else:
             text_lines = [
-                "Data catalogue source: {}"
-                    .format(self._source),  # noqa: E131
+                f"Data catalogue source: {self._source}",  # noqa: E131
                 "Data catalogue size: "
-                "ntotal = {:d}, wtotal = {:.3f}, wstotal = {:.3f}"
-                    .format(self.ntotal, self.wtotal, self.wstotal),
+                f"ntotal = {
+    self.ntotal:d}, wtotal = {
+        self.wtotal:.3f}, wstotal = {
+            self.wstotal:.3f}",
                 "Data-source particle extents: "
                 "([{:.3f}, {:.3f}], [{:.3f}, {:.3f}], [{:.3f}, {:.3f}])"
                     .format(
                         *self.bounds['x'], *self.bounds['y'], *self.bounds['z']
                     ),
-                "Random catalogue source: {}"
-                    .format(catalogue_ref._source),  # noqa: E131
+                f"Random catalogue source: {catalogue_ref._source}",  # noqa: E131
                 "Random catalogue size: "
                 "ntotal = {:d}, wtotal = {:.3f}, wstotal = {:.3f}"
                     .format(  # noqa: E131

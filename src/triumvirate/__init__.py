@@ -30,7 +30,6 @@ from importlib.metadata import PackageNotFoundError, version
 # Installation validation
 from ._valid_install import validate_installation  # noqa: F401
 
-
 __copyright__ = 'Copyright (C) 2023 Mike S Wang & Naonori S Sugiyama'
 __date__ = '2023-03-30'
 __license__ = 'GPL-3.0-or-later'

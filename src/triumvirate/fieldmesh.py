@@ -15,9 +15,9 @@ import numpy as np
 
 from ._field import _record_binned_vectors
 from .parameters import (
+    ParameterSet,
     _modify_sampling_parameters,
     fetch_paramset_template,
-    ParameterSet,
 )
 
 
