@@ -52,7 +52,7 @@ repos:
         args: ['--py310-plus']
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.22
+    rev: v0.16.8
     hooks:
       - id: ruff-check
         args: ['--fix']
@@ -68,7 +68,7 @@ repos:
       - id: flake8
 
   - repo: https://github.com/numpy/numpydoc
-    rev: v1.11.0rc0
+    rev: v1.11.0
     hooks:
       - id: numpydoc-validation
         exclude: "^(\
