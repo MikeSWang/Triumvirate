@@ -8,20 +8,20 @@ import pytest
 from numpy.testing import assert_allclose, assert_array_equal, assert_raises
 
 from triumvirate._arrayops import (
+    MixedSignError,
+    OrderError,
+    ShapeError,
+    SpacingError,
     _check_1d_array,
     _check_2d_array,
-    ShapeError,
-    OrderError,
-    MixedSignError,
-    SpacingError,
-    extrap_pad,
+    extrap2d_lin,
+    extrap2d_loglin,
+    extrap2d_loglin_oscil,
+    extrap2d_pad,
     extrap_lin,
     extrap_loglin,
     extrap_loglin_oscil,
-    extrap2d_lin,
-    extrap2d_loglin,
-    extrap2d_pad,
-    extrap2d_loglin_oscil,
+    extrap_pad,
     reshape_threept_datatab,
 )
 

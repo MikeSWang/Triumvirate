@@ -9,7 +9,7 @@ from triumvirate.twopt import (
     compute_corrfunc_in_gpp_box,
     compute_corrfunc_window,
     compute_powspec,
-    compute_powspec_in_gpp_box
+    compute_powspec_in_gpp_box,
 )
 
 
