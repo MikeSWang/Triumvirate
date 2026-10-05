@@ -12,9 +12,9 @@ from pydantic.dataclasses import dataclass
 from semantic_release import (
     CommitParser,
     LevelBump,
+    ParsedCommit,
     ParseError,
     ParseResult,
-    ParsedCommit,
     ParserOptions,
 )
 from semantic_release.commit_parser.util import breaking_re, parse_paragraphs

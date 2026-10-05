@@ -7,12 +7,11 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-
-from triumvirate.catalogue import ParticleCatalogue
 from triumvirate.dataobjs import Binning
-from triumvirate.logger import setup_logger
 from triumvirate.parameters import ParameterSet, fetch_paramset_template
 
+from triumvirate.catalogue import ParticleCatalogue
+from triumvirate.logger import setup_logger
 
 # ========================================================================
 # Paths
