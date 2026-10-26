@@ -7,8 +7,7 @@ from pathlib import Path
 
 import numpy as np
 from nbodykit import setup_logging
-from nbodykit.lab import CSVCatalog
-from nbodykit.lab import FFTCorr
+from nbodykit.lab import CSVCatalog, FFTCorr
 
 
 def configure():
@@ -129,14 +128,14 @@ def run_nbodykit(config):
 
     # Make measurements.
     print(
-        "Measuring correlation function: "
-        "multipole={}, range={}, num_bins={}, "
-        "ngrid={}, boxsize={}, scheme={}, interlace={}"
-        .format(
-            config.multipole, config.range, config.num_bins,
-            config.ngrid, config.boxsize, config.scheme, config.interlace
-        )
-    )
+        "Measuring correlation function: " f"multipole={
+            config.multipole}, range={
+            config.range}, num_bins={
+                config.num_bins}, " f"ngrid={
+                    config.ngrid}, boxsize={
+                        config.boxsize}, scheme={
+                            config.scheme}, interlace={
+                                config.interlace}")
 
     mesh = ctlg_data.to_mesh(
         BoxSize=config.boxsize,
@@ -168,11 +167,11 @@ def save_results(results, config):
 
     """
     header = ", ".join([
-        "[{:d}] {}".format(colidx, colname)
+        f"[{colidx:d}] {colname}"
         for colidx, colname in enumerate([
             "r_cen", "r_eff", "npairs",
-            "Re{{xi{:d}_raw}}".format(config.multipole),
-            "Im{{xi{:d}_raw}}".format(config.multipole),
+            f"Re{{xi{config.multipole:d}_raw}}",
+            f"Im{{xi{config.multipole:d}_raw}}",
         ])
     ])
     fmt = '\t'.join(['%.9e'] * 2 + ['%10d'] + ['% .9e'] * 2)
