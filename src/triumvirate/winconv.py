@@ -54,8 +54,9 @@ from scipy.interpolate import InterpolatedUnivariateSpline, RectBivariateSpline
 from sympy import Expr, latex, sympify
 from sympy.physics.wigner import wigner_3j, wigner_9j
 from tqdm import tqdm
+
 try:
-    from scipy.integrate import simpson           # scipy>=1.6
+    from scipy.integrate import simpson  # scipy>=1.6
 except ImportError:
     from scipy.integrate import simps as simpson  # scipy<1.6
 
@@ -350,7 +351,7 @@ The following variables all have this type:
 
 """
 
-MultipoleLike = Union[Multipole, tuple[Union[int, str], ...], str, int]
+MultipoleLike = Union[Multipole, tuple[int | str, ...], str, int]
 """Multipole-like type.
 
 This represents a multipole index or indices.
@@ -366,7 +367,7 @@ The following variables all have this type:
 
 """
 
-Multipole3PtLike = Union[Multipole, tuple[Union[int, str], ...], str]
+Multipole3PtLike = Union[Multipole, tuple[int | str, ...], str]
 """Three-point multipole-like type.
 
 This represents three-point multipole indices and is a subtype of
@@ -609,9 +610,7 @@ class WinConvTerm:
         else:
             index_Z_str = f"\\mathrm{{{index_Z_str}}}"
 
-        term_str = "{} Q_{} {}_{}".format(
-            coeff_str, index_Q_str, symbol, index_Z_str
-        ).strip()
+        term_str = f"{coeff_str} Q_{index_Q_str} {symbol}_{index_Z_str}".strip()
 
         return term_str
 
@@ -1299,9 +1298,9 @@ def _check_conv_range(r_conv, r_samp):
                 and (rc.max() <= (1 + RTOL) * rs.max())
         except AttributeError as err:
             raise ValueError(
-                "{}. `rc` is of type {} and `rs` is of type {}."
-                .format(err, type(rc), type(rs))
-            )
+                f"{err}. `rc` is of type {
+                    type(rc)} and `rs` is of type {
+                    type(rs)}.")
 
     # STYLE: Un-Pythonic if-block and return statements for clarity.
     if isinstance(r_conv, dict):
@@ -1725,15 +1724,9 @@ class WinConvBase:
                 ):
                     if self.comm is None or self.comm.rank == self.comm_root:
                         msg = (
-                            "Multipole: ({}); "
-                            "convolution range: {}, {}; "
-                            "window sample range: {}, {}."
-                        ).format(
-                            multipole,
-                            self.r_out[multipole].min(),
-                            self.r_out[multipole].max(),
-                            self._rQ_in[term.multipole_Q].min(),
-                            self._rQ_in[term.multipole_Q].max(),
+                            f"Multipole: ({multipole}); "
+                            f"convolution range: {self.r_out[multipole].min()}, {self.r_out[multipole].max()}; "
+                            f"window sample range: {self._rQ_in[term.multipole_Q].min()}, {self._rQ_in[term.multipole_Q].max()}."
                         )
                         warnings.warn(
                             "The convolution range `r_out` is not "
@@ -1751,15 +1744,9 @@ class WinConvBase:
                 ):
                     if self.comm is None or self.comm.rank == self.comm_root:
                         msg = (
-                            "Multipole: ({}); "
-                            "convolution range: {}, {}; "
-                            "CF sample range: {}, {}. "
-                        ).format(
-                            multipole,
-                            self.r_out[multipole].min(),
-                            self.r_out[multipole].max(),
-                            self.r_in[term.multipole_Z].min(),
-                            self.r_in[term.multipole_Z].max(),
+                            f"Multipole: ({multipole}); "
+                            f"convolution range: {self.r_out[multipole].min()}, {self.r_out[multipole].max()}; "
+                            f"CF sample range: {self.r_in[term.multipole_Z].min()}, {self.r_in[term.multipole_Z].max()}. "
                         )
                         warnings.warn(
                             "The convolution range `r_out` is not "

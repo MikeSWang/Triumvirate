@@ -11,7 +11,6 @@ from importlib import import_module
 from itertools import chain
 from pathlib import Path
 
-
 sys.path.insert(0, os.path.abspath("../../src"))
 
 
@@ -55,9 +54,7 @@ release = pkg_version
 if datetime.now().year == int(pkg_date):
     copyright = f'{pkg_date}, {pkg_author}'
 else:
-    copyright = '{}\u2013{}, {}'.format(
-        pkg_date, datetime.now().year, pkg_author
-    )
+    copyright = f'{pkg_date}\u2013{datetime.now().year}, {pkg_author}'
 
 # Set custom fields.
 anaconda_user = 'msw'
@@ -255,7 +252,7 @@ TYPE_ALIASES_BY_MODULE = {
 
 autodoc_type_aliases = {
     ta: f"{mod_name}.{ta}"
-    for mod_name in TYPE_ALIASES_BY_MODULE.keys()
+    for mod_name in TYPE_ALIASES_BY_MODULE
     for ta in TYPE_ALIASES_BY_MODULE.get(mod_name, [])
 }
 

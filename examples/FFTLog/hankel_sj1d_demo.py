@@ -21,8 +21,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import InterpolatedUnivariateSpline
 from scipy.special import gamma
-
 from triumvirate._fftlog import HankelTransform
+
 from triumvirate.transforms import SphericalBesselTransform
 
 try:

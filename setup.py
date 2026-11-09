@@ -7,15 +7,14 @@ import sys
 from copy import deepcopy
 from distutils.log import _global_log as distutils_logger
 from multiprocessing import cpu_count
-from setuptools import setup
-from setuptools.command.build_clib import build_clib
 
 import numpy
 from Cython.Build import cythonize
-from Cython.Distutils import build_ext, Extension
+from Cython.Distutils import Extension, build_ext
 from extension_helpers._openmp_helpers import check_openmp_support
 from extension_helpers._setup_helpers import pkg_config
-
+from setuptools import setup
+from setuptools.command.build_clib import build_clib
 
 # ========================================================================
 # Package

@@ -3,7 +3,6 @@
 """
 import numpy as np
 import pytest
-
 from triumvirate.dataobjs import Binning
 
 

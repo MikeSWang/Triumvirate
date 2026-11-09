@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 from sympy import Expr, sympify
 
-import triumvirate.winconv as winconv
+from triumvirate import winconv
 from triumvirate.winconv import (
     # BispecWinConv,
     # PowspecWinConv,
