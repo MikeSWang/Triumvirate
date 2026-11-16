@@ -4,8 +4,8 @@
 import numpy as np
 import pytest
 from scipy.special import gamma
-
 from triumvirate._fftlog import HankelTransform
+
 from triumvirate.transforms import (
     DoubleSphericalBesselTransform,
     SphericalBesselTransform,
